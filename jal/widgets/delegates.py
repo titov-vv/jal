@@ -1,4 +1,3 @@
-from datetime import datetime, timezone
 from zoneinfo import available_timezones
 from decimal import Decimal, InvalidOperation
 from PySide6.QtWidgets import (QApplication, QWidget, QStyle, QStyledItemDelegate, QLineEdit, QDateTimeEdit,
@@ -7,7 +6,8 @@ from PySide6.QtCore import Qt, QModelIndex, QEvent, QLocale, QDateTime, QDate, Q
 from PySide6.QtGui import QDoubleValidator, QBrush, QKeyEvent
 from jal.constants import Setup
 from jal.widgets.reference_selector import ReferenceSelectorWidget
-from jal.db.helpers import localize_decimal, delocalize_decimal
+from jal.db.clock import local_datetime, local_time, local_zone, window_bound
+from jal.db.helpers import is_day_marker, localize_decimal, delocalize_decimal
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.symbol import JalSymbol
@@ -121,25 +121,32 @@ class TimestampDelegate(GridLinesDelegate):
             except ValueError:
                 return self.tr("<invalid>")
         text_format = DateFormat.date() if self._date_only else DateFormat.datetime()
-        text = datetime.fromtimestamp(value, tz=timezone.utc).strftime(text_format) if value else ''
+        text = local_time(value).strftime(text_format) if value else ''
         return text
 
     def createEditor(self, aParent, option, index):
         editor = DateTimeEditWithReset(aParent)
-        editor.setTimeSpec(Qt.UTC)
         editor.setDisplayFormat(DateFormat.date(qt=True) if self._date_only
                                 else DateFormat.datetime(qt=True))
         return editor
 
+    # The editor is put on the clock the value it is given is read on, and Qt converts in both directions from
+    # there: it renders the user's own reading and hands back the instant the digits left in it stand for.
     def setEditorData(self, editor, index):
         timestamp = index.model().data(index, Qt.EditRole)
         if timestamp is None or timestamp == '':   # None is an SQL NULL - an optional date that isn't known yet
             QStyledItemDelegate.setEditorData(self, editor, index)
         else:
-            editor.setDateTime(QDateTime.fromSecsSinceEpoch(timestamp, QTimeZone(0)))
+            editor.setTimeZone(local_zone(timestamp))
+            editor.setDateTime(local_datetime(timestamp))
 
     def setModelData(self, editor, model, index):
         timestamp = editor.dateTime().toSecsSinceEpoch()
+        # A value that states a day is edited on no clock at all (see local_zone), so a time of day typed into one
+        # would be stored as if it were Greenwich. It stops being a day the moment it is given one, and what is left
+        # in the editor is then the user's own reading of a moment.
+        if editor.timeZone() == QTimeZone(QTimeZone.UTC) and not is_day_marker(timestamp):
+            timestamp = window_bound(timestamp)
         model.setData(index, timestamp)
 
 

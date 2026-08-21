@@ -1,9 +1,10 @@
 from decimal import Decimal
-from PySide6.QtCore import Qt, QDateTime, QEvent, QTimeZone
+from PySide6.QtCore import Qt, QEvent
 from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import (QApplication, QDialog, QVBoxLayout, QGridLayout, QLabel, QLineEdit, QDateTimeEdit,
                                QGroupBox, QDialogButtonBox, QMessageBox, QPushButton)
 from jal.constants import PredefinedAccountType, AssetLocation
+from jal.db.clock import local_datetime, local_zone
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.symbol import JalSymbol
@@ -91,7 +92,7 @@ class TransferAssignDialog(QDialog):
             form.addWidget(self._new_box, 0, 3)
         form.addWidget(QLabel(self.tr("on:")), 1, 0)
         self._timestamp = QDateTimeEdit(self)
-        self._timestamp.setTimeSpec(Qt.UTC)
+        self._timestamp.setTimeZone(local_zone())
         self._timestamp.setDisplayFormat(DateFormat.datetime(qt=True))
         self._timestamp.setCalendarPopup(True)
         form.addWidget(self._timestamp, 1, 1)
@@ -168,7 +169,8 @@ class TransferAssignDialog(QDialog):
         # an address is resolved on is itself a deduction when the end that IS known is not a wallet.
         self._account.selected_id = self._settlement.address_suggestion(self._oid)
         # Both ends of a fetched movement carry the same moment, and one of them is all that is known here
-        self._timestamp.setDateTime(QDateTime.fromSecsSinceEpoch(self._leg['timestamp'], QTimeZone(0)))
+        self._timestamp.setTimeZone(local_zone(self._leg['timestamp']))
+        self._timestamp.setDateTime(local_datetime(self._leg['timestamp']))
 
     # ------------------------------------------------------------------------------------------------------------------
     # Creates the staked position this leg goes into and chooses it, prefilled with everything the leg already says:

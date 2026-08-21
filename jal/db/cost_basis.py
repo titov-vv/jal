@@ -1,4 +1,5 @@
 from decimal import Decimal
+from jal.db.clock import local_moment, local_reading
 from jal.db.asset import JalAsset
 from jal.db.db import JalDB
 
@@ -48,8 +49,9 @@ def _rate_age(currency: int, target_currency: int, timestamp: int, rate_timestam
 def _stored_rate_age(currency: int, target_currency: int, timestamp: int) -> int:
     stored = JalDB._read("SELECT timestamp FROM quotes WHERE asset_id=:asset_id AND currency_id=:currency_id "
                          "AND timestamp<=:timestamp ORDER BY timestamp DESC LIMIT 1",
-                         [(":asset_id", currency), (":currency_id", target_currency), (":timestamp", timestamp)])
-    return int(stored) if stored else 0
+                         [(":asset_id", currency), (":currency_id", target_currency),
+                          (":timestamp", local_reading(timestamp))])
+    return local_moment(int(stored)) if stored else 0
 
 
 # ----------------------------------------------------------------------------------------------------------------------

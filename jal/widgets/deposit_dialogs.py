@@ -8,7 +8,8 @@ from jal.db.db import JalDB
 from jal.db.account import JalAccount
 from jal.db.common_models import AccountListModel, PeerTreeModel
 from jal.db.deposit import JalDepositBox
-from jal.db.helpers import now_ts, now_dt
+from jal.db.clock import local_zone, now_dt
+from jal.db.helpers import now_ts
 from jal.widgets.helpers import DateFormat
 from jal.db.operations import LedgerTransaction
 from jal.widgets.reference_dialogs import AccountListDialog, PeerListDialog
@@ -37,13 +38,13 @@ class NewDepositDialog(QDialog):
         self._amount = QLineEdit(self)
         layout.addRow(self.tr("Amount"), self._amount)
         self._opened = QDateTimeEdit(self)
-        self._opened.setTimeSpec(Qt.UTC)
+        self._opened.setTimeZone(local_zone())
         self._opened.setDisplayFormat(DateFormat.datetime(qt=True))
         self._opened.setCalendarPopup(True)
         self._opened.setDateTime(now_dt())
         layout.addRow(self.tr("Opened"), self._opened)
         self._ends = QDateTimeEdit(self)
-        self._ends.setTimeSpec(Qt.UTC)
+        self._ends.setTimeZone(local_zone())
         self._ends.setDisplayFormat(DateFormat.date(qt=True))
         self._ends.setCalendarPopup(True)
         self._ends.setDateTime(now_dt())
@@ -94,7 +95,7 @@ class DepositTransferDialog(QDialog):
         self._account.setup_selector(AccountListModel, AccountListDialog, self)
         layout.addRow(self.tr("From account") if mode == self.PUT else self.tr("To account"), self._account)
         self._timestamp = QDateTimeEdit(self)
-        self._timestamp.setTimeSpec(Qt.UTC)
+        self._timestamp.setTimeZone(local_zone())
         self._timestamp.setDisplayFormat(DateFormat.datetime(qt=True))
         self._timestamp.setCalendarPopup(True)
         self._timestamp.setDateTime(now_dt())
@@ -142,7 +143,7 @@ class DepositInterestDialog(QDialog):
         layout = QFormLayout(self)
 
         self._timestamp = QDateTimeEdit(self)
-        self._timestamp.setTimeSpec(Qt.UTC)
+        self._timestamp.setTimeZone(local_zone())
         self._timestamp.setDisplayFormat(DateFormat.datetime(qt=True))
         self._timestamp.setCalendarPopup(True)
         self._timestamp.setDateTime(now_dt())

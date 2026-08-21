@@ -6,7 +6,7 @@ from decimal import Decimal
 from PySide6.QtCore import Qt, QDateTime
 from PySide6.QtWidgets import QDialog, QDialogButtonBox
 from jal.data_import.receipt_api.receipt_api import ReceiptAPI
-from jal.db.helpers import now_dt
+from jal.db.clock import local_zone, now_dt
 from jal.db.settings import JalSettings
 from jal.ui.ui_login_pingo_doce_dlg import Ui_LoginPingoDoceDialog
 
@@ -161,7 +161,7 @@ class ReceiptPtPingoDoce(ReceiptAPI):
 
     def datetime(self) -> QDateTime:
         receipt_datetime = self.date_time
-        receipt_datetime.setTimeSpec(Qt.UTC)
+        receipt_datetime.setTimeZone(local_zone())   # what it says is a reading of the buyer's own clock
         return receipt_datetime
 
     def slip_lines(self) -> list:

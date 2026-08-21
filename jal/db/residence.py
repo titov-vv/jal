@@ -1,6 +1,4 @@
 from bisect import bisect_right
-from datetime import datetime, timezone
-from zoneinfo import ZoneInfo
 from jal.db.db import JalDB
 from jal.db.helpers import day_begin, now_ts
 from jal.universal_cache import UniversalCache
@@ -72,38 +70,3 @@ class JalResidence(JalDB):
     @classmethod
     def timezone(cls, timestamp: int = None) -> str:
         return cls._at(timestamp)[2]
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-# The reading that the wall clock of 'zone' showed at the moment JAL stores as 'timestamp'. A stored timestamp is the
-# reading of the user's own clock (see stored_timestamp), so the digits are turned back into an instant with the zone
-# the user was on then, and that instant is read again on the zone asked for. The answer keeps the same shape it was
-# given - the digits of a reading, spelled as a UTC epoch.
-#
-# A report filed in another country needs exactly this: a trade made at 23:30 in Lisbon happened at 01:30 of the next
-# day in Moscow, and the day is what it is taxed in. The reading is returned untouched while either zone is unknown,
-# so nothing moves until the user states where they lived.
-def wall_clock_reading(timestamp: int, zone: str) -> int:
-    home = JalResidence.timezone(timestamp)
-    if not zone or not home or zone == home:
-        return timestamp
-    instant = datetime.fromtimestamp(timestamp, tz=timezone.utc).replace(tzinfo=ZoneInfo(home))
-    return int(instant.astimezone(ZoneInfo(zone)).replace(tzinfo=timezone.utc).timestamp())
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-# The inverse of wall_clock_reading(): the timestamp JAL stores for the moment at which the wall clock of 'zone' showed
-# the given digits. A report whose year is a jurisdiction's needs this side of the mapping whenever the year is put to
-# the DATABASE rather than to a row already fetched - the stored readings can't be re-read one by one inside a query,
-# so it is the bounds of the window that are re-read instead. It also answers "which instant was the jurisdiction's 1
-# January", which is what a balance taken at the turn of the year is a balance at.
-#
-# The zone the user was on is looked up by the reading given rather than by the answer returned, because the residence
-# timeline is keyed on stored digits as well. That makes the inverse exact everywhere except within a few hours of a
-# move, and there it errs by those hours.
-def stored_reading(reading: int, zone: str) -> int:
-    home = JalResidence.timezone(reading)
-    if not zone or not home or zone == home:
-        return reading
-    instant = datetime.fromtimestamp(reading, tz=timezone.utc).replace(tzinfo=ZoneInfo(zone))
-    return int(instant.astimezone(ZoneInfo(home)).replace(tzinfo=timezone.utc).timestamp())

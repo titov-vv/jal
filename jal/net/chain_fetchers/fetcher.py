@@ -10,7 +10,6 @@ from jal.data_import.token_filter import TokenFilter
 from jal.db.bridge_matcher import BridgeMatcher
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
-from jal.db.helpers import local_timestamp
 from jal.db.settings import JalSettings
 from jal.db.token_blacklist import normalize_address
 
@@ -167,11 +166,6 @@ class ChainFetcher(Statement):
     def _report_page(self) -> None:
         self._page_count += 1
         self.page_fetched.emit(self._page_count)
-
-    # See local_timestamp() in jal/db/helpers.py - kept as a method so every fetcher reaches it as it always has.
-    @staticmethod
-    def _local_timestamp(utc_seconds: int) -> int:
-        return local_timestamp(utc_seconds)
 
     # The chain's native coin, which has no contract address behind it
     def _native_asset_id(self) -> int:

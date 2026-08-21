@@ -1,12 +1,13 @@
 from __future__ import annotations
 from decimal import Decimal
 
-from PySide6.QtCore import Qt, Slot, QDate
+from PySide6.QtCore import Qt, Slot
 from PySide6.QtGui import QBrush, QFont
 from PySide6.QtWidgets import QHeaderView
 from jal.db.helpers import localize_decimal
 from jal.db.tree_model import AbstractTreeItem, ReportTreeModel
 from jal.db.settings import JalSettings
+from jal.db.clock import day_finish, today_finish
 from jal.db.asset import JalAsset
 from jal.db.account import JalAccount
 from jal.widgets.delegates import GridLinesDelegate, FloatDelegate
@@ -78,7 +79,7 @@ class BalancesModel(ReportTreeModel):
         self._currency_name = ''
         self._active_only = not JalSettings().getValue("ShowInactiveAccountBalances", False)
         self._use_credit = JalSettings().getValue("UseAccountCreditLimit", True)
-        self._date = QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch()
+        self._date = today_finish()
         self.bold_font = QFont()
         self.bold_font.setBold(True)
         self.italic_font = QFont()
@@ -173,8 +174,8 @@ class BalancesModel(ReportTreeModel):
 
     @Slot()
     def setDate(self, new_date):
-        if self._date != new_date.endOfDay(Qt.UTC).toSecsSinceEpoch():
-            self._date = new_date.endOfDay(Qt.UTC).toSecsSinceEpoch()
+        if self._date != day_finish(new_date):
+            self._date = day_finish(new_date)
             self.prepareData()
 
     @Slot()

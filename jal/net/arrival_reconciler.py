@@ -8,7 +8,7 @@ from jal.constants import AssetLocation
 from jal.db.account import JalAccount
 from jal.db.bridge_matcher import BridgeMatcher
 from jal.db.db import JalDB
-from jal.db.helpers import local_timestamp, remove_exponent
+from jal.db.helpers import remove_exponent
 from jal.db.symbol import JalSymbol
 from jal.db.transfer_settlement import TransferSettlement
 from jal.net.route import Confidence
@@ -121,7 +121,7 @@ class ArrivalReconciler(QObject):
                                    text=text)
         leg = {'account_id': account.id(), 'symbol_id': symbol_id,
                'asset_id': JalSymbol(symbol_id).asset().id(), 'qty': arrival.qty,
-               'timestamp': local_timestamp(arrival.timestamp), 'tx_hash': arrival.tx_hash}
+               'timestamp': arrival.timestamp, 'tx_hash': arrival.tx_hash}
         return ArrivalProposal(route, leg=leg, text=text)
 
     # ------------------------------------------------------------------------------------------------------------------

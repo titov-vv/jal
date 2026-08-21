@@ -1,6 +1,6 @@
 import logging
 import re
-from datetime import datetime, timezone
+from datetime import datetime
 
 from jal.constants import PredefinedCategory
 from jal.data_import.statement import JSF, Statement_ImportError
@@ -11,6 +11,7 @@ JAL_STATEMENT_CLASS = "StatementTvoyBroker"
 
 # ----------------------------------------------------------------------------------------------------------------------
 class StatementTvoyBroker(StatementXLS):
+    source_timezone = 'Europe/Moscow'
     Header = (0, 0, '  Брокер: ООО "Твой Брокер"')
     PeriodPattern = (0, 2, r"  за период с (?P<S>\d\d\.\d\d\.\d\d\d\d) по (?P<E>\d\d\.\d\d\.\d\d\d\d)")
     AccountPattern = (2, 6, r"(?P<ACCOUNT>[^_]*)(_invest)?")   # drop "_invest" if it is present
@@ -139,9 +140,8 @@ class StatementTvoyBroker(StatementXLS):
             if abs(abs(price * qty) - amount) >= self.RU_PRICE_TOLERANCE:
                 price = abs(amount / qty)
             ts_string = self._statement[headers['date']][row] + ' ' + self._statement[headers['time']][row]
-            timestamp = int(datetime.strptime(ts_string, "%d.%m.%Y %H:%M:%S").replace(tzinfo=timezone.utc).timestamp())
-            settlement = int(datetime.strptime(self._statement[headers['settlement']][row],
-                                               "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
+            timestamp = self._moment(datetime.strptime(ts_string, "%d.%m.%Y %H:%M:%S"))
+            settlement = self._date(datetime.strptime(self._statement[headers['settlement']][row], "%d.%m.%Y"))
             account_id = self._find_account_id(self._account_number, currency)
             symbol_id = self._single_symbol_of(asset_id)
             new_id = max([0] + [x['id'] for x in self._data[JSF.TRADES]]) + 1
@@ -213,9 +213,8 @@ class StatementTvoyBroker(StatementXLS):
             if abs(abs(price * qty) - amount) >= self.RU_PRICE_TOLERANCE:
                 price = abs(amount / qty)
             ts_string = self._statement[headers['date']][row] + ' ' + self._statement[headers['time']][row]
-            timestamp = int(datetime.strptime(ts_string, "%d.%m.%Y %H:%M:%S").replace(tzinfo=timezone.utc).timestamp())
-            settlement = int(datetime.strptime(self._statement[headers['settlement']][row],
-                                               "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
+            timestamp = self._moment(datetime.strptime(ts_string, "%d.%m.%Y %H:%M:%S"))
+            settlement = self._date(datetime.strptime(self._statement[headers['settlement']][row], "%d.%m.%Y"))
             account_id = self._find_account_id(self._account_number, currency)
             new_id = max([0] + [x['id'] for x in self._data[JSF.TRADES]]) + 1
             trade = {"id": new_id, "number": deal_number, "timestamp": timestamp, "settlement": settlement,
@@ -255,8 +254,7 @@ class StatementTvoyBroker(StatementXLS):
             if operation not in operations:
                 raise Statement_ImportError(self.tr("Unsupported asset operation ") + f"'{operation}'")
             number = self._statement[headers['number']][row]
-            timestamp = int(datetime.strptime(self._statement[headers['date']][row],
-                                              "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
+            timestamp = self._date(datetime.strptime(self._statement[headers['date']][row], "%d.%m.%Y"))
             asset_name = self._statement[headers['asset_name']][row]
             issuer = self._statement[headers['issuer']][row]
             assets = [x for x in self._data[JSF.ASSETS] if x.get('broker_name') == asset_name and x.get('issuer') == issuer]
@@ -343,8 +341,7 @@ class StatementTvoyBroker(StatementXLS):
             if operation not in operations:
                 raise Statement_ImportError(self.tr("Unsuppported cash transaction ") + f"'{operation}'")
             number = self._statement[headers['number']][row]
-            timestamp = int(datetime.strptime(self._statement[headers['date']][row],
-                                              "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
+            timestamp = self._date(datetime.strptime(self._statement[headers['date']][row], "%d.%m.%Y"))
             amount = self._statement[headers['amount']][row]
             description = self._statement[headers['description']][row]
             account_id = self._find_account_id(self._account_number, self._statement[headers['currency']][row])

@@ -1,6 +1,6 @@
 from functools import partial
 
-from PySide6.QtCore import Qt, Slot, Signal, QDateTime, QSortFilterProxyModel
+from PySide6.QtCore import Qt, Slot, Signal, QSortFilterProxyModel
 from PySide6.QtGui import QAction, QKeySequence
 from PySide6.QtWidgets import QMenu, QMessageBox, QDialog
 from jal.constants import Setup
@@ -13,6 +13,7 @@ from jal.widgets.helpers import (ManipulateDate, TableSelectionRestorer, set_tab
 from jal.widgets.icons import JalIcon
 from jal.db.settings import JalSettings
 from jal.db.account import JalAccount
+from jal.db.clock import now_dt
 from jal.db.asset import JalAsset
 from jal.db.balances_model import BalancesModel
 from jal.db.operations_model import OperationsModel
@@ -73,9 +74,7 @@ class OperationsWidget(MdiWidget):
         self.ui.NewOperationBtn.setMenu(self.NewOperationMenu)
 
         # Setup balance and holdings parameters
-        current_time = QDateTime.currentDateTime()
-        current_time.setTimeSpec(Qt.UTC)  # We use UTC everywhere so need to force TZ info
-        self.ui.BalanceDate.setDateTime(current_time)
+        self.ui.BalanceDate.setDate(now_dt().date())
         self.ui.BalancesCurrencyCombo.setIndex(JalAsset.get_base_currency())
 
         self.ui.OperationsTableView.selectRow(0)

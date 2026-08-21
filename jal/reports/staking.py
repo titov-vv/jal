@@ -1,12 +1,13 @@
 from decimal import Decimal
 from functools import partial
 
-from PySide6.QtCore import Qt, Slot, QObject, QDateTime, QAbstractTableModel
+from PySide6.QtCore import Qt, Slot, QObject, QAbstractTableModel
 from PySide6.QtGui import QFont
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMessageBox, QMenu
 
 from jal.constants import AssetLocation, Setup
+from jal.db.clock import day_finish, now_dt
 from jal.db.asset import JalAsset
 from jal.db.chain_balance import JalChainBalance
 from jal.db.helpers import localize_decimal
@@ -297,9 +298,7 @@ class StakingReportWindow(MdiWidget):
         self.details_model = StakingDetailsModel(self.ui.DetailsTableView)
         self.ui.DetailsTableView.setModel(self.details_model)
 
-        current_time = QDateTime.currentDateTime()
-        current_time.setTimeSpec(Qt.UTC)   # We use UTC everywhere so need to force TZ info
-        self.ui.ReportDate.setDateTime(current_time)
+        self.ui.ReportDate.setDate(now_dt().date())
         self.ui.ReportCurrencyCombo.setIndex(JalAsset.get_base_currency())
 
         self.connect_signals_and_slots()
@@ -322,7 +321,7 @@ class StakingReportWindow(MdiWidget):
         self.updateReport()
 
     def _timestamp(self) -> int:
-        return self.ui.ReportDate.date().endOfDay(Qt.UTC).toSecsSinceEpoch()
+        return day_finish(self.ui.ReportDate.date())
 
     # The position the actions apply to, or None when nothing is selected
     def _selected(self) -> JalStakingBox:

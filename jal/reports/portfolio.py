@@ -1,10 +1,11 @@
 from functools import partial
 
-from PySide6.QtCore import Qt, Slot, QObject, QDateTime, QDate
+from PySide6.QtCore import Qt, Slot, QObject, QDate
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMenu, QDialog, QMessageBox
 from jal.ui.reports.ui_portfolio_report import Ui_PortfolioWidget
 from jal.reports.reports import Reports
+from jal.db.clock import day_finish, now_dt
 from jal.db.asset import JalAsset
 from jal.db.holdings_model import HoldingsModel
 from jal.widgets.mdi import MdiWidget
@@ -51,9 +52,7 @@ class PortfolioReportWindow(MdiWidget):
         self.ui.PortfolioTreeView.setContextMenuPolicy(Qt.CustomContextMenu)
 
         # Setup holdings parameters
-        current_time = QDateTime.currentDateTime()
-        current_time.setTimeSpec(Qt.UTC)  # We use UTC everywhere so need to force TZ info
-        self.ui.PortfolioDate.setDateTime(current_time)
+        self.ui.PortfolioDate.setDate(now_dt().date())
         self.ui.PortfolioCurrencyCombo.setIndex(JalAsset.get_base_currency())
 
         self.connect_signals_and_slots()
@@ -115,7 +114,7 @@ class PortfolioReportWindow(MdiWidget):
     def showPriceChart(self, index):
         model = index.model()
         account, asset, currency, asset_qty = model.get_data_for_tax(index)
-        self._parent.mdi_area().addWindow(ChartWindow(account, asset, currency, self.ui.PortfolioDate.date().endOfDay(Qt.UTC).toSecsSinceEpoch()), floating=True)
+        self._parent.mdi_area().addWindow(ChartWindow(account, asset, currency, day_finish(self.ui.PortfolioDate.date())), floating=True)
 
     # True when this row's position has been measured on chain more than once - anything less has no line to draw
     def _has_accrual_history(self, index) -> bool:

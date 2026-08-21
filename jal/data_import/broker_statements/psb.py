@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timezone
+from datetime import datetime
 
 from jal.data_import.statement import JSF
 from jal.data_import.statement_xls import StatementXLS
@@ -9,6 +9,7 @@ JAL_STATEMENT_CLASS = "StatementPSB"
 
 # ----------------------------------------------------------------------------------------------------------------------
 class StatementPSB(StatementXLS):
+    source_timezone = 'Europe/Moscow'
     Header = (2, 3, 'Брокер: ПАО "Промсвязьбанк"')
     PeriodPattern = (3, 6, r"с (?P<S>\d\d\.\d\d\.\d\d\d\d) по (?P<E>\d\d\.\d\d\.\d\d\d\d)")
     AccountPattern = (3, 9, r"(?P<ACCOUNT>\S*)( от \d\d\.\d\d\.\d\d\d\d)?")
@@ -98,15 +99,15 @@ class StatementPSB(StatementXLS):
                 amount = self._statement[headers['amount']][row]
                 if abs(abs(price * qty) - amount) >= self.RU_PRICE_TOLERANCE:
                     price = abs(amount / qty)
-                timestamp = int(datetime.strptime(self._statement[headers['timestamp']][row],
-                                                  "%d.%m.%Y %H:%M:%S").replace(tzinfo=timezone.utc).timestamp())
+                timestamp = self._moment(datetime.strptime(self._statement[headers['timestamp']][row],
+                                                           "%d.%m.%Y %H:%M:%S"))
                 if headers['*settlement'] == -1:
-                    settlement = int(
+                    settlement = self._date(
                         datetime.strptime(self._statement[headers['timestamp']][row], "%d.%m.%Y %H:%M:%S").replace(
-                            tzinfo=timezone.utc).replace(hour=0, minute=0, second=0).timestamp())
+                            hour=0, minute=0, second=0))
                 else:
-                    settlement = int(datetime.strptime(self._statement[headers['*settlement']][row],
-                                                       "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
+                    settlement = self._date(datetime.strptime(self._statement[headers['*settlement']][row],
+                                                              "%d.%m.%Y"))
                 account_id = self._find_account_id(self._account_number, currency)
                 new_id = max([0] + [x['id'] for x in self._data[JSF.TRADES]]) + 1
                 trade = {"id": new_id, "number": deal_number, "timestamp": timestamp, "settlement": settlement,
@@ -155,8 +156,7 @@ class StatementPSB(StatementXLS):
                 row += 1
                 continue
 
-            timestamp = int(datetime.strptime(self._statement[headers['date']][row],
-                                              "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
+            timestamp = self._date(datetime.strptime(self._statement[headers['date']][row], "%d.%m.%Y"))
             amount = self._statement[headers['amount']][row]
             account_id = self._find_account_id(self._account_number, self._statement[headers['currency']][row])
             if self._statement[headers['operation']][row] == 'Зачислено на счет':
@@ -212,8 +212,7 @@ class StatementPSB(StatementXLS):
                 logging.warning(self.tr("Unsupported payment: ") + self._statement[headers['operation']][row])
                 row += 1
                 continue
-            timestamp = int(datetime.strptime(self._statement[headers['date']][row],
-                                              "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
+            timestamp = self._date(datetime.strptime(self._statement[headers['date']][row], "%d.%m.%Y"))
             amount = float(self._statement[headers['coupon']][row])
             tax = float(self._statement[headers['tax']][row])
             account_id = self._find_account_id(self._account_number, self._statement[headers['currency']][row])
@@ -251,8 +250,7 @@ class StatementPSB(StatementXLS):
             if self._statement[self.HeaderCol][row] == '':
                 break
 
-            timestamp = int(datetime.strptime(self._statement[headers['date']][row],
-                                              "%d.%m.%Y").replace(tzinfo=timezone.utc).timestamp())
+            timestamp = self._date(datetime.strptime(self._statement[headers['date']][row], "%d.%m.%Y"))
             amount = float(self._statement[headers['amount']][row])
             tax = float(self._statement[headers['tax']][row])
             account_id = self._find_account_id(self._account_number, self._statement[headers['currency']][row])

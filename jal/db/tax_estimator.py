@@ -2,10 +2,11 @@ import logging
 from decimal import Decimal
 
 import pandas as pd
-from PySide6.QtCore import Qt, QAbstractTableModel, QDate
+from PySide6.QtCore import Qt, QAbstractTableModel
 from PySide6.QtGui import QFont
 from jal.constants import PredefinedAsset, Setup
 from jal.db.account import JalAccount
+from jal.db.clock import today_finish
 from jal.db.asset import JalAsset
 from jal.db.country import JalCountry
 from jal.ui.reports.ui_tax_estimation import Ui_TaxEstimationDialog
@@ -127,8 +128,8 @@ class TaxEstimator(MdiWidget):
         asset = JalAsset(self.asset_id)
         account_currency = JalAsset(account.currency())
         self.currency_name = account_currency.symbol()
-        self.quote = asset.quote(QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch(), account.currency())[1]
-        self.rate = account_currency.quote(QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch(), tax_currency)[1]
+        self.quote = asset.quote(today_finish(), account.currency())[1]
+        self.rate = account_currency.quote(today_finish(), tax_currency)[1]
         positions = account.open_trades_list(asset)
         table = []
         profit = Decimal('0')

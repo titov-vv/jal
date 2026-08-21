@@ -204,7 +204,7 @@ class HyperliquidFetcher(ChainFetcher):
                 del self._data[section][length:]
 
     def _classify(self, record: dict) -> None:
-        timestamp = self._local_timestamp(record['time'] // 1000)
+        timestamp = record['time'] // 1000
         if record['kind'] == 'fill':
             self._process_fill(record['data'], timestamp, record['hash'])
         else:

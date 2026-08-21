@@ -11,13 +11,10 @@ from jal.db.asset import JalAsset
 from jal.db.category import JalCategory
 from jal.db.helpers import is_day_marker
 from jal.db.operations import AssetPayment
-from jal.db.residence import wall_clock_reading
+from jal.db.clock import ZONE_SPAN, wall_clock_reading
 
 REPORT_METHOD = 0
 REPORT_TEMPLATE = 1
-# Wider than any gap between two wall clocks (the farthest apart are 26 hours), so a window widened by it can't miss
-# an operation that belongs to the year on the clock of the report - see TaxReport.category_operations()
-ZONE_SPAN = 2 * 24 * 60 * 60
 
 class TaxReport:
     PORTUGAL = 0

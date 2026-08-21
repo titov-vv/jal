@@ -46,8 +46,7 @@ _SOURCE = "LI.FI"   # what the user is told an answer came from
 
 # One end of a move as LI.FI recorded it. Amounts are kept exactly as the API reports them - an integer of the token's
 # smallest unit plus that token's decimals - and turned into a Decimal quantity here, which is lossless. The timestamp
-# stays the true UTC epoch the chain stamped: converting it into the local-wall-clock convention JAL stores is the
-# caller's business (ChainFetcher.local_timestamp), so that this module has nothing to do with how JAL keeps time.
+# stays the true UTC epoch the chain stamped, which is what JAL stores.
 def _leg(record: dict) -> RouteLeg:
     token = record.get('token') or {}
     chain_id = record.get('chainId')

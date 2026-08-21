@@ -42,7 +42,7 @@ class AssetAttributeDelegate(QStyledItemDelegate):
             return QLineEdit(aParent)
         elif datatype_of == "date":
             editor = DateTimeEditWithReset(aParent)
-            editor.setTimeSpec(Qt.UTC)
+            editor.setTimeSpec(Qt.UTC)   # an attribute of type 'date' states a day, which is the same day on every clock
             editor.setDisplayFormat(DateFormat.date(qt=True))
             return editor
         elif datatype_of == "tag":

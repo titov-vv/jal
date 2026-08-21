@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from decimal import Decimal
 from jal.db.db import JalDB
 from jal.db.asset import JalAsset
@@ -5,9 +6,10 @@ import jal.db.operations
 import jal.db.closed_trade
 import jal.db.chain_balance
 from jal.constants import Setup, BookAccount, PredefinedAsset, PredefinedAgents, PredefinedAccountType, AccountData, AssetLocation
+from jal.db.clock import ZONE_SPAN
 from jal.db.country import JalCountry
 from jal.db.token_blacklist import normalize_address, is_valid_address
-from jal.db.helpers import format_decimal, now_ts, year_begin, year_end
+from jal.db.helpers import format_decimal, now_ts
 from jal.universal_cache import UniversalCache
 
 
@@ -156,13 +158,20 @@ class JalAccount(JalDB):
                    and normalize_address(location_id, x.address()) == address]
         return matched[0] if len(matched) == 1 else None
 
+    # Anything to be listed in tax report for the account.
+    # The window is widened by a day at each end because it is put to the DATABASE, in stored instants, while the report
+    # counts its year on the clock of the jurisdiction it is filed in - an operation of the small hours of 1 January
+    # belongs to a year while the raw timestamps put it outside of. Offering an account too many is harmless:
+    # the report itself decides, row by row, which year each operation falls in (see TaxReport.category_operations).
     @classmethod
-    def get_taxable_accounts(cls, tax_date: int) -> list:
+    def get_taxable_accounts(cls, year: int) -> list:
+        begin = int(datetime(year, 1, 1, tzinfo=timezone.utc).timestamp()) - ZONE_SPAN
+        end = int(datetime(year + 1, 1, 1, tzinfo=timezone.utc).timestamp()) + ZONE_SPAN
         accounts = []
         query = cls._exec("SELECT account_id FROM asset_payments WHERE timestamp>=:y_b AND timestamp<=:y_e "
                           "UNION "
                           "SELECT account_id FROM trades WHERE timestamp>=:y_b AND timestamp<=:y_e AND qty<0",
-                          [(":y_b", year_begin(tax_date)), (":y_e", year_end(tax_date))])
+                          [(":y_b", begin), (":y_e", end)])
         while query.next():
             account_id = cls._read_record(query, cast=[int])
             accounts.append(JalAccount(account_id))

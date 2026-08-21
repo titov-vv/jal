@@ -11,6 +11,7 @@ from jal.widgets.helpers import (dependency_present, set_tables_row_height, set_
 from jal.widgets.theme import Theme, Meaning
 from jal.db.helpers import localize_decimal, delocalize_decimal
 from jal.db.peer import JalPeer
+from jal.db.clock import local_zone
 from jal.db.category import JalCategory
 from jal.db.operations import LedgerTransaction
 from jal.db.common_models import AccountListModel, PeerTreeModel, CategoryTreeModel, TagTreeModel
@@ -139,7 +140,7 @@ class ParameterDelegate(QStyledItemDelegate):    # Code doubles with pieces from
             editor = QLineEdit(aParent)
         elif data_type == QDateTime or data_type == QDate:
             editor = DateTimeEditWithReset(aParent)
-            editor.setTimeSpec(Qt.UTC)
+            editor.setTimeZone(local_zone())
             if data_type == QDate:
                 editor.setDisplayFormat(DateFormat.date(qt=True))
             else:
@@ -248,6 +249,7 @@ class ImportReceiptDialog(QDialog):
         self.ui.setupUi(self)
         set_tables_row_height(self)
         set_date_formats(self)
+        self.ui.SlipDateTime.setTimeZone(local_zone())   # what a receipt states is a reading of the buyer's own clock
         self.ui.AccountEdit.setup_selector(AccountListModel, AccountListDialog, self)
         self.ui.PeerEdit.setup_selector(PeerTreeModel, PeerListDialog, self)
         self.model = None

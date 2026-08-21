@@ -1,9 +1,10 @@
-from PySide6.QtCore import Qt, Slot, QDate, QAbstractTableModel, QModelIndex
+from PySide6.QtCore import Qt, Slot, QAbstractTableModel, QModelIndex
 from PySide6.QtWidgets import QHeaderView
 from jal.constants import Setup
 from jal.db.ledger import Ledger
 from jal.db.helpers import localize_decimal
 from jal.db.operations import LedgerTransaction
+from jal.db.clock import today_finish
 from jal.widgets.helpers import ts2dt, restore_columns
 from jal.widgets.delegates import ColoredAmountsDelegate, long_fraction
 from jal.widgets.theme import Theme, Meaning
@@ -127,7 +128,7 @@ class OperationsModel(QAbstractTableModel):
         if end:
             self._end = end
         else:
-            self._end = QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch()
+            self._end = today_finish()
         self.prepareData()
 
     def update(self):

@@ -7,6 +7,7 @@ import importlib.util
 import pathlib
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 from decimal import Decimal
 
 import pytest
@@ -21,16 +22,18 @@ from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
 from jal.db.db import JalDB
 from jal.db.reclock import RECLOCKED_COLUMNS, reclock
-from jal.db.residence import JalResidence, stored_reading, wall_clock_reading
+from jal.db.residence import JalResidence
 from lxml import etree
 
 from jal.data_import.broker_statements.ibkr import IBKR_DAY_MARKERS, StatementIBKR
 from jal.data_import.broker_statements.kucoin import StatementKuCoin
-from jal.db.helpers import is_day_marker, local_timestamp, now_ts, now_dt
+from jal.db.clock import (day_finish, day_start, local_datetime, local_moment, local_reading,
+                          local_time, now_dt, stored_reading, wall_clock_reading)
+from jal.db.helpers import DAY_MIDDLE_MARKER, is_day_marker, now_ts
 from jal.db.ledger import Ledger
-from jal.widgets.helpers import ts2axis, axis2ts, ts2d
+from jal.widgets.helpers import ts2axis, axis2ts, ts2d, ts2dt
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
-from tests.helpers import (create_assets, create_actions, create_dividends, create_trades, create_transfers,
+from tests.helpers import (create_assets, create_actions, create_dividends, create_quotes, create_trades, create_transfers,
                           d2t, pinned_tz)
 
 
@@ -41,28 +44,38 @@ def fixed_tz():
         yield 2 * 3600
 
 
+# Puts the whole timeline on one zone: as far as these tests are concerned the user lived there from the beginning
+def _resident_in(zone: str):
+    JalDB._exec("UPDATE residence SET timezone=:zone", [(":zone", zone)])
+    JalResidence.invalidate_cache()
+
+
 # A QDateTimeAxis label is produced by rendering the plotted value in local time, so the value handed to a chart
-# has to be shifted for that label to read the same date as the table cell beside it.
-def test_ts2axis_makes_a_local_rendering_read_as_the_stored_clock(fixed_tz):
-    stored = 1758803292                                       # renders as 2025-09-25 12:28:12 everywhere in JAL
-    assert stored - ts2axis(stored) == fixed_tz     # the local rendering adds the offset back
-    assert QDateTime.fromSecsSinceEpoch(ts2axis(stored)).toString('yyyy-MM-dd hh:mm:ss') == '2025-09-25 12:28:12'
+# has to be shifted for that label to read the same moment as the table cell beside it - which is the user's own
+# reading of the stored instant, not the instant and not the machine's idea of it.
+def test_ts2axis_makes_a_local_rendering_read_as_the_user_reads_it(prepare_db, fixed_tz):
+    _resident_in('Europe/Moscow')
+    stored = 1758803292                                       # 2025-09-25 12:28:12 UTC, i.e. 15:28:12 in Moscow
+    assert QDateTime.fromSecsSinceEpoch(ts2axis(stored)).toString('yyyy-MM-dd hh:mm:ss') == '2025-09-25 15:28:12'
+    assert ts2dt(stored).endswith('15:28:12')                 # ... and that is what the table shows beside it
 
 
 # What a chart reports back (the coordinate of a hovered point) has to arrive at the timestamp it was built from,
-# or the point cannot be looked up in the data behind the series.
-def test_axis2ts_is_the_inverse_of_ts2axis(fixed_tz):
+# or the point cannot be looked up in the data behind the series. A quote is stamped at the beginning of its day and
+# is a day marker, which is exactly the value neither direction may move.
+def test_axis2ts_is_the_inverse_of_ts2axis(prepare_db, fixed_tz):
+    _resident_in('Europe/Moscow')
     for stored in [0, 1104537600, 1662854400, 1758803292]:
         assert axis2ts(ts2axis(stored)) == stored
 
 
-# The tooltip and the axis of one chart must not disagree: the tooltip is rendered on the stored clock by ts2d().
-def test_axis_and_tooltip_agree_on_the_day(fixed_tz):
-    stored = 1735689540                                       # 2024-12-31 23:59:00 - a whole day away under UTC+2
+# The tooltip and the axis of one chart must not disagree: the tooltip is rendered by ts2d() on the same clock.
+def test_axis_and_tooltip_agree_on_the_day(prepare_db, fixed_tz):
+    _resident_in('Europe/Lisbon')
+    stored = 1735686000                                       # 2024-12-31 23:00 in Lisbon, already 2025 in Moscow
     axis_value = ts2axis(stored)
     assert QDateTime.fromSecsSinceEpoch(axis_value).toString('yyyy-MM-dd') == '2024-12-31'
     assert ts2d(axis2ts(axis_value)) == ts2d(stored)
-    assert datetime.fromtimestamp(stored, tz=timezone.utc).strftime('%Y-%m-%d') == '2024-12-31'
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -121,18 +134,19 @@ def test_a_date_editor_keeps_the_day_it_was_given(path, owner):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# 'Now' has one spelling in the application - now_ts() - and it is the wall clock, because that is the clock every
-# stored timestamp is written on. Anything that measures a stored value against the true UTC instant instead is out
-# by the local offset: a quote goes stale hours early, a bond expires on the wrong side of midnight, and a chain
-# balance read this evening lands beyond the end of today.
-def test_now_is_the_wall_clock_and_not_the_instant(fixed_tz):
-    assert now_ts() - int(datetime.now(tz=timezone.utc).timestamp()) == pytest.approx(fixed_tz, abs=1)
+# 'Now' has one spelling in the application - now_ts() - and it is the instant, because an instant is what every
+# stored timestamp is. The machine's own offset does not enter into it: the same second is the same number wherever
+# the database is opened, and it is the residence timeline, not the operating system, that says what a clock read.
+def test_now_is_the_instant_whatever_the_machine_says(fixed_tz):
+    assert now_ts() == pytest.approx(int(datetime.now(tz=timezone.utc).timestamp()), abs=1)
 
 
-# An editor is pre-filled with the same moment that would be stored for it, or an operation entered without touching
-# the date field is dated an offset away from when the user entered it.
-def test_now_dt_is_the_moment_now_ts_would_store(fixed_tz):
+# An editor is pre-filled with the same moment that would be stored for it, and shows it on the user's own clock -
+# or an operation entered without touching the date field is dated an offset away from when the user entered it.
+def test_now_dt_is_the_moment_now_ts_would_store(prepare_db, fixed_tz):
+    _resident_in('Europe/Moscow')
     assert now_dt().toSecsSinceEpoch() == pytest.approx(now_ts(), abs=1)
+    assert now_dt().toString('hh') == datetime.now(tz=ZoneInfo('Europe/Moscow')).strftime('%H')
 
 
 # The days left to an expiry are counted between two moments on the same clock. Ten days less a minute is nine days
@@ -144,6 +158,61 @@ def test_days_to_expiration_counts_on_the_stored_clock(prepare_db, fixed_tz):
     assert asset.days2expiration() == 9
     asset.update_data({'expiry': now_ts() - 2 * 86400 - 60})
     assert asset.days2expiration() == -2
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The reader and the writer of jal/db/clock.py: a stored instant is one number, and what a person sees is the digits
+# their own clock showed at it. Everything the application displays goes through this pair, so the answer to "which
+# clock is this shown on" is one answer and not forty-six.
+
+def test_a_stored_instant_is_read_on_the_clock_the_user_was_on(prepare_db):
+    _resident_in('Europe/Moscow')
+    instant = _stamp(2025, 9, 25, 12, 28, 12)
+    assert local_time(instant).strftime('%Y-%m-%d %H:%M:%S') == '2025-09-25 15:28:12'
+    assert local_reading(instant) == _stamp(2025, 9, 25, 15, 28, 12)
+    assert local_datetime(instant).toString('yyyy-MM-dd hh:mm:ss') == '2025-09-25 15:28:12'
+    assert local_moment(local_reading(instant)) == instant       # what an editor hands back is the instant again
+
+
+# ... and nothing is read on any clock while the timeline states none, which is what leaves a database whose owner
+# never said where they lived exactly as it was.
+def test_nothing_is_re_read_while_the_timeline_states_no_zone(prepare_db):
+    instant = _stamp(2025, 9, 25, 12, 28, 12)
+    assert JalResidence.timezone(instant) == ''
+    assert local_reading(instant) == instant
+    assert local_moment(instant) == instant
+
+
+# A day marker is not read on any clock either. This is what makes the move to storing instants invisible in 22
+# years of dates: the marker rows are the ones the re-clocking tool refuses to move, and refusing to re-read them
+# here is what keeps them spelling the same day afterwards.
+def test_a_day_marker_is_displayed_as_the_day_it_states(prepare_db):
+    _resident_in('America/New_York')                       # far enough west to push midnight into the day before
+    for marker in (d2t(250925), d2t(250925) + DAY_MIDDLE_MARKER):
+        assert local_reading(marker) == marker
+        assert ts2d(marker) == ts2d(d2t(250925))
+    ordinary = d2t(250925) + DAY_MIDDLE_MARKER + 1         # a second past noon is a moment again, and it moves
+    assert local_reading(ordinary) != ordinary
+
+
+# A day the user picked in a date field is their day, not Greenwich's: the money in an account at the end of a day
+# is the money there when that day ended where they were.
+def test_a_picked_day_is_bounded_by_the_clock_of_the_one_who_picked_it(prepare_db):
+    _resident_in('Europe/Moscow')
+    assert day_start(QDate(2025, 9, 25)) == _stamp(2025, 9, 24, 21)
+    assert day_finish(QDate(2025, 9, 25)) == _stamp(2025, 9, 25, 20, 59, 59)
+    _resident_in('')
+    assert day_start(QDate(2025, 9, 25)) == _stamp(2025, 9, 25)
+
+
+# The price of an operation is the price OF ITS DAY, and the day is the one the user's clock showed. A quote is
+# stamped at the beginning of a day, so an operation of the small hours - stored on the day before in Greenwich -
+# would otherwise be explained by the rate of the day before.
+def test_a_quote_is_taken_from_the_day_the_user_was_living(prepare_db):
+    _resident_in('Europe/Moscow')
+    create_quotes(2, 1, [(d2t(250924), 80.0), (d2t(250925), 90.0)])
+    early = _stamp(2025, 9, 24, 22, 30)                     # 01:30 on the 25th in Moscow
+    assert JalAsset(2).quote(early, 1) == (d2t(250925), Decimal('90'))
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -180,13 +249,21 @@ def _stamp(year, month, day, hour=0, minute=0, second=0) -> int:
     return int(datetime(year, month, day, hour, minute, second, tzinfo=timezone.utc).timestamp())
 
 
+# The day a READING falls on. A tax report answers in the digits of the jurisdiction's clock rather than in stored
+# instants, so ts2d() - which reads a stored instant on the user's own clock - would convert such a value twice.
+def _reading_day(reading: int) -> str:
+    return datetime.fromtimestamp(reading, tz=timezone.utc).strftime('%Y-%m-%d')
+
+
 # A statement reports a wall-clock reading and never says which clock. Stamping those digits as they are puts an
 # operation an offset away from everything entered by hand, so each module names the zone its source keeps its books
 # in and the reading is converted once, at the boundary.
 def test_a_source_reading_is_converted_from_the_zone_the_source_names(fixed_tz):
     statement = StatementKuCoin()                       # KuCoin writes UTC ("Time(UTC)" is its column label)
     assert statement.source_timezone == 'UTC'
-    assert statement._timestamp('2025-09-25 12:28:12') - _stamp(2025, 9, 25, 12, 28, 12) == fixed_tz
+    assert statement._timestamp('2025-09-25 12:28:12') == _stamp(2025, 9, 25, 12, 28, 12)
+    statement.source_timezone = 'Europe/Moscow'         # ... and the same digits on another clock are another moment
+    assert statement._timestamp('2025-09-25 12:28:12') == _stamp(2025, 9, 25, 9, 28, 12)
 
 
 # ... and a source that names no zone keeps its digits, which is what every module did before any of them declared one.
@@ -196,20 +273,22 @@ def test_an_undeclared_source_keeps_its_reading(fixed_tz):
     assert statement._timestamp('2025-09-25 12:28:12') == _stamp(2025, 9, 25, 12, 28, 12)
 
 
-# The conversion is an identity exactly when the machine runs on the zone the source reports in - which is what lets
-# the golden fixtures of tests/test_statements_cex.py be pinned to UTC and stay the moments they name.
-def test_a_source_reading_is_untouched_when_the_clocks_agree():
-    with pinned_tz('UTC'):
-        assert StatementKuCoin()._timestamp('2025-09-25 12:28:12') == _stamp(2025, 9, 25, 12, 28, 12)
+# The machine the import runs on has nothing to say about any of it: the same file read anywhere stores the same
+# moments, which is what lets the golden fixtures of the statement tests be values rather than local renderings.
+def test_a_source_reading_does_not_depend_on_the_machine():
+    stored = [None, None]
+    for i, zone in enumerate(('UTC', 'Etc/GMT+5')):
+        with pinned_tz(zone):
+            stored[i] = StatementKuCoin()._timestamp('2025-09-25 12:28:12')
+    assert stored[0] == stored[1] == _stamp(2025, 9, 25, 12, 28, 12)
 
 
-# Every source that reports an absolute instant instead of a wall clock reaches the very same stored clock, or a
+# Every source that reports an absolute instant instead of a wall clock reaches the very same stored value, or a
 # chain operation and the exchange withdrawal that funded it are ordered by their offsets rather than by what
 # happened first.
-def test_an_instant_and_a_utc_reading_land_on_the_same_stored_clock(fixed_tz):
+def test_an_instant_and_a_utc_reading_land_on_the_same_stored_value(fixed_tz):
     instant = _stamp(2025, 9, 25, 12, 28, 12)           # what a chain reports for that moment: absolute UTC seconds
-    assert local_timestamp(instant) == StatementKuCoin()._timestamp('2025-09-25 12:28:12')
-    assert local_timestamp(instant) - instant == fixed_tz
+    assert StatementKuCoin()._timestamp('2025-09-25 12:28:12') == instant
 
 
 # A date has no time of day to convert and shifting it can only turn it into a different date - a settlement day, an
@@ -223,12 +302,11 @@ def test_a_reported_date_is_never_shifted(fixed_tz):
 
 # The offset in force at the operation's own instant is used, not today's - Moscow kept DST until 2011, so the same
 # wall-clock reading is a different moment in summer and in winter.
-def test_the_offset_of_the_operation_is_used_and_not_the_current_one():
+def test_the_offset_of_the_operation_is_used_and_not_the_current_one(fixed_tz):
     statement = StatementKuCoin()
     statement.source_timezone = 'Europe/Moscow'
-    with pinned_tz('UTC'):
-        assert statement._timestamp('2010-07-01 12:00:00') == _stamp(2010, 7, 1, 8)    # UTC+4, Moscow summer time
-        assert statement._timestamp('2010-12-01 12:00:00') == _stamp(2010, 12, 1, 9)   # UTC+3, Moscow winter time
+    assert statement._timestamp('2010-07-01 12:30:00') == _stamp(2010, 7, 1, 8, 30)    # UTC+4, Moscow summer time
+    assert statement._timestamp('2010-12-01 12:30:00') == _stamp(2010, 12, 1, 9, 30)   # UTC+3, Moscow winter time
 
 
 # An XML statement writes both kinds of fact into attributes that look alike, and only the written form tells them
@@ -236,40 +314,41 @@ def test_the_offset_of_the_operation_is_used_and_not_the_current_one():
 # convert a settlement day or an ex-date out of its own date. The zone is declared here rather than taken from
 # StatementIBKR, which deliberately declares none - see the comment on it.
 def test_an_xml_attribute_is_a_moment_or_a_day_by_the_form_it_is_written_in(fixed_tz):
-    class ZonedStatement(StatementIBKR):
-        source_timezone = 'America/New_York'
-    statement = ZonedStatement()
+    statement = StatementIBKR()
     element = etree.fromstring('<Trade dateTime="20250925;122812" settleDateTarget="20250929"/>')
-    assert statement.attr_timestamp(element, 'dateTime', None) == _stamp(2025, 9, 25, 16, 28, 12) + fixed_tz
+    assert statement.attr_timestamp(element, 'dateTime', None) == _stamp(2025, 9, 25, 16, 28, 12)
     assert statement.attr_timestamp(element, 'settleDateTarget', None) == d2t(250929)
 
 
-# IBKR itself is left on no zone at all, so what it reports is stored as the digits it wrote. Its end-of-day marker
-# is the reason: 20:20 is not a time the payment happened, it is the day it belongs to - and a converted marker
-# lands on the next one. The tax corrections that arrive months later are matched to their dividend against what is
-# already stored, so the reading has to keep meaning what it meant when that row was written.
-def test_ibkr_readings_are_stored_as_the_source_wrote_them():
+# IBKR names its zone like every other source, but the end-of-day stamp it puts on an accounting day is not a time
+# of day and is not converted with the rest: 20:20 is not when the payment happened, it is the day it belongs to,
+# and converting it would land it on the next one - the day a payment is taxed in. The stored value is the marker
+# itself, unchanged, which is also what lets a tax correction arriving months later find its dividend among rows
+# written before any of this.
+def test_an_end_of_day_marker_of_a_source_is_stored_as_the_day_it_states(prepare_db, fixed_tz):
     statement = StatementIBKR()
-    assert statement.source_timezone == ''
+    assert statement.source_timezone == 'America/New_York'
+    assert statement.source_day_markers == IBKR_DAY_MARKERS
     element = etree.fromstring('<CashTransaction dateTime="20241227;202000" settleDate="20241227"/>')
-    for zone in ('Europe/Lisbon', 'Etc/GMT+5', 'UTC'):
-        with pinned_tz(zone):
-            stored = statement.attr_timestamp(element, 'dateTime', None)
-            assert ts2d(stored) == ts2d(d2t(241227)), zone
-            assert datetime.fromtimestamp(stored, tz=timezone.utc).strftime('%H:%M') == '20:20', zone
-            assert statement.attr_timestamp(element, 'settleDate', None) == d2t(241227), zone
+    stored = statement.attr_timestamp(element, 'dateTime', None)
+    assert stored == d2t(241227) + 20 * 3600 + 20 * 60         # the digits IBKR wrote, and nothing else
+    assert statement.attr_timestamp(element, 'settleDate', None) == d2t(241227)
+    for zone in ('Europe/Lisbon', 'Europe/Moscow'):
+        _resident_in(zone)
+        assert ts2d(stored) == ts2d(d2t(241227)), zone         # ... and it stays that day on any clock JAL reads
+
+
+# What IS a moment on the same statement moves with the source's zone, or a trade of the New York morning is stored
+# as if it had happened in the middle of the night.
+def test_a_trade_of_the_same_statement_is_converted_out_of_the_source_zone(fixed_tz):
+    element = etree.fromstring('<Trade dateTime="20241227;093100" settleDate="20241231"/>')
+    assert StatementIBKR().attr_timestamp(element, 'dateTime', None) == _stamp(2024, 12, 27, 14, 31)   # EST is -5
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 # The other end of the same boundary. A tax report is filed in a country, and the days and years it counts are that
 # country's - a stored reading is the user's own wall clock and has to be re-read on the clock of the jurisdiction
 # before it is printed as a date or bucketed into a year.
-
-# Puts the whole timeline on one zone: as far as these tests are concerned the user lived there from the beginning
-def _resident_in(zone: str):
-    JalDB._exec("UPDATE residence SET timezone=:zone", [(":zone", zone)])
-    JalResidence.invalidate_cache()
-
 
 # Gives a report the account and the year window that prepare_tax_report() would set up for it
 def _report_for(report, year: int):
@@ -282,9 +361,9 @@ def _report_for(report, year: int):
 
 def test_a_report_dates_a_moment_on_the_clock_of_the_country_it_is_filed_in(prepare_db_taxes):
     _resident_in('Europe/Lisbon')
-    evening = _stamp(2025, 6, 10, 23, 30)                                # a summer evening in Lisbon, where...
-    assert ts2d(TaxesPortugal()._moment(evening)) == ts2d(_stamp(2025, 6, 10))     # ... the report is filed at home
-    assert ts2d(TaxesRussia()._moment(evening)) == ts2d(_stamp(2025, 6, 11))       # ... but Moscow is already asleep
+    evening = _stamp(2025, 6, 10, 22, 30)                    # 23:30 of a summer evening in Lisbon (UTC+1), where...
+    assert _reading_day(TaxesPortugal()._moment(evening)) == '2025-06-10'    # ... the report is filed at home
+    assert _reading_day(TaxesRussia()._moment(evening)) == '2025-06-11'      # ... but Moscow is already asleep
 
 
 # The year an operation is declared in follows that same clock: half past eleven on 31 December in Lisbon is the new
@@ -330,8 +409,8 @@ def test_a_payment_dated_by_the_middle_of_its_day_is_never_read_on_another_clock
     _resident_in('Europe/Lisbon')
     report = TaxesRussia()
 
-    assert report._moment(noon) == noon                            # untouched, though Moscow is two hours ahead
-    assert report._moment(noon + 60) == noon + 60 + 2 * 3600       # a minute later is a moment, and it moves
+    assert report._moment(noon) == noon                            # untouched, though Moscow is three hours ahead
+    assert report._moment(noon + 60) == noon + 60 + 3 * 3600       # a minute later is a moment, and it moves
     assert [x.timestamp() for x in _report_for(report, 2025).dividends_list()] == [noon]
 
 
@@ -341,12 +420,13 @@ def test_a_payment_dated_by_the_middle_of_its_day_is_never_read_on_another_clock
 def test_an_evening_spending_is_not_mistaken_for_an_end_of_day_marker(prepare_db_taxes):
     evening = _stamp(2025, 6, 10, 20, 20)
     create_actions([(evening, 1, 1, [(PredefinedCategory.Fees, Decimal('-10'))])])
-    _resident_in('America/New_York')
+    _resident_in('Europe/Lisbon')
     report = _report_for(TaxesRussia(), 2025)
 
     assert not is_day_marker(evening)
     assert is_day_marker(evening, IBKR_DAY_MARKERS)                # ... unless the caller names the source it came from
-    assert ts2d(report._moment(evening)) == ts2d(_stamp(2025, 6, 11))
+    assert _reading_day(report._moment(evening)) == '2025-06-10'   # 23:20 in Moscow, still the same day
+    assert ts2dt(evening).endswith('21:20:00')                     # ... and 21:20 where the user spent it
     assert len(report.category_operations(PredefinedCategory.Fees)) == 1
 
 

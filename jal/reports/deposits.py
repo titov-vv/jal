@@ -1,10 +1,11 @@
 from decimal import Decimal
 from functools import partial
 
-from PySide6.QtCore import Qt, Slot, QObject, QDateTime, QAbstractTableModel
+from PySide6.QtCore import Qt, Slot, QObject, QAbstractTableModel
 from PySide6.QtGui import QFont
 
 from jal.constants import Setup
+from jal.db.clock import day_finish, now_dt
 from jal.db.deposit import JalDepositBox
 from jal.db.helpers import localize_decimal
 from jal.db.operations import LedgerTransaction
@@ -232,9 +233,7 @@ class DepositsReportWindow(MdiWidget):
 
         self.connect_signals_and_slots()
 
-        current_time = QDateTime.currentDateTime()
-        current_time.setTimeSpec(Qt.UTC)  # We use UTC everywhere so need to force TZ info
-        self.ui.DepositsDate.setDateTime(current_time)
+        self.ui.DepositsDate.setDate(now_dt().date())
         self.updateReport()
 
     def connect_signals_and_slots(self):
@@ -249,7 +248,7 @@ class DepositsReportWindow(MdiWidget):
             partial(self._parent.save_report, self.name, self.ui.ReportTableView.model()))
 
     def _timestamp(self) -> int:
-        return self.ui.DepositsDate.date().endOfDay(Qt.UTC).toSecsSinceEpoch()
+        return day_finish(self.ui.DepositsDate.date())
 
     # The deposit the actions apply to, or None when nothing is selected
     def _selected(self) -> JalDepositBox:

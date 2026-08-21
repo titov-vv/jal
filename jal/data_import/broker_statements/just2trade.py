@@ -1,6 +1,6 @@
 import logging
 import re
-from datetime import datetime, timezone
+from datetime import datetime
 
 from jal.constants import PredefinedCategory
 from jal.data_import.statement import JSF, Statement_ImportError
@@ -12,6 +12,7 @@ JAL_STATEMENT_CLASS = "StatementJ2T"
 
 # ----------------------------------------------------------------------------------------------------------------------
 class StatementJ2T(StatementXLS):
+    source_timezone = 'Europe/Moscow'
     PeriodPattern = (1, 0, r"Report by Client Accounts over a Period from (?P<S>\d\d\.\d\d\.\d\d\d\d) to (?P<E>\d\d\.\d\d\.\d\d\d\d)")
     AccountPattern = (5, 6, r"(?P<ACCOUNT>\S*)")
     HeaderCol = 1
@@ -107,7 +108,7 @@ class StatementJ2T(StatementXLS):
             if self._statement[self.HeaderCol][row] == '':
                 break
             try:
-                timestamp = int(self._statement[headers['timestamp']][row].replace(tzinfo=timezone.utc).timestamp())
+                timestamp = self._moment(self._statement[headers['timestamp']][row])
             except ValueError:  # Skip 'Итого' and similar lines
                 row += 1
                 continue
@@ -133,7 +134,7 @@ class StatementJ2T(StatementXLS):
             price = -(amount + fee) / qty
             assert price > 0.0
             # Settlement is stored as date in Excel report file
-            settlement = int(self._statement[headers['settlement']][row].replace(tzinfo=timezone.utc).timestamp())
+            settlement = self._date(self._statement[headers['settlement']][row])
             account_id = self._find_account_id(self._account_number, 'USD')   # FIXME - replace hardcoded 'USD'
             new_id = max([0] + [x['id'] for x in self._data[JSF.TRADES]]) + 1
             trade = {"id": new_id, "number": deal_number, "timestamp": timestamp, "settlement": settlement,
@@ -166,8 +167,8 @@ class StatementJ2T(StatementXLS):
             if self._statement[self.HeaderCol][row] == '':
                 break
             # Dates are stored as date in Excel report file for crypto deals
-            timestamp = int(self._statement[headers['timestamp']][row].replace(tzinfo=timezone.utc).timestamp())
-            settlement = int(self._statement[headers['settlement']][row].replace(tzinfo=timezone.utc).timestamp())
+            timestamp = self._date(self._statement[headers['timestamp']][row])
+            settlement = self._date(self._statement[headers['settlement']][row])
             deal_number = str(self._statement[headers['number']][row])
             symbol_id = self.symbol_id({'type': JSF.ASSET_CRYPTO, 'symbol': self._statement[headers['asset_name']][row],
                                         'name': self._statement[headers['asset_name']][row],
@@ -233,7 +234,7 @@ class StatementJ2T(StatementXLS):
             if self._statement[self.HeaderCol][row] == '':
                 break
             try:
-                timestamp = int(self._statement[headers['date']][row].replace(tzinfo=timezone.utc).timestamp())
+                timestamp = self._date(self._statement[headers['date']][row])
             except TypeError:  # Skip 'Итого' and similar lines
                 row += 1
                 continue
@@ -261,7 +262,7 @@ class StatementJ2T(StatementXLS):
                 row += 1
                 continue
             assert self._statement[headers['type']][row] == 'OUT'  # Should be outgoing flow
-            timestamp = int(self._statement[headers['date']][row].replace(tzinfo=timezone.utc).timestamp())
+            timestamp = self._date(self._statement[headers['date']][row])
             amount = self._statement[headers['amount']][row]
             self.tax(timestamp, amount, self._statement[headers['note']][row])
             cnt += 1
@@ -300,7 +301,7 @@ class StatementJ2T(StatementXLS):
             if self._statement[self.HeaderCol][row] == '':
                 break
             try:
-                timestamp = int(self._statement[headers['date']][row].replace(tzinfo=timezone.utc).timestamp())
+                timestamp = self._date(self._statement[headers['date']][row])
             except TypeError:
                 break   # Stop processing if we encounter invalid date (supposed to be "Итого:" line)
             account_id = self._find_account_id(self._account_number, self._statement[headers['currency']][row])
@@ -318,7 +319,7 @@ class StatementJ2T(StatementXLS):
         if len(dividend) != DividendPattern.count("(?P<"):  # check that expected number of groups was matched
             raise Statement_ImportError(self.tr("Dividend description miss some data ") + f"'{note}'")
         symbol_id = self._find_symbol_by_name(dividend['asset'])
-        ex_date = int(datetime.strptime(dividend['date'], "%d/%m/%Y").replace(tzinfo=timezone.utc).timestamp())
+        ex_date = self._date(datetime.strptime(dividend['date'], "%d/%m/%Y"))
         new_id = max([0] + [x['id'] for x in self._data[JSF.ASSET_PAYMENTS]]) + 1
         payment = {"id": new_id, "type": JSF.PAYMENT_DIVIDEND, "account": account_id, "timestamp": timestamp,
                    "ex_date": ex_date, "symbol": symbol_id, "amount": amount, "description": note}
@@ -333,7 +334,7 @@ class StatementJ2T(StatementXLS):
         if len(tax) != TaxPattern.count("(?P<"):  # check that expected number of groups was matched
             raise Statement_ImportError(self.tr("Dividend description miss some data ") + f"'{note}'")
         symbol_id = self._find_symbol_by_name(tax['asset'])
-        ex_date = int(datetime.strptime(tax['date'], "%d/%m/%Y").replace(tzinfo=timezone.utc).timestamp())
+        ex_date = self._date(datetime.strptime(tax['date'], "%d/%m/%Y"))
         dividend_record = self._locate_dividend(symbol_id, timestamp, ex_date)
         if dividend_record is None:
             raise Statement_ImportError(self.tr("Dividend for tax was not found ") + f"'{note}'")

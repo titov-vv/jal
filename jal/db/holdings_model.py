@@ -5,7 +5,8 @@ from decimal import Decimal
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QHeaderView
-from jal.db.helpers import now_ts, day_end
+from jal.db.clock import day_finish, local_reading, today_finish
+from jal.db.helpers import now_ts
 from jal.db.tree_model import AbstractTreeItem, ReportTreeModel
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
@@ -115,7 +116,7 @@ class HoldingsModel(ReportTreeModel):
         self._currency = 0
         self._only_active_accounts = True
         self._currency_name = ''
-        self._date = day_end(now_ts())
+        self._date = today_finish()
         self._columns = [{'name': self.tr("Currency/Account/Asset"), 'field': 'header'},
                          {'name': self.tr("Asset Name"), 'field': 'asset_name'},
                          {'name': self.tr("Qty"), 'field': 'qty'},
@@ -195,8 +196,8 @@ class HoldingsModel(ReportTreeModel):
             self._currency = currency_id
             self._currency_name = JalAsset(currency_id).symbol()
             update = True
-        if self._date != date.endOfDay(Qt.UTC).toSecsSinceEpoch():
-            self._date = date.endOfDay(Qt.UTC).toSecsSinceEpoch()
+        if self._date != day_finish(date):
+            self._date = day_finish(date)
             update = True
         if self._only_active_accounts == show_inactive:  # The logic is reversed inside the report
             self._only_active_accounts = not self._only_active_accounts
@@ -254,7 +255,7 @@ class HoldingsModel(ReportTreeModel):
             for asset_data in assets:
                 asset = asset_data['asset']
                 quote_ts, quote = asset.quote(self._date, account.currency())
-                quote_age = int((now_ts() - quote_ts) / 86400)
+                quote_age = int((local_reading(now_ts()) - quote_ts) / 86400)
                 since, payments_amount = self.get_asset_history_payments(account, asset, self._date)
                 # What the chain holds beyond what the books do - see JalChainBalance.accrual(). Only 'qty' moves:
                 # 'value_i' is what the position COST and no part of that cost belongs to the accrued quantity, so
@@ -315,7 +316,7 @@ class HoldingsModel(ReportTreeModel):
                     "paid": Decimal('0'),
                     "open_quote": None,
                     "quote": Decimal('1'),
-                    "quote_ts": day_end(now_ts()),
+                    "quote_ts": today_finish(),
                     "quote_a": rate,
                     "quote_age": 0,
                     "share": Decimal('0'),

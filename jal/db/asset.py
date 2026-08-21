@@ -3,6 +3,7 @@ import math
 from decimal import Decimal, InvalidOperation
 from jal.constants import AssetLocation, AssetData, BookAccount, PredefinedAsset, SymbolId
 from jal.db.db import JalDB
+from jal.db.clock import local_moment, local_reading
 from jal.db.helpers import format_decimal, day_begin, now_ts
 from jal.db.country import JalCountry
 from jal.db.residence import JalResidence
@@ -242,12 +243,14 @@ class JalAsset(JalDB):
     # Returns (timestamp, 1) if quotation is requested relative to itself
     # Returned timestamp might be less than given.
     # Returns (0, 0) if no quotation information present in db. Return value (timestamp, 0) is a valid quote
+    # A quote states the price of a day, and a day is not re-read on another clock (see jal/db/clock.py).
     def quote(self, timestamp: int, currency_id: int) -> tuple:
         if self._id == currency_id:
             return timestamp, Decimal('1')
         quote = self._read("SELECT timestamp, quote FROM quotes WHERE asset_id=:asset_id "
                            "AND currency_id=:currency_id AND timestamp<=:timestamp ORDER BY timestamp DESC LIMIT 1",
-                           [(":asset_id", self._id), (":currency_id", currency_id), (":timestamp", timestamp)])
+                           [(":asset_id", self._id), (":currency_id", currency_id),
+                            (":timestamp", local_reading(timestamp))])
         if quote is None:
             if self._type == PredefinedAsset.Money and currency_id != self.get_base_currency(timestamp):  # find a cross-rate
                 rate1 = self.quote(timestamp, self.get_base_currency(timestamp))[1]
@@ -260,7 +263,16 @@ class JalAsset(JalDB):
                     return cross_quote
             self._report_missing_quote(timestamp, currency_id)
             return 0, Decimal('0')
-        return int(quote[0]), Decimal(quote[1])
+        return self._quote_moment(int(quote[0]), timestamp), Decimal(quote[1])
+
+    # The moment a quote row belongs to, as the caller spells moments. A row stamped on exactly the moment asked
+    # about was written FOR that operation - a spin-off valuation, a vesting price - and stays that operation's own
+    # price whatever clock either of the two was written on; that exact pairing is what values a stock dividend (see
+    # AssetPayment.price). Anything else is the price of a day, read as a day, and it comes back as the instant the
+    # user's own clock stood at when that price was quoted.
+    @staticmethod
+    def _quote_moment(quote_timestamp: int, asked_about: int) -> int:
+        return quote_timestamp if quote_timestamp == asked_about else local_moment(quote_timestamp)
 
     # A non-Money asset is often quoted in one currency only while it may be held in an account denominated in
     # any other - crypto sources, for example.
@@ -273,10 +285,11 @@ class JalAsset(JalDB):
     def _cross_currency_quote(self, timestamp: int, currency_id: int):
         quote = self._read("SELECT timestamp, quote, currency_id FROM quotes WHERE asset_id=:asset_id "
                            "AND timestamp<=:timestamp ORDER BY timestamp DESC LIMIT 1",
-                           [(":asset_id", self._id), (":timestamp", timestamp)])
+                           [(":asset_id", self._id), (":timestamp", local_reading(timestamp))])
         if quote is None:
             return None
-        quote_timestamp, value, quote_currency = int(quote[0]), Decimal(quote[1]), int(quote[2])
+        quote_timestamp = self._quote_moment(int(quote[0]), timestamp)
+        value, quote_currency = Decimal(quote[1]), int(quote[2])
         # The pivot is a currency, so this recursion always lands in the Money branch above and never comes back here
         rate = JalAsset(quote_currency).quote(timestamp, currency_id)[1]
         if rate == Decimal('0'):
@@ -316,7 +329,8 @@ class JalAsset(JalDB):
         query = self._exec(
             "SELECT timestamp, quote FROM quotes WHERE asset_id=:asset_id "
             "AND currency_id=:currency_id AND timestamp>=:begin AND timestamp<=:end ORDER BY timestamp",
-            [(":asset_id", self._id), (":currency_id", currency_id), (":begin", begin), (":end", end)])
+            [(":asset_id", self._id), (":currency_id", currency_id),
+             (":begin", local_reading(begin)), (":end", local_reading(end))])
         while query.next():
             timestamp, quote = self._read_record(query, cast=[int, Decimal])
             quotes.append((timestamp, quote))
@@ -391,7 +405,7 @@ class JalAsset(JalDB):
     def days2expiration(self) -> int:
         if self._expiry == 0:
             return 0
-        return int((self._expiry - now_ts()) / 86400)
+        return int((self._expiry - local_reading(now_ts())) / 86400)
 
     def principal(self) -> Decimal:
         return self._principal

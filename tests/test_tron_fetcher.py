@@ -234,8 +234,9 @@ def test_token_is_matched_by_address_not_by_ticker(fetcher, tron_wallet):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# A blockchain reports absolute UTC time, but JAL stores and displays every timestamp as a naive local wall clock
-# (now_ts() and every broker importer do the same). Restores the process timezone AND re-runs tzset() on teardown -
+# A blockchain reports the absolute instant a block was mined, and an instant is exactly what JAL stores - so a chain
+# timestamp is taken as it comes, on whatever machine the fetch runs. The fixture pins a zone to prove it: a value
+# that were still converted would move with it. It restores the process timezone AND re-runs tzset() on teardown -
 # time.tzset() mutates process-global state, so leaving it set would shift timestamps in every later test.
 @pytest.fixture
 def fixed_tz():
@@ -251,18 +252,14 @@ def fixed_tz():
     time.tzset()
 
 
-def test_local_timestamp_shifts_utc_to_local_wall_clock(fixed_tz):
-    from datetime import datetime, timezone
+def test_a_block_time_is_stored_as_the_instant_it_is(fixed_tz, prepare_db):
     utc_epoch = 1758803292                                    # 2025-09-25 12:28:12 UTC
-    stored = TronFetcher._local_timestamp(utc_epoch)
-    # JAL renders every stored epoch in UTC, so the stored value must read back as the local wall clock (UTC+2)
-    shown = datetime.fromtimestamp(stored, tz=timezone.utc)
-    assert shown.strftime('%Y-%m-%d %H:%M:%S') == '2025-09-25 14:28:12'
-    assert stored - utc_epoch == fixed_tz                     # shifted by exactly the local offset
+    record = {'block_timestamp': utc_epoch * 1000}            # the API reports milliseconds
+    assert TronFetcher()._timestamp_of(record) == utc_epoch   # the machine's own offset changes nothing
 
 
-def test_local_timestamp_zero_stays_zero():
-    assert TronFetcher._local_timestamp(0) == 0               # an empty/absent block_timestamp is not shifted
+def test_a_missing_block_time_stays_zero(prepare_db):
+    assert TronFetcher()._timestamp_of({}) == 0               # an empty/absent block_timestamp is not a moment
 
 
 def test_timestamp_of_matches_now_ts_convention(fixed_tz, prepare_db):

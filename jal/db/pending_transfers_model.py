@@ -8,7 +8,8 @@ from jal.db import address_match
 from jal.db.tree_model import AbstractTreeItem, ReportTreeModel
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
-from jal.db.helpers import localize_decimal, now_ts, day_end
+from jal.db.clock import day_finish, today_finish
+from jal.db.helpers import localize_decimal
 from jal.db.operations import Bridge, Transfer
 from jal.db.transfer_settlement import TransferSettlement
 from jal.net.chain_fetchers.protocols import protocol_names
@@ -126,7 +127,7 @@ class PendingTransfersModel(ReportTreeModel):
         self._timestamp_delegate = None
         self._currency = 0
         self._currency_name = ''
-        self._date = day_end(now_ts())
+        self._date = today_finish()
         self._with_basis_gaps = False
         self._filter = ''
         self._hide_unsolicited = False
@@ -294,8 +295,8 @@ class PendingTransfersModel(ReportTreeModel):
             self._currency = currency_id
             self._currency_name = JalAsset(currency_id).symbol()
             update = True
-        if self._date != date.endOfDay(Qt.UTC).toSecsSinceEpoch():
-            self._date = date.endOfDay(Qt.UTC).toSecsSinceEpoch()
+        if self._date != day_finish(date):
+            self._date = day_finish(date)
             update = True
         if self._with_basis_gaps != with_basis_gaps:
             self._with_basis_gaps = with_basis_gaps

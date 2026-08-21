@@ -10,7 +10,7 @@ from PySide6.QtWidgets import QDialog, QInputDialog, QMessageBox
 from PySide6.QtWebEngineCore import QWebEngineProfile, QWebEnginePage, QWebEngineUrlScheme, \
     QWebEngineUrlSchemeHandler, QWebEngineUrlRequestJob
 from jal.data_import.receipt_api.receipt_api import ReceiptAPI
-from jal.db.helpers import now_dt
+from jal.db.clock import local_zone, now_dt
 from jal.db.settings import JalSettings
 from jal.ui.ui_login_lidl_plus_dlg import Ui_LoginLidlPlusDialog
 
@@ -131,7 +131,7 @@ class ReceiptEuLidlPlus(ReceiptAPI):
             receipt_datetime = QDateTime.fromString(self.slip_json['date'], 'yyyy-MM-ddTHH:mm:ss')
         else:
             receipt_datetime = QDateTime()
-        receipt_datetime.setTimeSpec(Qt.UTC)
+        receipt_datetime.setTimeZone(local_zone())   # what it says is a reading of the buyer's own clock
         return receipt_datetime
 
     def slip_lines(self) -> list:

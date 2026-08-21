@@ -11,7 +11,7 @@ from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QDialog, QMessageBox
 from jal.constants import Setup, AssetLocation, PredefinedAccountType, PredefinedAsset, PredefinedAgents, SymbolId
 from jal.db.db import JalDB
-from jal.db.helpers import wall_clock_timestamp
+from jal.db.helpers import is_day_marker, wall_clock_timestamp
 from jal.db.settings import JalSettings
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset, JalAssetCreator
@@ -108,10 +108,15 @@ class Statement(QObject):   # derived from QObject to have proper string transla
 
     currency_substitutions = {}
     # The zone whose wall clock this source's timestamps are readings of. It is a property of the SOURCE rather than of
-    # the file, so every module states its own here and the reading is converted once, at the boundary, into the clock
+    # the file, so every module states its own here and the reading is turned once, at the boundary, into the instant
     # JAL stores - see _moment() below.
-    # An empty name means the source's zone isn't known and its readings are taken as they are.
+    # An empty name means the source's zone isn't known and its digits are taken as UTC, which is what leaves an
+    # undeclared source stored exactly where it always was.
     source_timezone = ''
+    # The end-of-day stamps this source puts on an accounting day, on top of the ones every source shares (see
+    # is_day_marker). They are not times of day and they belong to this source alone, so only the module that knows
+    # the source can name them - and _moment() leaves what they stamp exactly as it was written.
+    source_day_markers = ()
     # True when a transfer of this statement is uniquely identified by the transaction it happened in, i.e. its
     # 'number' is a transaction hash. Only then may a transfer that is already in the database be recognized as the
     # same movement and skipped instead of stored again (see _transfer_already_imported).
@@ -242,9 +247,17 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         else:
             return 0, 0
 
-    # A moment this source reported, on the clock JAL stores - the single place a statement's wall-clock reading
+    # A moment this source reported, as the instant JAL stores - the single place a statement's wall-clock reading
     # becomes a timestamp.
+    #
+    # Except when the reading states a DAY rather than a moment in it: a source that writes midnight, or that stamps
+    # its own end-of-day marker on an accounting day, is naming the day and nothing else. Such a reading is stored as
+    # it was written, because converting it could only move it to another day - and the day is what a payment is
+    # taxed in, what a re-import recognises as already stored, and what a tax correction finds its dividend by.
     def _moment(self, moment: datetime) -> int:
+        reading = int(moment.replace(tzinfo=timezone.utc).timestamp())
+        if is_day_marker(reading, self.source_day_markers):
+            return reading
         return wall_clock_timestamp(moment, self.source_timezone)
 
     # A calendar date this source reported - a settlement day, an ex-date, the bounds of the reporting period. Unlike

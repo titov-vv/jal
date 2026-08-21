@@ -1,10 +1,11 @@
 import logging
 from decimal import Decimal, InvalidOperation
-from PySide6.QtCore import Qt, Slot, QDateTime, QTimeZone, QLocale
+from PySide6.QtCore import Qt, Slot, QLocale
 from PySide6.QtWidgets import QDialog, QDataWidgetMapper, QStyledItemDelegate, QComboBox, QLineEdit, QMessageBox, QHeaderView
 from jal.ui.ui_account_edit_dlg import Ui_AccountDialog
 from jal.constants import AccountData, PredefinedAccountType, PredefinedAgents, AssetLocation
 from jal.db.helpers import localize_decimal
+from jal.db.clock import local_datetime
 from jal.db.account import JalAccountCreator
 from jal.db.asset import JalAsset
 from jal.db.common_models import AccountRecordModel, AccountDataModel
@@ -175,7 +176,7 @@ class AccountDialog(QDialog):
             timestamp = int(raw)
         except (TypeError, ValueError):
             timestamp = 0
-        text = self.tr("Reconciled @") + QDateTime.fromSecsSinceEpoch(timestamp, QTimeZone(0)).toString(DateFormat.datetime(qt=True)) if timestamp else ''
+        text = self.tr("Reconciled @") + local_datetime(timestamp).toString(DateFormat.datetime(qt=True)) if timestamp else ''
         self.ui.ReconciledValue.setText(text)
 
     # Opens the dialog to edit an existing account. Starts a database transaction committed on OK / rolled back on

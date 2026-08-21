@@ -7,6 +7,7 @@ from PySide6.QtGui import QImage, QKeySequence, QShortcut
 from PySide6.QtWidgets import (QApplication, QAbstractItemView, QDialog, QTableView, QDateTimeEdit, QStyle,
                                QSplitter)
 from jal.constants import Setup
+from jal.db.clock import local_moment, local_reading, local_time, window_bound
 from jal.db.settings import JalSettings
 try:
     from pyzbar import pyzbar
@@ -368,31 +369,38 @@ def refresh_date_formats():
             widget.viewport().update()
 
 # -----------------------------------------------------------------------------------------------------------------------
-# converts given unix-timestamp into string that represents date and time
+# converts given unix-timestamp into string that represents date and time, on the user's own clock (see jal/db/clock.py)
 def ts2dt(timestamp: int) -> str:
-    return datetime.fromtimestamp(timestamp, tz=timezone.utc).strftime(DateFormat.datetime())
+    return local_time(timestamp).strftime(DateFormat.datetime())
 
 # -----------------------------------------------------------------------------------------------------------------------
 # converts given unix-timestamp into string that represents date
 def ts2d(timestamp: int) -> str:
-    return datetime.fromtimestamp(timestamp, tz=timezone.utc).strftime(DateFormat.date())
+    return local_time(timestamp).strftime(DateFormat.date())
 
 # -----------------------------------------------------------------------------------------------------------------------
 # QDateTimeAxis renders every value it is given through the machine's local time and has no timezone of its own, while
-# every date the application shows elsewhere is rendered by ts2dt() on the clock the timestamps are kept in. An axis
-# label would therefore sit an offset away from the very cell it labels. These two convert between the two clocks:
-# ts2axis() prepares a timestamp for a chart (series point or axis range) and axis2ts() reads back what a chart
-# reports (the coordinate of a hovered point). The offset in force at that instant is used, so DST is handled.
+# every date the application shows elsewhere is rendered by ts2dt() on the user's own clock. An axis label would
+# therefore sit an offset away from the very cell it labels. These two convert between the two clocks: ts2axis()
+# prepares a timestamp for a chart (series point or axis range) and axis2ts() reads back what a chart reports (the
+# coordinate of a hovered point). The offset in force at that instant is used, so DST is handled.
 def ts2axis(timestamp: int) -> int:
-    return int(datetime.fromtimestamp(timestamp, tz=timezone.utc).replace(tzinfo=None).timestamp())
+    return int(datetime.fromtimestamp(local_reading(timestamp), tz=timezone.utc).replace(tzinfo=None).timestamp())
 
 def axis2ts(value: int) -> int:
-    return int(datetime.fromtimestamp(value).replace(tzinfo=timezone.utc).timestamp())
+    return local_moment(int(datetime.fromtimestamp(value).replace(tzinfo=timezone.utc).timestamp()))
 
 # -----------------------------------------------------------------------------------------------------------------------
-# converts given datetime value into unix-timestamp
+# The same as ts2d() for a value that is already a READING of some other clock - the year bounds a tax report counts
+# in, say - and must not be read a second time on the user's.
+def reading2d(reading: int) -> str:
+    return datetime.fromtimestamp(reading, tz=timezone.utc).strftime(DateFormat.date())
+
+# -----------------------------------------------------------------------------------------------------------------------
+# converts a datetime the user named - a month boundary, a day picked in a date field - into the instant at which
+# their own clock reached it
 def dt2ts(value: datetime) -> int:
-    return int(value.replace(tzinfo=timezone.utc).timestamp())
+    return window_bound(int(value.replace(tzinfo=timezone.utc).timestamp()))
 
 # -----------------------------------------------------------------------------------------------------------------------
 # returns unix timestamp for the first second of the month/year
@@ -438,10 +446,10 @@ def timestamp_range(start_ts, end_ts):
 # where number is a month number from 1 to 12
 def month_list(begin: int, end: int) -> list:
     result = []
-    year_begin = int(datetime.fromtimestamp(begin, tz=timezone.utc).strftime('%Y'))
-    month_begin = str2int(datetime.fromtimestamp(begin, tz=timezone.utc).strftime('%m'))
-    year_end = int(datetime.fromtimestamp(end, tz=timezone.utc).strftime('%Y'))
-    month_end = str2int(datetime.fromtimestamp(end, tz=timezone.utc).strftime('%m'))
+    year_begin = int(local_time(begin).strftime('%Y'))
+    month_begin = str2int(local_time(begin).strftime('%m'))
+    year_end = int(local_time(end).strftime('%Y'))
+    month_end = str2int(local_time(end).strftime('%m'))
     for year in range(year_begin, year_end+1):
         month1 = month_begin if year == year_begin else 1
         month2 = month_end + 1 if year == year_end else 13
@@ -455,13 +463,13 @@ def month_list(begin: int, end: int) -> list:
 # where number is a week number in year from 1 to 53
 def week_list(begin: int, end: int) -> list:
     result = []
-    year_begin = int(datetime.fromtimestamp(begin, tz=timezone.utc).strftime('%Y'))
-    week_begin = str2int(datetime.fromtimestamp(begin, tz=timezone.utc).strftime('%W'))
+    year_begin = int(local_time(begin).strftime('%Y'))
+    week_begin = str2int(local_time(begin).strftime('%W'))
     if week_begin == 0:
         year_begin -= 1
         week_begin = 53
-    year_end = int(datetime.fromtimestamp(end, tz=timezone.utc).strftime('%Y'))
-    week_end = int(datetime.fromtimestamp(end, tz=timezone.utc).strftime('%W'))
+    year_end = int(local_time(end).strftime('%Y'))
+    week_end = int(local_time(end).strftime('%W'))
     if week_end == 0:
         year_end -= 1
         week_end = 53
@@ -495,11 +503,13 @@ def decodeQR(qr_image: QImage, code_type=None) -> str:
 # -----------------------------------------------------------------------------------------------------------------------
 # Helpers to work with datetime
 class ManipulateDate:
+    # The instant a day of the user's own clock began at - these are the bounds of a date range, so they are read
+    # the way the user stated them and not the way a stored row is.
     @staticmethod
     def toTimestamp(date_value):
         time_value = time(0, 0, 0)
         dt_value = datetime.combine(date_value, time_value)
-        return int(dt_value.replace(tzinfo=timezone.utc).timestamp())
+        return window_bound(int(dt_value.replace(tzinfo=timezone.utc).timestamp()))
 
     @staticmethod
     def PreviousWeek(day=datetime.today()):

@@ -1,7 +1,7 @@
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation, localcontext
 from zoneinfo import ZoneInfo
-from PySide6.QtCore import QDateTime, QLocale, QTimeZone
+from PySide6.QtCore import QLocale
 from jal.constants import Setup, JalGlobals
 
 
@@ -113,36 +113,17 @@ def year_begin(timestamp: int) -> int:
     begin = datetime.fromtimestamp(timestamp, tz=timezone.utc).replace(month=1, day=1, hour=0, minute=0, second=0)
     return int(begin.replace(tzinfo=timezone.utc).timestamp())
 
-# Returns timestamp of the last second of the year of given timestamp
-def year_end(timestamp: int) -> int:
-    end = datetime.fromtimestamp(timestamp, tz=timezone.utc).replace(month=1, day=1, hour=0, minute=0, second=0)
-    end = end.replace(year=end.year + 1) - timedelta(seconds=1)
-    return int(end.replace(tzinfo=timezone.utc).timestamp())
-
-# Returns current timestamp
+# The moment now, as JAL stores it: the instant itself, which is the same number on every clock. What the user's own
+# clock reads at that instant is a question for jal/db/clock.py, which is where a timestamp meets a person.
 def now_ts() -> int:
-    return int(datetime.now().replace(tzinfo=timezone.utc).timestamp())
+    return int(datetime.now(tz=timezone.utc).timestamp())
 
-# The same moment as now_ts(), for a QDateTimeEdit that is kept on UTC - i.e. what an editor has to be pre-filled
-# with so that it opens showing the time the wall clock shows.
-def now_dt() -> QDateTime:
-    return QDateTime.fromSecsSinceEpoch(now_ts(), QTimeZone(0))
-
-# The timestamp under which a given instant is stored. JAL keeps every timestamp as the LOCAL WALL-CLOCK reading of
-# the moment, spelled as a UTC epoch of those digits - now_ts() records manual entry exactly that way and every
-# display reads it back as UTC (see TimestampDelegate). An absolute instant therefore has to be re-expressed on that
-# clock before it is stored, or it lands an offset away from everything entered by hand. The offset in force at the
-# instant itself is used, so it stays right across DST boundaries.
-def stored_timestamp(instant: int) -> int:
-    return int(datetime.fromtimestamp(instant).replace(tzinfo=timezone.utc).timestamp())
-
-def local_timestamp(utc_seconds: int) -> int:
-    return stored_timestamp(utc_seconds) if utc_seconds > 0 else 0
-
+# The instant at which the wall clock of 'zone' showed the digits of 'moment' - what a source reports converted into
+# what JAL stores. The offset in force at the moment itself is used, so it stays right across DST boundaries.
+# A source that names no zone has its digits taken as UTC, which is what every importer did before any of them
+# declared one and what leaves an undeclared source exactly where it was.
 def wall_clock_timestamp(moment: datetime, zone: str = '') -> int:
-    if not zone:
-        return int(moment.replace(tzinfo=timezone.utc).timestamp())
-    return stored_timestamp(int(moment.replace(tzinfo=ZoneInfo(zone)).timestamp()))
+    return int(moment.replace(tzinfo=ZoneInfo(zone) if zone else timezone.utc).timestamp())
 
 # Returns timestamp of the first second of the day of given timestamp
 def day_begin(timestamp: int) -> int:

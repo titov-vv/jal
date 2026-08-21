@@ -1,6 +1,6 @@
 import base64
 import logging
-from PySide6.QtCore import Qt, Slot, Signal, Property, QDate, QPoint
+from PySide6.QtCore import Qt, Slot, Signal, Property, QPoint
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMenu, QDialog, QDialogButtonBox, QMessageBox, QHeaderView, QAbstractItemView
 from PySide6.QtSql import QSqlRelationalDelegate
@@ -9,6 +9,7 @@ from jal.db.common_models import AccountListModel, PeerTreeModel, CategoryTreeMo
     ResidenceListModel, TokenBlacklistModel
 from jal.db.asset_models import SymbolsListModel
 from jal.db.account import JalAccount
+from jal.db.clock import today_finish
 from jal.db.peer import JalPeer
 from jal.db.category import JalCategory
 from jal.db.tag import JalTag
@@ -523,7 +524,7 @@ class PeerListDialog(ReferenceDataDialog):
 
     @Slot()
     def showUsageReport(self):
-        settings = {'begin_ts': 0, 'end_ts': QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch(),
+        settings = {'begin_ts': 0, 'end_ts': today_finish(),
                     'peer_id': self._menu_peer_id}
         self._parent.reports.show_report("PeerReportWindow", settings, floating=False)
 
@@ -575,7 +576,7 @@ class CategoryListDialog(ReferenceDataDialog):
 
     @Slot()
     def showUsageReport(self):
-        settings = {'begin_ts': 0, 'end_ts': QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch(),
+        settings = {'begin_ts': 0, 'end_ts': today_finish(),
                     'category_id': self._menu_category_id}
         self._parent.reports.show_report("CategoryReportWindow", settings, floating=False)
 
@@ -622,7 +623,7 @@ class TagsListDialog(ReferenceDataDialog):
 
     @Slot()
     def showUsageReport(self):
-        settings = {'begin_ts': 0, 'end_ts': QDate.currentDate().endOfDay(Qt.UTC).toSecsSinceEpoch(),
+        settings = {'begin_ts': 0, 'end_ts': today_finish(),
                     'tag_id': self._menu_tag_id}
         self._parent.reports.show_report("TagReportWindow", settings, floating=False)
 

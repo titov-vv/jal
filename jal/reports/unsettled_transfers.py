@@ -1,9 +1,10 @@
 from functools import partial
 
-from PySide6.QtCore import Qt, Slot, QObject, QDateTime, QModelIndex, QPoint
+from PySide6.QtCore import Qt, Slot, QObject, QModelIndex, QPoint
 from PySide6.QtWidgets import QDialog, QMenu, QMessageBox
 from jal.ui.reports.ui_unsettled_transfers_report import Ui_UnsettledTransfersWidget
 from jal.reports.reports import Reports
+from jal.db.clock import now_dt
 from jal.db.asset import JalAsset
 from jal.db.pending_transfers_model import PendingTransfersModel
 from jal.db.transfer_settlement import TransferSettlement
@@ -51,9 +52,7 @@ class UnsettledTransfersReportWindow(MdiWidget):
         for field, name in self.transfers_model.groupings():
             self.ui.GroupCombo.addItem(name, field)
 
-        current_time = QDateTime.currentDateTime()
-        current_time.setTimeSpec(Qt.UTC)   # We use UTC everywhere so need to force TZ info
-        self.ui.ReportDate.setDateTime(current_time)
+        self.ui.ReportDate.setDate(now_dt().date())
         self.ui.ReportCurrencyCombo.setIndex(JalAsset.get_base_currency())
 
         self.connect_signals_and_slots()

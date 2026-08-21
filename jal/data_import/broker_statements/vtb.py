@@ -1,6 +1,6 @@
 import logging
 import re
-from datetime import timezone, datetime
+from datetime import datetime
 from jal.constants import PredefinedCategory
 from jal.data_import.statement_xls import StatementXLS
 from jal.data_import.statement import JSF, Statement_ImportError
@@ -19,6 +19,7 @@ def str2num(value):
 
 # ----------------------------------------------------------------------------------------------------------------------
 class StatementVTB(StatementXLS):
+    source_timezone = 'Europe/Moscow'
     AccountPattern = None  # to be set during validation
     PeriodPattern = None  # to be set during validation
     HeaderCol = 1
@@ -162,8 +163,8 @@ class StatementVTB(StatementXLS):
             amount = str2num(self._statement[headers['amount']][row])
             if abs(abs(price * qty) - amount) >= self.RU_PRICE_TOLERANCE:
                 price = abs((amount - bond_interest) / qty)
-            timestamp = int(self._statement[headers['datetime']][row].replace(tzinfo=timezone.utc).timestamp())
-            settlement = int(self._statement[headers['settlement']][row].replace(tzinfo=timezone.utc).timestamp())
+            timestamp = self._moment(self._statement[headers['datetime']][row])
+            settlement = self._date(self._statement[headers['settlement']][row])
             account_id = self._find_account_id(self._account_number, currency)
             new_id = max([0] + [x['id'] for x in self._data[JSF.TRADES]]) + 1
             trade = {"id": new_id, "number": deal_number, "timestamp": timestamp, "settlement": settlement,
@@ -208,7 +209,7 @@ class StatementVTB(StatementXLS):
             deal_number = self._statement[headers['number']][row]
             price = self._statement[headers['price']][row]
             fee = self._statement[headers['fee1']][row] + self._statement[headers['fee2']][row]
-            timestamp = int(self._statement[headers['datetime']][row].replace(tzinfo=timezone.utc).timestamp())
+            timestamp = self._moment(self._statement[headers['datetime']][row])
             account_id = self._find_account_id(self._account_number, 'RUR')
             new_id = max([0] + [x['id'] for x in self._data[JSF.TRADES]]) + 1
             trade = {"id": new_id, "number": deal_number, "timestamp": timestamp,
@@ -251,7 +252,7 @@ class StatementVTB(StatementXLS):
                 row += 1
                 logging.warning(self.tr("Unknown currency trade type: ") + self._statement[headers['B/S']][row])
                 continue
-            timestamp = int(self._statement[headers['datetime']][row].replace(tzinfo=timezone.utc).timestamp())
+            timestamp = self._moment(self._statement[headers['datetime']][row])
             number = self._statement[headers['number']][row]
             account_to = self._find_account_id(self._account_number, symbols_data['B'])
             account_from = self._find_account_id(self._account_number, symbols_data['A'])
@@ -302,7 +303,7 @@ class StatementVTB(StatementXLS):
             if len(assets) != 1:
                 raise Statement_ImportError(self.tr("No asset match in asset transactions ") + f"'{asset_name}'")
             symbol_id = self._single_symbol_of(assets[0]['id'])
-            timestamp = int(self._statement[headers['date']][row].replace(tzinfo=timezone.utc).timestamp())
+            timestamp = self._date(self._statement[headers['date']][row])
             try:
                 qty = float(self._statement[headers['qty']][row])
             except ValueError:
@@ -351,7 +352,7 @@ class StatementVTB(StatementXLS):
                 continue
             if operation not in operations:
                 raise Statement_ImportError(self.tr("Unsuppported cash transaction ") + f"'{operation}'")
-            timestamp = int(self._statement[headers['date']][row].replace(tzinfo=timezone.utc).timestamp())
+            timestamp = self._date(self._statement[headers['date']][row])
             amount = str2num(self._statement[headers['amount']][row])
             description = self._statement[headers['description']][row]
             account_id = self._find_account_id(self._account_number, self._statement[headers['currency']][row])

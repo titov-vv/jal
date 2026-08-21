@@ -300,8 +300,7 @@ class TronFetcher(ChainFetcher):
         return amount * rate if rate else None
 
     def _timestamp_of(self, record: dict) -> int:
-        # The API reports milliseconds of true UTC time; JAL stores seconds in its own local-wall-clock convention.
-        return self._local_timestamp(int(record.get('block_timestamp', 0)) // 1000)
+        return int(record.get('block_timestamp', 0)) // 1000   # the API reports milliseconds of the UTC JAL stores
 
     # Both counterparties are shown, sender first, so the note holds the whole movement regardless of its direction.
     # Left empty by the caller when the other side is a wallet of the user's own - it says nothing the operation

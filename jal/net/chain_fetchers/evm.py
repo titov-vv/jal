@@ -740,12 +740,10 @@ class EVMFetcher(ChainFetcher):
             return 0
 
     def _timestamp_of(self, record: dict) -> int:
-        # Etherscan reports seconds of true UTC time; JAL stores seconds in its own local-wall-clock convention.
         try:
-            seconds = int(record.get('timeStamp', 0))
+            return int(record.get('timeStamp', 0))    # Etherscan reports the seconds of true UTC that JAL stores
         except (TypeError, ValueError):
-            seconds = 0
-        return self._local_timestamp(seconds)
+            return 0
 
     # The counterparty addresses are put in the note only when the other side is NOT an account JAL already knows:
     # a transfer between two of the user's own wallets needs no address note, while an outside address is worth

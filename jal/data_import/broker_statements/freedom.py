@@ -12,6 +12,7 @@ JAL_STATEMENT_CLASS = "StatementFreedomFinance"
 
 
 class StatementFreedomFinance(Statement):
+    source_timezone = 'Europe/Moscow'
     FilenamePattern = re.compile(
         r'.*_(?P<start>\d{4}-\d{2}-\d{2} \d{2}_\d{2}_\d{2})_'
         r'(?P<end>\d{4}-\d{2}-\d{2} \d{2}_\d{2}_\d{2})_all\.xml$',
@@ -199,10 +200,10 @@ class StatementFreedomFinance(Statement):
         return ticker.split('.', 1)[1].upper() if '.' in ticker else ''
 
     def _parse_datetime(self, value: str) -> int:
-        return int(datetime.strptime(value, "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc).timestamp())
+        return self._moment(datetime.strptime(value, "%Y-%m-%d %H:%M:%S"))
 
     def _parse_date(self, value: str) -> int:
-        return int(datetime.strptime(value, "%Y-%m-%d").replace(tzinfo=timezone.utc).timestamp())
+        return self._date(datetime.strptime(value, "%Y-%m-%d"))
 
     def _to_decimal(self, value: str) -> Decimal:
         if value == '' or value == '-':

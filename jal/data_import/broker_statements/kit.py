@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta
 
 from jal.constants import Setup, PredefinedCategory
 from jal.data_import.statement import JSF, Statement_ImportError
@@ -10,6 +10,7 @@ JAL_STATEMENT_CLASS = "StatementKIT"
 
 # ----------------------------------------------------------------------------------------------------------------------
 class StatementKIT(StatementXLS):
+    source_timezone = 'Europe/Moscow'
     Header = (4, 0, "КИТ Финанс (АО)")
     PeriodPattern = (5, 8, r"(?P<S>\d\d\.\d\d\.\d\d\d\d)\s.\s(?P<E>\d\d\.\d\d\.\d\d\d\d)")
     AccountPattern = (5, 5, r"(?P<ACCOUNT>.*)-(.*)")
@@ -80,8 +81,8 @@ class StatementKIT(StatementXLS):
             t_date = self._statement[headers['date']][row]
             t_time = datetime.strptime(self._statement[headers['time']][row], "%H:%M:%S").time()
             trade_datetime = t_date + timedelta(hours=t_time.hour, minutes=t_time.minute, seconds=t_time.second)
-            timestamp = int(trade_datetime.replace(tzinfo=timezone.utc).timestamp())
-            settlement = int(self._statement[headers['settlement']][row].replace(tzinfo=timezone.utc).timestamp())
+            timestamp = self._moment(trade_datetime)
+            settlement = self._date(self._statement[headers['settlement']][row])
             account_id = self._find_account_id(self._account_number, self._statement[headers['currency']][row])
             new_id = max([0] + [x['id'] for x in self._data[JSF.TRADES]]) + 1
             trade = {"id": new_id, "number": str(number), "timestamp": timestamp, "settlement": settlement,
@@ -128,7 +129,7 @@ class StatementKIT(StatementXLS):
             operation = self._statement[headers['operation']][row]
             if operation not in operations:  # not supported type of operation
                 raise Statement_ImportError(self.tr("Unsuppported cash transaction ") + f"'{operation}'")
-            timestamp = int(self._statement[headers['date']][row].replace(tzinfo=timezone.utc).timestamp())
+            timestamp = self._date(self._statement[headers['date']][row])
             account_id = self._find_account_id(self._account_number, self._statement[headers['currency']][row])
             amount = self._statement[headers['amount']][row]
             reason = self._statement[headers['reason']][row]

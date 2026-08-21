@@ -9,7 +9,7 @@ from PySide6.QtCore import Qt, Signal, Slot, QUrl, QDateTime
 from PySide6.QtWidgets import QApplication, QDialog, QDialogButtonBox
 from PySide6.QtWebEngineCore import QWebEngineUrlRequestInterceptor, QWebEngineProfile, QWebEnginePage
 from jal.data_import.receipt_api.receipt_api import ReceiptAPI
-from jal.db.helpers import now_dt
+from jal.db.clock import local_zone, now_dt
 from jal.db.settings import JalSettings
 from jal.net.web_request import WebRequest
 from jal.ui.ui_login_fns_dlg import Ui_LoginFNSDialog
@@ -205,7 +205,7 @@ class ReceiptRuFNS(ReceiptAPI):
             receipt_datetime = QDateTime.fromSecsSinceEpoch(int(self.slip_json['dateTime']))
         else:
             receipt_datetime = QDateTime()
-        receipt_datetime.setTimeSpec(Qt.UTC)
+        receipt_datetime.setTimeZone(local_zone())   # what it says is a reading of the buyer's own clock
         return receipt_datetime
 
     def slip_lines(self) -> list:

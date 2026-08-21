@@ -8,10 +8,11 @@ from jal.db.settings import JalSettings
 # ----------------------------------------------------------------------------------------------------------------------
 # Re-reading stored timestamps on another clock.
 #
-# A stored timestamp is a wall-clock READING spelled as a UTC epoch (see stored_timestamp), so it only means anything
-# together with the clock it was read on. When that clock turns out to have been another one - the user moved and
-# entered the earlier years afterwards, or a source stamped its own zone into what was imported - the digits have to
-# be re-read:
+# JAL used to store a wall-clock READING spelled as a UTC epoch - digits that only mean anything together with the
+# clock they were read on - and it now stores the instant itself (see jal/db/clock.py). Whenever the clock behind a
+# stored value turns out to have been another one than the value is being read on - the move to instants itself, a
+# residence history entered after the years it covers, a source that stamped its own zone into what was imported -
+# the digits have to be re-read:
 #
 #     digits -> attached to the clock they were read on -> a true instant -> read again on the clock asked for
 #

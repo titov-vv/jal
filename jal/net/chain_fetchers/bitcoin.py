@@ -291,7 +291,7 @@ class BitcoinFetcher(ChainFetcher):
             # doesn't build (nothing in the validated history has this shape). Halting keeps it visible instead of
             # booking it as something it isn't.
             raise _HaltImport(self.tr("coinbase transaction - mined coins are income, not a transfer"))
-        timestamp = self._local_timestamp(int(transaction.get('status', {}).get('block_time', 0)))
+        timestamp = int(transaction.get('status', {}).get('block_time', 0))
         fee = self._amount(transaction.get('fee', 0))
         spent = sum(self._amount(self._spent_output(x).get('value', 0)) for x in transaction.get('vin', [])
                     if self._spent_output(x).get('scriptpubkey_address', '') in own)

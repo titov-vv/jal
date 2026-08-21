@@ -437,7 +437,7 @@ class SolanaFetcher(ChainFetcher):
     def _timestamp_of(self, tx: dict) -> int:
         # Helius reports seconds of true UTC time; JAL stores them in its own local-wall-clock convention
         try:
-            return self._local_timestamp(int(tx.get('timestamp', 0)))
+            return int(tx.get('timestamp', 0))
         except (TypeError, ValueError):
             return 0
 

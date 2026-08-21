@@ -1,5 +1,6 @@
-from PySide6.QtCore import Qt, Signal, Slot, Property, QDateTime, QTimeZone
+from PySide6.QtCore import Qt, Signal, Slot, Property
 from PySide6.QtWidgets import QWidget, QComboBox, QHBoxLayout, QLabel, QDateEdit
+from jal.db.clock import day_start, local_datetime
 from jal.widgets.helpers import ManipulateDate, DateFormat
 
 
@@ -40,7 +41,6 @@ class DateRangeSelector(QWidget):
         self.from_date = QDateEdit()
         self.from_date.setDisplayFormat(DateFormat.date(qt=True))
         self.from_date.setCalendarPopup(True)
-        self.from_date.setTimeSpec(Qt.UTC)
         self.layout.addWidget(self.from_date)
 
         self.from_label = QLabel(self.tr("To:"), parent=self)
@@ -49,7 +49,6 @@ class DateRangeSelector(QWidget):
         self.to_date = QDateEdit()
         self.to_date.setDisplayFormat(DateFormat.date(qt=True))
         self.to_date.setCalendarPopup(True)
-        self.to_date.setTimeSpec(Qt.UTC)
         self.layout.addWidget(self.to_date)
 
         self.setLayout(self.layout)
@@ -81,8 +80,8 @@ class DateRangeSelector(QWidget):
 
     def _update_range(self):
         self.changing_range = True
-        self.from_date.setDateTime(QDateTime.fromSecsSinceEpoch(self._begin, QTimeZone(0)))
-        self.to_date.setDateTime(QDateTime.fromSecsSinceEpoch(self._end, QTimeZone(0)))
+        self.from_date.setDate(local_datetime(self._begin).date())
+        self.to_date.setDate(local_datetime(self._end).date())
         self.changing_range = False
         self.changed.emit(self._begin, self._end)
 
@@ -102,13 +101,13 @@ class DateRangeSelector(QWidget):
 
     @Slot()
     def onFromChange(self):
-        self._begin = self.from_date.date().startOfDay(Qt.UTC).toSecsSinceEpoch()
+        self._begin = day_start(self.from_date.date())
         if not self.changing_range:
             self.changed.emit(self._begin, self._end)
 
     @Slot()
     def onToChange(self):
-        self._end = self.to_date.date().startOfDay(Qt.UTC).toSecsSinceEpoch()
+        self._end = day_start(self.to_date.date())
         if not self.changing_range:
             self.changed.emit(self._begin, self._end)
 

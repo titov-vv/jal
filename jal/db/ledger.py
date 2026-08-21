@@ -14,6 +14,7 @@ from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
 from jal.db.operations import LedgerTransaction, LedgerError, LedgerAssetShortage
 from jal.db.rebase_residue import RebaseResidue
+from jal.db.clock import day_start
 from jal.widgets.helpers import ts2dt, ts2d, set_date_formats
 from jal.ui.ui_rebuild_window import Ui_ReBuildDialog
 
@@ -42,7 +43,7 @@ class RebuildDialog(QDialog):
         if self.ui.LastRadioButton.isChecked():
             return self.frontier
         elif self.ui.DateRadionButton.isChecked():
-            return self.ui.CustomDateEdit.dateTime().toSecsSinceEpoch()
+            return day_start(self.ui.CustomDateEdit.date())   # the day the user picked, as their own clock began it
         else:  # self.AllRadioButton.isChecked()
             return 0
 

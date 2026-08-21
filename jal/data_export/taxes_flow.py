@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
-from jal.db.residence import stored_reading
+from jal.db.clock import stored_reading
 from jal.data_export.ru_ndfl3 import Ru_NDFL3
 
 

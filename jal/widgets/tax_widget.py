@@ -13,7 +13,7 @@ from jal.ui.ui_tax_export_widget import Ui_TaxWidget
 from jal.ui.ui_flow_export_widget import Ui_MoneyFlowWidget
 from jal.ui.ui_merge_dialog import Ui_MergeFilesToolDialog
 from jal.widgets.mdi import MdiWidget
-from jal.widgets.helpers import ts2d, dt2ts
+from jal.widgets.helpers import reading2d
 from jal.widgets.icons import JalIcon
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
@@ -76,7 +76,7 @@ class TaxWidget(MdiWidget):
     # Load account combobox with account names relevant for the given year
     def OnYearChange(self, year):
         self.ui.Account.clear()
-        accounts = JalAccount.get_taxable_accounts(dt2ts(datetime(year, 1, 1)))
+        accounts = JalAccount.get_taxable_accounts(year)
         for account in accounts:
             self.ui.Account.addItem(account.name(), account.id())
 
@@ -146,7 +146,7 @@ class TaxWidget(MdiWidget):
 
         reports_xls = XLSX(self.xls_filename)
         parameters = {
-            "period": f"{ts2d(taxes.year_begin)} - {ts2d(taxes.year_end - 1)}",
+            "period": f"{reading2d(taxes.year_begin)} - {reading2d(taxes.year_end - 1)}",
             "account": f"{taxes.account.number()} ({JalAsset(taxes.account.currency()).symbol()})",
             "account_name": taxes.account.name(),
             "currency": JalAsset(taxes.account.currency()).symbol(),
@@ -222,7 +222,7 @@ class MoneyFlowWidget(MdiWidget):
 
         reports_xls = XLSX(self.xls_filename)
         parameters = {
-            "period": f"{ts2d(taxes_flow.year_begin)} - {ts2d(taxes_flow.year_end - 1)}"
+            "period": f"{reading2d(taxes_flow.year_begin)} - {reading2d(taxes_flow.year_end - 1)}"
         }
         reports_xls.output_data(flow_report, "tax_rus_flow.json", parameters)
         if reports_xls.save():
