@@ -135,8 +135,8 @@ def _details(table: str, account_expression: str, description: str, oids) -> dic
 # existed. Two findings are returned row by row rather than counted, because each one is a judgement the user has to
 # make and neither can be made after the fact:
 #   'made_markers' - the moments this run turns INTO a day. A marker is recognised by its value alone (see
-#       is_day_marker), so three hours off Moscow spells a spending of 15:00 as noon, and from then on everything
-#       reads it as a day rather than a moment. Nothing distinguishes it afterwards.
+#       is_day_marker), so three hours off Moscow spells a spending of 03:00 as midnight, and from then on
+#       everything reads it as a day rather than a moment. Nothing distinguishes it afterwards.
 #   'reordered' - the two-leg operations whose legs end up out of order, including those that were in that order
 #       already: some of those were put right by hand, and moving either leg undoes the correction.
 #

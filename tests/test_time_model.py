@@ -29,7 +29,7 @@ from jal.data_import.broker_statements.ibkr import IBKR_DAY_MARKERS, StatementIB
 from jal.data_import.broker_statements.kucoin import StatementKuCoin
 from jal.db.clock import (day_finish, day_start, local_datetime, local_moment, local_reading,
                           local_time, now_dt, stored_reading, wall_clock_reading)
-from jal.db.helpers import DAY_MIDDLE_MARKER, is_day_marker, now_ts
+from jal.db.helpers import is_day_marker, now_ts
 from jal.db.ledger import Ledger
 from jal.widgets.helpers import ts2axis, axis2ts, ts2d, ts2dt
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
@@ -188,10 +188,10 @@ def test_nothing_is_re_read_while_the_timeline_states_no_zone(prepare_db):
 # here is what keeps them spelling the same day afterwards.
 def test_a_day_marker_is_displayed_as_the_day_it_states(prepare_db):
     _resident_in('America/New_York')                       # far enough west to push midnight into the day before
-    for marker in (d2t(250925), d2t(250925) + DAY_MIDDLE_MARKER):
-        assert local_reading(marker) == marker
-        assert ts2d(marker) == ts2d(d2t(250925))
-    ordinary = d2t(250925) + DAY_MIDDLE_MARKER + 1         # a second past noon is a moment again, and it moves
+    marker = d2t(250925)
+    assert local_reading(marker) == marker
+    assert ts2d(marker) == ts2d(d2t(250925))
+    ordinary = d2t(250925) + 1                             # a second past midnight is a moment again, and it moves
     assert local_reading(ordinary) != ordinary
 
 
@@ -399,19 +399,22 @@ def test_a_day_stored_without_a_time_of_day_is_never_read_on_another_clock(prepa
     assert [x.timestamp() for x in _report_for(report, 2025).dividends_list()] == [d2t(250101)]
 
 
-# Midnight is not the only spelling of a day. A payment known only by the day it happened is entered by hand at the
-# middle of that day, and noon states the day just as much as midnight does - is_day_marker() is what says so, and a
-# report of another jurisdiction has to leave both alone. A minute either side is an ordinary moment again.
-def test_a_payment_dated_by_the_middle_of_its_day_is_never_read_on_another_clock(prepare_db_taxes):
+# Midnight is the only spelling of a day that every source shares. A payment known only by the day it happened is
+# often entered by hand at the middle of that day, but noon is a plausible time of day and hand entry lands a second
+# off it as easily as on it - so it is a moment like any other and a report of another jurisdiction re-reads it.
+# Nothing is lost by that: noon is the one time of day that stays inside its own day at every offset there is.
+def test_a_payment_entered_at_the_middle_of_its_day_is_a_moment_like_any_other(prepare_db_taxes):
     create_assets([('GE', 'General Electric Company', 'US3696043013', 2, PredefinedAsset.Stock, 'us')])   # id 4
     noon = _stamp(2025, 6, 10, 12, 0)
     create_dividends([(noon, 1, 4, 10.0, 1.0, "Dividend known only by the day it happened")])
     _resident_in('Europe/Lisbon')
     report = TaxesRussia()
 
-    assert report._moment(noon) == noon                            # untouched, though Moscow is three hours ahead
-    assert report._moment(noon + 60) == noon + 60 + 3 * 3600       # a minute later is a moment, and it moves
-    assert [x.timestamp() for x in _report_for(report, 2025).dividends_list()] == [noon]
+    assert not is_day_marker(noon)
+    assert report._moment(noon) == noon + 3 * 3600                 # Moscow is three hours ahead, and so is the report
+    assert report._moment(noon + 60) == noon + 60 + 3 * 3600       # a minute later moves by exactly as much
+    assert _reading_day(report._moment(noon)) == '2025-06-10'      # ... and neither leaves the day it was entered on
+    assert [x.timestamp() for x in _report_for(report, 2025).dividends_list()] == [noon]   # ... nor its year
 
 
 # The end-of-day stamps a broker puts on an accounting day are that broker's alone, so they are NOT part of the
@@ -558,17 +561,17 @@ def test_a_summer_and_a_winter_reading_are_re_read_by_their_own_offsets(reclock_
 # could only move it to another day. The end-of-day stamp of a source is one of those days, but only for the source
 # it belongs to: the same digits on a cash account are an evening, and an evening is a moment like any other.
 def test_a_reading_that_states_a_day_is_left_where_it_is(reclock_db):
-    midnight, noon, end_of_day = d2t(210701), _stamp(2021, 7, 1, 12), _stamp(2021, 7, 1, 20, 20)
-    create_actions([_spending(midnight, 2), _spending(noon, 2), _spending(end_of_day, 2)])
+    midnight, end_of_day = d2t(210701), _stamp(2021, 7, 1, 20, 20)
+    create_actions([_spending(midnight, 2), _spending(end_of_day, 2)])
 
     report = reclock('Europe/Moscow', 'Europe/Lisbon', source_markers=IBKR_DAY_MARKERS, apply=True)
-    assert _column_report(report, 'actions')['markers'] == 3
+    assert _column_report(report, 'actions')['markers'] == 2
     assert _column_report(report, 'actions')['changed'] == 0
-    assert [_stored('actions', 'timestamp', x) for x in (1, 2, 3)] == [midnight, noon, end_of_day]
+    assert [_stored('actions', 'timestamp', x) for x in (1, 2)] == [midnight, end_of_day]
 
     reclock('Europe/Moscow', 'Europe/Lisbon', apply=True)          # ... the same rows, with no source named
-    assert [_stored('actions', 'timestamp', x) for x in (1, 2)] == [midnight, noon]
-    assert _stored('actions', 'timestamp', 3) == end_of_day - 2 * 3600
+    assert _stored('actions', 'timestamp', 1) == midnight
+    assert _stored('actions', 'timestamp', 2) == end_of_day - 2 * 3600
 
 
 # The dates an operation carries beside its moment are dates by definition, and they are not in the map at all -
@@ -601,17 +604,17 @@ def test_an_hour_the_clock_repeats_or_skips_is_reported_and_not_hidden(reclock_d
 
 
 # A marker is recognised by its value alone, so a run can MAKE one: three hours off Moscow turns a spending stored
-# at three in the afternoon into noon, and everything downstream reads noon as a day rather than a moment. Those
-# rows are counted while they can still be told apart - after the run nothing distinguishes them from a date that
-# was always one.
+# at three in the morning into midnight, and everything downstream reads midnight as a day rather than a moment.
+# Those rows are counted while they can still be told apart - after the run nothing distinguishes them from a date
+# that was always one.
 def test_a_moment_that_lands_on_a_marker_is_counted_before_it_becomes_one(reclock_db):
-    afternoon = _stamp(2021, 7, 1, 15)
-    create_actions([_spending(afternoon, 2), _spending(afternoon + 60, 2)])
+    early = _stamp(2021, 7, 1, 3)
+    create_actions([_spending(early, 2), _spending(early + 60, 2)])
 
     report = reclock('Europe/Moscow', 'UTC')
     assert _column_report(report, 'actions')['changed'] == 2
     assert [(x['oid'], x['becomes'], x['account']) for x in _column_report(report, 'actions')['made_markers']] == \
-           [(1, afternoon - 3 * 3600, 'Lisbon bank')]
+           [(1, early - 3 * 3600, 'Lisbon bank')]
 
 
 # A dry run is the default, and it is the whole point of the tool: it says what would happen and touches nothing.
@@ -741,8 +744,8 @@ def test_the_command_line_takes_all_the_accounts_without_naming_them(reclock_db)
 # makes are exported by the dry run alone - it is the last moment at which the two readings can be seen side by side.
 def test_the_findings_are_exported_for_review(reclock_db, tmp_path):
     tool, prefix = _shift_clock(), str(tmp_path / "run")
-    afternoon = _stamp(2021, 7, 1, 15)
-    create_actions([_spending(afternoon, 2)])
+    early = _stamp(2021, 7, 1, 3)
+    create_actions([_spending(early, 2)])
     oid = create_transfers([(_stamp(2021, 7, 1, 10), 1, Decimal('100'), 2, Decimal('100'), None)])[0]
     JalDB._exec("UPDATE transfers SET deposit_timestamp=:arrival WHERE oid=:oid",
                 [(":arrival", _stamp(2021, 7, 1, 10, 30)), (":oid", oid)])
@@ -751,7 +754,7 @@ def test_the_findings_are_exported_for_review(reclock_db, tmp_path):
     markers = _exported(tool.export_made_markers(prefix, report))
     assert markers[0] == ["operation", "column", "id", "account", "stored", "becomes", "marker", "note"]
     assert markers[1][:4] == ["actions", "timestamp", "1", "Lisbon bank"]
-    assert markers[1][5:7] == ["2021-07-01 12:00:00", "12:00:00"]
+    assert markers[1][5:7] == ["2021-07-01 00:00:00", "00:00:00"]
 
     report = reclock('Europe/Lisbon', 'Europe/Moscow', accounts=[1])
     legs = _exported(tool.export_reordered_legs(prefix, report))

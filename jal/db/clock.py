@@ -104,7 +104,7 @@ def local_zone(timestamp: int = None) -> QTimeZone:
 
 # 'Now' as an editor has to be pre-filled with it, or an operation entered without touching the date field is dated
 # an offset away from when the user entered it. Today's zone is asked for rather than the moment's: a 'now' that
-# happens to land on midnight or noon is still a moment, not a day being named.
+# happens to land on midnight is still a moment, not a day being named.
 def now_dt() -> QDateTime:
     return QDateTime.fromSecsSinceEpoch(now_ts(), local_zone())
 

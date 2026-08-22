@@ -140,7 +140,7 @@ def print_report(report: dict, exports: dict) -> None:
           f"{_total(report, 'days'):>7}{_total(report, 'years'):>7}{_total(report, 'made_markers'):>8}"
           f"{_total(report, 'ambiguous'):>7}{_total(report, 'nonexistent'):>6}")
     print("\n'dates' are the rows that state a day and are left alone, and '->date' the moments that BECOME one by\n"
-          "landing on midnight or noon - nothing can tell those apart afterwards. 'ambig' fall in an hour the source\n"
+          "landing on midnight - nothing can tell those apart afterwards. 'ambig' fall in an hour the source\n"
           "clock repeats (the first of the two is taken) and 'gap' in an hour it skips (the offset before the gap).")
     for column in report['columns']:
         for kind in ('ambiguous', 'nonexistent'):
