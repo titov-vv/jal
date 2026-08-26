@@ -25,6 +25,9 @@ from jal.db.settings import JalSettings
 # skipped at spring-forward never existed (Python answers with the offset in force before the gap).
 
 
+# The table whose rows may own a quote of their own - see _paired_quotes.
+PAYMENTS = "asset_payments"
+
 # Every stored timestamp that is a wall-clock reading, as (table, timestamp column, the account whose clock it was
 # read on, what to show about the row). The last two are SQL expressions over 'o', the row of the table named first.
 #
@@ -36,11 +39,13 @@ from jal.db.settings import JalSettings
 #   trades.settlement, asset_payments.ex_date, residence.since_timestamp - dates by definition, they state a day
 #     and carry no time of day to convert;
 #   ledger, ledger_totals, trades_opened, trades_closed - rebuilt from the operations, see the rebuild flag below;
-#   quotes, chain_balances, token_list_updates - re-downloaded from their source, which has its own clock.
+#   chain_balances, token_list_updates - re-downloaded from their source, which has its own clock;
+#   quotes - a series of DAYS read on the user's clock, and re-downloadable besides. The one exception is a quote
+#     written FOR a payment, which is not a day's price at all and moves with the payment - see _paired_quotes.
 RECLOCKED_COLUMNS = (
     ("actions", "timestamp", "o.account_id", "o.note"),
     ("asset_actions", "timestamp", "o.account_id", "o.note"),
-    ("asset_payments", "timestamp", "o.account_id", "o.note"),
+    (PAYMENTS, "timestamp", "o.account_id", "o.note"),
     ("conversions", "timestamp", "o.account_id", "o.note"),
     ("swaps", "timestamp", "o.account_id", "o.note"),
     ("swaps", "in_timestamp", "COALESCE(o.in_account_id, o.account_id)", "o.note"),
@@ -139,6 +144,8 @@ def _details(table: str, account_expression: str, description: str, oids) -> dic
 #       everything reads it as a day rather than a moment. Nothing distinguishes it afterwards.
 #   'reordered' - the two-leg operations whose legs end up out of order, including those that were in that order
 #       already: some of those were put right by hand, and moving either leg undoes the correction.
+# and one more thing is written beside the timestamps rather than only reported - 'quotes', the prices written for a
+# payment the run moves. They travel with it (see _paired_quotes), and the blocked ones are what to look at.
 #
 # Day markers are skipped by the run: they state a day and re-reading one could only move it to another day.
 def reclock(from_clock: str, to_clock: str, accounts: list = None, excluded: list = None, begin: int = 0, end: int = 0,
@@ -148,6 +155,7 @@ def reclock(from_clock: str, to_clock: str, accounts: list = None, excluded: lis
               'begin': begin, 'end': end, 'source_markers': tuple(source_markers), 'applied': False,
               'columns': [], 'reordered': []}
     changes = {}      # {(table, column): {oid: new_timestamp}} - everything the run would write
+    moved_payments = {}   # {oid: (stored, becomes)} - the payments that move, for the quotes written for them
     for table, column, account_expression, description in RECLOCKED_COLUMNS:
         condition, parameters = _selection(column, account_expression, accounts, excluded, begin, end)
         column_report = {'table': table, 'column': column, 'selected': 0, 'markers': 0, 'changed': 0,
@@ -167,6 +175,8 @@ def reclock(from_clock: str, to_clock: str, accounts: list = None, excluded: lis
             if new_timestamp == timestamp:
                 continue
             column_changes[oid] = new_timestamp
+            if table == PAYMENTS:
+                moved_payments[oid] = (timestamp, new_timestamp)
             column_report['changed'] += 1
             column_report['days'] += day_begin(new_timestamp) != day_begin(timestamp)
             column_report['years'] += year_begin(new_timestamp) != year_begin(timestamp)
@@ -178,12 +188,48 @@ def reclock(from_clock: str, to_clock: str, accounts: list = None, excluded: lis
         report['columns'].append(column_report)
         changes[(table, column)] = column_changes
     report['reordered'] = _reordered_legs(changes)
+    report['quotes'] = _paired_quotes(moved_payments)
+    changes[('quotes', 'timestamp')] = {x['quote_id']: x['becomes'] for x in report['quotes'] if not x['blocked']}
     report['changed'] = sum(x['changed'] for x in report['columns'])
     report['selected'] = sum(x['selected'] for x in report['columns'])
     if apply:
         _write(changes)
         report['applied'] = True
     return report
+
+
+# The quotes that belong to the payments this run moves, taking 'moved_payments' as {oid: (stored, becomes)}.
+#
+# A price carried by an imported payment is stored as a quote stamped on that payment's own moment (see
+# StatementJSON._import_asset_payments), and the exact equality of the two timestamps is what marks it as that
+# payment's own rather than as the price of a day: it is what values a stock dividend or a vesting (see
+# JalAsset._quote_moment and AssetPayment.price). Left on a reading nothing states any more, it stops valuing the
+# payment and no download will ever put it back - the series can be re-fetched, a price of one moment cannot.
+#
+# 'blocked' marks the one case a move can't be made in: the target moment already holds a quote of that asset in
+# that currency. Reported rather than resolved, because the alternative is overwriting a price that is not ours.
+def _paired_quotes(moved_payments: dict) -> list:
+    if not moved_payments:
+        return []
+    paired = []
+    query = JalDB._exec(f"SELECT p.oid, q.id, q.asset_id, q.currency_id FROM {PAYMENTS} AS p "
+                        "LEFT JOIN asset_symbol AS s ON s.id=p.symbol_id "
+                        "LEFT JOIN accounts AS a ON a.id=p.account_id "
+                        "JOIN quotes AS q ON q.asset_id=s.asset_id AND q.currency_id=a.currency_id "
+                        "AND q.timestamp=p.timestamp "
+                        f"WHERE p.oid IN ({','.join(str(int(x)) for x in moved_payments)})")
+    while query.next():
+        oid, quote_id, asset_id, currency_id = JalDB._read_record(query, cast=[int, int, int, int])
+        stored, becomes = moved_payments[oid]
+        occupied = JalDB._read("SELECT id FROM quotes WHERE asset_id=:asset_id AND currency_id=:currency_id "
+                               "AND timestamp=:timestamp",
+                               [(":asset_id", asset_id), (":currency_id", currency_id), (":timestamp", becomes)])
+        paired.append({'oid': oid, 'quote_id': quote_id, 'stored': stored, 'becomes': becomes,
+                       'blocked': bool(occupied)})
+    details = _details(PAYMENTS, "o.account_id", "o.note", [x['oid'] for x in paired])
+    for row in paired:
+        row.update(details.get(row['oid'], {'account': '', 'note': ''}))
+    return sorted(paired, key=lambda row: row['oid'])
 
 
 # The two-leg operations the run touches whose legs end up in the wrong order. Each leg takes its new value if the
@@ -219,7 +265,9 @@ def _reordered_legs(changes: dict) -> list:
 
 
 # Writes the whole run as one transaction - a half-re-clocked database has two conventions in it and no way to tell
-# which row is on which. The ledger is asked for on the next start: every book it holds is keyed by timestamp.
+# which row is on which. The quotes paired to the payments travel in it too, a payment and its own price being
+# exactly the pair that must not come apart. The ledger is asked for on the next start: every book it holds is keyed
+# by timestamp.
 def _write(changes: dict) -> None:
     database = JalDB()
     database.start_transaction()

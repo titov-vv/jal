@@ -722,6 +722,47 @@ def test_the_reconciliation_of_an_account_is_re_read_with_its_operations(reclock
     assert _stored('accounts', 'reconciled_on', 2) == 0                   # never reconciled, and it stays that way
 
 
+# A price that came in with a payment is stored as a quote stamped on that payment's own moment, and the exact
+# equality of the two is what marks it as the payment's own price rather than as the price of a day - it is what
+# values a stock dividend or a vesting. So it travels with the payment, while the series around it, being a series
+# of days read on the user's clock, stays exactly where it is.
+def test_the_price_written_for_a_payment_moves_with_it(reclock_db):
+    moment, a_day_of_the_series = _stamp(2021, 7, 1, 15), d2t(210701)
+    create_dividends([(moment, 1, 4, Decimal('10'), Decimal('1'), "Vested, and priced by the statement")])
+    create_quotes(4, 2, [(moment, 100), (a_day_of_the_series, 99)])
+
+    report = reclock('Europe/Moscow', 'Europe/Lisbon', apply=True)
+    assert [(x['oid'], x['stored'], x['becomes'], x['blocked']) for x in report['quotes']] == \
+           [(1, moment, moment - 2 * 3600, False)]
+    assert report['quotes'][0]['account'] == 'Moscow broker'
+    assert JalAsset(4).quote(moment - 2 * 3600, 2) == (moment - 2 * 3600, Decimal('100'))   # still its own price
+    assert _stored('quotes', 'timestamp', 2) == a_day_of_the_series      # ... and the day beside it never moved
+
+
+# The one place the price cannot follow: the moment the payment moves to already holds a price of that asset. It is
+# reported and left where it is, the alternative being to overwrite a price that belongs to somebody else.
+def test_a_price_that_cannot_follow_its_payment_is_reported_and_left_alone(reclock_db):
+    moment = _stamp(2021, 7, 1, 15)
+    create_dividends([(moment, 1, 4, Decimal('10'), Decimal('1'), "Vested onto an hour already quoted")])
+    create_quotes(4, 2, [(moment, 100), (moment - 2 * 3600, 99)])
+
+    report = reclock('Europe/Moscow', 'Europe/Lisbon', apply=True)
+    assert [(x['oid'], x['blocked']) for x in report['quotes']] == [(1, True)]
+    assert sorted(_stored('quotes', 'timestamp', x) for x in (1, 2)) == [moment - 2 * 3600, moment]
+
+
+# A run that moves no payment asks the quotes nothing at all, and a payment that moves without a price of its own
+# leaves the series alone as well.
+def test_the_quotes_are_untouched_by_a_run_that_moves_no_priced_payment(reclock_db):
+    moment = _stamp(2021, 7, 1, 15)
+    create_dividends([(moment, 1, 4, Decimal('10'), Decimal('1'), "Dividend of money, priced by nothing")])
+    create_quotes(4, 2, [(moment - 60, 100)])
+
+    report = reclock('Europe/Moscow', 'Europe/Lisbon', apply=True)
+    assert report['quotes'] == []
+    assert _stored('quotes', 'timestamp', 1) == moment - 60
+
+
 # The tool that drives the engine takes accounts by name, and a database may hold hundreds of them - a term deposit
 # is one account each. ALL (or ANY) is how they are all asked for without naming a single one, and a name that
 # matches nothing stops the run instead of quietly leaving that account behind.
@@ -763,5 +804,14 @@ def test_the_findings_are_exported_for_review(reclock_db, tmp_path):
                            "2021-07-01 10:30:00", "2021-07-01 10:30:00"]
     assert legs[1][6:9] == ["", "Moscow broker", "Lisbon bank"]
 
-    assert tool.export_reordered_legs(prefix, reclock('UTC', 'UTC')) == ''    # nothing found, nothing written
-    tool.print_report(report, {'reordered': prefix})   # ... and the report the user actually reads is printable
+    create_dividends([(_stamp(2021, 7, 1, 15), 1, 4, Decimal('10'), Decimal('1'), "Priced by the statement")])
+    create_quotes(4, 2, [(_stamp(2021, 7, 1, 15), 100)])
+    report = reclock('Europe/Moscow', 'Europe/Lisbon', accounts=[1])
+    quotes = _exported(tool.export_paired_quotes(prefix, report))
+    assert quotes[0] == ["payment", "account", "quote", "stored", "becomes", "result", "note"]
+    assert quotes[1][:2] == ["1", "Moscow broker"]
+    assert quotes[1][3:] == ["2021-07-01 15:00:00", "2021-07-01 13:00:00", "moved", "Priced by the statement"]
+
+    for export in (tool.export_reordered_legs, tool.export_paired_quotes):
+        assert export(prefix, reclock('UTC', 'UTC')) == ''                   # nothing found, nothing written
+    tool.print_report(report, {'reordered': prefix, 'quotes': prefix})   # ... and the report read is printable

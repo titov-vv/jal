@@ -15,9 +15,10 @@ out of whatever it selected, which is how a group is named when the group is "ev
 --from/--to are given in the SOURCE clock, i.e. the digits as they are stored and as the application
 shows them. Nothing is written without --apply: by default the run only reports what it would do.
 
-Two findings are written out as CSV beside the report, to be gone through row by row: the moments the
-run turns into days (dry run only - afterwards they cannot be told from a date) and the two-leg
-operations left with the arrival before the departure (every run).
+Three findings are written out as CSV beside the report, to be gone through row by row: the moments the
+run turns into days (dry run only - afterwards they cannot be told from a date), the two-leg operations
+left with the arrival before the departure, and the quotes that were written for a payment and travel
+with it (both on every run).
 
 Run it on a copy first; the database must already be at the schema version this code expects.
 """
@@ -116,6 +117,16 @@ def export_reordered_legs(prefix: str, report: dict) -> str:
                       "already_reordered", "departure_account", "arrival_account", "note"], rows)
 
 
+# The prices written for a payment the run moves, which move with it. Written on every run: a blocked one is a
+# payment left without its own price, and that outlives the run the same way an out-of-order pair does.
+def export_paired_quotes(prefix: str, report: dict) -> str:
+    rows = [[item['oid'], item['account'], item['quote_id'], timestamp_text(item['stored']),
+             timestamp_text(item['becomes']), 'left behind' if item['blocked'] else 'moved', item['note']]
+            for item in report['quotes']]
+    return write_csv(f"{prefix}_paired_quotes.csv",
+                     ["payment", "account", "quote", "stored", "becomes", "result", "note"], rows)
+
+
 def _total(report: dict, figure: str) -> int:
     return sum(len(x[figure]) if isinstance(x[figure], list) else x[figure] for x in report['columns'])
 
@@ -153,6 +164,14 @@ def print_report(report: dict, exports: dict) -> None:
               (f"Listed in {exports['made_markers']} - go\nthrough them before applying anything, "
                "afterwards they are indistinguishable from a real date."
                if exports.get('made_markers') else "A dry run lists them one by one."))
+    if report['quotes']:
+        blocked = [x for x in report['quotes'] if x['blocked']]
+        print(f"\n{len(report['quotes']) - len(blocked)} price(s) written for a payment move with it - stamped on "
+              f"the payment's own\nmoment, that is what values a stock dividend or a vesting, and no download "
+              f"brings one back." + (f" Listed in {exports['quotes']}." if exports.get('quotes') else ""))
+        for item in blocked:
+            print(f"  LEFT BEHIND: quote #{item['quote_id']} of payment #{item['oid']} on {item['account']} - "
+                  f"{timestamp_text(item['becomes'])} already holds a price of that asset")
     if report['reordered']:
         already = len([x for x in report['reordered'] if x['already']])
         print(f"\n{len(report['reordered'])} operation(s) are left with their legs out of order, the arrival before\n"
@@ -162,10 +181,14 @@ def print_report(report: dict, exports: dict) -> None:
             print(f"  {item['table']} #{item['oid']}{' (already)' if item['already'] else ''}: "
                   f"{timestamp_text(item['before'][0])} -> {timestamp_text(item['before'][1])}   becomes   "
                   f"{timestamp_text(item['after'][0])} -> {timestamp_text(item['after'][1])}")
+    quotes = len([x for x in report['quotes'] if not x['blocked']])
+    beside = f" and {quotes} paired price(s)" if quotes else ""
     if report['applied']:
-        print(f"\n{report['changed']} timestamp(s) WRITTEN. Start the application to let it rebuild the ledger.")
+        print(f"\n{report['changed']} timestamp(s){beside} WRITTEN. "
+              f"Start the application to let it rebuild the ledger.")
     else:
-        print(f"\nNothing was written - this was a dry run. Add --apply to move these {report['changed']} timestamp(s).")
+        print(f"\nNothing was written - this was a dry run. Add --apply to move these "
+              f"{report['changed']} timestamp(s){beside}.")
 
 
 def main() -> None:
@@ -188,7 +211,8 @@ def main() -> None:
     parser.add_argument("--markers", action="append", choices=sorted(MARKER_SETS), default=None,
                         help="the source whose end-of-day stamps state a day rather than a time of day")
     parser.add_argument("--csv", metavar="PREFIX", default="reclock",
-                        help="where the findings are written: PREFIX_day_markers.csv, PREFIX_reordered_legs.csv")
+                        help="where the findings are written: PREFIX_day_markers.csv, PREFIX_reordered_legs.csv, "
+                             "PREFIX_paired_quotes.csv")
     parser.add_argument("--apply", action="store_true", help="write the changes instead of only reporting them")
     args = parser.parse_args()
 
@@ -210,8 +234,8 @@ def main() -> None:
         sys.exit(f"{failure} - a clock is named the way the IANA database names it, i.e. 'Europe/Lisbon'")
     # The markers a run makes are exported by the dry run only: it is the run that still has both readings to show,
     # and the applied one has already made them. The legs left out of order are exported by both, because there the
-    # question - is this pair right? - outlives the run that raised it.
-    exports = {'reordered': export_reordered_legs(args.csv, report)}
+    # question - is this pair right? - outlives the run that raised it, and so does a price left behind.
+    exports = {'reordered': export_reordered_legs(args.csv, report), 'quotes': export_paired_quotes(args.csv, report)}
     if not args.apply:
         exports['made_markers'] = export_made_markers(args.csv, report)
     print_report(report, exports)
