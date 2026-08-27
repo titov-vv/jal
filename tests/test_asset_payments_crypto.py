@@ -1,3 +1,4 @@
+import logging
 from decimal import Decimal
 
 import pytest
@@ -91,6 +92,29 @@ def test_dust_attack_opens_lot_at_zero_without_a_quote(wallet):
     assert _amount() == Decimal('0.000001')       # the dust still increases the position...
     assert _open_lots() == Decimal('0.000001')     # ... as an open lot, opened at a zero basis
     assert AssetPayment(1).price() == Decimal('0')
+
+
+def test_unquoted_dust_is_valued_at_zero_and_reported_as_no_miss(wallet, caplog):
+    # A report asks every operation what it is worth, and dust is the one payment whose missing quote reports
+    # nothing: the coins were unsolicited and a token nobody trades will never have a quote, so zero is the answer
+    # and not a failure to find one - the same thing price() states for the very same operation. Logged as an error
+    # it is a line per report run about something the user can do nothing about.
+    JalAccount(WALLET).set_data(AccountData.Precision, 6)
+    _payment(AssetPayment.DustAttack, d2t(210202), '0.000001')
+
+    with caplog.at_level(logging.ERROR):
+        assert AssetPayment(1).amount(currency_id=2) == Decimal('0')
+    assert caplog.records == []
+
+
+def test_an_unquoted_gas_fee_is_still_reported(wallet, caplog):
+    # ... while the same miss on any other asset-denominated payment IS worth saying: those coins are the chain's
+    # own, they are quoted everywhere, and a value of zero there means the books understate what was spent
+    _payment(AssetPayment.GasFee, d2t(210202), '10')
+
+    with caplog.at_level(logging.ERROR):
+        assert AssetPayment(1).amount(currency_id=2) == Decimal('0')
+    assert len(caplog.records) == 1
 
 
 def test_dust_attack_uses_quote_when_one_exists(wallet):

@@ -713,7 +713,10 @@ class AssetPayment(LedgerTransaction):
             # A crypto quote is daily, so it never falls on the exact block timestamp the way an exchange quote
             # does for a stock dividend - the last known price is the best available and is not an error.
             timestamp, price = self._asset.quote(self._timestamp, self._account.currency())
-            if not timestamp:
+            if not timestamp and self._subtype != AssetPayment.DustAttack:
+                # Dust is the one of these with nothing to report: the coins arrived unsolicited and a token
+                # nobody trades has no quote to be found anywhere, so zero is the right value and not a miss -
+                # exactly what price() states for the same operation.
                 logging.error(self.tr("No price data to value an asset-denominated payment: ") + f"{self.dump()}")
             amount = self._amount * price
         else:
