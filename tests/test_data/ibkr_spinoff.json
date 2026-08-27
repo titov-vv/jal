@@ -62,6 +62,7 @@
    "type": "spin-off",
    "account": 1,
    "timestamp": 1637353500,
+   "timestamp_day_only": true,
    "number": "10302900848",
    "symbol": 2,
    "quantity": 100,

@@ -69,7 +69,7 @@ class ReportOperationsModel(QAbstractTableModel):
 
     def data_text(self, operation, column, odata):
         if column == 0:
-            return ts2dt(operation.timestamp())
+            return ts2dt(operation.timestamp(), operation.timestamp_is_day())
         elif column == 1:
             return operation.account_name()
         elif column == 2:

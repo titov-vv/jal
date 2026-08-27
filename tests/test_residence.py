@@ -14,7 +14,7 @@ from jal.widgets.delegates import TimezoneDelegate
 # Where the residence migration starts and ends inside the delta. It is run from the shipped file rather than
 # copied here, so this test breaks if the migration text stops doing what it says.
 _MIGRATION_FROM = "-- RESIDENCE REPLACES BASE CURRENCY"
-_MIGRATION_TO = "-- Set new DB schema version"
+_MIGRATION_TO = "-- A TIMESTAMP THAT STATES A DAY SAYS SO ITSELF"   # the next section of the same delta
 
 # The retired table, as it looked in schema version 64.
 _OLD_SCHEMA = """

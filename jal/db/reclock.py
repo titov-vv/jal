@@ -61,6 +61,10 @@ RECLOCKED_COLUMNS = (
     ("accounts", "reconciled_on", "o.id", "''"),
 )
 
+# The timestamps that say for themselves whether they state a day, in a column named after them.
+FLAGGED_COLUMNS = (("asset_payments", "timestamp"), ("asset_actions", "timestamp"))
+
+
 # The operations that hold two moments, as (table, earlier leg, later leg). Moving one leg and not the other can put
 # the arrival before the departure - legitimate enough when the two ends were read on clocks hours apart, but it has
 # to be seen rather than discovered later by the ledger. Pairs that are already stored in that order are reported
@@ -161,11 +165,12 @@ def reclock(from_clock: str, to_clock: str, accounts: list = None, excluded: lis
         column_report = {'table': table, 'column': column, 'selected': 0, 'markers': 0, 'changed': 0,
                          'days': 0, 'years': 0, 'made_markers': [], 'ambiguous': [], 'nonexistent': []}
         column_changes = {}
-        query = JalDB._exec(f"SELECT o.oid, o.{column} FROM {table} AS o WHERE {condition}", parameters)
+        stated = f"o.{column}_day_only" if (table, column) in FLAGGED_COLUMNS else "0"
+        query = JalDB._exec(f"SELECT o.oid, o.{column}, {stated} FROM {table} AS o WHERE {condition}", parameters)
         while query.next():
-            oid, timestamp = JalDB._read_record(query, cast=[int, int])
+            oid, timestamp, day_only = JalDB._read_record(query, cast=[int, int, bool])
             column_report['selected'] += 1
-            if is_day_marker(timestamp, source_markers):
+            if day_only or is_day_marker(timestamp, source_markers):
                 column_report['markers'] += 1
                 continue
             anomaly = clock_anomaly(timestamp, from_clock)

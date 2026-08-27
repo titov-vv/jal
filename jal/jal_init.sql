@@ -150,6 +150,7 @@ CREATE TABLE asset_payments (
     oid        INTEGER PRIMARY KEY UNIQUE NOT NULL,   -- Unique operation id
     otype      INTEGER NOT NULL DEFAULT (2),          -- Operation type (2 = asset payment)
     timestamp  INTEGER NOT NULL,                      -- Timestamp when payment really happened
+    timestamp_day_only INTEGER NOT NULL DEFAULT (0),  -- 1 when the source stated the DAY this payment belongs to and no time within it. 'timestamp' keeps the digits the source wrote
     ex_date    INTEGER NOT NULL DEFAULT (0),          -- Timestamp (date) of ex-date for dividends
     number     TEXT    NOT NULL DEFAULT (''),         -- Number of the operation in broker/exchange systems
     type       INTEGER NOT NULL,                      -- Sub-type of operation (see AssetPayment class)
@@ -375,6 +376,7 @@ CREATE TABLE asset_actions (
     oid        INTEGER     PRIMARY KEY UNIQUE NOT NULL,          -- Unique operation id
     otype      INTEGER     NOT NULL DEFAULT (5),                 -- Operation type (5 = corporate action)
     timestamp  INTEGER     NOT NULL,                             -- Timestamp when action happened
+    timestamp_day_only INTEGER NOT NULL DEFAULT (0),             -- 1 when 'timestamp' states the DAY the action took effect and no time within it
     number     TEXT        DEFAULT (''),                         -- Number of operation in broker/exchange systems
     account_id INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,      -- where the operation is accounted
     type       INTEGER     NOT NULL,                             -- Type of corporate action (see CorporateAction class)

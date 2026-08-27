@@ -52,8 +52,10 @@ class TaxReport:
     # decides which year an operation belongs to. An exchange rate is deliberately not asked for on this clock: the
     # amounts it explains are converted in the ledger, on the stored moment, and a rate taken from a different day
     # would stop being the one those amounts were made of.
-    def _moment(self, timestamp: int) -> int:
-        if is_day_marker(timestamp):
+    # 'day_only' is what the operation itself says about its timestamp (see LedgerTransaction.timestamp_is_day); the
+    # marker check answers for a value that carries no such answer beside it.
+    def _moment(self, timestamp: int, day_only: bool = False) -> int:
+        if day_only or is_day_marker(timestamp):
             return self._date(timestamp)   # a reading that states a day carries no time of day to re-read
         return wall_clock_reading(timestamp, self.report_timezone)
 

@@ -114,15 +114,34 @@ class TimestampDelegate(GridLinesDelegate):
         self._parent = parent
         self._date_only = date_only
 
-    def displayText(self, value, locale):
+    def displayText(self, value, locale, day_only: bool = False):
         if isinstance(value, str):  # int value comes here in form of string in case of SQL aggregate function results
             try:
                 value = int(value)
             except ValueError:
                 return self.tr("<invalid>")
-        text_format = DateFormat.date() if self._date_only else DateFormat.datetime()
-        text = local_time(value).strftime(text_format) if value else ''
+        text_format = DateFormat.date() if self._date_only or day_only else DateFormat.datetime()
+        text = local_time(value, day_only).strftime(text_format) if value else ''
         return text
+
+    # displayText() is handed the value alone, so a row that says its timestamp states a day is answered here, where
+    # the row is still in reach.
+    def initStyleOption(self, option, index):
+        super().initStyleOption(option, index)
+        if self._states_day(index):
+            option.text = self.displayText(index.data(Qt.EditRole), option.locale, day_only=True)
+
+    # Whether the row itself says its timestamp states a DAY rather than a moment. An operation that can hold the
+    # answer keeps it beside the timestamp, in a column named after it (see jal_init.sql); a row with no such column
+    # says nothing and the value is left to answer for itself (see is_day_marker).
+    @staticmethod
+    def _states_day(index) -> bool:
+        model = index.model()
+        if not hasattr(model, 'record'):
+            return False
+        flag = model.record().fieldName(index.column()) + '_day_only'
+        record = model.record(index.row())
+        return bool(record.value(flag)) if record.indexOf(flag) >= 0 else False
 
     def createEditor(self, aParent, option, index):
         editor = DateTimeEditWithReset(aParent)
@@ -137,15 +156,17 @@ class TimestampDelegate(GridLinesDelegate):
         if timestamp is None or timestamp == '':   # None is an SQL NULL - an optional date that isn't known yet
             QStyledItemDelegate.setEditorData(self, editor, index)
         else:
-            editor.setTimeZone(local_zone(timestamp))
-            editor.setDateTime(local_datetime(timestamp))
+            day_only = self._states_day(index)
+            editor.setTimeZone(local_zone(timestamp, day_only))
+            editor.setDateTime(local_datetime(timestamp, day_only))
 
     def setModelData(self, editor, model, index):
         timestamp = editor.dateTime().toSecsSinceEpoch()
         # A value that states a day is edited on no clock at all (see local_zone), so a time of day typed into one
-        # would be stored as if it were Greenwich. It stops being a day the moment it is given one, and what is left
-        # in the editor is then the user's own reading of a moment.
-        if editor.timeZone() == QTimeZone(QTimeZone.UTC) and not is_day_marker(timestamp):
+        # would be stored as if it were Greenwich. A value that says so for itself keeps saying it - what is edited
+        # there is which day it is - while one that only spelled it in the value stops being a day the moment it is
+        # given a time, and what is left in the editor is then the user's own reading of a moment.
+        if editor.timeZone() == QTimeZone(QTimeZone.UTC) and not self._states_day(index) and not is_day_marker(timestamp):
             timestamp = window_bound(timestamp)
         model.setData(index, timestamp)
 

@@ -80,6 +80,7 @@
    "type": "split",
    "account": 1,
    "timestamp": 1695932700,
+   "timestamp_day_only": true,
    "number": "25164201871",
    "symbol": 3,
    "quantity": 35.0,

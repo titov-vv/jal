@@ -22,9 +22,11 @@ from jal.db.residence import JalResidence
 # bounds a tax report counts in.
 #
 # Two rules everything passing through here obeys:
-#   - a DAY MARKER is never re-read (see is_day_marker). It states a day and holds no time of day to convert, so it
-#     reads the same on every clock - which is what makes the dates of 22 years read after the move to instants
-#     exactly as they read before it;
+#   - a value that states a DAY is never re-read. It holds no time of day to convert, so it reads the same on every
+#     clock - which is what makes the dates of 22 years read after the move to instants exactly as they read before
+#     it. Two things say a value is a day, and either is enough: the operation itself, which is how a source's own
+#     end-of-day stamp survives being stored (see LedgerTransaction.timestamp_is_day), and failing that the value,
+#     midnight being the day a source gave without a time (see is_day_marker);
 #   - while the timeline states no zone, the reading IS the stored value. A database whose owner never said where
 #     they lived behaves as it always did, and nothing in it appears to move.
 # ----------------------------------------------------------------------------------------------------------------------
@@ -69,22 +71,24 @@ def stored_reading(reading: int, zone: str) -> int:
 # ----------------------------------------------------------------------------------------------------------------------
 # The reader - a stored instant as the user's own clock showed it, in the three shapes the application asks for: a
 # Python datetime to format, a Qt datetime to hand an editor, and the bare digits to compare or to print.
-def local_time(timestamp: int) -> datetime:
-    return datetime.fromtimestamp(timestamp, tz=_zone(_reading_zone(timestamp)))
+def local_time(timestamp: int, day_only: bool = False) -> datetime:
+    return datetime.fromtimestamp(timestamp, tz=_zone(_reading_zone(timestamp, day_only)))
 
 
-def local_reading(timestamp: int) -> int:
-    return int(local_time(timestamp).replace(tzinfo=timezone.utc).timestamp())
+def local_reading(timestamp: int, day_only: bool = False) -> int:
+    return int(local_time(timestamp, day_only).replace(tzinfo=timezone.utc).timestamp())
 
 
-def local_datetime(timestamp: int) -> QDateTime:
-    return QDateTime.fromSecsSinceEpoch(timestamp, local_zone(timestamp))
+def local_datetime(timestamp: int, day_only: bool = False) -> QDateTime:
+    return QDateTime.fromSecsSinceEpoch(timestamp, local_zone(timestamp, day_only))
 
 
 # The instant a reading of the user's own clock names - the writer to the reader above, and its exact inverse: a day
 # marker states a day, a day is the same day on every clock, and neither of them moves one.
-def local_moment(reading: int) -> int:
-    return reading if is_day_marker(reading) else stored_reading(reading, user_zone(reading))
+def local_moment(reading: int, day_only: bool = False) -> int:
+    if day_only or is_day_marker(reading):
+        return reading
+    return stored_reading(reading, user_zone(reading))
 
 
 # The instant at which the user's own clock reached these digits, for a BOUND the user stated rather than a value
@@ -98,8 +102,8 @@ def window_bound(reading: int) -> int:
 # The zone a QDateTime or a QDateTimeEdit holding this instant is kept on. Qt converts in both directions once it is
 # set, so an editor given this zone renders the user's own reading and returns the instant the digits left in it
 # stand for - which is why this module has no separate writer for editors.
-def local_zone(timestamp: int = None) -> QTimeZone:
-    return _qt_zone(_reading_zone(timestamp) if timestamp is not None else user_zone())
+def local_zone(timestamp: int = None, day_only: bool = False) -> QTimeZone:
+    return _qt_zone(_reading_zone(timestamp, day_only) if timestamp is not None else user_zone())
 
 
 # 'Now' as an editor has to be pre-filled with it, or an operation entered without touching the date field is dated
@@ -134,10 +138,11 @@ def _qt_zone(name: str) -> QTimeZone:
     return QTimeZone(name.encode()) if name else QTimeZone(QTimeZone.UTC)
 
 
-# The zone a stored instant is read on: the user's own, except that a day marker is read on none - see the rules at
-# the top of this module.
-def _reading_zone(timestamp: int) -> str:
-    return '' if is_day_marker(timestamp) else user_zone(timestamp)
+# The zone a stored instant is read on: the user's own, except that a value stating a day is read on none - see the
+# rules at the top of this module. 'day_only' is what the operation itself says; the marker check answers for
+# everything that holds no such answer.
+def _reading_zone(timestamp: int, day_only: bool = False) -> str:
+    return '' if day_only or is_day_marker(timestamp) else user_zone(timestamp)
 
 
 # The timeline is asked about a day by the middle of it, which is inside that day whatever the offset - and a day is

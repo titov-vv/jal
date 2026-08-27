@@ -255,10 +255,13 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     # it was written, because converting it could only move it to another day - and the day is what a payment is
     # taxed in, what a re-import recognises as already stored, and what a tax correction finds its dividend by.
     def _moment(self, moment: datetime) -> int:
-        reading = int(moment.replace(tzinfo=timezone.utc).timestamp())
-        if is_day_marker(reading, self.source_day_markers):
-            return reading
+        if self._states_day(moment):
+            return int(moment.replace(tzinfo=timezone.utc).timestamp())
         return wall_clock_timestamp(moment, self.source_timezone)
+
+    # Whether a reading this source wrote names a day rather than a moment in it.
+    def _states_day(self, moment: datetime) -> bool:
+        return is_day_marker(int(moment.replace(tzinfo=timezone.utc).timestamp()), self.source_day_markers)
 
     # A calendar date this source reported - a settlement day, an ex-date, the bounds of the reporting period. Unlike
     # a moment it carries no time of day to convert, and shifting it can only turn it into a different date, so it is

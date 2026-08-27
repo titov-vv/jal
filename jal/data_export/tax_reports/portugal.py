@@ -31,7 +31,7 @@ class TaxesPortugal(TaxReport):
                 note = "Stock vesting"
             line = {
                 'report_template': "dividend",
-                'payment_date': self._moment(dividend.timestamp()),
+                'payment_date': self._moment(dividend.timestamp(), dividend.timestamp_is_day()),
                 'symbol': dividend.asset().symbol(self.account_currency.id()),
                 'full_name': dividend.asset().name(),
                 'isin': dividend.asset().symbol_id(SymbolId.ISIN),
@@ -76,7 +76,7 @@ class TaxesPortugal(TaxReport):
                 'qty': trade.qty(),
                 'o_type': "Aquisição" if trade.qty() >= Decimal('0') else "Venda",
                 'o_number': trade.open_operation().number(),
-                'o_date': self._moment(trade.open_operation().timestamp()),
+                'o_date': self._moment(trade.open_operation().timestamp(), trade.open_operation().timestamp_is_day()),
                 'o_rate': self.account_currency.quote(trade.close_operation().timestamp() if self.one_currency_rate else trade.open_operation().timestamp(), self._currency_id)[1],
                 'o_price': trade.open_price(),
                 'o_fee': trade.open_fee(),
@@ -85,7 +85,7 @@ class TaxesPortugal(TaxReport):
                 'o_amount_eur': round(trade.open_amount(self._currency_id, rate_ts=rate_ts, no_settlement=True), 2),
                 'c_type': "Venda" if trade.qty() >= Decimal('0') else "Aquisição",
                 'c_number': trade.close_operation().number(),
-                'c_date': self._moment(trade.close_operation().timestamp()),
+                'c_date': self._moment(trade.close_operation().timestamp(), trade.close_operation().timestamp_is_day()),
                 'c_rate': self.account_currency.quote(trade.close_operation().timestamp(), self._currency_id)[1],
                 'c_price': trade.close_operation().price(),
                 'c_fee': trade.close_fee(),
@@ -112,7 +112,7 @@ class TaxesPortugal(TaxReport):
                 amount = Decimal(interest['amount'])
                 line = {
                     'report_template': "interest",
-                    'payment_date': self._moment(operation.timestamp()),
+                    'payment_date': self._moment(operation.timestamp(), operation.timestamp_is_day()),
                     'rate': rate,
                     'amount': amount,
                     'amount_eur': round(amount * rate, 2),
@@ -121,12 +121,12 @@ class TaxesPortugal(TaxReport):
                 interests_report.append(line)
         # Process cash payments out of corporate actions
         payments = CorporateAction.get_payments(self.account)
-        payments = [x for x in payments if self.year_begin <= self._moment(x['timestamp']) < self.year_end]
+        payments = [x for x in payments if self.year_begin <= self._moment(x['timestamp'], x['day_only']) < self.year_end]
         for payment in payments:
             rate = self.account_currency.quote(payment['timestamp'], self._currency_id)[1]
             line = {
                 'report_template': "interest",
-                'payment_date': self._moment(payment['timestamp']),
+                'payment_date': self._moment(payment['timestamp'], payment['day_only']),
                 'rate': rate,
                 'amount': payment['amount'],
                 'amount_eur': round(payment['amount'] * rate, 2),

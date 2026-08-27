@@ -3,6 +3,7 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 import csv
 import importlib
+import sqlparse
 import importlib.util
 import pathlib
 import xml.etree.ElementTree as ET
@@ -11,10 +12,13 @@ from zoneinfo import ZoneInfo
 from decimal import Decimal
 
 import pytest
-from PySide6.QtCore import QDate, QDateTime, QTimeZone
+from PySide6.QtCore import Qt, QDate, QDateTime, QTimeZone
+from PySide6.QtSql import QSqlTableModel
 from PySide6.QtWidgets import QWidget
 
 from constants import PredefinedAsset, PredefinedCategory
+from jal.data_import.statement import JSF
+from jal.db.operations import AssetPayment, CorporateAction, LedgerTransaction
 from jal.data_export.tax_reports.portugal import TaxesPortugal
 from jal.data_export.tax_reports.russia import TaxesRussia
 from jal.data_export.taxes_flow import TaxesFlowRus
@@ -23,6 +27,7 @@ from jal.db.asset import JalAsset
 from jal.db.db import JalDB
 from jal.db.reclock import RECLOCKED_COLUMNS, reclock
 from jal.db.residence import JalResidence
+from jal.widgets.delegates import DateTimeEditWithReset, TimestampDelegate
 from lxml import etree
 
 from jal.data_import.broker_statements.ibkr import IBKR_DAY_MARKERS, StatementIBKR
@@ -34,7 +39,14 @@ from jal.db.ledger import Ledger
 from jal.widgets.helpers import ts2axis, axis2ts, ts2d, ts2dt
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from tests.helpers import (create_assets, create_actions, create_dividends, create_quotes, create_trades, create_transfers,
-                          d2t, pinned_tz)
+                          create_corporate_actions, d2t, pinned_tz, symbol_id_for)
+
+
+# Where the day-only seeding starts and ends inside jal_delta_65.sql. Run from the shipped file rather than copied
+# here, so this test breaks if the migration text stops doing what it says.
+_DAY_ONLY_SECTION = "-- A TIMESTAMP THAT STATES A DAY SAYS SO ITSELF"
+_DAY_ONLY_SEED = "-- Every corporate action is effective on a date"
+_DAY_ONLY_SEED_END = "-- Set new DB schema version"
 
 
 # The offset is handed out so a test can state the shift it expects in terms of it instead of repeating the number.
@@ -451,6 +463,201 @@ def test_a_payment_entered_at_the_middle_of_its_day_is_a_moment_like_any_other(p
     assert report._moment(noon + 60) == noon + 60 + 3 * 3600       # a minute later moves by exactly as much
     assert _reading_day(report._moment(noon)) == '2025-06-10'      # ... and neither leaves the day it was entered on
     assert [x.timestamp() for x in _report_for(report, 2025).dividends_list()] == [noon]   # ... nor its year
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# A payment whose source stated the day it belongs to says so itself, and is then read on no clock at all. The value
+# is still the digits IBKR wrote - an end-of-day stamp, not midnight - so nothing but the flag could say it is a day,
+# and eight hours east of Greenwich the difference is the difference between two dates.
+def test_a_payment_that_states_its_day_is_read_on_no_clock(prepare_db_taxes):
+    create_assets([('GE', 'General Electric Company', 'US3696043013', 2, PredefinedAsset.Stock, 'us')])   # id 4
+    stamped = d2t(241227) + 20 * 3600 + 20 * 60            # the accounting day IBKR stamps, as it is stored
+    LedgerTransaction.create_new(LedgerTransaction.AssetPayment,
+                                 {'timestamp': stamped, 'timestamp_day_only': True,
+                                  'type': AssetPayment.Dividend, 'account_id': 1, 'symbol_id': symbol_id_for(4),
+                                  'amount': Decimal('10'), 'tax': Decimal('1'), 'note': "Stamped with its day"})
+    payment = LedgerTransaction.get_operation(LedgerTransaction.AssetPayment, 1)
+    _resident_in('Asia/Tokyo')                             # far enough east to push 20:20 into the next day
+
+    assert payment.timestamp() == stamped                  # the digits the source wrote, and nothing else
+    assert payment.timestamp_is_day()
+    assert ts2d(payment.timestamp(), payment.timestamp_is_day()) == ts2d(d2t(241227))
+    assert ts2dt(payment.timestamp(), payment.timestamp_is_day()) == ts2d(d2t(241227))   # no time of day to show
+    assert ts2d(payment.timestamp()) != ts2d(d2t(241227))  # ... which is exactly what the value alone cannot say
+
+
+# ... and a report filed anywhere leaves it on that day too, without being told where the row came from. Read as a
+# moment it would move by the offset of the jurisdiction instead, which on the last day of a tax year is the
+# difference between two years - Moscow is only three hours ahead and an end-of-day stamp survives that much, but
+# nothing about the stamp says so and no further jurisdiction has to be added for it to stop being true.
+def test_a_tax_report_does_not_re_read_a_payment_that_states_its_day(prepare_db_taxes):
+    create_assets([('GE', 'General Electric Company', 'US3696043013', 2, PredefinedAsset.Stock, 'us')])   # id 4
+    stamped = d2t(241231) + 20 * 3600 + 20 * 60            # the last day of a tax year
+    LedgerTransaction.create_new(LedgerTransaction.AssetPayment,
+                                 {'timestamp': stamped, 'timestamp_day_only': True,
+                                  'type': AssetPayment.Dividend, 'account_id': 1, 'symbol_id': symbol_id_for(4),
+                                  'amount': Decimal('10'), 'tax': Decimal('1'), 'note': "Stamped with its day"})
+    payment = LedgerTransaction.get_operation(LedgerTransaction.AssetPayment, 1)
+    _resident_in('Asia/Tokyo')
+    report = TaxesRussia()
+
+    assert report._moment(payment.timestamp(), payment.timestamp_is_day()) == stamped
+    assert _reading_day(report._moment(payment.timestamp(), payment.timestamp_is_day())) == '2024-12-31'
+    assert report._moment(payment.timestamp()) == stamped + 3 * 3600   # what it would be re-read as otherwise
+
+
+# The re-clocking tool asks the row instead of being told which broker wrote it. Everything it needed 'source_markers'
+# for on a payment is now stored beside the payment, and a run that names no markers at all still leaves it alone.
+def test_reclock_leaves_a_payment_that_states_its_day_where_it_is(prepare_db_taxes):
+    create_assets([('GE', 'General Electric Company', 'US3696043013', 2, PredefinedAsset.Stock, 'us')])   # id 4
+    stamped = d2t(241227) + 20 * 3600 + 20 * 60
+    for day_only, note in ((True, "Stamped with its day"), (False, "An evening of its own")):
+        LedgerTransaction.create_new(LedgerTransaction.AssetPayment,
+                                     {'timestamp': stamped, 'timestamp_day_only': day_only,
+                                      'type': AssetPayment.Dividend, 'account_id': 1, 'symbol_id': symbol_id_for(4),
+                                      'amount': Decimal('10'), 'tax': Decimal('1'), 'note': note})
+
+    report = reclock('Europe/Moscow', 'Europe/Lisbon')     # no source_markers, and none needed
+    payments = [x for x in report['columns'] if x['table'] == 'asset_payments'][0]
+    assert payments['selected'] == 2 and payments['markers'] == 1 and payments['changed'] == 1
+
+
+# A source answers for its own readings, and it answers about the READING rather than about the timestamp that comes
+# out of it. The two differ: an IBKR afternoon in New York is stored at exactly one of the stamps IBKR puts on an
+# accounting day, and read back off the stored value it could no longer be told from a day.
+def test_a_source_says_of_its_reading_whether_it_states_a_day(prepare_db):
+    statement = StatementIBKR()
+    cash = etree.fromstring('<CashTransaction dateTime="20241227;202000" settleDate="20241227"/>')
+    assert statement.attr_day_only(cash, 'dateTime')            # an end-of-day stamp names the day
+    assert statement.attr_day_only(cash, 'settleDate')          # ... and a bare date says so by its form alone
+    assert not statement.attr_day_only(cash, 'reportDate')      # an attribute that isn't there names no day
+
+    morning = etree.fromstring('<Trade dateTime="20241227;093100"/>')
+    assert not statement.attr_day_only(morning, 'dateTime')
+    afternoon = etree.fromstring('<Trade dateTime="20241227;152500"/>')
+    assert not statement.attr_day_only(afternoon, 'dateTime')   # ... though it IS stored at the 20:25 stamp
+    assert statement.attr_timestamp(afternoon, 'dateTime', None) % (24 * 3600) in IBKR_DAY_MARKERS
+
+
+# A corporate action takes effect for a whole day, and the value cannot be trusted to say so: IBKR stamps one with
+# 19:45 as readily as with 20:25, and no list of stamps kept in code would ever be finished. The statement states it.
+def test_a_corporate_action_states_its_day_whatever_the_source_stamped_on_it(data_path, prepare_db):
+    statement = StatementIBKR()
+    statement.load(data_path + 'ibkr_bond.xml')
+    actions = statement._data[JSF.CORP_ACTIONS]
+
+    assert actions and all(x['timestamp_day_only'] for x in actions)
+    assert any(x['timestamp'] % (24 * 3600) not in IBKR_DAY_MARKERS for x in actions)   # ... 19:45, in this one
+
+
+# What the value used to spell is what the migration writes down, so a database upgraded into this schema reads
+# exactly as it did before - and the rows nothing but the source could have explained are marked at last.
+def test_the_migration_marks_the_days_the_value_used_to_spell(project_root, prepare_db_taxes):
+    create_assets([('GE', 'General Electric Company', 'US3696043013', 2, PredefinedAsset.Stock, 'us')])   # id 4
+    days = [d2t(241227), d2t(241227) + 20 * 3600 + 20 * 60, d2t(241227) + 20 * 3600 + 25 * 60]
+    moments = [d2t(241227) + 9 * 3600, d2t(241227) + 20 * 3600 + 21 * 60]
+    for i, timestamp in enumerate(days + moments):
+        LedgerTransaction.create_new(LedgerTransaction.AssetPayment,
+                                     {'timestamp': timestamp, 'type': AssetPayment.Dividend, 'account_id': 1,
+                                      'symbol_id': symbol_id_for(4), 'amount': Decimal('10'), 'tax': Decimal('1'),
+                                      'note': f"Payment {i}"})
+    create_corporate_actions(1, [(d2t(241227) + 19 * 3600 + 45 * 60, CorporateAction.Split, 4, Decimal('10'),
+                                  "Stamped with a time no marker list knows", [(4, Decimal('20'), Decimal('1'))])])
+    JalDB._exec("UPDATE asset_payments SET timestamp_day_only=0")   # as a database of the previous schema holds them
+    JalDB._exec("UPDATE asset_actions SET timestamp_day_only=0")
+
+    with open(project_root + "/jal/updates/jal_delta_65.sql") as delta:
+        text = delta.read()
+    for statement in sqlparse.split(text[text.index(_DAY_ONLY_SEED):text.index(_DAY_ONLY_SEED_END)]):
+        if sqlparse.format(statement, strip_comments=True).strip():
+            assert JalDB._exec(statement.strip()) is not None, f"Statement failed: {statement}"
+
+    flagged = []
+    query = JalDB._exec("SELECT timestamp, timestamp_day_only FROM asset_payments ORDER BY oid")
+    while query.next():
+        flagged.append(JalDB._read_record(query, cast=[int, bool]))
+    assert [x[0] for x in flagged if x[1]] == days                  # every day the value spelled, and none besides
+    assert [x[0] for x in flagged if not x[1]] == moments
+    assert JalDB._read("SELECT timestamp_day_only FROM asset_actions") == 1
+
+
+# The form the user opens shows the same day the list beside it shows. The editor is put on no clock for a value
+# that states a day, so the digits in it are the ones stored - and saving the form without touching the date must
+# leave those digits alone, which is what would go wrong if the editor's zone were read as Greenwich.
+def test_the_editor_of_a_payment_that_states_its_day_keeps_it(prepare_db_taxes, owner):
+    create_assets([('GE', 'General Electric Company', 'US3696043013', 2, PredefinedAsset.Stock, 'us')])   # id 4
+    stamped = d2t(241227) + 20 * 3600 + 20 * 60
+    LedgerTransaction.create_new(LedgerTransaction.AssetPayment,
+                                 {'timestamp': stamped, 'timestamp_day_only': True,
+                                  'type': AssetPayment.Dividend, 'account_id': 1, 'symbol_id': symbol_id_for(4),
+                                  'amount': Decimal('10'), 'tax': Decimal('1'), 'note': "Stamped with its day"})
+    _resident_in('Asia/Tokyo')
+    model = QSqlTableModel(parent=owner, db=JalDB.connection())
+    model.setTable('asset_payments')
+    model.select()
+    index = model.index(0, model.fieldIndex('timestamp'))
+    delegate = TimestampDelegate(parent=owner)
+    editor = DateTimeEditWithReset(owner)
+
+    delegate.setEditorData(editor, index)
+    assert editor.dateTime().toString('yyyy-MM-dd hh:mm:ss') == '2024-12-27 20:20:00'
+    delegate.setModelData(editor, model, index)
+    assert model.data(index, Qt.EditRole) == stamped        # saved untouched, and stored exactly as it was
+
+
+# The flag is put beside the timestamp it speaks about rather than appended, so the migration rebuilds both tables -
+# and a rebuild has to hand back the schema it was given. Everything the two tables carry with them is dropped on the
+# way through (nine triggers and a view), and a view of quite another table was lost here once by an editing slip
+# that nothing else would have caught.
+def test_the_migration_leaves_the_schema_it_found(project_root, prepare_db_taxes):
+    def objects():
+        found = {}
+        query = JalDB._exec("SELECT type, name, sql FROM sqlite_master WHERE type IN ('trigger', 'view', 'index')")
+        while query.next():
+            kind, name, sql = JalDB._read_record(query, cast=[str, str, str])
+            found[(kind, name)] = sql
+        return found
+
+    def columns(table):
+        found = []
+        query = JalDB._exec(f"PRAGMA table_info({table})")
+        while query.next():
+            found.append(JalDB._read_record(query)[1:])
+        return found
+
+    before = objects(), columns('asset_payments'), columns('asset_actions')
+    results = JalDB._read("SELECT COUNT(*) FROM asset_action_results")
+    with open(project_root + "/jal/updates/jal_delta_65.sql") as delta:
+        text = delta.read()
+    section = text[text.index(_DAY_ONLY_SECTION):text.index(_DAY_ONLY_SEED_END)]
+
+    # As the delta itself runs - foreign keys off, or dropping 'asset_actions' cascades over its results.
+    JalDB().enable_fk(False)
+    try:
+        for statement in sqlparse.split(section):
+            # Comments are stripped before execution, as JalDB.run_sql_script does - a ':' inside one (the delta
+            # spells out IBKR's 20:20) would otherwise be read as a query parameter.
+            clean = sqlparse.format(statement, strip_comments=True).strip()
+            if clean:
+                assert JalDB._exec(clean) is not None, f"Statement failed: {clean}"
+    finally:
+        JalDB().enable_fk(True)
+
+    assert (objects(), columns('asset_payments'), columns('asset_actions')) == before
+    assert JalDB._read("SELECT COUNT(*) FROM asset_action_results") == results
+
+
+# The rebuild above drops 'asset_actions', which 'asset_action_results' REFERENCES ON DELETE CASCADE - with foreign
+# keys ON that drop takes every result row with it, silently and inside the same transaction that looks like it
+# succeeded. The delta turns them off, and WHERE it says so is the whole point: the pragma is a no-op inside a
+# transaction, so stated among the statements it would do nothing at all. Every delta before this one states it
+# there; they survive only because the chain is applied with foreign keys already off.
+def test_the_migration_turns_foreign_keys_off_before_it_opens_a_transaction(project_root):
+    with open(project_root + "/jal/updates/jal_delta_65.sql") as delta:
+        text = delta.read()
+    pragma = text.upper().index("PRAGMA FOREIGN_KEYS")
+    assert pragma < text.upper().index("BEGIN TRANSACTION")
+    assert "OFF" in text[pragma:text.index("\n", pragma)].upper()
 
 
 # The end-of-day stamps a broker puts on an accounting day are that broker's alone, so they are NOT part of the

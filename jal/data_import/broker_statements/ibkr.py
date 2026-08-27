@@ -245,6 +245,7 @@ class StatementIBKR(StatementXML):
                                             ('symbol', 'symbol', IBKR_Asset, 0),
                                             ('currency', 'currency', IBKR_Currency, None),
                                             ('dateTime', 'timestamp', datetime, None),
+                                            ('dateTime', 'timestamp_day_only', bool, False),
                                             ('reportDate', 'reported', datetime, None),
                                             ('amount', 'amount', float, None),
                                             ('tradeID', 'number', str, ''),
@@ -622,6 +623,10 @@ class StatementIBKR(StatementXML):
         logging.info(self.tr("Options E&A&E loaded: ") + f"{cnt} ({len(options)})")
 
     def load_corporate_actions(self, actions):
+        # A corporate action takes effect for a whole day
+        for action in actions:
+            action['timestamp_day_only'] = True
+
         action_loaders = {
             JSF.ACTION_MERGER: self.load_merger,
             JSF.ACTION_SPINOFF: self.load_spinoff,
@@ -894,7 +899,7 @@ class StatementIBKR(StatementXML):
         action['note'] = action['description']
         action['fee'] = 0.0
         self.drop_extra_fields(action, ["description", "value", "proceeds", "type", "code", "asset_type",
-                                        "jal_processed"])
+                                        "jal_processed", "timestamp_day_only"])
         self._data[JSF.TRADES].append(action)
         return 1
 

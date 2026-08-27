@@ -54,7 +54,7 @@ class AssetsPaymentsModel(QAbstractTableModel):
 
     def data_text(self, dividend, column):
         if column == 0:
-            return ts2dt(dividend.timestamp())
+            return ts2dt(dividend.timestamp(), dividend.timestamp_is_day())
         if column == 1:
             return dividend.asset().symbol()
         if column == 2:

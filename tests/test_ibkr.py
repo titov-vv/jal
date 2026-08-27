@@ -86,9 +86,9 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
 
     # validate dividend & tax
     test_dividends = [
-        [1, 2, 1592770800, 0, '', 1, 1, 6, '16.76', '1.68', 'XOM (US30231G1022) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)'],
-        [2, 2, 1596054000, 0, '', 1, 1, 9, '51.0', '5.1', 'TWO(US90187B4086) PAYMENT IN LIEU OF DIVIDEND (Ordinary Dividend)'],
-        [3, 2, 1588191600, 0, '', 1, 1, 10, '25.0', '2.5', 'NRZ(US64828T2015) CASH DIVIDEND USD 0.25 PER SHARE (Ordinary Dividend)']
+        [1, 2, 1592770800, 1, 0, '', 1, 1, 6, '16.76', '1.68', 'XOM (US30231G1022) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)'],
+        [2, 2, 1596054000, 1, 0, '', 1, 1, 9, '51.0', '5.1', 'TWO(US90187B4086) PAYMENT IN LIEU OF DIVIDEND (Ordinary Dividend)'],
+        [3, 2, 1588191600, 1, 0, '', 1, 1, 10, '25.0', '2.5', 'NRZ(US64828T2015) CASH DIVIDEND USD 0.25 PER SHARE (Ordinary Dividend)']
     ]
     payments = JalAccount(1).dump_asset_payments()
     assert len(payments) == len(test_dividends)
@@ -195,10 +195,10 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
 
     # validate dividend & tax
     test_dividends = [
-        [1, 2, 1592770800, 0, '', 1, 1, 6, '16.76', '0.21', 'XOM (US30231G1022) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)'],
-        [2, 2, 1596054000, 0, '', 1, 1, 9, '51.0', '0.01', 'TWO(US90187B4086) PAYMENT IN LIEU OF DIVIDEND (Ordinary Dividend)'],
-        [3, 2, 1588191600, 0, '', 1, 1, 10, '25.0', '1.04', 'NRZ(US64828T2015) CASH DIVIDEND USD 0.25 PER SHARE (Ordinary Dividend)'],
-        [4, 2, 1659484800, 0, '', 4, 1, 11, '0.3052', '0', 'Stock Award Vesting']
+        [1, 2, 1592770800, 1, 0, '', 1, 1, 6, '16.76', '0.21', 'XOM (US30231G1022) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)'],
+        [2, 2, 1596054000, 1, 0, '', 1, 1, 9, '51.0', '0.01', 'TWO(US90187B4086) PAYMENT IN LIEU OF DIVIDEND (Ordinary Dividend)'],
+        [3, 2, 1588191600, 1, 0, '', 1, 1, 10, '25.0', '1.04', 'NRZ(US64828T2015) CASH DIVIDEND USD 0.25 PER SHARE (Ordinary Dividend)'],
+        [4, 2, 1659484800, 0, 0, '', 4, 1, 11, '0.3052', '0', 'Stock Award Vesting']
     ]
     payments = JalAccount(1).dump_asset_payments()
     assert len(payments) == len(test_dividends)
@@ -207,9 +207,9 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
 
     # validate corp actions
     test_asset_actions = [
-        [1, 5, 1588969500, '12693114547', 1, 4, 8, '150.0', 'ACB(CA05156X1087) SPLIT 1 FOR 12 (ACB, AURORA CANNABIS INC, CA05156X8843)',
+        [1, 5, 1588969500, 1, '12693114547', 1, 4, 8, '150.0', 'ACB(CA05156X1087) SPLIT 1 FOR 12 (ACB, AURORA CANNABIS INC, CA05156X8843)',
          [1, 1, 14, '12.5', '1.0']],
-        [2, 5, 1610569500, '14909999818', 1, 3, 4, '140.0', 'PEIX(US69423U3059) CUSIP/ISIN CHANGE TO (US0215131063) (PEIX, ALTO INGREDIENTS INC, US0215131063)',
+        [2, 5, 1610569500, 1, '14909999818', 1, 3, 4, '140.0', 'PEIX(US69423U3059) CUSIP/ISIN CHANGE TO (US0215131063) (PEIX, ALTO INGREDIENTS INC, US0215131063)',
          [2, 2, 21, '140.0', '1.0']]
     ]
     actions = JalAccount(1).dump_corporate_actions()

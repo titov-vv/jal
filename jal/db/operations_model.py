@@ -82,7 +82,7 @@ class OperationsModel(QAbstractTableModel):
 
     def data_text(self, operation: LedgerTransaction, column):
         if column == 0:
-            date_time = ts2dt(operation.timestamp())
+            date_time = ts2dt(operation.timestamp(), operation.timestamp_is_day())
             if operation.number() and operation.type() != LedgerTransaction.Transfer:  # Transfer is 1-liner
                 date_time += f"\n# {operation.number()}"
             return date_time

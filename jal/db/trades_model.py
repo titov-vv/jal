@@ -28,9 +28,9 @@ class TradeTreeItem(AbstractTreeItem):
             self._data = {
                 'symbol': self._trade.symbol(),
                 'open_ts': self._trade.open_operation().timestamp(),
-                'open_date': ts2d(self._trade.open_operation().timestamp()),
+                'open_date': ts2d(self._trade.open_operation().timestamp(), self._trade.open_operation().timestamp_is_day()),
                 'close_ts': self._trade.close_operation().timestamp(),
-                'close_date': ts2d(self._trade.close_operation().timestamp()),
+                'close_date': ts2d(self._trade.close_operation().timestamp(), self._trade.close_operation().timestamp_is_day()),
                 'open_price': self._trade.open_price(),
                 'close_price': self._trade.close_price(),
                 'qty': self._trade.qty(),

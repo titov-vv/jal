@@ -370,13 +370,17 @@ def refresh_date_formats():
 
 # -----------------------------------------------------------------------------------------------------------------------
 # converts given unix-timestamp into string that represents date and time, on the user's own clock (see jal/db/clock.py)
-def ts2dt(timestamp: int) -> str:
+# 'day_only' is an operation saying its timestamp states a day: there is then no time of day to show, and printing the
+# digits it happens to be stored with would show an hour that never happened.
+def ts2dt(timestamp: int, day_only: bool = False) -> str:
+    if day_only:
+        return ts2d(timestamp, day_only=True)
     return local_time(timestamp).strftime(DateFormat.datetime())
 
 # -----------------------------------------------------------------------------------------------------------------------
 # converts given unix-timestamp into string that represents date
-def ts2d(timestamp: int) -> str:
-    return local_time(timestamp).strftime(DateFormat.date())
+def ts2d(timestamp: int, day_only: bool = False) -> str:
+    return local_time(timestamp, day_only).strftime(DateFormat.date())
 
 # -----------------------------------------------------------------------------------------------------------------------
 # QDateTimeAxis renders every value it is given through the machine's local time and has no timezone of its own, while

@@ -21,7 +21,8 @@ class StatementXML(Statement):
         self.attr_loader = {
             str: self.attr_string,
             float: self.attr_number,
-            datetime: self.attr_timestamp
+            datetime: self.attr_timestamp,
+            bool: self.attr_day_only
         }
 
     def _init_data(self):
@@ -64,18 +65,36 @@ class StatementXML(Statement):
     # string carrying a time of day is a moment and is converted out of the source's zone, while a bare date is a
     # calendar day and is kept as it stands - see Statement._moment() and Statement._date().
     def attr_timestamp(self, xml_element, attr_name, default_value):
-        if attr_name not in xml_element.attrib:
+        parsed = self._attr_datetime(xml_element, attr_name)
+        if parsed is None:
             return default_value
+        value, is_date = parsed
+        return self._date(value) if is_date else self._moment(value)
+
+    # Whether the value of 'attr_name' states a DAY rather than a moment in it - a bare date says so by its form, and
+    # a full one by carrying this source's end-of-day stamp. Asked of the written form, for the reason _states_day()
+    # gives; an attribute that isn't there names no day.
+    def attr_day_only(self, xml_element, attr_name, default_value: bool = False) -> bool:
+        parsed = self._attr_datetime(xml_element, attr_name)
+        if parsed is None:
+            return default_value
+        value, is_date = parsed
+        return True if is_date else self._states_day(value)
+
+    # The written value as (datetime, whether it is a bare date), or None when the attribute is absent.
+    def _attr_datetime(self, xml_element, attr_name):
+        if attr_name not in xml_element.attrib:
+            return None
         time_str = xml_element.attrib[attr_name]
         try:
             if len(time_str) == 19:  # YYYY-MM-DDTHH:MM:SS
-                return self._moment(datetime.strptime(time_str, "%Y-%m-%dT%H:%M:%S"))
+                return datetime.strptime(time_str, "%Y-%m-%dT%H:%M:%S"), False
             if len(time_str) == 15:  # YYYYMMDD;HHMMSS
-                return self._moment(datetime.strptime(time_str, "%Y%m%d;%H%M%S"))
+                return datetime.strptime(time_str, "%Y%m%d;%H%M%S"), False
             elif len(time_str) == 8:  # YYYYMMDD
-                return self._date(datetime.strptime(time_str, "%Y%m%d"))
+                return datetime.strptime(time_str, "%Y%m%d"), True
             else:
-                return default_value
+                return None
         except ValueError:
             raise Statement_ImportError(QApplication.translate("StatementXML", "Unsupported date/time format: ")
                                         + f"{xml_element.attrib[attr_name]}")

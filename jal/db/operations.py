@@ -65,6 +65,7 @@ class LedgerTransaction(JalDB):
         self._view_rows = 1    # How many rows it will require operation in QTableView
         self._icon = JalIcon[JalIcon.NONE]
         self._timestamp = 0
+        self._timestamp_day_only = False
         self._account = None
         self._account_name = ''
         self._account_currency = ''
@@ -83,7 +84,7 @@ class LedgerTransaction(JalDB):
             # dump() is what builds the text of every LedgerError - it must never raise itself.
             if self._data[key] is None or self._data[key] == '':
                 continue
-            if 'timestamp' in key:
+            if key.endswith('timestamp'):   # ... and not a column that merely says something ABOUT one
                 self._data[key] = ts2dt(self._data[key])
             if 'account' in key:
                 self._data[key] = jal.db.account.JalAccount(self._data[key]).name()
@@ -287,6 +288,10 @@ class LedgerTransaction(JalDB):
 
     def timestamp(self):
         return self._timestamp
+
+    # True when the timestamp above states the DAY this operation belongs to and no time within it.
+    def timestamp_is_day(self) -> bool:
+        return self._timestamp_day_only
 
     def account(self):
         return self._account
@@ -520,6 +525,7 @@ class AssetPayment(LedgerTransaction):
     _db_table = "asset_payments"
     _db_fields = {
         "timestamp": {"mandatory": True, "validation": True},
+        "timestamp_day_only": {"mandatory": False, "validation": False},
         "ex_date": {"mandatory": False, "validation": False},
         # Payments stored before 2026 have an empty one, so the re-import check treats an empty stored value as the same payment rather than as a different one.
         "number": {"mandatory": False, "validation": True, "default": '', "matches_empty": True},
@@ -569,7 +575,7 @@ class AssetPayment(LedgerTransaction):
         self._otype = LedgerTransaction.AssetPayment
         self._opart = opart
         self._view_rows = 2
-        self._data = self._read("SELECT p.type, p.timestamp, p.ex_date, p.number, p.account_id, "
+        self._data = self._read("SELECT p.type, p.timestamp, p.timestamp_day_only, p.ex_date, p.number, p.account_id, "
                                 "p.symbol_id, p.amount, p.tax, l.amount_acc AS t_qty, p.note AS note "
                                 "FROM asset_payments AS p "
                                 "LEFT JOIN ledger_totals AS l ON l.otype=p.otype AND l.oid=p.oid "
@@ -584,6 +590,7 @@ class AssetPayment(LedgerTransaction):
         except KeyError:
             assert False, "Unknown dividend type"
         self._timestamp = self._data['timestamp']
+        self._timestamp_day_only = bool(self._data['timestamp_day_only'])
         self._ex_date = self._data['ex_date'] if self._data['ex_date'] else 0
         self._account = jal.db.account.JalAccount(self._data['account_id'])
         self._account_name = self._account.name()
@@ -1894,6 +1901,7 @@ class CorporateAction(LedgerTransaction):
     _db_table = "asset_actions"
     _db_fields = {
         "timestamp": {"mandatory": True, "validation": True},
+        "timestamp_day_only": {"mandatory": False, "validation": False},
         "number": {"mandatory": False, "validation": True, "default": ''},
         "account_id": {"mandatory": True, "validation": True},
         "type": {"mandatory": True, "validation": True},
@@ -1931,7 +1939,8 @@ class CorporateAction(LedgerTransaction):
         }
         super().__init__(oid)
         self._otype = LedgerTransaction.CorporateAction
-        self._data = self._read("SELECT a.type, a.timestamp, a.number, a.account_id, a.qty, a.symbol_id, a.note "
+        self._data = self._read("SELECT a.type, a.timestamp, a.timestamp_day_only, a.number, a.account_id, "
+                                "a.qty, a.symbol_id, a.note "
                                 "FROM asset_actions AS a WHERE a.oid=:oid",
                                 [(":oid", self._oid)], named=True)
         if self._data is None:
@@ -1949,6 +1958,7 @@ class CorporateAction(LedgerTransaction):
             self._view_rows = 2
         self._icon = JalIcon[icons[self._subtype]]
         self._timestamp = self._data['timestamp']
+        self._timestamp_day_only = bool(self._data['timestamp_day_only'])
         self._account = jal.db.account.JalAccount(self._data['account_id'])
         self._account_name = self._account.name()
         self._account_currency = JalAsset(self._account.currency()).symbol()
@@ -2039,14 +2049,14 @@ class CorporateAction(LedgerTransaction):
     @classmethod
     def get_payments(cls, account) -> list:
         payments = []
-        query = cls._exec("SELECT a.timestamp, r.qty, a.note FROM asset_actions AS a "
+        query = cls._exec("SELECT a.timestamp, a.timestamp_day_only, r.qty, a.note FROM asset_actions AS a "
                           "LEFT JOIN asset_action_results AS r ON r.action_id=a.oid "
                           "LEFT JOIN asset_symbol AS s ON r.symbol_id=s.id "
                           "WHERE a.account_id=:account_id AND s.asset_id=:account_currency",
                           [(":account_id", account.id()), (":account_currency", account.currency())])
         while query.next():
-            timestamp, amount, note = cls._read_record(query, cast=[int, Decimal, str])
-            payments.append({"timestamp": timestamp, "amount": amount, "note": note})
+            timestamp, day_only, amount, note = cls._read_record(query, cast=[int, bool, Decimal, str])
+            payments.append({"timestamp": timestamp, "day_only": day_only, "amount": amount, "note": note})
         return payments
 
     def processLedger(self, ledger):
