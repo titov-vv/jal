@@ -1,14 +1,17 @@
 from decimal import Decimal
 
+import pytest
+
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo, prepare_db_ledger
 from tests.helpers import d2t, create_stocks, create_actions, create_trades, create_quotes, \
     create_corporate_actions, create_stock_dividends, create_transfers
 from constants import BookAccount, PredefinedCategory, AssetLocation
+from jal.db.db import JalDB
 from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
 from jal.db.peer import JalPeer
-from jal.db.operations import LedgerTransaction, AssetPayment
+from jal.db.operations import LedgerTransaction, LedgerError, AssetPayment
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -545,3 +548,53 @@ def test_asset_transfer(prepare_db):
     trades = JalAccount(2).closed_trades_list()
     assert len(trades) == 2
     assert sum([x.profit() for x in trades]) == Decimal('845')
+
+
+#-----------------------------------------------------------------------------------------------------------------------
+# The price granted shares were received at is stored ON THE PAYMENT and is what values them, so a vesting is
+# complete on its own: it needs no quote of that very second in the price series, and the ledger no longer has to
+# be given one before it will book the lot. This is what the old pairing by exact timestamp made impossible - the
+# price lived in 'quotes' and a first-ever import, which creates the asset, could have none.
+def test_a_vesting_is_valued_by_its_own_price_without_any_quote(prepare_db_fifo):
+    create_stocks([('A', 'A SHARE')], currency_id=2)   # id = 4
+    create_stock_dividends([(AssetPayment.StockVesting, 1643907900, 1, 4, 2.0, 2, 54.0, 0.0, 'Vested +2 A')])
+    JalDB._exec("DELETE FROM quotes")      # not one price of this asset is known to the database
+
+    ledger = Ledger()
+    ledger.rebuild(from_timestamp=0)
+
+    assert LedgerAmounts("value")[BookAccount.Assets, 1, 4] == Decimal('108')   # 2 shares at the stated 54
+
+
+#-----------------------------------------------------------------------------------------------------------------------
+# ... and the price travels with the operation, so moving the payment cannot come apart from it. Under the pairing
+# by exact timestamp this very edit orphaned the price and the next rebuild stopped on the payment it could no
+# longer value.
+def test_a_vesting_keeps_its_price_when_its_timestamp_is_edited(prepare_db_fifo):
+    create_stocks([('A', 'A SHARE')], currency_id=2)   # id = 4
+    create_stock_dividends([(AssetPayment.StockVesting, 1643907900, 1, 4, 2.0, 2, 54.0, 0.0, 'Vested +2 A')])
+    JalDB._exec("DELETE FROM quotes")
+    JalDB._exec("UPDATE asset_payments SET timestamp=:moved WHERE oid=1", [(":moved", 1643907900 - 7200)])
+
+    ledger = Ledger()
+    ledger.rebuild(from_timestamp=0)
+
+    assert LedgerTransaction.get_operation(LedgerTransaction.AssetPayment, 1).price() == Decimal('54')
+    assert LedgerAmounts("value")[BookAccount.Assets, 1, 4] == Decimal('108')
+
+
+#-----------------------------------------------------------------------------------------------------------------------
+# A vesting that states no price is refused rather than opened at a zero basis, which would report the whole
+# proceeds as gain when the shares are sold. Recoverable and reported as such: the quantity is already right and
+# only the valuation is missing, so stating it and rebuilding completes the operation.
+def test_a_vesting_without_a_price_stops_the_rebuild_recoverably(prepare_db_fifo):
+    create_stocks([('A', 'A SHARE')], currency_id=2)   # id = 4
+    create_stock_dividends([(AssetPayment.StockVesting, 1643907900, 1, 4, 2.0, 2, 54.0, 0.0, 'Vested +2 A')])
+    JalDB._exec("UPDATE asset_payments SET price='' WHERE oid=1")   # ... while the series still holds the price
+
+    ledger = Ledger()
+    with pytest.raises(LedgerError):      # re-raised under pytest, reported to the user in the running application
+        ledger.rebuild(from_timestamp=0)
+
+    assert ledger.stopped_by is not None
+    assert LedgerAmounts("value")[BookAccount.Assets, 1, 4] == Decimal('0')

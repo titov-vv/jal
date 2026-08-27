@@ -1,13 +1,10 @@
-from PySide6.QtCore import Slot, QEvent, QStringListModel, QByteArray
-from PySide6.QtGui import QPalette
-from PySide6.QtWidgets import QApplication, QMessageBox
+from decimal import Decimal
+from PySide6.QtCore import Slot, QStringListModel, QByteArray
+from PySide6.QtWidgets import QMessageBox
 from jal.ui.widgets.ui_asset_payment_operation import Ui_AssetPaymentOperation
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.helpers import set_visible_retaining_size
 from jal.widgets.delegates import WidgetMapperDelegateBase
-from jal.widgets.theme import Theme, Meaning
-from jal.db.account import JalAccount
-from jal.db.asset import JalAsset
 from jal.db.helpers import db_row2dict, now_ts
 from jal.db.operations import LedgerTransaction, AssetPayment
 from jal.db.common_models import AccountListModel
@@ -24,6 +21,7 @@ class AssetPaymentWidgetDelegate(WidgetMapperDelegateBase):
                           'ex_date': self.timestamp_delegate,
                           'symbol_id': self.symbol_delegate,
                           'amount': self.decimal_delegate,
+                          'price': self.decimal_long_delegate,   # a per-share price, as a trade's is
                           'tax': self.decimal_delegate}
 
 
@@ -56,9 +54,8 @@ class AssetPaymentWidget(AbstractOperationDetails):
         self.mapper.setItemDelegate(AssetPaymentWidgetDelegate(self.mapper))
 
         self.ui.account_widget.changed.connect(self.mapper.submit)
-        self.ui.symbol_widget.changed.connect(self.assetChanged)
+        self.ui.symbol_widget.changed.connect(self.mapper.submit)
         self.ui.type.currentIndexChanged.connect(self.typeChanged)
-        self.ui.timestamp_editor.dateTimeChanged.connect(self.refreshAssetPrice)
 
         self.mapper.addMapping(self.ui.timestamp_editor, self.model.fieldIndex("timestamp"))
         self.mapper.addMapping(self.ui.ex_date_editor, self.model.fieldIndex("ex_date"))
@@ -68,15 +65,11 @@ class AssetPaymentWidget(AbstractOperationDetails):
         self.mapper.addMapping(self.ui.type, self.model.fieldIndex("type"), QByteArray().setRawData("currentIndex", 12))
         self.mapper.addMapping(self.ui.number, self.model.fieldIndex("number"))
         self.mapper.addMapping(self.ui.dividend_edit, self.model.fieldIndex("amount"))
+        self.mapper.addMapping(self.ui.price_edit, self.model.fieldIndex("price"))
         self.mapper.addMapping(self.ui.tax_edit, self.model.fieldIndex("tax"))
         self.mapper.addMapping(self.ui.note, self.model.fieldIndex("note"))
 
         self.model.select()
-
-    @Slot()
-    def assetChanged(self):
-        self.mapper.submit()
-        self.refreshAssetPrice()
 
     @Slot()
     def typeChanged(self, dividend_type_id):
@@ -101,35 +94,19 @@ class AssetPaymentWidget(AbstractOperationDetails):
         price_visible = dividend_type_id == AssetPayment.StockDividend or dividend_type_id == AssetPayment.StockVesting
         set_visible_retaining_size(self.ui.price_label, price_visible)
         set_visible_retaining_size(self.ui.price_edit, price_visible)
-        self.refreshAssetPrice()
-
-    def refreshAssetPrice(self):
-        if self.ui.type.currentIndex() == AssetPayment.StockDividend or self.ui.type.currentIndex() == AssetPayment.StockVesting:
-            dividend_timestamp = self.ui.timestamp_editor.dateTime().toSecsSinceEpoch()
-            timestamp, price = JalAsset.from_symbol(self.ui.symbol_widget.selected_id).quote(dividend_timestamp,
-                                                                             JalAccount(self.ui.account_widget.selected_id).currency())
-            palette = QPalette(QApplication.palette(self.ui.price_edit))
-            if timestamp == dividend_timestamp:
-                self.ui.price_edit.setText(str(price))
-                self.ui.price_edit.setToolTip("")
-            else:
-                self.ui.price_edit.setText(self.tr("No quote"))
-                palette.setColor(QPalette.Text, Theme.text(Meaning.NEGATIVE, palette.base().color()))
-                self.ui.price_edit.setToolTip(
-                    self.tr("You should set quote via Data->Quotes menu for Date/Time of the dividend"))
-            self.ui.price_edit.setPalette(palette)
-
-    # The "no quote" warning above is a palette color derived from the theme, so a theme switch has to redo it
-    def changeEvent(self, event):
-        if event.type() == QEvent.ApplicationPaletteChange:
-            self.refreshAssetPrice()
-        super().changeEvent(event)
 
     def _validated(self):
         fields = db_row2dict(self.model, 0)
         if not fields['type']:
             QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("Please set a type of the dividend."), QMessageBox.Ok)
             return False
+        # The value granted shares were received at is what their whole cost basis rests on.
+        # A zero is refused beside an empty one: nobody was ever granted shares worth nothing.
+        if fields['type'] in (AssetPayment.StockDividend, AssetPayment.StockVesting):
+            if not fields['price'] or Decimal(fields['price']) <= Decimal('0'):
+                QMessageBox().warning(self, self.tr("Incomplete data"),
+                                      self.tr("Please set the price the stock was granted at."), QMessageBox.Ok)
+                return False
         return True
 
     def prepareNew(self, account_id):
@@ -142,6 +119,7 @@ class AssetPaymentWidget(AbstractOperationDetails):
         new_record.setValue("symbol_id", 0)
         new_record.setValue("amount", '0')
         new_record.setValue("tax", '0')
+        new_record.setValue("price", '')
         new_record.setValue("note", None)
         return new_record
 

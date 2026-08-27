@@ -54,12 +54,31 @@ CREATE TABLE asset_payments_new (
     symbol_id  INTEGER REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     amount     TEXT    NOT NULL DEFAULT ('0'),
     tax        TEXT    NOT NULL DEFAULT ('0'),
+    price      TEXT    NOT NULL DEFAULT (''),
     note       TEXT
 );
 INSERT INTO asset_payments_new (oid, otype, timestamp, ex_date, number, type, account_id, symbol_id, amount, tax, note)
     SELECT oid, otype, timestamp, ex_date, number, type, account_id, symbol_id, amount, tax, note FROM asset_payments;
 DROP TABLE asset_payments;
 ALTER TABLE asset_payments_new RENAME TO asset_payments;
+--------------------------------------------------------------------------------
+-- Move the price of a stock divident or vesting into the payment record
+UPDATE asset_payments SET price = COALESCE(
+    (SELECT q.quote FROM quotes AS q
+     JOIN asset_symbol AS s ON s.id = asset_payments.symbol_id
+     JOIN accounts AS a ON a.id = asset_payments.account_id
+     WHERE q.asset_id = s.asset_id AND q.currency_id = a.currency_id
+       AND q.timestamp = asset_payments.timestamp), '')
+    WHERE type IN (3, 4);   -- AssetPayment.StockDividend, AssetPayment.StockVesting
+-- The quote that was consumed is deleted: an instant stamped in the middle of a day is not a point of a price
+-- series, and left there it would go on shadowing the day around it. Only the rows a payment actually took its
+-- price from, and the series they sat in is re-downloadable in any case.
+DELETE FROM quotes WHERE id IN (
+    SELECT q.id FROM quotes AS q
+    JOIN asset_symbol AS s ON s.asset_id = q.asset_id
+    JOIN asset_payments AS p ON p.symbol_id = s.id AND p.timestamp = q.timestamp AND p.type IN (3, 4)
+    JOIN accounts AS a ON a.id = p.account_id AND a.currency_id = q.currency_id
+    WHERE p.price <> '');
 --------------------------------------------------------------------------------
 CREATE TABLE asset_actions_new (
     oid        INTEGER     PRIMARY KEY UNIQUE NOT NULL,
@@ -89,7 +108,7 @@ BEGIN
     DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= NEW.timestamp;
 END;
-CREATE TRIGGER asset_payments_after_update AFTER UPDATE OF timestamp, type, account_id, symbol_id, amount, tax ON asset_payments FOR EACH ROW
+CREATE TRIGGER asset_payments_after_update AFTER UPDATE OF timestamp, type, account_id, symbol_id, amount, tax, price ON asset_payments FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;

@@ -158,6 +158,7 @@ CREATE TABLE asset_payments (
     symbol_id  INTEGER REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,  -- for which asset
     amount     TEXT    NOT NULL DEFAULT ('0'),        -- How much was paid (in form of money or stocks)
     tax        TEXT    NOT NULL DEFAULT ('0'),        -- Amount of tax that was witheld from the payment
+    price      TEXT    NOT NULL DEFAULT (''),         -- Per-unit value the payment was made at, as the source stated it (stock dividend/vesting). Empty means not stated - never a zero, which would be a real and wrong price
     note       TEXT                                   -- Free text comment
 );
 
@@ -671,7 +672,7 @@ BEGIN
 END;
 -- Ledger and trades cleanup after modification
 DROP TRIGGER IF EXISTS asset_payments_after_update;
-CREATE TRIGGER asset_payments_after_update AFTER UPDATE OF timestamp, type, account_id, symbol_id, amount, tax ON asset_payments FOR EACH ROW
+CREATE TRIGGER asset_payments_after_update AFTER UPDATE OF timestamp, type, account_id, symbol_id, amount, tax, price ON asset_payments FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;

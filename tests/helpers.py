@@ -166,13 +166,16 @@ def create_coupons(coupons):
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Create dividends in database: dividends is a list of dividends as tuples
-# (type, timestamp, account, asset_id, qty, currency_id, quote, tax, note)
+# (type, timestamp, account, asset_id, qty, currency_id, price, tax, note)
 # Type = StockDividend or StockVesting
+# The price is written onto the payment, which is what values it (see AssetPayment.price), and a quote of the same
+# price is left in the series beside it - the way a real import leaves the day it was downloaded for.
 def create_stock_dividends(dividends):
     for dividend in dividends:
         create_quotes(dividend[3], dividend[5], [(dividend[1], dividend[6])])
         data = {'timestamp': dividend[1], 'type': dividend[0], 'account_id': dividend[2],
-                'symbol_id': symbol_id_for(dividend[3]), 'amount': dividend[4], 'tax': dividend[7], 'note': dividend[8]}
+                'symbol_id': symbol_id_for(dividend[3]), 'amount': dividend[4], 'tax': dividend[7],
+                'price': Decimal(str(dividend[6])), 'note': dividend[8]}
         LedgerTransaction.create_new(LedgerTransaction.AssetPayment, data)
 
 

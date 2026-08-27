@@ -6,6 +6,7 @@ from tests.helpers import d2t
 from jal.constants import PredefinedAsset, SymbolId, AssetLocation
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset, AssetData
+from jal.db.operations import LedgerTransaction
 
 
 def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
@@ -237,27 +238,30 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
 
     # validate asset payments
     test_payments = [
-        [1, 2, 1529612400, 0, 0, '', 1, 1, 5, '16.76', '0', 'EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)'],
-        [2, 2, 1533673200, 0, 0, '', 1, 1, 5, '20.35', '0.54', 'EDV(US9219107094) CASH DIVIDEND 0.10175000 USD PER SHARE (Ordinary Dividend)'],
-        [3, 2, 1633033200, 0, 0, '16054321038', 3, 1, 4, '5.887', '15.0', 'VUG (US9229087369) Stock Dividend US9229087369 196232339 for 10000000000'],
-        [4, 2, 1595017200, 0, 0, '13259965038', 3, 1, 19, '3.0', '0', 'TEF (US8793822086) STOCK DIVIDEND US8793822086 416666667 FOR 10000000000'],
-        [5, 2, 1591215600, 0, 0, '12882908488', 3, 1, 35, '3.0', '0', 'MAC (US5543821012) CASH DIVIDEND USD 0.10, STOCK DIVIDEND US5543821012 548275673 FOR 10000000000'],
-        [6, 2, 1578082800, 0, 1577664000, '', 1, 1, 6, '60.2', '6.02', 'ZROZ(US72201R8824) CASH DIVIDEND USD 0.86 PER SHARE (Ordinary Dividend)'],
-        [7, 2, 1633033200, 0, 0, '', 1, 1, 4, '158.6', '15.86', 'VUG (US9229087369) CASH DIVIDEND USD 0.52 (Ordinary Dividend)'],
-        [8, 2, 1590595065, 0, 0, '2882737839', 2, 1, 12, '-25.69', '0', 'PURCHASE ACCRUED INT X 6 1/4 03/15/26'],
-        [9, 2, 1600128000, 0, 0, '', 2, 1, 12, '62.5', '0', 'BOND COUPON PAYMENT (X 6 1/4 03/15/26)'],
-        [10, 2, 1549843200, 0, 0, '', 6, 1, 9, '-0.249018', '0', 'French Transaction Tax']
+        [1, 2, 1529612400, 0, 0, '', 1, 1, 5, '16.76', '0', '', 'EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)'],
+        [2, 2, 1533673200, 0, 0, '', 1, 1, 5, '20.35', '0.54', '', 'EDV(US9219107094) CASH DIVIDEND 0.10175000 USD PER SHARE (Ordinary Dividend)'],
+        [3, 2, 1633033200, 0, 0, '16054321038', 3, 1, 4, '5.887', '15.0', '25.73', 'VUG (US9229087369) Stock Dividend US9229087369 196232339 for 10000000000'],
+        [4, 2, 1595017200, 0, 0, '13259965038', 3, 1, 19, '3.0', '0', '4.73', 'TEF (US8793822086) STOCK DIVIDEND US8793822086 416666667 FOR 10000000000'],
+        [5, 2, 1591215600, 0, 0, '12882908488', 3, 1, 35, '3.0', '0', '8.59', 'MAC (US5543821012) CASH DIVIDEND USD 0.10, STOCK DIVIDEND US5543821012 548275673 FOR 10000000000'],
+        [6, 2, 1578082800, 0, 1577664000, '', 1, 1, 6, '60.2', '6.02', '', 'ZROZ(US72201R8824) CASH DIVIDEND USD 0.86 PER SHARE (Ordinary Dividend)'],
+        [7, 2, 1633033200, 0, 0, '', 1, 1, 4, '158.6', '15.86', '', 'VUG (US9229087369) CASH DIVIDEND USD 0.52 (Ordinary Dividend)'],
+        [8, 2, 1590595065, 0, 0, '2882737839', 2, 1, 12, '-25.69', '0', '', 'PURCHASE ACCRUED INT X 6 1/4 03/15/26'],
+        [9, 2, 1600128000, 0, 0, '', 2, 1, 12, '62.5', '0', '', 'BOND COUPON PAYMENT (X 6 1/4 03/15/26)'],
+        [10, 2, 1549843200, 0, 0, '', 6, 1, 9, '-0.249018', '0', '', 'French Transaction Tax']
     ]
     payments = JalAccount(1).dump_asset_payments()
     assert len(payments) == len(test_payments)
     for i, payment in enumerate(test_payments):
         assert payments[i] == payment
 
-    # Verify that asset prices were loaded for stock dividends and vestings
-    assert JalAsset(1).quote(d2t(230101), 1) == (1672531200, Decimal('1'))
-    assert JalAsset(4).quote(d2t(230101), 2) == (1633033200, Decimal('25.73'))
-    assert JalAsset(18).quote(d2t(230101), 2) == (1595017200, Decimal('4.73'))
-    assert JalAsset(34).quote(d2t(230101), 2) == (1591215600, Decimal('8.59'))
+    # The price a stock dividend or a vesting came in with is stored ON THE PAYMENT (see AssetPayment.price) and
+    # asked of it, not of the price series - the rows above carry it, and it is what values them.
+    for oid, price in ((3, '25.73'), (4, '4.73'), (5, '8.59')):
+        assert LedgerTransaction.get_operation(LedgerTransaction.AssetPayment, oid).price() == Decimal(price)
+    # ... and nothing was written into the series on their behalf: an asset the statement only ever granted has
+    # no quote of its own at all.
+    assert JalAsset(18).quote(d2t(230101), 2) == (0, Decimal('0'))
+    assert JalAsset(34).quote(d2t(230101), 2) == (0, Decimal('0'))
     assert JalAsset(8).quote(d2t(230101), 2) == (0, Decimal('0'))  # Stock granted but not vested
 
     # validate corp actions

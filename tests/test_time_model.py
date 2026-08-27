@@ -7,7 +7,6 @@ import sqlparse
 import importlib.util
 import pathlib
 import xml.etree.ElementTree as ET
-from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 from decimal import Decimal
 
@@ -25,7 +24,7 @@ from jal.data_export.taxes_flow import TaxesFlowRus
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
 from jal.db.db import JalDB
-from jal.db.reclock import RECLOCKED_COLUMNS, reclock
+from jal.db.reclock import PAYMENTS, RECLOCKED_COLUMNS, reclock
 from jal.db.residence import JalResidence
 from jal.widgets.delegates import DateTimeEditWithReset, TimestampDelegate
 from lxml import etree
@@ -38,15 +37,8 @@ from jal.db.helpers import is_day_marker, now_ts
 from jal.db.ledger import Ledger
 from jal.widgets.helpers import ts2axis, axis2ts, ts2d, ts2dt
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
-from tests.helpers import (create_assets, create_actions, create_dividends, create_quotes, create_trades, create_transfers,
-                          create_corporate_actions, d2t, pinned_tz, symbol_id_for)
-
-
-# Where the day-only seeding starts and ends inside jal_delta_65.sql. Run from the shipped file rather than copied
-# here, so this test breaks if the migration text stops doing what it says.
-_DAY_ONLY_SECTION = "-- A TIMESTAMP THAT STATES A DAY SAYS SO ITSELF"
-_DAY_ONLY_SEED = "-- Every corporate action is effective on a date"
-_DAY_ONLY_SEED_END = "-- Set new DB schema version"
+from tests.helpers import (create_assets, create_actions, create_dividends, create_quotes, create_stock_dividends,
+                          create_trades, create_transfers, create_corporate_actions, d2t, pinned_tz, symbol_id_for)
 
 
 # The offset is handed out so a test can state the shift it expects in terms of it instead of repeating the number.
@@ -227,40 +219,26 @@ def test_a_quote_is_taken_from_the_day_the_user_was_living(prepare_db):
     assert JalAsset(2).quote(early, 1) == (d2t(250925), Decimal('90'))
 
 
-# A price stamped on exactly the moment asked about was written FOR the operation asking and is that operation's
-# own, not the price of a day. The series is searched up to local_reading(), which is HOURS PAST that moment on a
-# clock ahead of UTC, so the latest row of that window is somebody else's price - here the day that has already
-# begun in Moscow while the operation is still on the previous one in Greenwich.
-def test_the_price_written_for_an_operation_is_not_shadowed_by_a_later_day(prepare_db):
+# Every row of the series is the price of a DAY, whatever time of day it is stamped at, and the latest one up to
+# the moment asked about is the answer. No row of it is anybody's own price to be found ahead of the rest - an
+# operation that carries a price of its own stores it with itself (see AssetPayment.price) and never asks here.
+def test_a_quote_of_the_series_is_the_latest_one_up_to_the_moment_asked_about(prepare_db):
     _resident_in('Europe/Moscow')
     moment = _stamp(2025, 9, 24, 22, 30)                    # 01:30 on the 25th in Moscow, so the 25th is in range
     create_quotes(2, 1, [(d2t(250924), 80.0), (moment, 85.0), (d2t(250925), 90.0)])
-    assert JalAsset(2).quote(moment, 1) == (moment, Decimal('85'))
-    assert JalAsset(2).quote(moment + 1, 1) == (d2t(250925), Decimal('90'))   # anything else is the price of a day
-
-
-# Two operations minutes apart each carry a price of their own, and the second one's is inside the window the first
-# one's search widens to. Neither may be valued by the other's - the vestings of one afternoon are exactly that
-# case, and the ledger stops on the payment it cannot price (see AssetPayment.price).
-def test_two_priced_operations_of_one_hour_keep_their_own_prices(prepare_db):
-    _resident_in('Europe/Moscow')
-    first, second = _stamp(2025, 9, 24, 12), _stamp(2025, 9, 24, 12, 2)
-    create_quotes(2, 1, [(first, 80.0), (second, 85.0)])
-    assert JalAsset(2).quote(first, 1) == (first, Decimal('80'))
-    assert JalAsset(2).quote(second, 1) == (second, Decimal('85'))
+    assert JalAsset(2).quote(moment, 1) == (local_moment(d2t(250925)), Decimal('90'))
+    assert JalAsset(2).quote(moment - 3600, 1) == (local_moment(d2t(250925)), Decimal('90'))
 
 
 # The same rule where the asset is quoted in a currency it is not being asked about: the account is denominated in
-# one currency and the source lists the asset in another, so the price found is converted at the cross-rate. Which
-# price is found first has to be settled the same way, or a cross-quoted asset loses its own price where a directly
-# quoted one keeps it.
-def test_a_cross_quoted_price_of_an_operation_is_found_before_the_series(prepare_db):
+# one currency and the source lists the asset in another, so the price found is converted at the cross-rate.
+def test_a_cross_quoted_price_is_taken_from_the_series_the_same_way(prepare_db):
     _resident_in('Europe/Moscow')
     create_assets([('GE', 'General Electric Company', 'US3696043013', 2, PredefinedAsset.Stock, 'us')])   # id 4
     moment = _stamp(2025, 9, 24, 22, 30)
     create_quotes(4, 2, [(moment, 10.0), (d2t(250925), 12.0)])       # the asset is quoted in currency 2 alone...
     create_quotes(2, 1, [(d2t(250924), 80.0), (d2t(250925), 80.0)])  # ... and that currency in the one asked about
-    assert JalAsset(4).quote(moment, 1) == (moment, Decimal('800'))
+    assert JalAsset(4).quote(moment, 1) == (local_moment(d2t(250925)), Decimal('960'))
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -550,37 +528,6 @@ def test_a_corporate_action_states_its_day_whatever_the_source_stamped_on_it(dat
     assert any(x['timestamp'] % (24 * 3600) not in IBKR_DAY_MARKERS for x in actions)   # ... 19:45, in this one
 
 
-# What the value used to spell is what the migration writes down, so a database upgraded into this schema reads
-# exactly as it did before - and the rows nothing but the source could have explained are marked at last.
-def test_the_migration_marks_the_days_the_value_used_to_spell(project_root, prepare_db_taxes):
-    create_assets([('GE', 'General Electric Company', 'US3696043013', 2, PredefinedAsset.Stock, 'us')])   # id 4
-    days = [d2t(241227), d2t(241227) + 20 * 3600 + 20 * 60, d2t(241227) + 20 * 3600 + 25 * 60]
-    moments = [d2t(241227) + 9 * 3600, d2t(241227) + 20 * 3600 + 21 * 60]
-    for i, timestamp in enumerate(days + moments):
-        LedgerTransaction.create_new(LedgerTransaction.AssetPayment,
-                                     {'timestamp': timestamp, 'type': AssetPayment.Dividend, 'account_id': 1,
-                                      'symbol_id': symbol_id_for(4), 'amount': Decimal('10'), 'tax': Decimal('1'),
-                                      'note': f"Payment {i}"})
-    create_corporate_actions(1, [(d2t(241227) + 19 * 3600 + 45 * 60, CorporateAction.Split, 4, Decimal('10'),
-                                  "Stamped with a time no marker list knows", [(4, Decimal('20'), Decimal('1'))])])
-    JalDB._exec("UPDATE asset_payments SET timestamp_day_only=0")   # as a database of the previous schema holds them
-    JalDB._exec("UPDATE asset_actions SET timestamp_day_only=0")
-
-    with open(project_root + "/jal/updates/jal_delta_65.sql") as delta:
-        text = delta.read()
-    for statement in sqlparse.split(text[text.index(_DAY_ONLY_SEED):text.index(_DAY_ONLY_SEED_END)]):
-        if sqlparse.format(statement, strip_comments=True).strip():
-            assert JalDB._exec(statement.strip()) is not None, f"Statement failed: {statement}"
-
-    flagged = []
-    query = JalDB._exec("SELECT timestamp, timestamp_day_only FROM asset_payments ORDER BY oid")
-    while query.next():
-        flagged.append(JalDB._read_record(query, cast=[int, bool]))
-    assert [x[0] for x in flagged if x[1]] == days                  # every day the value spelled, and none besides
-    assert [x[0] for x in flagged if not x[1]] == moments
-    assert JalDB._read("SELECT timestamp_day_only FROM asset_actions") == 1
-
-
 # The form the user opens shows the same day the list beside it shows. The editor is put on no clock for a value
 # that states a day, so the digits in it are the ones stored - and saving the form without touching the date must
 # leave those digits alone, which is what would go wrong if the editor's zone were read as Greenwich.
@@ -603,48 +550,6 @@ def test_the_editor_of_a_payment_that_states_its_day_keeps_it(prepare_db_taxes, 
     assert editor.dateTime().toString('yyyy-MM-dd hh:mm:ss') == '2024-12-27 20:20:00'
     delegate.setModelData(editor, model, index)
     assert model.data(index, Qt.EditRole) == stamped        # saved untouched, and stored exactly as it was
-
-
-# The flag is put beside the timestamp it speaks about rather than appended, so the migration rebuilds both tables -
-# and a rebuild has to hand back the schema it was given. Everything the two tables carry with them is dropped on the
-# way through (nine triggers and a view), and a view of quite another table was lost here once by an editing slip
-# that nothing else would have caught.
-def test_the_migration_leaves_the_schema_it_found(project_root, prepare_db_taxes):
-    def objects():
-        found = {}
-        query = JalDB._exec("SELECT type, name, sql FROM sqlite_master WHERE type IN ('trigger', 'view', 'index')")
-        while query.next():
-            kind, name, sql = JalDB._read_record(query, cast=[str, str, str])
-            found[(kind, name)] = sql
-        return found
-
-    def columns(table):
-        found = []
-        query = JalDB._exec(f"PRAGMA table_info({table})")
-        while query.next():
-            found.append(JalDB._read_record(query)[1:])
-        return found
-
-    before = objects(), columns('asset_payments'), columns('asset_actions')
-    results = JalDB._read("SELECT COUNT(*) FROM asset_action_results")
-    with open(project_root + "/jal/updates/jal_delta_65.sql") as delta:
-        text = delta.read()
-    section = text[text.index(_DAY_ONLY_SECTION):text.index(_DAY_ONLY_SEED_END)]
-
-    # As the delta itself runs - foreign keys off, or dropping 'asset_actions' cascades over its results.
-    JalDB().enable_fk(False)
-    try:
-        for statement in sqlparse.split(section):
-            # Comments are stripped before execution, as JalDB.run_sql_script does - a ':' inside one (the delta
-            # spells out IBKR's 20:20) would otherwise be read as a query parameter.
-            clean = sqlparse.format(statement, strip_comments=True).strip()
-            if clean:
-                assert JalDB._exec(clean) is not None, f"Statement failed: {clean}"
-    finally:
-        JalDB().enable_fk(True)
-
-    assert (objects(), columns('asset_payments'), columns('asset_actions')) == before
-    assert JalDB._read("SELECT COUNT(*) FROM asset_action_results") == results
 
 
 # The rebuild above drops 'asset_actions', which 'asset_action_results' REFERENCES ON DELETE CASCADE - with foreign
@@ -965,45 +870,22 @@ def test_the_reconciliation_of_an_account_is_re_read_with_its_operations(reclock
     assert _stored('accounts', 'reconciled_on', 2) == 0                   # never reconciled, and it stays that way
 
 
-# A price that came in with a payment is stored as a quote stamped on that payment's own moment, and the exact
-# equality of the two is what marks it as the payment's own price rather than as the price of a day - it is what
-# values a stock dividend or a vesting. So it travels with the payment, while the series around it, being a series
-# of days read on the user's clock, stays exactly where it is.
-def test_the_price_written_for_a_payment_moves_with_it(reclock_db):
+# The price a payment was made at is stored ON THE PAYMENT and moves with it because it IS the payment - there is
+# no second row to keep in step and none to be left behind. The series, being a series of days read on the user's
+# clock, is not re-clocked at all and stays exactly where it is.
+def test_a_priced_payment_keeps_its_price_and_leaves_the_series_alone(reclock_db):
     moment, a_day_of_the_series = _stamp(2021, 7, 1, 15), d2t(210701)
-    create_dividends([(moment, 1, 4, Decimal('10'), Decimal('1'), "Vested, and priced by the statement")])
-    create_quotes(4, 2, [(moment, 100), (a_day_of_the_series, 99)])
+    create_stock_dividends([(AssetPayment.StockVesting, moment, 1, 4, Decimal('10'), 2, Decimal('100'),
+                             Decimal('0'), "Vested, and priced by the statement")])
+    create_quotes(4, 2, [(a_day_of_the_series, 99)])
 
-    report = reclock('Europe/Moscow', 'Europe/Lisbon', apply=True)
-    assert [(x['oid'], x['stored'], x['becomes'], x['blocked']) for x in report['quotes']] == \
-           [(1, moment, moment - 2 * 3600, False)]
-    assert report['quotes'][0]['account'] == 'Moscow broker'
-    assert JalAsset(4).quote(moment - 2 * 3600, 2) == (moment - 2 * 3600, Decimal('100'))   # still its own price
-    assert _stored('quotes', 'timestamp', 2) == a_day_of_the_series      # ... and the day beside it never moved
-
-
-# The one place the price cannot follow: the moment the payment moves to already holds a price of that asset. It is
-# reported and left where it is, the alternative being to overwrite a price that belongs to somebody else.
-def test_a_price_that_cannot_follow_its_payment_is_reported_and_left_alone(reclock_db):
-    moment = _stamp(2021, 7, 1, 15)
-    create_dividends([(moment, 1, 4, Decimal('10'), Decimal('1'), "Vested onto an hour already quoted")])
-    create_quotes(4, 2, [(moment, 100), (moment - 2 * 3600, 99)])
-
-    report = reclock('Europe/Moscow', 'Europe/Lisbon', apply=True)
-    assert [(x['oid'], x['blocked']) for x in report['quotes']] == [(1, True)]
-    assert sorted(_stored('quotes', 'timestamp', x) for x in (1, 2)) == [moment - 2 * 3600, moment]
-
-
-# A run that moves no payment asks the quotes nothing at all, and a payment that moves without a price of its own
-# leaves the series alone as well.
-def test_the_quotes_are_untouched_by_a_run_that_moves_no_priced_payment(reclock_db):
-    moment = _stamp(2021, 7, 1, 15)
-    create_dividends([(moment, 1, 4, Decimal('10'), Decimal('1'), "Dividend of money, priced by nothing")])
-    create_quotes(4, 2, [(moment - 60, 100)])
-
-    report = reclock('Europe/Moscow', 'Europe/Lisbon', apply=True)
-    assert report['quotes'] == []
-    assert _stored('quotes', 'timestamp', 1) == moment - 60
+    reclock('Europe/Moscow', 'Europe/Lisbon', apply=True)
+    assert _stored(PAYMENTS, 'timestamp', 1) == moment - 2 * 3600
+    vesting = LedgerTransaction.get_operation(LedgerTransaction.AssetPayment, 1)
+    assert vesting.price() == Decimal('100')
+    # Neither quote is touched - not the day of the series, and not the one stamped on the hour the payment used
+    # to sit on, which is now just another row of the same series and nobody's own price to keep in step.
+    assert sorted(_stored('quotes', 'timestamp', x) for x in (1, 2)) == [a_day_of_the_series, moment]
 
 
 # The tool that drives the engine takes accounts by name, and a database may hold hundreds of them - a term deposit
@@ -1047,14 +929,5 @@ def test_the_findings_are_exported_for_review(reclock_db, tmp_path):
                            "2021-07-01 10:30:00", "2021-07-01 10:30:00"]
     assert legs[1][6:9] == ["", "Moscow broker", "Lisbon bank"]
 
-    create_dividends([(_stamp(2021, 7, 1, 15), 1, 4, Decimal('10'), Decimal('1'), "Priced by the statement")])
-    create_quotes(4, 2, [(_stamp(2021, 7, 1, 15), 100)])
-    report = reclock('Europe/Moscow', 'Europe/Lisbon', accounts=[1])
-    quotes = _exported(tool.export_paired_quotes(prefix, report))
-    assert quotes[0] == ["payment", "account", "quote", "stored", "becomes", "result", "note"]
-    assert quotes[1][:2] == ["1", "Moscow broker"]
-    assert quotes[1][3:] == ["2021-07-01 15:00:00", "2021-07-01 13:00:00", "moved", "Priced by the statement"]
-
-    for export in (tool.export_reordered_legs, tool.export_paired_quotes):
-        assert export(prefix, reclock('UTC', 'UTC')) == ''                   # nothing found, nothing written
-    tool.print_report(report, {'reordered': prefix, 'quotes': prefix})   # ... and the report read is printable
+    assert tool.export_reordered_legs(prefix, reclock('UTC', 'UTC')) == ''   # nothing found, nothing written
+    tool.print_report(report, {'reordered': prefix})                     # ... and the report read is printable

@@ -958,10 +958,10 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 raise Statement_ImportError(self.tr("Unmatched symbol for payment: ") + f"{payment}")
             operation['note'] = operation.pop('description')
             if 'price' in operation:
-                asset_id = self.mapped_id(JSF.ASSETS, self._symbol_asset(symbol)['id'])
-                JalAsset(asset_id).set_quotes(
-                    [{'timestamp': operation['timestamp'], 'quote': Decimal(operation.pop('price'))}],
-                    JalAccount(operation['account_id']).currency())
+                # The value the source stated for granted shares belongs to the payment it came with and not to
+                # the price series - it is that operation's own price, not the price of a day (see
+                # AssetPayment.price). Bound as a Decimal, which _exec() spells canonically for the column.
+                operation['price'] = Decimal(str(operation['price']))
             db_payment_id = self.mapped_id(JSF.ASSET_PAYMENTS, payment['id'])
             if operation['type'] == JSF.PAYMENT_DIVIDEND:
                 if db_payment_id:  # Dividend exists, only tax to be updated

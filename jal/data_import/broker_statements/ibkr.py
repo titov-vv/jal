@@ -17,7 +17,7 @@ from jal.data_import.statement_xml import StatementXML
 
 JAL_STATEMENT_CLASS = "StatementIBKR"
 IBKR_CALCULATION_PRECISION = 10
-DIVIDENDS_TABLE_ASSET_FIELD = 7
+DIVIDENDS_TABLE_ASSET_FIELD = 8
 
 # The end-of-day stamps IBKR puts on an accounting day. They are not times of day, and they are IBKR's alone - an
 # evening entry on a cash account can legitimately read 20:20 (or 20:24, 20:25), so they are never part of the common

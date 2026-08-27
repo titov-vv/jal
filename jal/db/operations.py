@@ -534,6 +534,7 @@ class AssetPayment(LedgerTransaction):
         "symbol_id": {"mandatory": True, "validation": True},
         "amount": {"mandatory": True, "validation": True},
         "tax": {"mandatory": False, "validation": False},
+        "price": {"mandatory": False, "validation": False},
         "note": {"mandatory": False, "validation": True}
     }
     PART_VALUE = 1
@@ -576,7 +577,7 @@ class AssetPayment(LedgerTransaction):
         self._opart = opart
         self._view_rows = 2
         self._data = self._read("SELECT p.type, p.timestamp, p.timestamp_day_only, p.ex_date, p.number, p.account_id, "
-                                "p.symbol_id, p.amount, p.tax, l.amount_acc AS t_qty, p.note AS note "
+                                "p.symbol_id, p.amount, p.tax, p.price, l.amount_acc AS t_qty, p.note AS note "
                                 "FROM asset_payments AS p "
                                 "LEFT JOIN ledger_totals AS l ON l.otype=p.otype AND l.oid=p.oid "
                                 "AND l.book_account = :book_assets WHERE p.oid=:oid",
@@ -601,6 +602,7 @@ class AssetPayment(LedgerTransaction):
         self._number = self._data['number']
         self._amount = Decimal(self._data['amount'])
         self._tax = Decimal(self._data['tax'])
+        self._price = Decimal(self._data['price']) if self._data['price'] else None  # Empty is "the price was never stated", which is not the same as a stated zero - a zero is a real price, and a wrong one for shares that were granted.
         self._note = self._data['note']
         self._peer_id = self._account.organization()
 
@@ -675,14 +677,13 @@ class AssetPayment(LedgerTransaction):
             return price if quote_timestamp else Decimal('0')
         if self._subtype != AssetPayment.StockDividend and self._subtype != AssetPayment.StockVesting:
             return Decimal('0')
-        quote_timestamp, price = self._asset.quote(self._timestamp, self._account.currency())
-        if quote_timestamp != self._timestamp:
-            # Recoverable in exactly the same way as an unpriced reward above - a quote is missing, not wrong data
+        if self._price is None:
             logging.debug(f"Unpriced stock dividend/vesting. Operation: {self.dump()}")
-            raise LedgerError(self.tr("No quote to value a stock dividend or vesting: {} on {}. "
-                                      "Download quotes for this asset and rebuild the ledger.").format(
+            raise LedgerError(self.tr("No price for a stock dividend or vesting: {} on {}. "
+                                      "Open the operation, state the price it was granted at "
+                                      "and rebuild the ledger.").format(
                                       self._asset.symbol(self._account.currency()), ts2d(self._timestamp)))
-        return price
+        return self._price
 
     # There are no any fee possible for Dividend
     def fee(self) -> Decimal:
@@ -698,10 +699,9 @@ class AssetPayment(LedgerTransaction):
         if not currency_id:
             return self._amount
         if self._subtype == AssetPayment.StockDividend or self._subtype == AssetPayment.StockVesting:
-            timestamp, price = self._asset.quote(self._timestamp, self._account.currency())
-            if timestamp != self._timestamp:
+            if self._price is None:
                 logging.error(self.tr("No price data for stock dividend/vesting: ") + f"{self.dump()}")
-            amount = self._amount * price
+            amount = self._amount * (self._price if self._price is not None else Decimal('0'))
         elif self._subtype == AssetPayment.RebaseAdjustment:
             # Worth nothing by definition, the same zero price() gives the ledger: this books quantity a position
             # already owned, not something acquired, so pricing it at market here would report money the account
