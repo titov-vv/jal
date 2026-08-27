@@ -243,14 +243,21 @@ class JalAsset(JalDB):
     # Returns (timestamp, 1) if quotation is requested relative to itself
     # Returned timestamp might be less than given.
     # Returns (0, 0) if no quotation information present in db. Return value (timestamp, 0) is a valid quote
-    # A quote states the price of a day, and a day is not re-read on another clock (see jal/db/clock.py).
+    # A quote states the price of a day, and a day is not re-read on another clock (see jal/db/clock.py) - except
+    # for the one stamped on exactly the moment asked about, which is that operation's own price and is looked for
+    # first (see _quote_moment).
     def quote(self, timestamp: int, currency_id: int) -> tuple:
         if self._id == currency_id:
             return timestamp, Decimal('1')
         quote = self._read("SELECT timestamp, quote FROM quotes WHERE asset_id=:asset_id "
-                           "AND currency_id=:currency_id AND timestamp<=:timestamp ORDER BY timestamp DESC LIMIT 1",
-                           [(":asset_id", self._id), (":currency_id", currency_id),
-                            (":timestamp", local_reading(timestamp))])
+                           "AND currency_id=:currency_id AND timestamp=:timestamp",
+                           [(":asset_id", self._id), (":currency_id", currency_id), (":timestamp", timestamp)])
+        if quote is None:
+            quote = self._read("SELECT timestamp, quote FROM quotes WHERE asset_id=:asset_id "
+                               "AND currency_id=:currency_id AND timestamp<=:timestamp "
+                               "ORDER BY timestamp DESC LIMIT 1",
+                               [(":asset_id", self._id), (":currency_id", currency_id),
+                                (":timestamp", local_reading(timestamp))])
         if quote is None:
             if self._type == PredefinedAsset.Money and currency_id != self.get_base_currency(timestamp):  # find a cross-rate
                 rate1 = self.quote(timestamp, self.get_base_currency(timestamp))[1]
@@ -270,6 +277,12 @@ class JalAsset(JalDB):
     # price whatever clock either of the two was written on; that exact pairing is what values a stock dividend (see
     # AssetPayment.price). Anything else is the price of a day, read as a day, and it comes back as the instant the
     # user's own clock stood at when that price was quoted.
+    #
+    # Which is why both lookups above ask for that exact moment BEFORE they ask for the latest price up to it. The
+    # two live in one table on two conventions - an operation's own price on the instant, a day's price on the
+    # reading of it - so the series is searched up to local_reading(), an hour or three PAST the moment itself on a
+    # clock ahead of UTC. Taking the latest row of that window would let a later day of the series, or the price of
+    # another operation minutes away, stand in front of the price an operation was actually given.
     @staticmethod
     def _quote_moment(quote_timestamp: int, asked_about: int) -> int:
         return quote_timestamp if quote_timestamp == asked_about else local_moment(quote_timestamp)
@@ -284,8 +297,12 @@ class JalAsset(JalDB):
     # letting a currency in here could recurse endlessly between two currencies that quote each other.
     def _cross_currency_quote(self, timestamp: int, currency_id: int):
         quote = self._read("SELECT timestamp, quote, currency_id FROM quotes WHERE asset_id=:asset_id "
-                           "AND timestamp<=:timestamp ORDER BY timestamp DESC LIMIT 1",
-                           [(":asset_id", self._id), (":timestamp", local_reading(timestamp))])
+                           "AND timestamp=:timestamp ORDER BY currency_id LIMIT 1",
+                           [(":asset_id", self._id), (":timestamp", timestamp)])
+        if quote is None:
+            quote = self._read("SELECT timestamp, quote, currency_id FROM quotes WHERE asset_id=:asset_id "
+                               "AND timestamp<=:timestamp ORDER BY timestamp DESC LIMIT 1",
+                               [(":asset_id", self._id), (":timestamp", local_reading(timestamp))])
         if quote is None:
             return None
         quote_timestamp = self._quote_moment(int(quote[0]), timestamp)

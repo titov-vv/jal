@@ -215,6 +215,42 @@ def test_a_quote_is_taken_from_the_day_the_user_was_living(prepare_db):
     assert JalAsset(2).quote(early, 1) == (d2t(250925), Decimal('90'))
 
 
+# A price stamped on exactly the moment asked about was written FOR the operation asking and is that operation's
+# own, not the price of a day. The series is searched up to local_reading(), which is HOURS PAST that moment on a
+# clock ahead of UTC, so the latest row of that window is somebody else's price - here the day that has already
+# begun in Moscow while the operation is still on the previous one in Greenwich.
+def test_the_price_written_for_an_operation_is_not_shadowed_by_a_later_day(prepare_db):
+    _resident_in('Europe/Moscow')
+    moment = _stamp(2025, 9, 24, 22, 30)                    # 01:30 on the 25th in Moscow, so the 25th is in range
+    create_quotes(2, 1, [(d2t(250924), 80.0), (moment, 85.0), (d2t(250925), 90.0)])
+    assert JalAsset(2).quote(moment, 1) == (moment, Decimal('85'))
+    assert JalAsset(2).quote(moment + 1, 1) == (d2t(250925), Decimal('90'))   # anything else is the price of a day
+
+
+# Two operations minutes apart each carry a price of their own, and the second one's is inside the window the first
+# one's search widens to. Neither may be valued by the other's - the vestings of one afternoon are exactly that
+# case, and the ledger stops on the payment it cannot price (see AssetPayment.price).
+def test_two_priced_operations_of_one_hour_keep_their_own_prices(prepare_db):
+    _resident_in('Europe/Moscow')
+    first, second = _stamp(2025, 9, 24, 12), _stamp(2025, 9, 24, 12, 2)
+    create_quotes(2, 1, [(first, 80.0), (second, 85.0)])
+    assert JalAsset(2).quote(first, 1) == (first, Decimal('80'))
+    assert JalAsset(2).quote(second, 1) == (second, Decimal('85'))
+
+
+# The same rule where the asset is quoted in a currency it is not being asked about: the account is denominated in
+# one currency and the source lists the asset in another, so the price found is converted at the cross-rate. Which
+# price is found first has to be settled the same way, or a cross-quoted asset loses its own price where a directly
+# quoted one keeps it.
+def test_a_cross_quoted_price_of_an_operation_is_found_before_the_series(prepare_db):
+    _resident_in('Europe/Moscow')
+    create_assets([('GE', 'General Electric Company', 'US3696043013', 2, PredefinedAsset.Stock, 'us')])   # id 4
+    moment = _stamp(2025, 9, 24, 22, 30)
+    create_quotes(4, 2, [(moment, 10.0), (d2t(250925), 12.0)])       # the asset is quoted in currency 2 alone...
+    create_quotes(2, 1, [(d2t(250924), 80.0), (d2t(250925), 80.0)])  # ... and that currency in the one asked about
+    assert JalAsset(4).quote(moment, 1) == (moment, Decimal('800'))
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 # A tax year is a HALF-OPEN window. 'year_end' is already the first second of the NEXT year (see
 # TaxReport.prepare_tax_report), so testing it with '<=' puts an operation stamped at midnight on 1 January into two
