@@ -12,9 +12,9 @@ from datetime import datetime, timezone
 from decimal import Decimal
 
 import pytest
-from PySide6.QtCore import Qt, QDate, QDateTime, QTimeZone
+from PySide6.QtCore import Qt, QAbstractTableModel, QDate, QDateTime, QTimeZone
 from PySide6.QtSql import QSqlTableModel
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QStyleOptionViewItem, QWidget
 
 from constants import PredefinedAsset, PredefinedCategory
 from jal.data_import.statement import JSF
@@ -932,3 +932,29 @@ def test_the_findings_are_exported_for_review(reclock_db, tmp_path):
 
     assert tool.export_reordered_legs(prefix, reclock('UTC', 'UTC')) == ''   # nothing found, nothing written
     tool.print_report(report, {'reordered': prefix})                     # ... and the report read is printable
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The day-only flag lives in a table column, so only an SQL model can be asked for it. A report model is a plain
+# QAbstractTableModel that may well have a record() of its own meaning something else entirely - the Staked positions
+# report keeps one that hands out the row behind an index - and asking that one the SQL question raises inside
+# paint(), once per cell, for as long as the report is open.
+def test_a_non_sql_model_is_not_asked_whether_its_timestamp_states_a_day(owner):
+    class ReportModel(QAbstractTableModel):
+        def rowCount(self, parent=None):
+            return 1
+
+        def columnCount(self, parent=None):
+            return 1
+
+        def record(self, index):        # a row of its own, not a QSqlRecord - and it demands the index
+            return {'row': index.row()}
+
+        def data(self, index, role=Qt.DisplayRole):
+            return d2t(210202) if role in (Qt.DisplayRole, Qt.EditRole) else None
+
+    model = ReportModel(owner)
+    delegate = TimestampDelegate(parent=owner)
+    option = QStyleOptionViewItem()
+    delegate.initStyleOption(option, model.index(0, 0))     # used to raise TypeError on ReportModel.record()
+    assert option.text == delegate.displayText(d2t(210202), option.locale)

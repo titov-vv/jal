@@ -4,6 +4,7 @@ from PySide6.QtWidgets import (QApplication, QWidget, QStyle, QStyledItemDelegat
                                QTreeView, QComboBox)
 from PySide6.QtCore import Qt, QModelIndex, QEvent, QLocale, QDateTime, QDate, QTime, QTimeZone
 from PySide6.QtGui import QDoubleValidator, QBrush, QKeyEvent
+from PySide6.QtSql import QSqlQueryModel
 from jal.constants import Setup
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 from jal.db.clock import local_datetime, local_time, local_zone, window_bound
@@ -134,10 +135,13 @@ class TimestampDelegate(GridLinesDelegate):
     # Whether the row itself says its timestamp states a DAY rather than a moment. An operation that can hold the
     # answer keeps it beside the timestamp, in a column named after it (see jal_init.sql); a row with no such column
     # says nothing and the value is left to answer for itself (see is_day_marker).
+    # Only an SQL model is asked: the question is about a table column, and a model that isn't backed by one has no
+    # such column to name. Asked of any model that happens to have a record() of its own - a report model keeps one
+    # that returns its own row - the call lands on a method that means something entirely different.
     @staticmethod
     def _states_day(index) -> bool:
         model = index.model()
-        if not hasattr(model, 'record'):
+        if not isinstance(model, QSqlQueryModel):
             return False
         flag = model.record().fieldName(index.column()) + '_day_only'
         record = model.record(index.row())
