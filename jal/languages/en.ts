@@ -783,42 +783,42 @@ Do you want to delete the account anyway?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="717"/>
+        <location filename="../db/operations.py" line="720"/>
         <source>No price data to value an asset-denominated payment: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="738"/>
+        <location filename="../db/operations.py" line="741"/>
         <source>Dividend payment for:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="739"/>
+        <location filename="../db/operations.py" line="742"/>
         <source>Tax: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="807"/>
+        <location filename="../db/operations.py" line="810"/>
         <source>Can&apos;t process dividend as bank isn&apos;t set for investment account: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="829"/>
+        <location filename="../db/operations.py" line="832"/>
         <source>Unsupported dividend type.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="849"/>
+        <location filename="../db/operations.py" line="852"/>
         <source>Not supported action: stock dividend or vesting closes short trade.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="867"/>
+        <location filename="../db/operations.py" line="870"/>
         <source>Asset amount is not enough to pay the gas fee. Date: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="872"/>
+        <location filename="../db/operations.py" line="875"/>
         <source>Processed asset amount is less than the gas fee. Date: </source>
         <translation></translation>
     </message>
@@ -1403,88 +1403,88 @@ Do you want to delete the account anyway?</source>
 <context>
     <name>Bridge</name>
     <message>
-        <location filename="../db/operations.py" line="2312"/>
+        <location filename="../db/operations.py" line="2315"/>
         <source>Outgoing bridge</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2313"/>
+        <location filename="../db/operations.py" line="2316"/>
         <source>Incoming bridge</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2314"/>
-        <location filename="../db/operations.py" line="2418"/>
+        <location filename="../db/operations.py" line="2317"/>
+        <location filename="../db/operations.py" line="2421"/>
         <source>Bridge fee</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2393"/>
+        <location filename="../db/operations.py" line="2396"/>
         <source>(pending)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2422"/>
+        <location filename="../db/operations.py" line="2425"/>
         <source>Bridge (awaiting matching):</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2426"/>
+        <location filename="../db/operations.py" line="2429"/>
         <source>In-kind fee:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2463"/>
+        <location filename="../db/operations.py" line="2466"/>
         <source>Bridge must move the same asset between accounts. Operation: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2466"/>
+        <location filename="../db/operations.py" line="2469"/>
         <source>Bridge between the same account isn&apos;t supported. Operation: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2468"/>
+        <location filename="../db/operations.py" line="2471"/>
         <source>Bridge can&apos;t receive more asset than was sent. Operation: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2470"/>
+        <location filename="../db/operations.py" line="2473"/>
         <source>Bridge receive can&apos;t precede its send. Operation: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2475"/>
+        <location filename="../db/operations.py" line="2478"/>
         <source>Bridge fee asset isn&apos;t set. Operation: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2487"/>
+        <location filename="../db/operations.py" line="2490"/>
         <source>Asset amount is not enough for bridge processing. Date: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2492"/>
+        <location filename="../db/operations.py" line="2495"/>
         <source>Processed asset amount is less than bridge amount. Date: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2503"/>
+        <location filename="../db/operations.py" line="2506"/>
         <source>Asset amount is not enough to pay the bridge fee. Date: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2509"/>
+        <location filename="../db/operations.py" line="2512"/>
         <source>Processed asset amount is less than the bridge fee. Date: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2531"/>
+        <location filename="../db/operations.py" line="2534"/>
         <source>Asset withdrawal not found for bridge.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2538"/>
+        <location filename="../db/operations.py" line="2541"/>
         <source>There is no FX rate to convert bridge cost basis. Date: </source>
         <translation></translation>
     </message>
@@ -1931,82 +1931,114 @@ Do you want to delete the category anyway?</source>
 <context>
     <name>ChainBalanceReader</name>
     <message>
-        <location filename="../net/chain_balances.py" line="137"/>
+        <location filename="../net/chain_balances.py" line="148"/>
         <source>On-chain balance not read - the wallet has several staking boxes: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="172"/>
+        <location filename="../net/chain_balances.py" line="183"/>
         <source>On-chain balance not read - unexpected asset in a Hyperliquid staking box: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="177"/>
+        <location filename="../net/chain_balances.py" line="188"/>
         <source>Unexpected answer from Hyperliquid for account </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="184"/>
+        <location filename="../net/chain_balances.py" line="195"/>
         <source>Hyperliquid staking balance is missing a field: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="189"/>
+        <location filename="../net/chain_balances.py" line="200"/>
         <source>Unreadable Hyperliquid staking balance in field: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="219"/>
+        <location filename="../net/chain_balances.py" line="230"/>
         <source>On-chain balance not read - the Helius API key isn&apos;t set</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="225"/>
+        <location filename="../net/chain_balances.py" line="236"/>
         <source>Unexpected answer from Helius for stake account </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="234"/>
+        <location filename="../net/chain_balances.py" line="245"/>
         <source>Stake account no longer exists on chain: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="237"/>
+        <location filename="../net/chain_balances.py" line="248"/>
         <source>On-chain balance not read - the address is not a stake account: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="242"/>
+        <location filename="../net/chain_balances.py" line="253"/>
         <source>Unreadable balance of stake account </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="297"/>
+        <location filename="../net/chain_balances.py" line="312"/>
         <source>Could not read the decimals of token </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="302"/>
+        <location filename="../net/chain_balances.py" line="317"/>
         <source>Unreadable decimals of token </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="305"/>
+        <location filename="../net/chain_balances.py" line="320"/>
         <source>Implausible decimals of token </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="318"/>
+        <location filename="../net/chain_balances.py" line="352"/>
+        <location filename="../net/chain_balances.py" line="442"/>
         <source>On-chain balance not read - the API key isn&apos;t set: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="327"/>
+        <location filename="../net/chain_balances.py" line="360"/>
+        <source>On-chain balance not read - the pool does not stake this asset: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_balances.py" line="379"/>
+        <source>Could not read the stake.link position of </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_balances.py" line="384"/>
+        <source>Unreadable stake.link position of </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_balances.py" line="398"/>
+        <source>Could not read the stake.link distribution of </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_balances.py" line="403"/>
+        <location filename="../net/chain_balances.py" line="411"/>
+        <source>Unreadable stake.link distribution of </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_balances.py" line="419"/>
+        <source>stake.link distribution didn&apos;t match the published root, or couldn&apos;t be read: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_balances.py" line="451"/>
         <source>Could not read the balance of </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="332"/>
+        <location filename="../net/chain_balances.py" line="456"/>
         <source>Unreadable balance of </source>
         <translation></translation>
     </message>
@@ -2258,52 +2290,52 @@ Do you want to delete the category anyway?</source>
 <context>
     <name>Conversion</name>
     <message>
-        <location filename="../db/operations.py" line="2163"/>
+        <location filename="../db/operations.py" line="2166"/>
         <source>Conversion</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2185"/>
+        <location filename="../db/operations.py" line="2188"/>
         <source>Fee:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2211"/>
+        <location filename="../db/operations.py" line="2214"/>
         <source>Conversion assets aren&apos;t set. Operation: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2213"/>
+        <location filename="../db/operations.py" line="2216"/>
         <source>Can&apos;t process conversion of an asset into itself. Operation: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2215"/>
+        <location filename="../db/operations.py" line="2218"/>
         <source>Conversion quantities must be positive. Operation: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2222"/>
+        <location filename="../db/operations.py" line="2225"/>
         <source>Asset amount is not enough for conversion processing. Date: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2233"/>
+        <location filename="../db/operations.py" line="2236"/>
         <source>Processed asset amount is less than conversion amount. Date: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2252"/>
+        <location filename="../db/operations.py" line="2255"/>
         <source>Can&apos;t process the conversion fee as organization isn&apos;t set for account: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2256"/>
+        <location filename="../db/operations.py" line="2259"/>
         <source>Asset amount is not enough to pay the conversion fee. Date: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2262"/>
+        <location filename="../db/operations.py" line="2265"/>
         <source>Processed asset amount is less than the conversion fee. Date: </source>
         <translation></translation>
     </message>
@@ -2421,57 +2453,57 @@ Do you want to delete the category anyway?</source>
 <context>
     <name>CorporateAction</name>
     <message>
-        <location filename="../db/operations.py" line="1933"/>
+        <location filename="../db/operations.py" line="1936"/>
         <source>UNDEFINED</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1934"/>
+        <location filename="../db/operations.py" line="1937"/>
         <source>Symbol change</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1935"/>
+        <location filename="../db/operations.py" line="1938"/>
         <source>Split</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1936"/>
+        <location filename="../db/operations.py" line="1939"/>
         <source>Spin-off</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1937"/>
+        <location filename="../db/operations.py" line="1940"/>
         <source>Merger</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1938"/>
+        <location filename="../db/operations.py" line="1941"/>
         <source>Delisting</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2045"/>
+        <location filename="../db/operations.py" line="2048"/>
         <source>Asset isn&apos;t a part of corporate action results: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2064"/>
+        <location filename="../db/operations.py" line="2067"/>
         <source>Corporate action type isn&apos;t defined. Date: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2069"/>
+        <location filename="../db/operations.py" line="2072"/>
         <source>Asset amount is not enough for corporate action processing. Date: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2073"/>
+        <location filename="../db/operations.py" line="2076"/>
         <source>Unhandled case: Corporate action covers not full open position. Date: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2079"/>
+        <location filename="../db/operations.py" line="2082"/>
         <source>Results value of corporate action doesn&apos;t match 100% of initial asset value. </source>
         <translation></translation>
     </message>
@@ -9065,82 +9097,82 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
 <context>
     <name>Swap</name>
     <message>
-        <location filename="../db/operations.py" line="1125"/>
+        <location filename="../db/operations.py" line="1128"/>
         <source>Swap</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1125"/>
+        <location filename="../db/operations.py" line="1128"/>
         <source>Outgoing swap</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1125"/>
+        <location filename="../db/operations.py" line="1128"/>
         <source>Incoming swap</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1176"/>
+        <location filename="../db/operations.py" line="1179"/>
         <source>There are no quotes to value the swap. Date: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1191"/>
+        <location filename="../db/operations.py" line="1194"/>
         <source>Fee:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1226"/>
+        <location filename="../db/operations.py" line="1229"/>
         <source>Can&apos;t process swap as organization isn&apos;t set for account: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1228"/>
+        <location filename="../db/operations.py" line="1231"/>
         <source>Swap assets aren&apos;t set. Operation: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1230"/>
+        <location filename="../db/operations.py" line="1233"/>
         <source>Can&apos;t process swap of an asset into itself. Operation: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1232"/>
+        <location filename="../db/operations.py" line="1235"/>
         <source>Swap quantities must be positive. Operation: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1234"/>
+        <location filename="../db/operations.py" line="1237"/>
         <source>Swap can&apos;t receive an asset before it was exchanged. Operation: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1245"/>
+        <location filename="../db/operations.py" line="1248"/>
         <source>Asset amount is not enough for swap processing. Date: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1251"/>
+        <location filename="../db/operations.py" line="1254"/>
         <source>Processed asset amount is less than swap amount. Date: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1276"/>
+        <location filename="../db/operations.py" line="1279"/>
         <source>Asset disposal not found for swap.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1283"/>
+        <location filename="../db/operations.py" line="1286"/>
         <source>There is no FX rate to convert swap proceeds. Date: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1296"/>
+        <location filename="../db/operations.py" line="1299"/>
         <source>Asset amount is not enough to pay the swap fee. Date: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1302"/>
+        <location filename="../db/operations.py" line="1305"/>
         <source>Processed asset amount is less than the swap fee. Date: </source>
         <translation></translation>
     </message>
@@ -10040,7 +10072,7 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
 <context>
     <name>TimestampDelegate</name>
     <message>
-        <location filename="../widgets/delegates.py" line="122"/>
+        <location filename="../widgets/delegates.py" line="123"/>
         <source>&lt;invalid&gt;</source>
         <translation></translation>
     </message>
@@ -10143,17 +10175,17 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
 <context>
     <name>Trade</name>
     <message>
-        <location filename="../db/operations.py" line="936"/>
+        <location filename="../db/operations.py" line="939"/>
         <source>Sell</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="939"/>
+        <location filename="../db/operations.py" line="942"/>
         <source>Buy</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1020"/>
+        <location filename="../db/operations.py" line="1023"/>
         <source>Can&apos;t process trade as bank isn&apos;t set for investment account: </source>
         <translation></translation>
     </message>
@@ -10245,90 +10277,90 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
 <context>
     <name>Transfer</name>
     <message>
-        <location filename="../db/operations.py" line="1356"/>
+        <location filename="../db/operations.py" line="1359"/>
         <source>Outgoing transfer</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1357"/>
+        <location filename="../db/operations.py" line="1360"/>
         <source>Incoming transfer</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1358"/>
-        <location filename="../db/operations.py" line="1463"/>
+        <location filename="../db/operations.py" line="1361"/>
+        <location filename="../db/operations.py" line="1466"/>
         <source>Transfer fee</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1359"/>
+        <location filename="../db/operations.py" line="1362"/>
         <source>Outgoing asset transfer</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1360"/>
+        <location filename="../db/operations.py" line="1363"/>
         <source>Incoming asset transfer</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1361"/>
+        <location filename="../db/operations.py" line="1364"/>
         <source>Asset transfer fee</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1377"/>
-        <location filename="../db/operations.py" line="1382"/>
+        <location filename="../db/operations.py" line="1380"/>
+        <location filename="../db/operations.py" line="1385"/>
         <source>(pending)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1468"/>
+        <location filename="../db/operations.py" line="1471"/>
         <source>Cost basis:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1482"/>
+        <location filename="../db/operations.py" line="1485"/>
         <source>Error. Zero rate</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1574"/>
-        <location filename="../db/operations.py" line="1587"/>
+        <location filename="../db/operations.py" line="1577"/>
+        <location filename="../db/operations.py" line="1590"/>
         <source>Arrival precedes departure, transfer is left unsettled: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1595"/>
+        <location filename="../db/operations.py" line="1598"/>
         <source>Transfer settled by transaction hash: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1766"/>
+        <location filename="../db/operations.py" line="1769"/>
         <source>Can&apos;t collect fee from the account &apos;{}&apos; ({}) as organization isn&apos;t set for it. Date: {}</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1807"/>
+        <location filename="../db/operations.py" line="1810"/>
         <source>Asset amount is not enough to pay the transfer fee. Date: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1820"/>
+        <location filename="../db/operations.py" line="1823"/>
         <source>Processed asset amount is less than the transfer fee. Date: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1833"/>
+        <location filename="../db/operations.py" line="1836"/>
         <source>Asset amount is not enough for asset transfer processing. Date: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1838"/>
+        <location filename="../db/operations.py" line="1841"/>
         <source>Processed asset amount is less than transfer amount. Date: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1854"/>
+        <location filename="../db/operations.py" line="1857"/>
         <source>Asset withdrawal not found for transfer.</source>
         <translation></translation>
     </message>

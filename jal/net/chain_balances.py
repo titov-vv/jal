@@ -10,6 +10,8 @@ from jal.db.chain_balance import JalChainBalance
 from jal.db.db import JalDB
 from jal.db.settings import JalSettings
 from jal.db.staking import JalStakingBox
+from jal.db.token_blacklist import normalize_address
+from jal.net import stakelink
 from jal.net.web_request import WebRequest
 
 # The keyless 'info' endpoint of HyperCore, the same one HyperliquidFetcher reads its history from
@@ -55,7 +57,8 @@ _MAX_TOKEN_DECIMALS = 36
 #
 # This exists because a whole class of balance growth is INVISIBLE to a fetcher: a Solana stake account is credited
 # its epoch rewards with no transaction behind it, a Hyperliquid delegation auto-compounds its rewards without ever
-# touching the ledger feed, and an Aave aToken grows through a reserve index that emits nothing at all. A fetcher can
+# touching the ledger feed, a stake.link position grows through the rebasing of an stLINK balance held inside the
+# pool, and an Aave aToken grows through a reserve index that emits nothing at all. A fetcher can
 # only book the movements a chain announces, so for these positions the ledger is structurally short of the real
 # quantity, and the only way to learn the difference is to ask the chain what the balance IS.
 #
@@ -128,11 +131,19 @@ class ChainBalanceReader(JalDB):
         return [JalStakingBox(int(box_id)) for box_id in box_ids]
 
     # True when the account-level figure of a venue may be attributed to this box alone: it is the only box of its
-    # wallet that still holds anything. Anything else is refused and said out loud - an aggregate that cannot be split
-    # must never be distributed across the boxes that share it, and a silently multiplied accrual is exactly the kind
-    # of wrong number this whole feature exists to avoid producing.
+    # wallet that still holds anything AND that the same reading would land on. Anything else is refused and said out
+    # loud - an aggregate that cannot be split must never be distributed across the boxes that share it, and a
+    # silently multiplied accrual is exactly the kind of wrong number this whole feature exists to avoid producing.
+    #
+    # What "the same reading" means is (chain, address), because that pair is the whole of what a reader asks about:
+    # two boxes of one wallet on the same venue get the identical figure, while a wallet that stakes into two
+    # DIFFERENT protocols gets two figures that have nothing to do with each other. A guard that looked at every
+    # sibling regardless would refuse the second case too - and one wallet holding both a stake.link LINK position
+    # and a stake.link SDL one is the ordinary shape, not a corner case.
     def _box_may_take_account_total(self, box: JalStakingBox, wallet: JalAccount, timestamp: int) -> bool:
-        siblings = [x for x in self._boxes_of_wallet(wallet.id()) if x.id() != box.id() and x.holdings(timestamp)]
+        siblings = [x for x in self._boxes_of_wallet(wallet.id())
+                    if x.id() != box.id() and x.chain() == box.chain() and x.address() == box.address()
+                    and x.holdings(timestamp)]
         if siblings:
             logging.warning(self.tr("On-chain balance not read - the wallet has several staking boxes: ")
                             + f"{wallet.name()} ({', '.join(x.name() for x in siblings + [box])})")
@@ -243,15 +254,9 @@ class ChainBalanceReader(JalDB):
             return None
 
     # ------------------------------------------------------------------------------------------------------------------
-    # REBASING ASSETS. The other half of what this module reads, and the one the whole design was built from: an Aave
-    # aToken's balance is a scaled number times the reserve's liquidity index, and that index rises EVERY BLOCK with
-    # no event and no transfer behind it. A fetcher that can only book what a chain announces is therefore short by
-    # the entire accrued interest - 2.24% on the position this was measured against, and growing.
-    #
-    # Unlike a staking box, the trigger is the ASSET rather than the account: the flag says this token's quantity can
-    # grow on its own (AssetData.Rebasing), and it is set by hand per asset because inferring it from a ticker prefix
-    # would eventually add invented quantity to a position that never grows. Share tokens must never carry it -
-    # Fluid's fTokens and stkAAVE hold a fixed quantity whose PRICE accrues, which the quote source already reports.
+    # EVM CONTRACTS. What every reading of an EVM chain needs before it can ask anything: which provider serves the
+    # chain, which contract an asset is on it, how to call a view and how to scale the bare integer that comes back.
+    # Both tracks below go through these - the staking contracts read here and the rebasing assets read after them.
 
     # {location_id: EVM fetcher class}. The endpoint configuration is read off the fetchers rather than repeated here,
     # so a chain served by a different provider (Avalanche, on Routescan, with its own root and its own key) is
@@ -274,6 +279,19 @@ class ChainBalanceReader(JalDB):
             [(":asset_id", asset_id), (":location_id", location_id), (":id_type", id_type)])
         return address if address else ''
 
+    # One 'eth_call' on a contract, as the hex word it answered with, or '' when it answered with anything else.
+    #
+    # A view that REVERTS answers with an 'error' object and no result at all, and telling that apart from a number
+    # is not a formality here: an arithmetic underflow is how a stake.link view says the arguments it was given
+    # don't match the state it holds, and reading such an answer as a quantity would invent one.
+    def _eth_call(self, chain, contract: str, data: str, api_key: str) -> str:
+        answer = self._get(chain.api_root, {"chainid": chain.chain_id, "module": "proxy", "action": "eth_call",
+                                            "to": contract, "data": data, "tag": "latest", "apikey": api_key})
+        result = answer.get('result') if isinstance(answer, dict) else None
+        if not isinstance(result, str) or not result.startswith('0x') or len(result) < 3:
+            return ''
+        return result
+
     # Decimals of a token, asked of the contract once and remembered for good (AssetData.Decimals).
     #
     # A history endpoint reports the decimals beside every amount, which is why importing transfers never needed
@@ -289,11 +307,8 @@ class ChainBalanceReader(JalDB):
         known = asset.decimals()
         if known is not None:
             return known
-        answer = self._get(chain.api_root, {"chainid": chain.chain_id, "module": "proxy", "action": "eth_call",
-                                            "to": contract, "data": _ERC20_DECIMALS, "tag": "latest",
-                                            "apikey": api_key})
-        result = answer.get('result') if isinstance(answer, dict) else None
-        if not result or not isinstance(result, str) or not result.startswith('0x') or len(result) < 3:
+        result = self._eth_call(chain, contract, _ERC20_DECIMALS, api_key)
+        if not result:
             logging.warning(self.tr("Could not read the decimals of token ") + f"{asset.symbol()} ({contract})")
             return None
         try:
@@ -306,6 +321,115 @@ class ChainBalanceReader(JalDB):
             return None
         asset.set_decimals(decimals)
         return decimals
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # stake.link's LINK PriorityPool - the first staking container whose size cannot be read from the chain alone.
+    #
+    # Everything about the protocol itself is in jal/net/stakelink.py; what is here is the part that belongs to JAL:
+    # which box may be measured, against which asset, and how the answer is turned into a quantity. In short, the
+    # position is the LINK still waiting in the pool's queue plus the unclaimed stLINK the pool holds for the
+    # account, the second half carrying all of the yield because stLINK rebases. Both halves need the account's entry
+    # in a merkle distribution the pool publishes to IPFS and keeps only the root of on-chain, so the payload is
+    # verified against that root before a single figure from it is used.
+    #
+    # Like Hyperliquid and unlike Solana, the figure is per ACCOUNT: the address a box carries is the pool contract,
+    # which every one of its users shares, so what identifies the position is the wallet. Hence the same guard.
+    def _stakelink_priority_pool_balance(self, box: JalStakingBox, timestamp: int):
+        wallet = self._wallet_of_box(box)
+        if wallet is None or not wallet.address():
+            return None
+        if not self._box_may_take_account_total(box, wallet, timestamp):
+            return None
+        asset = self._sole_asset_of(box, timestamp)
+        if asset is None:
+            return None
+        chain = self._evm_chains().get(box.chain())
+        contract = self._contract_of(asset.id(), box.chain())
+        if chain is None or not contract:
+            return None
+        api_key = JalSettings().getStr(chain.api_key_setting).strip()
+        if not api_key:
+            logging.warning(self.tr("On-chain balance not read - the API key isn't set: ") + chain.api_name)
+            return None
+        pool = box.address()
+        # The pool says which token it takes, and it must be the one the box is recorded as holding. This is the
+        # check that makes reading a bare address safe, the same way the stake program is for Solana: were the box
+        # ever pointed at another pool, its whole LINK-shaped answer would be booked as this position's quantity.
+        staked_token = self._eth_call(chain, pool, stakelink.SELECTOR_TOKEN, api_key)
+        if not staked_token or staked_token[-40:].lower() != normalize_address(box.chain(), contract)[-40:]:
+            logging.warning(self.tr("On-chain balance not read - the pool does not stake this asset: ")
+                            + f"{asset.symbol()} @ {box.name()}")
+            return None
+        decimals = self._token_decimals(asset, chain, contract, api_key)
+        if decimals is None:
+            return None
+        distribution = self._stakelink_distribution(chain, pool, wallet.address(), api_key)
+        if distribution is None:
+            return None
+        amount, shares = distribution
+        # Two calls and neither may be dropped: the first is what has NOT been distributed yet (everything deposited
+        # since the last update of the tree is in it), the second is what has, with its accrued yield. Both take the
+        # account's entry as their argument and subtract it from what the pool recorded, so a stale or wrong entry
+        # makes them revert rather than answer - which is why an empty answer is refused instead of read as zero.
+        queued = self._eth_call(chain, pool, stakelink.call_data(stakelink.SELECTOR_QUEUED_TOKENS,
+                                                                 wallet.address(), amount), api_key)
+        unclaimed = self._eth_call(chain, pool, stakelink.call_data(stakelink.SELECTOR_LSD_TOKENS,
+                                                                    wallet.address(), shares), api_key)
+        if not queued or not unclaimed:
+            logging.warning(self.tr("Could not read the stake.link position of ") + wallet.name())
+            return None
+        try:
+            return asset.id(), stakelink.position(int(queued, 16), int(unclaimed, 16), decimals)
+        except (DecimalException, ValueError, TypeError):
+            logging.warning(self.tr("Unreadable stake.link position of ") + wallet.name())
+            return None
+
+    # The wallet's entry in the distribution the pool has published, as (amount, sharesAmount) in wei.
+    #
+    # The pool publishes the tree to IPFS and keeps only its root and the content hash on-chain, so this is the one
+    # reading in the module that leaves the chain - and the one place where trusting the answer would be a mistake.
+    # It isn't trusted: the tree is rebuilt from whatever a gateway serves and its root compared with the on-chain
+    # one, so an altered entry anywhere in the file is thrown away with the rest of it. What survives is a pair the
+    # contract itself would honour.
+    def _stakelink_distribution(self, chain, pool: str, address: str, api_key: str):
+        digest = self._eth_call(chain, pool, stakelink.SELECTOR_IPFS_HASH, api_key)
+        root = self._eth_call(chain, pool, stakelink.SELECTOR_MERKLE_ROOT, api_key)
+        if not digest or not root:
+            logging.warning(self.tr("Could not read the stake.link distribution of ") + pool)
+            return None
+        try:
+            digest, root = bytes.fromhex(digest[2:]), bytes.fromhex(root[2:])
+        except ValueError:
+            logging.warning(self.tr("Unreadable stake.link distribution of ") + pool)
+            return None
+        if not any(root):
+            # Nothing has been distributed yet, which is the ordinary state of a pool whose queue has never been
+            # drained. A zero entry is the honest answer: the account's whole position is still in the queue.
+            return 0, 0
+        cid = stakelink.ipfs_cid(digest)
+        if not cid:
+            logging.warning(self.tr("Unreadable stake.link distribution of ") + pool)
+            return None
+        # The whole tree is fetched to read one line of it - there is no per-account endpoint, and the root can only
+        # be checked against the whole file anyway. It is a few hundred KB and is asked for once per update.
+        for gateway in stakelink.IPFS_GATEWAYS:
+            entry = stakelink.distribution_entry(self._get(gateway + cid, {}), root, address)
+            if entry is not None:
+                return entry
+        logging.warning(self.tr("stake.link distribution didn't match the published root, or couldn't be read: ")
+                        + cid)
+        return None
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # REBASING ASSETS. The other half of what this module reads, and the one the whole design was built from: an Aave
+    # aToken's balance is a scaled number times the reserve's liquidity index, and that index rises EVERY BLOCK with
+    # no event and no transfer behind it. A fetcher that can only book what a chain announces is therefore short by
+    # the entire accrued interest - 2.24% on the position this was measured against, and growing.
+    #
+    # Unlike a staking box, the trigger is the ASSET rather than the account: the flag says this token's quantity can
+    # grow on its own (AssetData.Rebasing), and it is set by hand per asset because inferring it from a ticker prefix
+    # would eventually add invented quantity to a position that never grows. Share tokens must never carry it -
+    # Fluid's fTokens and stkAAVE hold a fixed quantity whose PRICE accrues, which the quote source already reports.
 
     # What one wallet really holds of one rebasing token, as {asset id: quantity}, or None when it could not be read.
     def _evm_token_balance(self, account: JalAccount, asset: JalAsset, timestamp: int):
@@ -366,12 +490,33 @@ class ChainBalanceReader(JalDB):
     # of the storage: 'chain_balances' is keyed by (account, asset) and knows nothing about staking or rebasing, which
     # is what lets the same table serve the box readers here and the rebasing-asset reader that comes later.
     #
-    # A venue that is absent is absent on purpose. Tron's frozen TRX is a fixed quantity whose rewards are a separate
-    # pot paid out by an explicit claim - a receivable, not balance growth. A CEX staking box has no API to ask at
-    # all. A box of an unlisted venue simply never gets a row, which is the correct outcome rather than a gap.
+    # A venue that is absent is absent on purpose, and every one of them is absent for the same reason: what it pays
+    # is a RECEIVABLE rather than growth of the staked quantity, and this table measures a quantity. Tron's frozen
+    # TRX is a fixed amount whose rewards sit in a separate pot until an explicit claim; stake.link's SDL locking is
+    # the same shape and more so - `staked()` never moves and the yield arrives as claimable stLINK, stPOL and stESP,
+    # three assets the box does not hold, so its accrual measured in SDL is genuinely zero. A CEX staking box has no
+    # API to ask at all. A box of an unlisted venue simply never gets a row, which is the correct outcome, not a gap.
     def _box_readers(self) -> dict:
         return {AssetLocation.HL_BLOCKCHAIN: self._hyperliquid_box_balance,
-                AssetLocation.SOL_BLOCKCHAIN: self._solana_box_balance}
+                AssetLocation.SOL_BLOCKCHAIN: self._solana_box_balance,
+                AssetLocation.ETH_BLOCKCHAIN: self._evm_box_balance}
+
+    # The staking contracts of an EVM chain that can be read, as {location: {contract address: reader}}.
+    #
+    # One more level of dispatch than the other chains need, and the chain is what forces it: an EVM box's address IS
+    # the contract holding the position, a chain carries as many staking protocols as anyone cares to deploy on it,
+    # and each of them reports what it holds in its own way. So here the chain says nothing and the contract says
+    # everything - the same split the protocol registry makes for a transaction's counterparty.
+    def _evm_box_readers(self) -> dict:
+        return {AssetLocation.ETH_BLOCKCHAIN: {stakelink.PRIORITY_POOL: self._stakelink_priority_pool_balance}}
+
+    # A box of an EVM chain is read by the contract it points at. One pointing at a contract with no reader is left
+    # alone, exactly as a box of an unlisted venue is - the absence is the correct outcome, not a gap.
+    def _evm_box_balance(self, box: JalStakingBox, timestamp: int):
+        if not box.address():
+            return None
+        reader = self._evm_box_readers().get(box.chain(), {}).get(normalize_address(box.chain(), box.address()))
+        return reader(box, timestamp) if reader else None
 
     # Reads and records the real balance of every staking box whose venue is known to accrue silently.
     #

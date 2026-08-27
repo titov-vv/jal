@@ -1,3 +1,4 @@
+import json
 from decimal import Decimal
 
 import pytest
@@ -745,3 +746,282 @@ def test_the_accrual_axis_starts_at_zero(hl_wallet):
 
     assert bounds[2] == 0
     assert bounds[3] >= Decimal('0.07')
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# stake.link's LINK PriorityPool - the case where the chain alone does not hold the answer. The position is split
+# between an on-chain queue and an off-chain merkle distribution the pool publishes to IPFS, keeping only the root
+# of it on-chain, so the whole design rests on rebuilding that tree and refusing a payload that doesn't match.
+#
+# Every figure below is the real position on 2026-08-27: 64.093431589462644823 LINK booked, the whole of it
+# distributed into 52.310156802488044315 stLINK shares that the pool had grown to 64.795746667946949683 LINK.
+LINK_CONTRACT = '0x514910771af9ca656af840dff83e8264ecf986ca'
+PRIORITY_POOL = '0xddc796a66e8b83d0bccd97df33a6ccfba8fd60ea'
+ETH_WALLET_ADDRESS = '0x' + 'a' * 40
+LINK_WALLET = 0
+LINK = 0
+
+# The merkle root of _DISTRIBUTION below, and of _DISTRIBUTION with only its first entry. Both were computed with a
+# keccak implementation independent of the one jal/net/stakelink.py uses, so what the tests pin is the ALGORITHM -
+# leaf = keccak(keccak(abi.encode(account, amount, shares))), leaves sorted, sorted-pair hashing - and not the
+# module's agreement with itself. The same rebuild reproduced the live contract's merkleRoot() over all 3257
+# accounts of the real distribution, which is the check that proves it against the chain rather than against a
+# reference of my own.
+_ROOT = '0xae9409d4b0efc0fecd947702299dd235ab98337bb6a5e9d3b61fed3fb9a8914f'
+_SINGLE_ROOT = '0xbbdc7372f056ea8740b00c5f8858a50e14915e6a138dfe77ffcc97a91f7af4a6'    # of _DISTRIBUTION's second entry alone
+_IPFS_DIGEST = '0xaf3480ae941c657b06eac569f0b4c452637136e8875379d9c32e09b8730f9096'
+_IPFS_CID = 'Qma8aVPWqiWpK4fBR3CL7in7rkqBVH26CE28wjECLDYZBT'   # the CID that digest really served on 2026-08-27
+
+_QUEUED_WEI = 64093431589462644823        # what the account queued in total, and what JAL's ledger booked
+_SHARES_WEI = 52310156802488044315        # the stLINK shares the distribution credited it with
+_STLINK_WEI = 64795746667946949683        # what those shares were worth in LINK when measured
+
+_DISTRIBUTION = {'merkleRoot': _ROOT,
+                 'data': {ETH_WALLET_ADDRESS: {'amount': str(_QUEUED_WEI), 'sharesAmount': str(_SHARES_WEI)},
+                          '0x' + 'b' * 40: {'amount': '1000000000000000000', 'sharesAmount': '800000000000000000'},
+                          '0x' + 'c' * 40: {'amount': '0', 'sharesAmount': '0'}}}
+
+
+@pytest.fixture
+def link_wallet(prepare_db):
+    from jal.db.asset import JalAssetCreator
+    from jal.constants import SymbolId
+    global LINK_WALLET, LINK
+    JalSettings().setValue("ApiKey_Etherscan", "test-key")
+    LINK_WALLET = JalAccountCreator(currency_id=USD, number='', name='ETH wallet', investing=1, organization=1,
+                                    precision=18, account_type=PredefinedAccountType.Wallet,
+                                    address=ETH_WALLET_ADDRESS, chain=AssetLocation.ETH_BLOCKCHAIN).commit().id()
+    creator = JalAssetCreator(PredefinedAsset.Crypto, "Chainlink")
+    symbol_id = creator.add_symbol('LINK', USD, AssetLocation.ETH_BLOCKCHAIN)
+    creator.add_identifier(symbol_id, SymbolId.ETH_ADDRESS, LINK_CONTRACT)
+    LINK = creator.commit().id()
+    create_trades(LINK_WALLET, [(d2t(260101), d2t(260101), LINK, Decimal('100'), Decimal('12'), Decimal('0'))])
+    Ledger().rebuild(from_timestamp=0)
+    yield
+
+
+def _link_box(name, address=PRIORITY_POOL, wallet=None) -> JalStakingBox:
+    return JalStakingBox.create(JalAccount(wallet if wallet else LINK_WALLET), name, protocol='stake.link',
+                                chain=AssetLocation.ETH_BLOCKCHAIN, address=address)
+
+
+def _stake_link(box_id, amount, timestamp=d2t(260201)):
+    LedgerTransaction.create_new(LedgerTransaction.Transfer, {
+        'withdrawal_timestamp': timestamp, 'withdrawal_account': LINK_WALLET, 'withdrawal': str(amount),
+        'deposit_timestamp': timestamp, 'deposit_account': box_id, 'deposit': str(amount),
+        'number': '', 'note': '', 'symbol_id': symbol_id_for(LINK)}).oid()
+    Ledger().rebuild(from_timestamp=0)
+
+
+def _word(value: int) -> str:
+    return '0x' + format(value, '064x')
+
+
+# Answers everything a stake.link reading asks: five 'eth_call's dispatched on the selector, and the IPFS GET that
+# the two views' arguments come from. Every answer is overridable, which is what the failure cases below vary.
+def _fake_stakelink(monkeypatch, token=LINK_CONTRACT, digest=_IPFS_DIGEST, root=_ROOT, queued=0,
+                    unclaimed=_STLINK_WEI, decimals=18, payload=None, gateways=None):
+    from jal.net import stakelink
+    payload = _DISTRIBUTION if payload is None else payload
+    asked = []
+    answers = {stakelink.SELECTOR_TOKEN: _word(int(token, 16)) if token else '',
+               stakelink.SELECTOR_IPFS_HASH: digest, stakelink.SELECTOR_MERKLE_ROOT: root,
+               stakelink.SELECTOR_QUEUED_TOKENS: _word(queued) if queued is not None else '',
+               stakelink.SELECTOR_LSD_TOKENS: _word(unclaimed) if unclaimed is not None else '',
+               '0x313ce567': _word(decimals)}
+
+    def fake_get(self, url, params):
+        if not params:                                    # an IPFS gateway is asked with a bare URL
+            asked.append(url)
+            if gateways is not None:
+                return gateways.get(url)
+            return json.dumps(payload) if payload is not None else None
+        asked.append(params['data'][:10])
+        answer = answers.get(params['data'][:10])
+        return {'result': answer} if answer else {'error': {'code': -32000, 'message': 'execution reverted'}}
+    monkeypatch.setattr(ChainBalanceReader, "_get", fake_get)
+    return asked
+
+
+# The reading this whole reader exists for: the ledger holds what was queued, the chain holds that plus the yield
+# the pool's stLINK has rebased into, and nothing on the chain ever announced the difference.
+def test_the_stakelink_position_is_the_queue_plus_the_unclaimed_stlink(link_wallet, monkeypatch):
+    box = _link_box("stake.link PriorityPool")
+    _stake_link(box.id(), Decimal('64.093431589462644823'))
+    _fake_stakelink(monkeypatch)
+
+    assert ChainBalanceReader().read_staking_boxes(NOW) == 1
+    assert JalChainBalance().latest(box.id(), LINK, NOW)['amount'] == Decimal('64.795746667946949683')
+    accrual = JalChainBalance().accrual(box.id(), LINK, box.holdings(NOW)[0]['amount'], NOW)
+    assert accrual['delta'] == Decimal('0.702315078484304860')
+
+
+# Both halves are read and added: what a distribution hasn't covered yet is still in the queue, and dropping either
+# half would show a position that has lost everything deposited since the last update of the tree.
+def test_both_halves_of_the_position_are_added_up(link_wallet, monkeypatch):
+    box = _link_box("stake.link PriorityPool")
+    _stake_link(box.id(), Decimal('74.093431589462644823'))
+    _fake_stakelink(monkeypatch, queued=10 * 10 ** 18)
+
+    ChainBalanceReader().read_staking_boxes(NOW)
+    assert JalChainBalance().latest(box.id(), LINK, NOW)['amount'] == Decimal('74.795746667946949683')
+
+
+# The check that makes reading an off-chain file safe at all. The payload is served by a gateway nobody controls, so
+# the tree is REBUILT from it and its root compared with the one the contract published - a single altered entry,
+# anywhere in the file and for anyone, changes the root and the whole payload is thrown away.
+def test_a_tampered_distribution_is_refused(link_wallet, monkeypatch):
+    import copy
+    box = _link_box("stake.link PriorityPool")
+    _stake_link(box.id(), Decimal('64.093431589462644823'))
+    tampered = copy.deepcopy(_DISTRIBUTION)
+    tampered['data'][ETH_WALLET_ADDRESS]['sharesAmount'] = str(_SHARES_WEI * 2)
+    _fake_stakelink(monkeypatch, payload=tampered)
+
+    assert ChainBalanceReader().read_staking_boxes(NOW) == 0
+    assert JalChainBalance().latest(box.id(), LINK, NOW) is None
+
+
+# ...and the root the payload CLAIMS is not what it is checked against - only the rebuilt one is. A payload that
+# simply carries the right root beside wrong data must not pass.
+def test_a_payload_that_only_claims_the_right_root_is_refused(link_wallet, monkeypatch):
+    import copy
+    box = _link_box("stake.link PriorityPool")
+    _stake_link(box.id(), Decimal('64.093431589462644823'))
+    forged = copy.deepcopy(_DISTRIBUTION)
+    forged['data'] = {ETH_WALLET_ADDRESS: {'amount': str(_QUEUED_WEI), 'sharesAmount': str(_SHARES_WEI * 3)}}
+    _fake_stakelink(monkeypatch, payload=forged)
+
+    assert ChainBalanceReader().read_staking_boxes(NOW) == 0
+
+
+# An account the tree doesn't mention has queued LINK that no distribution has covered yet. That is an ordinary
+# state and not a failure, so it reads as a zero entry - and the whole position is then the queue.
+def test_an_account_absent_from_the_distribution_is_all_queue(link_wallet, monkeypatch):
+    box = _link_box("stake.link PriorityPool")
+    _stake_link(box.id(), Decimal('64.093431589462644823'))
+    # A distribution of somebody else alone - the tree is a single leaf, so its root is that leaf.
+    without_us = {'merkleRoot': _SINGLE_ROOT, 'data': {'0x' + 'b' * 40: _DISTRIBUTION['data']['0x' + 'b' * 40]}}
+    _fake_stakelink(monkeypatch, root=_SINGLE_ROOT, payload=without_us, queued=_QUEUED_WEI, unclaimed=0)
+
+    assert ChainBalanceReader().read_staking_boxes(NOW) == 1
+    assert JalChainBalance().latest(box.id(), LINK, NOW)['amount'] == Decimal('64.093431589462644823')
+
+
+# A pool that has never made a distribution publishes a zero root, and then there is nothing to fetch: the account's
+# whole position is in the queue and the gateway is never asked.
+def test_an_empty_root_means_everything_is_still_queued(link_wallet, monkeypatch):
+    box = _link_box("stake.link PriorityPool")
+    _stake_link(box.id(), Decimal('64.093431589462644823'))
+    asked = _fake_stakelink(monkeypatch, root='0x' + '0' * 64, queued=_QUEUED_WEI, unclaimed=0)
+
+    assert ChainBalanceReader().read_staking_boxes(NOW) == 1
+    assert JalChainBalance().latest(box.id(), LINK, NOW)['amount'] == Decimal('64.093431589462644823')
+    assert not [x for x in asked if x.startswith('http')]
+
+
+# The check that makes reading a bare address safe, and the counterpart of the stake-program check on Solana: the
+# pool itself says which token it takes, and a box pointed at a pool of some other token is refused rather than
+# having that pool's whole answer booked as this position's quantity.
+def test_a_pool_that_stakes_another_token_is_refused(link_wallet, monkeypatch):
+    box = _link_box("stake.link PriorityPool")
+    _stake_link(box.id(), Decimal('64.093431589462644823'))
+    _fake_stakelink(monkeypatch, token='0x' + 'e' * 40)
+
+    assert ChainBalanceReader().read_staking_boxes(NOW) == 0
+    assert JalChainBalance().latest(box.id(), LINK, NOW) is None
+
+
+# A view that reverts answers with an error and no result, which is how the pool says the arguments it was given
+# don't match the state it holds. It must never be read as a quantity of zero.
+@pytest.mark.parametrize("call", ["queued", "unclaimed", "digest", "root"])
+def test_a_reverting_view_stores_nothing(link_wallet, monkeypatch, call):
+    box = _link_box("stake.link PriorityPool")
+    _stake_link(box.id(), Decimal('64.093431589462644823'))
+    _fake_stakelink(monkeypatch, **{call: None if call in ('queued', 'unclaimed') else ''})
+
+    assert ChainBalanceReader().read_staking_boxes(NOW) == 0
+    assert JalChainBalance().latest(box.id(), LINK, NOW) is None
+
+
+# The distribution is pinned by its content hash, so ANY gateway that answers serves the same bytes - which is what
+# lets a second one be tried when the first doesn't answer, with no loss of trust.
+def test_the_next_gateway_is_tried_when_the_first_does_not_answer(link_wallet, monkeypatch):
+    from jal.net import stakelink
+    box = _link_box("stake.link PriorityPool")
+    _stake_link(box.id(), Decimal('64.093431589462644823'))
+    urls = {stakelink.IPFS_GATEWAYS[0] + _IPFS_CID: None,
+            stakelink.IPFS_GATEWAYS[1] + _IPFS_CID: json.dumps(_DISTRIBUTION)}
+    asked = _fake_stakelink(monkeypatch, gateways=urls)
+
+    assert ChainBalanceReader().read_staking_boxes(NOW) == 1
+    assert JalChainBalance().latest(box.id(), LINK, NOW)['amount'] == Decimal('64.795746667946949683')
+    assert [x for x in asked if x.startswith('http')] == list(urls)
+
+
+# The pool figure is per ACCOUNT - the address a box carries is the contract every user of it shares - so it may
+# only be attributed to a box that is alone in owning it, exactly as a Hyperliquid one may.
+def test_two_boxes_on_the_same_pool_are_refused(link_wallet, monkeypatch):
+    first = _link_box("stake.link PriorityPool")
+    second = _link_box("stake.link PriorityPool #2")
+    _stake_link(first.id(), Decimal('34'))
+    _stake_link(second.id(), Decimal('30.093431589462644823'))
+    _fake_stakelink(monkeypatch)
+
+    assert ChainBalanceReader().read_staking_boxes(NOW) == 0
+    assert JalChainBalance().latest(first.id(), LINK, NOW) is None
+    assert JalChainBalance().latest(second.id(), LINK, NOW) is None
+
+
+# ...but a sibling box of a DIFFERENT protocol shares nothing with it, and must not silence it. One wallet holding
+# both a stake.link LINK position and its SDL one is the ordinary shape - the guard asks about the venue a reading
+# lands on, which is (chain, address), and not about staking boxes in general.
+def test_a_box_of_another_protocol_does_not_block_the_reading(link_wallet, monkeypatch):
+    box = _link_box("stake.link PriorityPool")
+    other = _link_box("stake.link SDL staking", address='0x' + 'f' * 40)
+    _stake_link(box.id(), Decimal('64.093431589462644823'))
+    _stake_link(other.id(), Decimal('2.406573872940269419'))
+    _fake_stakelink(monkeypatch)
+
+    assert ChainBalanceReader().read_staking_boxes(NOW) == 1
+    assert JalChainBalance().latest(box.id(), LINK, NOW)['amount'] == Decimal('64.795746667946949683')
+    assert JalChainBalance().latest(other.id(), LINK, NOW) is None    # nothing knows how to read that one
+
+
+# A box pointing at a contract no reader knows is left alone, exactly as a box of an unlisted venue is. Ethereum
+# carries as many staking protocols as anyone cares to deploy on it, so the chain alone decides nothing here.
+def test_an_unknown_ethereum_contract_is_not_read(link_wallet, monkeypatch):
+    box = _link_box("Some other pool", address='0x' + 'e' * 40)
+    _stake_link(box.id(), Decimal('64.093431589462644823'))
+    asked = _fake_stakelink(monkeypatch)
+
+    assert ChainBalanceReader().read_staking_boxes(NOW) == 0
+    assert asked == []
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The two pieces of protocol arithmetic, on their own. Both are pinned to values taken from outside the module: the
+# CID is the one that really served the distribution, and the roots were computed with another keccak implementation.
+def test_the_ipfs_cid_is_derived_from_the_published_digest():
+    from jal.net import stakelink
+    assert stakelink.ipfs_cid(bytes.fromhex(_IPFS_DIGEST[2:])) == _IPFS_CID
+    assert stakelink.ipfs_cid(b'\0' * 31) == ''       # a digest of the wrong size names nothing
+
+
+def test_the_merkle_root_is_rebuilt_as_the_contract_verifies_it():
+    from jal.net import stakelink
+    entry = stakelink.distribution_entry(json.dumps(_DISTRIBUTION), bytes.fromhex(_ROOT[2:]), ETH_WALLET_ADDRESS)
+
+    assert entry == (_QUEUED_WEI, _SHARES_WEI)
+    # ...the address is matched whatever case it is written in, and an unknown one is a zero entry rather than None
+    assert stakelink.distribution_entry(json.dumps(_DISTRIBUTION), bytes.fromhex(_ROOT[2:]),
+                                        ETH_WALLET_ADDRESS.upper()) == (_QUEUED_WEI, _SHARES_WEI)
+    assert stakelink.distribution_entry(json.dumps(_DISTRIBUTION), bytes.fromhex(_ROOT[2:]),
+                                        '0x' + 'd' * 40) == (0, 0)
+
+
+@pytest.mark.parametrize("payload", ['', 'not json', '"{}"', json.dumps({'data': 'wrong shape'}),
+                                     json.dumps({'data': {'0xabc': {'amount': 'x', 'sharesAmount': '1'}}}), None])
+def test_an_unreadable_distribution_is_refused(payload):
+    from jal.net import stakelink
+    assert stakelink.distribution_entry(payload, bytes.fromhex(_ROOT[2:]), ETH_WALLET_ADDRESS) is None
