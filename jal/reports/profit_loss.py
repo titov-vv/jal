@@ -9,7 +9,7 @@ from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.common_models import AccountListModel
 from jal.constants import BookAccount, PredefinedCategory, Setup
-from jal.widgets.helpers import month_list, set_grids_row_height, restore_columns
+from jal.widgets.helpers import month_list, set_grids_metrics, restore_columns
 from jal.widgets.delegates import FloatDelegate
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.reference_dialogs import AccountListDialog
@@ -164,7 +164,7 @@ class ProfitLossReportWindow(MdiWidget):
         super().__init__(parent.mdi_area())
         self.ui = Ui_ProfitLossReportWidget()
         self.ui.setupUi(self)
-        set_grids_row_height(self)
+        set_grids_metrics(self)
         self.ui.ReportAccountEdit.setup_selector(AccountListModel, AccountListDialog, self)
         self._parent = parent
         self.name = self.tr("P&L by account")

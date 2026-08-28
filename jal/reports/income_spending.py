@@ -10,7 +10,7 @@ from jal.db.clock import local_time
 from jal.db.category import JalCategory
 from jal.constants import Setup
 from jal.widgets.helpers import is_signal_connected, month_list, month_start_ts, month_end_ts, \
-    week_list, week_start_ts, week_end_ts, str2int, restore_columns, set_grids_row_height
+    week_list, week_start_ts, week_end_ts, str2int, restore_columns, set_grids_metrics
 from jal.widgets.icons import JalIcon
 from jal.widgets.delegates import GridLinesDelegate, FloatDelegate
 from jal.widgets.mdi import MdiWidget
@@ -385,7 +385,7 @@ class IncomeSpendingReportWindow(MdiWidget):
         super().__init__(parent.mdi_area())
         self.ui = Ui_IncomeSpendingReportWidget()
         self.ui.setupUi(self)
-        set_grids_row_height(self)
+        set_grids_metrics(self)
         self._parent = parent
         self.name = self.tr("Income & spending")
         self.current_index = None  # this is used in onOperationContextMenu() to track item for menu

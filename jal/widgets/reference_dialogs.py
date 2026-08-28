@@ -20,7 +20,7 @@ from jal.widgets.icons import JalIcon
 from jal.db.settings import JalSettings
 from jal.widgets.assets_dialogs import SymbolListDialog
 from jal.widgets.account_dialog import AccountDialog
-from jal.widgets.helpers import set_grids_row_height
+from jal.widgets.helpers import set_grids_metrics
 
 
 # --------------------------------------------------------------------------------------------------------------
@@ -35,7 +35,7 @@ class ReferenceDataDialog(QDialog):
         super().__init__(parent)
         self.ui = Ui_ReferenceDataDialog()
         self.ui.setupUi(self)
-        set_grids_row_height(self)
+        set_grids_metrics(self)
         self._parent = parent
         self.model = None
         self._view = None

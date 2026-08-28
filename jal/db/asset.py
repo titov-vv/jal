@@ -158,6 +158,12 @@ class JalAsset(JalDB):
     # the list rather than at the text: a text naming two tickers is a display, and storing it would create a
     # listing under a ticker that exists nowhere.
     def tickers(self, currency: int = None, location: int = None) -> list:
+        return list(dict.fromkeys(x['symbol'] for x in self._active_listings(currency, location)))   # de-duplicated, first listing first
+
+    # The active listings of this asset, narrowed by currency and location as symbol() describes above. It is the
+    # one place that narrowing is written, so everything that shows a listing - its ticker, its icon - shows the
+    # same one.
+    def _active_listings(self, currency: int = None, location: int = None) -> list:
         if not self._data:
             return []
         currency = None if self._type == PredefinedAsset.Money else currency  # Money have one unique symbol
@@ -166,7 +172,13 @@ class JalAsset(JalDB):
             listings = [x for x in listings if x['currency_id'] == currency]
             if location and [x for x in listings if x['location_id'] == location]:
                 listings = [x for x in listings if x['location_id'] == location]
-        return list(dict.fromkeys(x['symbol'] for x in listings))   # de-duplicated, first listing first
+        return listings
+
+    # Id of the listing that names this asset for the given currency and location - the very row whose ticker
+    # symbol() prints, so that an icon taken by this id belongs to the ticker shown beside it. 0 if there is none.
+    def listing_id(self, currency: int = None, location: int = None) -> int:
+        listings = self._active_listings(currency, location)
+        return listings[0]['id'] if listings else 0
 
     # Returns list of ids of asset's active symbols
     def active_symbol_ids(self) -> list:

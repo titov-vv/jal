@@ -1,16 +1,16 @@
 from datetime import datetime, timezone
 from decimal import Decimal, InvalidOperation
 from PySide6.QtCore import Qt, QModelIndex
-from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtSql import QSqlQueryModel, QSqlTableModel
 from PySide6.QtWidgets import QCompleter, QMessageBox
 from jal.db.db import JalDB
 from jal.db.common_models_abstract import AbstractReferenceListModel
 from jal.db.asset import JalAsset
+from jal.db.icon import JalIcons
 from jal.db.symbol import JalSymbol
 from jal.db.tag import JalTag
 from jal.widgets.helpers import DateFormat
-from jal.constants import CmColumn, CmWidth, AssetData, IconOwner, SymbolId, Setup
+from jal.constants import CmColumn, CmWidth, AssetData, IconOwner, SymbolId
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -25,17 +25,15 @@ class SymbolsListModel(QSqlQueryModel, JalDB):
             CmColumn("currency_id", self.tr("Currency"), hide=True),
             CmColumn("currency", self.tr("Currency")),
             CmColumn("location_id", self.tr("Location")),
-            CmColumn("full_name", self.tr("Name"), width=CmWidth.WIDTH_STRETCH, details=True),
-            CmColumn("icon", '', width=Setup.ASSET_ICON_SIZE + 8)
+            CmColumn("full_name", self.tr("Name"), width=CmWidth.WIDTH_STRETCH, details=True)
         ]
         self._filter_by = ''
         self._filter_value = None
         self._default_name = 'symbol'
-        self._base_query = "SELECT s.id, s.symbol, s.asset_id, a.type_id, s.currency_id, c.symbol AS currency, s.location_id, a.full_name, i.image AS icon "\
+        self._base_query = "SELECT s.id, s.symbol, s.asset_id, a.type_id, s.currency_id, c.symbol AS currency, s.location_id, a.full_name "\
                            "FROM asset_symbol s "\
                            "LEFT JOIN assets a ON a.id=s.asset_id "\
-                           "LEFT JOIN asset_symbol c ON s.currency_id=c.asset_id AND c.active=1 "\
-                           f"LEFT JOIN icons i ON i.entity={IconOwner.Symbol} AND i.item_id=s.id"
+                           "LEFT JOIN asset_symbol c ON s.currency_id=c.asset_id AND c.active=1"
         self._filter_clause = ''
         self._filter_params = []   # bound parameters of _current_query (carried into locateItem's wrapper query)
         self._sort_clause = "ORDER BY s.symbol"
@@ -67,24 +65,12 @@ class SymbolsListModel(QSqlQueryModel, JalDB):
                 return self._columns[section].header
         return None
 
-    # The 'icon' column keeps the image itself (the 'icons' row of this listing, filled in by the quote
-    # downloader), so it is displayed as a picture and never as text - the raw bytes of a PNG are not
-    # something to show. A listing with no row of its own joins to NULL, which is 'nothing to show' as well.
+    # The logo of a listing is drawn before its ticker. The image itself is not part of the query - it is asked
+    # for by id from the icon store, which decodes it once per size instead of once per paint, and answers the
+    # common case ("this listing has none") without reaching the database at all.
     def data(self, index, role=Qt.DisplayRole):
-        if index.isValid() and index.column() == self.fieldIndex("icon"):
-            if role == Qt.DecorationRole:
-                image = super().data(index, Qt.DisplayRole)
-                if image:   # NULL (never downloaded) and empty (source has none) are both 'nothing to show'
-                    pixmap = QPixmap()
-                    if pixmap.loadFromData(image):
-                        # Logos are stored as they are served (a Trust Wallet one is 256x256), and a decoration is
-                        # painted at its own size - so it is scaled down here, otherwise one icon sets the height
-                        # of every row in the table.
-                        return QIcon(pixmap.scaled(Setup.ASSET_ICON_SIZE, Setup.ASSET_ICON_SIZE,
-                                                   Qt.KeepAspectRatio, Qt.SmoothTransformation))
-                return None
-            if role == Qt.DisplayRole:
-                return None
+        if role == Qt.DecorationRole and index.isValid() and index.column() == self.fieldIndex("symbol"):
+            return JalIcons.decoration(IconOwner.Symbol, self.getId(index), JalIcons.grid_size())
         return super().data(index, role)
 
     def fieldIndex(self, field):
@@ -186,11 +172,10 @@ class AssetSymbolsModel(AbstractReferenceListModel):
         columns = [
             CmColumn("id", '', hide=True),
             CmColumn("asset_id", '', hide=True),
-            CmColumn("symbol", self.tr("Symbol"), default=True, sort=True, width=CmWidth.WIDTH_STRETCH),
+            CmColumn("symbol", self.tr("Symbol"), default=True, sort=True, width=CmWidth.WIDTH_STRETCH, icon=True),
             CmColumn("currency_id", self.tr("Currency")),
             CmColumn("location_id", self.tr("Location")),
-            CmColumn("active", self.tr("Act.")),
-            CmColumn("icon", '', hide=True)
+            CmColumn("active", self.tr("Act."))
         ]
         super().__init__("asset_symbol", columns, parent)
         self.set_default_values({'symbol': '', 'currency_id': JalAsset.get_base_currency(), 'location_id': 0, 'active': 1})

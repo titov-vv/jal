@@ -2,12 +2,13 @@ import base64
 import logging
 from datetime import time, datetime, timedelta, timezone
 from functools import cmp_to_key, partial
-from PySide6.QtCore import Qt, QCollator, QItemSelectionModel, QTimer
+from PySide6.QtCore import Qt, QCollator, QItemSelectionModel, QSize, QTimer
 from PySide6.QtGui import QImage, QKeySequence, QShortcut
 from PySide6.QtWidgets import (QApplication, QAbstractItemView, QDialog, QTableView, QTreeView, QDateTimeEdit,
                                QStyle, QSplitter)
 from jal.constants import Setup
 from jal.db.clock import local_moment, local_reading, local_time, window_bound
+from jal.db.icon import JalIcons
 from jal.db.settings import JalSettings
 try:
     from pyzbar import pyzbar
@@ -112,11 +113,19 @@ def grid_row_height(view, lines: int = 1) -> int:
     padding = 2 * view.style().pixelMetric(QStyle.PM_FocusFrameVMargin, None, view) * RowPadding.factor()
     return view.fontMetrics().height() * lines + padding
 
-# Gives every grid inside the given widget (a form as a rule) the same row height.
-# A table takes it from its vertical header, but a tree has none - there the height comes from the sizeHint() of
+# The size of an icon drawn inside a grid row: the height of the font, without the padding above.
+# It is the largest icon a row can carry for free - the text already claims that many pixels, so the row keeps the
+# height it has - and it follows the font and the screen instead of freezing a pixel count that is wrong elsewhere.
+def grid_icon_size(view) -> int:
+    return view.fontMetrics().height()
+
+# Gives every grid inside the given widget (a form as a rule) the same row height and the same icon size.
+# A table takes the height from its vertical header, but a tree has none - there it comes from the sizeHint() of
 # the delegate that paints the row, so a tree is given GridLinesDelegate as its default delegate for the columns
 # that don't set one of their own.
-def set_grids_row_height(widget):
+# The icon size has to be set explicitly on both: a view that was never told one clamps every decoration to the
+# style's 16 px, whatever the font is doing.
+def set_grids_metrics(widget):
     from jal.widgets.delegates import GridLinesDelegate    # Deferred import to break a circular import: delegates.py needs DateFormat from this module.
     for table in widget.findChildren(QTableView):
         height = grid_row_height(table)
@@ -124,9 +133,11 @@ def set_grids_row_height(widget):
         # the forms declare there would hold a row above the font on a small one.
         table.verticalHeader().setMinimumSectionSize(height)
         table.verticalHeader().setDefaultSectionSize(height)
+        table.setIconSize(QSize(grid_icon_size(table), grid_icon_size(table)))
     for tree in widget.findChildren(QTreeView):
         if not isinstance(tree.itemDelegate(), GridLinesDelegate):
             tree.setItemDelegate(GridLinesDelegate(tree))
+        tree.setIconSize(QSize(grid_icon_size(tree), grid_icon_size(tree)))
 
 # -----------------------------------------------------------------------------------------------------------------------
 # QMainWindow.saveState() covers toolbars and dock widgets, but not a QSplitter inside the central widget, so here are
@@ -415,8 +426,9 @@ def refresh_date_formats():
 # was given in its vertical header and has to be walked once more.
 def refresh_row_heights():
     RowPadding.invalidate()
+    JalIcons.invalidate_indent()   # the space a row keeps for an icon is a preference as well
     for widget in QApplication.topLevelWidgets():
-        set_grids_row_height(widget)
+        set_grids_metrics(widget)
     for widget in QApplication.allWidgets():
         if isinstance(widget, QTreeView):
             widget.scheduleDelayedItemsLayout()

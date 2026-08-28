@@ -5,12 +5,14 @@ from decimal import Decimal
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QHeaderView
+from jal.constants import IconOwner
 from jal.db.clock import day_finish, local_reading, today_finish
 from jal.db.helpers import now_ts
 from jal.db.tree_model import AbstractTreeItem, ReportTreeModel
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.chain_balance import JalChainBalance
+from jal.db.icon import JalIcons
 from jal.db.operations import LedgerTransaction, Transfer, CorporateAction
 from jal.widgets.delegates import GridLinesDelegate, FloatDelegate, TimestampDelegate
 from jal.widgets.helpers import ts2d
@@ -25,6 +27,7 @@ class AssetTreeItem(AbstractTreeItem):
         if data is None:
             self._data = {
                 'header': '', 'currency_id': 0, 'currency': '', 'account_id': 0, 'account': '', 'asset_id': 0,
+                'symbol_id': 0,
                 'tag': '', 'asset_is_currency': False, 'asset': '', 'asset_name': '', 'country_id': 0, 'country': '',
                 'since': 0, 'qty': None, 'value_i': Decimal('0'), 'paid': Decimal('0'),
                 'open_quote': None, 'quote': None, 'quote_ts': Decimal('0'), 'quote_a': Decimal('0'),
@@ -62,6 +65,7 @@ class AssetTreeItem(AbstractTreeItem):
                 self._data['quote'] = self._data['open_quote'] = None
             self._data['qty'] += child_data['qty']
             self._data['asset_name'] = child_data['asset_name']
+            self._data['symbol_id'] = child_data['symbol_id']
 
     def _afterParentGroupUpdate(self, group_data):
         self._data['share'] = Decimal('100') * self._data['value_common'] / group_data['value_common'] if group_data['value_common'] else Decimal('0')
@@ -148,9 +152,26 @@ class HoldingsModel(ReportTreeModel):
                 return self._fonts.get(item.details()['font'], None)
             if role == Qt.ToolTipRole:
                 return self.data_tooltip(item.details())
+            if role == Qt.DecorationRole and index.column() == self.fieldIndex('header'):
+                return self.row_icon(item)
             return None
         except Exception as e:
             print(e)
+
+    # What the first column of a row is a picture of. A leaf row is a holding of an asset and wears the logo of the
+    # listing its ticker came from; a group row is whatever it groups by - an account, an asset or a currency - and
+    # a group that stands for none of those (a tag, a country) keeps the blank that holds the text in line.
+    def row_icon(self, item):
+        details = item.details()
+        group = item.getGroup()
+        if group is None or group[0] == 'asset_id':
+            return JalIcons.decoration(IconOwner.Symbol, details.get('symbol_id', 0), JalIcons.grid_size())
+        if group[0] == 'account_id':
+            return JalIcons.decoration(IconOwner.Account, details.get('account_id', 0), JalIcons.grid_size())
+        if group[0] == 'currency_id':
+            return JalIcons.decoration(IconOwner.Symbol, JalAsset(details.get('currency_id', 0)).listing_id(),
+                                       JalIcons.grid_size())
+        return JalIcons.spacer(JalIcons.grid_size())
 
     # Both lines say the same kind of thing - HOW OLD the numbers behind this row are - and a row may need either or
     # both. The quote line appears only for a stale quote, while the on-chain one appears whenever a quantity was
@@ -276,6 +297,8 @@ class HoldingsModel(ReportTreeModel):
                     "account": account.name(),
                     "asset_id": asset.id(),
                     "asset": asset.symbol(currency=account.currency(), location=account.chain()),
+                    # The very listing that ticker came from, so the logo drawn beside it belongs to it
+                    "symbol_id": asset.listing_id(currency=account.currency(), location=account.chain()),
                     "asset_name": asset.name() + expiry_text,
                     "asset_is_currency": False,
                     "country_id": asset.country().id(),
@@ -305,6 +328,7 @@ class HoldingsModel(ReportTreeModel):
                     "account": account.name(),
                     "asset_id": account.currency(),
                     "asset": JalAsset(account.currency()).symbol(),
+                    "symbol_id": JalAsset(account.currency()).listing_id(),
                     "asset_name": JalAsset(account.currency()).name(),
                     "asset_is_currency": True,
                     "country_id": JalAsset(account.currency()).country().id(),

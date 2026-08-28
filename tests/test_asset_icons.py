@@ -138,11 +138,11 @@ def test_coin_is_not_looked_up_as_a_security(prepare_db):
 def test_icon_url_of_securities(prepare_db):
     create_assets([('AAPL', 'Apple Inc.', 'US0378331005', 2, PredefinedAsset.Stock, 0)])
     symbol = JalSymbol(symbol_id_for(4))
-    assert icon_url(symbol) == f"https://assets.parqet.com/logos/isin/US0378331005?format=png&size={Setup.ASSET_ICON_SIZE}"
+    assert icon_url(symbol) == f"https://assets.parqet.com/logos/isin/US0378331005?format=png&size={Setup.ICON_STORED_SIZE}"
 
     # A listing with no ISIN falls back to its ticker
     create_assets([('VOO', 'Vanguard S&P 500', '', 2, PredefinedAsset.ETF, 0)])
-    assert icon_url(JalSymbol(symbol_id_for(5))) == f"https://assets.parqet.com/logos/symbol/VOO?format=png&size={Setup.ASSET_ICON_SIZE}"
+    assert icon_url(JalSymbol(symbol_id_for(5))) == f"https://assets.parqet.com/logos/symbol/VOO?format=png&size={Setup.ICON_STORED_SIZE}"
 
     # A currency has no logo to download - it is displayed with the flag of its country
     assert icon_url(JalSymbol(symbol_id_for(2))) == ''
@@ -203,33 +203,38 @@ def test_listing_without_source_is_not_marked(prepare_db, monkeypatch):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# The icon column of the symbols list keeps the image itself, so it is displayed as a picture - the raw bytes of a
-# PNG must never end up rendered as text in the table.
-def test_symbol_list_displays_icon_as_image(prepare_db):
+# The symbols list shows the logo of a listing before its ticker, and it never queries the image itself: the store
+# is asked by id, so no row of this list carries the bytes of a PNG that could end up rendered as text.
+def test_symbol_list_displays_icon_before_the_ticker(prepare_db):
     create_assets([('AAPL', 'Apple Inc.', 'US0378331005', 2, PredefinedAsset.Stock, 0)])
     symbol_id = symbol_id_for(4)
     JalIcons.store(IconOwner.Symbol, symbol_id, _png_image(), IconSource.Downloaded)
 
     model = SymbolsListModel()
     model.setFilter()
+    assert model.fieldIndex("icon") == -1                       # the image is no longer a column of this list
+    assert 'icon' not in [model.record(0).fieldName(i) for i in range(model.record(0).count())]
     rows = [i for i in range(model.rowCount()) if model.record(i).value('id') == symbol_id]
     assert len(rows) == 1
-    index = model.index(rows[0], model.fieldIndex("icon"))
-    assert model.data(index, Qt.DisplayRole) is None
+    index = model.index(rows[0], model.fieldIndex("symbol"))
+    assert model.data(index, Qt.DisplayRole) == 'AAPL'           # the ticker keeps its column, the logo joins it
 
     icon = model.data(index, Qt.DecorationRole)
     assert isinstance(icon, QIcon)
     assert not icon.isNull()
-    # The stored image is scaled down for display - one 256x256 logo must not set the height of every row
-    assert max(icon.availableSizes()[0].width(), icon.availableSizes()[0].height()) == Setup.ASSET_ICON_SIZE
+    # The stored image is painted at the size of a grid row - one 256x256 logo must not set the height of every row
+    assert max(icon.availableSizes()[0].width(), icon.availableSizes()[0].height()) == JalIcons.grid_size()
 
-    # A listing with no icon (and one the source had no icon for) shows nothing at all
+    # A listing with no icon (and one the source had no icon for) reserves the same space and shows nothing in it
     create_assets([('NOLOGO', 'Unknown Corp.', '', 2, PredefinedAsset.Stock, 0)])
     JalIcons.store(IconOwner.Symbol, symbol_id_for(5), b'', IconSource.Downloaded)
     model.setFilter()
     for row in range(model.rowCount()):
         if model.record(row).value('id') in (symbol_id_for(5), symbol_id_for(2)):
-            assert model.data(model.index(row, model.fieldIndex("icon")), Qt.DecorationRole) is None
+            blank = model.data(model.index(row, model.fieldIndex("symbol")), Qt.DecorationRole)
+            assert isinstance(blank, QIcon)
+            assert blank.availableSizes()[0].width() == JalIcons.grid_size()
+            assert blank.pixmap(JalIcons.grid_size()).toImage().pixelColor(0, 0).alpha() == 0   # space, not a picture
 
 
 # ----------------------------------------------------------------------------------------------------------------------

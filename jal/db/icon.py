@@ -1,9 +1,10 @@
 import logging
 from PySide6.QtCore import Qt, QByteArray, QSize
-from PySide6.QtGui import QIcon, QPixmap
+from PySide6.QtGui import QFontMetrics, QIcon, QPixmap
 from PySide6.QtWidgets import QApplication
-from jal.constants import IconSource
+from jal.constants import IconOwner, IconSource
 from jal.db.db import JalDB
+from jal.db.settings import JalSettings
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -27,12 +28,49 @@ class JalIcons(JalDB):
     _cached = None      # the one instance that carries this class into JalDB's cache invalidation
     _present = None     # {(entity, item_id)} of the elements that have an image, read in one query
     _pixmaps = {}       # (entity, item_id, size) -> QPixmap, decoded once and painted many times
+    _indent = None      # cached value of the preference below - it is asked once per row painted
+
+    # Whether a row whose element has no icon still keeps the space one would take. With it the names of a list
+    # start at one and the same place whether or not the thing they name carries a logo; without it a column of
+    # elements that mostly have none isn't made narrower for the few that do. It is the user's call, so it is a
+    # preference (see the settings registry) rather than a decision taken here.
+    INDENT_KEY = "AlignRowsByIcons"
+    INDENT_DEFAULT = True
+
+    # The kind of element a row of a table stands for - all a table needs to join the icon-carrying columns of the
+    # interface, together with an AFTER DELETE trigger of its own. A table that is absent from here has no icons.
+    _ENTITY_OF_TABLE = {
+        "accounts": IconOwner.Account,
+        "asset_symbol": IconOwner.Symbol,
+        "tags": IconOwner.Tag
+    }
+
+    # The kind of element the rows of the given table are, or None if that table has no icons
+    @classmethod
+    def entity_of_table(cls, table: str):
+        return cls._ENTITY_OF_TABLE.get(table)
 
     # A classmethod so that it can be called on the class as well as on the instance JalDB.invalidate_cache() holds
     @classmethod
     def invalidate_cache(cls) -> None:
         cls._present = None
         cls._pixmaps = {}
+        cls._indent = None   # another database has preferences of its own
+
+    # Drops the cached preference, so that the next row painted reads it from the database again
+    @classmethod
+    def invalidate_indent(cls) -> None:
+        cls._indent = None
+
+    # True if a row with no icon keeps the space of one (see INDENT_KEY above)
+    @classmethod
+    def rows_are_indented(cls) -> bool:
+        if cls._indent is None:
+            try:
+                cls._indent = JalSettings().getBool(cls.INDENT_KEY, cls.INDENT_DEFAULT)
+            except RuntimeError:
+                return cls.INDENT_DEFAULT   # No database open yet - a view may be built before it is
+        return cls._indent
 
     # JalIcons maintains single cache available for all instances
     @classmethod
@@ -125,7 +163,7 @@ class JalIcons(JalDB):
         cls._pixmaps = {key: value for key, value in cls._pixmaps.items() if key[:2] != (entity, item_id)}
 
     # The icon of one element scaled to the given square size, or an empty QIcon if it has none. Images are
-    # stored at Setup.ASSET_ICON_SIZE and painted much smaller, so the result is cached per element and size:
+    # stored at Setup.ICON_STORED_SIZE and painted much smaller, so the result is cached per element and size:
     # a grid asks for the same picture once per row on every repaint.
     @classmethod
     def icon(cls, entity: int, item_id: int, size: int) -> QIcon:
@@ -138,4 +176,36 @@ class JalIcons(JalDB):
                 logging.warning(f"Can't decode the icon stored for element {item_id} of kind {entity}")
                 return QIcon()
             cls._pixmaps[key] = pixmap.scaled(QSize(size, size), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        return QIcon(cls._pixmaps[key])
+
+    # What a cell of an icon-carrying column shows: the icon of this element, or the empty space of one when it has
+    # none - and nothing at all if the user asked for no such space (see rows_are_indented).
+    @classmethod
+    def decoration(cls, entity: int, item_id: int, size: int):
+        icon = cls.icon(entity, item_id, size)
+        return icon if not icon.isNull() else cls.spacer(size)
+
+    # The place an icon would take, for a row that has none to show: an invisible pixmap while rows are indented,
+    # and nothing when they are not.
+    @classmethod
+    def spacer(cls, size: int):
+        return cls.blank(size) if cls.rows_are_indented() else None
+
+    # The size a grid paints an icon at: the height of the application font, which is the number
+    # set_grids_metrics() gives every view as its icon size. Asked by the models, which see no view of their own -
+    # a view whose font is not the application's gets an icon smaller than the space it reserved, never a larger
+    # one, so a row can't grow because of this.
+    @classmethod
+    def grid_size(cls) -> int:
+        return QFontMetrics(QApplication.font()).height()
+
+    # An empty square of the given size, cached like the images beside it. The key can't collide with a real
+    # element's - those are keyed by an integer kind and an integer id.
+    @classmethod
+    def blank(cls, size: int) -> QIcon:
+        key = (None, None, size)
+        if key not in cls._pixmaps:
+            pixmap = QPixmap(QSize(size, size))
+            pixmap.fill(Qt.transparent)
+            cls._pixmaps[key] = pixmap
         return QIcon(cls._pixmaps[key])

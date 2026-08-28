@@ -94,8 +94,8 @@ def icon_url(symbol: JalSymbol) -> str:
         return ''
     isin = symbol.identifier(SymbolId.ISIN)
     if isin:
-        return PARQET_URL.format(key='isin', value=isin, size=Setup.ASSET_ICON_SIZE)
-    return PARQET_URL.format(key='symbol', value=symbol.symbol(), size=Setup.ASSET_ICON_SIZE) if symbol.symbol() else ''
+        return PARQET_URL.format(key='isin', value=isin, size=Setup.ICON_STORED_SIZE)
+    return PARQET_URL.format(key='symbol', value=symbol.symbol(), size=Setup.ICON_STORED_SIZE) if symbol.symbol() else ''
 
 
 # ----------------------------------------------------------------------------------------------------------------------

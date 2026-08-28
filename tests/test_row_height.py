@@ -7,7 +7,7 @@ from tests.helpers import create_actions, d2t
 from constants import PredefinedCategory
 from jal.db.ledger import Ledger
 from jal.widgets.operations_widget import OperationsWidget
-from jal.widgets.helpers import set_grids_row_height, grid_row_height, RowPadding
+from jal.widgets.helpers import set_grids_metrics, grid_row_height, RowPadding
 from jal.db.settings import JalSettings
 from jal.widgets.reference_dialogs import AccountListDialog, TagsListDialog
 
@@ -55,7 +55,7 @@ def test_row_height_follows_the_font(prepare_db):
         font = QFont(dialog.font())
         font.setPointSize(font.pointSize() + 8)
         dialog.setFont(font)
-        set_grids_row_height(dialog)
+        set_grids_metrics(dialog)
 
     assert table_row_height(accounts) > before
     assert tree_row_height(tags) == table_row_height(accounts)
@@ -76,7 +76,7 @@ def test_tree_without_own_delegates_gets_the_metric(prepare_db):
     window.show()
     assert tree.sizeHintForRow(0) < grid_row_height(tree)   # the default delegate asks for the font height alone
 
-    set_grids_row_height(window)
+    set_grids_metrics(window)
     assert tree.sizeHintForRow(0) == grid_row_height(tree)
 
     window.close()
@@ -114,8 +114,8 @@ def test_row_padding_preference(prepare_db):
     for choice in (RowPadding.NONE, RowPadding.NORMAL, RowPadding.ROOMY):
         JalSettings().setValue(RowPadding.SETTINGS_KEY, choice)
         RowPadding.invalidate()
-        set_grids_row_height(accounts)
-        set_grids_row_height(tags)
+        set_grids_metrics(accounts)
+        set_grids_metrics(tags)
         heights[choice] = table_row_height(accounts)
         assert tree_row_height(tags) == heights[choice]
 

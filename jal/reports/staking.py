@@ -6,9 +6,10 @@ from PySide6.QtGui import QFont
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMessageBox, QMenu
 
-from jal.constants import AssetLocation, Setup
+from jal.constants import AssetLocation, IconOwner, Setup
 from jal.db.clock import day_finish, now_dt
 from jal.db.asset import JalAsset
+from jal.db.icon import JalIcons
 from jal.db.chain_balance import JalChainBalance
 from jal.db.helpers import localize_decimal
 from jal.db.operations import LedgerTransaction
@@ -19,7 +20,7 @@ from jal.widgets.delegates import FloatDelegate, TimestampDelegate
 from jal.widgets.icons import JalIcon
 from jal.widgets.accrual_chart import AccrualChartWindow
 from jal.widgets.mdi import MdiWidget
-from jal.widgets.helpers import set_grids_row_height, restore_columns
+from jal.widgets.helpers import set_grids_metrics, restore_columns
 
 JAL_REPORT_CLASS = "StakingReport"
 
@@ -67,7 +68,18 @@ class StakingListModel(QAbstractTableModel):
             font = QFont()
             font.setItalic(True)   # a closed position is shown as past, exactly as a deactivated account is
             return font
+        if role == Qt.DecorationRole and index.column() == 3:
+            return self._asset_icon(self._data[index.row()])
         return None
+
+    # The logo of the listing the Asset column names - the same listing data_text() takes the ticker from, asked
+    # for by the box's own currency and chain
+    def _asset_icon(self, record: dict):
+        if record['asset'] is None:
+            return JalIcons.spacer(JalIcons.grid_size())
+        box = record['box']
+        listing = record['asset'].listing_id(currency=box.currency().id(), location=box.chain())
+        return JalIcons.decoration(IconOwner.Symbol, listing, JalIcons.grid_size())
 
     def data_text(self, record: dict, column: int):
         box = record['box']
@@ -211,6 +223,9 @@ class StakingDetailsModel(QAbstractTableModel):
         return None
 
     def data(self, index, role=Qt.DisplayRole):
+        if role == Qt.DecorationRole and index.column() == 2:
+            listing = self._data[index.row()]['asset'].listing_id(currency=self._currency_id, location=self._chain)
+            return JalIcons.decoration(IconOwner.Symbol, listing, JalIcons.grid_size())
         if role != Qt.DisplayRole:
             return None
         record = self._data[index.row()]
@@ -289,7 +304,7 @@ class StakingReportWindow(MdiWidget):
         super().__init__(parent.mdi_area())
         self.ui = Ui_StakingReportWidget()
         self.ui.setupUi(self)
-        set_grids_row_height(self)
+        set_grids_metrics(self)
         self._parent = parent
         self.name = self.tr("Staked positions")
 

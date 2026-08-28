@@ -346,6 +346,12 @@ class LedgerTransaction(JalDB):
     def value_currency(self) -> str:
         return ''
 
+    # The listings the lines of value_currency() name, in the same order - one asset_symbol id per line, 0 for a
+    # line that names nothing an icon can belong to. It has to stay in step with the text above it, so the two are
+    # written as one thought: whoever changes the lines changes both.
+    def value_currency_icons(self) -> list:
+        return []
+
     def reconciled(self) -> bool:
         return self._reconciled
 
@@ -450,6 +456,12 @@ class IncomeSpending(LedgerTransaction):
         else:
             return f" {self._account_currency}"
 
+    def value_currency_icons(self) -> list:
+        icons = [JalAsset(self._account.currency()).listing_id()]
+        if self._currency and not self._opart:
+            icons.append(JalAsset(self._currency).listing_id())
+        return icons
+
     def value_total(self) -> list:
         total = [self._money_total(self._account.id())]
         if self._currency:
@@ -533,6 +545,11 @@ class AssetPayment(LedgerTransaction):
     # other inflow that cost the receiving account nothing - at the quote of the moment it arrives - rather than at
     # the value it left the payer at, which this account never bore.
     TokenRentReturn = 13
+    # Payments whose amount is a QUANTITY OF THE ASSET and not a sum of money: shares received as a dividend,
+    # coins earned by staking, coins burned as gas. What the amount is denominated in decides what the totals
+    # count and what the last column of the operations list names, so it is stated once here.
+    _ASSET_DENOMINATED = (StockDividend, StockVesting, StakingReward, Reward, GasFee, DustAttack,
+                          RebaseAdjustment, TokenRent, TokenRentReturn)
     _db_table = "asset_payments"
     _dump_timestamps = ('ex_date',)
     _db_fields = {
@@ -778,13 +795,7 @@ class AssetPayment(LedgerTransaction):
             return [amount, None]
 
     def value_currency(self) -> str:
-        # The amount of these payments is a quantity of the asset, not a sum of money: shares received as a
-        # dividend, coins earned by staking, coins burned as gas
-        asset_denominated = (AssetPayment.StockDividend, AssetPayment.StockVesting, AssetPayment.StakingReward,
-                             AssetPayment.Reward, AssetPayment.GasFee, AssetPayment.DustAttack,
-                             AssetPayment.RebaseAdjustment, AssetPayment.TokenRent,
-                             AssetPayment.TokenRentReturn)
-        if self._subtype in asset_denominated and not self._opart:
+        if self._subtype in self._ASSET_DENOMINATED and not self._opart:
             if self._tax:
                 return f" {self._symbol.symbol()}\n {self._account_currency}"
             else:
@@ -792,13 +803,18 @@ class AssetPayment(LedgerTransaction):
         else:
             return f" {self._account_currency}"
 
+    def value_currency_icons(self) -> list:
+        if self._subtype in self._ASSET_DENOMINATED and not self._opart:
+            icons = [self._symbol.id()]
+            if self._tax:
+                icons.append(JalAsset(self._account.currency()).listing_id())
+            return icons
+        return [JalAsset(self._account.currency()).listing_id()]
+
     def value_total(self) -> list:
         balance = []
         amount = self._money_total(self._account.id())
-        if self._subtype in (AssetPayment.StockDividend, AssetPayment.StockVesting, AssetPayment.StakingReward,
-                             AssetPayment.Reward, AssetPayment.GasFee, AssetPayment.DustAttack,
-                             AssetPayment.RebaseAdjustment, AssetPayment.TokenRent,
-                             AssetPayment.TokenRentReturn):
+        if self._subtype in self._ASSET_DENOMINATED:
             qty = self._asset_total(self._account.id(), self._asset.id())
             if qty is None:
                 return [Decimal('NaN')]
@@ -1007,6 +1023,12 @@ class Trade(LedgerTransaction):
             return f" {self._account_currency}"
         else:
             return f" {self._account_currency}\n {self._symbol.symbol()}"
+
+    def value_currency_icons(self) -> list:
+        icons = [JalAsset(self._account.currency()).listing_id()]
+        if not self._opart:
+            icons.append(self._symbol.id())
+        return icons
 
     def value_total(self) -> list:
         amount = self._money_total(self._account.id())
@@ -1225,6 +1247,14 @@ class Swap(LedgerTransaction):
         if self._fee_asset.id():
             text += f"\n {self._fee_symbol.symbol()}"
         return text
+
+    def value_currency_icons(self) -> list:
+        if self._opart == Swap.Incoming:
+            return [self._in_symbol.id()]
+        icons = [self._out_symbol.id()] if self._cross_chain else [self._out_symbol.id(), self._in_symbol.id()]
+        if self._fee_asset.id():
+            icons.append(self._fee_symbol.id())
+        return icons
 
     def value_total(self) -> list:
         if self._opart == Swap.Incoming:
@@ -1758,6 +1788,25 @@ class Transfer(LedgerTransaction):
         else:
             assert False, "Unknown transfer type"
 
+    # One line, so one listing: the asset moved, or the currency of the account the leg belongs to. A leg with no
+    # account yet (a pending transfer) names no currency either, and gets nothing.
+    def value_currency_icons(self) -> list:
+        if self._opart == Transfer.Outgoing:
+            if self._asset.id():
+                return [self._symbol.id()]
+            return [JalAsset(self._withdrawal_account.currency()).listing_id()] if self._has_out else []
+        elif self._opart == Transfer.Incoming:
+            if self._asset.id():
+                return [self._symbol.id()]
+            return [JalAsset(self._deposit_account.currency()).listing_id()] if self._has_in else []
+        elif self._opart == Transfer.Fee:
+            if self._fee_asset.id():
+                return [self._fee_symbol.id()]
+            # A leg with no account of its own names no currency either - and an absent line takes no icon
+            return [JalAsset(self._fee_account.currency()).listing_id()] if self._fee_currency else []
+        else:
+            assert False, "Unknown transfer type"
+
     def value_total(self) -> list:
         assert self._opart in (Transfer.Outgoing, Transfer.Incoming, Transfer.Fee), "Unknown transfer type"
         # account_id() gives the account of the part being displayed, and 0 for a leg that has none yet - the totals
@@ -2020,6 +2069,10 @@ class CorporateAction(LedgerTransaction):
             symbol += f" {JalSymbol(x['symbol_id']).symbol()}\n"
         return symbol[:-1]  # Crop ending line break
 
+    def value_currency_icons(self) -> list:
+        icons = [] if self._subtype == CorporateAction.SpinOff else [self._symbol.id()]
+        return icons + [x['symbol_id'] for x in self._results]
+
     def value_total(self) -> list:
         if self._subtype == CorporateAction.SpinOff:
             balance = []
@@ -2214,6 +2267,12 @@ class Conversion(LedgerTransaction):
         if self._fee_asset.id():
             text += f"\n {self._fee_symbol.symbol()}"
         return text
+
+    def value_currency_icons(self) -> list:
+        icons = [self._out_symbol.id(), self._in_symbol.id()]
+        if self._fee_asset.id():
+            icons.append(self._fee_symbol.id())
+        return icons
 
     def value_total(self) -> list:
         balance = [self._asset_total(self._account.id(), self._out_asset.id()),
@@ -2461,6 +2520,14 @@ class Bridge(LedgerTransaction):
             return self._fee_symbol.symbol()
         else:
             return self._out_symbol.symbol()
+
+    def value_currency_icons(self) -> list:
+        if self._opart == Bridge.Incoming:
+            return [self._in_symbol.id()]
+        elif self._opart == Bridge.Fee:
+            return [self._fee_symbol.id()]
+        else:
+            return [self._out_symbol.id()]
 
     def value_total(self) -> list:
         if self._opart == Bridge.Outgoing:

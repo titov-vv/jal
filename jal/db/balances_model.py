@@ -4,12 +4,14 @@ from decimal import Decimal
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtGui import QBrush, QFont
 from PySide6.QtWidgets import QHeaderView
+from jal.constants import IconOwner
 from jal.db.helpers import localize_decimal
 from jal.db.tree_model import AbstractTreeItem, ReportTreeModel
 from jal.db.settings import JalSettings
 from jal.db.clock import day_finish, today_finish
 from jal.db.asset import JalAsset
 from jal.db.account import JalAccount
+from jal.db.icon import JalIcons
 from jal.widgets.delegates import GridLinesDelegate, FloatDelegate
 from jal.widgets.icons import JalIcon
 from jal.widgets.theme import Theme, Meaning
@@ -110,8 +112,13 @@ class BalancesModel(ReportTreeModel):
                 return self._fonts.get(item.details()['font'], None)
             if role == Qt.BackgroundRole and index.column() == self.fieldIndex('value'):
                 return self.data_background(item.details().get('unreconciled', 0), self._view.isEnabled())
-            if role == Qt.DecorationRole and item.isGroup() and index.column() == self.fieldIndex('account_name'):
-                return JalIcon[item.details().get('icon_id', JalIcon.NONE)]
+            if role == Qt.DecorationRole and index.column() == self.fieldIndex('account_name'):
+                # Two kinds of picture in one column, which is what the indentation of a tree already separates:
+                # a group row is an account TYPE and wears the glyph of that type, while the accounts under it are
+                # particular institutions and wear whatever logo they carry (a blank of the same size if none).
+                if item.isGroup():
+                    return JalIcon[item.details().get('icon_id', JalIcon.NONE)]
+                return JalIcons.decoration(IconOwner.Account, item.details().get('account', 0), JalIcons.grid_size())
             if self._use_credit and index.column() == self.fieldIndex('value') and item.details()['credit_limit']:
                 if role == Qt.DecorationRole:
                     return JalIcon[JalIcon.WITH_CREDIT]

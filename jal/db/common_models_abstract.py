@@ -4,6 +4,7 @@ from PySide6.QtSql import QSqlTableModel, QSqlRelationalTableModel
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QMessageBox, QCompleter
 from jal.db.db import JalDB, JalSqlError
+from jal.db.icon import JalIcons
 from jal.constants import Setup, CmColumn
 
 
@@ -25,6 +26,12 @@ class BaseReferenceModelMixin:
         details = [x.name for x in columns if x.details]
         assert len(details) <= 1, f"More than 1 details column {details} in model for '{table}' table"
         self._details_field = details[0] if details else None
+        icons = [x.name for x in columns if x.icon]
+        assert len(icons) <= 1, f"More than 1 icon column {icons} in model for '{table}' table"
+        self._icon_field = icons[0] if icons else None
+        self._icon_entity = JalIcons.entity_of_table(table)
+        assert self._icon_field is None or self._icon_entity is not None, \
+            f"Column '{self._icon_field}' asks for an icon, but '{table}' table has none (see JalIcons)"
         self._default_values = {}
         # This is auxiliary 'plain' model of the same table - to be given as QCompleter source of data
         self._completion_model = QSqlTableModel(parent=parent, db=self.connection())
@@ -76,6 +83,15 @@ class BaseReferenceModelMixin:
                 return self._columns[section].header
         return None
 
+    # The icon of the element this row stands for, to be drawn before the text of the column that carries it
+    # (see CmColumn.icon). Any other column, and any model of a table that has no icons, is answered with None.
+    # An element with no icon of its own gets a blank of the same size, so the text of every row starts at the
+    # same place.
+    def icon_decoration(self, index):
+        if self._icon_field is None or index.column() != self.fieldIndex(self._icon_field):
+            return None
+        return JalIcons.decoration(self._icon_entity, self.getId(index), JalIcons.grid_size())
+
 # ----------------------------------------------------------------------------------------------------------------------
 class AbstractReferenceListModel(BaseReferenceModelMixin, QSqlRelationalTableModel, JalDB):
     def __init__(self, table, columns, parent=None):
@@ -109,6 +125,10 @@ class AbstractReferenceListModel(BaseReferenceModelMixin, QSqlRelationalTableMod
             font = QFont()
             font.setStrikeOut(True)
             return font
+        if role == Qt.DecorationRole:
+            decoration = self.icon_decoration(index)
+            if decoration is not None:
+                return decoration
         return super().data(index, role)
 
     def getId(self, index):
@@ -277,6 +297,8 @@ class SqlTreeModel(BaseReferenceModelMixin, QAbstractItemModel, JalDB):
                                   [(":id", item_id)])
             else:
                 return None
+        if role == Qt.DecorationRole:
+            return self.icon_decoration(index)
         return None
 
     def setData(self, index, value, role=Qt.EditRole):

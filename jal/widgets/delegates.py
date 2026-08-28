@@ -2,19 +2,39 @@ from zoneinfo import available_timezones
 from decimal import Decimal, InvalidOperation
 from PySide6.QtWidgets import (QApplication, QWidget, QStyle, QStyledItemDelegate, QLineEdit, QDateTimeEdit,
                                QTreeView, QComboBox)
-from PySide6.QtCore import Qt, QModelIndex, QEvent, QLocale, QDateTime, QDate, QTime, QTimeZone
+from PySide6.QtCore import Qt, QModelIndex, QEvent, QLocale, QDateTime, QDate, QRect, QTime, QTimeZone
 from PySide6.QtGui import QDoubleValidator, QBrush, QKeyEvent
 from PySide6.QtSql import QSqlQueryModel
-from jal.constants import Setup
+from jal.constants import IconOwner, Setup
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 from jal.db.clock import local_datetime, local_time, local_zone, window_bound
 from jal.db.helpers import is_day_marker, localize_decimal, delocalize_decimal
 from jal.db.account import JalAccount
+from jal.db.icon import JalIcons
 from jal.db.asset import JalAsset
 from jal.db.symbol import JalSymbol
 from jal.widgets.icons import JalIcon
 from jal.widgets.helpers import DateFormat, grid_row_height
 from jal.widgets.theme import Theme, Meaning
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# How many LINES the row an index belongs to is laid out for, as the model answers it. A cell may hold fewer values
+# than that - a payment with no tax has one amount in a two-line row - and those values belong to the first lines of
+# the row, beside the text that made it tall, not to the middle of the empty space. A model that lays its rows out
+# in lines answers this role; anything else leaves the cell to be split by what it holds.
+ROW_LINES_ROLE = Qt.UserRole + 100
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The number of bands a cell of several values is split into: the lines the row was made tall for, and never fewer
+# than the values there are to draw.
+def cell_bands(index, values: int) -> int:
+    lines = index.model().data(index, ROW_LINES_ROLE)
+    try:
+        return max(int(lines), values)
+    except (TypeError, ValueError):
+        return values
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -428,6 +448,47 @@ def long_fraction(x: Decimal) -> bool:
         return False
     return abs(x - round(x, Setup.DEFAULT_ACCOUNT_PRECISION)) > Decimal('0')
 
+# ----------------------------------------------------------------------------------------------------------------------
+# Draws the last column of the operations list: one ticker per line, each with the logo of the listing it names
+# before it. A cell here may hold two or three lines (a trade names the account currency and the asset, a swap names
+# what went out, what came in and the fee), so a single decoration centred against the whole cell would belong to
+# none of them - the cell is split into a band per line instead, the way ColoredAmountsDelegate splits the amounts
+# these tickers stand beside.
+class TickerIconsDelegate(GridLinesDelegate):
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+        self._parent = parent
+
+    def paint(self, painter, option, index):
+        self.paint_grid(painter, option, index)
+        draw_item_panel(painter, option)   # otherwise a selected row loses its highlight in this column
+        text = index.model().data(index, Qt.DisplayRole)
+        if not text:
+            return
+        lines = text.split("\n")
+        listings = index.model().data(index, Qt.DecorationRole)
+        if not isinstance(listings, list) or len(listings) != len(lines):
+            listings = [0] * len(lines)    # a column that says nothing about its listings gets no icons, not wrong ones
+        size = JalIcons.grid_size()
+        painter.save()
+        if option.state & QStyle.State_Selected:
+            pen = painter.pen()
+            pen.setColor(option.palette.highlightedText().color())
+            painter.setPen(pen)
+        height = option.rect.height() / cell_bands(index, len(lines))
+        for i, line in enumerate(lines):
+            top = int(option.rect.top() + i * height)
+            icon = JalIcons.decoration(IconOwner.Symbol, listings[i], size)
+            indent = 0
+            if icon is not None:   # None where a line has no icon and rows are not indented for the missing ones
+                icon.paint(painter, QRect(option.rect.left(), int(top + (height - size) / 2), size, size), Qt.AlignCenter)
+                indent = size
+            text_rect = QRect(option.rect.left() + indent, top, option.rect.width() - indent, int(height))
+            painter.drawText(text_rect, Qt.AlignLeft | Qt.AlignVCenter,
+                             painter.fontMetrics().elidedText(line, Qt.ElideRight, text_rect.width()))
+        painter.restore()
+
+
 # Display several numbers that provided by the model in form of a list
 # Each number is displayed on its own line
 # colors - display positive/negative values with green/red color
@@ -449,13 +510,11 @@ class ColoredAmountsDelegate(QStyledItemDelegate):
         # readable on the table's ground, not on the highlight color, so they would be the wrong ink for it.
         selected = bool(option.state & QStyle.State_Selected)
         color = option.palette.highlightedText().color() if selected else index.model().data(index, role=Qt.ForegroundRole)
-        rect = option.rect
-        H = rect.height()
-        Y = rect.top()
-        rect.setHeight(H / len(data))
+        bands = cell_bands(index, len(data))
+        height = option.rect.height() / bands
         for i, item in enumerate(data):
-            rect.moveTop(Y + i * (H / len(data)))
-            self.draw_value(option.rect, painter, item, color, colored=self._colors and not selected)
+            band = QRect(option.rect.left(), int(option.rect.top() + i * height), option.rect.width(), int(height))
+            self.draw_value(band, painter, item, color, colored=self._colors and not selected)
         painter.restore()
 
     # Displays given value as formatted number with required color (or Green/Red if colored is True)

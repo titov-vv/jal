@@ -51,7 +51,7 @@ class Setup:
     # can be priced at all, since an unpriced one is already held by the relative bound.
     REBASE_RESIDUE_TOLERANCE = '1E-9'                # of the quantity the operation converts
     REBASE_RESIDUE_MAX_VALUE = '0.01'                # in the account's currency
-    ASSET_ICON_SIZE = 64
+    ICON_STORED_SIZE = 64
     REPO_URL = "https://github.com/titov-vv/jal"
     REPO_README = "docs"
     REPO_FAQ = "faq"
@@ -97,6 +97,7 @@ class CmColumn:    # column metadata for custom models
     group: bool = False          # True = enable grouping by this column
     default: bool = False        # True = this is the default column to show as item name
     details: bool = False        # True = this column contains details to show in item related widgets
+    icon: bool = False           # True = this column shows the icon of the element its row stands for, before the text
     delegate_type: str | None = None            # one of CmDelegate values that defines formatting/editing delegate for the column
     delegate_details: str | int | None = None   # additional details for delegate (e.g. number of decimal places for FLOAT delegate)
 

@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QWidget, QDataWidgetMapper
 from PySide6.QtSql import QSqlTableModel
 from jal.db.db import JalModel
 from jal.widgets.icons import JalIcon
-from jal.widgets.helpers import set_grids_row_height, set_date_formats, assign_shortcut
+from jal.widgets.helpers import set_grids_metrics, set_date_formats, assign_shortcut
 
 
 class AbstractOperationDetails(QWidget):
@@ -18,7 +18,7 @@ class AbstractOperationDetails(QWidget):
         assert ui_class is not None, "Can't create operation class without UI provided"
         self.ui = ui_class()
         self.ui.setupUi(self)
-        set_grids_row_height(self)
+        set_grids_metrics(self)
         set_date_formats(self)
 
         self.model = None

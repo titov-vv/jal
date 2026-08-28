@@ -9,7 +9,7 @@ from jal.db.common_models import CategoryTreeModel
 from jal.ui.reports.ui_category_report import Ui_CategoryReportWidget
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.reference_dialogs import CategoryListDialog
-from jal.widgets.helpers import TableSelectionRestorer, set_grids_row_height
+from jal.widgets.helpers import TableSelectionRestorer, set_grids_metrics
 
 JAL_REPORT_CLASS = "CategoryReport"
 
@@ -53,7 +53,7 @@ class CategoryReportWindow(MdiWidget):
         super().__init__(parent.mdi_area())
         self.ui = Ui_CategoryReportWidget()
         self.ui.setupUi(self)
-        set_grids_row_height(self)
+        set_grids_metrics(self)
         self.ui.ReportCategoryEdit.setup_selector(CategoryTreeModel, CategoryListDialog, self)
         self._parent = parent
 

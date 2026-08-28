@@ -9,7 +9,7 @@ from jal.db.common_models import TagTreeModel
 from jal.ui.reports.ui_tag_report import Ui_TagReportWidget
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.reference_dialogs import TagsListDialog
-from jal.widgets.helpers import TableSelectionRestorer, set_grids_row_height
+from jal.widgets.helpers import TableSelectionRestorer, set_grids_metrics
 
 JAL_REPORT_CLASS = "TagReport"
 
@@ -53,7 +53,7 @@ class TagReportWindow(MdiWidget):
         super().__init__(parent.mdi_area())
         self.ui = Ui_TagReportWidget()
         self.ui.setupUi(self)
-        set_grids_row_height(self)
+        set_grids_metrics(self)
         self.ui.ReportTagEdit.setup_selector(TagTreeModel, TagsListDialog, self)
         self._parent = parent
 

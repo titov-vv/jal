@@ -16,7 +16,7 @@ from jal.widgets.delegates import FloatDelegate, TimestampDelegate
 from jal.widgets.deposit_dialogs import NewDepositDialog, DepositTransferDialog, DepositInterestDialog
 from jal.widgets.icons import JalIcon
 from jal.widgets.mdi import MdiWidget
-from jal.widgets.helpers import set_grids_row_height, restore_columns
+from jal.widgets.helpers import set_grids_metrics, restore_columns
 
 JAL_REPORT_CLASS = "DepositsReport"
 
@@ -216,7 +216,7 @@ class DepositsReportWindow(MdiWidget):
         super().__init__(parent.mdi_area())
         self.ui = Ui_DepositsReportWidget()
         self.ui.setupUi(self)
-        set_grids_row_height(self)
+        set_grids_metrics(self)
         self._parent = parent
         self.name = self.tr("Deposits")
 

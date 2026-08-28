@@ -12,7 +12,7 @@ from jal.widgets.delegates import DateTimeEditWithReset, BoolDelegate, ConstantL
 from jal.widgets.icons import JalIcon
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 from jal.widgets.reference_dialogs import TagsListDialog
-from jal.widgets.helpers import set_grids_row_height, DateFormat
+from jal.widgets.helpers import set_grids_metrics, DateFormat
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -118,7 +118,7 @@ class SymbolDialog(QDialog):
         super().__init__(parent)
         self.ui = Ui_SymbolDialog()
         self.ui.setupUi(self)
-        set_grids_row_height(self)
+        set_grids_metrics(self)
         self._asset_id = 0
         self._current_symbol_id = 0
 
@@ -172,7 +172,6 @@ class SymbolDialog(QDialog):
         view = self.ui.SymbolsTable
         view.setColumnHidden(model.fieldIndex("id"), True)
         view.setColumnHidden(model.fieldIndex("asset_id"), True)
-        view.setColumnHidden(model.fieldIndex("icon"), True)
         view.horizontalHeader().setSectionResizeMode(model.fieldIndex("symbol"), QHeaderView.Stretch)
         model.setRelation(model.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "symbol"))
         self._currency_delegate = QSqlRelationalDelegate(view)

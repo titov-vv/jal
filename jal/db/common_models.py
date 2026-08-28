@@ -27,7 +27,7 @@ class AccountListModel(AbstractReferenceListModel):
         self._baseline_filter = '' if include_hidden else f"accounts.account_type NOT IN ({hidden})"
         columns = [
             CmColumn("id", '', hide=True),
-            CmColumn("name", self.tr("Name"), width=CmWidth.WIDTH_STRETCH, sort=True),
+            CmColumn("name", self.tr("Name"), width=CmWidth.WIDTH_STRETCH, sort=True, icon=True),
             CmColumn("currency_id", self.tr("Currency"), delegate_type=CmDelegate.LOOKUP),
             CmColumn("active", self.tr("Act."), width=64, delegate_type=CmDelegate.BOOL),
             CmColumn("investing", self.tr("Invest."), width=64, delegate_type=CmDelegate.BOOL),
@@ -164,7 +164,7 @@ class PeerTreeModel(SqlTreeModel):
                 return JalPeer(item_id).number_of_documents()
             else:
                 return super().data(index, role)
-        return None
+        return super().data(index, role)   # every other role is the base model's business, icons among them
 
     def removeElement(self, index) -> bool:
         peer = JalPeer(self.getId(index))
@@ -209,7 +209,7 @@ class CategoryTreeModel(SqlTreeModel):
 class TagTreeModel(SqlTreeModel):
     def __init__(self, parent=None):
         columns = [
-            CmColumn("tag", self.tr("Tag"), sort=True, default=True, width=CmWidth.WIDTH_STRETCH, delegate_type=CmDelegate.GRID)
+            CmColumn("tag", self.tr("Tag"), sort=True, default=True, width=CmWidth.WIDTH_STRETCH, delegate_type=CmDelegate.GRID, icon=True)
         ]
         super().__init__("tags", columns, parent)
         self.set_default_values({"tag": self.tr("New tag")})

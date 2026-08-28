@@ -6,7 +6,7 @@ from jal.db.helpers import localize_decimal
 from jal.db.operations import LedgerTransaction
 from jal.db.clock import today_finish
 from jal.widgets.helpers import ts2dt, restore_columns, grid_row_height
-from jal.widgets.delegates import ColoredAmountsDelegate, long_fraction
+from jal.widgets.delegates import ColoredAmountsDelegate, TickerIconsDelegate, long_fraction, ROW_LINES_ROLE
 from jal.widgets.theme import Theme, Meaning
 from jal.universal_cache import UniversalCache
 
@@ -20,6 +20,7 @@ class OperationsModel(QAbstractTableModel):
         self._view = parent_view
         self._amount_delegate = None
         self._total_delegate = None
+        self._currency_delegate = None
         self._data = []
         self._cache = UniversalCache()
         self._begin = 0
@@ -54,6 +55,14 @@ class OperationsModel(QAbstractTableModel):
             return self._cache.get_data(self._fetch_column_text, (row, index.column())) # operation is too heavy to be an argument for caching -> use row id
         if role == Qt.DecorationRole and index.column() == 0:
             return operation.icon()
+        if role == ROW_LINES_ROLE:
+            # How tall this row was made, in lines - so that a column holding fewer values than that puts them on
+            # the first lines instead of in the middle of the height the other columns asked for.
+            return operation.view_rows()
+        if role == Qt.DecorationRole and index.column() == 5:
+            # Not a picture but the listings its lines name - the column is painted by TickerIconsDelegate, which
+            # needs one icon per line and can only get them from the operation that wrote the lines.
+            return operation.value_currency_icons()
         if role == Qt.FontRole:
             # below line isn't related with font, it is put here to be called for each row minimal times (ideally 1)
             if index.column() == 0:
@@ -108,8 +117,10 @@ class OperationsModel(QAbstractTableModel):
         self._view.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
         self._amount_delegate = ColoredAmountsDelegate(self._view)
         self._total_delegate = ColoredAmountsDelegate(self._view, colors=False, signs=False)
+        self._currency_delegate = TickerIconsDelegate(self._view)
         self._view.setItemDelegateForColumn(3, self._amount_delegate)     # Amount
         self._view.setItemDelegateForColumn(4, self._total_delegate)      # Balance
+        self._view.setItemDelegateForColumn(5, self._currency_delegate)   # Currency
         self._view.verticalHeader().setSectionResizeMode(QHeaderView.Fixed)  # row size is adjusted in data() method
         restore_columns(self._view, Setup.COLUMNS_STATE_PREFIX)
 

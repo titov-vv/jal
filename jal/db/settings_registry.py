@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from PySide6.QtCore import QCoreApplication, QT_TRANSLATE_NOOP
+from jal.db.icon import JalIcons
 from jal.db.settings import JalSettings
 from jal.widgets.helpers import DateFormat, RowPadding
 
@@ -127,6 +128,15 @@ def _register_builtin_settings() -> None:
         tooltip=QT_TRANSLATE_NOOP("Preferences",
                                   "How much air every table and tree row keeps around its text. The row always "
                                   "follows the font; this only sets what is added on top of it.")))
+    SettingsRegistry.register(SettingDescriptor(
+        key=JalIcons.INDENT_KEY,
+        page=QT_TRANSLATE_NOOP("Preferences", "Interface"),
+        label=QT_TRANSLATE_NOOP("Preferences", "Align rows by icons"),
+        type=SettingType.Boolean, default=JalIcons.INDENT_DEFAULT,
+        tooltip=QT_TRANSLATE_NOOP("Preferences",
+                                  "Keep the place of an icon on the rows that have none, so that the names of a "
+                                  "list start at one and the same place. Switch it off to give that space back to "
+                                  "the text where few elements carry a picture.")))
     SettingsRegistry.register(SettingDescriptor(
         key="ApiKey_TronGrid",
         page=QT_TRANSLATE_NOOP("Preferences", "Blockchain"),

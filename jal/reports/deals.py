@@ -4,7 +4,7 @@ from PySide6.QtCore import Slot, QObject
 from jal.ui.reports.ui_deals_report import Ui_DealsReportWidget
 from jal.reports.reports import Reports
 from jal.widgets.mdi import MdiWidget
-from jal.widgets.helpers import set_grids_row_height
+from jal.widgets.helpers import set_grids_metrics
 from jal.db.trades_model import ClosedTradesModel
 
 JAL_REPORT_CLASS = "DealsReport"
@@ -24,7 +24,7 @@ class DealsReportWindow(MdiWidget):
         super().__init__(parent.mdi_area())
         self.ui = Ui_DealsReportWidget()
         self.ui.setupUi(self)
-        set_grids_row_height(self)
+        set_grids_metrics(self)
         self._parent = parent
         self.name = self.tr("Deals by account")
 
