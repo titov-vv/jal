@@ -7,7 +7,8 @@ from tests.helpers import create_actions, d2t
 from constants import PredefinedCategory
 from jal.db.ledger import Ledger
 from jal.widgets.operations_widget import OperationsWidget
-from jal.widgets.helpers import set_grids_row_height, grid_row_height
+from jal.widgets.helpers import set_grids_row_height, grid_row_height, RowPadding
+from jal.db.settings import JalSettings
 from jal.widgets.reference_dialogs import AccountListDialog, TagsListDialog
 
 
@@ -101,4 +102,45 @@ def test_operations_rows_match_the_balances_tree(prepare_db_fifo):
     assert window.ui.BalancesTreeView.sizeHintForRow(0) == table.rowHeight(0)
 
     window.close()
+    parent.deleteLater()
+
+
+# The padding is a preference, so every grid follows it - and it is read once and cached, not per row
+def test_row_padding_preference(prepare_db):
+    parent = QWidget()
+    accounts, tags = open_dialogs(parent)
+
+    heights = {}
+    for choice in (RowPadding.NONE, RowPadding.NORMAL, RowPadding.ROOMY):
+        JalSettings().setValue(RowPadding.SETTINGS_KEY, choice)
+        RowPadding.invalidate()
+        set_grids_row_height(accounts)
+        set_grids_row_height(tags)
+        heights[choice] = table_row_height(accounts)
+        assert tree_row_height(tags) == heights[choice]
+
+    assert heights[RowPadding.NONE] == accounts.ui.DataView.fontMetrics().height()
+    assert heights[RowPadding.NONE] < heights[RowPadding.NORMAL] < heights[RowPadding.ROOMY]
+    # The padding is what grows, and it grows by the same step every time
+    assert (heights[RowPadding.ROOMY] - heights[RowPadding.NORMAL]
+            == heights[RowPadding.NORMAL] - heights[RowPadding.NONE])
+
+    accounts.close()
+    tags.close()
+    parent.deleteLater()
+
+
+# A row asks for its height on every layout, so the value may not go to the database more than once
+def test_row_padding_is_read_once(prepare_db, monkeypatch):
+    reads = []
+    original = JalSettings.getInt
+    monkeypatch.setattr(JalSettings, 'getInt',
+                        lambda self, key, default=0: (reads.append(key), original(self, key, default))[1])
+    RowPadding.invalidate()
+    parent = QWidget()
+    view = QTreeView(parent)
+    view.setModel(QStringListModel(["one", "two", "three"], view))
+    for _ in range(10):
+        grid_row_height(view)
+    assert reads.count(RowPadding.SETTINGS_KEY) == 1
     parent.deleteLater()

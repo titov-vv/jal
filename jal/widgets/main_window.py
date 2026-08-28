@@ -14,7 +14,8 @@ from jal.ui.ui_main_window import Ui_JAL_MainWindow
 from jal.widgets.operations_widget import OperationsWidget
 from jal.widgets.tax_widget import TaxWidget, MoneyFlowWidget, TaxMergeDialog
 from jal.widgets.helpers import (dependency_present, menu_label, menu_mnemonic, ts2dt,
-                                restore_splitters, save_splitters, save_columns, refresh_date_formats)
+                                restore_splitters, save_splitters, save_columns, refresh_date_formats,
+                                refresh_row_heights)
 from jal.widgets.icons import JalIcon, AUX_PREFIX, CHAIN_PREFIX
 from jal.widgets.reference_dialogs import AccountListDialog, TagsListDialog, CategoryListDialog, QuotesListDialog, PeerListDialog, ResidenceDialog, TokenBlacklistDialog
 from jal.widgets.assets_dialogs import SymbolListDialog
@@ -381,12 +382,13 @@ class MainWindow(QMainWindow):
         self.ledger.rebuild()
 
     # Preferences change application settings only and never any operation, so no ledger rebuild is needed here.
-    # The date layout is the one setting that is visible everywhere at once, so it is put into use immediately
+    # The date layout and the row padding are visible everywhere at once, so both are put into use immediately
     # instead of asking for a restart the way a change of language has to.
     @Slot()
     def showPreferences(self):
         if PreferencesDialog(parent=self).exec():
             refresh_date_formats()
+            refresh_row_heights()
 
     # A ledger that halted on a rebasing residue can be finished, and the halt carries the numbers to do it with - so
     # it is offered here instead of being left in the log as a dead end. Asked and not done silently, because it

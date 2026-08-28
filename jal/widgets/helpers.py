@@ -80,10 +80,36 @@ def center_window(window):
         window.setGeometry(x, y, window.width(), window.height())
 
 # -----------------------------------------------------------------------------------------------------------------------
-# The height a row of the given view gets: the font the view actually uses plus the padding the style keeps
-# around a focus frame. A row that shows several lines of text pays for the lines, not for the padding again.
+# How much air a grid row keeps around its text, as a multiple of the padding the style asks for. Every grid in the
+# application takes its height from grid_row_height() below, so this one preference sets the density of all of them.
+class RowPadding:
+    NONE = 0        # text only - the densest a row can be
+    NORMAL = 1      # what the style keeps around a focus frame
+    ROOMY = 2
+    DEFAULT = NORMAL
+    SETTINGS_KEY = "RowPadding"
+    FACTORS = {NONE: 0, NORMAL: 1, ROOMY: 2}
+    _current = None   # A height is asked for per row, so the setting is read once and cached here
+
+    @classmethod
+    def factor(cls) -> int:
+        if cls._current is None:
+            try:
+                stored = JalSettings().getInt(cls.SETTINGS_KEY, cls.DEFAULT)
+            except RuntimeError:
+                return cls.FACTORS[cls.DEFAULT]   # No database open yet - a view may be built before it is
+            cls._current = stored if stored in cls.FACTORS else cls.DEFAULT
+        return cls.FACTORS[cls._current]
+
+    # Drops the cached value, so that the next row measured reads the preference from the database again
+    @classmethod
+    def invalidate(cls) -> None:
+        cls._current = None
+
+# The height a row of the given view gets: the font the view actually uses plus the padding chosen above.
+# A row that shows several lines of text pays for the lines, not for the padding again.
 def grid_row_height(view, lines: int = 1) -> int:
-    padding = 2 * view.style().pixelMetric(QStyle.PM_FocusFrameVMargin, None, view)
+    padding = 2 * view.style().pixelMetric(QStyle.PM_FocusFrameVMargin, None, view) * RowPadding.factor()
     return view.fontMetrics().height() * lines + padding
 
 # Gives every grid inside the given widget (a form as a rule) the same row height.
@@ -380,6 +406,20 @@ def refresh_date_formats():
     for widget in QApplication.allWidgets():
         if isinstance(widget, QDateTimeEdit):
             widget.setDisplayFormat(DateFormat.localized(widget.displayFormat()))
+        elif isinstance(widget, QAbstractItemView):
+            widget.viewport().update()
+
+# -----------------------------------------------------------------------------------------------------------------------
+# Puts the row padding that was just chosen in the preferences dialog into use without a restart. A tree asks its
+# delegate for a height on every layout, so it only has to be told to lay out again, but a table keeps the height it
+# was given in its vertical header and has to be walked once more.
+def refresh_row_heights():
+    RowPadding.invalidate()
+    for widget in QApplication.topLevelWidgets():
+        set_grids_row_height(widget)
+    for widget in QApplication.allWidgets():
+        if isinstance(widget, QTreeView):
+            widget.scheduleDelayedItemsLayout()
         elif isinstance(widget, QAbstractItemView):
             widget.viewport().update()
 

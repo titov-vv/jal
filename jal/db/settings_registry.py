@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from PySide6.QtCore import QCoreApplication, QT_TRANSLATE_NOOP
 from jal.db.settings import JalSettings
-from jal.widgets.helpers import DateFormat
+from jal.widgets.helpers import DateFormat, RowPadding
 
 # Context that every translatable string of the settings registry belongs to.
 # Mind that the registration sites below spell it out as the literal "Preferences" instead of using this
@@ -116,6 +116,17 @@ def _register_builtin_settings() -> None:
                  (DateFormat.ISO, QT_TRANSLATE_NOOP("Preferences", "ISO (yyyy-mm-dd)"))),
         tooltip=QT_TRANSLATE_NOOP("Preferences",
                                   "The layout every date in the application is shown in.")))
+    SettingsRegistry.register(SettingDescriptor(
+        key=RowPadding.SETTINGS_KEY,
+        page=QT_TRANSLATE_NOOP("Preferences", "Interface"),
+        label=QT_TRANSLATE_NOOP("Preferences", "Table row padding"),
+        type=SettingType.Choice, default=RowPadding.DEFAULT,
+        options=((RowPadding.NONE, QT_TRANSLATE_NOOP("Preferences", "None (densest)")),
+                 (RowPadding.NORMAL, QT_TRANSLATE_NOOP("Preferences", "Normal")),
+                 (RowPadding.ROOMY, QT_TRANSLATE_NOOP("Preferences", "Roomy"))),
+        tooltip=QT_TRANSLATE_NOOP("Preferences",
+                                  "How much air every table and tree row keeps around its text. The row always "
+                                  "follows the font; this only sets what is added on top of it.")))
     SettingsRegistry.register(SettingDescriptor(
         key="ApiKey_TronGrid",
         page=QT_TRANSLATE_NOOP("Preferences", "Blockchain"),
