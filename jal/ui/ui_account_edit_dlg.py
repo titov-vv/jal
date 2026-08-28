@@ -22,6 +22,7 @@ from PySide6.QtWidgets import (QAbstractButton, QApplication, QCheckBox, QDialog
 
 from jal.constants import AccountTypeComboBox
 from jal.widgets.custom.db_lookup_combobox import DbLookupComboBox
+from jal.widgets.icon_picker import IconButton
 
 class Ui_AccountDialog(object):
     def setupUi(self, AccountDialog):
@@ -86,6 +87,11 @@ class Ui_AccountDialog(object):
 
         self.gridLayout_2.addWidget(self.TypeCombo, 2, 2, 1, 4)
 
+        self.IconButton = IconButton(self.MainFrame)
+        self.IconButton.setObjectName(u"IconButton")
+
+        self.gridLayout_2.addWidget(self.IconButton, 0, 1, 1, 1)
+
         self.NameEdit = QLineEdit(self.MainFrame)
         self.NameEdit.setObjectName(u"NameEdit")
 
@@ -148,7 +154,8 @@ class Ui_AccountDialog(object):
         self.OrganizationLbl.setBuddy(self.OrganizationCombo)
         self.DataLbl.setBuddy(self.AddDataButton)
 #endif // QT_CONFIG(shortcut)
-        QWidget.setTabOrder(self.NameEdit, self.CurrencyCombo)
+        QWidget.setTabOrder(self.NameEdit, self.IconButton)
+        QWidget.setTabOrder(self.IconButton, self.CurrencyCombo)
         QWidget.setTabOrder(self.CurrencyCombo, self.TypeCombo)
         QWidget.setTabOrder(self.TypeCombo, self.OrganizationCombo)
         QWidget.setTabOrder(self.OrganizationCombo, self.ActiveCheck)
@@ -177,6 +184,9 @@ class Ui_AccountDialog(object):
         self.ReconciledValue.setToolTip(QCoreApplication.translate("AccountDialog", u"Set automatically when this account is reconciled by an operation", None))
 #endif // QT_CONFIG(tooltip)
         self.ReconciledValue.setText("")
+#if QT_CONFIG(tooltip)
+        self.IconButton.setToolTip(QCoreApplication.translate("AccountDialog", u"Icon of this account", None))
+#endif // QT_CONFIG(tooltip)
         self.DataLbl.setText(QCoreApplication.translate("AccountDialog", u"&Account details:", None))
 #if QT_CONFIG(tooltip)
         self.AddDataButton.setToolTip(QCoreApplication.translate("AccountDialog", u"Add new", None))

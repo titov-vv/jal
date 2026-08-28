@@ -8,10 +8,11 @@ from jal.db.asset import JalAsset
 from jal.db.asset_models import SymbolsListModel
 from jal.db.ledger import Ledger
 from jal.db.symbol import JalSymbol
-from jal.constants import CmWidth, PredefinedAsset, AssetLocation
+from jal.constants import CmWidth, IconOwner, PredefinedAsset, AssetLocation
 from jal.widgets.delegates import ConstantLookupDelegate
 from jal.widgets.icons import JalIcon
 from jal.widgets.helpers import set_grids_metrics
+from jal.widgets.icon_picker import IconPicker
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -29,6 +30,7 @@ class SymbolListDialog(QDialog):
         self._location_id = None
         self._search_text = ''
         self.selection_enabled = False
+        self._icon_picker = None   # kept alive while its menu is open
         self.model = SymbolsListModel(self)
         self.setup_ui()
 
@@ -196,6 +198,11 @@ class SymbolListDialog(QDialog):
             return   # while the dialog is being used to PICK a symbol, acting on one is not what a click means
         self.ui.DataView.setCurrentIndex(index)
         menu = QMenu(self.ui.DataView)
+        # The icon belongs to the LISTING this row is, not to the asset behind it: a coin deployed on two chains
+        # is two listings, and each wears its own logo (see JalAsset.listing_id).
+        self._icon_picker = IconPicker(IconOwner.Symbol, self.model.getId(index), parent=self)
+        menu.addMenu(self._icon_picker.menu(menu)).setText(self.tr("Icon"))
+        menu.addSeparator()
         menu.addAction(self.tr("Merge asset into..."), self.onMergeAsset)
         menu.popup(self.ui.DataView.viewport().mapToGlobal(position))
 

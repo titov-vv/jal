@@ -185,6 +185,20 @@ class JalIcons(JalDB):
         icon = cls.icon(entity, item_id, size)
         return icon if not icon.isNull() else cls.spacer(size)
 
+    # One entry per distinct image stored for elements of the given kind, as (item_id, image) of the first element
+    # that carries it - what the picker offers when an icon already in the database is to be given to one more
+    # element. Distinct by the image itself, so five accounts sharing one logo are offered once.
+    @classmethod
+    def distinct_images(cls, entity: int) -> list:
+        images = []
+        query = cls._exec("SELECT MIN(item_id) AS item_id, image FROM icons "
+                          "WHERE entity=:entity AND length(image)>0 GROUP BY image ORDER BY item_id",
+                          [(":entity", entity)])
+        while query is not None and query.next():
+            item_id, image = cls._read_record(query)
+            images.append((int(item_id), bytes(image)))
+        return images
+
     # The place an icon would take, for a row that has none to show: an invisible pixmap while rows are indented,
     # and nothing when they are not.
     @classmethod

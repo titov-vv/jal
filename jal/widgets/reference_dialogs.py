@@ -21,6 +21,7 @@ from jal.db.settings import JalSettings
 from jal.widgets.assets_dialogs import SymbolListDialog
 from jal.widgets.account_dialog import AccountDialog
 from jal.widgets.helpers import set_grids_metrics
+from jal.widgets.icon_picker import IconPicker
 
 
 # --------------------------------------------------------------------------------------------------------------
@@ -58,6 +59,7 @@ class ReferenceDataDialog(QDialog):
         self.toolbar = None
         self.custom_context_menu = False
         self._delegates = []  # to keep references to delegates to avoid garbage collection
+        self._icon_picker = None   # kept alive while its menu is open
 
         self.ui.AddChildBtn.setVisible(False)
         self.ui.EditBtn.setVisible(False)
@@ -111,9 +113,24 @@ class ReferenceDataDialog(QDialog):
     @Slot()
     def onDataViewContextMenu(self, pos):
         contextMenu = QMenu(self._view)
+        index = self._view.indexAt(pos)
+        self.addIconAction(contextMenu, index)
         if self.custom_context_menu:
-            self.customizeContextMenu(contextMenu, self._view.indexAt(pos))
+            self.customizeContextMenu(contextMenu, index)
         contextMenu.popup(self._view.viewport().mapToGlobal(pos))
+
+    # Every list whose model carries icons offers to set one, without a line of code in the dialog itself - which
+    # is the same reason the display side asks the model rather than the dialog (see BaseReferenceModelMixin).
+    def addIconAction(self, menu: QMenu, index) -> None:
+        entity = self.model.icon_entity() if hasattr(self.model, 'icon_entity') else None
+        if entity is None or not index.isValid():
+            return
+        item_id = self.model.getId(index)
+        if not item_id:   # the hidden root of a tree ('tags' seeds one with id 0) is not an element to decorate
+            return
+        self._icon_picker = IconPicker(entity, item_id, parent=self)
+        menu.addMenu(self._icon_picker.menu(menu)).setText(self.tr("Icon"))
+        menu.addSeparator()
 
     @Slot()
     def onHeaderContextMenu(self, pos):

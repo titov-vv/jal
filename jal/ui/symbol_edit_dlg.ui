@@ -275,6 +275,13 @@
                 </property>
                </widget>
               </item>
+              <item row="0" column="4">
+               <widget class="IconButton" name="SymbolIconButton">
+                <property name="toolTip">
+                 <string>Icon of the selected symbol</string>
+                </property>
+               </widget>
+              </item>
               <item row="0" column="1">
                <spacer name="horizontalSpacer_2">
                 <property name="orientation">
@@ -298,7 +305,7 @@
                 </property>
                </widget>
               </item>
-              <item row="1" column="0" colspan="4">
+              <item row="1" column="0" colspan="5">
                <widget class="QTableView" name="SymbolsTable">
                 <property name="editTriggers">
                  <set>QAbstractItemView::EditTrigger::AnyKeyPressed|QAbstractItemView::EditTrigger::EditKeyPressed|QAbstractItemView::EditTrigger::SelectedClicked</set>
@@ -426,6 +433,7 @@
   <tabstop>DataTable</tabstop>
   <tabstop>AddSymbolButton</tabstop>
   <tabstop>RemoveSymbolButton</tabstop>
+  <tabstop>SymbolIconButton</tabstop>
   <tabstop>SymbolsTable</tabstop>
   <tabstop>AddIdButton</tabstop>
   <tabstop>RemoveIdButton</tabstop>
@@ -448,6 +456,11 @@
    <class>AssetTypeComboBox</class>
    <extends>QComboBox</extends>
    <header>jal/constants.h</header>
+  </customwidget>
+  <customwidget>
+   <class>IconButton</class>
+   <extends>QToolButton</extends>
+   <header>jal/widgets/icon_picker.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

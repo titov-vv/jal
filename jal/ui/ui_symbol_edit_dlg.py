@@ -23,6 +23,7 @@ from PySide6.QtWidgets import (QAbstractButton, QAbstractItemView, QApplication,
 
 from jal.constants import AssetTypeComboBox
 from jal.widgets.custom.db_lookup_combobox import DbLookupComboBox
+from jal.widgets.icon_picker import IconButton
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 
 class Ui_SymbolDialog(object):
@@ -171,6 +172,11 @@ class Ui_SymbolDialog(object):
 
         self.gridLayout_3.addWidget(self.RemoveSymbolButton, 0, 3, 1, 1)
 
+        self.SymbolIconButton = IconButton(self.SymbolsListFrame)
+        self.SymbolIconButton.setObjectName(u"SymbolIconButton")
+
+        self.gridLayout_3.addWidget(self.SymbolIconButton, 0, 4, 1, 1)
+
         self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.gridLayout_3.addItem(self.horizontalSpacer_2, 0, 1, 1, 1)
@@ -189,7 +195,7 @@ class Ui_SymbolDialog(object):
         self.SymbolsTable.verticalHeader().setVisible(False)
         self.SymbolsTable.verticalHeader().setMinimumSectionSize(20)
 
-        self.gridLayout_3.addWidget(self.SymbolsTable, 1, 0, 1, 4)
+        self.gridLayout_3.addWidget(self.SymbolsTable, 1, 0, 1, 5)
 
         self.HSplitter.addWidget(self.SymbolsListFrame)
         self.IDsListFrame = QFrame(self.HSplitter)
@@ -256,7 +262,8 @@ class Ui_SymbolDialog(object):
         QWidget.setTabOrder(self.RemoveDataButton, self.DataTable)
         QWidget.setTabOrder(self.DataTable, self.AddSymbolButton)
         QWidget.setTabOrder(self.AddSymbolButton, self.RemoveSymbolButton)
-        QWidget.setTabOrder(self.RemoveSymbolButton, self.SymbolsTable)
+        QWidget.setTabOrder(self.RemoveSymbolButton, self.SymbolIconButton)
+        QWidget.setTabOrder(self.SymbolIconButton, self.SymbolsTable)
         QWidget.setTabOrder(self.SymbolsTable, self.AddIdButton)
         QWidget.setTabOrder(self.AddIdButton, self.RemoveIdButton)
         QWidget.setTabOrder(self.RemoveIdButton, self.IdentifiersTable)
@@ -288,6 +295,9 @@ class Ui_SymbolDialog(object):
         self.RemoveSymbolButton.setToolTip(QCoreApplication.translate("SymbolDialog", u"Remove selected symbol", None))
 #endif // QT_CONFIG(tooltip)
         self.RemoveSymbolButton.setText("")
+#if QT_CONFIG(tooltip)
+        self.SymbolIconButton.setToolTip(QCoreApplication.translate("SymbolDialog", u"Icon of the selected symbol", None))
+#endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
         self.AddSymbolButton.setToolTip(QCoreApplication.translate("SymbolDialog", u"Add new symbol", None))
 #endif // QT_CONFIG(tooltip)

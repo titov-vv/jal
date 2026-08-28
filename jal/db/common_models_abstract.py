@@ -83,6 +83,10 @@ class BaseReferenceModelMixin:
                 return self._columns[section].header
         return None
 
+    # The kind of element the rows of this model are (see IconOwner), or None if they carry no icons
+    def icon_entity(self):
+        return self._icon_entity if self._icon_field else None
+
     # The icon of the element this row stands for, to be drawn before the text of the column that carries it
     # (see CmColumn.icon). Any other column, and any model of a table that has no icons, is answered with None.
     # An element with no icon of its own gets a blank of the same size, so the text of every row starts at the

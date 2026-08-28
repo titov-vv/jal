@@ -118,6 +118,13 @@
       <item row="2" column="2" colspan="4">
        <widget class="AccountTypeComboBox" name="TypeCombo"/>
       </item>
+      <item row="0" column="1">
+       <widget class="IconButton" name="IconButton">
+        <property name="toolTip">
+         <string>Icon of this account</string>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="2" colspan="4">
        <widget class="QLineEdit" name="NameEdit"/>
       </item>
@@ -215,6 +222,7 @@
  </widget>
  <tabstops>
   <tabstop>NameEdit</tabstop>
+  <tabstop>IconButton</tabstop>
   <tabstop>CurrencyCombo</tabstop>
   <tabstop>TypeCombo</tabstop>
   <tabstop>OrganizationCombo</tabstop>
@@ -235,6 +243,11 @@
    <class>AccountTypeComboBox</class>
    <extends>QComboBox</extends>
    <header>jal/constants.h</header>
+  </customwidget>
+  <customwidget>
+   <class>IconButton</class>
+   <extends>QToolButton</extends>
+   <header>jal/widgets/icon_picker.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

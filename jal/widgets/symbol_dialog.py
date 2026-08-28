@@ -4,7 +4,7 @@ from PySide6.QtCore import Qt, Slot, QDateTime, QTimeZone, QLocale
 from PySide6.QtSql import QSqlRelation, QSqlRelationalDelegate
 from PySide6.QtWidgets import QDialog, QDataWidgetMapper, QStyledItemDelegate, QComboBox, QLineEdit, QMessageBox, QHeaderView
 from jal.ui.ui_symbol_edit_dlg import Ui_SymbolDialog
-from jal.constants import PredefinedAsset, AssetData, SymbolId, AssetLocation
+from jal.constants import PredefinedAsset, AssetData, IconOwner, SymbolId, AssetLocation
 from jal.db.helpers import localize_decimal, db_row2dict
 from jal.db.asset_models import AssetRecordModel, AssetSymbolsModel, SymbolIdentifiersModel, AssetDataModel
 from jal.db.common_models import TagTreeModel
@@ -160,6 +160,7 @@ class SymbolDialog(QDialog):
         self.ui.RemoveDataButton.setIcon(JalIcon[JalIcon.REMOVE])
 
         self.ui.SymbolsTable.selectionModel().selectionChanged.connect(self.onSymbolSelected)
+        self.ui.SymbolIconButton.changed.connect(self.ui.SymbolsTable.viewport().update)
         self.ui.AddSymbolButton.clicked.connect(self.onAddSymbol)
         self.ui.RemoveSymbolButton.clicked.connect(self.onRemoveSymbol)
         self.ui.AddIdButton.clicked.connect(self.onAddIdentifier)
@@ -254,6 +255,9 @@ class SymbolDialog(QDialog):
     # clear the view's selection (and with it, any pending selectionChanged signal) as a side effect.
     def _select_symbol(self, symbol_id):
         self._current_symbol_id = symbol_id if symbol_id else 0
+        # The icon belongs to the listing, so the button follows the selected row - and it is what makes an icon
+        # reachable for a listing of an asset that is being edited rather than looked up in the assets list.
+        self.ui.SymbolIconButton.setElement(IconOwner.Symbol, self._current_symbol_id)
         if self._current_symbol_id:
             self._id_model.filterBy("symbol_id", self._current_symbol_id)
         else:

@@ -429,8 +429,14 @@ def refresh_row_heights():
     JalIcons.invalidate_indent()   # the space a row keeps for an icon is a preference as well
     for widget in QApplication.topLevelWidgets():
         set_grids_metrics(widget)
+    refresh_grids(relayout=True)
+
+# Repaints every grid of the application. A stored icon may sit on a row of any view that is open - a list, a
+# report tree, the operations table - and no model can know that the store was written to, so they are all told
+# to paint again. 'relayout' is for a change of the row metric, where a tree has to measure its rows once more.
+def refresh_grids(relayout: bool = False):
     for widget in QApplication.allWidgets():
-        if isinstance(widget, QTreeView):
+        if relayout and isinstance(widget, QTreeView):
             widget.scheduleDelayedItemsLayout()
         elif isinstance(widget, QAbstractItemView):
             widget.viewport().update()

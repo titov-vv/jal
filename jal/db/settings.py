@@ -7,12 +7,14 @@ from jal.constants import Setup
 class FolderFor:
     Statement = auto()
     Report = auto()
+    Icon = auto()
 
 class JalSettings(JalDB):
     __RECENT_PREFIX = "RecentFolder_"
     __folders = {
         FolderFor.Statement: "Statement",
-        FolderFor.Report: "Report"
+        FolderFor.Report: "Report",
+        FolderFor.Icon: "Icon"
     }
 
     def __init__(self):

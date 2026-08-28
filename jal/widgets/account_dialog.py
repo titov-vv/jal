@@ -3,7 +3,7 @@ from decimal import Decimal, InvalidOperation
 from PySide6.QtCore import Qt, Slot, QLocale
 from PySide6.QtWidgets import QDialog, QDataWidgetMapper, QStyledItemDelegate, QComboBox, QLineEdit, QMessageBox, QHeaderView
 from jal.ui.ui_account_edit_dlg import Ui_AccountDialog
-from jal.constants import AccountData, PredefinedAccountType, PredefinedAgents, AssetLocation
+from jal.constants import AccountData, IconOwner, PredefinedAccountType, PredefinedAgents, AssetLocation
 from jal.db.helpers import localize_decimal
 from jal.db.clock import local_datetime
 from jal.db.account import JalAccountCreator
@@ -188,6 +188,7 @@ class AccountDialog(QDialog):
         self._mapper.toFirst()
         self._load_reconciled()
         self._data_model.filterBy("account_id", self._account_id)
+        self.ui.IconButton.setElement(IconOwner.Account, self._account_id)
 
     # Creates a new account. The row is written to the database immediately (inside a fresh transaction) so that
     # attributes added below already have a real account_id to refer to.
@@ -213,6 +214,7 @@ class AccountDialog(QDialog):
         self._mapper.toFirst()
         self._load_reconciled()
         self._data_model.filterBy("account_id", self._account_id)
+        self.ui.IconButton.setElement(IconOwner.Account, self._account_id)
 
     @Slot()
     def onAddData(self):
