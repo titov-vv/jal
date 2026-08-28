@@ -77,18 +77,28 @@ class LedgerTransaction(JalDB):
     def tr(self, text):
         return QApplication.translate("LedgerTransaction", text)
 
+    # Columns that dump() can't recognize by name - a timestamp not named 'timestamp', an asset id not named 'symbol_id'
+    _dump_timestamps = ()
+    _dump_assets = ()
+
     def dump(self):
-        for key in self._data:
-            # An operation may hold optional fields that are absent (a pending bridge leg, the receiving leg of a
-            # same-chain swap): SQL NULL reads back as '' and has nothing to convert. Skipping it matters because
-            # dump() is what builds the text of every LedgerError - it must never raise itself.
-            if self._data[key] is None or self._data[key] == '':
+        data = dict(self._data)   # Rendered into a copy, so that a second dump() doesn't re-convert its own output
+        for key, value in data.items():
+            # An operation may hold optional fields that are absent or a zero id/timestamp. Skipping it matters
+            # because dump() is what builds the text of every LedgerError - it must never raise itself.
+            if not value:
                 continue
-            if key.endswith('timestamp'):   # ... and not a column that merely says something ABOUT one
-                self._data[key] = ts2dt(self._data[key])
-            if 'account' in key:
-                self._data[key] = jal.db.account.JalAccount(self._data[key]).name()
-        return str(self._data)
+            if key.endswith('timestamp') or key in self._dump_timestamps:
+                data[key] = ts2dt(value)
+            elif 'account' in key:
+                data[key] = jal.db.account.JalAccount(value).name()
+            elif key.endswith('symbol_id'):
+                data[key] = JalSymbol(value).symbol()
+            elif key in self._dump_assets:
+                data[key] = JalAsset(value).symbol()
+            elif key == 'type':   # Operation subtype, already resolved into _oname
+                data[key] = self._oname
+        return str(data)
 
     @staticmethod
     def get_operation(operation_type, oid, opart=0):
@@ -350,6 +360,7 @@ class LedgerTransaction(JalDB):
 # ----------------------------------------------------------------------------------------------------------------------
 class IncomeSpending(LedgerTransaction):
     _db_table = "actions"
+    _dump_assets = ('currency',)   # 'alt_currency_id' is selected as 'currency'
     _db_fields = {
         "timestamp": {"mandatory": True, "validation": False},
         "account_id": {"mandatory": True, "validation": False},
@@ -523,6 +534,7 @@ class AssetPayment(LedgerTransaction):
     # the value it left the payer at, which this account never bore.
     TokenRentReturn = 13
     _db_table = "asset_payments"
+    _dump_timestamps = ('ex_date',)
     _db_fields = {
         "timestamp": {"mandatory": True, "validation": True},
         "timestamp_day_only": {"mandatory": False, "validation": False},
@@ -895,6 +907,7 @@ class AssetPayment(LedgerTransaction):
 # ----------------------------------------------------------------------------------------------------------------------
 class Trade(LedgerTransaction):
     _db_table = "trades"
+    _dump_timestamps = ('settlement',)
     _db_fields = {
         "timestamp": {"mandatory": True, "validation": True},
         "settlement": {"mandatory": False, "validation": False},
