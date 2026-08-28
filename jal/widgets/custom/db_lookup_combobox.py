@@ -1,6 +1,36 @@
-from PySide6.QtCore import Qt, Property
+from PySide6.QtCore import Qt, Property, QSize
 from PySide6.QtWidgets import QComboBox
+from jal.constants import IconOwner
+from jal.db.asset import JalAsset
 from jal.db.db import JalModel
+from jal.db.icon import JalIcons
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# What a row of a looked-up table is a picture of. Only the tables whose rows have icons are listed here; anything
+# else is text alone, and a table that gains icons later (agents, when peers get them) is one branch more.
+# Mind what the key of each table means: 'currencies' is a view over ASSETS, while an icon belongs to a listing of
+# an asset - the same narrowing every other place makes (see JalAsset.listing_id).
+def lookup_row_icon(table: str, row_id):
+    if not row_id:
+        return None
+    if table == "currencies":
+        return JalIcons.decoration(IconOwner.Symbol, JalAsset(int(row_id)).listing_id(), JalIcons.grid_size())
+    return None
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The model behind the combo box below: a plain table model that also answers with the icon of the element each row
+# stands for, which is all a QComboBox needs to draw it - in the closed box and in the popup alike.
+class LookupModel(JalModel):
+    def __init__(self, parent, table_name, key_field):
+        super().__init__(parent, table_name)
+        self._key_field = key_field
+
+    def data(self, index, role=Qt.DisplayRole):
+        if role == Qt.DecorationRole and index.isValid() and self._key_field:
+            return lookup_row_icon(self._table, self.record(index.row()).value(self._key_field))
+        return super().data(index, role)
 
 
 # Combobox to lookup in db tables:
@@ -42,6 +72,7 @@ class DbLookupComboBox(QComboBox):
         if self._key_field == field_name:
             return
         self._key_field = field_name
+        self.setupDb()   # the model needs the key to know which element each row is, and so which icon it wears
 
     def getField(self):
         return self._field
@@ -60,9 +91,12 @@ class DbLookupComboBox(QComboBox):
     def setupDb(self):
         if not self._table or not self._field:
             return
-        self._model = JalModel(self, self._table)
+        self._model = LookupModel(self, self._table, self._key_field)
         field_idx = self._model.fieldIndex(self._field)
         self._model.setSort(field_idx, Qt.AscendingOrder)
         self._model.select()
         self.setModel(self._model)
         self.setModelColumn(field_idx)
+        # A combo box that was never told an icon size clamps every icon to the style's 16 px, exactly as a view
+        # does - and this is the same size a grid paints an icon at, so a row of the popup keeps its height.
+        self.setIconSize(QSize(JalIcons.grid_size(), JalIcons.grid_size()))

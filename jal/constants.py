@@ -494,6 +494,25 @@ class AssetLocation(PredefinedList, QObject):
     BLOCKCHAINS = [ETH_BLOCKCHAIN, ARB_BLOCKCHAIN, BTC_BLOCKCHAIN, SOL_BLOCKCHAIN, TRX_BLOCKCHAIN, HL_BLOCKCHAIN,
                    AVAX_BLOCKCHAIN]
 
+    # Glyph of each blockchain, as the name of the file that carries it in jal/img (with CHAIN_PREFIX in front of
+    # it - see JalIcon.module_icon). The fetcher of each chain names the same file, but a chain is drawn wherever an
+    # account states one and not only where it can be fetched, so the map lives here beside BLOCKCHAINS: the db and
+    # widget layers must not import the net layer to draw a picture.
+    _CHAIN_ICONS = {
+        ETH_BLOCKCHAIN: 'ethereum.png',
+        ARB_BLOCKCHAIN: 'arbitrum.png',
+        BTC_BLOCKCHAIN: 'bitcoin.png',
+        SOL_BLOCKCHAIN: 'solana.png',
+        TRX_BLOCKCHAIN: 'tron.png',
+        HL_BLOCKCHAIN: 'hyperliquid.png',
+        AVAX_BLOCKCHAIN: 'avalanche.png'
+    }
+
+    # Name of the image file that marks the given blockchain, or '' if the location isn't a blockchain
+    @classmethod
+    def icon_of(cls, location_id: int) -> str:
+        return cls._CHAIN_ICONS.get(location_id, '')
+
     # Identifier that holds a token's contract (or mint) address on each chain. The address is the only trustworthy
     # key for a token - tickers and names are chosen by whoever deployed the contract - so it identifies a token
     # everywhere: quote downloads, statement import and the chain fetchers. Bitcoin has no tokens and is absent.

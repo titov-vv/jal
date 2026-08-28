@@ -10,6 +10,7 @@ from jal.db.clock import day_finish, local_reading, today_finish
 from jal.db.helpers import now_ts
 from jal.db.tree_model import AbstractTreeItem, ReportTreeModel
 from jal.db.account import JalAccount
+from jal.db.common_models import account_row_icon
 from jal.db.asset import JalAsset
 from jal.db.chain_balance import JalChainBalance
 from jal.db.icon import JalIcons
@@ -167,7 +168,7 @@ class HoldingsModel(ReportTreeModel):
         if group is None or group[0] == 'asset_id':
             return JalIcons.decoration(IconOwner.Symbol, details.get('symbol_id', 0), JalIcons.grid_size())
         if group[0] == 'account_id':
-            return JalIcons.decoration(IconOwner.Account, details.get('account_id', 0), JalIcons.grid_size())
+            return account_row_icon(JalAccount(details.get('account_id', 0)))
         if group[0] == 'currency_id':
             return JalIcons.decoration(IconOwner.Symbol, JalAsset(details.get('currency_id', 0)).listing_id(),
                                        JalIcons.grid_size())

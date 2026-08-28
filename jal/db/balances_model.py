@@ -11,6 +11,7 @@ from jal.db.settings import JalSettings
 from jal.db.clock import day_finish, today_finish
 from jal.db.asset import JalAsset
 from jal.db.account import JalAccount
+from jal.db.common_models import account_row_icon
 from jal.db.icon import JalIcons
 from jal.widgets.delegates import GridLinesDelegate, FloatDelegate
 from jal.widgets.icons import JalIcon
@@ -118,7 +119,7 @@ class BalancesModel(ReportTreeModel):
                 # particular institutions and wear whatever logo they carry (a blank of the same size if none).
                 if item.isGroup():
                     return JalIcon[item.details().get('icon_id', JalIcon.NONE)]
-                return JalIcons.decoration(IconOwner.Account, item.details().get('account', 0), JalIcons.grid_size())
+                return account_row_icon(JalAccount(item.details().get('account', 0)))
             if self._use_credit and index.column() == self.fieldIndex('value') and item.details()['credit_limit']:
                 if role == Qt.DecorationRole:
                     return JalIcon[JalIcon.WITH_CREDIT]

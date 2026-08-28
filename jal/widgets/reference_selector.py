@@ -1,6 +1,7 @@
 from PySide6.QtCore import Qt, Signal, Property, Slot, QEvent, QModelIndex
 from PySide6.QtWidgets import QApplication, QWidget, QHBoxLayout, QLineEdit, QLabel, QToolButton
 from PySide6.QtGui import QPalette
+from jal.db.icon import JalIcons
 from jal.widgets.icons import JalIcon
 from jal.widgets.helpers import layout_step
 from jal.widgets.theme import Theme, Meaning
@@ -27,6 +28,11 @@ class ReferenceSelectorWidget(QWidget):
         self.layout.setContentsMargins(0, 0, 0, 0)
         # A tight, style-derived gap for this in-field cluster
         self.layout.setSpacing(max(1, layout_step(self) // 2))
+        # The icon of whatever is selected, at the head of the cluster. Every operation form picks its account,
+        # its symbol and its tag through this widget, so this is where a stored icon reaches the forms.
+        self.icon = QLabel()
+        self.icon.setVisible(False)
+        self.layout.addWidget(self.icon)
         self.name = QLineEdit()
         self.name.setText("")
         self.layout.addWidget(self.name)
@@ -108,6 +114,7 @@ class ReferenceSelectorWidget(QWidget):
     def set_labels_text(self, item_id):
         assert not self._model is None, f"Model is not set for {self.__class__.__name__}"
         self.name.setText(self._model.getValue(item_id))
+        self._update_icon()
         details_text = self._model.getValueDetails(item_id)
         if details_text:
             self.details.setVisible(True)
@@ -140,6 +147,18 @@ class ReferenceSelectorWidget(QWidget):
         model = index.model()
         self.selected_id = model.data(model.index(index.row(), 0), Qt.DisplayRole)
         self.changed.emit()
+
+    # Shows the icon of the selected element, if its kind has icons at all and this one has one. A kind that has
+    # none (a peer, a category - until S6) and an empty selection show nothing; the space of a missing icon is kept
+    # or not exactly as it is in a grid, because it is the same preference (see JalIcons.decoration).
+    def _update_icon(self):
+        entity = self._model.icon_entity() if hasattr(self._model, 'icon_entity') else None
+        decoration = None
+        if entity is not None and self.p_selected_id:
+            decoration = JalIcons.decoration(entity, self.p_selected_id, JalIcons.grid_size())
+        self.icon.setVisible(decoration is not None)
+        if decoration is not None:
+            self.icon.setPixmap(decoration.pixmap(JalIcons.grid_size()))
 
     # Highlights input field with red color if widget has invalid value.
     def _update_view(self):

@@ -1,10 +1,12 @@
 from decimal import Decimal, InvalidOperation
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QIcon
 from PySide6.QtSql import QSqlRelation
 from PySide6.QtWidgets import QMessageBox
-from jal.constants import CmColumn, CmWidth, CmDelegate, CmReference, PredefinedAccountType, PredefinedAgents, \
-    AccountData, AssetLocation
+from jal.constants import CmColumn, CmWidth, CmDelegate, CmReference, IconOwner, PredefinedAccountType, \
+    PredefinedAgents, AccountData, AssetLocation
 from jal.db.category import JalCategory
+from jal.db.icon import JalIcons
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.country import JalCountry
@@ -13,7 +15,43 @@ from jal.db.peer import JalPeer
 from jal.db.residence import JalResidence
 from jal.db.token_blacklist import JalTokenBlacklist
 from jal.widgets.helpers import ts2d
-from jal.widgets.icons import JalIcon
+from jal.widgets.icons import JalIcon, CHAIN_PREFIX
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The mark of a blockchain: the picture its own fetcher wears in the menu, taken from the location→file map that
+# lives beside AssetLocation.BLOCKCHAINS. An empty icon where the location isn't a chain.
+def chain_icon(location_id: int) -> QIcon:
+    icon_name = AssetLocation.icon_of(location_id)
+    return JalIcon.module_icon(CHAIN_PREFIX, icon_name) if icon_name else QIcon()
+
+
+# The glyph that says what kind of account this row is. A WALLET is marked by its blockchain rather than by the
+# generic wallet glyph - 'Ethereum' or 'Solana' is what the user knows the account as, and every chain already
+# ships a picture. It is the account that is asked and not its type, because a group row of the balances tree
+# stands for the type itself and keeps its own glyph.
+def account_mark(account: JalAccount) -> QIcon:
+    if account.account_type() == PredefinedAccountType.Wallet:
+        icon = chain_icon(account.chain())
+        if not icon.isNull():
+            return icon
+    return JalIcon[account.type_icon()]
+
+
+# What marks an account ROW - a row that says WHICH account this is, as opposed to a column or a group row that says
+# what kind it is. Its own icon if it has one; the blockchain it sits on if it is a wallet that has none, because a
+# chain is the nearest thing to an identity such an account has; and otherwise the empty space of an icon (or
+# nothing, if the user turned that off). Never the glyph of its TYPE: in every place this is used the type is
+# already said - by the group row above it, or by the type column beside it.
+def account_row_icon(account: JalAccount) -> QIcon:
+    size = JalIcons.grid_size()
+    icon = JalIcons.icon(IconOwner.Account, account.id(), size)
+    if not icon.isNull():
+        return icon
+    chain = chain_icon(account.chain())    # any account that states a chain, which is a wallet or a staking box
+    if not chain.isNull():
+        return chain
+    return JalIcons.spacer(size)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -52,12 +90,19 @@ class AccountListModel(AbstractReferenceListModel):
     def flags(self, index):
         return super().flags(index) & ~Qt.ItemIsEditable
 
-    def data(self, index, role=Qt.DisplayRole):   # Display account-type icon as decoration role
+    def data(self, index, role=Qt.DisplayRole):   # Display the mark of the account kind as decoration role
         if not index.isValid():
             return None
         if role == Qt.DecorationRole and index.column() == self.fieldIndex('account_type'):
-            return JalIcon[JalAccount.get_type_icon(super().data(index, Qt.DisplayRole))]
+            return account_mark(JalAccount(self.getId(index)))
         return super().data(index, role)
+
+    # The name column says which account this is, so a wallet with no icon of its own falls back to its chain
+    # (see account_row_icon) instead of the blank the model base would give it.
+    def icon_decoration(self, index):
+        if self._icon_field is None or index.column() != self.fieldIndex(self._icon_field):
+            return None
+        return account_row_icon(JalAccount(self.getId(index)))
 
     def removeElement(self, index) -> bool:
         reply = QMessageBox().warning(None, self.tr("Warning"), self.tr("All transactions related with this account will be deleted.\n"
@@ -124,6 +169,13 @@ class AccountDataModel(AbstractReferenceListModel):
             if index.column() == self.fieldIndex("value"):
                 datatype = super().data(index.sibling(index.row(), self.fieldIndex("datatype")), role)
                 return self._format_value(datatype, super().data(index, role))
+        if role == Qt.DecorationRole and index.isValid() and index.column() == self.fieldIndex("value"):
+            datatype = super().data(index.sibling(index.row(), self.fieldIndex("datatype")), Qt.DisplayRole)
+            if datatype == AccountData.Chain:      # the one attribute that names something with a picture
+                try:
+                    return chain_icon(int(super().data(index, Qt.DisplayRole)))
+                except (TypeError, ValueError):
+                    return None
         return super().data(index, role)
 
     def _format_value(self, datatype, value):

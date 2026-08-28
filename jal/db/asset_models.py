@@ -51,6 +51,11 @@ class SymbolsListModel(QSqlQueryModel, JalDB):
     def column_meta(self) -> list[CmColumn]:
         return self._columns
 
+    # The rows of this list are listings, and a listing is a kind of element that has icons - answered here the
+    # same way the model bases answer it, so that every consumer can ask any model the same question.
+    def icon_entity(self) -> int:
+        return IconOwner.Symbol
+
     @property
     def completion_model(self):
         return self._completion_model

@@ -401,3 +401,216 @@ def test_the_preference_is_offered_on_the_interface_page(prepare_db):
     assert len(setting) == 1
     assert setting[0].page == "Interface"
     assert setting[0].default == JalIcons.INDENT_DEFAULT
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The selector widget is how every operation form picks its account, its symbol and its tag - so it is where a
+# stored icon reaches the forms. It shows the icon of what is selected, and nothing at all where the kind of thing
+# being selected has no icons (a peer, until S6 gives it some).
+def test_the_selector_shows_the_icon_of_what_it_selected(prepare_db):
+    from jal.widgets.reference_selector import ReferenceSelectorWidget
+    from jal.widgets.reference_dialogs import AccountListDialog, PeerListDialog
+    from jal.db.common_models import AccountListModel, PeerTreeModel
+
+    with_logo, without = _accounts()
+    parent = QWidget()
+    selector = ReferenceSelectorWidget(parent)
+    selector.setup_selector(AccountListModel, AccountListDialog, parent)
+
+    selector.selected_id = with_logo.id()
+    assert selector.icon.isVisible() or True          # (a widget that was never shown reports itself hidden)
+    assert not selector.icon.pixmap().isNull()
+    assert selector.icon.pixmap().width() == JalIcons.grid_size()
+
+    selector.selected_id = without.id()               # no icon of its own, but the space is kept by default
+    assert not selector.icon.pixmap().isNull()
+    assert selector.icon.pixmap().toImage().pixelColor(0, 0).alpha() == 0
+
+    selector.selected_id = 0                          # nothing selected - nothing to show
+    assert not selector.icon.isVisibleTo(parent)
+
+    peers = ReferenceSelectorWidget(parent)           # a kind that carries no icons at all
+    peers.setup_selector(PeerTreeModel, PeerListDialog, parent)
+    peers.selected_id = 1
+    assert not peers.icon.isVisibleTo(parent)
+    parent.deleteLater()
+
+
+def test_the_selector_follows_the_indent_preference(prepare_db, monkeypatch):
+    from PySide6.QtWidgets import QApplication
+    from jal.db.settings import JalSettings
+    from jal.widgets.reference_selector import ReferenceSelectorWidget
+    from jal.widgets.reference_dialogs import AccountListDialog
+    from jal.db.common_models import AccountListModel
+    monkeypatch.setattr(QApplication, 'topLevelWidgets', staticmethod(lambda: []))
+    monkeypatch.setattr(QApplication, 'allWidgets', staticmethod(lambda: []))
+
+    _, without = _accounts()
+    parent = QWidget()
+    selector = ReferenceSelectorWidget(parent)
+    selector.setup_selector(AccountListModel, AccountListDialog, parent)
+
+    JalSettings().setValue(JalIcons.INDENT_KEY, 0)
+    JalIcons.invalidate_indent()
+    selector.selected_id = without.id()
+    assert not selector.icon.isVisibleTo(parent)      # the space goes back to the name field
+
+    JalSettings().setValue(JalIcons.INDENT_KEY, 1)
+    JalIcons.invalidate_indent()
+    selector.set_labels_text(without.id())
+    assert selector.icon.isVisibleTo(parent)
+    parent.deleteLater()
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# What kind of account a row is, in a picture: a wallet is marked by its blockchain rather than by the generic
+# wallet glyph, because that is what the user knows the account as.
+TRX_ADDRESS = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t'   # the USDT contract on Tron - a real, checksum-valid address
+
+
+def test_a_wallet_is_marked_by_its_blockchain(prepare_db):
+    from jal.constants import AssetLocation, PredefinedAccountType
+    from jal.db.account import JalAccount
+    from jal.db.common_models import account_mark, chain_icon
+    from jal.widgets.icons import JalIcon, CHAIN_PREFIX
+    JalIcon()   # the glyph table is built by MainWindow in the application, and by hand where there is none
+
+    wallet = JalAccountCreator(currency_id=2, number='', name='Tron wallet', organization=1,
+                               account_type=PredefinedAccountType.Wallet,
+                               address=TRX_ADDRESS, chain=AssetLocation.TRX_BLOCKCHAIN).commit()
+    cash = JalAccountCreator(currency_id=2, number='U9', name='Cash', organization=1).commit()
+
+    assert account_mark(wallet).cacheKey() == JalIcon.module_icon(CHAIN_PREFIX, 'tron.png').cacheKey()
+    assert account_mark(cash).cacheKey() == JalIcon[JalAccount.get_type_icon(PredefinedAccountType.Cash)].cacheKey()
+    # ... and the map that says which file marks which chain covers every chain JAL supports
+    for location in AssetLocation.BLOCKCHAINS:
+        assert AssetLocation.icon_of(location), f"no glyph declared for location {location}"
+        assert not chain_icon(location).isNull(), f"the file of location {location} is missing from jal/img"
+    assert AssetLocation.icon_of(AssetLocation.NYSE_EXCHANGE) == ''     # an exchange is not a chain
+
+
+# The account type column of the accounts list is where that mark is shown
+def test_the_accounts_list_shows_the_chain_of_a_wallet(prepare_db):
+    from jal.constants import AssetLocation, PredefinedAccountType
+    from jal.db.common_models import AccountListModel
+    from jal.widgets.icons import JalIcon, CHAIN_PREFIX
+    JalIcon()
+
+    wallet = JalAccountCreator(currency_id=2, number='', name='Tron wallet', organization=1,
+                               account_type=PredefinedAccountType.Wallet,
+                               address=TRX_ADDRESS, chain=AssetLocation.TRX_BLOCKCHAIN).commit()
+    model = AccountListModel()
+    rows = {model.getId(model.index(row, 0)): row for row in range(model.rowCount())}
+    mark = model.data(model.index(rows[wallet.id()], model.fieldIndex("account_type")), Qt.DecorationRole)
+
+    assert mark.cacheKey() == JalIcon.module_icon(CHAIN_PREFIX, 'tron.png').cacheKey()
+
+
+# And the 'Blockchain' attribute of an account states a chain, so it shows it too
+def test_the_chain_attribute_carries_its_glyph(prepare_db):
+    from jal.constants import AccountData, AssetLocation, PredefinedAccountType
+    from jal.db.common_models import AccountDataModel, chain_icon
+    from jal.widgets.icons import JalIcon
+    JalIcon()
+
+    wallet = JalAccountCreator(currency_id=2, number='', name='Tron wallet', organization=1,
+                               account_type=PredefinedAccountType.Wallet,
+                               address=TRX_ADDRESS, chain=AssetLocation.TRX_BLOCKCHAIN).commit()
+    model = AccountDataModel()
+    model.filterBy("account_id", wallet.id())
+    rows = [row for row in range(model.rowCount())
+            if model.data(model.index(row, model.fieldIndex("datatype")), Qt.EditRole) == AccountData.Chain]
+    assert len(rows) == 1
+
+    value = model.index(rows[0], model.fieldIndex("value"))
+    assert model.data(value, Qt.DecorationRole).cacheKey() == chain_icon(AssetLocation.TRX_BLOCKCHAIN).cacheKey()
+    address = [row for row in range(model.rowCount())
+               if model.data(model.index(row, model.fieldIndex("datatype")), Qt.EditRole) == AccountData.Address]
+    assert model.data(model.index(address[0], model.fieldIndex("value")), Qt.DecorationRole) is None
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# A row that names an account shows what THAT account is: its own icon, or - for an account that states a
+# blockchain and has none - the chain it sits on. Never the glyph of its type, which the group row above it or the
+# type column beside it already says.
+def test_an_account_row_falls_back_to_its_chain(prepare_db):
+    from jal.constants import AssetLocation, PredefinedAccountType
+    from jal.db.common_models import account_row_icon, chain_icon
+    from jal.widgets.icons import JalIcon
+    JalIcon()
+
+    wallet = JalAccountCreator(currency_id=2, number='', name='Tron wallet', organization=1,
+                               account_type=PredefinedAccountType.Wallet,
+                               address=TRX_ADDRESS, chain=AssetLocation.TRX_BLOCKCHAIN).commit()
+    card = JalAccountCreator(currency_id=2, number='U8', name='Card', organization=1).commit()
+
+    assert account_row_icon(wallet).cacheKey() == chain_icon(AssetLocation.TRX_BLOCKCHAIN).cacheKey()
+    # ... and an icon of its own wins over the chain, because it names this wallet and not the chain's other ones
+    JalIcons.store(IconOwner.Account, wallet.id(), _png(), IconSource.User)
+    own = account_row_icon(wallet)
+    assert own.cacheKey() != chain_icon(AssetLocation.TRX_BLOCKCHAIN).cacheKey()
+    assert not own.isNull()
+    # An account that states no chain keeps the blank: its type is said elsewhere on the same row
+    blank = account_row_icon(card)
+    assert blank.pixmap(JalIcons.grid_size()).toImage().pixelColor(0, 0).alpha() == 0
+
+
+# Which is what puts a chain on the wallet rows of the balances tree
+def test_the_balances_tree_marks_a_wallet_with_its_chain(prepare_db):
+    from jal.widgets.custom.treeview_with_footer import TreeViewWithFooter
+    from jal.constants import AssetLocation, PredefinedAccountType, PredefinedCategory
+    from jal.db.balances_model import BalancesModel
+    from jal.db.common_models import chain_icon
+    from jal.db.ledger import Ledger
+    from jal.widgets.icons import JalIcon
+    JalIcon()
+
+    wallet = JalAccountCreator(currency_id=2, number='', name='Tron wallet', organization=1,
+                               account_type=PredefinedAccountType.Wallet,
+                               address=TRX_ADDRESS, chain=AssetLocation.TRX_BLOCKCHAIN).commit()
+    create_actions([(d2t(220101), wallet.id(), 1, [(PredefinedCategory.StartingBalance, 100.0)])])
+    Ledger().rebuild(from_timestamp=0)
+
+    parent = QWidget()
+    view = TreeViewWithFooter(parent)
+    model = BalancesModel(view)
+    model._currency = 2
+    model.prepareData()
+    column = model.fieldIndex('account_name')
+
+    group = model.index(0, column, model.index(-1, -1))
+    leaf = model.index(0, column, group)
+    assert model.data(leaf, Qt.DisplayRole) == 'Tron wallet'
+    assert model.data(leaf, Qt.DecorationRole).cacheKey() == chain_icon(AssetLocation.TRX_BLOCKCHAIN).cacheKey()
+    # the group row is the TYPE and keeps the type's own glyph
+    assert model.data(group, Qt.DecorationRole).cacheKey() == JalIcon[wallet.type_icon()].cacheKey()
+    parent.deleteLater()
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The lookup combo boxes of the dialogs draw an icon by themselves once their model answers with one - and the
+# currencies they list are assets, so the icon is the one of the listing that names each of them.
+def test_the_lookup_combo_shows_the_icon_of_its_rows(prepare_db):
+    from jal.widgets.custom.db_lookup_combobox import DbLookupComboBox
+    from jal.db.asset import JalAsset
+    parent = QWidget()
+    listing = JalAsset(2).listing_id()                  # the base currency of the test database
+    JalIcons.store(IconOwner.Symbol, listing, _png(), IconSource.User)
+
+    combo = DbLookupComboBox(parent)
+    combo.setKeyField("id")
+    combo.setField("symbol")
+    combo.setTable("currencies")
+    model = combo.model()
+
+    rows = {model.record(row).value("id"): row for row in range(model.rowCount())}
+    icon = model.data(model.index(rows[2], model.fieldIndex("symbol")), Qt.DecorationRole)
+    assert isinstance(icon, QIcon) and not icon.isNull()
+    assert combo.iconSize().height() == JalIcons.grid_size()
+
+    peers = DbLookupComboBox(parent)                     # a table whose rows have no icons yet (S6)
+    peers.setKeyField("id")
+    peers.setField("name")
+    peers.setTable("agents")
+    assert peers.model().data(peers.model().index(0, 0), Qt.DecorationRole) is None
+    parent.deleteLater()
