@@ -5,7 +5,7 @@ from jal.db.symbol import JalSymbol
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Icon (logo) URL of an asset listing. Both sources below are keyless and answer 404 for something they don't know,
-# which is the answer the caller stores as "no icon exists" (see JalSymbol.set_icon).
+# which is the answer the caller stores as "no icon exists" (see JalIcons.store).
 #
 # Coins and tokens come from the Trust Wallet asset repository - it is keyed by chain + contract address, which is
 # exactly how JAL identifies a token, so the icon is looked up by the same key the quote download uses and a token

@@ -13,9 +13,10 @@ from PySide6.QtCore import Qt, QObject, Signal, Slot, QDate
 from PySide6.QtWidgets import QApplication, QDialog, QListWidgetItem
 
 from jal.ui.ui_quotes_update_dlg import Ui_UpdateQuotesDlg
-from jal.constants import AssetLocation, PredefinedAsset, SymbolId
+from jal.constants import AssetLocation, IconOwner, IconSource, PredefinedAsset, SymbolId
 from jal.db.asset import JalAsset
 from jal.db.helpers import day_begin, now_ts
+from jal.db.icon import JalIcons
 from jal.db.symbol import JalSymbol
 from jal.net.asset_icons import icon_url, coingecko_icons_urls, parse_coingecko_icons
 from jal.net.chain_balances import ChainBalanceReader
@@ -390,13 +391,14 @@ class QuoteDownloader(QObject):
         self.download_icons(listings)
 
     # Downloads the missing icons of the given listings. Only a listing that was never asked about is requested:
-    # JalSymbol.icon_requested() is True both for a listing that has an icon and for one the source answered 404
-    # for, so neither is downloaded twice and an icon that doesn't exist is asked for exactly once ever.
+    # JalIcons.stored() is True both for a listing that has an icon and for one the source answered 404 for, so
+    # neither is downloaded twice and an icon that doesn't exist is asked for exactly once ever. It is also True
+    # for whatever the user chose, which a download never touches - JalIcons.store() refuses that in any case.
     # Icons are cosmetic, so nothing here is allowed to affect the quotes that were just downloaded: a request that
     # fails is simply left for the next run. The one exception is a user cancellation, which propagates out of
     # _wait_for_event() exactly as it does from the quote loop.
     def download_icons(self, listings: list) -> None:
-        pending = [x for x in listings if x.id() and not x.icon_requested()]
+        pending = [x for x in listings if x.id() and not JalIcons.stored(IconOwner.Symbol, x.id())]
         if not pending:
             return
         logging.info(self.tr("Loading asset icons"))
@@ -404,10 +406,10 @@ class QuoteDownloader(QObject):
         for i, symbol in enumerate(pending):
             image, no_icon_exists = self._fetch_icon(symbol, coin_icons)
             if image:
-                symbol.set_icon(image)
+                JalIcons.store(IconOwner.Symbol, symbol.id(), image, IconSource.Downloaded)
             elif no_icon_exists:
                 logging.debug(self.tr("There is no icon available for ") + f"{symbol.symbol()}")
-                symbol.set_icon(b'')
+                JalIcons.store(IconOwner.Symbol, symbol.id(), b'', IconSource.Downloaded)
             self.update_progress.emit(100.0 * (i + 1) / len(pending))
 
     # Fetches the icon of one listing. The source keyed by the listing itself (its contract address, or its ISIN)
@@ -415,7 +417,7 @@ class QuoteDownloader(QObject):
     # recorded for it - answers when that source has nothing, which is the common case for a token the Trust Wallet
     # repository doesn't carry.
     # Returns the image and, when there is none, whether every source that could be asked has answered that it has
-    # none: only such an answer is remembered (see JalSymbol.set_icon), so that a source which was merely
+    # none: only such an answer is remembered (see JalIcons.store), so that a source which was merely
     # unreachable - or a coin logo that couldn't be looked up this time - is asked again on the next run.
     def _fetch_icon(self, symbol: JalSymbol, coin_icons: dict) -> tuple:
         coin_id = symbol.asset().coin_id()

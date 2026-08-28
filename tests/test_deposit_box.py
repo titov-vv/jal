@@ -134,6 +134,6 @@ def test_deposit_money_reaches_the_balances(prepare_bank_account):
     assert JalAccount(box.id()).balance(t_open) == Decimal('1000')
     # It carries its own type, which is what groups deposits together in the balances view
     assert JalAccount(box.id()).account_type() == PredefinedAccountType.Deposit
-    assert JalAccount(box.id()).type_icon() == 'tag_deposit.ico'
+    assert JalAccount(box.id()).type_icon() == 'atype_deposit.ico'
     # The total of the bank account and the deposit is what the bank account held before the deposit was opened
     assert JalAccount(1).balance(t_open) + JalAccount(box.id()).balance(t_open) == Decimal('10000')

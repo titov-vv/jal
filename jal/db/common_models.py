@@ -209,18 +209,10 @@ class CategoryTreeModel(SqlTreeModel):
 class TagTreeModel(SqlTreeModel):
     def __init__(self, parent=None):
         columns = [
-            CmColumn("tag", self.tr("Tag"), sort=True, default=True, width=CmWidth.WIDTH_STRETCH, delegate_type=CmDelegate.GRID),
-            CmColumn("icon_file", self.tr("Icon filename"), delegate_type=CmDelegate.GRID)
+            CmColumn("tag", self.tr("Tag"), sort=True, default=True, width=CmWidth.WIDTH_STRETCH, delegate_type=CmDelegate.GRID)
         ]
         super().__init__("tags", columns, parent)
         self.set_default_values({"tag": self.tr("New tag")})
-
-    def data(self, index, role=Qt.DisplayRole):   # Display tag icon as decoration role
-        if not index.isValid():
-            return None
-        if role == Qt.DecorationRole and index.column() == self.fieldIndex('icon_file'):
-            return JalIcon[super().data(index, Qt.DisplayRole)]
-        return super().data(index, role)
 
 
 # ----------------------------------------------------------------------------------------------------------------------

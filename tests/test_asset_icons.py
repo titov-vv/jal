@@ -9,9 +9,10 @@ from PySide6.QtGui import QIcon, QImage
 
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import create_assets, symbol_id_for
-from constants import AssetLocation, PredefinedAsset, SymbolId, Setup
+from constants import AssetLocation, IconOwner, IconSource, PredefinedAsset, SymbolId, Setup
 from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.asset_models import SymbolsListModel
+from jal.db.icon import JalIcons
 from jal.db.symbol import JalSymbol
 from jal.net.asset_icons import icon_url, eip55_address, coingecko_icons_urls, parse_coingecko_icons
 from jal.net.downloader import QuoteDownloader
@@ -148,24 +149,6 @@ def test_icon_url_of_securities(prepare_db):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# The icon column keeps three states in one BLOB: NULL = never asked, empty = asked and there is none,
-# an image = the icon itself. This is what lets the downloader skip a listing it already knows about.
-def test_icon_storage_states(prepare_db):
-    create_assets([('AAPL', 'Apple Inc.', 'US0378331005', 2, PredefinedAsset.Stock, 0)])
-    symbol_id = symbol_id_for(4)
-    assert JalSymbol(symbol_id).icon() is None
-    assert JalSymbol(symbol_id).icon_requested() is False
-
-    JalSymbol(symbol_id).set_icon(b'')      # The source was asked and has no icon for this listing
-    assert JalSymbol(symbol_id).icon() == b''
-    assert JalSymbol(symbol_id).icon_requested() is True    # ... so it is never asked again
-
-    JalSymbol(symbol_id).set_icon(PNG)
-    assert JalSymbol(symbol_id).icon() == PNG
-    assert JalSymbol(symbol_id).icon_requested() is True
-
-
-# ----------------------------------------------------------------------------------------------------------------------
 # Downloader behavior: a listing is requested once, its answer (image or 'nothing') is remembered, and a repeated
 # run downloads nothing at all.
 def test_icons_are_downloaded_once(prepare_db, monkeypatch):
@@ -179,8 +162,8 @@ def test_icons_are_downloaded_once(prepare_db, monkeypatch):
 
     downloader.download_icons([known, unknown])
     assert len(requested) == 2
-    assert JalSymbol(known.id()).icon() == PNG
-    assert JalSymbol(unknown.id()).icon() == b''    # Marked as 'no icon exists' rather than left unset
+    assert JalIcons.image(IconOwner.Symbol, known.id()) == PNG
+    assert JalIcons.image(IconOwner.Symbol, unknown.id()) == b''    # Marked as 'no icon exists' rather than left unset
 
     requested.clear()
     downloader.download_icons([JalSymbol(known.id()), JalSymbol(unknown.id())])
@@ -199,7 +182,7 @@ def test_failed_icon_request_is_retried(prepare_db, monkeypatch):
 
     downloader.download_icons([symbol])
     assert len(attempts) == 1
-    assert JalSymbol(symbol.id()).icon() is None            # Nothing was recorded ...
+    assert JalIcons.image(IconOwner.Symbol, symbol.id()) is None            # Nothing was recorded ...
     downloader.download_icons([JalSymbol(symbol.id())])
     assert len(attempts) == 2                               # ... so the next run asks again
 
@@ -216,7 +199,7 @@ def test_listing_without_source_is_not_marked(prepare_db, monkeypatch):
     monkeypatch.setattr("jal.net.downloader.WebRequest", NoRequest)
     currency = JalSymbol(symbol_id_for(2))    # The base currency of the test database
     QuoteDownloader().download_icons([currency])
-    assert JalSymbol(currency.id()).icon() is None
+    assert JalIcons.image(IconOwner.Symbol, currency.id()) is None
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -225,7 +208,7 @@ def test_listing_without_source_is_not_marked(prepare_db, monkeypatch):
 def test_symbol_list_displays_icon_as_image(prepare_db):
     create_assets([('AAPL', 'Apple Inc.', 'US0378331005', 2, PredefinedAsset.Stock, 0)])
     symbol_id = symbol_id_for(4)
-    JalSymbol(symbol_id).set_icon(_png_image())
+    JalIcons.store(IconOwner.Symbol, symbol_id, _png_image(), IconSource.Downloaded)
 
     model = SymbolsListModel()
     model.setFilter()
@@ -242,7 +225,7 @@ def test_symbol_list_displays_icon_as_image(prepare_db):
 
     # A listing with no icon (and one the source had no icon for) shows nothing at all
     create_assets([('NOLOGO', 'Unknown Corp.', '', 2, PredefinedAsset.Stock, 0)])
-    JalSymbol(symbol_id_for(5)).set_icon(b'')
+    JalIcons.store(IconOwner.Symbol, symbol_id_for(5), b'', IconSource.Downloaded)
     model.setFilter()
     for row in range(model.rowCount()):
         if model.record(row).value('id') in (symbol_id_for(5), symbol_id_for(2)):
@@ -288,7 +271,7 @@ def test_coin_icon_is_downloaded_by_its_recorded_id(prepare_db, monkeypatch):
     QuoteDownloader().download_icons([JalSymbol(dot.id())])
     assert len(requested) == 2                    # the lookup, then the image itself
     assert 'ids=polkadot' in requested[0]
-    assert JalSymbol(dot.id()).icon() == PNG
+    assert JalIcons.image(IconOwner.Symbol, dot.id()) == PNG
 
 
 def test_coin_logos_are_looked_up_in_one_request(prepare_db, monkeypatch):
@@ -308,7 +291,7 @@ def test_coin_logos_are_looked_up_in_one_request(prepare_db, monkeypatch):
     assert 'ids=algorand,nologocoin,polkadot' in lookups[0]
     # The two coins with a logo have it, and the one the source has no logo for is left alone rather than given
     # the placeholder image - it has no other source, so nothing is recorded for it either
-    icons = [JalSymbol(x.id()).icon() for x in listings]
+    icons = [JalIcons.image(IconOwner.Symbol, x.id()) for x in listings]
     assert icons == [PNG, PNG, None]
 
 
@@ -322,7 +305,7 @@ def test_rate_limited_coin_lookup_is_retried(prepare_db, monkeypatch):
 
     QuoteDownloader().download_icons([JalSymbol(dot.id())])
     assert len(requested) == 1                     # the lookup failed, so no image was asked for
-    assert JalSymbol(dot.id()).icon() is None      # ... and nothing was recorded
+    assert JalIcons.image(IconOwner.Symbol, dot.id()) is None      # ... and nothing was recorded
     QuoteDownloader().download_icons([JalSymbol(dot.id())])
     assert len(requested) == 2                     # the next run asks again
 
@@ -341,4 +324,4 @@ def test_coin_logo_is_the_fallback_of_an_unknown_token(prepare_db, monkeypatch):
 
     QuoteDownloader().download_icons([JalSymbol(token.id())])
     assert [x for x in requested if 'trustwallet' in x]      # the address was tried first
-    assert JalSymbol(token.id()).icon() == PNG               # and the coin's logo filled in
+    assert JalIcons.image(IconOwner.Symbol, token.id()) == PNG               # and the coin's logo filled in

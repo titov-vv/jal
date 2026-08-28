@@ -9,7 +9,7 @@ class Setup:
     INI_FILE = "jal.ini"
     DB_PATH = "jal.sqlite"
     DB_CONNECTION = "JAL.DB"
-    DB_REQUIRED_VERSION = 65
+    DB_REQUIRED_VERSION = 66
     SQLITE_MIN_VERSION = "3.35"
     MAIN_WND_NAME = "JAL_MainWindow"
     SPLITTER_STATE_PREFIX = "SplitterState_"
@@ -605,6 +605,21 @@ class TokenList(PredefinedList, QObject):
 class TokenVerdict:
     Import = 1
     Blacklist = 2
+
+
+# What a per-element icon belongs to - the 'entity' column of the 'icons' table (see jal.db.icon).
+# These values are written into the delete triggers of jal_init.sql, so a value is fixed once used and never reused.
+class IconOwner:
+    Account = 1
+    Symbol = 2       # one listing of an asset, i.e. a row of 'asset_symbol' and not the asset itself
+    Tag = 3
+
+
+# Who wrote an icon row. What the user stored is authoritative: a download never overwrites a row that says
+# 'User' here, not even to replace it with a better image - see JalIcons.store().
+class IconSource:
+    Downloaded = 1
+    User = 2
 
 
 class AssetTypeComboBox(QComboBox):

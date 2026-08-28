@@ -18,15 +18,16 @@ class JalAccount(JalDB):
     MONEY_FLOW = 1
     ASSETS_FLOW = 2
 
+    # The glyph each account type is marked with - a package file (atype_*.ico in jal/img).
     _TYPE_ICONS = {
-        PredefinedAccountType.Cash: "tag_cash.ico",
-        PredefinedAccountType.Bank: "tag_bank.ico",
-        PredefinedAccountType.Card: "tag_card.ico",
-        PredefinedAccountType.Broker: "tag_investing.ico",
-        PredefinedAccountType.Wallet: "tag_wallet.ico",
-        PredefinedAccountType.Deposit: "tag_deposit.ico",
-        PredefinedAccountType.CEX: "tag_cex.ico",
-        PredefinedAccountType.Staking: "tag_deposit.ico",   # a box like the deposit one, and shares its icon
+        PredefinedAccountType.Cash: "atype_cash.ico",
+        PredefinedAccountType.Bank: "atype_bank.ico",
+        PredefinedAccountType.Card: "atype_card.ico",
+        PredefinedAccountType.Broker: "atype_broker.ico",
+        PredefinedAccountType.Wallet: "atype_wallet.ico",
+        PredefinedAccountType.Deposit: "atype_deposit.ico",
+        PredefinedAccountType.CEX: "atype_cex.ico",
+        PredefinedAccountType.Staking: "atype_deposit.ico",   # a box like the deposit one, and shares its glyph
     }
 
     # Account types an on-chain address may resolve to. A wallet is the obvious one; a staking box is the other,

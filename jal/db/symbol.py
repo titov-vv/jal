@@ -1,5 +1,4 @@
 import logging
-from PySide6.QtCore import QByteArray
 from jal.constants import SymbolId, BookAccount
 from jal.db.db import JalDB
 from jal.db.asset import JalAsset
@@ -27,7 +26,6 @@ class JalSymbol(JalDB):
         self._currency = self._data.get('currency_id', None)
         self._location = self._data.get('location_id', 0)
         self._active = self._data.get('active', 0)
-        self._icon = self._data.get('icon', None)
 
     def invalidate_cache(self):
         self.db_cache.clear_cache()
@@ -143,32 +141,6 @@ class JalSymbol(JalDB):
 
     def active(self) -> bool:
         return bool(self._active)
-
-    # Returns the icon image of this listing as bytes, or None if an icon was never asked for.
-    # Empty bytes are a meaningful answer and not the same thing as None - see set_icon() below.
-    def icon(self):
-        if self._icon is None or isinstance(self._icon, str):
-            # A NULL BLOB is reported as an empty string by the QSQLITE driver, an empty BLOB as empty bytes -
-            # which is exactly the distinction the icon column carries, so the two must not be conflated here.
-            return None
-        return bytes(self._icon)
-
-    # True if an icon download was already attempted for this listing, no matter whether it found anything.
-    def icon_requested(self) -> bool:
-        return self.icon() is not None
-
-    # Stores the downloaded icon image of this listing. Empty data is stored as an empty BLOB and means "the
-    # source was asked and has no icon for this listing" - the column being NULL means "never asked". Keeping
-    # the two apart is what stops the downloader from re-requesting an icon that doesn't exist on every run,
-    # and it needs no column of its own: NULL and a zero-length BLOB are different values of the same column.
-    def set_icon(self, image: bytes) -> None:
-        if not self._id:
-            logging.error(self.tr("Can't set an icon of an empty symbol"))
-            return
-        _ = self._exec("UPDATE asset_symbol SET icon=:icon WHERE id=:id",
-                       [(":icon", QByteArray(bytes(image))), (":id", self._id)])
-        self._reload()
-        self._icon = self._data.get('icon', None)
 
     # Returns identifier of given type (see SymbolId) for this symbol, or '' if there is none
     def identifier(self, id_type: int) -> str:

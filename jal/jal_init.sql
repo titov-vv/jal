@@ -73,8 +73,7 @@ CREATE TABLE asset_symbol (
     symbol      TEXT NOT NULL,
     currency_id INTEGER REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     location_id INTEGER NOT NULL DEFAULT (0),
-    active      INTEGER NOT NULL DEFAULT (1),
-    icon        BLOB
+    active      INTEGER NOT NULL DEFAULT (1)
 );
 -- Index to prevent duplicates. The location is part of the key so that one asset may carry the same ticker on
 -- more than one venue at once - a token that exists on several blockchains (e.g. USDT on Ethereum and on Tron)
@@ -367,9 +366,23 @@ DROP TABLE IF EXISTS tags;
 CREATE TABLE tags (
     id         INTEGER   PRIMARY KEY UNIQUE NOT NULL,
     pid        INTEGER   NOT NULL DEFAULT (0) REFERENCES tags (id) ON DELETE CASCADE ON UPDATE CASCADE,
-    tag        TEXT (64) NOT NULL UNIQUE,
-    icon_file  TEXT      DEFAULT ('') NOT NULL
+    tag        TEXT (64) NOT NULL UNIQUE
 );
+
+-- Per-element pictures: one row per element that has an icon, keyed by the kind of the element and its id.
+-- Deliberately not a column of the owning table - accounts and listings are loaded with SELECT * into long-lived
+-- caches and an image has no business travelling with them, and a table that wants icons later needs no schema
+-- change here, only a value of IconOwner and a delete trigger of its own.
+DROP TABLE IF EXISTS icons;
+CREATE TABLE icons (
+    id      INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    entity  INTEGER NOT NULL,   -- kind of the owning element (see IconOwner)
+    item_id INTEGER NOT NULL,   -- id of the owning row inside that kind's table
+    image   BLOB    NOT NULL,   -- PNG image; zero length means "this element deliberately has no icon"
+    source  INTEGER NOT NULL    -- who wrote this row - a download or the user (see IconSource)
+);
+DROP INDEX IF EXISTS icons_uniqueness;
+CREATE UNIQUE INDEX icons_uniqueness ON icons (entity, item_id);
 
 -- Table to store about corporate actions that transform one asset into another
 DROP TABLE IF EXISTS asset_actions;
@@ -839,9 +852,26 @@ BEGIN
     DELETE FROM ledger WHERE timestamp >= (SELECT MIN(timestamp) FROM ledger WHERE tag_id=OLD.id);
     DELETE FROM asset_data WHERE datatype=1 AND value=OLD.id;
 END;
+-- An icon points at its owner by (entity, item_id), which no foreign key can express - so each table that has
+-- icons drops them itself. The 'entity' values are IconOwner.Account/Symbol/Tag.
+DROP TRIGGER IF EXISTS accounts_after_delete_icon;
+CREATE TRIGGER accounts_after_delete_icon AFTER DELETE ON accounts FOR EACH ROW
+BEGIN
+    DELETE FROM icons WHERE entity=1 AND item_id=OLD.id;
+END;
+DROP TRIGGER IF EXISTS asset_symbol_after_delete_icon;
+CREATE TRIGGER asset_symbol_after_delete_icon AFTER DELETE ON asset_symbol FOR EACH ROW
+BEGIN
+    DELETE FROM icons WHERE entity=2 AND item_id=OLD.id;
+END;
+DROP TRIGGER IF EXISTS tags_after_delete_icon;
+CREATE TRIGGER tags_after_delete_icon AFTER DELETE ON tags FOR EACH ROW
+BEGIN
+    DELETE FROM icons WHERE entity=3 AND item_id=OLD.id;
+END;
 ------------------------------------------------------------------------------------------------------------------------
 -- Initialize default values for settings
-INSERT INTO settings(name, value) VALUES('SchemaVersion', 65);
+INSERT INTO settings(name, value) VALUES('SchemaVersion', 66);
 INSERT INTO settings(name, value) VALUES('Language', 1);
 INSERT INTO settings(name, value) VALUES('RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
 INSERT INTO settings(name, value) VALUES('RuTaxSessionId', '');
@@ -901,10 +931,10 @@ INSERT INTO categories (id, pid, name) VALUES (9, 3, 'Results of investments');
 -- Initialize predefined tags
 INSERT INTO tags (id, pid, tag) VALUES (0, 0, '');
 INSERT INTO tags (id, pid, tag) VALUES (1, 0, 'Account type');
-INSERT INTO tags (id, pid, tag, icon_file) VALUES (2, 1, 'Cash', 'tag_cash.ico');
-INSERT INTO tags (id, pid, tag, icon_file) VALUES (3, 1, 'Bank account', 'tag_bank.ico');
-INSERT INTO tags (id, pid, tag, icon_file) VALUES (4, 1, 'Card', 'tag_card.ico');
-INSERT INTO tags (id, pid, tag, icon_file) VALUES (5, 1, 'Broker account', 'tag_investing.ico');
+INSERT INTO tags (id, pid, tag) VALUES (2, 1, 'Cash');
+INSERT INTO tags (id, pid, tag) VALUES (3, 1, 'Bank account');
+INSERT INTO tags (id, pid, tag) VALUES (4, 1, 'Card');
+INSERT INTO tags (id, pid, tag) VALUES (5, 1, 'Broker account');
 
 -- Initialize common currencies
 INSERT INTO assets (id, type_id, full_name) VALUES (1, 1, 'Российский Рубль');

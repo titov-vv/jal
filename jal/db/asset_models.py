@@ -10,7 +10,7 @@ from jal.db.asset import JalAsset
 from jal.db.symbol import JalSymbol
 from jal.db.tag import JalTag
 from jal.widgets.helpers import DateFormat
-from jal.constants import CmColumn, CmWidth, AssetData, SymbolId, Setup
+from jal.constants import CmColumn, CmWidth, AssetData, IconOwner, SymbolId, Setup
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -31,10 +31,11 @@ class SymbolsListModel(QSqlQueryModel, JalDB):
         self._filter_by = ''
         self._filter_value = None
         self._default_name = 'symbol'
-        self._base_query = "SELECT s.id, s.symbol, s.asset_id, a.type_id, s.currency_id, c.symbol AS currency, s.location_id, a.full_name, s.icon "\
+        self._base_query = "SELECT s.id, s.symbol, s.asset_id, a.type_id, s.currency_id, c.symbol AS currency, s.location_id, a.full_name, i.image AS icon "\
                            "FROM asset_symbol s "\
                            "LEFT JOIN assets a ON a.id=s.asset_id "\
-                           "LEFT JOIN asset_symbol c ON s.currency_id=c.asset_id AND c.active=1"
+                           "LEFT JOIN asset_symbol c ON s.currency_id=c.asset_id AND c.active=1 "\
+                           f"LEFT JOIN icons i ON i.entity={IconOwner.Symbol} AND i.item_id=s.id"
         self._filter_clause = ''
         self._filter_params = []   # bound parameters of _current_query (carried into locateItem's wrapper query)
         self._sort_clause = "ORDER BY s.symbol"
@@ -66,8 +67,9 @@ class SymbolsListModel(QSqlQueryModel, JalDB):
                 return self._columns[section].header
         return None
 
-    # The 'icon' column keeps the image itself (asset_symbol.icon is a BLOB filled in by the quote downloader),
-    # so it is displayed as a picture and never as text - the raw bytes of a PNG are not something to show.
+    # The 'icon' column keeps the image itself (the 'icons' row of this listing, filled in by the quote
+    # downloader), so it is displayed as a picture and never as text - the raw bytes of a PNG are not
+    # something to show. A listing with no row of its own joins to NULL, which is 'nothing to show' as well.
     def data(self, index, role=Qt.DisplayRole):
         if index.isValid() and index.column() == self.fieldIndex("icon"):
             if role == Qt.DecorationRole:

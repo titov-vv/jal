@@ -40,8 +40,6 @@ def test_tag_tree_duplicate_name_is_refused(prepare_db, monkeypatch):
     cash = model.locateItem(2)                       # 'Cash' - a tag is named by the 'tag' column, not by 'name'
     assert not model.setData(cash, model.getValue(3))   # the name of 'Bank account' is taken
     assert model.data(cash) == "Cash"
-    icon = model.index(cash.row(), model.fieldIndex('icon_file'), cash.parent())
-    assert model.setData(icon, 'tag_bank.ico')       # only the name is unique, an icon may be shared
     model.revertAll()
 
 

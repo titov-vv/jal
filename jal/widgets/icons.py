@@ -6,7 +6,6 @@ from collections import UserDict
 from PySide6.QtGui import QIcon, QIconEngine, QPixmap, QImage, QPainter, QPalette
 from PySide6.QtWidgets import QApplication
 from jal.db.settings import JalSettings
-from jal.db.tag import JalTag
 from jal.widgets.theme import Meaning, Theme
 
 
@@ -14,10 +13,10 @@ ICON_PREFIX = "ui_"
 FLAG_PREFIX = "flag_"    # Country flags for languages and reports
 AUX_PREFIX = "aux_"      # Logos of broker statement modules
 CHAIN_PREFIX = "chain_"  # Logos of blockchain fetcher modules
-TAG_PREFIX = "tag_"
+ATYPE_PREFIX = "atype_"  # Glyphs of the account types (see JalAccount._TYPE_ICONS)
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Every ui_*.ico and tag_*.ico in jal/img is a black glyph on transparency - the files carry a shape and no color
+# Every ui_*.ico and atype_*.ico in jal/img is a black glyph on transparency - the files carry a shape and no color
 # at all. This engine keeps the shape and supplies the color, asking the live palette for it at paint time.
 class JalIconEngine(QIconEngine):
     def __init__(self, source, meaning=None):
@@ -220,13 +219,11 @@ class JalIcon(UserDict):
         for filename in os.listdir(img_path):
             if re.match(f"^({AUX_PREFIX}|{CHAIN_PREFIX}).*", filename):
                 self._icons[filename] = self.load_icon(img_path + filename)
-        # Account-type icons live as tag_*.ico files and are keyed by filename, independent of any 'tags' row
-        # (e.g. tag_wallet.ico has no tag row) - so load them straight from disk.
+        # Account-type glyphs are keyed by filename because the account types name the file they want
+        # (JalAccount._TYPE_ICONS) rather than a member of this class - so load whatever is on disk.
         for filename in os.listdir(img_path):
-            if re.match(f"^{TAG_PREFIX}.*\\.ico$", filename):
+            if re.match(f"^{ATYPE_PREFIX}.*\\.ico$", filename):
                 self._icons[filename] = self.load_glyph(img_path + filename)
-        for tag_id, filename in JalTag.icon_files().items():
-            self._icons[filename] = self.load_glyph(img_path + filename)
 
     @staticmethod
     def load_icon(path) -> QIcon:

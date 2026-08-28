@@ -9,6 +9,7 @@ from jal.db.db import JalDB, JalDBError
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
 from jal.db.symbol import JalSymbol
+from jal.db.icon import JalIcons
 from jal.db.settings import JalSettings
 from jal.db.token_blacklist import JalTokenBlacklist
 from jal.db.residence import JalResidence
@@ -51,6 +52,7 @@ def prepare_db(project_root, tmp_path, data_path):
     JalSymbol.db_cache.clear_cache()
     JalTokenBlacklist.db_cache.clear_cache()
     JalResidence.invalidate_cache()
+    JalIcons.invalidate_cache()
     DateFormat.invalidate()   # the date layout is cached from the settings of the database that was open before
     forget_columns()          # ... and so are the column widths of the tables that were open
     error = JalDB().init_db()
