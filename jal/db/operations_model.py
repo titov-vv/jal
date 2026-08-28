@@ -71,8 +71,8 @@ class OperationsModel(QAbstractTableModel):
                     return '\n'.join([localize_decimal(x) for x in data])
         if role == Qt.TextAlignmentRole:
             if index.column() == 3 or index.column() == 4:
-                return int(Qt.AlignRight)
-            return int(Qt.AlignLeft)
+                return int(Qt.AlignRight | Qt.AlignVCenter)
+            return int(Qt.AlignLeft | Qt.AlignVCenter)
         if role == Qt.UserRole:  # return underlying data for given field extra parameter
             return odata[field]
 

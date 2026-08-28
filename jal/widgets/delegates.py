@@ -245,7 +245,7 @@ class FloatDelegate(GridLinesDelegate):
 
     def initStyleOption(self, option, index):
         super().initStyleOption(option, index)
-        option.displayAlignment = Qt.AlignRight
+        option.displayAlignment = Qt.AlignRight | Qt.AlignVCenter
         if self._colors and self._color is not None:
             option.backgroundBrush = QBrush(self._color)
 

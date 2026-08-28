@@ -282,9 +282,9 @@ class IncomeSpendingReportModel(QAbstractItemModel):
                     return QBrush(Theme.text(Meaning.MUTED))
         if role == Qt.TextAlignmentRole:
             if index.column() == 0:
-                return int(Qt.AlignLeft)
+                return int(Qt.AlignLeft | Qt.AlignVCenter)
             else:
-                return int(Qt.AlignRight)
+                return int(Qt.AlignRight | Qt.AlignVCenter)
         if role == CATEGORY_ROLE:  # return category id for given index
             if index.column() != 0:
                 year, period = self._root.column2calendar(index.column())
