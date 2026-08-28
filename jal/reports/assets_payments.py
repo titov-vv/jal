@@ -10,7 +10,7 @@ from jal.db.helpers import localize_decimal
 from jal.ui.reports.ui_assets_payments_report import Ui_AssetsPaymentsReportWidget
 from jal.widgets.delegates import FloatDelegate
 from jal.widgets.mdi import MdiWidget
-from jal.widgets.helpers import ts2dt, set_tables_row_height, restore_columns
+from jal.widgets.helpers import ts2dt, set_grids_row_height, restore_columns
 
 JAL_REPORT_CLASS = "AssetsPaymentsReport"
 
@@ -132,7 +132,7 @@ class AssetsPaymentsReportWindow(MdiWidget):
         super().__init__(parent.mdi_area())
         self.ui = Ui_AssetsPaymentsReportWidget()
         self.ui.setupUi(self)
-        set_tables_row_height(self)
+        set_grids_row_height(self)
         self._parent = parent
         self.name = self.tr("Assets' payments")
 

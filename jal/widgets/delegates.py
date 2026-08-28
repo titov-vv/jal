@@ -13,7 +13,7 @@ from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.symbol import JalSymbol
 from jal.widgets.icons import JalIcon
-from jal.widgets.helpers import DateFormat
+from jal.widgets.helpers import DateFormat, grid_row_height
 from jal.widgets.theme import Theme, Meaning
 
 
@@ -103,6 +103,15 @@ class GridLinesDelegate(QStyledItemDelegate):
     def paint(self, painter, option, index):
         self.paint_grid(painter, option, index)
         super().paint(painter, option, index)
+
+    # A tree has no vertical header and thus no default section size: its row is as tall as the tallest sizeHint()
+    # among the columns of that row. Reporting the height a table gives its rows keeps a tree and a table in the
+    # same window at one row height, and keeps both following the font. I.e. allows to have consistent UI look.
+    def sizeHint(self, option, index):
+        size = super().sizeHint(option, index)
+        if option.widget is not None:
+            size.setHeight(max(size.height(), grid_row_height(option.widget)))
+        return size
 
 
 # ----------------------------------------------------------------------------------------------------------------------

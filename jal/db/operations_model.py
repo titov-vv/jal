@@ -5,7 +5,7 @@ from jal.db.ledger import Ledger
 from jal.db.helpers import localize_decimal
 from jal.db.operations import LedgerTransaction
 from jal.db.clock import today_finish
-from jal.widgets.helpers import ts2dt, restore_columns
+from jal.widgets.helpers import ts2dt, restore_columns, grid_row_height
 from jal.widgets.delegates import ColoredAmountsDelegate, long_fraction
 from jal.widgets.theme import Theme, Meaning
 from jal.universal_cache import UniversalCache
@@ -57,7 +57,7 @@ class OperationsModel(QAbstractTableModel):
         if role == Qt.FontRole:
             # below line isn't related with font, it is put here to be called for each row minimal times (ideally 1)
             if index.column() == 0:
-                self._view.setRowHeight(row, self._view.fontMetrics().height() * operation.view_rows())
+                self._view.setRowHeight(row, grid_row_height(self._view, operation.view_rows()))
             return self._view.font()
         if role == Qt.ForegroundRole and self._view.isEnabled():
             if index.column() == 4 and operation.reconciled():

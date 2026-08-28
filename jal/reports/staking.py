@@ -19,7 +19,7 @@ from jal.widgets.delegates import FloatDelegate, TimestampDelegate
 from jal.widgets.icons import JalIcon
 from jal.widgets.accrual_chart import AccrualChartWindow
 from jal.widgets.mdi import MdiWidget
-from jal.widgets.helpers import set_tables_row_height, restore_columns
+from jal.widgets.helpers import set_grids_row_height, restore_columns
 
 JAL_REPORT_CLASS = "StakingReport"
 
@@ -289,7 +289,7 @@ class StakingReportWindow(MdiWidget):
         super().__init__(parent.mdi_area())
         self.ui = Ui_StakingReportWidget()
         self.ui.setupUi(self)
-        set_tables_row_height(self)
+        set_grids_row_height(self)
         self._parent = parent
         self.name = self.tr("Staked positions")
 

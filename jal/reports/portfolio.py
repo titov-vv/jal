@@ -17,6 +17,7 @@ from jal.widgets.accrual_chart import AccrualChartWindow
 from jal.widgets.price_chart import ChartWindow
 from jal.widgets.selection_dialog import SelectReferenceDialog
 from jal.widgets.reference_dialogs import TagsListDialog
+from jal.widgets.helpers import set_grids_row_height
 
 JAL_REPORT_CLASS = "AssetPortfolioReport"
 
@@ -35,6 +36,7 @@ class PortfolioReportWindow(MdiWidget):
         super().__init__(parent.mdi_area())
         self.ui = Ui_PortfolioWidget()
         self.ui.setupUi(self)
+        set_grids_row_height(self)
         self._parent = parent
         self.name = self.tr("Asset portfolio")
 

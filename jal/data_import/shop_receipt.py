@@ -6,7 +6,7 @@ from PySide6.QtWidgets import QDialog, QDialogButtonBox, QHeaderView, QStyle, QS
 from jal.constants import Setup
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 from jal.widgets.delegates import DateTimeEditWithReset, draw_item_panel
-from jal.widgets.helpers import (dependency_present, set_tables_row_height, set_date_formats,
+from jal.widgets.helpers import (dependency_present, set_grids_row_height, set_date_formats,
                                  restore_columns, save_columns, DateFormat)
 from jal.widgets.theme import Theme, Meaning
 from jal.db.helpers import localize_decimal, delocalize_decimal
@@ -247,7 +247,7 @@ class ImportReceiptDialog(QDialog):
         super().__init__(parent)
         self.ui = Ui_ImportShopReceiptDlg()
         self.ui.setupUi(self)
-        set_tables_row_height(self)
+        set_grids_row_height(self)
         set_date_formats(self)
         self.ui.SlipDateTime.setTimeZone(local_zone())   # what a receipt states is a reading of the buyer's own clock
         self.ui.AccountEdit.setup_selector(AccountListModel, AccountListDialog, self)

@@ -8,7 +8,7 @@ from jal.ui.ui_operations_widget import Ui_OperationsWidget
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.selection_dialog import SelectReferenceDialog
 from jal.widgets.reference_dialogs import TagsListDialog
-from jal.widgets.helpers import (ManipulateDate, TableSelectionRestorer, set_tables_row_height,
+from jal.widgets.helpers import (ManipulateDate, TableSelectionRestorer, set_grids_row_height,
                                 restore_splitters, save_splitters, assign_shortcut)
 from jal.widgets.icons import JalIcon
 from jal.db.settings import JalSettings
@@ -34,7 +34,7 @@ class OperationsWidget(MdiWidget):
         super().__init__(parent)
         self.ui = Ui_OperationsWidget()
         self.ui.setupUi(self)
-        set_tables_row_height(self)
+        set_grids_row_height(self)
         restore_splitters(self, Setup.SPLITTER_STATE_PREFIX)
         self._parent = parent  # Main window
 

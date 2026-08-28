@@ -11,7 +11,7 @@ from jal.db.symbol import JalSymbol
 from jal.constants import CmWidth, PredefinedAsset, AssetLocation
 from jal.widgets.delegates import ConstantLookupDelegate
 from jal.widgets.icons import JalIcon
-from jal.widgets.helpers import set_tables_row_height
+from jal.widgets.helpers import set_grids_row_height
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -22,7 +22,7 @@ class SymbolListDialog(QDialog):
         super().__init__(parent)
         self.ui = Ui_AssetsListDialog()
         self.ui.setupUi(self)
-        set_tables_row_height(self)
+        set_grids_row_height(self)
         self._parent = parent
         self._type_id = None
         self._currency_id = None

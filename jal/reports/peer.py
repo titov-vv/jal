@@ -9,7 +9,7 @@ from jal.db.common_models import PeerTreeModel
 from jal.ui.reports.ui_peer_report import Ui_PeerReportWidget
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.reference_dialogs import PeerListDialog
-from jal.widgets.helpers import TableSelectionRestorer, set_tables_row_height
+from jal.widgets.helpers import TableSelectionRestorer, set_grids_row_height
 
 JAL_REPORT_CLASS = "PeerReport"
 
@@ -53,7 +53,7 @@ class PeerReportWindow(MdiWidget):
         super().__init__(parent.mdi_area())
         self.ui = Ui_PeerReportWidget()
         self.ui.setupUi(self)
-        set_tables_row_height(self)
+        set_grids_row_height(self)
         self.ui.ReportPeerEdit.setup_selector(PeerTreeModel, PeerListDialog, self)
         self._parent = parent
 

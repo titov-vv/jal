@@ -4,8 +4,8 @@ from datetime import time, datetime, timedelta, timezone
 from functools import cmp_to_key, partial
 from PySide6.QtCore import Qt, QCollator, QItemSelectionModel, QTimer
 from PySide6.QtGui import QImage, QKeySequence, QShortcut
-from PySide6.QtWidgets import (QApplication, QAbstractItemView, QDialog, QTableView, QDateTimeEdit, QStyle,
-                               QSplitter)
+from PySide6.QtWidgets import (QApplication, QAbstractItemView, QDialog, QTableView, QTreeView, QDateTimeEdit,
+                               QStyle, QSplitter)
 from jal.constants import Setup
 from jal.db.clock import local_moment, local_reading, local_time, window_bound
 from jal.db.settings import JalSettings
@@ -80,12 +80,27 @@ def center_window(window):
         window.setGeometry(x, y, window.width(), window.height())
 
 # -----------------------------------------------------------------------------------------------------------------------
-# Sets the row height of every table inside the given widget (a form as a rule) from the font that the table
-# actually uses.
-def set_tables_row_height(widget):
+# The height a row of the given view gets: the font the view actually uses plus the padding the style keeps
+# around a focus frame. A row that shows several lines of text pays for the lines, not for the padding again.
+def grid_row_height(view, lines: int = 1) -> int:
+    padding = 2 * view.style().pixelMetric(QStyle.PM_FocusFrameVMargin, None, view)
+    return view.fontMetrics().height() * lines + padding
+
+# Gives every grid inside the given widget (a form as a rule) the same row height.
+# A table takes it from its vertical header, but a tree has none - there the height comes from the sizeHint() of
+# the delegate that paints the row, so a tree is given GridLinesDelegate as its default delegate for the columns
+# that don't set one of their own.
+def set_grids_row_height(widget):
+    from jal.widgets.delegates import GridLinesDelegate    # Deferred import to break a circular import: delegates.py needs DateFormat from this module.
     for table in widget.findChildren(QTableView):
-        padding = 2 * table.style().pixelMetric(QStyle.PM_FocusFrameVMargin, None, table)
-        table.verticalHeader().setDefaultSectionSize(table.fontMetrics().height() + padding)
+        height = grid_row_height(table)
+        # The floor goes with the height: a font-derived metric can't be written into a .ui file, and the 20 px
+        # the forms declare there would hold a row above the font on a small one.
+        table.verticalHeader().setMinimumSectionSize(height)
+        table.verticalHeader().setDefaultSectionSize(height)
+    for tree in widget.findChildren(QTreeView):
+        if not isinstance(tree.itemDelegate(), GridLinesDelegate):
+            tree.setItemDelegate(GridLinesDelegate(tree))
 
 # -----------------------------------------------------------------------------------------------------------------------
 # QMainWindow.saveState() covers toolbars and dock widgets, but not a QSplitter inside the central widget, so here are

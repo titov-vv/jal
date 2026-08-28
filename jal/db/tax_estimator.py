@@ -11,7 +11,7 @@ from jal.db.asset import JalAsset
 from jal.db.country import JalCountry
 from jal.ui.reports.ui_tax_estimation import Ui_TaxEstimationDialog
 from jal.widgets.mdi import MdiWidget
-from jal.widgets.helpers import ts2d, set_tables_row_height, restore_columns
+from jal.widgets.helpers import ts2d, set_grids_row_height, restore_columns
 from jal.widgets.delegates import FloatDelegate
 
 
@@ -86,7 +86,7 @@ class TaxEstimator(MdiWidget):
         super().__init__(parent)
         self.ui = Ui_TaxEstimationDialog()
         self.ui.setupUi(self)
-        set_tables_row_height(self)
+        set_grids_row_height(self)
 
         self.country = JalCountry(data={'code': country_code}, search=True)
         self.account_id = account_id

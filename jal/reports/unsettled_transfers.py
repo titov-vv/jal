@@ -14,6 +14,7 @@ from jal.widgets.mdi import MdiWidget
 from jal.widgets.swap_convert_dialog import SwapConvertDialog
 from jal.widgets.transfer_assign_dialog import TransferAssignDialog
 from jal.widgets.transfer_match_dialog import TransferMatchDialog
+from jal.widgets.helpers import set_grids_row_height
 
 JAL_REPORT_CLASS = "UnsettledTransfersReport"
 
@@ -36,6 +37,7 @@ class UnsettledTransfersReportWindow(MdiWidget):
         super().__init__(parent.mdi_area())
         self.ui = Ui_UnsettledTransfersWidget()
         self.ui.setupUi(self)
+        set_grids_row_height(self)
         self._parent = parent
         self.name = self.tr("Unsettled transfers")
 
