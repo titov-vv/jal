@@ -841,22 +841,22 @@ Do you want to delete the account anyway?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/asset_payment_operation.ui" line="132"/>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="129"/>
         <source>Asset Payment</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/asset_payment_operation.ui" line="188"/>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="185"/>
         <source>&amp;Note</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/asset_payment_operation.ui" line="201"/>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="198"/>
         <source>A&amp;ccount</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/asset_payment_operation.ui" line="240"/>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="237"/>
         <source>Di&amp;vidend</source>
         <translation type="unfinished"></translation>
     </message>
@@ -866,7 +866,7 @@ Do you want to delete the account anyway?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/asset_payment_operation.ui" line="152"/>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="149"/>
         <source>unknown</source>
         <translation></translation>
     </message>
@@ -876,44 +876,44 @@ Do you want to delete the account anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/asset_payment_operation.ui" line="72"/>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="69"/>
         <source>T&amp;ype</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/asset_payment_operation.ui" line="85"/>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="82"/>
         <source>Ta&amp;x</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/asset_payment_operation.ui" line="101"/>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="98"/>
         <source>Ass&amp;et</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/asset_payment_operation.ui" line="169"/>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="166"/>
         <source>dd/MM/yyyy</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/asset_payment_operation.ui" line="214"/>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="211"/>
         <source>Ex-Date</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/asset_payment_operation.ui" line="230"/>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="227"/>
         <source>Cancel changes</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/asset_payment_operation.ui" line="263"/>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="260"/>
         <source>dd/MM/yyyy hh:mm:ss</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/widgets/asset_payment_operation.ui" line="276"/>
-        <source>Price</source>
-        <translation></translation>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="273"/>
+        <source>&amp;Price</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

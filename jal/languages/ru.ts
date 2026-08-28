@@ -842,22 +842,22 @@ Do you want to delete the account anyway?</source>
         <translation>Сохранить изменения</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/asset_payment_operation.ui" line="132"/>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="129"/>
         <source>Asset Payment</source>
         <translation>Выплата по ЦБ</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/asset_payment_operation.ui" line="188"/>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="185"/>
         <source>&amp;Note</source>
         <translation>&amp;Примечание</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/asset_payment_operation.ui" line="201"/>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="198"/>
         <source>A&amp;ccount</source>
         <translation>&amp;Счет</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/asset_payment_operation.ui" line="240"/>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="237"/>
         <source>Di&amp;vidend</source>
         <translation>Дивиденд</translation>
     </message>
@@ -867,7 +867,7 @@ Do you want to delete the account anyway?</source>
         <translation>ВАЛ</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/asset_payment_operation.ui" line="152"/>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="149"/>
         <source>unknown</source>
         <translation>неизвестно</translation>
     </message>
@@ -877,44 +877,44 @@ Do you want to delete the account anyway?</source>
         <translation>Дата/&amp;Время</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/asset_payment_operation.ui" line="72"/>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="69"/>
         <source>T&amp;ype</source>
         <translation>&amp;Тип</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/asset_payment_operation.ui" line="85"/>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="82"/>
         <source>Ta&amp;x</source>
         <translation>Н&amp;алог</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/asset_payment_operation.ui" line="101"/>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="98"/>
         <source>Ass&amp;et</source>
         <translation>А&amp;ктив</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/asset_payment_operation.ui" line="169"/>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="166"/>
         <source>dd/MM/yyyy</source>
         <translation>dd/MM/yyyy</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/asset_payment_operation.ui" line="214"/>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="211"/>
         <source>Ex-Date</source>
         <translation>Дата отс&amp;ечки</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/asset_payment_operation.ui" line="230"/>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="227"/>
         <source>Cancel changes</source>
         <translation>Отменить изменения</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/asset_payment_operation.ui" line="263"/>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="260"/>
         <source>dd/MM/yyyy hh:mm:ss</source>
         <translation>dd/MM/yyyy hh:mm:ss</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/asset_payment_operation.ui" line="276"/>
-        <source>Price</source>
-        <translation>Цена</translation>
+        <location filename="../ui/widgets/asset_payment_operation.ui" line="273"/>
+        <source>&amp;Price</source>
+        <translation>&amp;Цена</translation>
     </message>
 </context>
 <context>
