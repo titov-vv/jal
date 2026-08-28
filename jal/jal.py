@@ -57,7 +57,8 @@ def main():
     sys.excepthook = exception_logger
     app = QApplication(sys.argv)   # sys.argv is passed to enable Qt built-in options: -style, -stylesheet, -platform, etc.
     app.setApplicationName("JAL")          # Without it macOS shows the interpreter name in the application menu
-    app.setApplicationDisplayName("JAL")   # The user-visible name: the macOS application menu and window titles use it
+    instance = os.environ.get('JAL_INSTANCE', '').strip()   # Marks the window when several jal copies run side by side
+    app.setApplicationDisplayName("JAL" + (f" [{instance}]" if instance else ""))   # The user-visible name: the macOS application menu and window titles use it
     app.setApplicationVersion(__version__)
     app.setOrganizationName("jal")
     app.setDesktopFileName("jal")          # Matches jal.desktop so Wayland can find the window icon
@@ -80,6 +81,8 @@ def main():
         window = make_error_window(error)
     else:
         window = MainWindow(translator)
+    if instance:
+        window.setWindowTitle(f"{window.windowTitle()} [{instance}]")   # The window manager shows the widget title, not the display name
     window.show()
     # The last line of defence for the web-requests that are still running: the main window waits for them when it
     # is closed, but the event loop can also end without that happening (a session shutdown, an exit() from
