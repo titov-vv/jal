@@ -1,5 +1,7 @@
 # Error messages
 
+A reference list of the messages JAL writes to its log. For the same messages explained at length, with what to do about each, see [chapter 13 of the user manual](https://titov-vv.github.io/jal/manual/13-troubleshooting).
+
 ### INFO
 Informational messages that may help to understand what JAL does but doesn't require any special attention.
 

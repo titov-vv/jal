@@ -42,40 +42,21 @@ JAL is tailored for those who want a clear insight into their personal incomes, 
 - Electronic slips download for russian and some european shops. 
 - Category recognition for goods in electronic slips using TensorFlow.
 
+## 📖 User manual
+The [**User manual**](https://titov-vv.github.io/jal/manual/README) explains the whole program from the first start onwards - accounts and operations, investments, crypto, statement imports, every report, taxes, backups and troubleshooting. It is also reachable from menu *Help->User manual*.
+
 ## 📥 Installation
-JAL offers cross-platform compatibility and portability. Here's how to get started:
-1. **From GitHub Repository**:
-   - Clone repository locally with `git https://github.com/titov-vv/jal.git`
-   - Ensure you have Python 3.9 or later and meet all dependencies in `requirements.txt`.
-   - Tips Windows users: Ensure Python installation from ![the official site](https://www.python.org/) and turn on options `pip installation` and `add Python to environment variables` during the installation. Reboot to apply changes.
-   - Use `run.py` to launch the application.
-2. **Using pip**:
-   - Install using `pip install jal`.
-   - Launch with the `jal` command or alternatively `python -m jal.jal`.
-3. **Hybrid Installation**:
-   - Download source files and use `setup.py` for tailored installation.
-  
-
-Database will be initialized automatically with minimal required set of data, and you will be able to start use the program.
-
-You may choose program language in menu *Settings->Language*.
-
-## 🔧 Configuration
-JAL configuration is stored in `jal.sqlite` file together with all other data, that is created by default in `jal` folder.
-But you may configure location of this file with help of `database_path` parameter in `jal.ini` located in OS config directory (e.g. `$HOME/.config` on most Unix-like systems). 
-Here is an example of such file:
-```jal.ini
-[main]
-database_path=/home/user/some_folder
+JAL runs on Windows, macOS and Linux and needs **Python 3.9 or newer**. In a terminal:
 ```
+pip install jal
+```
+Then start it with `jal`, or with `python -m jal.jal` if that command is not found. To upgrade later, use `pip install jal -U`.
 
-## ❗️ Upgrades
-If you installed *jal* via *pip* then you may upgrade it to newer version with help of command `pip install jal -U`
+To run from the sources instead: clone the repository, install the dependencies from `requirements.txt` and launch `run.py`.
 
-## 🖭  Backups
-You can use menu *Ledger->Backup* and *Ledger->Restore* to save and restore a copy of your data.
-But you may get the same result by simply saving *jal.sqlite* file that contains everything.
-You may see a location of the file that *jal* uses in menu *Help->About JAL*.
+The database is initialized automatically on the first start, so you can begin at once, and you may choose the program language in menu *Settings->Language*.
+
+See [Installing and starting JAL](https://titov-vv.github.io/jal/manual/02-install) in the manual for the step-by-step version, including where the `jal.sqlite` file is kept, how to move it elsewhere with `jal.ini`, and how to back it up.
 
 ## 📈 Tax report for investment account
 Tax report can be prepared based on data from any broker if operations are present in JAL. Tax reports are supported for Russia and Portugal.    
@@ -116,7 +97,7 @@ If you want to ask a question, report a bug, provide help or support an author -
 I would like to a mention people who helped me in 2022 and 2023 as I got more donations, help and feedback from users this year. 
 And while I can't name every one of them I would like to confirm my appreciation for this help. They did the project better!
 
-## [FAQ](https://github.com/titov-vv/jal/blob/master/docs/FAQ.md)
+## [Frequently asked questions](https://titov-vv.github.io/jal/manual/13-troubleshooting#frequently-asked-questions)
 
 ## [Description of error messages](https://github.com/titov-vv/jal/blob/master/docs/error_description.md)
 

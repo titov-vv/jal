@@ -1,14 +1,14 @@
 # FAQ
 
-1. *Which platforms/operation systems are supported by JAL*?  
-JAL was created as a cross-platform appication based on *python* and GUI library *[Qt](https://www.qt.io/)*.
-Thus, theoretically, it should work on any platform that supports python and Qt installation.  
-Installation and usage were tested on Linux, Windows and MacOS systems. 
-But there are some problematic enviroments sometimes, like Windows with ARM (M1) CPU (*JAL* can't be installed due to *numpy* library compilation failure).
+These questions are now answered in the user manual, together with the messages JAL may show and the
+things that look wrong but are not:
 
-2. *Application does not start from python! We're write in it `>>>pip install jal`, and got SyntaxError*.  
-JAL must run not from interactive python shell but, as any other python script, by passing a name of running program to python interpreter as an argument. It's shown in examples in Readme. 
+### → [Frequently asked questions](https://titov-vv.github.io/jal/manual/13-troubleshooting#frequently-asked-questions)
 
-3. *How to start from begining, with clean database*?   
-You may use menu _Ledger -> Delete all data_ to start from scratch.  
-Or you may delete JAL database file manually (don't forget to make backup if needed!). Database file is named `jal/jal.sqlite`. If you delete it (while programm is closed, sure), next run JAL creates new, clean database.
+* Which platforms and operating systems JAL runs on
+* Why `pip install jal` fails with a *SyntaxError* when typed into the Python shell
+* How to start over with a clean database
+* Whether the database can be shared, synced between computers, or sent anywhere
+
+The whole manual is at [titov-vv.github.io/jal/manual](https://titov-vv.github.io/jal/manual/README),
+and *Help->User manual* opens it from inside the program.
