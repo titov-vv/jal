@@ -14,10 +14,11 @@ FLAG_PREFIX = "flag_"    # Country flags for languages and reports
 AUX_PREFIX = "aux_"      # Logos of broker statement modules
 CHAIN_PREFIX = "chain_"  # Logos of blockchain fetcher modules
 ATYPE_PREFIX = "atype_"  # Glyphs of the account types (see JalAccount._TYPE_ICONS)
+MONEY_PREFIX = "money_"  # Currency signs, each file named after the ticker of the currency it stands for
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Every ui_*.ico and atype_*.ico in jal/img is a black glyph on transparency - the files carry a shape and no color
-# at all. This engine keeps the shape and supplies the color, asking the live palette for it at paint time.
+# Every ui_*.ico, atype_*.ico and money_*.ico in jal/img is a black glyph on transparency - the files carry a shape
+# and no color at all. This engine keeps the shape and supplies the color, asking the live palette for it at paint time.
 class JalIconEngine(QIconEngine):
     def __init__(self, source, meaning=None):
         super().__init__()
@@ -219,10 +220,12 @@ class JalIcon(UserDict):
         for filename in os.listdir(img_path):
             if re.match(f"^({AUX_PREFIX}|{CHAIN_PREFIX}).*", filename):
                 self._icons[filename] = self.load_icon(img_path + filename)
-        # Account-type glyphs are keyed by filename because the account types name the file they want
-        # (JalAccount._TYPE_ICONS) rather than a member of this class - so load whatever is on disk.
+        # Account-type glyphs and currency signs are keyed by filename because what wants them names the file
+        # rather than a member of this class - an account type by JalAccount._TYPE_ICONS, a currency by its own
+        # ticker - so load whatever is on disk. A currency JAL never heard of is given its sign by putting a file
+        # into jal/img and changing nothing here.
         for filename in os.listdir(img_path):
-            if re.match(f"^{ATYPE_PREFIX}.*\\.ico$", filename):
+            if re.match(f"^({ATYPE_PREFIX}|{MONEY_PREFIX}).*\\.ico$", filename):
                 self._icons[filename] = self.load_glyph(img_path + filename)
 
     @staticmethod
@@ -251,6 +254,13 @@ class JalIcon(UserDict):
         if country_code not in cls._flags:
             return QIcon()
         return cls._icons[cls._flags[country_code]]
+
+    # The sign of the currency with the given ticker ('USD' -> money_usd.ico), or an empty icon if the package
+    # carries none for it. It marks a KIND of thing - every dollar account, listing or amount wears the same
+    # sign - which is what makes it a glyph and not one of the pictures kept per element (see jal.db.icon).
+    @classmethod
+    def money_glyph(cls, ticker: str) -> QIcon:
+        return cls._icons.get(MONEY_PREFIX + ticker.lower() + ".ico", QIcon())
 
     # Logo of a dynamically loaded module: the module names the image file it wants and the prefix says which
     # kind of module asks (AUX_PREFIX for broker statements, CHAIN_PREFIX for blockchain fetchers), so two

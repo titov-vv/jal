@@ -713,3 +713,87 @@ def test_a_theme_change_drops_the_painted_icons(prepare_db):
     QApplication.setPalette(_light_palette())
     assert not _is_plated(JalIcons.icon(IconOwner.Account, account.id(), size), size)
     JalIcons.invalidate_cache()
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# No source publishes a logo of a currency, so a listing of one wears the sign of its ticker instead: a glyph of
+# the package named money_<ticker>.ico, drawn in the palette's colour like every other glyph.
+def test_a_currency_listing_wears_its_sign(prepare_db):
+    from jal.widgets.icons import JalIcon
+    JalIcon()   # the glyph table is built by MainWindow in the application, and by hand where there is none
+    size = JalIcons.grid_size()
+
+    for asset_id, ticker in ((1, 'RUB'), (2, 'USD'), (3, 'EUR')):
+        sign = JalIcon.money_glyph(ticker)
+        assert not sign.isNull(), f"jal/img carries no sign for {ticker}"
+        assert JalIcons.decoration(IconOwner.Symbol, symbol_id_for(asset_id), size).cacheKey() == sign.cacheKey()
+    # ... and the ticker is the whole of the lookup, so a currency the package has no file for simply has no sign
+    assert JalIcon.money_glyph('XYZ').isNull()
+
+
+# A currency added while the application runs is drawn like the ones that ship: nothing keeps a list of the
+# currencies that have a sign, and the map of the listings that are currencies is dropped when one is created.
+def test_a_currency_added_later_wears_its_sign_too(prepare_db):
+    from jal.db.asset import JalAssetCreator
+    from jal.widgets.icons import JalIcon
+    JalIcon()
+    size = JalIcons.grid_size()
+    JalIcons.decoration(IconOwner.Symbol, symbol_id_for(2), size)      # fills that map
+
+    # A listing is what makes an asset a currency here, so it is added the way an import adds one. The ticker is
+    # deliberately one that already exists: it is the whole of the lookup, and this listing is new to the map.
+    asset = JalAssetCreator(PredefinedAsset.Money, 'US dollar, as an import would add it').commit()
+    added = asset.add_symbol('USD', asset.id(), location_id=AssetLocation.BANK_ACCOUNT)
+
+    assert JalIcons.decoration(IconOwner.Symbol, added, size).cacheKey() == JalIcon.money_glyph('USD').cacheKey()
+
+
+# The sign fills a gap and overrides nothing that was decided about this listing
+def test_a_stored_picture_wins_over_the_currency_sign(prepare_db):
+    from jal.widgets.icons import JalIcon
+    JalIcon()
+    size = JalIcons.grid_size()
+    listing, sign = symbol_id_for(2), JalIcon.money_glyph('USD')
+
+    JalIcons.store(IconOwner.Symbol, listing, _png(), IconSource.User)
+    assert JalIcons.decoration(IconOwner.Symbol, listing, size).cacheKey() != sign.cacheKey()
+
+    JalIcons.forget(IconOwner.Symbol, listing)
+    assert JalIcons.decoration(IconOwner.Symbol, listing, size).cacheKey() == sign.cacheKey()
+
+    # "the source was asked and had none" says nothing about what the user wants - the sign still fills the gap
+    JalIcons.store(IconOwner.Symbol, listing, b'', IconSource.Downloaded)
+    assert JalIcons.decoration(IconOwner.Symbol, listing, size).cacheKey() == sign.cacheKey()
+
+    # "this element shows no icon" is the user's decision, and it leaves the row with the empty space of an icon
+    JalIcons.store(IconOwner.Symbol, listing, b'', IconSource.User)
+    bare = JalIcons.decoration(IconOwner.Symbol, listing, size)
+    assert bare.cacheKey() != sign.cacheKey()
+    assert bare.pixmap(size).toImage().pixelColor(0, 0).alpha() == 0
+
+
+# Only a currency gets one: a share with no logo keeps the empty space of an icon and is never given the sign of
+# the currency it is priced in.
+def test_a_security_is_given_no_currency_sign(prepare_db):
+    from jal.widgets.icons import JalIcon
+    JalIcon()
+    size = JalIcons.grid_size()
+    create_assets([('AAPL', 'Apple Inc.', 'US0378331005', 2, PredefinedAsset.Stock, 0)])
+
+    decoration = JalIcons.decoration(IconOwner.Symbol, symbol_id_for(4), size)
+    assert decoration.cacheKey() != JalIcon.money_glyph('USD').cacheKey()
+    assert decoration.pixmap(size).toImage().pixelColor(0, 0).alpha() == 0
+
+
+# Which is what puts the sign before the ticker of a currency in the assets list
+def test_the_assets_list_shows_a_currency_sign(prepare_db):
+    from jal.widgets.icons import JalIcon
+    JalIcon()
+    model = SymbolsListModel()
+    model.setFilter()
+    rows = [i for i in range(model.rowCount()) if model.record(i).value('id') == symbol_id_for(2)]
+    assert len(rows) == 1
+
+    index = model.index(rows[0], model.fieldIndex("symbol"))
+    assert model.data(index, Qt.DisplayRole) == 'USD'
+    assert model.data(index, Qt.DecorationRole).cacheKey() == JalIcon.money_glyph('USD').cacheKey()

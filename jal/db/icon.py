@@ -2,9 +2,10 @@ import logging
 from PySide6.QtCore import Qt, QByteArray, QRectF, QSize
 from PySide6.QtGui import QColor, QFontMetrics, QIcon, QPainter, QPainterPath, QPixmap
 from PySide6.QtWidgets import QApplication
-from jal.constants import IconOwner, IconSource
+from jal.constants import IconOwner, IconSource, PredefinedAsset
 from jal.db.db import JalDB
 from jal.db.settings import JalSettings
+from jal.widgets.icons import JalIcon
 from jal.widgets.theme import Theme
 
 
@@ -42,6 +43,8 @@ def _contrast(first: QColor, second: QColor) -> float:
 class JalIcons(JalDB):
     _cached = None      # the one instance that carries this class into JalDB's cache invalidation
     _present = None     # {(entity, item_id)} of the elements that have an image, read in one query
+    _blank = None       # {(entity, item_id)} of the elements the user decided show no picture at all
+    _currencies = None  # {listing id: ticker} of every listing of a currency, read in one query
     _pixmaps = {}       # (entity, item_id, size) -> QPixmap, decoded once and painted many times
     _indent = None      # cached value of the preference below - it is asked once per row painted
     _palette = None     # the palette the pixmaps above were made for: they carry a ground-dependent treatment
@@ -81,6 +84,8 @@ class JalIcons(JalDB):
     @classmethod
     def invalidate_cache(cls) -> None:
         cls._present = None
+        cls._blank = None
+        cls._currencies = None
         cls._pixmaps = {}
         cls._indent = None   # another database has preferences of its own
 
@@ -104,18 +109,49 @@ class JalIcons(JalDB):
     def class_cache(cls) -> True:
         return True
 
+    # Puts this class into the list JalDB.invalidate_cache() walks, once - everything cached below is dropped by it
+    @classmethod
+    def _register(cls) -> None:
+        if cls._cached is None:
+            cls._cached = cls(cached=True)
+
     # The set of elements that have an image to paint. One query for the whole application, so the answer that
-    # nearly every row gets - "this one has none" - never reaches the database.
+    # nearly every row gets - "this one has none" - never reaches the database. The elements the user asked to
+    # show nothing at all are separated out by the same pass: they are the same rows, told apart by 'source'.
     @classmethod
     def _known(cls) -> set:
         if cls._present is None:
-            if cls._cached is None:
-                cls._cached = cls(cached=True)   # registers this class for cache invalidation, once
-            cls._present = set()
-            query = cls._exec("SELECT entity, item_id FROM icons WHERE length(image)>0")
+            cls._register()
+            cls._present, cls._blank = set(), set()
+            query = cls._exec("SELECT entity, item_id, length(image), source FROM icons")
             while query.next():
-                cls._present.add(tuple(cls._read_record(query)))
+                entity, item_id, length, source = cls._read_record(query)
+                if length:
+                    cls._present.add((entity, item_id))
+                elif source == IconSource.User:
+                    cls._blank.add((entity, item_id))
         return cls._present
+
+    # The set of elements the user decided show no picture at all - the b'' + User of the four states above.
+    # It is not "has no icon": that is nearly every element, and it is the one answer a fallback may fill in.
+    @classmethod
+    def _declined(cls) -> set:
+        cls._known()    # both sets are read by one query
+        return cls._blank
+
+    # {listing id: ticker} of every listing of a currency.
+    @classmethod
+    def _currency_tickers(cls) -> dict:
+        if cls._currencies is None:
+            cls._register()
+            cls._currencies = {}
+            query = cls._exec("SELECT s.id, s.symbol FROM asset_symbol AS s "
+                              "LEFT JOIN assets AS a ON a.id=s.asset_id WHERE a.type_id=:money",
+                              [(":money", PredefinedAsset.Money)])
+            while query is not None and query.next():
+                listing_id, ticker = cls._read_record(query)
+                cls._currencies[listing_id] = ticker
+        return cls._currencies
 
     # True if this element has an image stored. Answered from the cache above, so it is free to ask per row.
     @classmethod
@@ -165,7 +201,7 @@ class JalIcons(JalDB):
                            (":image", QByteArray(bytes(image))), (":source", source)], commit=True)
         if query is None:
             return False
-        cls._remember(entity, item_id, bool(image))
+        cls._remember(entity, item_id, image, source)
         return True
 
     # Drops everything stored about this element, so that it is 'never asked about' again. For a listing that
@@ -175,18 +211,20 @@ class JalIcons(JalDB):
     def forget(cls, entity: int, item_id: int) -> None:
         cls._exec("DELETE FROM icons WHERE entity=:entity AND item_id=:id",
                   [(":entity", entity), (":id", item_id)], commit=True)
-        cls._remember(entity, item_id, False)
+        cls._remember(entity, item_id, b'')
 
-    # Puts what was just written into the cache instead of re-reading the whole 'who has one' set for one row,
-    # and drops what was decoded from the image this element used to have. A set that isn't loaded is left alone -
-    # it reads the truth when it is first asked.
+    # Puts what was just written into the cached sets instead of re-reading them for one row, and drops what was
+    # decoded from the image this element used to have. 'source' is None where the row was deleted rather than
+    # written. Sets that aren't loaded are left alone - they read the truth when they are first asked.
     @classmethod
-    def _remember(cls, entity: int, item_id: int, has_image: bool) -> None:
+    def _remember(cls, entity: int, item_id: int, image: bytes, source=None) -> None:
         if cls._present is not None:
-            if has_image:
+            cls._present.discard((entity, item_id))
+            cls._blank.discard((entity, item_id))
+            if image:
                 cls._present.add((entity, item_id))
-            else:
-                cls._present.discard((entity, item_id))
+            elif source == IconSource.User:
+                cls._blank.add((entity, item_id))
         cls._pixmaps = {key: value for key, value in cls._pixmaps.items() if key[:2] != (entity, item_id)}
 
     # The icon of one element scaled to the given square size, or an empty QIcon if it has none. Images are
@@ -257,11 +295,22 @@ class JalIcons(JalDB):
         painter.end()
         return plated
 
-    # What a cell of an icon-carrying column shows: the icon of this element, or the empty space of one when it has
-    # none - and nothing at all if the user asked for no such space (see rows_are_indented).
+    # The sign a currency listing wears where no picture is stored for it.
+    @classmethod
+    def _currency_sign(cls, entity: int, item_id: int) -> QIcon:
+        if entity != IconOwner.Symbol or (entity, item_id) in cls._declined():
+            return QIcon()
+        ticker = cls._currency_tickers().get(item_id, '')
+        return JalIcon.money_glyph(ticker) if ticker else QIcon()
+
+    # What a cell of an icon-carrying column shows: the icon of this element, the sign of the currency it is if it
+    # is one and has no icon, or the empty space of an icon - and nothing at all if the user asked for no such
+    # space (see rows_are_indented).
     @classmethod
     def decoration(cls, entity: int, item_id: int, size: int):
         icon = cls.icon(entity, item_id, size)
+        if icon.isNull():
+            icon = cls._currency_sign(entity, item_id)
         return icon if not icon.isNull() else cls.spacer(size)
 
     # One entry per distinct image stored for elements of the given kind, as (item_id, image) of the first element

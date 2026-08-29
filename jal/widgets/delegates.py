@@ -3,7 +3,7 @@ from decimal import Decimal, InvalidOperation
 from PySide6.QtWidgets import (QApplication, QWidget, QStyle, QStyledItemDelegate, QLineEdit, QDateTimeEdit,
                                QTreeView, QComboBox)
 from PySide6.QtCore import Qt, QModelIndex, QEvent, QLocale, QDateTime, QDate, QRect, QTime, QTimeZone
-from PySide6.QtGui import QDoubleValidator, QBrush, QKeyEvent
+from PySide6.QtGui import QDoubleValidator, QBrush, QIcon, QKeyEvent
 from PySide6.QtSql import QSqlQueryModel
 from jal.constants import IconOwner, Setup
 from jal.widgets.reference_selector import ReferenceSelectorWidget
@@ -481,7 +481,12 @@ class TickerIconsDelegate(GridLinesDelegate):
             icon = JalIcons.decoration(IconOwner.Symbol, listings[i], size)
             indent = 0
             if icon is not None:   # None where a line has no icon and rows are not indented for the missing ones
-                icon.paint(painter, QRect(option.rect.left(), int(top + (height - size) / 2), size, size), Qt.AlignCenter)
+                # The mode is spelled out because this delegate paints the icon itself: a glyph takes its colour
+                # from it, and on a selected row that is the difference between being read and being lost in the
+                # highlight. A stored picture is painted as it is in either mode.
+                mode = QIcon.Selected if option.state & QStyle.State_Selected else QIcon.Normal
+                icon.paint(painter, QRect(option.rect.left(), int(top + (height - size) / 2), size, size),
+                           Qt.AlignCenter, mode)
                 indent = size
             text_rect = QRect(option.rect.left() + indent, top, option.rect.width() - indent, int(height))
             painter.drawText(text_rect, Qt.AlignLeft | Qt.AlignVCenter,

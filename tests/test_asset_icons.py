@@ -225,12 +225,13 @@ def test_symbol_list_displays_icon_before_the_ticker(prepare_db):
     # The stored image is painted at the size of a grid row - one 256x256 logo must not set the height of every row
     assert max(icon.availableSizes()[0].width(), icon.availableSizes()[0].height()) == JalIcons.grid_size()
 
-    # A listing with no icon (and one the source had no icon for) reserves the same space and shows nothing in it
+    # A listing with no icon (and one the source had no icon for) reserves the same space and shows nothing in it.
+    # A currency is no example of that any more - it wears the sign of its ticker (see test_icon_display.py).
     create_assets([('NOLOGO', 'Unknown Corp.', '', 2, PredefinedAsset.Stock, 0)])
     JalIcons.store(IconOwner.Symbol, symbol_id_for(5), b'', IconSource.Downloaded)
     model.setFilter()
     for row in range(model.rowCount()):
-        if model.record(row).value('id') in (symbol_id_for(5), symbol_id_for(2)):
+        if model.record(row).value('id') == symbol_id_for(5):
             blank = model.data(model.index(row, model.fieldIndex("symbol")), Qt.DecorationRole)
             assert isinstance(blank, QIcon)
             assert blank.availableSizes()[0].width() == JalIcons.grid_size()
