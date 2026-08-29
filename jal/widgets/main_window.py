@@ -104,9 +104,10 @@ class MainWindow(QMainWindow):
         self.ui.actionExit.triggered.connect(QApplication.instance().quit)
         self.ui.actionOperations.triggered.connect(self.showOperationsWindow)
         self.ui.actionAbout.triggered.connect(self.showAboutWindow)
-        self.ui.actionDocumentation.triggered.connect(partial(self.openHelpDocument, Setup.REPO_README))
-        self.ui.actionFAQ.triggered.connect(partial(self.openHelpDocument, Setup.REPO_FAQ))
-        self.ui.actionErrorMessages.triggered.connect(partial(self.openHelpDocument, Setup.REPO_ERRORS))
+        self.ui.actionManual.triggered.connect(partial(self.openHelpDocument, Setup.DOC_MANUAL))
+        self.ui.actionDocumentation.triggered.connect(partial(self.openHelpDocument, Setup.DOC_README))
+        self.ui.actionFAQ.triggered.connect(partial(self.openHelpDocument, Setup.DOC_FAQ))
+        self.ui.actionErrorMessages.triggered.connect(partial(self.openHelpDocument, Setup.DOC_ERRORS))
         self.ui.actionReportProblem.triggered.connect(partial(QDesktopServices.openUrl, QUrl(Setup.REPO_URL + "/issues")))
         self.langGroup.triggered.connect(self.onLanguageChanged)
         self.statementGroup.triggered.connect(self.statements.load)
@@ -319,10 +320,9 @@ class MainWindow(QMainWindow):
     # Opens a document from the project repository in a browser, in the language the application is set to
     @Slot()
     def openHelpDocument(self, document: str):
-        language = JalSettings().getLanguage()
-        suffix = '' if language == 'en' else f".{language}"
-        url = f"{Setup.REPO_URL}/blob/master/{Setup.HELP_DOCUMENTS[document]}{suffix}.md"
-        QDesktopServices.openUrl(QUrl(url))
+        pages = Setup.HELP_DOCUMENTS[document]
+        page = pages.get(JalSettings().getLanguage(), pages['en'])
+        QDesktopServices.openUrl(QUrl(Setup.DOCS_URL + page))
 
     @Slot()
     def showAboutWindow(self):

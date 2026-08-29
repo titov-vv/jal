@@ -53,13 +53,16 @@ class Setup:
     REBASE_RESIDUE_MAX_VALUE = '0.01'                # in the account's currency
     ICON_STORED_SIZE = 64
     REPO_URL = "https://github.com/titov-vv/jal"
-    REPO_README = "docs"
-    REPO_FAQ = "faq"
-    REPO_ERRORS = "err"
-    HELP_DOCUMENTS = {                         # Documents that the Help menu opens in a browser. Each is kept in an English and a Russian version that differ
-        REPO_README: "docs/README",            # by a '.ru' suffix, so the language currently selected in the application picks the file to open.
-        REPO_FAQ: "docs/FAQ",
-        REPO_ERRORS: "docs/error_description"
+    DOCS_URL = "https://titov-vv.github.io/jal/"   # GitHub Pages site built from the repository's docs/ folder
+    DOC_MANUAL = "manual"
+    DOC_README = "docs"
+    DOC_FAQ = "faq"
+    DOC_ERRORS = "err"
+    HELP_DOCUMENTS = {                     # Pages that the Help menu opens in a browser, as paths relative to DOCS_URL.
+        DOC_MANUAL: {'en': "manual/README"},                                   # A document that has no page in the language
+        DOC_README: {'en': "", 'ru': "README.ru"},                             # currently selected falls back to the english
+        DOC_FAQ: {'en': "manual/13-troubleshooting", 'ru': "FAQ.ru"},          # one - the manual is english-only for now.
+        DOC_ERRORS: {'en': "error_description", 'ru': "error_description.ru"}
     }
 
 # ----------------------------------------------------------------------------------------------------------------------

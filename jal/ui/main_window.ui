@@ -126,6 +126,7 @@
     <property name="title">
      <string>&amp;Help</string>
     </property>
+    <addaction name="actionManual"/>
     <addaction name="actionDocumentation"/>
     <addaction name="actionFAQ"/>
     <addaction name="actionErrorMessages"/>
@@ -252,6 +253,11 @@
    </property>
    <property name="menuRole">
     <enum>QAction::MenuRole::PreferencesRole</enum>
+   </property>
+  </action>
+  <action name="actionManual">
+   <property name="text">
+    <string>&amp;User manual</string>
    </property>
   </action>
   <action name="actionDocumentation">
