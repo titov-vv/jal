@@ -59,7 +59,7 @@ class Setup:
     DOC_FAQ = "faq"
     DOC_ERRORS = "err"
     HELP_DOCUMENTS = {                     # Pages that the Help menu opens in a browser, as paths relative to DOCS_URL.
-        DOC_MANUAL: {'en': "manual/README"},                                   # A document that has no page in the language
+        DOC_MANUAL: {'en': "manual/"},                                         # A document that has no page in the language
         DOC_README: {'en': "", 'ru': "README.ru"},                             # currently selected falls back to the english
         DOC_FAQ: {'en': "manual/13-troubleshooting", 'ru': "FAQ.ru"},          # one - the manual is english-only for now.
         DOC_ERRORS: {'en': "error_description", 'ru': "error_description.ru"}

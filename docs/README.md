@@ -43,7 +43,7 @@ JAL is tailored for those who want a clear insight into their personal incomes, 
 - Category recognition for goods in electronic slips using TensorFlow.
 
 ## 📖 User manual
-The [**User manual**](https://titov-vv.github.io/jal/manual/README) explains the whole program from the first start onwards - accounts and operations, investments, crypto, statement imports, every report, taxes, backups and troubleshooting. It is also reachable from menu *Help->User manual*.
+The [**User manual**](https://titov-vv.github.io/jal/manual/) explains the whole program from the first start onwards - accounts and operations, investments, crypto, statement imports, every report, taxes, backups and troubleshooting. It is also reachable from menu *Help->User manual*.
 
 ## 📥 Installation
 JAL runs on Windows, macOS and Linux and needs **Python 3.9 or newer**. In a terminal:

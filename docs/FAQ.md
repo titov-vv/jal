@@ -10,5 +10,5 @@ things that look wrong but are not:
 * How to start over with a clean database
 * Whether the database can be shared, synced between computers, or sent anywhere
 
-The whole manual is at [titov-vv.github.io/jal/manual](https://titov-vv.github.io/jal/manual/README),
+The whole manual is at [titov-vv.github.io/jal/manual](https://titov-vv.github.io/jal/manual/),
 and *Help->User manual* opens it from inside the program.
