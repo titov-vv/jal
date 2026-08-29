@@ -1,10 +1,25 @@
 import logging
-from PySide6.QtCore import Qt, QByteArray, QSize
-from PySide6.QtGui import QFontMetrics, QIcon, QPixmap
+from PySide6.QtCore import Qt, QByteArray, QRectF, QSize
+from PySide6.QtGui import QColor, QFontMetrics, QIcon, QPainter, QPainterPath, QPixmap
 from PySide6.QtWidgets import QApplication
 from jal.constants import IconOwner, IconSource
 from jal.db.db import JalDB
 from jal.db.settings import JalSettings
+from jal.widgets.theme import Theme
+
+
+# WCAG contrast ratio of two opaque colours, 1.0 (identical) to 21.0 (black on white). The same formula
+# jal.widgets.theme derives every colour with - repeated here because this module measures rather than derives.
+def _luminance(color: QColor) -> float:
+    def channel(value: int) -> float:
+        value = value / 255
+        return value / 12.92 if value <= 0.03928 else ((value + 0.055) / 1.055) ** 2.4
+    return 0.2126 * channel(color.red()) + 0.7152 * channel(color.green()) + 0.0722 * channel(color.blue())
+
+
+def _contrast(first: QColor, second: QColor) -> float:
+    lighter, darker = max(_luminance(first), _luminance(second)), min(_luminance(first), _luminance(second))
+    return (lighter + 0.05) / (darker + 0.05)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -29,6 +44,18 @@ class JalIcons(JalDB):
     _present = None     # {(entity, item_id)} of the elements that have an image, read in one query
     _pixmaps = {}       # (entity, item_id, size) -> QPixmap, decoded once and painted many times
     _indent = None      # cached value of the preference below - it is asked once per row painted
+    _palette = None     # the palette the pixmaps above were made for: they carry a ground-dependent treatment
+
+    # A picture that can't be told from the ground it is painted on is given a plate to sit on, and nothing else
+    # is touched. The measurement below decides which is which, on the pixmap that will actually be drawn.
+    #
+    # 'Told from the ground' is not lightness alone: an orange logo on white has a WCAG contrast of 2.2 and is
+    # perfectly visible, because the eye separates it by COLOUR. Both are therefore allowed to count as ink, and
+    # that is what keeps every saturated logo off the plate - measured over the live collection at the size a row
+    # paints, 6 pictures of 202 need one on a dark row and none does on a light one.
+    _INK_CONTRAST = 3.0        # WCAG ratio at which ink is told from its ground by lightness
+    _INK_DISTANCE = 90         # ... or by colour, across the RGB cube (of 441)
+    _INK_MINIMUM = 0.02        # less ink than this share of the box and there is nothing to see at all
 
     # Whether a row whose element has no icon still keeps the space one would take. With it the names of a list
     # start at one and the same place whether or not the thing they name carries a logo; without it a column of
@@ -169,14 +196,66 @@ class JalIcons(JalDB):
     def icon(cls, entity: int, item_id: int, size: int) -> QIcon:
         if not cls.has_image(entity, item_id):
             return QIcon()
+        cls._forget_stale_palette()
         key = (entity, item_id, size)
         if key not in cls._pixmaps:
             pixmap = QPixmap()
             if not pixmap.loadFromData(cls.image(entity, item_id)):
                 logging.warning(f"Can't decode the icon stored for element {item_id} of kind {entity}")
                 return QIcon()
-            cls._pixmaps[key] = pixmap.scaled(QSize(size, size), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            pixmap = pixmap.scaled(QSize(size, size), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            cls._pixmaps[key] = pixmap if cls._is_readable(pixmap) else cls._on_plate(pixmap, size)
         return QIcon(cls._pixmaps[key])
+
+    # Everything cached above was made to be painted on one particular ground, so a change of palette - the user
+    # switching the desktop between light and dark - drops it all.
+    @classmethod
+    def _forget_stale_palette(cls) -> None:
+        palette = QApplication.palette().cacheKey()
+        if cls._palette != palette:
+            cls._palette = palette
+            cls._pixmaps = {}
+
+    # True if enough of this picture can be told from the ground a row paints it on. Measured on the pixmap that
+    # will be drawn - a few hundred pixels, once per picture and size - and never on the stored image, which is
+    # larger and is not what the eye gets.
+    @classmethod
+    def _is_readable(cls, pixmap: QPixmap) -> bool:
+        ground = QApplication.palette().base().color()
+        image = pixmap.toImage()
+        area = image.width() * image.height()
+        if not area:
+            return True
+        ink = 0
+        for y in range(image.height()):
+            for x in range(image.width()):
+                pixel = image.pixelColor(x, y)
+                weight = pixel.alphaF()
+                blended = QColor(round(pixel.red() * weight + ground.red() * (1 - weight)),
+                                 round(pixel.green() * weight + ground.green() * (1 - weight)),
+                                 round(pixel.blue() * weight + ground.blue() * (1 - weight)))
+                distance = ((blended.red() - ground.red()) ** 2 + (blended.green() - ground.green()) ** 2
+                            + (blended.blue() - ground.blue()) ** 2) ** 0.5
+                if _contrast(blended, ground) >= cls._INK_CONTRAST or distance >= cls._INK_DISTANCE:
+                    ink += 1
+        return ink / area >= cls._INK_MINIMUM
+
+    # The same picture on a plate of the ground's opposite, rounded so that it reads as a chip rather than a patch.
+    # The picture keeps its size - the plate is the box the row already reserved, and the row does not grow.
+    @classmethod
+    def _on_plate(cls, pixmap: QPixmap, size: int) -> QPixmap:
+        plated = QPixmap(QSize(size, size))
+        plated.fill(Qt.transparent)
+        painter = QPainter(plated)
+        painter.setRenderHint(QPainter.Antialiasing)
+        path = QPainterPath()
+        path.addRoundedRect(QRectF(0, 0, size, size), size / 5, size / 5)
+        painter.fillPath(path, Theme.plate())
+        inset = max(1, size // 8)
+        picture = pixmap.scaled(QSize(size - 2 * inset, size - 2 * inset), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        painter.drawPixmap(round((size - picture.width()) / 2), round((size - picture.height()) / 2), picture)
+        painter.end()
+        return plated
 
     # What a cell of an icon-carrying column shows: the icon of this element, or the empty space of one when it has
     # none - and nothing at all if the user asked for no such space (see rows_are_indented).

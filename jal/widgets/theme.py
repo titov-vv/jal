@@ -39,6 +39,7 @@ _ANCHOR = {
 _FILL_STRENGTH = 0.50      # how much of the hue is mixed into the ground for a deliberately colored cell
 _TINT_STRENGTH = 0.12      # ... and for a row tint, which has to stay behind its own text
 _SEPARATOR_STRENGTH = 0.22 # grid lines: the palette's text color, mostly dissolved into the ground
+_PLATE_STRENGTH = 0.88     # the plate under an unreadable picture: nearly all the way to the text color
 _MUTED_STRENGTH = 0.55     # MUTED text: more than half way from the ground to the text color
 
 # WCAG AA for body text. MUTED is deliberately quieter - it is secondary information and forcing it to 4.5 would
@@ -135,6 +136,12 @@ class Theme:
     def separator(cls, ground: QColor = None) -> QColor:
         return cls._derive('separator', None, ground)
 
+    # The plate that goes under a picture which would otherwise dissolve into the ground it is painted on - a dark
+    # logo on a dark row (see JalIcons.icon), for example.
+    @classmethod
+    def plate(cls, ground: QColor = None) -> QColor:
+        return cls._derive('plate', None, ground)
+
     @classmethod
     def _derive(cls, role: str, meaning, ground: QColor) -> QColor:
         global _cache_palette
@@ -154,6 +161,8 @@ class Theme:
         ink = palette.text().color()
         if role == 'separator':
             return _mix(ink, ground, _SEPARATOR_STRENGTH)
+        if role == 'plate':
+            return _mix(ink, ground, _PLATE_STRENGTH)
         if meaning == Meaning.MUTED:   # achromatic: derived from the palette's own text colour, not from a hue
             if role == 'text':
                 muted = _mix(ink, ground, _MUTED_STRENGTH)

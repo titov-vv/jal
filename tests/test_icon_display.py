@@ -7,7 +7,7 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 from decimal import Decimal
 
 from PySide6.QtCore import Qt, QBuffer, QIODevice
-from PySide6.QtGui import QFont, QIcon, QImage
+from PySide6.QtGui import QColor, QFont, QIcon, QImage
 from PySide6.QtWidgets import QWidget
 
 from tests.fixtures import project_root, data_path, prepare_db
@@ -614,3 +614,102 @@ def test_the_lookup_combo_shows_the_icon_of_its_rows(prepare_db):
     peers.setTable("agents")
     assert peers.model().data(peers.model().index(0, 0), Qt.DecorationRole) is None
     parent.deleteLater()
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# A picture that can't be told from the ground a row paints it on is given a plate to sit on.
+def _dark_palette():
+    from PySide6.QtGui import QPalette
+    palette = QPalette()
+    palette.setColor(QPalette.Base, QColor("#2A2A2A"))
+    palette.setColor(QPalette.Text, QColor("#E8E8E8"))
+    return palette
+
+
+def _light_palette():
+    from PySide6.QtGui import QPalette
+    palette = QPalette()
+    palette.setColor(QPalette.Base, QColor("#FFFFFF"))
+    palette.setColor(QPalette.Text, QColor("#000000"))
+    return palette
+
+
+# A mark of the given color on transparency - the shape of every logo that vanishes on one theme or the other
+def _mark(color, size: int = 64) -> bytes:
+    from PySide6.QtGui import QPainter
+    image = QImage(size, size, QImage.Format_ARGB32)
+    image.fill(Qt.transparent)
+    painter = QPainter(image)
+    painter.fillRect(size // 4, size // 4, size // 2, size // 2, color)
+    painter.end()
+    buffer = QBuffer()
+    buffer.open(QIODevice.WriteOnly)
+    image.save(buffer, "PNG")
+    return bytes(buffer.data())
+
+
+def _is_plated(icon, size: int) -> bool:
+    from jal.widgets.theme import Theme
+    return icon.pixmap(size).toImage().pixelColor(size // 2, 1) == Theme.plate()
+
+
+def test_only_a_picture_that_dissolves_gets_a_plate(prepare_db):
+    from PySide6.QtWidgets import QApplication
+    account = JalAccountCreator(currency_id=2, number='U1', name='Black mark', organization=1).commit()
+    colored = JalAccountCreator(currency_id=2, number='U2', name='Orange mark', organization=1).commit()
+    JalIcons.store(IconOwner.Account, account.id(), _mark(Qt.black), IconSource.User)
+    JalIcons.store(IconOwner.Account, colored.id(), _mark(QColor("#F7931A")), IconSource.User)
+    size = JalIcons.grid_size()
+
+    QApplication.setPalette(_light_palette())
+    JalIcons.invalidate_cache()
+    assert not _is_plated(JalIcons.icon(IconOwner.Account, account.id(), size), size)     # black on white is fine
+    assert not _is_plated(JalIcons.icon(IconOwner.Account, colored.id(), size), size)
+
+    QApplication.setPalette(_dark_palette())
+    JalIcons.invalidate_cache()
+    assert _is_plated(JalIcons.icon(IconOwner.Account, account.id(), size), size)         # black on dark is not
+    # ... while an orange mark is told from a dark ground by its COLOUR, and is left alone
+    assert not _is_plated(JalIcons.icon(IconOwner.Account, colored.id(), size), size)
+
+    QApplication.setPalette(_light_palette())
+    JalIcons.invalidate_cache()
+
+
+# The plate is a way of PAINTING what is stored: the row keeps its height and the database keeps its bytes
+def test_the_plate_changes_neither_the_size_nor_what_is_stored(prepare_db):
+    from PySide6.QtWidgets import QApplication
+    account = JalAccountCreator(currency_id=2, number='U1', name='Black mark', organization=1).commit()
+    stored = _mark(Qt.black)
+    JalIcons.store(IconOwner.Account, account.id(), stored, IconSource.User)
+    size = JalIcons.grid_size()
+
+    QApplication.setPalette(_dark_palette())
+    JalIcons.invalidate_cache()
+    pixmap = JalIcons.icon(IconOwner.Account, account.id(), size).pixmap(size)
+
+    assert _is_plated(JalIcons.icon(IconOwner.Account, account.id(), size), size)
+    assert pixmap.width() == pixmap.height() == size
+    assert JalIcons.image(IconOwner.Account, account.id()) == stored     # the database is untouched
+
+    QApplication.setPalette(_light_palette())
+    JalIcons.invalidate_cache()
+
+
+# The treatment belongs to the ground, so a change of theme has to drop what was made for the old one
+def test_a_theme_change_drops_the_painted_icons(prepare_db):
+    from PySide6.QtWidgets import QApplication
+    account = JalAccountCreator(currency_id=2, number='U1', name='Black mark', organization=1).commit()
+    JalIcons.store(IconOwner.Account, account.id(), _mark(Qt.black), IconSource.User)
+    size = JalIcons.grid_size()
+
+    QApplication.setPalette(_light_palette())
+    JalIcons.invalidate_cache()
+    assert not _is_plated(JalIcons.icon(IconOwner.Account, account.id(), size), size)
+
+    QApplication.setPalette(_dark_palette())          # no invalidate_cache() here - the palette change is the signal
+    assert _is_plated(JalIcons.icon(IconOwner.Account, account.id(), size), size)
+
+    QApplication.setPalette(_light_palette())
+    assert not _is_plated(JalIcons.icon(IconOwner.Account, account.id(), size), size)
+    JalIcons.invalidate_cache()
