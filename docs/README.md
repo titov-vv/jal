@@ -65,30 +65,26 @@ Step-by-step example (in russian language) of Russian tax report preparation for
 Use contacts from beginning of this page if you need support regarding statements or reports.
 
 ## Screenshots
-Qt have a better look on Linux out of the box. Here is main program window:  
-![Main Window on Linux](https://github.com/titov-vv/jal/blob/master/docs/img/main_linux.png?raw=true)
+All pictures below show an invented demo ledger, not real data. Here is the main program window:  
+![Main Window](https://github.com/titov-vv/jal/blob/master/docs/manual/img/main_window.png?raw=true)
 
-The same window on Windows - the same functions with a bit different look:  
-![Main Window on Windows](https://github.com/titov-vv/jal/blob/master/docs/img/main_windows.png?raw=true)
-
-Accounts are be arranged in groups (Cash, Cards, Investments, etc), each account holds one currency.
-Below is a view of main window where one account is chosen ('Mastercard') and account select/edit window is opened on top:  
+Accounts are arranged in groups (Cash, Card, Bank, Broker, Wallet, etc), each account holds one currency.
+Below is a view of main window where one account is chosen ('Everyday Card') and account select/edit window is opened on top:  
 ![One Account](https://github.com/titov-vv/jal/blob/master/docs/img/one_account_view.png?raw=true)
 
 Example of investment account view with Buy, Sell and Dividend operations recorded (there is an asset select/edit window on top):  
 ![Investment Account](https://github.com/titov-vv/jal/blob/master/docs/img/stocks_and_investment_account.png?raw=true)
 
-'Holdings' tab contains portfolio overview (You display account and portfolio balances for any date).
-Holdings are grouped by currencies and then by accounts.  
-![Holdings](https://github.com/titov-vv/jal/blob/master/docs/img/investment_portfolio_holdings.png?raw=true)
+The *Portfolio* report gives an overview of everything held on a given date, grouped by currency and then by account.  
+![Portfolio](https://github.com/titov-vv/jal/blob/master/docs/manual/img/report_portfolio.png?raw=true)
 
 Examples of reports are below:
 Monthly incomes/spendings *(categories hierarchy is supported with sub-totals calculation)*  
-![Income/Spending report](https://github.com/titov-vv/jal/blob/master/docs/img/report_income_spending.png?raw=true)
+![Income/Spending report](https://github.com/titov-vv/jal/blob/master/docs/manual/img/report_income_spending.png?raw=true)
 Profit/Loss for investment account *(Assets value to be fixed, Returns include dividends and other payments)*  
-![Profit/Loss report](https://github.com/titov-vv/jal/blob/master/docs/img/report_profit_loss.png?raw=true)
+![Profit/Loss report](https://github.com/titov-vv/jal/blob/master/docs/manual/img/report_profit_loss.png?raw=true)
 List of all closed deals for investment account  
-![Deals report](https://github.com/titov-vv/jal/blob/master/docs/img/report_deals.png?raw=true)
+![Deals report](https://github.com/titov-vv/jal/blob/master/docs/manual/img/report_deals.png?raw=true)
 
 ## 📞 Support, Feedback
 If you want to ask a question, report a bug, provide help or support an author - you may use email [jal@gmx.ru](mailto:jal@gmx.ru?subject=%5BJAL%5D%20Help) or [Telegram](https://t.me/jal_support) ([Issues](https://github.com/titov-vv/jal/issues) on GitHub are always welcome also).
