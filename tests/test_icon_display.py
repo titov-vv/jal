@@ -207,6 +207,9 @@ def test_operations_keep_tickers_and_icons_in_step(prepare_db):
                 text, icons = operation.value_currency(), operation.value_currency_icons()
                 lines = text.split("\n") if text else []
                 assert len(icons) == len(lines), f"{type(operation).__name__} part {opart}: {icons} against '{text}'"
+                # The gap before a ticker is drawn by the delegate for every line alike - a ticker that pads itself
+                # would stand further right than the ones beside it.
+                assert lines == [x.strip() for x in lines], f"{type(operation).__name__} part {opart}: '{text}'"
                 checked += 1
     assert checked > 15
 

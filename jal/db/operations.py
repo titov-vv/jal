@@ -452,9 +452,9 @@ class IncomeSpending(LedgerTransaction):
 
     def value_currency(self) -> str:
         if self._currency and not self._opart:
-            return f" {self._account_currency}\n {self._currency_name}"
+            return f"{self._account_currency}\n{self._currency_name}"
         else:
-            return f" {self._account_currency}"
+            return f"{self._account_currency}"
 
     def value_currency_icons(self) -> list:
         icons = [JalAsset(self._account.currency()).listing_id()]
@@ -797,11 +797,11 @@ class AssetPayment(LedgerTransaction):
     def value_currency(self) -> str:
         if self._subtype in self._ASSET_DENOMINATED and not self._opart:
             if self._tax:
-                return f" {self._symbol.symbol()}\n {self._account_currency}"
+                return f"{self._symbol.symbol()}\n{self._account_currency}"
             else:
-                return f" {self._symbol.symbol()}"
+                return f"{self._symbol.symbol()}"
         else:
-            return f" {self._account_currency}"
+            return f"{self._account_currency}"
 
     def value_currency_icons(self) -> list:
         if self._subtype in self._ASSET_DENOMINATED and not self._opart:
@@ -1020,9 +1020,9 @@ class Trade(LedgerTransaction):
 
     def value_currency(self) -> str:
         if self._opart:
-            return f" {self._account_currency}"
+            return f"{self._account_currency}"
         else:
-            return f" {self._account_currency}\n {self._symbol.symbol()}"
+            return f"{self._account_currency}\n{self._symbol.symbol()}"
 
     def value_currency_icons(self) -> list:
         icons = [JalAsset(self._account.currency()).listing_id()]
@@ -1241,11 +1241,11 @@ class Swap(LedgerTransaction):
 
     def value_currency(self) -> str:
         if self._opart == Swap.Incoming:
-            return f" {self._in_symbol.symbol()}"
-        text = f" {self._out_symbol.symbol()}" if self._cross_chain \
-            else f" {self._out_symbol.symbol()}\n {self._in_symbol.symbol()}"
+            return f"{self._in_symbol.symbol()}"
+        text = f"{self._out_symbol.symbol()}" if self._cross_chain \
+            else f"{self._out_symbol.symbol()}\n{self._in_symbol.symbol()}"
         if self._fee_asset.id():
-            text += f"\n {self._fee_symbol.symbol()}"
+            text += f"\n{self._fee_symbol.symbol()}"
         return text
 
     def value_currency_icons(self) -> list:
@@ -2062,11 +2062,11 @@ class CorporateAction(LedgerTransaction):
 
     def value_currency(self) -> str:
         if self._subtype != CorporateAction.SpinOff:
-            symbol = f" {self._symbol.symbol()}\n"
+            symbol = f"{self._symbol.symbol()}\n"
         else:
             symbol = ""
         for x in self._results:
-            symbol += f" {JalSymbol(x['symbol_id']).symbol()}\n"
+            symbol += f"{JalSymbol(x['symbol_id']).symbol()}\n"
         return symbol[:-1]  # Crop ending line break
 
     def value_currency_icons(self) -> list:
@@ -2263,9 +2263,9 @@ class Conversion(LedgerTransaction):
         return result
 
     def value_currency(self) -> str:
-        text = f" {self._out_symbol.symbol()}\n {self._in_symbol.symbol()}"
+        text = f"{self._out_symbol.symbol()}\n{self._in_symbol.symbol()}"
         if self._fee_asset.id():
-            text += f"\n {self._fee_symbol.symbol()}"
+            text += f"\n{self._fee_symbol.symbol()}"
         return text
 
     def value_currency_icons(self) -> list:

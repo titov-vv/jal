@@ -470,6 +470,7 @@ class TickerIconsDelegate(GridLinesDelegate):
         if not isinstance(listings, list) or len(listings) != len(lines):
             listings = [0] * len(lines)    # a column that says nothing about its listings gets no icons, not wrong ones
         size = JalIcons.grid_size()
+        gap = painter.fontMetrics().horizontalAdvance(" ")
         painter.save()
         if option.state & QStyle.State_Selected:
             pen = painter.pen()
@@ -479,15 +480,15 @@ class TickerIconsDelegate(GridLinesDelegate):
         for i, line in enumerate(lines):
             top = int(option.rect.top() + i * height)
             icon = JalIcons.decoration(IconOwner.Symbol, listings[i], size)
-            indent = 0
-            if icon is not None:   # None where a line has no icon and rows are not indented for the missing ones
+            indent = gap
+            if icon is not None:   # None where a line has no icon - a missing one takes no space of its own
                 # The mode is spelled out because this delegate paints the icon itself: a glyph takes its colour
                 # from it, and on a selected row that is the difference between being read and being lost in the
                 # highlight. A stored picture is painted as it is in either mode.
                 mode = QIcon.Selected if option.state & QStyle.State_Selected else QIcon.Normal
                 icon.paint(painter, QRect(option.rect.left(), int(top + (height - size) / 2), size, size),
                            Qt.AlignCenter, mode)
-                indent = size
+                indent = size + gap
             text_rect = QRect(option.rect.left() + indent, top, option.rect.width() - indent, int(height))
             painter.drawText(text_rect, Qt.AlignLeft | Qt.AlignVCenter,
                              painter.fontMetrics().elidedText(line, Qt.ElideRight, text_rect.width()))
