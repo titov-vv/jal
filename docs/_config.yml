@@ -1,0 +1,17 @@
+# GitHub Pages builds this folder into https://titov-vv.github.io/jal/
+
+# Pinned rather than left to the Pages default, because docs/_includes/head-custom.html overrides
+# this theme's own copy of that include and only works while the theme really is primer.
+theme: jekyll-theme-primer
+
+# Before this file existed, Pages derived these from the repository name and description. They are
+# restated here at those exact values, because a site that has a _config.yml may no longer receive
+# them - keep them in sync if the repository description is ever changed.
+title: jal
+description: Personal finance tracking project
+
+# Rewrites relative links between markdown files (manual/03-first-steps.md -> .../03-first-steps.html),
+# which is what keeps the chapter navigation of the user manual working on the site as well as on
+# GitHub. Pages enables it by default; naming it here makes the manual independent of that default.
+plugins:
+  - jekyll-relative-links
