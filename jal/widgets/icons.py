@@ -83,6 +83,7 @@ class JalIcon(UserDict):
     APP_MAIN = auto()
     BOND_AMORTIZATION = auto()
     BOND_INTEREST = auto()
+    BRIDGE = auto()
     BUY = auto()
     CANCEL = auto()
     CHART = auto()
@@ -95,6 +96,7 @@ class JalIcon(UserDict):
     DEPOSIT_CLOSE = auto()
     DETAILS = auto()
     DIVIDEND = auto()
+    DUST = auto()
     FEE = auto()
     INTEREST = auto()
     LIST = auto()
@@ -129,11 +131,12 @@ class JalIcon(UserDict):
         APP_MAIN: "jal.png",
         BOND_AMORTIZATION: "amortization.ico",
         BOND_INTEREST: "coupon.ico",
+        BRIDGE: "bridge.ico",
         BUY: "buy.ico",
         CANCEL: "cancel.ico",
         CHART: "chart.ico",
         CLEAN: "clean.ico",
-        CONVERSION: "renaming.ico",             # TODO dedicated icon for conversions (reuses the symbol-change glyph)
+        CONVERSION: "conversion.ico",
         COPY: "copy.ico",
         DELISTING: "delisting.ico",
         DEPOSIT_ACCOUNT: "deposit_account.ico",
@@ -141,6 +144,7 @@ class JalIcon(UserDict):
         DEPOSIT_CLOSE: "deposit_close.ico",
         DETAILS: "details.ico",
         DIVIDEND: "dividend.ico",
+        DUST: "dust.ico",
         FEE: "fee.ico",
         INTEREST: "interest.ico",
         LIST: "list.ico",
@@ -151,7 +155,7 @@ class JalIcon(UserDict):
         REMOVE: "remove.ico",
         SELL: "sell.ico",
         SPINOFF: "spinoff.ico",
-        SWAP: "renaming.ico",                   # TODO dedicated icon for swaps (reuses the symbol-change glyph)
+        SWAP: "swap.ico",
         SPLIT: "split.ico",
         STOCK_DIVIDEND: "dividend_stock.ico",
         STOCK_VESTING: "vesting.ico",

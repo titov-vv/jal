@@ -580,7 +580,7 @@ class AssetPayment(LedgerTransaction):
             AssetPayment.GasFee: JalIcon.FEE,
             AssetPayment.StakingReward: JalIcon.INTEREST,
             AssetPayment.Reward: JalIcon.INTEREST,
-            AssetPayment.DustAttack: JalIcon.TRANSFER_IN,     # TODO dedicated icon for a dust attack
+            AssetPayment.DustAttack: JalIcon.DUST,
             AssetPayment.RebaseAdjustment: JalIcon.TRANSFER_IN,
             AssetPayment.TokenRent: JalIcon.FEE,
             AssetPayment.TokenRentReturn: JalIcon.TRANSFER_IN
@@ -2381,8 +2381,10 @@ class Bridge(LedgerTransaction):
 
     def __init__(self, operation_data=None, opart=Outgoing):
         assert opart in [Bridge.Outgoing, Bridge.Incoming, Bridge.Fee], "Unknown bridge part"
-        icons = {Bridge.Outgoing: JalIcon.TRANSFER_ASSET_OUT,
-                 Bridge.Incoming: JalIcon.TRANSFER_ASSET_IN,
+        # Both legs wear the bridge itself - the asset-transfer arrows made a crossing look like any other
+        # transfer. Which leg a row is stays legible from its name and the sign of its amount.
+        icons = {Bridge.Outgoing: JalIcon.BRIDGE,
+                 Bridge.Incoming: JalIcon.BRIDGE,
                  Bridge.Fee: JalIcon.FEE}
         self.names = {Bridge.Outgoing: self.tr("Outgoing bridge"),
                       Bridge.Incoming: self.tr("Incoming bridge"),
