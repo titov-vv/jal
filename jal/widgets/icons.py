@@ -12,7 +12,7 @@ from jal.widgets.theme import Meaning, Theme
 ICON_PREFIX = "ui_"
 FLAG_PREFIX = "flag_"    # Country flags for languages and reports
 AUX_PREFIX = "aux_"      # Logos of broker statement modules
-CHAIN_PREFIX = "chain_"  # Logos of blockchain fetcher modules
+CHAIN_PREFIX = "chain_"  # Logos of the blockchains (see AssetLocation._CHAIN_ICONS)
 ATYPE_PREFIX = "atype_"  # Glyphs of the account types (see JalAccount._TYPE_ICONS)
 MONEY_PREFIX = "money_"  # Currency signs, each file named after the ticker of the currency it stands for
 
@@ -267,8 +267,9 @@ class JalIcon(UserDict):
         return cls._icons.get(MONEY_PREFIX + ticker.lower() + ".ico", QIcon())
 
     # Logo of a dynamically loaded module: the module names the image file it wants and the prefix says which
-    # kind of module asks (AUX_PREFIX for broker statements, CHAIN_PREFIX for blockchain fetchers), so two
-    # modules of different kinds may name their images alike. An unknown name gives an empty icon.
+    # kind of module asks (AUX_PREFIX for broker statements, CHAIN_PREFIX for blockchains), so two modules of
+    # different kinds may name their images alike. An unknown name gives an empty icon. A chain image is asked
+    # about by its location as well as by its fetcher - a chain JAL has no fetcher for is drawn all the same.
     @classmethod
     def module_icon(cls, prefix, icon_name) -> QIcon:
         return cls._icons.get(prefix + icon_name, QIcon())

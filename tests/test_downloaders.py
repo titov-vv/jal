@@ -305,6 +305,14 @@ def test_llama_coin_key(prepare_db):
     # Native coin of Arbitrum is bridged ETH and not the ARB token (the latter has a contract address)
     _, eth_arb = create_crypto('Ether ARB', 'ETH', 2, AssetLocation.ARB_BLOCKCHAIN)
     assert llama_coin_key(JalSymbol(eth_arb)) == 'coingecko:ethereum'
+    # A chain that has no fetcher is priced the same way - the coin of a wallet kept by hand needs no id recorded
+    # for it by hand either
+    _, near = create_crypto('NEAR Protocol', 'NEAR', 2, AssetLocation.NEAR_BLOCKCHAIN)
+    assert llama_coin_key(JalSymbol(near)) == 'coingecko:near'
+    _, ada = create_crypto('Cardano', 'ADA', 2, AssetLocation.ADA_BLOCKCHAIN)
+    assert llama_coin_key(JalSymbol(ada)) == 'coingecko:cardano'
+    _, dot = create_crypto('Polkadot', 'DOT', 2, AssetLocation.DOT_BLOCKCHAIN)
+    assert llama_coin_key(JalSymbol(dot)) == 'coingecko:polkadot'
 
     # A listing that isn't on a blockchain has no key at all
     _, stock = create_crypto('Not a coin', 'NPC', 2, AssetLocation.NYSE_EXCHANGE)

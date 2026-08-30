@@ -8,12 +8,15 @@ from PySide6.QtWidgets import QMessageBox
 from tests.fixtures import project_root, data_path, prepare_db
 from constants import PredefinedAccountType, AccountData, AssetLocation
 from jal.db.account import JalAccount, JalAccountCreator
+from jal.net.chain_fetchers.fetchers import ChainFetchers
 from jal.widgets.account_dialog import AccountDialog
 
 # A real Tron address (the USDT contract), used because its checksum is valid - the addresses below differ from it
 # only in ways that a mistyped address would.
 TRX_ADDRESS = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
 ETH_ADDRESS = "0x111111111117dC0aa78b770fA6A738034120C302"
+# A NEAR named account, used for the chains JAL knows but has no fetcher for
+NEAR_ADDRESS = "example.near"
 
 
 # AccountDialog reports invalid data with a modal QMessageBox, which would block a test run forever.
@@ -55,6 +58,24 @@ def test_wallet_account_creation(prepare_db):
     # The attributes are stored in 'account_data' like every other per-account value
     assert account.get_data(AccountData.Address) == TRX_ADDRESS
     assert int(account.get_data(AccountData.Chain)) == AssetLocation.TRX_BLOCKCHAIN
+
+
+def test_wallet_on_a_chain_without_a_fetcher(prepare_db):
+    account = JalAccountCreator(currency_id=2, number='', name='NEAR wallet', organization=1,
+                                account_type=PredefinedAccountType.Wallet,
+                                address=NEAR_ADDRESS, chain=AssetLocation.NEAR_BLOCKCHAIN).commit()
+    assert account.account_type() == PredefinedAccountType.Wallet
+    assert account.chain() == AssetLocation.NEAR_BLOCKCHAIN
+    # An address of a chain JAL has no validator for is stored as it was typed - see is_valid_address()
+    assert account.address() == NEAR_ADDRESS
+    # The chain is one of the chains JAL knows, and it is drawn like any other...
+    assert AssetLocation.NEAR_BLOCKCHAIN in AssetLocation.BLOCKCHAINS
+    assert AssetLocation.icon_of(AssetLocation.NEAR_BLOCKCHAIN)
+    # ... while nothing offers to fetch it: the Import->Blockchain menu is built from the fetcher modules that
+    # exist, so a chain kept by hand simply never appears there.
+    fetchable = [item['location_id'] for item in ChainFetchers(None).items]
+    for chain in (AssetLocation.NEAR_BLOCKCHAIN, AssetLocation.ADA_BLOCKCHAIN, AssetLocation.DOT_BLOCKCHAIN):
+        assert chain not in fetchable
 
 
 def test_wallet_account_mandatory_attributes(prepare_db):

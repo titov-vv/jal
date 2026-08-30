@@ -26,7 +26,10 @@ _TRUSTWALLET_CHAINS = {
     AssetLocation.SOL_BLOCKCHAIN: 'solana',
     AssetLocation.TRX_BLOCKCHAIN: 'tron',
     AssetLocation.HL_BLOCKCHAIN: 'hyperevm',
-    AssetLocation.AVAX_BLOCKCHAIN: 'avalanchec'
+    AssetLocation.AVAX_BLOCKCHAIN: 'avalanchec',
+    AssetLocation.NEAR_BLOCKCHAIN: 'near',
+    AssetLocation.ADA_BLOCKCHAIN: 'cardano',
+    AssetLocation.DOT_BLOCKCHAIN: 'polkadot'
 }
 
 # Folder whose 'info' logo is the logo of the coin native to each chain. It is not always the chain's own folder -
@@ -40,7 +43,10 @@ _NATIVE_COIN_FOLDERS = {
     AssetLocation.SOL_BLOCKCHAIN: 'solana',
     AssetLocation.TRX_BLOCKCHAIN: 'tron',
     AssetLocation.AVAX_BLOCKCHAIN: 'avalanchec',
-    AssetLocation.HL_BLOCKCHAIN: 'hyperevm'
+    AssetLocation.HL_BLOCKCHAIN: 'hyperevm',
+    AssetLocation.NEAR_BLOCKCHAIN: 'near',
+    AssetLocation.ADA_BLOCKCHAIN: 'cardano',
+    AssetLocation.DOT_BLOCKCHAIN: 'polkadot'
 }
 
 # A coin held on a centralized exchange has no contract address to be keyed by at all, so only a coin that is the

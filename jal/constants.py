@@ -490,12 +490,15 @@ class AssetLocation(PredefinedList, QObject):
     # Avalanche C-chain only: the X- and P-chains have a different model altogether and no EVM address, so a wallet
     # account of this location always means the C-chain.
     AVAX_BLOCKCHAIN = 307
+    NEAR_BLOCKCHAIN = 308  # Chain that JAL knows but has no fetcher for
+    ADA_BLOCKCHAIN = 309   # Chain that JAL knows but has no fetcher for
+    DOT_BLOCKCHAIN = 310   # Chain that JAL knows but has no fetcher for
     SMA_VICTORIA = 999
 
     # Locations that are blockchains. It is the single definition of that set: the 'Chain' attribute of a wallet
     # account and the crypto quote downloader are both restricted to it, so a new chain is added in one place.
     BLOCKCHAINS = [ETH_BLOCKCHAIN, ARB_BLOCKCHAIN, BTC_BLOCKCHAIN, SOL_BLOCKCHAIN, TRX_BLOCKCHAIN, HL_BLOCKCHAIN,
-                   AVAX_BLOCKCHAIN]
+                   AVAX_BLOCKCHAIN, NEAR_BLOCKCHAIN, ADA_BLOCKCHAIN, DOT_BLOCKCHAIN]
 
     # Glyph of each blockchain, as the name of the file that carries it in jal/img (with CHAIN_PREFIX in front of
     # it - see JalIcon.module_icon). The fetcher of each chain names the same file, but a chain is drawn wherever an
@@ -508,7 +511,10 @@ class AssetLocation(PredefinedList, QObject):
         SOL_BLOCKCHAIN: 'solana.png',
         TRX_BLOCKCHAIN: 'tron.png',
         HL_BLOCKCHAIN: 'hyperliquid.png',
-        AVAX_BLOCKCHAIN: 'avalanche.png'
+        AVAX_BLOCKCHAIN: 'avalanche.png',
+        NEAR_BLOCKCHAIN: 'near.png',
+        ADA_BLOCKCHAIN: 'cardano.png',
+        DOT_BLOCKCHAIN: 'polkadot.png'
     }
 
     # Name of the image file that marks the given blockchain, or '' if the location isn't a blockchain
@@ -518,7 +524,8 @@ class AssetLocation(PredefinedList, QObject):
 
     # Identifier that holds a token's contract (or mint) address on each chain. The address is the only trustworthy
     # key for a token - tickers and names are chosen by whoever deployed the contract - so it identifies a token
-    # everywhere: quote downloads, statement import and the chain fetchers. Bitcoin has no tokens and is absent.
+    # everywhere: quote downloads, statement import and the chain fetchers. A chain whose tokens JAL doesn't deal
+    # with is absent: Bitcoin has none at all, and NEAR/Cardano/Polkadot are kept by hand and hold their coin only.
     _ADDRESS_IDS = {
         ETH_BLOCKCHAIN: SymbolId.ETH_ADDRESS,
         ARB_BLOCKCHAIN: SymbolId.ARB_ADDRESS,
@@ -545,7 +552,10 @@ class AssetLocation(PredefinedList, QObject):
         SOL_BLOCKCHAIN: 'SOL',
         TRX_BLOCKCHAIN: 'TRX',
         HL_BLOCKCHAIN: 'HYPE',
-        AVAX_BLOCKCHAIN: 'AVAX'
+        AVAX_BLOCKCHAIN: 'AVAX',
+        NEAR_BLOCKCHAIN: 'NEAR',
+        ADA_BLOCKCHAIN: 'ADA',
+        DOT_BLOCKCHAIN: 'DOT'
     }
 
     # Ticker of the coin native to the given blockchain location, or '' if the location isn't a blockchain
@@ -583,6 +593,9 @@ class AssetLocation(PredefinedList, QObject):
             self.TRX_BLOCKCHAIN: self.tr("Tron"),
             self.HL_BLOCKCHAIN: self.tr("Hyperliquid"),
             self.AVAX_BLOCKCHAIN: self.tr("Avalanche"),
+            self.NEAR_BLOCKCHAIN: self.tr("NEAR"),
+            self.ADA_BLOCKCHAIN: self.tr("Cardano"),
+            self.DOT_BLOCKCHAIN: self.tr("Polkadot"),
             self.SMA_VICTORIA: self.tr("Victoria Seguros")
         }
 

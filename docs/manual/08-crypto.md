@@ -18,10 +18,10 @@ a cost. What is different is where the records come from — JAL can read a publ
 | **Crypto exchange** | Coins held for you by an exchange | nothing special |
 
 Create either in **Data → Accounts** as usual. For a wallet, add the two attributes under *Account
-details*: **Blockchain** (Ethereum, Arbitrum, Bitcoin, Solana, Tron, Hyperliquid, Avalanche) and
-**Address** — the address exactly as the chain shows it. JAL refuses to create a wallet without both,
-and checks that the address really belongs to that chain, so a typo cannot silently produce a wallet
-that fetches nothing.
+details*: **Blockchain** (Ethereum, Arbitrum, Bitcoin, Solana, Tron, Hyperliquid, Avalanche, NEAR,
+Cardano, Polkadot) and **Address** — the address exactly as the chain shows it. JAL refuses to create
+a wallet without both, and — on the chains it knows how to check — verifies that the address really
+belongs to that chain, so a typo cannot silently produce a wallet that fetches nothing.
 
 ![A wallet account](img/dlg_account_wallet.png)
 
@@ -31,6 +31,11 @@ that fetches nothing.
 
 The wallet's currency should be the coin's usual quote currency (USD for most). One account per
 address per chain.
+
+NEAR, Cardano and Polkadot wallets are kept by hand: JAL knows these chains — the account, the price
+of its coin and its logo all work — but has no reader for them, so their operations are entered
+manually. Put the transaction hash into the operation's *Number* field: a reader written for the chain one
+day will then recognize what you have already entered instead of importing it a second time.
 
 ## Reading a wallet from the blockchain
 

@@ -67,7 +67,12 @@ _LLAMA_NATIVE_COINS = {
     AssetLocation.BTC_BLOCKCHAIN: "coingecko:bitcoin",
     AssetLocation.SOL_BLOCKCHAIN: "coingecko:solana",
     AssetLocation.TRX_BLOCKCHAIN: "coingecko:tron",
-    AssetLocation.AVAX_BLOCKCHAIN: "coingecko:avalanche-2"
+    AssetLocation.AVAX_BLOCKCHAIN: "coingecko:avalanche-2",
+    # Chains with no fetcher: their coin has no contract address anywhere, so this is the only key it can have and
+    # the wallet that holds it is priced without the user having to record an id for the asset by hand.
+    AssetLocation.NEAR_BLOCKCHAIN: "coingecko:near",
+    AssetLocation.ADA_BLOCKCHAIN: "coingecko:cardano",
+    AssetLocation.DOT_BLOCKCHAIN: "coingecko:polkadot"
 }
 
 # Number of daily points requested in one '/chart' call. Verified 2026-07-18: a span of 500 is served but 1000 is

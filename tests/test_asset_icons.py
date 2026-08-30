@@ -106,6 +106,9 @@ def test_icon_url_of_native_coins(prepare_db):
     # The native coin of Arbitrum is bridged ETH, so it wears the Ethereum logo and not the Arbitrum one
     eth_on_arbitrum = _crypto_listing('Ethereum', 'ETH', AssetLocation.ARB_BLOCKCHAIN)
     assert '/blockchains/ethereum/info/logo.png' in icon_url(eth_on_arbitrum)
+    # A chain with no fetcher is a chain like any other here - a wallet kept by hand shows its coin the same way
+    ada = _crypto_listing('Cardano', 'ADA', AssetLocation.ADA_BLOCKCHAIN)
+    assert '/blockchains/cardano/info/logo.png' in icon_url(ada)
 
 
 # A listing on a chain with no contract address stored is a token JAL has no address for far more often than it is
@@ -124,6 +127,9 @@ def test_icon_url_of_exchange_coins(prepare_db):
     btc = _crypto_listing('Bitcoin', 'BTC', AssetLocation.CEX_EXCHANGE)
     assert icon_url(btc) == "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/bitcoin/" \
                             "info/logo.png"
+    # ... a chain JAL merely knows about counts as known here as much as a chain it fetches
+    dot = _crypto_listing('Polkadot', 'DOT', AssetLocation.CEX_EXCHANGE)
+    assert '/blockchains/polkadot/info/logo.png' in icon_url(dot)
     # ... while a token held on an exchange gets no icon rather than a guessed one
     usdt = _crypto_listing('Tether', 'USDT', AssetLocation.CEX_EXCHANGE)
     assert icon_url(usdt) == ''
@@ -266,18 +272,20 @@ def test_coingecko_icons_lookup():
         assert parse_coingecko_icons(broken) == {}
 
 
+# ALGO rather than a coin native to a chain JAL knows: the recorded id is then the ONLY thing the listing can be
+# identified by, which is what this is about (an exchange-held DOT wears the logo of the Polkadot chain instead).
 def test_coin_icon_is_downloaded_by_its_recorded_id(prepare_db, monkeypatch):
-    dot = _crypto_listing('Polkadot', 'DOT', AssetLocation.CEX_EXCHANGE)
-    dot.asset().update_data({'coin_id': 'polkadot'})
+    algo = _crypto_listing('Algorand', 'ALGO', AssetLocation.CEX_EXCHANGE)
+    algo.asset().update_data({'coin_id': 'algorand'})
     requested = []
     monkeypatch.setattr("jal.net.downloader.WebRequest",
                         _fake_web_request({'coins/markets': (200, MARKETS_ANSWER.encode()),
-                                           'polkadot.jpg': (200, PNG)}, requested))
+                                           'download.png': (200, PNG)}, requested))
 
-    QuoteDownloader().download_icons([JalSymbol(dot.id())])
+    QuoteDownloader().download_icons([JalSymbol(algo.id())])
     assert len(requested) == 2                    # the lookup, then the image itself
-    assert 'ids=polkadot' in requested[0]
-    assert JalIcons.image(IconOwner.Symbol, dot.id()) == PNG
+    assert 'ids=algorand' in requested[0]
+    assert JalIcons.image(IconOwner.Symbol, algo.id()) == PNG
 
 
 def test_coin_logos_are_looked_up_in_one_request(prepare_db, monkeypatch):
@@ -304,15 +312,15 @@ def test_coin_logos_are_looked_up_in_one_request(prepare_db, monkeypatch):
 # A rate limit is the normal answer of this source, and it says nothing about whether a logo exists - so a coin
 # whose lookup didn't come through keeps its icon unset and is asked again on the next download.
 def test_rate_limited_coin_lookup_is_retried(prepare_db, monkeypatch):
-    dot = _crypto_listing('Polkadot', 'DOT', AssetLocation.CEX_EXCHANGE)
-    dot.asset().update_data({'coin_id': 'polkadot'})
+    algo = _crypto_listing('Algorand', 'ALGO', AssetLocation.CEX_EXCHANGE)
+    algo.asset().update_data({'coin_id': 'algorand'})
     requested = []
     monkeypatch.setattr("jal.net.downloader.WebRequest", _fake_web_request({'coins/markets': (429, '')}, requested))
 
-    QuoteDownloader().download_icons([JalSymbol(dot.id())])
+    QuoteDownloader().download_icons([JalSymbol(algo.id())])
     assert len(requested) == 1                     # the lookup failed, so no image was asked for
-    assert JalIcons.image(IconOwner.Symbol, dot.id()) is None      # ... and nothing was recorded
-    QuoteDownloader().download_icons([JalSymbol(dot.id())])
+    assert JalIcons.image(IconOwner.Symbol, algo.id()) is None     # ... and nothing was recorded
+    QuoteDownloader().download_icons([JalSymbol(algo.id())])
     assert len(requested) == 2                     # the next run asks again
 
 
