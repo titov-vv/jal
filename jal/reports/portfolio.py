@@ -47,6 +47,7 @@ class PortfolioReportWindow(MdiWidget):
         self.ui.GroupCombo.addItem(self.tr("Country"), "country_id")
         self.ui.GroupCombo.addItem(self.tr("Country - Asset"), "country_id;asset_id")
         self.ui.GroupCombo.addItem(self.tr("Tag"), "tag")
+        self.ui.GroupCombo.addItem(self.tr("Account tag - Account"), "account_tag_id;account_id")
         self.ui.GroupCombo.addItem("None", "")
 
         self.holdings_model = HoldingsModel(self.ui.PortfolioTreeView)

@@ -52,7 +52,7 @@ Fill it in:
 | **Bank/Broker** | The institution. Leave it as *None* for cash. You can type a new name into the box. |
 | **Active** | Leave ticked. Untick it when an account is closed, to hide it without deleting its history. |
 | **Investing** | Tick it **only** for accounts that can hold shares, funds, bonds or crypto. |
-| **Account details** | Extra facts, added with the **+** button next to the table: *Account #*, *Credit* (a card's credit limit), *Country*, *Precision* (how many decimals the account counts in — 2 for money). |
+| **Account details** | Extra facts, added with the **+** button next to the table: *Account #*, *Credit* (a card's credit limit), *Country*, *Precision* (how many decimals the account counts in — 2 for money), *Tag* (see [*Tags*](05-everyday-money.md#tags)). |
 
 Click **OK**. Repeat for every account you have, then **Close**.
 

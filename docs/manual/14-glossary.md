@@ -85,7 +85,7 @@ account of its own; see the *Staked positions* report.
 **Symbol** — see *listing*.
 
 **Tag** — a free label that cuts across categories: `Holiday`, `Car`. Set per line of an operation,
-and on assets.
+and on assets and accounts.
 
 **Term deposit** — money placed with a bank for a fixed period at a stated rate. JAL keeps each as an
 account of its own.

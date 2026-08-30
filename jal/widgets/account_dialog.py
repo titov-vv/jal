@@ -11,6 +11,7 @@ from jal.db.asset import JalAsset
 from jal.db.common_models import AccountRecordModel, AccountDataModel
 from jal.db.token_blacklist import normalize_address, is_valid_address
 from jal.widgets.custom.db_lookup_combobox import DbLookupComboBox
+from jal.widgets.reference_selector import ReferenceSelectorWidget
 from jal.widgets.icons import JalIcon
 from jal.widgets.helpers import set_grids_metrics, DateFormat
 
@@ -18,13 +19,15 @@ from jal.widgets.helpers import set_grids_metrics, DateFormat
 # ----------------------------------------------------------------------------------------------------------------------
 # Compound delegate for the account details grid (mirrors SymbolDialog's AssetAttributeDelegate): the 'datatype'
 # column picks an AccountData attribute, the 'value' column shows an editor that depends on the picked attribute's
-# type (str/int/float/country).
+# type (str/int/float/country/chain/tag).
 class AccountAttributeDelegate(QStyledItemDelegate):
-    def __init__(self, key_column, value_column, parent=None):
+    def __init__(self, key_column, value_column, tag_model_class, tag_dialog_class, parent=None):
         super().__init__(parent=parent)
         self._key = key_column
         self._value = value_column
         self._types = AccountData()
+        self._tag_model_class = tag_model_class
+        self._tag_dialog_class = tag_dialog_class
 
     def _value_type(self, index):
         type_idx = index.model().data(index.sibling(index.row(), self._key), role=Qt.EditRole)
@@ -55,6 +58,10 @@ class AccountAttributeDelegate(QStyledItemDelegate):
             locations = AssetLocation()
             for location_id in AssetLocation.BLOCKCHAINS:   # Only blockchains, not the exchanges of the same list
                 editor.addItem(locations.get_name(location_id), userData=location_id)
+            return editor
+        if datatype_of == "tag":
+            editor = ReferenceSelectorWidget(aParent, validate=False)
+            editor.setup_selector(self._tag_model_class, self._tag_dialog_class, aParent)
             return editor
         return QLineEdit(aParent)  # str / int / float share a plain line editor
 
@@ -87,6 +94,11 @@ class AccountAttributeDelegate(QStyledItemDelegate):
                 editor.setCurrentIndex(editor.findData(int(raw)))
             except (TypeError, ValueError):
                 editor.setCurrentIndex(0)
+        elif datatype_of == "tag":
+            try:
+                editor.selected_id = int(raw)
+            except (TypeError, ValueError):
+                editor.selected_id = 0
 
     def setModelData(self, editor, model, index):
         if index.column() == self._key:
@@ -104,6 +116,8 @@ class AccountAttributeDelegate(QStyledItemDelegate):
             model.setData(index, str(editor.getKey()))
         elif datatype_of == "chain":
             model.setData(index, str(editor.currentData()))
+        elif datatype_of == "tag":
+            model.setData(index, str(editor.selected_id))
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -114,8 +128,10 @@ class AccountAttributeDelegate(QStyledItemDelegate):
 # written to the database as soon as it is created, so its attribute rows always know their real account_id.
 # 'OK' commits the transaction, 'Cancel' (or closing the dialog) rolls it all back.
 class AccountDialog(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, tag_model_class=None, tag_dialog_class=None):
         super().__init__(parent)
+        self._tag_model_class = tag_model_class
+        self._tag_dialog_class = tag_dialog_class
         self.ui = Ui_AccountDialog()
         self.ui.setupUi(self)
         set_grids_metrics(self)
@@ -161,7 +177,8 @@ class AccountDialog(QDialog):
         view.setColumnHidden(model.fieldIndex("id"), True)
         view.setColumnHidden(model.fieldIndex("account_id"), True)
         view.horizontalHeader().setSectionResizeMode(model.fieldIndex("value"), QHeaderView.Stretch)
-        self._attribute_delegate = AccountAttributeDelegate(model.fieldIndex("datatype"), model.fieldIndex("value"), view)
+        self._attribute_delegate = AccountAttributeDelegate(model.fieldIndex("datatype"), model.fieldIndex("value"),
+                                                            self._tag_model_class, self._tag_dialog_class, view)
         view.setItemDelegateForColumn(model.fieldIndex("datatype"), self._attribute_delegate)
         view.setItemDelegateForColumn(model.fieldIndex("value"), self._attribute_delegate)
 

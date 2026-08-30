@@ -1,7 +1,7 @@
 from zoneinfo import available_timezones
 from decimal import Decimal, InvalidOperation
-from PySide6.QtWidgets import (QApplication, QWidget, QStyle, QStyledItemDelegate, QLineEdit, QDateTimeEdit,
-                               QTreeView, QComboBox)
+from PySide6.QtWidgets import (QApplication, QWidget, QStyle, QStyledItemDelegate, QStyleOptionViewItem,
+                               QLineEdit, QDateTimeEdit, QTreeView, QComboBox)
 from PySide6.QtCore import Qt, QModelIndex, QEvent, QLocale, QDateTime, QDate, QRect, QTime, QTimeZone
 from PySide6.QtGui import QDoubleValidator, QBrush, QIcon, QKeyEvent
 from PySide6.QtSql import QSqlQueryModel
@@ -447,6 +447,48 @@ def long_fraction(x: Decimal) -> bool:
     except AttributeError:
         return False
     return abs(x - round(x, Setup.DEFAULT_ACCOUNT_PRECISION)) > Decimal('0')
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The role a model answers with the icon of the group its row was put into, drawn before everything else the cell
+# holds. Kept here rather than on either model because both trees that use it answer it the same way.
+TAG_ICON_ROLE = Qt.UserRole + 101
+
+
+# Draws a row that carries a group mark as well as its own picture: the mark first, then the cell exactly as it
+# would look without one. Everything after the mark - the identity icon, the text and its elision, the fonts and
+# the selection colours - is left to the base delegate on a rect moved to the right, so a tagged row and an
+# untagged one differ by the mark and by nothing else.
+class TaggedIconDelegate(GridLinesDelegate):
+    def _mark(self, index) -> QIcon:
+        icon = index.model().data(index, TAG_ICON_ROLE)
+        return icon if isinstance(icon, QIcon) and not icon.isNull() else QIcon()
+
+    # The space the mark takes, or zero for a row that has none - such a row keeps no place for it (see
+    # account_tag_icon), which is the one way this delegate changes the layout of the cell.
+    @staticmethod
+    def _indent(option) -> int:
+        return JalIcons.grid_size() + option.fontMetrics.horizontalAdvance(" ")
+
+    def paint(self, painter, option, index):
+        mark = self._mark(index)
+        if mark.isNull():
+            super().paint(painter, option, index)
+            return
+        self.paint_grid(painter, option, index)
+        draw_item_panel(painter, option)   # the strip the mark takes needs the row highlight as much as the text does
+        size = JalIcons.grid_size()
+        mark.paint(painter, QRect(option.rect.left(), option.rect.top() + int((option.rect.height() - size) / 2),
+                                  size, size), Qt.AlignCenter)
+        shifted = QStyleOptionViewItem(option)
+        shifted.rect = option.rect.adjusted(self._indent(option), 0, 0, 0)
+        QStyledItemDelegate.paint(self, painter, shifted, index)
+
+    def sizeHint(self, option, index):
+        size = super().sizeHint(option, index)
+        if not self._mark(index).isNull():
+            size.setWidth(size.width() + self._indent(option))
+        return size
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Draws the last column of the operations list: one ticker per line, each with the logo of the listing it names

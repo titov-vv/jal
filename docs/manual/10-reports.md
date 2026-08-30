@@ -56,7 +56,8 @@ What you own, on a chosen date:
 | **Value** | Quantity × *Last*, in the account's currency |
 | **Value, …** | The same, converted into the common currency |
 
-**Group by** rearranges everything — by currency and account, by asset, by country, or by tag.
+**Group by** rearranges everything — by currency and account, by asset, by country, by the tag on
+the asset, or by the tag on the account it is held in.
 **Show Inactive accounts** brings closed accounts back into the picture.
 
 Right-click a position for its [price chart](06-investments.md#looking-at-prices), a

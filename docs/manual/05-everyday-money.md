@@ -106,6 +106,12 @@ The [operations by tag](10-reports.md#operations-by-category-peer-or-tag) report
 everything carrying the tag, whatever category it was under. Tags can also be attached to assets,
 which lets the portfolio be grouped by them — see [chapter 6](06-investments.md).
 
+A tag can be put on an **account** too — add a *Tag* detail to it in **Data → Accounts**. That is how
+you split a long list of accounts into groups of your own (by the property important for you). Give the
+tag a picture — right-click it in the list above and choose **Icon** — and every account carrying it
+is marked with that picture in the [balances panel](04-main-window.md#the-pictures-beside-the-names)
+and in the [portfolio report](10-reports.md#asset-portfolio).
+
 ## Repeating operations
 
 Most household spending repeats. Select last month's operation, press **copy** (or `Ctrl+D`), and a

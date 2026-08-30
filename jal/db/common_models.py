@@ -13,6 +13,7 @@ from jal.db.country import JalCountry
 from jal.db.common_models_abstract import AbstractReferenceListModel, SqlTreeModel
 from jal.db.peer import JalPeer
 from jal.db.residence import JalResidence
+from jal.db.tag import JalTag
 from jal.db.token_blacklist import JalTokenBlacklist
 from jal.widgets.helpers import ts2d
 from jal.widgets.icons import JalIcon, CHAIN_PREFIX
@@ -52,6 +53,15 @@ def account_row_icon(account: JalAccount) -> QIcon:
     if not chain.isNull():
         return chain
     return JalIcons.spacer(size)
+
+
+# The mark of the group an account was put into by its tag, drawn BEFORE the icon that says which account it is -
+# the two answer different questions and a row may need both. A null icon where there is nothing to draw, and that
+# is deliberately not a spacer: an untagged row gives the space back to its name instead of holding a column of
+# blanks for the few accounts that are tagged (unlike the identity icon, which lines a whole list up).
+def account_tag_icon(account: JalAccount) -> QIcon:
+    tag_id = account.tag().id()
+    return JalIcons.icon(IconOwner.Tag, tag_id, JalIcons.grid_size()) if tag_id else QIcon()
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -171,9 +181,15 @@ class AccountDataModel(AbstractReferenceListModel):
                 return self._format_value(datatype, super().data(index, role))
         if role == Qt.DecorationRole and index.isValid() and index.column() == self.fieldIndex("value"):
             datatype = super().data(index.sibling(index.row(), self.fieldIndex("datatype")), Qt.DisplayRole)
-            if datatype == AccountData.Chain:      # the one attribute that names something with a picture
+            # The two attributes that name something with a picture of its own - chain and tag
+            if datatype == AccountData.Chain:
                 try:
                     return chain_icon(int(super().data(index, Qt.DisplayRole)))
+                except (TypeError, ValueError):
+                    return None
+            if datatype == AccountData.Tag:
+                try:
+                    return JalIcons.icon(IconOwner.Tag, int(super().data(index, Qt.DisplayRole)), JalIcons.grid_size())
                 except (TypeError, ValueError):
                     return None
         return super().data(index, role)
@@ -191,6 +207,8 @@ class AccountDataModel(AbstractReferenceListModel):
                 return AssetLocation().get_name(int(value))
             elif datatype_of == "date":
                 return ts2d(int(value))
+            elif datatype_of == "tag":
+                return JalTag(int(value)).name()
         except (ValueError, InvalidOperation, TypeError):
             return ''
         return value

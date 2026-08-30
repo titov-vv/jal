@@ -8,6 +8,8 @@ from constants import PredefinedAccountType, AccountData
 from jal.db.db import JalDB
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.widgets.account_dialog import AccountDialog
+from jal.db.common_models import TagTreeModel
+from jal.widgets.reference_dialogs import TagsListDialog
 
 
 def _accounts_count():
@@ -83,3 +85,41 @@ def test_edit_attribute_ok_persists(prepare_db):
 
     JalAccount.db_cache.clear_cache()
     assert JalAccount(1).number() == "ACC-2"
+
+
+# The tag of an account is an attribute like any other, edited in the same grid - which means the delegate has to
+# offer a tag selector for it. The selector's dialog class is handed to AccountDialog rather than imported by it,
+# because reference_dialogs imports this module and naming TagsListDialog there would close that circle.
+def test_account_tag_is_edited_in_the_attribute_grid(prepare_db):
+    from PySide6.QtWidgets import QWidget
+    from jal.widgets.reference_selector import ReferenceSelectorWidget
+
+    cash = JalDB._read("SELECT id FROM tags WHERE tag='Cash'")
+    # No number, so the account starts with no attribute rows at all - adding one here would otherwise collide
+    # with the existing 'Number' row and AccountDataModel would refuse it with a modal warning.
+    JalAccountCreator(currency_id=2, number='', name='Bank', organization=1,
+                      account_type=PredefinedAccountType.Bank).commit()
+
+    dialog = AccountDialog(None, TagTreeModel, TagsListDialog)
+    dialog.setSelectedId(1)
+    dialog.onAddData()
+    model = dialog._data_model
+    row = _data_row_by_type(dialog, AccountData.Number)     # the row is added with the default attribute type
+    model.setData(model.index(row, model.fieldIndex("datatype")), AccountData.Tag)
+    row = _data_row_by_type(dialog, AccountData.Tag)
+    assert row >= 0
+
+    # The value cell of a tag row offers a tag selector, not the plain line editor the other types share
+    parent = QWidget()
+    value_index = model.index(row, model.fieldIndex("value"))
+    editor = dialog._attribute_delegate.createEditor(parent, None, value_index)
+    assert isinstance(editor, ReferenceSelectorWidget)
+    editor.selected_id = cash
+    dialog._attribute_delegate.setModelData(editor, model, value_index)
+    dialog.accept()
+
+    JalAccount.db_cache.clear_cache()
+    assert JalAccount(1).tag().id() == cash
+    # ... and the grid shows the tag by name rather than by the id it stores
+    assert model.data(value_index, Qt.DisplayRole) == 'Cash'
+    parent.deleteLater()

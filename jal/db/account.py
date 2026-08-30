@@ -8,6 +8,7 @@ import jal.db.chain_balance
 from jal.constants import Setup, BookAccount, PredefinedAsset, PredefinedAgents, PredefinedAccountType, AccountData, AssetLocation
 from jal.db.clock import ZONE_SPAN
 from jal.db.country import JalCountry
+from jal.db.tag import JalTag
 from jal.db.token_blacklist import normalize_address, is_valid_address
 from jal.db.helpers import format_decimal, now_ts
 from jal.universal_cache import UniversalCache
@@ -70,6 +71,10 @@ class JalAccount(JalDB):
             self._deposit_rate = Decimal(attributes[AccountData.DepositRate])
         except (KeyError, TypeError, ArithmeticError):
             self._deposit_rate = Decimal('0')
+        try:
+            self._tag = JalTag(int(attributes[AccountData.Tag]))
+        except (KeyError, TypeError, ValueError):
+            self._tag = JalTag(0)
 
     def invalidate_cache(self):
         self.db_cache.clear_cache()
@@ -334,6 +339,15 @@ class JalAccount(JalDB):
 
     def credit_limit(self) -> Decimal:
         return self._credit_limit
+
+    # The tag put on the account by the user. JalTag(0) if the account carries none.
+    def tag(self) -> JalTag:
+        return self._tag
+
+    def set_tag(self, tag_id: int) -> None:
+        if self._tag.id() == tag_id:
+            return
+        self.set_data(AccountData.Tag, tag_id if tag_id else None)
 
     # Returns a raw per-account attribute value from 'account_data' (or 'default' if it is not set)
     def get_data(self, datatype: int, default=None):

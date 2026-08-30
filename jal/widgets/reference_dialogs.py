@@ -472,7 +472,7 @@ class AccountListDialog(ReferenceDataDialog):
     # Add/Edit open the modal AccountDialog to create/edit an account and its account_data attributes.
     @Slot()
     def OnAdd(self):
-        dialog = AccountDialog(self)
+        dialog = AccountDialog(self, TagTreeModel, TagsListDialog)
         dialog.createNewRecord()
         if dialog.exec() == QDialog.Accepted:
             self._reload()
@@ -483,7 +483,7 @@ class AccountListDialog(ReferenceDataDialog):
         if not idx.isValid():
             return
         account_id = self.model.getId(idx)
-        dialog = AccountDialog(self)
+        dialog = AccountDialog(self, TagTreeModel, TagsListDialog)
         dialog.setSelectedId(account_id)
         if dialog.exec() == QDialog.Accepted:
             self._reload()

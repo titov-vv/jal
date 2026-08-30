@@ -9,7 +9,7 @@ class Setup:
     INI_FILE = "jal.ini"
     DB_PATH = "jal.sqlite"
     DB_CONNECTION = "JAL.DB"
-    DB_REQUIRED_VERSION = 66
+    DB_REQUIRED_VERSION = 67
     SQLITE_MIN_VERSION = "3.35"
     MAIN_WND_NAME = "JAL_MainWindow"
     SPLITTER_STATE_PREFIX = "SplitterState_"
@@ -404,6 +404,7 @@ class AccountData(PredefinedList, QObject):
     StakeProtocol = 11  # Protocol/venue that holds the asset of a staking box, named as a human calls it. It is the
                         # same name the protocol registry (net/chain_fetchers/protocols.py) writes into the
                         # description of a custody transfer, which is what ties a box to the legs it settles.
+    Tag = 12           # Tag assigned to the account, stored as tags.id.
 
     # Attributes that the application maintains itself and that must never be typed in by hand: they are kept
     # out of the attribute selector and their rows are not editable in the account details grid. A wrong sync
@@ -424,7 +425,8 @@ class AccountData(PredefinedList, QObject):
             self.DepositEnd: self.tr("Deposit end date"),
             self.DepositRate: self.tr("Interest rate, %"),
             self.StakeAccounts: self.tr("Staking state"),
-            self.StakeProtocol: self.tr("Staking protocol")
+            self.StakeProtocol: self.tr("Staking protocol"),
+            self.Tag: self.tr("Tag")
         }
         self._types = {
             self.Number: "str",
@@ -437,7 +439,8 @@ class AccountData(PredefinedList, QObject):
             self.DepositEnd: "date",
             self.DepositRate: "float",
             self.StakeAccounts: "str",
-            self.StakeProtocol: "str"
+            self.StakeProtocol: "str",
+            self.Tag: "tag"
         }
 
     def get_type(self, type_id, default='') -> str:

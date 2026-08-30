@@ -800,3 +800,221 @@ def test_the_assets_list_shows_a_currency_sign(prepare_db):
     index = model.index(rows[0], model.fieldIndex("symbol"))
     assert model.data(index, Qt.DisplayRole) == 'USD'
     assert model.data(index, Qt.DecorationRole).cacheKey() == JalIcon.money_glyph('USD').cacheKey()
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# A row may say two things at once: which GROUP an account was put in by its tag, and WHICH account it is. The tag
+# mark is answered on a role of its own so that it is drawn before - and never instead of - the icon the row wears
+# already, which for a wallet is the logo of its chain.
+# JalIcons.icon() wraps its cached pixmap in a fresh QIcon on every call, so two icons of one element differ by
+# cacheKey() and are told apart by what they draw instead (unlike the file glyphs of JalIcon, which are cached
+# whole and compared by key elsewhere in this file).
+def _same_picture(first: QIcon, second: QIcon) -> bool:
+    size = JalIcons.grid_size()
+    return first.pixmap(size).toImage() == second.pixmap(size).toImage()
+
+
+def _tagged_wallet(tag_name: str = 'Cash', with_picture: bool = True):
+    from jal.constants import AssetLocation, PredefinedAccountType
+    tag_id = JalDB._read("SELECT id FROM tags WHERE tag=:tag", [(":tag", tag_name)])
+    wallet = JalAccountCreator(currency_id=2, number='', name='Tron wallet', organization=1,
+                               account_type=PredefinedAccountType.Wallet,
+                               address=TRX_ADDRESS, chain=AssetLocation.TRX_BLOCKCHAIN).commit()
+    wallet.set_tag(tag_id)
+    if with_picture:
+        JalIcons.store(IconOwner.Tag, tag_id, _png(), IconSource.User)
+    return wallet, tag_id
+
+
+def test_a_tagged_account_wears_its_tag_mark_beside_its_own_icon(prepare_db):
+    from jal.db.common_models import account_tag_icon, account_row_icon, chain_icon
+    from jal.constants import AssetLocation
+    from jal.widgets.icons import JalIcon
+    JalIcon()
+
+    wallet, tag_id = _tagged_wallet()
+
+    mark = account_tag_icon(wallet)
+    assert isinstance(mark, QIcon) and not mark.isNull()
+    assert _same_picture(mark, JalIcons.icon(IconOwner.Tag, tag_id, JalIcons.grid_size()))
+    assert mark.availableSizes()[0].width() == JalIcons.grid_size()
+    # ... and the icon that says WHICH account this is has not changed - the wallet still wears its chain
+    assert account_row_icon(wallet).cacheKey() == chain_icon(AssetLocation.TRX_BLOCKCHAIN).cacheKey()
+
+
+# The mark takes space only on the rows that carry one. Unlike the identity icon, which holds a whole column in
+# line, an untagged row gives that space back to its name - and it does so whether or not rows are aligned by
+# icons, because that preference is about lining names up, not about marking groups.
+def test_an_untagged_row_keeps_no_space_for_a_tag(prepare_db):
+    from jal.db.common_models import account_tag_icon
+    from jal.db.settings import JalSettings
+
+    account = JalAccountCreator(currency_id=2, number='U9', name='Untagged', organization=1).commit()
+    for indent in (1, 0):
+        JalSettings().setValue(JalIcons.INDENT_KEY, indent)
+        JalIcons.invalidate_indent()
+        assert account_tag_icon(account).isNull()
+    JalSettings().setValue(JalIcons.INDENT_KEY, 1)
+    JalIcons.invalidate_indent()
+
+
+# A tag with no picture stored marks nothing either: there is no glyph to fall back on the way an account falls
+# back on its chain, and a mark nobody can tell from another is worse than none.
+def test_a_tag_without_a_picture_marks_nothing(prepare_db):
+    from jal.db.common_models import account_tag_icon
+    wallet, _ = _tagged_wallet(with_picture=False)
+    assert account_tag_icon(wallet).isNull()
+
+
+# Which is what puts the mark on the rows of the balances tree, on the role the delegate reads it from
+def test_the_balances_tree_answers_the_tag_mark_beside_the_chain(prepare_db):
+    from jal.widgets.custom.treeview_with_footer import TreeViewWithFooter
+    from jal.constants import AssetLocation, PredefinedCategory
+    from jal.db.balances_model import BalancesModel
+    from jal.db.common_models import chain_icon
+    from jal.db.ledger import Ledger
+    from jal.widgets.delegates import TAG_ICON_ROLE
+    from jal.widgets.icons import JalIcon
+    JalIcon()
+
+    wallet, tag_id = _tagged_wallet()
+    plain = JalAccountCreator(currency_id=2, number='U9', name='Untagged', organization=1).commit()
+    create_actions([(d2t(220101), wallet.id(), 1, [(PredefinedCategory.StartingBalance, 100.0)]),
+                    (d2t(220101), plain.id(), 1, [(PredefinedCategory.StartingBalance, 50.0)])])
+    Ledger().rebuild(from_timestamp=0)
+
+    parent = QWidget()
+    view = TreeViewWithFooter(parent)
+    model = BalancesModel(view)
+    model._currency = 2
+    model.prepareData()
+    column = model.fieldIndex('account_name')
+
+    marks, chains = {}, {}
+    for group_row in range(model.rowCount(model.index(-1, -1))):
+        group = model.index(group_row, column, model.index(-1, -1))
+        assert model.data(group, TAG_ICON_ROLE) is None       # a group row stands for the TYPE, not for a tag
+        for row in range(model.rowCount(group)):
+            leaf = model.index(row, column, group)
+            marks[model.data(leaf, Qt.DisplayRole)] = model.data(leaf, TAG_ICON_ROLE)
+            chains[model.data(leaf, Qt.DisplayRole)] = model.data(leaf, Qt.DecorationRole)
+
+    assert not marks['Tron wallet'].isNull()
+    assert _same_picture(marks['Tron wallet'], JalIcons.icon(IconOwner.Tag, tag_id, JalIcons.grid_size()))
+    assert marks['Untagged'].isNull()
+    # ... and the chain logo of the wallet is untouched by any of it
+    assert chains['Tron wallet'].cacheKey() == chain_icon(AssetLocation.TRX_BLOCKCHAIN).cacheKey()
+    parent.deleteLater()
+
+
+# The delegate draws the mark itself, so it is the one that decides how much room a cell needs: the width of a
+# mark plus a gap on a row that has one, and not a pixel more on a row that has none.
+def test_the_delegate_asks_for_room_only_where_there_is_a_mark(prepare_db):
+    from PySide6.QtWidgets import QTreeView, QStyleOptionViewItem
+    from PySide6.QtCore import QAbstractListModel, QModelIndex
+    from jal.widgets.delegates import TaggedIconDelegate, TAG_ICON_ROLE
+
+    class _Rows(QAbstractListModel):
+        def rowCount(self, parent=QModelIndex()):
+            return 2
+
+        def data(self, index, role=Qt.DisplayRole):
+            if role == Qt.DisplayRole:
+                return "Same text"
+            if role == TAG_ICON_ROLE and index.row() == 0:
+                return JalIcons.blank(JalIcons.grid_size())
+            return None
+
+    parent = QWidget()
+    view = QTreeView(parent)
+    rows = _Rows()
+    view.setModel(rows)
+    delegate = TaggedIconDelegate(view)
+    option = QStyleOptionViewItem()
+    option.initFrom(view)
+
+    marked = delegate.sizeHint(option, rows.index(0, 0)).width()
+    plain = delegate.sizeHint(option, rows.index(1, 0)).width()
+    assert marked - plain == JalIcons.grid_size() + option.fontMetrics.horizontalAdvance(" ")
+    parent.deleteLater()
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# What the marks are FOR: with clustering on, the accounts that share a tag are put next to each other inside their
+# type group, so the marks form an unbroken run down the column instead of being scattered through it. It is an
+# order and not a tree level - the shape of the balances tree does not change.
+def test_the_balances_tree_clusters_the_accounts_of_one_tag(prepare_db):
+    from jal.widgets.custom.treeview_with_footer import TreeViewWithFooter
+    from jal.constants import PredefinedCategory
+    from jal.db.balances_model import BalancesModel
+    from jal.db.ledger import Ledger
+    from jal.db.settings import JalSettings
+
+    cash = JalDB._read("SELECT id FROM tags WHERE tag='Cash'")
+    card = JalDB._read("SELECT id FROM tags WHERE tag='Card'")
+    # Named so that the tag order and the alphabetical one disagree - otherwise the test proves nothing
+    tags = {'Alpha': cash, 'Bravo': card, 'Charlie': cash, 'Delta': card}
+    for name, tag_id in tags.items():
+        account = JalAccountCreator(currency_id=2, number=name, name=name, organization=1).commit()
+        account.set_tag(tag_id)
+        create_actions([(d2t(220101), account.id(), 1, [(PredefinedCategory.StartingBalance, 100.0)])])
+    Ledger().rebuild(from_timestamp=0)
+
+    parent = QWidget()
+    view = TreeViewWithFooter(parent)
+    model = BalancesModel(view)
+    model._currency = 2
+
+    def names() -> list:
+        column = model.fieldIndex('account_name')
+        group = model.index(0, column, model.index(-1, -1))
+        return [model.data(model.index(row, column, group), Qt.DisplayRole) for row in range(model.rowCount(group))]
+
+    model.groupByTag(False)
+    assert names() == ['Alpha', 'Bravo', 'Charlie', 'Delta']      # by account name alone
+    model.groupByTag(True)
+    assert names() == ['Bravo', 'Delta', 'Alpha', 'Charlie']      # by tag name first ('Card' before 'Cash'), then by account
+    assert JalSettings().getValue("GroupBalancesByTag", False)    # ... and the choice is remembered
+    # The tree is still one level of account types deep - clustering is an order, not a grouping
+    assert model.rowCount(model.index(-1, -1)) == 1
+
+    model.groupByTag(False)
+    parent.deleteLater()
+
+
+# The portfolio report reaches the same end through its own grouping combo, which was already generic enough to
+# take one more field: a tag becomes a group row wearing its own picture.
+def test_the_portfolio_can_group_accounts_by_their_tag(prepare_db):
+    from PySide6.QtWidgets import QTreeView
+    from jal.constants import PredefinedCategory
+    from jal.db.holdings_model import HoldingsModel
+    from jal.db.ledger import Ledger
+    from jal.db.clock import now_dt
+    from jal.widgets.delegates import TAG_ICON_ROLE
+
+    cash = JalDB._read("SELECT id FROM tags WHERE tag='Cash'")
+    JalIcons.store(IconOwner.Tag, cash, _png(), IconSource.User)
+    account = JalAccountCreator(currency_id=2, number='U1', name='Tagged', investing=1, organization=1).commit()
+    account.set_tag(cash)
+    create_actions([(d2t(220101), account.id(), 1, [(PredefinedCategory.StartingBalance, 100.0)])])
+    Ledger().rebuild(from_timestamp=0)
+
+    parent = QWidget()
+    model = HoldingsModel(QTreeView(parent))
+    column = model.fieldIndex('header')
+
+    # Grouped by account: the account row carries the mark of the tag it was put in
+    model.updateView(currency_id=2, date=now_dt().date(), grouping="account_id", show_inactive=False)
+    group = model.index(0, column, model.index(-1, -1))
+    assert model.data(group, Qt.DisplayRole) == 'Tagged'
+    assert _same_picture(model.data(group, TAG_ICON_ROLE), JalIcons.icon(IconOwner.Tag, cash, JalIcons.grid_size()))
+
+    # Grouped BY the tag: the group row above says it once, so nothing under it repeats the mark
+    model.updateView(currency_id=2, date=now_dt().date(), grouping="account_tag_id;account_id", show_inactive=False)
+    tag_group = model.index(0, column, model.index(-1, -1))
+    assert model.data(tag_group, Qt.DisplayRole) == 'Cash'
+    assert _same_picture(model.data(tag_group, Qt.DecorationRole), JalIcons.icon(IconOwner.Tag, cash, JalIcons.grid_size()))
+    account_row = model.index(0, column, tag_group)
+    assert model.data(account_row, Qt.DisplayRole) == 'Tagged'
+    assert model.data(account_row, TAG_ICON_ROLE) is None
+    parent.deleteLater()

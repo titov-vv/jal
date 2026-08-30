@@ -11,9 +11,9 @@ from jal.db.settings import JalSettings
 from jal.db.clock import day_finish, today_finish
 from jal.db.asset import JalAsset
 from jal.db.account import JalAccount
-from jal.db.common_models import account_row_icon
+from jal.db.common_models import account_row_icon, account_tag_icon
 from jal.db.icon import JalIcons
-from jal.widgets.delegates import GridLinesDelegate, FloatDelegate
+from jal.widgets.delegates import GridLinesDelegate, FloatDelegate, TaggedIconDelegate, TAG_ICON_ROLE
 from jal.widgets.icons import JalIcon
 from jal.widgets.theme import Theme, Meaning
 
@@ -24,14 +24,14 @@ class AccountTreeItem(AbstractTreeItem):
         super().__init__(parent, group)
         if data is None:
             self._data = {
-                "account_tag": '', "icon_id": JalIcon.NONE, "account": 0, "account_name": '', "currency": 0, "currency_name": '',
+                "account_type": '', "icon_id": JalIcon.NONE, "tag_name": '', "account": 0, "account_name": '', "currency": 0, "currency_name": '',
                 "value": Decimal('0'), "value_common": Decimal('0'), "credit_limit": Decimal('0'), "reconciled": 0, "active": 1, "font": "bold"
             }
         else:
             self._data = data.copy()
 
     def _calculateGroupTotals(self, child_data):
-        self._data['account_name'] = child_data['account_tag']
+        self._data['account_name'] = child_data['account_type']
         self._data['icon_id'] = child_data['icon_id']
         self._data['value_common'] += child_data['value_common']
 
@@ -75,6 +75,7 @@ class BalancesModel(ReportTreeModel):
     def __init__(self, parent_view):
         super().__init__(parent_view)
         self._grid_delegate = None
+        self._name_delegate = None
         self._float_delegate = None
         self._view = parent_view
         self._data = []
@@ -82,6 +83,7 @@ class BalancesModel(ReportTreeModel):
         self._currency_name = ''
         self._active_only = not JalSettings().getValue("ShowInactiveAccountBalances", False)
         self._use_credit = JalSettings().getValue("UseAccountCreditLimit", True)
+        self._group_by_tag = JalSettings().getValue("GroupBalancesByTag", False)
         self._date = today_finish()
         self.bold_font = QFont()
         self.bold_font.setBold(True)
@@ -120,6 +122,12 @@ class BalancesModel(ReportTreeModel):
                 if item.isGroup():
                     return JalIcon[item.details().get('icon_id', JalIcon.NONE)]
                 return account_row_icon(JalAccount(item.details().get('account', 0)))
+            # The mark of the tag group an account was put in, drawn before the icon above. A group row stands for
+            # the type and is not in any tag group of its own.
+            if role == TAG_ICON_ROLE and index.column() == self.fieldIndex('account_name'):
+                if item.isGroup():
+                    return None
+                return account_tag_icon(JalAccount(item.details().get('account', 0)))
             if self._use_credit and index.column() == self.fieldIndex('value') and item.details()['credit_limit']:
                 if role == Qt.DecorationRole:
                     return JalIcon[JalIcon.WITH_CREDIT]
@@ -164,8 +172,9 @@ class BalancesModel(ReportTreeModel):
             else:
                 self._view.header().setSectionResizeMode(self.fieldIndex(field), QHeaderView.ResizeToContents)
         self._grid_delegate = GridLinesDelegate(self._view)
+        self._name_delegate = TaggedIconDelegate(self._view)
         self._float_delegate = FloatDelegate(2, allow_tail=False, empty_zero=True, parent=self._view)
-        self._view.setItemDelegateForColumn(self.fieldIndex('account_name'), self._grid_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex('account_name'), self._name_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex('currency_name'), self._grid_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex('value'), self._float_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex('value_common'), self._float_delegate)
@@ -198,6 +207,20 @@ class BalancesModel(ReportTreeModel):
         JalSettings().setValue("UseAccountCreditLimit", state)
         self.prepareData()
 
+    @Slot()
+    def groupByTag(self, state: bool):
+        self._group_by_tag = state
+        JalSettings().setValue("GroupBalancesByTag", state)
+        self.prepareData()
+
+    # What orders the accounts inside a type group. With clustering on the tag comes first, so accounts that share
+    # one gather together and their marks form an unbroken run down the column - which is what the mark is for.
+    # Untagged accounts make a cluster of their own, at the top, because '' precedes every tag name.
+    def _sort_key(self, balance: dict):
+        if self._group_by_tag:
+            return balance['account_type'], balance['tag_name'], balance['account_name']
+        return balance['account_type'], balance['account_name']
+
     def getAccountId(self, index):
         if not index.isValid():
             return 0
@@ -209,7 +232,7 @@ class BalancesModel(ReportTreeModel):
     # Populate table balances with data calculated for given parameters of model: _currency, _date, _active_only
     def prepareData(self):
         self.beginResetModel()
-        self.setGrouping("account_tag")
+        self.setGrouping("account_type")
         balances = []
         # Deposit boxes are asked for explicitly: they are accounts of a hidden type, so they are excluded by
         # default, but the money in an open deposit is part of the balance sheet and gets its own type group here.
@@ -219,8 +242,9 @@ class BalancesModel(ReportTreeModel):
             rate = JalAsset(account.currency()).quote(self._date, self._currency)[1]
             if value != Decimal('0'):
                 balances.append({
-                    "account_tag": account.type_name(),
+                    "account_type": account.type_name(),
                     "icon_id": account.type_icon(),
+                    "tag_name": account.tag().name(),
                     "account": account.id(),
                     "account_name": account.name(),
                     "currency": account.currency(),
@@ -233,7 +257,7 @@ class BalancesModel(ReportTreeModel):
                     "font": 'normal' if account.is_active() else 'italic'
                 })
         # Sort data items and add them into the tree in right order
-        balances = sorted(balances, key=lambda x: (x['account_tag'], x['account_name']))
+        balances = sorted(balances, key=self._sort_key)
         self._root = AccountTreeItem()
         for position in balances:
             new_item = AccountTreeItem(position)

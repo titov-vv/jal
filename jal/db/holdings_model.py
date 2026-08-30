@@ -10,12 +10,12 @@ from jal.db.clock import day_finish, local_reading, today_finish
 from jal.db.helpers import now_ts
 from jal.db.tree_model import AbstractTreeItem, ReportTreeModel
 from jal.db.account import JalAccount
-from jal.db.common_models import account_row_icon
+from jal.db.common_models import account_row_icon, account_tag_icon
 from jal.db.asset import JalAsset
 from jal.db.chain_balance import JalChainBalance
 from jal.db.icon import JalIcons
 from jal.db.operations import LedgerTransaction, Transfer, CorporateAction
-from jal.widgets.delegates import GridLinesDelegate, FloatDelegate, TimestampDelegate
+from jal.widgets.delegates import GridLinesDelegate, FloatDelegate, TimestampDelegate, TaggedIconDelegate, TAG_ICON_ROLE
 from jal.widgets.helpers import ts2d
 
 
@@ -29,7 +29,8 @@ class AssetTreeItem(AbstractTreeItem):
             self._data = {
                 'header': '', 'currency_id': 0, 'currency': '', 'account_id': 0, 'account': '', 'asset_id': 0,
                 'symbol_id': 0,
-                'tag': '', 'asset_is_currency': False, 'asset': '', 'asset_name': '', 'country_id': 0, 'country': '',
+                'tag': '', 'account_tag_id': 0, 'account_tag': '',
+                'asset_is_currency': False, 'asset': '', 'asset_name': '', 'country_id': 0, 'country': '',
                 'since': 0, 'qty': None, 'value_i': Decimal('0'), 'paid': Decimal('0'),
                 'open_quote': None, 'quote': None, 'quote_ts': Decimal('0'), 'quote_a': Decimal('0'),
                 'value': Decimal('0'), 'value_common': Decimal('0'), 'p/l': Decimal('0'), 'p/l%': Decimal('0'),
@@ -51,6 +52,7 @@ class AssetTreeItem(AbstractTreeItem):
         self._data['asset'] = child_data['asset']
         self._data['country'] = child_data['country']
         self._data['tag'] = child_data['tag']
+        self._data['account_tag'] = child_data['account_tag']
         self._data['paid'] += child_data['paid']
         self._data['value'] += child_data['value']
         self._data['value_common'] += child_data['value_common']
@@ -106,6 +108,7 @@ class HoldingsModel(ReportTreeModel):
     def __init__(self, parent_view):
         super().__init__(parent_view)
         self._grid_delegate = None
+        self._header_delegate = None
         self._float_delegate = None
         self._float2_delegate = None
         self._float4_delegate = None
@@ -155,13 +158,15 @@ class HoldingsModel(ReportTreeModel):
                 return self.data_tooltip(item.details())
             if role == Qt.DecorationRole and index.column() == self.fieldIndex('header'):
                 return self.row_icon(item)
+            if role == TAG_ICON_ROLE and index.column() == self.fieldIndex('header'):
+                return self.row_tag_icon(item)
             return None
         except Exception as e:
             print(e)
 
     # What the first column of a row is a picture of. A leaf row is a holding of an asset and wears the logo of the
     # listing its ticker came from; a group row is whatever it groups by - an account, an asset or a currency - and
-    # a group that stands for none of those (a tag, a country) keeps the blank that holds the text in line.
+    # a group that stands for none of those (an asset's tag, a country) keeps the blank that holds the text in line.
     def row_icon(self, item):
         details = item.details()
         group = item.getGroup()
@@ -169,10 +174,21 @@ class HoldingsModel(ReportTreeModel):
             return JalIcons.decoration(IconOwner.Symbol, details.get('symbol_id', 0), JalIcons.grid_size())
         if group[0] == 'account_id':
             return account_row_icon(JalAccount(details.get('account_id', 0)))
+        if group[0] == 'account_tag_id':
+            return JalIcons.decoration(IconOwner.Tag, details.get('account_tag_id', 0), JalIcons.grid_size())
         if group[0] == 'currency_id':
             return JalIcons.decoration(IconOwner.Symbol, JalAsset(details.get('currency_id', 0)).listing_id(),
                                        JalIcons.grid_size())
         return JalIcons.spacer(JalIcons.grid_size())
+
+    # The mark of the tag group an account was put in, drawn before the picture above. Only a row that stands for
+    # one account carries it: a holding row under it would repeat the mark of its account on every line. And when
+    # the report is already grouped BY that tag nothing carries it - the group row above says it once.
+    def row_tag_icon(self, item):
+        group = item.getGroup()
+        if group is None or group[0] != 'account_id' or 'account_tag_id' in self._groups:
+            return None
+        return account_tag_icon(JalAccount(item.details().get('account_id', 0)))
 
     # Both lines say the same kind of thing - HOW OLD the numbers behind this row are - and a row may need either or
     # both. The quote line appears only for a stale quote, while the on-chain one appears whenever a quantity was
@@ -193,12 +209,13 @@ class HoldingsModel(ReportTreeModel):
             else:
                 self._view.header().setSectionResizeMode(self.fieldIndex(field), QHeaderView.ResizeToContents)
         self._grid_delegate = GridLinesDelegate(self._view)
+        self._header_delegate = TaggedIconDelegate(self._view)
         self._date_delegate = TimestampDelegate(date_only=True, parent=self._view)
         self._float_delegate = FloatDelegate(0, allow_tail=True, parent=self._view)
         self._float2_delegate = FloatDelegate(2, allow_tail=False, parent=self._view)
         self._float4_delegate = FloatDelegate(4, allow_tail=False, parent=self._view)
         self._profit_delegate = FloatDelegate(2, allow_tail=False, colors=True, parent=self._view)
-        self._view.setItemDelegateForColumn(self.fieldIndex('header'), self._grid_delegate)
+        self._view.setItemDelegateForColumn(self.fieldIndex('header'), self._header_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex('asset_name'), self._grid_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex('qty'), self._float_delegate)
         self._view.setItemDelegateForColumn(self.fieldIndex('since'), self._date_delegate)
@@ -304,7 +321,9 @@ class HoldingsModel(ReportTreeModel):
                     "asset_is_currency": False,
                     "country_id": asset.country().id(),
                     "country": asset.country().name(),
-                    "tag": asset.tag().name() if asset.tag().name() else self.tr("N/A"),
+                    "tag": asset.tag().name() if asset.tag().name() else self.tr("N/A"),  # the ASSET tag
+                    "account_tag_id": account.tag().id(),           # the ACCOUNT's tag, unlike an asset 'tag' above
+                    "account_tag": account.tag().name() if account.tag().name() else self.tr("N/A"),
                     "since": since,
                     "qty": asset_data['amount'] + accrual['delta'],
                     "value_i": asset_data['value'],
@@ -335,6 +354,8 @@ class HoldingsModel(ReportTreeModel):
                     "country_id": JalAsset(account.currency()).country().id(),
                     "country": JalAsset(account.currency()).country().name(),
                     "tag": self.tr("Money"),
+                    "account_tag_id": account.tag().id(),           # the ACCOUNT's tag, unlike 'tag' above
+                    "account_tag": account.tag().name() if account.tag().name() else self.tr("N/A"),
                     "since": 0,
                     "qty": money,
                     "value_i": Decimal('0'),

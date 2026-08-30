@@ -5,9 +5,13 @@ from decimal import Decimal
 from PySide6.QtCore import Qt
 from PySide6.QtSql import QSqlTableModel
 
+import sqlparse
+
 from tests.fixtures import project_root, data_path, prepare_db
 from constants import PredefinedAccountType, AccountData, Setup
 from jal.db.account import JalAccount, JalAccountCreator
+from jal.db.db import JalDB
+from jal.db.tag import JalTag
 from jal.db.common_models import AccountListModel, AccountDataModel
 
 
@@ -100,3 +104,91 @@ def test_account_data_model_roundtrip(prepare_db):
     reloaded = JalAccount(acc.id())
     assert reloaded.number() == "ACC-123"
     assert reloaded.get_data(AccountData.Number) == "ACC-123"
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# An account may carry a tag (AccountData.Tag), stored in 'account_data' the way an asset's tag is stored in
+# 'asset_data'. It is what the balances and holdings trees group accounts by.
+def test_account_tag_roundtrip(prepare_db):
+    cash = JalDB._read("SELECT id FROM tags WHERE tag='Cash'")
+    account = JalAccountCreator(currency_id=2, number='U1', name='Wallet', organization=1).commit()
+
+    assert account.tag().id() == 0            # an account carries none until one is put on it
+    assert account.get_data(AccountData.Tag) is None
+
+    account.set_tag(cash)
+    assert account.tag().id() == cash
+    assert account.tag().name() == 'Cash'
+    assert JalAccount(account.id()).tag().id() == cash          # ... and it survives a reload through the cache
+
+    account.set_tag(0)                        # clearing it removes the row rather than storing a zero
+    assert account.tag().id() == 0
+    assert account.get_data(AccountData.Tag) is None
+
+
+# A tag is deleted from under the accounts that carried it, which no foreign key can express - the
+# 'tags_after_delete' trigger drops those attribute rows the same way it drops an asset's.
+def test_deleting_a_tag_takes_it_off_the_accounts(prepare_db):
+    cash = JalDB._read("SELECT id FROM tags WHERE tag='Cash'")
+    account = JalAccountCreator(currency_id=2, number='U1', name='Wallet', organization=1).commit()
+    account.set_tag(cash)
+    assert JalAccount(account.id()).tag().id() == cash
+
+    JalDB._exec("DELETE FROM tags WHERE id=:id", [(":id", cash)], commit=True)
+    JalDB().invalidate_cache()
+
+    assert JalDB._read("SELECT value FROM account_data WHERE account_id=:id AND datatype=:type",
+                       [(":id", account.id()), (":type", AccountData.Tag)]) is None
+    assert JalAccount(account.id()).tag().id() == 0
+
+
+# Replacing a tag with another one carries the accounts over to it, beside the assets and the operations
+def test_replacing_a_tag_repoints_the_accounts(prepare_db):
+    cash = JalDB._read("SELECT id FROM tags WHERE tag='Cash'")
+    card = JalDB._read("SELECT id FROM tags WHERE tag='Card'")
+    account = JalAccountCreator(currency_id=2, number='U1', name='Wallet', organization=1).commit()
+    account.set_tag(cash)
+
+    JalTag(cash).replace_with(card)
+
+    assert JalAccount(account.id()).tag().id() == card
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The 66 -> 67 migration, run from the shipped delta file rather than copied here, so this test breaks if the
+# migration text stops doing what it says: it is the trigger that takes a deleted tag off the accounts.
+_MIGRATION_FROM = "-- AN ACCOUNT MAY CARRY A TAG"
+_MIGRATION_TO = "-- Set new DB schema version"
+
+# The trigger schema 66 shipped - it knew about an asset's tag but not about an account's
+_OLD_SCHEMA = """
+DROP TRIGGER tags_after_delete;
+CREATE TRIGGER tags_after_delete AFTER DELETE ON tags FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= (SELECT MIN(timestamp) FROM ledger WHERE tag_id=OLD.id);
+    DELETE FROM asset_data WHERE datatype=1 AND value=OLD.id;
+END;
+"""
+
+
+def test_account_tag_migration(prepare_db, project_root):
+    for statement in sqlparse.split(_OLD_SCHEMA):
+        assert JalDB._exec(statement.strip()) is not None, f"Can't restore the old schema: {statement}"
+    cash = JalDB._read("SELECT id FROM tags WHERE tag='Cash'")
+    account = JalAccountCreator(currency_id=2, number='U1', name='Wallet', organization=1).commit()
+    account.set_tag(cash)
+
+    with open(project_root + "/jal/updates/jal_delta_67.sql") as delta:
+        text = delta.read()
+    start, end = text.index(_MIGRATION_FROM), text.index(_MIGRATION_TO)
+    for statement in sqlparse.split(text[start:end]):
+        if not sqlparse.format(statement, strip_comments=True).strip():
+            continue   # a run of comment lines is not a statement
+        assert JalDB._exec(statement.strip()) is not None, f"Migration statement failed: {statement}"
+
+    # The account keeps the tag the migration found on it ...
+    JalDB().invalidate_cache()
+    assert JalAccount(account.id()).tag().id() == cash
+    # ... and the rebuilt trigger now takes it away with the tag itself
+    JalDB._exec("DELETE FROM tags WHERE id=:id", [(":id", cash)], commit=True)
+    assert JalDB._read("SELECT COUNT(*) FROM account_data WHERE datatype=:type", [(":type", AccountData.Tag)]) == 0
