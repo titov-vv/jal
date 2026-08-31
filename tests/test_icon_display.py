@@ -1100,3 +1100,36 @@ def test_the_portfolio_can_group_accounts_by_their_tag(prepare_db):
     assert model.data(account_row, Qt.DisplayRole) == 'Tagged'
     assert model.data(account_row, TAG_ICON_ROLE) is None
     parent.deleteLater()
+
+
+# The Name column of the deposits report names an ACCOUNT too - the box the bank keeps the money in - so it is
+# marked the same way. A deposit sits on no chain, so until it is given an icon of its own the column holds a
+# spacer: the names of the deposits line up with each other rather than stepping in and out.
+def test_the_deposits_report_marks_the_name_column(prepare_db):
+    from PySide6.QtWidgets import QTableView
+    from jal.constants import PredefinedAccountType
+    from jal.db.deposit import JalDepositBox
+    from jal.reports.deposits import DepositsListModel
+    from jal.widgets.icons import JalIcon
+    JalIcon()
+
+    from jal.db.ledger import Ledger
+    from jal.widgets.deposit_dialogs import move_money
+    JalAccountCreator(currency_id=2, number='B1', name='Bank account', organization=1,
+                      account_type=PredefinedAccountType.Bank).commit()
+    create_actions([(d2t(210101), 1, 1, [(PredefinedCategory.StartingBalance, 1000.0)])])
+    box = JalDepositBox.create("Deposit A", currency_id=2, organization_id=1)
+    move_money(1, box.id(), Decimal('500'), d2t(210102))
+    Ledger().rebuild(from_timestamp=0)
+
+    model = DepositsListModel(QTableView())
+    model.updateView(timestamp=d2t(210201))
+    name = model.index(0, 0)
+
+    assert model.data(name, Qt.DisplayRole) == "Deposit A"
+    size = JalIcons.grid_size()
+    assert model.data(name, Qt.DecorationRole).pixmap(size).toImage() == JalIcons.spacer(size).pixmap(size).toImage()
+    # ... and an icon of its own replaces that spacer, which is what makes a deposit's icon worth setting
+    JalIcons.store(IconOwner.Account, box.id(), _png(), IconSource.User)
+    icon = model.data(name, Qt.DecorationRole)
+    assert icon.pixmap(size).toImage() == JalIcons.icon(IconOwner.Account, box.id(), size).pixmap(size).toImage()

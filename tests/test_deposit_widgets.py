@@ -115,3 +115,47 @@ def test_deposit_details_model_without_a_deposit(prepare_db):
     model = DepositDetailsModel(QTableView())
     model.setDeposit(None, d2t(210501))
     assert model.rowCount() == 0
+
+
+# The name a deposit carries is given once, in the dialog that opens it, and this list is the only place it is ever
+# seen - so it is the place it is corrected. What opens is the account editor cut down to a name and an icon
+# (AccountDialog.edit_name_only, tested in test_account_dialog.py): a deposit IS an account, and everything else
+# about that account - its currency, its type, its bank - must not change.
+def test_the_report_offers_to_rename_a_deposit(bank_with_deposit):
+    from PySide6.QtWidgets import QMenu
+    from jal.reports.deposits import DepositsReportWindow
+
+    window = DepositsReportWindow(Reports(None, None))
+    window.show()
+    window.updateReport()
+    view = window.ui.ReportTableView
+    window.onDepositContextMenu(view.visualRect(window.deposits_model.index(0, 0)).center())
+
+    menu = view.findChild(QMenu)
+    assert [x.text() for x in menu.actions()] == ['Rename deposit...']
+    menu.close()
+    window.deleteLater()
+
+
+# ... and the rename touches the name alone: the terms of the deposit live in the account attributes the cut-down
+# dialog doesn't show (JalDepositBox.set_terms), and its currency is what every amount in its ledger was booked with.
+def test_renaming_a_deposit_keeps_its_terms(bank_with_deposit):
+    from PySide6.QtWidgets import QDialog, QWidget
+    from jal.db.account import JalAccount
+    from jal.widgets.account_dialog import AccountDialog
+
+    parent = QWidget()
+    dialog = AccountDialog(parent)
+    dialog.setSelectedId(bank_with_deposit.id())
+    dialog.edit_name_only("Deposit")
+    dialog.ui.NameEdit.setText("Deposit A, renewed")
+    dialog.accept()
+    assert dialog.result() == QDialog.Accepted
+
+    JalAccount.db_cache.clear_cache()
+    deposit = JalDepositBox(bank_with_deposit.id())
+    assert deposit.name() == "Deposit A, renewed"
+    assert deposit.end_date() == d2t(211231) and deposit.rate() == Decimal('4.25')
+    assert deposit.currency().id() == 2 and deposit.organization() == 1
+    assert deposit.balance(d2t(210501)) == Decimal('1035')
+    parent.deleteLater()

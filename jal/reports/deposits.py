@@ -3,15 +3,19 @@ from functools import partial
 
 from PySide6.QtCore import Qt, Slot, QObject, QAbstractTableModel
 from PySide6.QtGui import QFont
+from PySide6.QtGui import QAction
+from PySide6.QtWidgets import QDialog, QMenu
 
 from jal.constants import Setup
 from jal.db.clock import day_finish, now_dt
+from jal.db.common_models import account_row_icon
 from jal.db.deposit import JalDepositBox
 from jal.db.helpers import localize_decimal
 from jal.db.operations import LedgerTransaction
 from jal.db.peer import JalPeer
 from jal.reports.reports import Reports
 from jal.ui.reports.ui_deposits_report import Ui_DepositsReportWidget
+from jal.widgets.account_dialog import AccountDialog
 from jal.widgets.delegates import FloatDelegate, TimestampDelegate
 from jal.widgets.deposit_dialogs import NewDepositDialog, DepositTransferDialog, DepositInterestDialog
 from jal.widgets.icons import JalIcon
@@ -54,6 +58,9 @@ class DepositsListModel(QAbstractTableModel):
     def data(self, index, role=Qt.DisplayRole, field=''):
         if role == Qt.DisplayRole:
             return self.data_text(self._data[index.row()], index.column())
+        if role == Qt.DecorationRole and index.column() == 0:
+            return account_row_icon(self._data[index.row()].account())
+        return None
 
     def data_text(self, deposit: JalDepositBox, column: int):
         if column == 0:
@@ -239,6 +246,8 @@ class DepositsReportWindow(MdiWidget):
     def connect_signals_and_slots(self):
         self.ui.DepositsDate.dateChanged.connect(self.updateReport)
         self.ui.ReportTableView.selectionModel().selectionChanged.connect(self.onDepositSelected)
+        self.ui.ReportTableView.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.ui.ReportTableView.customContextMenuRequested.connect(self.onDepositContextMenu)
         self.ui.NewButton.pressed.connect(self.onNewDeposit)
         self.ui.PutButton.pressed.connect(partial(self.onTransfer, DepositTransferDialog.PUT))
         self.ui.GetButton.pressed.connect(partial(self.onTransfer, DepositTransferDialog.GET))
@@ -259,6 +268,30 @@ class DepositsReportWindow(MdiWidget):
     def updateReport(self):
         self.deposits_model.updateView(timestamp=self._timestamp())
         self.details_model.setDeposit(self._selected(), self._timestamp())
+
+    @Slot()
+    def onDepositContextMenu(self, pos):
+        index = self.ui.ReportTableView.indexAt(pos)
+        deposit = self.deposits_model.deposit(index)
+        if deposit is None:
+            return
+        menu = QMenu(self.ui.ReportTableView)
+        action = QAction(icon=JalIcon[JalIcon.DETAILS], text=self.tr("Rename deposit..."),
+                         parent=self.ui.ReportTableView)
+        action.triggered.connect(partial(self.renameDeposit, deposit.id()))
+        menu.addAction(action)
+        menu.popup(self.ui.ReportTableView.viewport().mapToGlobal(pos))
+
+    # The name and the icon of a deposit, and nothing else about the account behind it (see
+    # AccountDialog.edit_name_only). A deposit is named once, in the dialog that opens it, and this list is the only
+    # place that name is ever seen - so it is the place it is corrected.
+    @Slot()
+    def renameDeposit(self, deposit_id):
+        dialog = AccountDialog(self)
+        dialog.setSelectedId(deposit_id)
+        dialog.edit_name_only(self.tr("Deposit"))
+        if dialog.exec() == QDialog.Accepted:
+            self.updateReport()
 
     @Slot()
     def onDepositSelected(self, _selected=None, _deselected=None):
