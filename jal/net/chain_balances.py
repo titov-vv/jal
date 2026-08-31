@@ -14,7 +14,7 @@ from jal.db.settings import JalSettings
 from jal.db.staking import JalStakingBox
 from jal.db.symbol import JalSymbol
 from jal.db.token_blacklist import normalize_address
-from jal.net import merkl, stakelink
+from jal.net import aave, merkl, stakelink
 from jal.net.web_request import WebRequest
 
 # The keyless 'info' endpoint of HyperCore, the same one HyperliquidFetcher reads its history from
@@ -47,10 +47,11 @@ _LAMPORTS = Decimal('10') ** 9      # 1 SOL = 10^9 lamports, the unit a stake ac
 _SOL_STAKE_PROGRAM = 'Stake11111111111111111111111111111111111111'
 
 # Call data of the ERC-20 views that take no arguments - the function selector alone. 'decimals()' is the only way to
-# learn the scale of a balance, which is reported as a bare integer (see _token_decimals); 'name()' is asked only when
-# an asset has to be created for a token JAL has never seen (see _token_name).
+# learn the scale of a balance, which is reported as a bare integer (see _token_decimals); 'name()' and 'symbol()' are
+# asked only when an asset has to be created for a token JAL has never seen (see _reward_asset).
 _ERC20_DECIMALS = '0x313ce567'
 _ERC20_NAME = '0x06fdde03'
+_ERC20_SYMBOL = '0x95d89b41'
 
 # The cap exists because the length word of a dynamic string comes from the answer itself, and an answer that isn't
 # a string would otherwise be read as a request to decode megabytes.
@@ -317,19 +318,28 @@ class ChainBalanceReader(JalDB):
         known = asset.decimals()
         if known is not None:
             return known
+        decimals = self._contract_decimals(chain, contract, api_key, asset.symbol())
+        if decimals is None:
+            return None
+        asset.set_decimals(decimals)
+        return decimals
+
+    # The same question asked of a token JAL has no asset for yet, which is the state every reward token starts in -
+    # nothing can be remembered against an asset that doesn't exist, and the scale is needed before it is created.
+    def _contract_decimals(self, chain, contract: str, api_key: str, symbol: str = ''):
+        token = f"{symbol} ({contract})" if symbol else contract
         result = self._eth_call(chain, contract, _ERC20_DECIMALS, api_key)
         if not result:
-            logging.warning(self.tr("Could not read the decimals of token ") + f"{asset.symbol()} ({contract})")
+            logging.warning(self.tr("Could not read the decimals of token ") + token)
             return None
         try:
             decimals = int(result, 16)
         except ValueError:
-            logging.warning(self.tr("Unreadable decimals of token ") + f"{asset.symbol()} ({contract})")
+            logging.warning(self.tr("Unreadable decimals of token ") + token)
             return None
         if not 0 <= decimals <= _MAX_TOKEN_DECIMALS:
-            logging.warning(self.tr("Implausible decimals of token ") + f"{asset.symbol()}: {decimals}")
+            logging.warning(self.tr("Implausible decimals of token ") + f"{token}: {decimals}")
             return None
-        asset.set_decimals(decimals)
         return decimals
 
     # The name a token calls itself, or '' when it won't say.
@@ -340,7 +350,16 @@ class ChainBalanceReader(JalDB):
     # both answering 'aEthUSDG' - so an asset named after the symbol alone would be indistinguishable from the one
     # already in the database, while the two really are different tokens with different prices.
     def _token_name(self, chain, contract: str, api_key: str) -> str:
-        result = self._eth_call(chain, contract, _ERC20_NAME, api_key)
+        return self._token_string(chain, contract, _ERC20_NAME, api_key)
+
+    # The ticker a token calls itself by. Asked only where the source doesn't report one: an API answer carries the
+    # symbol beside every reward, while a contract view answers with a bare integer and says nothing at all.
+    def _token_symbol(self, chain, contract: str, api_key: str) -> str:
+        return self._token_string(chain, contract, _ERC20_SYMBOL, api_key)
+
+    # One of the string views of a token, decoded. Both are read the same way and both have the same two forms.
+    def _token_string(self, chain, contract: str, selector: str, api_key: str) -> str:
+        result = self._eth_call(chain, contract, selector, api_key)
         try:
             data = bytes.fromhex(result[2:]) if result else b''
         except ValueError:
@@ -528,9 +547,9 @@ class ChainBalanceReader(JalDB):
     # a fixed amount whose rewards sit in a separate pot until an explicit claim; stake.link's SDL locking is the same
     # shape and more so - `staked()` never moves and the yield arrives as claimable stLINK, stPOL and stESP, three
     # assets the box does not hold, so its accrual measured in SDL is genuinely zero. Those belong in 'receivables'
-    # instead (see read_receivables() below, which reads Merkl today and is where SDL slots in next). A CEX staking
-    # box has no API to ask at all. A box of an unlisted venue simply never gets a row, which is the correct outcome,
-    # not a gap.
+    # instead (see read_receivables() below, which reads Merkl and Aave's Safety module, and is where SDL slots in
+    # next). A CEX staking box has no API to ask at all. A box of an unlisted venue simply never gets a row, which
+    # is the correct outcome, not a gap.
     def _box_readers(self) -> dict:
         return {AssetLocation.HL_BLOCKCHAIN: self._hyperliquid_box_balance,
                 AssetLocation.SOL_BLOCKCHAIN: self._solana_box_balance,
@@ -583,9 +602,33 @@ class ChainBalanceReader(JalDB):
     # refuse: not a position that grew, but a distributor that OWES the wallet something it has not paid yet.
     #
     # The trigger is the WALLET, like the rebasing-asset reader and unlike a box - a Merkl campaign has no container
-    # behind it, the reward is simply owed to an address. What is read goes into 'receivables', which is keyed by the
-    # SOURCE as well as the asset, because several distributors pay the same token to the same wallet.
+    # behind it and Aave's Safety module is a token the wallet itself holds, so in both cases the reward is simply
+    # owed to an address. What is read goes into 'receivables', which is keyed by the SOURCE as well as the asset,
+    # because several distributors pay the same token to the same wallet.
+
+    # Who may owe a wallet something on each chain, as {location: {contract: reader}} - the same shape
+    # _evm_box_readers() uses, and for the same reason: the chain says nothing about who owes the money and the
+    # contract says everything, because the contract IS the 'source' a receivable is keyed by.
     #
+    # Merkl is registered on every EVM chain JAL reads rather than on a list of its own: its Distributor is deployed
+    # at one address everywhere it serves, and a list here would quietly stop asking on a chain added later.
+    def _receivable_readers(self) -> dict:
+        readers = {location: {merkl.DISTRIBUTOR: self._merkl_claims} for location in self._evm_chains()}
+        readers[AssetLocation.ETH_BLOCKCHAIN].update({module: self._aave_claims for module in aave.SAFETY_MODULES})
+        return readers
+
+    # Which sources may owe one wallet something, as {contract: (reader, {location: account})}.
+    #
+    # A source is asked ONCE about every chain the wallet is held on rather than once per chain, because that is
+    # what Merkl's single request needs; a source deployed on one chain only gets a group of one and never notices.
+    @staticmethod
+    def _sources_of(readers: dict, accounts: dict) -> dict:
+        sources = {}
+        for location, account in accounts.items():
+            for contract, reader in readers.get(location, {}).items():
+                sources.setdefault(contract, (reader, {}))[1][location] = account
+        return sources
+
     # Reads and records everything the known distributors owe every wallet.
     #
     # Wallets are grouped by ADDRESS rather than asked about one account at a time: JAL models one account per chain,
@@ -595,21 +638,84 @@ class ChainBalanceReader(JalDB):
     # 'locations' filters by chain, exactly as the other two readers do - the checkboxes of the quote-update dialog
     # decide which chains are asked, and no new UI is needed.
     def read_receivables(self, timestamp: int, locations: list = None) -> int:
-        chains = self._evm_chains()
+        readers = self._receivable_readers()
         wallets = {}
         for account in JalAccount.get_all_accounts(investing_only=True, include_hidden=True):
-            if account.chain() not in chains or not account.address():
+            if account.chain() not in readers or not account.address():
                 continue
             if locations is not None and account.chain() not in locations:
                 continue
             wallets.setdefault(normalize_address(account.chain(), account.address()), {})[account.chain()] = account
         count = 0
         for address, accounts in wallets.items():
-            count += self._merkl_claims(timestamp, address, accounts)
+            for source, (reader, holders) in self._sources_of(readers, accounts).items():
+                count += reader(timestamp, source, address, holders)
         return count
 
+    # Writes down as zero every claim of one source that the source no longer reports.
+    # A stream that has stopped being reported must be recorded rather than left standing: the display reads the
+    # latest row, so a claim that quietly disappeared would otherwise be shown as owed for good. Same discipline the
+    # Solana reader follows for a stake account that has been closed.
+    def _forget_unreported(self, timestamp: int, account: JalAccount, source: str, reported: set) -> None:
+        for asset_id, known_source in self._receivables.known_claims(account.id()):
+            if known_source == source and asset_id not in reported:
+                self._receivables.store(timestamp, account.id(), asset_id, known_source, Decimal('0'), Decimal('0'))
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # AAVE'S SAFETY MODULE. Everything about the protocol is in jal/net/aave.py; what is here is the part that belongs
+    # to JAL, which asset the answer is about and how a bare integer becomes a quantity.
+    # What one Safety module owes one wallet. Returns how many claims were recorded.
+    def _aave_claims(self, timestamp: int, source: str, address: str, accounts: dict) -> int:
+        chains = self._evm_chains()
+        count = 0
+        for location, account in accounts.items():
+            recorded = self._store_aave_rewards(timestamp, chains[location], account, source, address)
+            if recorded is None:
+                continue
+            count += recorded
+        return count
+
+    # One module's reward, stored. None when it could not be read at all, which is what stops a failed reading from
+    # being mistaken for "nothing is owed" and zeroing what was recorded before.
+    def _store_aave_rewards(self, timestamp: int, chain, account: JalAccount, source: str, address: str):
+        api_key = JalSettings().getStr(chain.api_key_setting).strip()
+        if not api_key:
+            logging.warning(self.tr("Claimable rewards not read - the API key isn't set: ") + chain.api_name)
+            return None
+        # Which token the module pays is asked of the module rather than assumed: both of them pay AAVE today, and a
+        # reward booked against the wrong asset would be wrong in the one way nobody would ever notice.
+        token = aave.address_answer(self._eth_call(chain, source, aave.SELECTOR_REWARD_TOKEN, api_key))
+        if not token:
+            logging.warning(self.tr("Could not read the reward token of ") + source)
+            return None
+        # The view and not the stored mapping - see the header of jal/net/aave.py. Reading 'stakerRewardsToClaim'
+        # instead would have reported 0.003% of the truth on the position this was measured against.
+        owed = aave.amount_answer(self._eth_call(chain, source, aave.rewards_call(address), api_key))
+        if owed is None:
+            logging.warning(self.tr("Could not read the claimable rewards of ") + f"{source} @ {account.name()}")
+            return None
+        if owed == 0:
+            # Nothing is owed, and nothing is invented to say so: an asset is created only for a reward that exists,
+            # and a wallet holding none of the staked token would otherwise be given one it will never hold. What
+            # this module paid before still gets its zero, which is what keeps a figure that was paid off screen.
+            self._forget_unreported(timestamp, account, source, set())
+            return 0
+        resolved = self._reward_asset(chain, account, token, api_key)
+        if resolved is None:
+            return None       # the token couldn't be read, which is not the same thing as nothing being owed
+        asset, decimals = resolved
+        # 'pending' stays at zero: a Safety module has no epoch and no unproven bucket - what it reports is
+        # claimable this second.
+        self._receivables.store(timestamp, account.id(), asset.id(), source,
+                                Decimal(owed) / (Decimal('10') ** decimals))
+        self._forget_unreported(timestamp, account, source, {asset.id()})
+        return 1
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # MERKL, the first source and the only one with a merkle distribution behind it.
+
     # What Merkl owes one wallet, across every chain that wallet is held on. Returns how many claims were recorded.
-    def _merkl_claims(self, timestamp: int, address: str, accounts: dict) -> int:
+    def _merkl_claims(self, timestamp: int, source: str, address: str, accounts: dict) -> int:
         chains = self._evm_chains()
         answer = self._get(merkl.API_URL.format(address=address),
                            {"chainId": ",".join(str(chains[x].chain_id) for x in accounts)})
@@ -624,7 +730,7 @@ class ChainBalanceReader(JalDB):
             if rewards is None:
                 logging.warning(self.tr("Unexpected answer from Merkl for account ") + account.name())
                 continue
-            recorded = self._store_merkl_chain(timestamp, chain, account, rewards)
+            recorded = self._store_merkl_chain(timestamp, chain, account, source, rewards)
             if recorded is None:
                 continue
             count += recorded
@@ -632,14 +738,14 @@ class ChainBalanceReader(JalDB):
 
     # One chain's worth of claims, stored. None when the chain could not be read at all, which is what stops a
     # failed reading from being mistaken for "nothing is owed" and zeroing what was recorded before.
-    def _store_merkl_chain(self, timestamp: int, chain, account: JalAccount, rewards: list):
+    def _store_merkl_chain(self, timestamp: int, chain, account: JalAccount, source: str, rewards: list):
         api_key = JalSettings().getStr(chain.api_key_setting).strip()
         if not api_key:
             logging.warning(self.tr("Claimable rewards not read - the API key isn't set: ") + chain.api_name)
             return None
         # The root the CONTRACT published, never the one the API reports beside the proof: while a dispute period is
         # open the two disagree, and the contract's is the one a claim would be verified against.
-        root = self._eth_call(chain, merkl.DISTRIBUTOR, merkl.SELECTOR_MERKLE_ROOT, api_key)
+        root = self._eth_call(chain, source, merkl.SELECTOR_MERKLE_ROOT, api_key)
         try:
             root = bytes.fromhex(root[2:]) if root else b''
         except ValueError:
@@ -649,23 +755,15 @@ class ChainBalanceReader(JalDB):
             return None
         count = 0
         for reward in rewards:
-            claim = self._merkl_claim(chain, account, reward, root, api_key)
+            claim = self._merkl_claim(chain, account, source, reward, root, api_key)
             if claim is None:
                 continue
             asset_id, amount, pending = claim
-            self._receivables.store(timestamp, account.id(), asset_id, merkl.DISTRIBUTOR, amount, pending)
+            self._receivables.store(timestamp, account.id(), asset_id, source, amount, pending)
             count += 1
-        # A stream that has stopped being REPORTED must be written down as zero rather than left standing: the
-        # display reads the latest row, so a claim that quietly disappeared would otherwise be shown as owed for
-        # good. Same discipline the Solana reader follows for a stake account that has been closed.
-        #
-        # What decides this is what the source still mentions, NOT what was successfully stored above. A line that
-        # failed verification, or whose token couldn't be resolved, is a claim JAL couldn't READ - and reading a
-        # failure as "nothing is owed any more" would erase a real receivable on a bad afternoon.
-        reported = self._reported_assets(account, rewards)
-        for asset_id, source in self._receivables.known_claims(account.id()):
-            if source == merkl.DISTRIBUTOR and asset_id not in reported:
-                self._receivables.store(timestamp, account.id(), asset_id, source, Decimal('0'), Decimal('0'))
+        # Everything Merkl has stopped reporting is written down as zero - see _forget_unreported(). What decides it
+        # is what the ANSWER still mentions, not what was successfully stored above.
+        self._forget_unreported(timestamp, account, source, self._reported_assets(account, rewards))
         return count
 
     # The assets the source named in this answer, whether or not each of them could be read. Only assets JAL already
@@ -685,7 +783,7 @@ class ChainBalanceReader(JalDB):
         return reported
 
     # One reward line as (asset_id, claimable, pending), or None when it can't be read or can't be trusted.
-    def _merkl_claim(self, chain, account: JalAccount, reward, root: bytes, api_key: str):
+    def _merkl_claim(self, chain, account: JalAccount, source: str, reward, root: bytes, api_key: str):
         entry = merkl.reward_entry(reward)
         if entry is None:
             logging.warning(self.tr("Unreadable claimable reward for account ") + account.name())
@@ -697,7 +795,7 @@ class ChainBalanceReader(JalDB):
                             + f"{entry['symbol']} @ {account.name()}")
             return None
         claimed = merkl.claimed_amount(
-            self._eth_call(chain, merkl.DISTRIBUTOR, merkl.claimed_call(account.address(), entry['address']), api_key))
+            self._eth_call(chain, source, merkl.claimed_call(account.address(), entry['address']), api_key))
         if claimed is None:
             logging.warning(self.tr("Could not read what has already been claimed of ")
                             + f"{entry['symbol']} @ {account.name()}")
@@ -711,48 +809,68 @@ class ChainBalanceReader(JalDB):
         # long as they existed - and creating a quote-less asset for each of them would fill the asset list with
         # tokens the account has never held and never will. A stream JAL already knows still gets its zero written,
         # because that zero is what stops a stale figure from lingering on screen.
-        asset = self._reward_asset(chain, account, entry, api_key, create=unclaimed > 0)
-        if asset is None:
+        resolved = self._reward_asset(chain, account, entry['address'], api_key, symbol=entry['symbol'],
+                                     decimals=entry['decimals'], create=unclaimed > 0)
+        if resolved is None:
             return None
-        return (asset.id(), merkl.quantity(unclaimed, entry['decimals']),
-                merkl.quantity(entry['pending'], entry['decimals']))
+        asset, decimals = resolved
+        return asset.id(), merkl.quantity(unclaimed, decimals), merkl.quantity(entry['pending'], decimals)
 
-    # The asset a reward is paid in, created if JAL has never seen the token and there is something to record.
+    # The asset a reward is paid in and the scale of its amounts, as (asset, decimals) - created if JAL has never
+    # seen the token and there is something to record. None when the token can't be read, or when nothing is owed in
+    # a token JAL doesn't know.
     #
     # Creating it is the deliberate choice here, and it is the opposite of what the balance readers above do - they
     # start from an asset the account already holds and refuse to invent one. A reward is different precisely because
     # the account holds NONE of it: refusing an unknown token would make the whole feature silent for exactly the
     # campaigns it exists to catch, which is a reward in a coin that has never arrived. What is left behind if the
     # campaign is never claimed is an asset with no operations and no quote - visible, harmless and removable.
-    def _reward_asset(self, chain, account: JalAccount, entry: dict, api_key: str, create: bool = True):
+    #
+    # 'symbol' and 'decimals' are what the SOURCE said about the token, for a source that says anything at all: an
+    # API reports both beside every reward, while a contract view answers with a bare integer. What is missing is
+    # asked of the token itself, and only where it is really needed - a token JAL already knows carries its own
+    # decimals, and a ticker is needed only to create one.
+    def _reward_asset(self, chain, account: JalAccount, contract: str, api_key: str, symbol: str = '',
+                      decimals: int = None, create: bool = True):
         location = account.chain()
         id_type = AssetLocation.address_id_of(location)
         if id_type is None:
             return None
-        # Decimals come free with the answer, so the contract never has to be asked for them - but an implausible
-        # value is refused BEFORE anything is created: it would divide the reward into nothing, or into a fortune,
-        # and an asset invented for a reward that is then thrown away would be left behind for no reason at all.
-        if not 0 <= entry['decimals'] <= _MAX_TOKEN_DECIMALS:
-            logging.warning(self.tr("Implausible decimals of token ") + f"{entry['symbol']}: {entry['decimals']}")
+        # A reported value is refused BEFORE anything is created: it would divide the reward into nothing, or into a
+        # fortune, and an asset invented for a reward that is then thrown away would be left behind for no reason.
+        if decimals is not None and not 0 <= decimals <= _MAX_TOKEN_DECIMALS:
+            logging.warning(self.tr("Implausible decimals of token ") + f"{symbol}: {decimals}")
             return None
-        address = normalize_address(location, entry['address'])
-        symbol = JalSymbol.find_by_identifier(id_type, address)
-        if symbol.id():
-            asset = symbol.asset()
-        else:
-            if not create:
+        address = normalize_address(location, contract)
+        listing = JalSymbol.find_by_identifier(id_type, address)
+        if listing.id():
+            asset = listing.asset()
+            if decimals is None:
+                decimals = self._token_decimals(asset, chain, address, api_key)
+                return (asset, decimals) if decimals is not None else None
+            asset.set_decimals(decimals)   # a no-op when the token already has them - see set_decimals()
+            return asset, decimals
+        if not create:
+            return None
+        if decimals is None:
+            decimals = self._contract_decimals(chain, address, api_key)
+            if decimals is None:
                 return None
-            # The name comes from the contract rather than from the API, which reports only a ticker. Two different
-            # tokens sharing a ticker is not a corner case - see _token_name() - and an asset named after the ticker
-            # alone would be impossible to tell from the one already in the database.
-            name = self._token_name(chain, address, api_key) or entry['symbol']
-            logging.info(self.tr("New asset created for a claimable reward: ") + f"{name} ({address})")
-            creator = JalAssetCreator(PredefinedAsset.Crypto, name)
-            if not creator.id():
-                logging.warning(self.tr("Couldn't create an asset for a claimable reward: ") + entry['symbol'])
-                return None
-            symbol_id = creator.add_symbol(entry['symbol'], account.currency(), location_id=location)
-            creator.add_identifier(symbol_id, id_type, address)
-            asset = creator.commit()
-        asset.set_decimals(entry['decimals'])   # a no-op when the token already has them - see set_decimals()
-        return asset
+        symbol = symbol or self._token_symbol(chain, address, api_key)
+        if not symbol:
+            logging.warning(self.tr("Couldn't read the ticker of a claimable reward token: ") + address)
+            return None
+        # The name comes from the contract rather than from the API, which reports only a ticker. Two different
+        # tokens sharing a ticker is not a corner case - see _token_name() - and an asset named after the ticker
+        # alone would be impossible to tell from the one already in the database.
+        name = self._token_name(chain, address, api_key) or symbol
+        logging.info(self.tr("New asset created for a claimable reward: ") + f"{name} ({address})")
+        creator = JalAssetCreator(PredefinedAsset.Crypto, name)
+        if not creator.id():
+            logging.warning(self.tr("Couldn't create an asset for a claimable reward: ") + symbol)
+            return None
+        symbol_id = creator.add_symbol(symbol, account.currency(), location_id=location)
+        creator.add_identifier(symbol_id, id_type, address)
+        asset = creator.commit()
+        asset.set_decimals(decimals)
+        return asset, decimals
