@@ -123,3 +123,45 @@ def test_account_tag_is_edited_in_the_attribute_grid(prepare_db):
     # ... and the grid shows the tag by name rather than by the id it stores
     assert model.data(value_index, Qt.DisplayRole) == 'Cash'
     parent.deleteLater()
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# An account of a HIDDEN type - a staked position, a term deposit - is shown by this dialog cut down to the two
+# things it may show of itself: its name and its icon. Everything else is hidden rather than disabled, because it
+# either says "account" where the user is shown none, or carries a value that must not change (see edit_name_only).
+def test_name_only_mode_shows_the_name_and_the_icon_alone(prepare_db):
+    box = JalAccountCreator(currency_id=2, number='', name='stake.link', investing=1, organization=1,
+                            account_type=PredefinedAccountType.Staking).commit()
+    dialog = AccountDialog()
+    dialog.setSelectedId(box.id())
+    dialog.edit_name_only("Staked position")
+
+    assert dialog.windowTitle() == "Staked position"
+    assert dialog.ui.NameEdit.isVisibleTo(dialog) and dialog.ui.IconButton.isVisibleTo(dialog)
+    for widget in (dialog.ui.CurrencyLbl, dialog.ui.CurrencyCombo, dialog.ui.TypeLbl, dialog.ui.TypeCombo,
+                   dialog.ui.OrganizationLbl, dialog.ui.OrganizationCombo, dialog.ui.ActiveCheck,
+                   dialog.ui.InvestingCheck, dialog.ui.ReconciledValue, dialog.ui.DetailsFrame):
+        assert not widget.isVisibleTo(dialog), f"{widget.objectName()} is shown in the name-only mode"
+
+    dialog.ui.NameEdit.setText("stake.link PriorityPool")
+    dialog.accept()
+
+    JalAccount.db_cache.clear_cache()
+    account = JalAccount(box.id())
+    assert account.name() == "stake.link PriorityPool"
+    # ... and nothing the mode hid was touched by the round trip
+    assert account.account_type() == PredefinedAccountType.Staking and account.currency() == 2
+
+
+# Cancelling the same dialog leaves the name as it was - the transaction it opened is rolled back like any other
+def test_name_only_mode_cancel_keeps_the_name(prepare_db):
+    box = JalAccountCreator(currency_id=2, number='', name='stake.link', investing=1, organization=1,
+                            account_type=PredefinedAccountType.Staking).commit()
+    dialog = AccountDialog()
+    dialog.setSelectedId(box.id())
+    dialog.edit_name_only("Staked position")
+    dialog.ui.NameEdit.setText("Renamed by mistake")
+    dialog.reject()
+
+    JalAccount.db_cache.clear_cache()
+    assert JalAccount(box.id()).name() == 'stake.link'

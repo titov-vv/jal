@@ -185,6 +185,22 @@ class AccountDialog(QDialog):
     def getSelectedId(self):
         return self._account_id
 
+    # Cuts the dialog down to the two things an account of a HIDDEN type may show of itself - its name and its icon -
+    # and gives it a title of its own, because such an account is not called an account anywhere the user sees it
+    # (a staked position, a term deposit). Everything else is hidden and not merely disabled: the type, the currency
+    # and the bank say nothing about a container, and the fields behind them must not change - the currency and the
+    # precision of a box are what every amount in its ledger was booked with (see JalStakingBox.create). The details
+    # grid goes with them: it is where the precision is edited, so it is shown by the full dialog only.
+    def edit_name_only(self, title: str) -> None:
+        self.setWindowTitle(title)
+        for widget in (self.ui.CurrencyLbl, self.ui.CurrencyCombo, self.ui.TypeLbl, self.ui.TypeCombo,
+                       self.ui.OrganizationLbl, self.ui.OrganizationCombo, self.ui.ActiveCheck,
+                       self.ui.InvestingCheck, self.ui.ReconciledValue, self.ui.DetailsFrame):
+            widget.setVisible(False)
+        # Only the height is given back: the width is the one the form was drawn at, and a name field squeezed to
+        # its own minimum would show a dozen characters of a name that is a sentence long.
+        self.resize(self.width(), self.sizeHint().height())
+
     # Shows the currently loaded account's reconciliation timestamp (set by JAL operations, not edited here) as a
     # read-only label. An empty label means the account has never been reconciled.
     def _load_reconciled(self):

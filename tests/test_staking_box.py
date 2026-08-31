@@ -214,3 +214,32 @@ def test_staking_report_window_builds_and_selects(wallet):
     window.ui.ReportTableView.selectRow(0)
     assert window._selected().id() == box.id()
     assert window.details_model.rowCount() == 1
+
+
+# The name a box carries is a guess: the dialog that creates one suggests the protocol the import recognized, and
+# this report is the only place that guess is ever seen - so it is the place it is corrected. What opens is the
+# account editor cut down to a name and an icon (AccountDialog.edit_name_only, tested in test_account_dialog.py):
+# a box IS an account, and everything else about that account must not change.
+def test_the_report_offers_to_rename_a_position(wallet):
+    import os
+    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+    from PySide6.QtWidgets import QMenu
+    from jal.reports.reports import Reports
+    from jal.reports.staking import StakingReportWindow
+
+    JalStakingBox.create(JalAccount(WALLET), "stake.link", protocol='stake.link PriorityPool',
+                         chain=AssetLocation.ETH_BLOCKCHAIN, address=POOL)
+    _pending_leg(WALLET, None, 60, d2t(210201), HASH_OUT, address=POOL)
+    TransferSettlement().settle_all()
+    Ledger().rebuild(from_timestamp=0)
+
+    window = StakingReportWindow(Reports(None, None))
+    window.show()
+    window.updateReport()
+    view = window.ui.ReportTableView
+    window.onPositionContextMenu(view.visualRect(window.boxes_model.index(0, 0)).center())
+
+    menu = view.findChild(QMenu)
+    assert [x.text() for x in menu.actions()] == ['Show accrual chart', 'Rename position...']
+    menu.close()
+    window.deleteLater()

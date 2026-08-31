@@ -4,7 +4,7 @@ from functools import partial
 from PySide6.QtCore import Qt, Slot, QObject, QAbstractTableModel
 from PySide6.QtGui import QFont
 from PySide6.QtGui import QAction
-from PySide6.QtWidgets import QMessageBox, QMenu
+from PySide6.QtWidgets import QDialog, QMessageBox, QMenu
 
 from jal.constants import AssetLocation, IconOwner, Setup
 from jal.db.clock import day_finish, now_dt
@@ -12,6 +12,7 @@ from jal.db.asset import JalAsset
 from jal.db.icon import JalIcons
 from jal.db.account import JalAccount
 from jal.db.chain_balance import JalChainBalance
+from jal.db.common_models import account_row_icon
 from jal.db.helpers import localize_decimal
 from jal.db.operations import LedgerTransaction
 from jal.db.receivable import JalReceivable
@@ -21,6 +22,7 @@ from jal.reports.reports import Reports
 from jal.ui.reports.ui_staking_report import Ui_StakingReportWidget
 from jal.widgets.delegates import FloatDelegate, TimestampDelegate
 from jal.widgets.icons import JalIcon, chain_icon
+from jal.widgets.account_dialog import AccountDialog
 from jal.widgets.accrual_chart import AccrualChartWindow, ReceivableChartWindow
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.helpers import set_grids_metrics, restore_columns
@@ -76,6 +78,8 @@ class StakingListModel(QAbstractTableModel):
             font = QFont()
             font.setItalic(True)   # a closed position is shown as past, exactly as a deactivated account is
             return font
+        if role == Qt.DecorationRole and index.column() == 0:
+            return account_row_icon(JalAccount(self._data[index.row()]['account_id']))
         if role == Qt.DecorationRole and index.column() == 2:
             icon = chain_icon(self._data[index.row()]['chain'])  # The chain is named and marked in the same cell, the way a wallet account is everywhere else.
             return icon if not icon.isNull() else None
@@ -413,20 +417,42 @@ class StakingReportWindow(MdiWidget):
         if not index.isValid():
             return
         record = self.boxes_model.record(index)
-        if record is None or record['asset'] is None:
+        if record is None:
             return
         menu = QMenu(self.ui.ReportTableView)
+        # A chart is of one asset, so it is offered where the row names one - an emptied box, which is listed with
+        # 'Show closed' and holds nothing, still has a name to correct.
         if record['box'] is None:
+            if record['asset'] is None:
+                return
             action = QAction(icon=JalIcon[JalIcon.CHART], text=self.tr("Show claim history"),
                              parent=self.ui.ReportTableView)
             action.triggered.connect(partial(self.showClaimHistory, self.boxes_model.account(index),
                                              record['asset'].id(), record['source']))
+            menu.addAction(action)
         else:
-            action = QAction(icon=JalIcon[JalIcon.CHART], text=self.tr("Show accrual chart"),
+            if record['asset'] is not None:
+                action = QAction(icon=JalIcon[JalIcon.CHART], text=self.tr("Show accrual chart"),
+                                 parent=self.ui.ReportTableView)
+                action.triggered.connect(partial(self.showAccrualChart, record['box'].id(), record['asset'].id()))
+                menu.addAction(action)
+            action = QAction(icon=JalIcon[JalIcon.DETAILS], text=self.tr("Rename position..."),
                              parent=self.ui.ReportTableView)
-            action.triggered.connect(partial(self.showAccrualChart, record['box'].id(), record['asset'].id()))
-        menu.addAction(action)
+            action.triggered.connect(partial(self.renamePosition, record['box'].id()))
+            menu.addAction(action)
         menu.popup(self.ui.ReportTableView.viewport().mapToGlobal(pos))
+
+    # The name and the icon of a staked position, and nothing else about the account behind it (see
+    # AccountDialog.edit_name_only). A box is created from a pending transfer leg and named after the protocol the
+    # import recognized, so the name it ends up with is a guess that the user is the only one able to correct - and
+    # this list, where a box is named, is the only place that guess is ever seen.
+    @Slot()
+    def renamePosition(self, box_id):
+        dialog = AccountDialog(self)
+        dialog.setSelectedId(box_id)
+        dialog.edit_name_only(self.tr("Staked position"))
+        if dialog.exec() == QDialog.Accepted:
+            self.updateReport()
 
     @Slot()
     def showAccrualChart(self, account_id, asset_id):

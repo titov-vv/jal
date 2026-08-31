@@ -622,6 +622,39 @@ def test_the_staking_report_marks_the_chain_column(prepare_db):
     assert model.data(model.index(row[0], 2), Qt.DecorationRole) is None
 
 
+# The Name column of the same report names an ACCOUNT - the box for a staked position, the wallet that is owed for
+# a claim - so it is marked the way an account row is marked in the balances and the holdings: its own icon, or the
+# chain it sits on while it has none of its own.
+def test_the_staking_report_marks_the_name_column(prepare_db):
+    from PySide6.QtWidgets import QTableView
+    from jal.constants import AssetLocation, PredefinedAccountType
+    from jal.db.account import JalAccount
+    from jal.db.common_models import chain_icon
+    from jal.db.staking import JalStakingBox
+    from jal.reports.staking import StakingListModel
+    from jal.widgets.icons import JalIcon
+    JalIcon()
+
+    wallet = JalAccountCreator(currency_id=2, number='', name='Tron wallet', organization=1,
+                               account_type=PredefinedAccountType.Wallet,
+                               address=TRX_ADDRESS, chain=AssetLocation.TRX_BLOCKCHAIN).commit()
+    box = JalStakingBox.create(JalAccount(wallet.id()), 'Tron staking', protocol='Tron staking',
+                               chain=AssetLocation.TRX_BLOCKCHAIN)
+
+    model = StakingListModel(QTableView())
+    model.updateView(timestamp=d2t(300101), currency_id=2, show_closed=True)
+    name = model.index(0, 0)
+
+    assert model.data(name, Qt.DisplayRole) == 'Tron staking'
+    assert model.data(name, Qt.DecorationRole).cacheKey() == chain_icon(AssetLocation.TRX_BLOCKCHAIN).cacheKey()
+    # ... and an icon of its own wins over the chain, which is what makes the box's icon worth setting
+    JalIcons.store(IconOwner.Account, box.id(), _png(), IconSource.User)
+    icon = model.data(name, Qt.DecorationRole)
+    assert not icon.isNull() and icon.cacheKey() != chain_icon(AssetLocation.TRX_BLOCKCHAIN).cacheKey()
+    size = JalIcons.grid_size()
+    assert icon.pixmap(size).toImage() == JalIcons.icon(IconOwner.Account, box.id(), size).pixmap(size).toImage()
+
+
 def test_the_token_blacklist_marks_the_chain_column(prepare_db):
     from jal.constants import AssetLocation
     from jal.db.common_models import TokenBlacklistModel, chain_icon
