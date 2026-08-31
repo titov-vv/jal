@@ -1,4 +1,4 @@
-from math import ceil, log
+from math import ceil, floor, log
 
 from jal.constants import AssetLocation
 from jal.db.account import JalAccount
@@ -31,16 +31,24 @@ from jal.net.chain_fetchers.protocols import protocol_category, protocol_contrac
 #
 #   alphabet                each end          together
 #   hex (EVM)               3  (1/4096)       7  (1 in 268 million)
-#   base58 (SOL/BTC/TRX)    3  (1/195k)       5  (1 in 656 million)
-#   bech32 (BTC bc1)        3  (1/32768)      6  (1 in 1.07 billion)
+#   base58 (SOL/BTC/TRX)    2  (1/3364)       5  (1 in 656 million)
+#   bech32 (BTC bc1)        2  (1/1024)       6  (1 in 1.07 billion)
 #
-# Rounding is always UP, so no chain is ever asked for less improbability than hex is. That matters at the per-end
-# bar: two base58 characters would be 1/3364, which is WEAKER than the 1/4096 hex demands, so the bar stays at three.
-# The gain is at the combined bar - a base58 lookalike matching 3+3 is one in 38 billion and was refused for being
-# six characters long, while a 4+4 one (which is what a wallet showing four-and-four displays) already passed.
+# The two bars are rounded in opposite directions, because they are doing different jobs. The COMBINED bar carries
+# the whole probability claim, so it rounds UP and no chain is ever asked for less improbability than hex: the
+# weakest pair that can pass is 3+4 in hex (1 in 268 million), 2+3 in base58 (1 in 656 million) and 2+4 in bech32
+# (1 in 1.07 billion). The per-end bar makes no claim of its own - it only demands that the resemblance is present
+# at BOTH ends, because both ends are what an abbreviation shows - so it rounds DOWN, never below two: one character
+# agreeing at an end is not a match of anything, two is the least that can be called one.
+#
+# Rounding the per-end bar up instead is what kept a real Solana attempt out: an address agreeing on three leading
+# and two trailing characters, sent 17 seconds after a genuine transfer to a wallet of the same user. Five base58
+# characters is one chance in 656 million, so it was ground deliberately - which is the whole question this asks -
+# and it was refused only because two characters is fewer than hex's three.
 _HEX_AT_EACH_END = 3
 _HEX_TOGETHER = 7
 _HEX_ALPHABET = 16
+_MIN_AT_EACH_END = 2         # a single agreeing character at an end is not a resemblance, however rich the alphabet
 # The alphabet an address of each chain is written in. EVM addresses (and Hyperliquid's, which are EVM-shaped) are
 # hex; Solana mints, Tron's 'T...' form and Bitcoin's legacy addresses are base58. A bech32 Bitcoin address is a
 # 32-character alphabet and is told apart by its prefix, not by its chain - see _alphabet_of().
@@ -62,13 +70,14 @@ def _alphabet_of(location_id: int, address: str) -> int:
 
 
 # The (at each end, together) thresholds for an address of the given chain - the hex pair above, restated in an
-# alphabet that may carry more per character. Never weaker than hex at either bar (see the note above).
+# alphabet that may carry more per character. The combined bar is never weaker than hex's; the per-end bar may be,
+# and deliberately is, because the combined bar is what carries the claim (see the note above).
 def _thresholds(location_id: int, address: str) -> tuple:
     alphabet = _alphabet_of(location_id, address)
     if alphabet == _HEX_ALPHABET:
         return _HEX_AT_EACH_END, _HEX_TOGETHER
     scale = log(_HEX_ALPHABET) / log(alphabet)
-    return ceil(_HEX_AT_EACH_END * scale), ceil(_HEX_TOGETHER * scale)
+    return max(_MIN_AT_EACH_END, floor(_HEX_AT_EACH_END * scale)), ceil(_HEX_TOGETHER * scale)
 
 
 # How many characters two addresses share at the start and at the end, as (leading, trailing).

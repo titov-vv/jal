@@ -129,10 +129,10 @@ SOL_GENUINE = "7FBMXMu2cC2s8jJHbTGz3M6fYEq31GyXGNWwszV34ETP"
 
 def test_thresholds_keep_the_probability_not_the_character_count():
     assert _thresholds(ETH, "0x" + "a" * 40) == (3, 7)          # hex is the baseline and does not move
-    assert _thresholds(SOL, SOL_GENUINE) == (3, 5)              # 58^-5 is already stricter than 16^-7
-    assert _thresholds(AssetLocation.TRX_BLOCKCHAIN, "T" + "a" * 33) == (3, 5)
-    assert _thresholds(AssetLocation.BTC_BLOCKCHAIN, "1" + "a" * 33) == (3, 5)
-    assert _thresholds(AssetLocation.BTC_BLOCKCHAIN, "bc1q" + "a" * 38) == (3, 6)   # 32 symbols, told by the prefix
+    assert _thresholds(SOL, SOL_GENUINE) == (2, 5)              # 58^-5 is already stricter than 16^-7
+    assert _thresholds(AssetLocation.TRX_BLOCKCHAIN, "T" + "a" * 33) == (2, 5)
+    assert _thresholds(AssetLocation.BTC_BLOCKCHAIN, "1" + "a" * 33) == (2, 5)
+    assert _thresholds(AssetLocation.BTC_BLOCKCHAIN, "bc1q" + "a" * 38) == (2, 6)   # 32 symbols, told by the prefix
 
 
 # A base58 lookalike matching three characters at each end is one chance in 38 billion - far past the bar hex is
@@ -143,22 +143,30 @@ def test_a_three_and_three_base58_lookalike_is_now_recognized():
     assert is_lookalike(SOL, lookalike, SOL_GENUINE)
 
 
-# ... while the per-end bar does NOT move: two base58 characters is 1/3364, weaker than the 1/4096 hex demands, so
-# an address agreeing on only two at one end stays below the bar however long the other end is.
-def test_two_characters_at_one_end_are_still_not_enough_in_base58():
-    lookalike = SOL_GENUINE[:6] + "Z" * 36 + SOL_GENUINE[-2:]
-    assert address_resemblance(SOL, lookalike, SOL_GENUINE) == (6, 2)
+# The per-end bar moves too, down to two: it is not the probability claim - the combined bar is - and only asks that
+# the resemblance is present at both ends. One character is not a resemblance, so two is where it stops.
+def test_one_character_at_one_end_is_never_enough():
+    lookalike = SOL_GENUINE[:7] + "Z" * 36 + SOL_GENUINE[-1:]
+    assert address_resemblance(SOL, lookalike, SOL_GENUINE) == (7, 1)
     assert is_lookalike(SOL, lookalike, SOL_GENUINE) is False
 
 
-# The real 0.00001 SOL arrival of 2026-02-15 (leg 4597). It agrees on three characters at the front and only two at
-# the back, so it stays below the bar - and rightly: a Solana wallet abbreviates to four and four, and
-# '7FBM...4ETP' against '7FBY...szTP' is a pair a user reads as different. It is dust to be written off, not an
-# imitation the detector can vouch for.
-def test_the_real_solana_dust_of_2026_02_15_is_not_called_poisoning():
+# The real 0.00001 SOL arrival of 2026-02-15 (leg 4597, payment 2007 of the live database): three characters at the
+# front and two at the back, sent 17 seconds after a genuine transfer to another wallet of the same user. Five base58
+# characters is one chance in 656 million - stricter than the 1 in 268 million hex is held to - so it was ground
+# deliberately, and rounding the per-end bar up to hex's three was the only thing keeping it out.
+def test_the_real_solana_poisoning_of_2026_02_15_is_recognized():
     sender = "7FBYsS4zSc2NVvFjxUyPyTjNkZHhwJH5tzrYgGyYszTP"
     assert address_resemblance(SOL, sender, SOL_GENUINE) == (3, 2)
-    assert is_lookalike(SOL, sender, SOL_GENUINE) is False
+    assert is_lookalike(SOL, sender, SOL_GENUINE)
+
+
+# Two and two is four characters, one short of the combined bar - the per-end bar dropping to two must not let a pair
+# through that the probability claim itself refuses.
+def test_two_and_two_in_base58_is_still_one_character_short():
+    lookalike = SOL_GENUINE[:2] + "Z" * 40 + SOL_GENUINE[-2:]
+    assert address_resemblance(SOL, lookalike, SOL_GENUINE) == (2, 2)
+    assert is_lookalike(SOL, lookalike, SOL_GENUINE) is False
 
 
 # The rescaling for richer alphabets must not touch hex: the total-agreement threshold there stays at 7, so 3
