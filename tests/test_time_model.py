@@ -242,6 +242,43 @@ def test_a_cross_quoted_price_is_taken_from_the_series_the_same_way(prepare_db):
     assert JalAsset(4).quote(moment, 1) == (local_moment(d2t(250925)), Decimal('960'))
 
 
+# The series says what one quote says, only more of them: a chart plots its points beside the operations of the
+# same account, and ts2axis() reads whatever it is handed on the user's clock - so a point that came back as the
+# stored reading would be read a second time and sit an offset away from the trade that paid for it. Only a quote
+# stamped inside a day is moved at all; the daily ones state a day and are never re-read.
+def test_a_series_spells_its_moments_as_a_single_quote_does(prepare_db):
+    _resident_in('Europe/Moscow')
+    intraday, daily = _stamp(2025, 9, 24, 22, 30), d2t(250925)
+    create_quotes(2, 1, [(intraday, 85.0), (daily, 90.0)])
+    series = JalAsset(2).quotes(0, _stamp(2025, 9, 26), 1)
+    assert [t for t, _q in series] == [local_moment(intraday), local_moment(daily)]
+    assert local_moment(intraday) != intraday and local_moment(daily) == daily
+    # ... and each of them is the moment quote() gives for the same row
+    assert series[-1][0] == JalAsset(2).quote(_stamp(2025, 9, 26), 1)[0]
+
+
+# The same for a series that had to be converted: a EUR-quoted account charting a USD-quoted asset (see
+# JalAsset._cross_currency_quotes) reads its points on the same clock as an unconverted one.
+def test_a_converted_series_spells_its_moments_the_same_way(prepare_db):
+    _resident_in('Europe/Moscow')
+    create_assets([('GE', 'General Electric Company', 'US3696043013', 2, PredefinedAsset.Stock, 'us')])   # id 4
+    intraday = _stamp(2025, 9, 24, 22, 30)
+    create_quotes(4, 2, [(intraday, 10.0)])                          # the asset is quoted in currency 2 alone...
+    create_quotes(2, 1, [(d2t(250924), 80.0), (d2t(250925), 80.0)])  # ... and that currency in the one asked about
+    assert JalAsset(4).quotes(0, _stamp(2025, 9, 26), 1) == [(local_moment(intraday), Decimal('800'))]
+
+
+# The ends of the stored series are moments too: QuoteDownloader._adjust_start weighs them against the day a
+# download was asked to start from and against the first operation of the asset, both of which are moments.
+def test_the_ends_of_a_series_are_moments_as_well(prepare_db):
+    _resident_in('Europe/Moscow')
+    assert JalAsset(2).quotes_range(1) == (0, 0)     # no series states no moment, and is left alone
+    intraday, daily = _stamp(2025, 9, 24, 22, 30), d2t(250925)
+    create_quotes(2, 1, [(intraday, 85.0), (daily, 90.0)])
+    assert JalAsset(2).quotes_range(1) == (local_moment(intraday), local_moment(daily))
+    assert local_moment(intraday) != intraday        # ... and the first of them really is re-read
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 # A tax year is a HALF-OPEN window. 'year_end' is already the first second of the NEXT year (see
 # TaxReport.prepare_tax_report), so testing it with '<=' puts an operation stamped at midnight on 1 January into two

@@ -317,6 +317,8 @@ class JalAsset(JalDB):
     # Return a list of tuples (timestamp:int, quote:Decimal) of all quotes available for asset
     # for time interval begin-end
     # If adjust_splits is True then quotes will be corrected for each split
+    # Each moment is spelled as quote() spells it - the instant the user's own clock stood at when that price was
+    # quoted - so a caller may mix these points with the timestamps of operations, which is what a price chart does.
     def quotes(self, begin: int, end: int, currency_id: int, adjust_splits=False) -> list:
         quotes = []
         splits = {}  # Dictionary of timestamp:coefficient for splits
@@ -336,8 +338,32 @@ class JalAsset(JalDB):
              (":begin", local_reading(begin)), (":end", local_reading(end))])
         while query.next():
             timestamp, quote = self._read_record(query, cast=[int, Decimal])
-            quotes.append((timestamp, quote))
+            quotes.append((local_moment(timestamp), quote))
+        if not quotes and self._type != PredefinedAsset.Money:
+            quotes = self._cross_currency_quotes(begin, end, currency_id)
         quotes = [(t_q, q * math.prod([splits[t_s] for t_s in splits if day_begin(t_s) > t_q])) for t_q, q in quotes]
+        return quotes
+
+    # The series counterpart of _cross_currency_quote() above.
+    def _cross_currency_quotes(self, begin: int, end: int, currency_id: int) -> list:
+        source_id = self._read("SELECT currency_id FROM quotes WHERE asset_id=:asset_id AND timestamp<=:end "
+                               "ORDER BY timestamp DESC LIMIT 1",
+                               [(":asset_id", self._id), (":end", local_reading(end))])
+        if source_id is None or int(source_id) == currency_id:
+            return []
+        source = JalAsset(int(source_id))
+        quotes = []
+        query = self._exec(
+            "SELECT timestamp, quote FROM quotes WHERE asset_id=:asset_id "
+            "AND currency_id=:currency_id AND timestamp>=:begin AND timestamp<=:end ORDER BY timestamp",
+            [(":asset_id", self._id), (":currency_id", int(source_id)),
+             (":begin", local_reading(begin)), (":end", local_reading(end))])
+        while query.next():
+            timestamp, quote = self._read_record(query, cast=[int, Decimal])
+            timestamp = local_moment(timestamp)
+            rate = source.quote(timestamp, currency_id)[1]
+            if rate:
+                quotes.append((timestamp, quote * rate))
         return quotes
 
     # Returns the timestamp of the earliest ledger record of the asset, or of its earliest operation when the ledger
@@ -360,6 +386,9 @@ class JalAsset(JalDB):
 
     # Returns tuple (begin_timestamp: int, end_timestamp: int) that defines timestamp range for which quotations are
     # available in database for given currency
+    # Both ends are moments spelled as quote() and quotes() spell them, the caller weighing them against the day a
+    # download was asked to start from and against the first operation of the asset (see QuoteDownloader._adjust_start).
+    # An absent series is (0, 0), which states no moment at all and is left alone.
     def quotes_range(self, currency_id: int) -> tuple:
         try:
             begin, end = self._read("SELECT MIN(timestamp), MAX(timestamp) FROM quotes "
@@ -369,7 +398,7 @@ class JalAsset(JalDB):
             begin = end = 0
         begin = db_timestamp2int(begin)
         end = db_timestamp2int(end)
-        return begin, end
+        return local_moment(begin), local_moment(end)
 
     # Returns the location (see AssetLocation) of the symbol defined for given currency (currency_id can be None).
     # For a specific listing's location use JalSymbol.location().

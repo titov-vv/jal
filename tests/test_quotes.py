@@ -78,3 +78,44 @@ def test_currency_quote_is_unchanged(prepare_db):
     create_quotes(EUR, RUB, [(LATER, '100')])
     assert JalAsset(EUR).quote(TS, RUB) == (LATER, Decimal('100'))
     assert JalAsset(RUB).quote(TS, EUR) == (TS, Decimal('0.01'))
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The same mismatch seen as a series - what a price chart asks for
+def test_quotes_series_prefers_the_requested_currency(prepare_db):
+    asset = _create_crypto("Tron", "TRX")
+    create_quotes(asset, USD, [(EARLIER, '0.20'), (LATER, '0.30')])
+    create_quotes(asset, EUR, [(EARLIER, '0.15'), (LATER, '0.25')])
+    create_quotes(USD, EUR, [(EARLIER, '0.90'), (LATER, '0.80')])
+    # Nothing is converted while the requested currency has a series of its own
+    assert JalAsset(asset).quotes(0, TS, EUR) == [(EARLIER, Decimal('0.15')), (LATER, Decimal('0.25'))]
+
+
+def test_quotes_series_is_cross_converted(prepare_db):
+    # A crypto asset quoted in USD only, charted on a EUR account: every point takes the rate of its own moment
+    asset = _create_crypto("Tron", "TRX")
+    create_quotes(asset, USD, [(EARLIER, '0.20'), (LATER, '0.30')])
+    create_quotes(USD, EUR, [(EARLIER, '0.90'), (LATER, '0.80')])
+    assert JalAsset(asset).quotes(0, TS, EUR) == [(EARLIER, Decimal('0.18')), (LATER, Decimal('0.24'))]
+
+
+def test_quotes_series_drops_points_without_a_rate(prepare_db):
+    # The rate series starts later than the asset's own: the points it doesn't reach are dropped rather than
+    # drawn unconverted or at zero
+    asset = _create_crypto("Tron", "TRX")
+    create_quotes(asset, USD, [(EARLIER, '0.20'), (LATER, '0.30')])
+    create_quotes(USD, EUR, [(LATER, '0.80')])
+    assert JalAsset(asset).quotes(0, TS, EUR) == [(LATER, Decimal('0.24'))]
+
+
+def test_quotes_series_without_any_rate_is_empty(prepare_db):
+    asset = _create_crypto("Tron", "TRX")
+    create_quotes(asset, USD, [(EARLIER, '0.20'), (LATER, '0.30')])
+    assert JalAsset(asset).quotes(0, TS, RUB) == []
+
+
+def test_quotes_series_of_a_currency_is_unchanged(prepare_db):
+    # A currency must never enter the converting path - see test_currency_quote_is_unchanged above
+    create_quotes(EUR, RUB, [(LATER, '100')])
+    assert JalAsset(EUR).quotes(0, TS, RUB) == [(LATER, Decimal('100'))]
+    assert JalAsset(EUR).quotes(0, TS, USD) == []
