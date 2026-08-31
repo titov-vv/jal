@@ -1,4 +1,5 @@
 import json
+import logging
 from decimal import Decimal
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
@@ -397,3 +398,32 @@ def test_flow_report_lists_an_account_that_carries_no_number(prepare_db):
     report = TaxesFlowRus().prepare_flow_report(2020)
     assert [(x['account'], x['account_name'], x['money_in']) for x in report] == \
            [('', 'Rental deposit', Decimal('0.25')), ('U7654321', 'Broker', Decimal('0.1'))]
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# A bond price is reported as a percentage of the face value, but the face value may be absent - it isn't provided by
+# every statement. The report has to be produced anyway (only the price cells are left empty) and to say in the log
+# which bond needs the face value to be filled in.
+def test_bond_without_face_value_is_reported_with_a_warning(prepare_db_taxes, caplog):
+    create_assets([("SU26216RMFS0", "ОФЗ 26216", "RU000A0JXQK2", 2, PredefinedAsset.Bond, 'ru')])   # ID 4, no principal
+    create_trades(1, [(d2t(210315), d2t(210317), 4, 10.0, 950.0, 1.0, "B1"),
+                      (d2t(211011), d2t(211013), 4, -10.0, 980.0, 1.0, "S1"),
+                      (d2t(211101), d2t(211103), 4, 5.0, 990.0, 1.0, "B2"),
+                      (d2t(211201), d2t(211203), 4, -5.0, 995.0, 1.0, "S2")])
+    create_quotes(2, 1, [(d2t(210315), 73.5), (d2t(210317), 73.6), (d2t(211011), 72.0), (d2t(211013), 72.1),
+                         (d2t(211101), 71.0), (d2t(211103), 71.1), (d2t(211201), 74.0), (d2t(211203), 74.1)])
+    Ledger().rebuild(from_timestamp=0)
+
+    assert JalAsset(4).principal() == Decimal('0')
+    with caplog.at_level(logging.WARNING):
+        tax_report = TaxesRussia().prepare_tax_report(2021, 1)
+
+    trades = [x for x in tax_report["Облигации"] if x['report_template'] == "bond_trade"]
+    assert len(trades) == 2
+    assert [x['principal'] for x in trades] == [Decimal('0'), Decimal('0')]
+    assert [x['o_price'] for x in trades] == [Decimal('0'), Decimal('0')]
+    assert [x['c_price'] for x in trades] == [Decimal('0'), Decimal('0')]
+    assert trades[0]['profit'] == Decimal('298')   # (980 - 950) * 10 - 2 of fees
+    # The bond is named once, not once per trade
+    assert [x.message for x in caplog.records if x.levelno == logging.WARNING] == \
+           ["Bond has no face value, trade prices are left empty in the report: SU26216RMFS0"]

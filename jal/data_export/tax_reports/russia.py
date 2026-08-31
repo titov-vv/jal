@@ -1,3 +1,4 @@
+import logging
 from decimal import Decimal
 from jal.constants import PredefinedAsset, PredefinedCategory, SymbolId
 from jal.db.operations import LedgerTransaction, AssetPayment, CorporateAction
@@ -167,7 +168,21 @@ class TaxesRussia(TaxReport):
         bonds_report = []
         ns = not self.use_settlement
         trades = self.trades_list([PredefinedAsset.Bond])
+        no_principal = set()   # bonds without a face value - each is reported once, not once per trade
         for trade in trades:
+            # A bond price is reported as a percentage of the face value. If the bond has no face value recorded
+            # the prices are left empty, but the trade is still reported - its amounts, accrued interest and
+            # financial result don't depend on the face value.
+            principal = trade.asset().principal()
+            if principal:
+                o_price = Decimal('100') * trade.open_price() / principal
+                c_price = Decimal('100') * trade.close_operation().price() / principal
+            else:
+                o_price = c_price = Decimal('0')
+                if trade.asset().id() not in no_principal:
+                    no_principal.add(trade.asset().id())
+                    logging.warning(self.tr("Bond has no face value, trade prices are left empty in the report: ")
+                                    + f"{trade.asset().symbol(self.account_currency.id())}")
             if ns:
                 os_rate = self.account_currency.quote(trade.open_operation().timestamp(), self._currency_id)[1]
                 cs_rate = self.account_currency.quote(trade.close_operation().timestamp(), self._currency_id)[1]
@@ -192,7 +207,7 @@ class TaxesRussia(TaxReport):
                 'o_symbol': trade.open_operation().asset().symbol(),
                 'o_isin': trade.open_operation().asset().symbol_id(SymbolId.ISIN),
                 'o_qty': trade.open_qty(),
-                'principal': trade.asset().principal(),
+                'principal': principal,
                 'country_iso': country.iso_code(),
                 'o_type': "Покупка" if trade.qty() >= Decimal('0') else "Продажа",
                 'o_number': trade.open_operation().number(),
@@ -200,7 +215,7 @@ class TaxesRussia(TaxReport):
                 'o_rate': self.account_currency.quote(trade.open_operation().timestamp(), self._currency_id)[1],
                 'os_date': self._date(trade.open_operation().settlement()),
                 'os_rate': os_rate,
-                'o_price': Decimal('100') * trade.open_price() / trade.asset().principal(),
+                'o_price': o_price,
                 'o_int': -trade.open_operation().accrued_interest(),
                 'o_int_rub': -round(trade.open_operation().accrued_interest(self._currency_id), 2),
                 'o_amount':  round(trade.open_amount(no_settlement=ns), 2),
@@ -213,7 +228,7 @@ class TaxesRussia(TaxReport):
                 'c_rate': self.account_currency.quote(trade.close_operation().timestamp(), self._currency_id)[1],
                 'cs_date': self._date(trade.close_operation().settlement()),
                 'cs_rate': cs_rate,
-                'c_price': Decimal('100') * trade.close_operation().price() / trade.asset().principal(),
+                'c_price': c_price,
                 'c_int': trade.close_operation().accrued_interest(),
                 'c_int_rub': round(trade.close_operation().accrued_interest(self._currency_id), 2),
                 'c_amount': round(trade.close_amount(no_settlement=ns), 2),
