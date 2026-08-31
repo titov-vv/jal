@@ -5,6 +5,7 @@ from enum import auto
 from collections import UserDict
 from PySide6.QtGui import QIcon, QIconEngine, QPixmap, QImage, QPainter, QPalette
 from PySide6.QtWidgets import QApplication
+from jal.constants import AssetLocation
 from jal.db.settings import JalSettings
 from jal.widgets.theme import Meaning, Theme
 
@@ -273,3 +274,11 @@ class JalIcon(UserDict):
     @classmethod
     def module_icon(cls, prefix, icon_name) -> QIcon:
         return cls._icons.get(prefix + icon_name, QIcon())
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The mark of a blockchain: the picture its own fetcher wears in the menu, taken from the location→file map that
+# lives beside AssetLocation.BLOCKCHAINS. An empty icon where the location isn't a chain.
+def chain_icon(location_id: int) -> QIcon:
+    icon_name = AssetLocation.icon_of(location_id)
+    return JalIcon.module_icon(CHAIN_PREFIX, icon_name) if icon_name else QIcon()

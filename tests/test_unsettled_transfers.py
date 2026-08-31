@@ -194,7 +194,13 @@ def test_the_chain_column_names_the_chain_of_the_listing(wallets):
     JalSymbol.db_cache.clear_cache()
     _transfer(WALLET_A, None, 400, d2t(210103))
 
-    assert _row(_model(), 0, 'chain') == 'Arbitrum'
+    model = _model()
+    assert _row(model, 0, 'chain') == 'Arbitrum'
+    # ... and it is marked with the chain's own logo, exactly as a wallet account is wherever one is named
+    from jal.widgets.icons import JalIcon, chain_icon
+    JalIcon()   # the glyph table is built by MainWindow in the application, and by hand where there is none
+    icon = model.data(model.index(0, _column(model, 'chain'), QModelIndex()), Qt.DecorationRole)
+    assert icon.cacheKey() == chain_icon(AssetLocation.ARB_BLOCKCHAIN).cacheKey()
 
 
 # ... and what sits on no chain says nothing there rather than something vaguely true: a listing nobody located, a
@@ -206,6 +212,9 @@ def test_a_leg_that_is_on_no_chain_leaves_the_column_empty(wallets):
     model = _model()
 
     assert _row(model, 0, 'chain') == '' and _row(model, 1, 'chain') == ''
+    # No name and no mark either - a row with nothing to say there keeps no space for a logo
+    for row in (0, 1):
+        assert model.data(model.index(row, _column(model, 'chain'), QModelIndex()), Qt.DecorationRole) is None
 
 
 # ----------------------------------------------------------------------------------------------------------------------

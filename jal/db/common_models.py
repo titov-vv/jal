@@ -16,17 +16,10 @@ from jal.db.residence import JalResidence
 from jal.db.tag import JalTag
 from jal.db.token_blacklist import JalTokenBlacklist
 from jal.widgets.helpers import ts2d
-from jal.widgets.icons import JalIcon, CHAIN_PREFIX
+from jal.widgets.icons import JalIcon, chain_icon
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# The mark of a blockchain: the picture its own fetcher wears in the menu, taken from the location→file map that
-# lives beside AssetLocation.BLOCKCHAINS. An empty icon where the location isn't a chain.
-def chain_icon(location_id: int) -> QIcon:
-    icon_name = AssetLocation.icon_of(location_id)
-    return JalIcon.module_icon(CHAIN_PREFIX, icon_name) if icon_name else QIcon()
-
-
 # The glyph that says what kind of account this row is. A WALLET is marked by its blockchain rather than by the
 # generic wallet glyph - 'Ethereum' or 'Solana' is what the user knows the account as, and every chain already
 # ships a picture. It is the account that is asked and not its type, because a group row of the balances tree
@@ -342,6 +335,16 @@ class TokenBlacklistModel(AbstractReferenceListModel):
         ]
         super().__init__("token_blacklist", columns, parent)
         self.set_default_values({'location_id': AssetLocation.ETH_BLOCKCHAIN, 'address': '', 'name_hint': '', 'added_ts': 0, 'auto': 0})   # A manually added token is not an automatic one
+
+    # The rows of this table carry no icon of their own, but the chain each of them names does - and it is the same
+    # mark the account list and the staked positions put before that chain's name.
+    def icon_decoration(self, index):
+        if index.column() != self.fieldIndex("location_id"):
+            return None
+        try:
+            return chain_icon(int(super().data(index, Qt.DisplayRole)))
+        except (TypeError, ValueError):
+            return None
 
     # The table is maintained by the token filter and by this dialog only, so the shared cache of
     # JalTokenBlacklist has to be dropped after any change made here.

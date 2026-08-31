@@ -20,7 +20,7 @@ from jal.net.chain_fetchers.protocols import protocol_name
 from jal.reports.reports import Reports
 from jal.ui.reports.ui_staking_report import Ui_StakingReportWidget
 from jal.widgets.delegates import FloatDelegate, TimestampDelegate
-from jal.widgets.icons import JalIcon
+from jal.widgets.icons import JalIcon, chain_icon
 from jal.widgets.accrual_chart import AccrualChartWindow, ReceivableChartWindow
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.helpers import set_grids_metrics, restore_columns
@@ -76,6 +76,9 @@ class StakingListModel(QAbstractTableModel):
             font = QFont()
             font.setItalic(True)   # a closed position is shown as past, exactly as a deactivated account is
             return font
+        if role == Qt.DecorationRole and index.column() == 2:
+            icon = chain_icon(self._data[index.row()]['chain'])  # The chain is named and marked in the same cell, the way a wallet account is everywhere else.
+            return icon if not icon.isNull() else None
         if role == Qt.DecorationRole and index.column() == 3:
             return self._asset_icon(self._data[index.row()])
         return None

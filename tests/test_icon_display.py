@@ -590,6 +590,55 @@ def test_the_balances_tree_marks_a_wallet_with_its_chain(prepare_db):
     parent.deleteLater()
 
 
+# Every column that NAMES a chain is marked with it as well: the staked positions and the token blacklist say which
+# chain a row is on in a column of their own, and a name there without the logo the same chain wears everywhere else
+# is the odd one out.
+def test_the_staking_report_marks_the_chain_column(prepare_db):
+    from PySide6.QtWidgets import QTableView
+    from jal.constants import AssetLocation, PredefinedAccountType
+    from jal.db.account import JalAccount
+    from jal.db.common_models import chain_icon
+    from jal.db.staking import JalStakingBox
+    from jal.reports.staking import StakingListModel
+    from jal.widgets.icons import JalIcon
+    JalIcon()
+
+    wallet = JalAccountCreator(currency_id=2, number='', name='Tron wallet', organization=1,
+                               account_type=PredefinedAccountType.Wallet,
+                               address=TRX_ADDRESS, chain=AssetLocation.TRX_BLOCKCHAIN).commit()
+    JalStakingBox.create(JalAccount(wallet.id()), 'Tron staking', protocol='Tron staking',
+                         chain=AssetLocation.TRX_BLOCKCHAIN)
+
+    model = StakingListModel(QTableView())
+    model.updateView(timestamp=d2t(300101), currency_id=2, show_closed=True)   # an empty box is listed as closed
+    chain = model.index(0, 2)
+
+    assert model.data(chain, Qt.DisplayRole) == 'Tron'
+    assert model.data(chain, Qt.DecorationRole).cacheKey() == chain_icon(AssetLocation.TRX_BLOCKCHAIN).cacheKey()
+    # A position on no chain (a venue's internal staking balance) names none, so it keeps no space for a logo either
+    JalStakingBox.create(JalAccount(wallet.id()), 'Exchange staking', protocol='Exchange staking')
+    model.updateView(timestamp=d2t(300101))
+    row = [x for x in range(model.rowCount()) if model.data(model.index(x, 0), Qt.DisplayRole) == 'Exchange staking']
+    assert model.data(model.index(row[0], 2), Qt.DecorationRole) is None
+
+
+def test_the_token_blacklist_marks_the_chain_column(prepare_db):
+    from jal.constants import AssetLocation
+    from jal.db.common_models import TokenBlacklistModel, chain_icon
+    from jal.db.token_blacklist import JalTokenBlacklist
+    from jal.widgets.icons import JalIcon
+    JalIcon()
+
+    JalTokenBlacklist.add(AssetLocation.TRX_BLOCKCHAIN, TRX_ADDRESS, name_hint='USDT')
+    model = TokenBlacklistModel()
+    model.setFilter('')
+
+    assert model.rowCount() == 1
+    chain = model.index(0, model.fieldIndex("location_id"))
+    assert model.data(chain, Qt.DecorationRole).cacheKey() == chain_icon(AssetLocation.TRX_BLOCKCHAIN).cacheKey()
+    assert model.data(model.index(0, model.fieldIndex("address")), Qt.DecorationRole) is None
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 # The lookup combo boxes of the dialogs draw an icon by themselves once their model answers with one - and the
 # currencies they list are assets, so the icon is the one of the listing that names each of them.

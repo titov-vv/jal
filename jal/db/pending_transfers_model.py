@@ -14,6 +14,7 @@ from jal.db.operations import Bridge, Transfer
 from jal.db.transfer_settlement import TransferSettlement
 from jal.net.chain_fetchers.protocols import protocol_names
 from jal.widgets.delegates import GridLinesDelegate, FloatDelegate, TimestampDelegate
+from jal.widgets.icons import chain_icon
 from jal.widgets.theme import Theme, Meaning
 
 
@@ -24,7 +25,7 @@ class PendingLegTreeItem(AbstractTreeItem):
     def __init__(self, leg=None, parent=None, group=''):
         super().__init__(parent, group)
         if leg is None:
-            self._data = {'timestamp': 0, 'age': 0, 'from': '', 'to': '', 'asset': '', 'chain': '',
+            self._data = {'timestamp': 0, 'age': 0, 'from': '', 'to': '', 'asset': '', 'chain': '', 'chain_id': 0,
                           'qty': Decimal('0'), 'value': Decimal('0'), 'action': '', 'suggestion': '', 'address': '',
                           'number': '', 'note': '', 'account': '', 'protocol': ''}
         else:
@@ -201,6 +202,9 @@ class PendingTransfersModel(ReportTreeModel):
         details = item.details()
         if role == Qt.DisplayRole:
             return details[self._columns[index.column()]['field']]
+        if role == Qt.DecorationRole and index.column() == self.fieldIndex('chain'):
+            icon = chain_icon(details['chain_id'])
+            return icon if not icon.isNull() else None
         if role == Qt.FontRole:
             # An account the address resolved to is the one thing in the row that is an answer rather than a
             # question, so it says so wherever the rest of the row is set in the type of what is still unknown
@@ -422,6 +426,7 @@ class PendingTransfersModel(ReportTreeModel):
             'to': unknown if outgoing else leg['account'].name(),
             'asset': Transfer.leg_symbol(leg),
             'chain': self._chain_of(leg['symbol']),
+            'chain_id': self._chain_id_of(leg['symbol']),
             'qty': leg['qty'],
             'value': value,
             'action': self._leg_action(kind, suggested, duplicate),
@@ -447,6 +452,14 @@ class PendingTransfersModel(ReportTreeModel):
         if self._locations is None:
             self._locations = AssetLocation()
         return self._locations.get_name(symbol.location())
+
+    # The same chain as an id, kept beside its name so that the column can be marked with the chain's logo. The name
+    # stays what the row HOLDS: it is what the filter searches and what the column sorts by.
+    @staticmethod
+    def _chain_id_of(symbol) -> int:
+        if symbol is None or symbol.location() not in AssetLocation.BLOCKCHAINS:
+            return 0
+        return symbol.location()
 
     # How long the leg has been waiting, in whole days as of the date the report is drawn for. Never below zero: a
     # leg dated later in the day the report ends on has not been waiting a negative time, it has just arrived.
@@ -523,6 +536,7 @@ class PendingTransfersModel(ReportTreeModel):
             'to': self.tr("(unknown)"),
             'asset': half['symbol'].symbol(),
             'chain': self._chain_of(half['symbol']),
+            'chain_id': self._chain_id_of(half['symbol']),
             'qty': half['qty'],
             'value': half['qty'] * half['asset'].quote(self._date, self._currency)[1],
             # Not one of this report's buttons: a half-bridge is already recorded as a crossing, so what it waits
@@ -552,6 +566,7 @@ class PendingTransfersModel(ReportTreeModel):
             'to': leg['to_account'].name(),
             'asset': leg['symbol'].symbol(),
             'chain': self._chain_of(leg['symbol']),
+            'chain_id': self._chain_id_of(leg['symbol']),
             'qty': leg['qty'],
             'value': Decimal('0'),
             # This row is settled and no action of this report applies to it - it is listed to be looked at, and
