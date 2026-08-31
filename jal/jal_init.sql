@@ -313,6 +313,32 @@ CREATE TABLE chain_balances (
 DROP INDEX IF EXISTS chain_balances_uniqueness;
 CREATE UNIQUE INDEX chain_balances_uniqueness ON chain_balances (account_id, asset_id, timestamp);
 
+-- Table: receivables - what a distributor OWES an account and has not paid yet: a reward that has been earned,
+-- is backed by a published proof, and is waiting to be claimed.
+--
+-- It is valuation data exactly as 'chain_balances' is, and for the same reason - unrealized value is a quote and
+-- never an operation. What it is NOT is a chain balance, and the difference is why it needs a table of its own:
+--   * a chain balance is a quantity OF THE ASSET A POSITION HOLDS, and it is displayed as the amount by which it
+--     exceeds the books. A receivable is denominated in an asset the account holds NONE of, so there is no ledger
+--     quantity to subtract and the whole stored figure is the answer;
+--   * a chain balance is keyed (account, asset), which is enough because one account holds one balance of one token.
+--     A receivable also needs its SOURCE: several distributors pay the same token to the same wallet, and folding
+--     them into one row would show one source's reward under the total's name.
+-- Appended to, never updated, like 'chain_balances' and 'quotes': one row per (account, asset, source) per refresh,
+-- the latest row drives the display, and the series is a per-claim history for free.
+DROP TABLE IF EXISTS receivables;
+CREATE TABLE receivables (
+    id         INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    timestamp  INTEGER NOT NULL,                     -- when the claim was read
+    account_id INTEGER NOT NULL REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    asset_id   INTEGER NOT NULL REFERENCES assets (id) ON DELETE CASCADE ON UPDATE CASCADE,
+    source     TEXT    NOT NULL,                     -- normalized address of the distributor that owes it
+    amount     TEXT    NOT NULL,                     -- claimable now - a published proof backs it
+    pending    TEXT    NOT NULL DEFAULT ('0')        -- accruing inside the current epoch, no proof yet
+);
+DROP INDEX IF EXISTS receivables_uniqueness;
+CREATE UNIQUE INDEX receivables_uniqueness ON receivables (account_id, asset_id, source, timestamp);
+
 -- Unknown/spam token policy: blacklisted tokens are never imported and never become assets/symbols,
 -- so scam names/tickers stay out of the asset tables entirely
 DROP TABLE IF EXISTS token_blacklist;

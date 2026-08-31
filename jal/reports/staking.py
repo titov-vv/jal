@@ -10,15 +10,18 @@ from jal.constants import AssetLocation, IconOwner, Setup
 from jal.db.clock import day_finish, now_dt
 from jal.db.asset import JalAsset
 from jal.db.icon import JalIcons
+from jal.db.account import JalAccount
 from jal.db.chain_balance import JalChainBalance
 from jal.db.helpers import localize_decimal
 from jal.db.operations import LedgerTransaction
+from jal.db.receivable import JalReceivable
 from jal.db.staking import JalStakingBox
+from jal.net.chain_fetchers.protocols import protocol_name
 from jal.reports.reports import Reports
 from jal.ui.reports.ui_staking_report import Ui_StakingReportWidget
 from jal.widgets.delegates import FloatDelegate, TimestampDelegate
 from jal.widgets.icons import JalIcon
-from jal.widgets.accrual_chart import AccrualChartWindow
+from jal.widgets.accrual_chart import AccrualChartWindow, ReceivableChartWindow
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.helpers import set_grids_metrics, restore_columns
 
@@ -26,11 +29,15 @@ JAL_REPORT_CLASS = "StakingReport"
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# What was staked and is still held somewhere else at the report date, one row per asset in a box.
+# What was staked and is still held somewhere else at the report date, one row per asset in a box - and, beside it,
+# what a distributor owes a wallet and hasn't paid yet.
 #
 # A row per (box, asset) rather than per box: a container normally holds the one coin it was made for, but nothing
 # says it must, and folding two coins into one row would have to state a quantity that means nothing. What a box IS
 # stays one thing - the details below, and closing it, act on the whole box whichever of its rows is selected.
+#
+# A CLAIMABLE REWARD is listed here too, one row per (wallet, asset, distributor), because it is the same kind of
+# thing the 'Accrued' column already exists for: value that has been earned and not yet received.
 class StakingListModel(QAbstractTableModel):
     def __init__(self, parent_view):
         super().__init__(parent_view)
@@ -45,6 +52,7 @@ class StakingListModel(QAbstractTableModel):
         self._float_delegate = None
         self._qty_delegate = None
         self._timestamp_delegate = None
+        self._accrued_delegate = None
         self._value_total = Decimal('0')
 
     def rowCount(self, parent=None):
@@ -64,7 +72,7 @@ class StakingListModel(QAbstractTableModel):
     def data(self, index, role=Qt.DisplayRole, field=''):
         if role == Qt.DisplayRole:
             return self.data_text(self._data[index.row()], index.column())
-        if role == Qt.FontRole and not self._data[index.row()]['box'].is_active():
+        if role == Qt.FontRole and not self._data[index.row()]['active']:
             font = QFont()
             font.setItalic(True)   # a closed position is shown as past, exactly as a deactivated account is
             return font
@@ -73,28 +81,26 @@ class StakingListModel(QAbstractTableModel):
         return None
 
     # The logo of the listing the Asset column names - the same listing data_text() takes the ticker from, asked
-    # for by the box's own currency and chain
+    # for by the row's own currency and chain
     def _asset_icon(self, record: dict):
         if record['asset'] is None:
             return JalIcons.spacer(JalIcons.grid_size())
-        box = record['box']
-        listing = record['asset'].listing_id(currency=box.currency().id(), location=box.chain())
+        listing = record['asset'].listing_id(currency=record['currency_id'], location=record['chain'])
         return JalIcons.decoration(IconOwner.Symbol, listing, JalIcons.grid_size())
 
     def data_text(self, record: dict, column: int):
-        box = record['box']
         if column == 0:
-            return box.name()
+            return record['name']
         if column == 1:
-            return box.protocol()
+            return record['protocol']
         if column == 2:
-            return AssetLocation().get_name(box.chain()) if box.chain() else ''
+            return AssetLocation().get_name(record['chain']) if record['chain'] else ''
         if column == 3:
             if record['asset'] is None:
                 return ''
-            # Asked for the box's own currency and chain: a coin held on several chains is one asset with a listing
+            # Asked for the row's own currency and chain: a coin held on several chains is one asset with a listing
             # per chain, and asking without them answers with every ticker it has run together
-            return record['asset'].symbol(currency=box.currency().id(), location=box.chain())
+            return record['asset'].symbol(currency=record['currency_id'], location=record['chain'])
         if column == 4:
             return record['amount']
         if column == 5:
@@ -103,14 +109,15 @@ class StakingListModel(QAbstractTableModel):
             # what a given box earned: yield reaches the wallet and nothing records which container produced it, so
             # any per-box figure would be a guess. A live chain balance minus the booked principal IS that figure,
             # measured instead of guessed - so here it is the subject of the report rather than a rarity that would
-            # leave the column empty on every other row.
+            # leave the column empty on every other row. A claimable reward is the same column's other half: it too
+            # is earned and unpaid, and the only difference is that it waits at a distributor instead of in a box.
             return record['accrued']
         if column == 6:
             return record['value']
         if column == 7:
-            return box.opened_at()
+            return record['since']
         if column == 8:
-            return box.address()
+            return record['address']
         return ''
 
     def footerData(self, section: int, role=Qt.DisplayRole):
@@ -131,6 +138,13 @@ class StakingListModel(QAbstractTableModel):
     def box(self, index) -> JalStakingBox:
         record = self.record(index)
         return record['box'] if record else None
+
+    # The account a row belongs to: the box itself for a staked position, the wallet that is owed for a claim.
+    def account(self, index) -> int:
+        record = self.record(index)
+        if record is None:
+            return 0
+        return record['box'].id() if record['box'] is not None else record['account_id']
 
     # The whole row behind an index, for a caller that needs the asset too and not only the box it sits in
     def record(self, index) -> dict:
@@ -157,8 +171,7 @@ class StakingListModel(QAbstractTableModel):
             if not holdings:
                 # Only reachable with closed positions shown - a box that holds nothing is what a finished stake
                 # leaves behind, and it is listed so that what WAS staked can still be found
-                self._data.append({'box': box, 'asset': None, 'amount': Decimal('0'), 'accrued': Decimal('0'),
-                                   'value': Decimal('0')})
+                self._data.append(self._box_row(box, None, Decimal('0'), Decimal('0'), Decimal('0')))
                 continue
             for holding in holdings:
                 rate = holding['asset'].quote(self._timestamp, self._currency_id)[1]
@@ -167,21 +180,59 @@ class StakingListModel(QAbstractTableModel):
                 # because that is what the position is worth and what the total at the bottom has to add up to.
                 accrued = JalChainBalance().accrual(box.id(), holding['asset'].id(), holding['amount'],
                                                     self._timestamp)['delta']
-                self._data.append({'box': box, 'asset': holding['asset'], 'amount': holding['amount'],
-                                   'accrued': accrued, 'value': (holding['amount'] + accrued) * rate})
+                self._data.append(self._box_row(box, holding['asset'], holding['amount'], accrued,
+                                                (holding['amount'] + accrued) * rate))
+        self._data += self._claim_rows()
         self._value_total = sum([x['value'] for x in self._data], Decimal('0'))
         self.endResetModel()
 
+    # One row of a staked position. Everything the columns need is taken off the box HERE rather than when the row is
+    # drawn, so that a claimable-reward row - which has no box - can fill the same fields from somewhere else.
+    @staticmethod
+    def _box_row(box: JalStakingBox, asset, amount: Decimal, accrued: Decimal, value: Decimal) -> dict:
+        return {'box': box, 'name': box.name(), 'protocol': box.protocol(), 'chain': box.chain(),
+                'currency_id': box.currency().id(), 'address': box.address(), 'since': box.opened_at(),
+                'active': box.is_active(), 'asset': asset, 'amount': amount, 'accrued': accrued, 'value': value,
+                'source': '', 'account_id': box.id()}
+
+    # What the distributors owe, one row per (wallet, asset, distributor).
+    #
+    # There is no principal to show and no date to show it from: a reward was never deposited anywhere, so 'Quantity'
+    # is zero (the column blanks it) and 'Staked since' is empty. The Address column names the DISTRIBUTOR, which is
+    # what a row of this kind is identified by and what tells two of them paying the same token apart.
+    #
+    # 'Show closed' doesn't filter these: a claim isn't open or closed, it is owed or it isn't, and one that has been
+    # paid simply stops being listed.
+    def _claim_rows(self) -> list:
+        rows = []
+        receivables = JalReceivable()
+        for account_id in receivables.accounts_with_claims(self._timestamp):
+            account = JalAccount(account_id)
+            for claim in receivables.claims(account_id, self._timestamp):
+                asset = JalAsset(claim['asset_id'])
+                rate = asset.quote(self._timestamp, self._currency_id)[1]
+                # The protocol is named where it is known and the bare contract shown where it isn't - a row must
+                # always say who owes the money, and an unregistered distributor is still an address one can look up.
+                name = protocol_name(account.chain(), claim['source']) or claim['source']
+                rows.append({'box': None, 'name': account.name(), 'protocol': name, 'chain': account.chain(),
+                             'currency_id': account.currency(), 'address': claim['source'], 'since': 0,
+                             'active': True, 'asset': asset, 'amount': Decimal('0'), 'accrued': claim['amount'],
+                             'value': claim['amount'] * rate, 'source': claim['source'], 'account_id': account_id})
+        return rows
+
     def configureView(self):
         # A staked quantity keeps its tail: coins are held to 18 decimals and rounding one to two would show a
-        # position of 0.00 for anything small enough
-        self._qty_delegate = FloatDelegate(2, allow_tail=True)
+        # position of 0.00 for anything small enough. 'empty_zero' is what leaves the column blank on a
+        # claimable-reward row instead: a reward has no staked principal at all, and a literal 0.00 there would read
+        # as a position that has been emptied.
+        self._qty_delegate = FloatDelegate(2, allow_tail=True, empty_zero=True)
+        self._accrued_delegate = FloatDelegate(2, allow_tail=True)
         self._float_delegate = FloatDelegate(2, allow_tail=False)
         self._timestamp_delegate = TimestampDelegate(date_only=True)
         self._view.setItemDelegateForColumn(4, self._qty_delegate)
         # The accrual keeps its tail for the same reason the quantity does, and more so: it is a small fraction of
         # the position (0.07 HYPE on 11.9, 0.15 SOL on 5.9), so two decimals would round most of it out of sight.
-        self._view.setItemDelegateForColumn(5, self._qty_delegate)
+        self._view.setItemDelegateForColumn(5, self._accrued_delegate)
         self._view.setItemDelegateForColumn(6, self._float_delegate)
         self._view.setItemDelegateForColumn(7, self._timestamp_delegate)
         self._view.setColumnWidth(0, 200)
@@ -350,9 +401,9 @@ class StakingReportWindow(MdiWidget):
                                     show_closed=self.ui.ClosedCheck.isChecked())
         self.details_model.setBox(self._selected(), self._timestamp())
 
-    # The 'Accrued' column says what a position has earned right now; this draws how it got there. The series is the
-    # 'chain_balances' history, which every quotes update leaves a row in - so it costs no extra request and exists
-    # whether or not anyone opens it.
+    # The 'Accrued' column says what a position has earned right now; this draws how it got there. Both series are
+    # left behind by the ordinary quotes update - the box's by 'chain_balances', the claim's by 'receivables' - so
+    # either chart costs no extra request and exists whether or not anyone opens it.
     @Slot()
     def onPositionContextMenu(self, pos):
         index = self.ui.ReportTableView.indexAt(pos)
@@ -362,15 +413,25 @@ class StakingReportWindow(MdiWidget):
         if record is None or record['asset'] is None:
             return
         menu = QMenu(self.ui.ReportTableView)
-        action = QAction(icon=JalIcon[JalIcon.CHART], text=self.tr("Show accrual chart"),
-                         parent=self.ui.ReportTableView)
-        action.triggered.connect(partial(self.showAccrualChart, record['box'].id(), record['asset'].id()))
+        if record['box'] is None:
+            action = QAction(icon=JalIcon[JalIcon.CHART], text=self.tr("Show claim history"),
+                             parent=self.ui.ReportTableView)
+            action.triggered.connect(partial(self.showClaimHistory, self.boxes_model.account(index),
+                                             record['asset'].id(), record['source']))
+        else:
+            action = QAction(icon=JalIcon[JalIcon.CHART], text=self.tr("Show accrual chart"),
+                             parent=self.ui.ReportTableView)
+            action.triggered.connect(partial(self.showAccrualChart, record['box'].id(), record['asset'].id()))
         menu.addAction(action)
         menu.popup(self.ui.ReportTableView.viewport().mapToGlobal(pos))
 
     @Slot()
     def showAccrualChart(self, account_id, asset_id):
         self._parent.mdi_area().addWindow(AccrualChartWindow(account_id, asset_id), floating=True)
+
+    @Slot()
+    def showClaimHistory(self, account_id, asset_id, source):
+        self._parent.mdi_area().addWindow(ReceivableChartWindow(account_id, asset_id, source), floating=True)
 
     @Slot()
     def onBoxSelected(self, _selected=None, _deselected=None):
@@ -381,6 +442,8 @@ class StakingReportWindow(MdiWidget):
     # lost. Unstaking is not done here - it happens on the chain and reaches JAL as the transfer that settles back.
     @Slot()
     def closePosition(self):
+        # None means nothing is selected, or a claimable reward is - and a claim is not a position that can be
+        # closed. It ends when it is paid, and the next update writes it down as zero.
         box = self._selected()
         if box is None:
             return

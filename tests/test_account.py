@@ -157,8 +157,10 @@ def test_replacing_a_tag_repoints_the_accounts(prepare_db):
 # ----------------------------------------------------------------------------------------------------------------------
 # The 66 -> 67 migration, run from the shipped delta file rather than copied here, so this test breaks if the
 # migration text stops doing what it says: it is the trigger that takes a deleted tag off the accounts.
+# The delta carries more than one section, so the slice ends where the NEXT one begins rather than at the version
+# bump - running a neighbouring section here would fail on tables a fresh test database already has.
 _MIGRATION_FROM = "-- AN ACCOUNT MAY CARRY A TAG"
-_MIGRATION_TO = "-- Set new DB schema version"
+_MIGRATION_TO = "-- CLAIMABLE REWARDS THAT HAVE NOT BEEN PAID YET"
 
 # The trigger schema 66 shipped - it knew about an asset's tag but not about an account's
 _OLD_SCHEMA = """

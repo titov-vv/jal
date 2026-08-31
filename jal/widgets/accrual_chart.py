@@ -7,9 +7,31 @@ from PySide6.QtCharts import QChart, QChartView, QLineSeries, QScatterSeries, QD
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.chain_balance import JalChainBalance
+from jal.db.receivable import JalReceivable
 from jal.widgets.helpers import ts2d, DateFormat, ts2axis, axis2ts
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.theme import Theme, Meaning, is_dark_theme
+
+
+# Said plainly rather than drawn as an empty chart. Both series can only ever be accumulated going forward: no source
+# anywhere reports what a balance or a claim was on a past date, so too few points means "not measured yet" and never
+# "nothing was earned".
+def not_enough_yet(parent) -> QLabel:
+    return QLabel(QApplication.translate(
+        "AccrualChartWidget", "Not enough on-chain measurements yet - the history is collected as quotes are "
+                              "updated, and cannot be filled in for the past."), parent=parent)
+
+
+# Axis bounds. The vertical one always starts at zero: what is plotted is measured FROM nothing, and letting the axis
+# start at the first reading would turn a position that grew by a hundredth of a percent into a dramatic climb.
+def axis_range(series) -> list:
+    min_ts = min(x['timestamp'] for x in series) - 86400
+    max_ts = max(x['timestamp'] for x in series) + 86400
+    top = max(x['accrued'] for x in series)
+    if top <= Decimal('0'):
+        return [min_ts, max_ts, 0, 1]
+    step = Decimal(10) ** Decimal(floor(Decimal.log10(top)))
+    return [min_ts, max_ts, 0, ceil(top / step) * step]
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -25,9 +47,16 @@ from jal.widgets.theme import Theme, Meaning, is_dark_theme
 # daily staircase besides, since rewards are distributed once a day and nothing moves in between. That is why the
 # points are drawn as markers on the line instead of being smoothed away: every one of them is a measurement, and the
 # space between two of them is not information.
+#
+# 'details' names the lines of the tooltip as (label, key) pairs read off the point being hovered, because what is
+# worth saying about a measurement depends on what was measured: an accrual is only meaningful beside the two
+# quantities it is the difference of, while a claim has no books to be compared against and says what is still
+# accruing behind it instead.
 class AccrualChartWidget(QWidget):
-    def __init__(self, parent, series, data_range, unit_name):
+    def __init__(self, parent, series, data_range, unit_name, value_name=None, details=None):
         super().__init__(parent=parent)
+        self._details = details if details is not None else [
+            (self.tr("On chain: "), 'chain'), (self.tr("In books: "), 'ledger'), (self.tr("Accrued: "), 'accrued')]
         self.setMinimumWidth(600)
         self.setMinimumHeight(400)
 
@@ -51,7 +80,7 @@ class AccrualChartWidget(QWidget):
         self.axisY = QValueAxis()
         self.axisY.setTickCount(11)
         self.axisY.setRange(data_range[2], data_range[3])
-        self.axisY.setTitleText(self.tr("Accrued, ") + unit_name)
+        self.axisY.setTitleText((self.tr("Accrued, ") if value_name is None else value_name) + unit_name)
 
         self.chartView = QChartView()
         self.chartView.chart().addSeries(self.accrued_series)
@@ -84,7 +113,7 @@ class AccrualChartWidget(QWidget):
         self.layout.addWidget(self.chartView)
         self.setLayout(self.layout)
 
-    # Both quantities behind a point, because the accrual alone doesn't say what it accrued ON - the same 0.07 means
+    # Everything behind a point, because the plotted figure alone doesn't say what produced it - the same 0.07 means
     # something different against 6 staked coins than against 12.
     def MouseOverPoint(self, point, state):
         if not state:
@@ -96,10 +125,8 @@ class AccrualChartWidget(QWidget):
             self.setToolTip("")
             return
         measurement = measured[0]
-        self.setToolTip(ts2d(measurement['timestamp']) + "\n"
-                        + self.tr("On chain: ") + f"{measurement['chain']}\n"
-                        + self.tr("In books: ") + f"{measurement['ledger']}\n"
-                        + self.tr("Accrued: ") + f"{measurement['accrued']}")
+        lines = [label + f"{measurement[key]}" for label, key in self._details if key in measurement]
+        self.setToolTip("\n".join([ts2d(measurement['timestamp'])] + lines))
 
 
 class AccrualChartWindow(MdiWidget):
@@ -112,27 +139,36 @@ class AccrualChartWindow(MdiWidget):
 
         self.layout = QHBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)
-        # A position that was never read, or read once, has no history to draw yet - and it is worth saying so
-        # plainly. The series can only ever be accumulated going forward: no source anywhere reports what a balance
-        # was on a past date, so an empty chart here means "not measured yet" and never "nothing was earned".
-        if len(series) < 2:
-            self.layout.addWidget(QLabel(
-                self.tr("Not enough on-chain measurements yet - the balance history is collected as quotes are "
-                        "updated, and cannot be filled in for the past."), parent=self))
+        if len(series) < 2:   # A position that was never read, or read once, has no history to draw yet
+            self.layout.addWidget(not_enough_yet(self))
         else:
-            self.layout.addWidget(AccrualChartWidget(self, series, self._range(series), name))
+            self.layout.addWidget(AccrualChartWidget(self, series, axis_range(series), name))
         self.setLayout(self.layout)
         self.setWindowTitle(self.tr("Accrued quantity: ") + f"{name} @ {account.name()}")
         self.ready = True
 
-    # Axis bounds. The vertical one always starts at zero: an accrual is measured FROM nothing, and letting the axis
-    # start at the first reading would turn a position that grew by a hundredth of a percent into a dramatic climb.
-    @staticmethod
-    def _range(series) -> list:
-        min_ts = min(x['timestamp'] for x in series) - 86400
-        max_ts = max(x['timestamp'] for x in series) + 86400
-        top = max(x['accrued'] for x in series)
-        if top <= Decimal('0'):
-            return [min_ts, max_ts, 0, 1]
-        step = Decimal(10) ** Decimal(floor(Decimal.log10(top)))
-        return [min_ts, max_ts, 0, ceil(top / step) * step]
+
+# ----------------------------------------------------------------------------------------------------------------------
+# How much a distributor has come to owe an account over time - the claimable half of a Merkl-style reward, plotted at
+# every moment it was read.
+# 'pending' is shown in the tooltip but never plotted: it has no proof behind it, cannot be claimed today, and drawing
+# it beside a figure that can would suggest the two are the same kind of thing.
+class ReceivableChartWindow(MdiWidget):
+    def __init__(self, account_id, asset_id, source, parent=None):
+        super().__init__(parent)
+        account = JalAccount(account_id)
+        asset = JalAsset(asset_id)
+        series = JalReceivable().claim_history(account_id, asset_id, source)
+        name = asset.symbol(currency=account.currency(), location=account.chain())
+
+        self.layout = QHBoxLayout(self)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        if len(series) < 2:
+            self.layout.addWidget(not_enough_yet(self))
+        else:
+            self.layout.addWidget(AccrualChartWidget(
+                self, series, axis_range(series), name, value_name=self.tr("Claimable, "),
+                details=[(self.tr("Claimable: "), 'accrued'), (self.tr("Pending: "), 'pending')]))
+        self.setLayout(self.layout)
+        self.setWindowTitle(self.tr("Claimable reward: ") + f"{name} @ {account.name()}")
+        self.ready = True

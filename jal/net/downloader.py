@@ -296,8 +296,9 @@ class QuoteDownloader(QObject):
 
     # The third part of an update, beside currency rates and asset prices: what the chain says a position REALLY
     # holds, for the positions whose quantity can grow without any transaction behind it (a staking box that accrues
-    # inside the container, a rebasing receipt token). It belongs here rather than in a corner of its own because it
-    # is the same kind of thing as a quote - a dated measurement of value that no operation produced
+    # inside the container, a rebasing receipt token), and what a distributor owes a wallet and hasn't paid yet. It
+    # belongs here rather than in a corner of its own because it is the same kind of thing as a quote - a dated
+    # measurement of value that no operation produced.
     #
     # It deliberately IGNORES the dialog's date range. A balance is a "now" value and no API offers it for a past
     # date, so there is no history to request and a date range would only suggest one exists. Nothing is back-dated:
@@ -308,6 +309,7 @@ class QuoteDownloader(QObject):
             reader = ChainBalanceReader()
             count = reader.read_staking_boxes(timestamp, locations=sources_list)
             count += reader.read_rebasing_assets(timestamp, locations=sources_list)
+            count += reader.read_receivables(timestamp, locations=sources_list)
         except Exception as error:
             # A balance reading is an extra, not a prerequisite: the quotes are already downloaded and stored by the
             # time this runs, and losing the whole update because a venue's API misbehaved would be a bad trade.

@@ -737,12 +737,12 @@ def test_the_accrual_chart_window_builds(hl_wallet):
 # The vertical axis starts at zero, so a position that grew by a hundredth of a percent is not drawn as a dramatic
 # climb - the size of the accrual relative to nothing is the whole point of the picture.
 def test_the_accrual_axis_starts_at_zero(hl_wallet):
-    from jal.widgets.accrual_chart import AccrualChartWindow
+    from jal.widgets.accrual_chart import axis_range
     series = [{'timestamp': d2t(260301), 'chain': Decimal('11.93'), 'ledger': Decimal('11.92'),
                'accrued': Decimal('0.01')},
               {'timestamp': d2t(260501), 'chain': Decimal('11.99'), 'ledger': Decimal('11.92'),
                'accrued': Decimal('0.07')}]
-    bounds = AccrualChartWindow._range(series)
+    bounds = axis_range(series)
 
     assert bounds[2] == 0
     assert bounds[3] >= Decimal('0.07')
