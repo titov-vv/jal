@@ -139,7 +139,7 @@ def test_name_only_mode_shows_the_name_and_the_icon_alone(prepare_db):
     assert dialog.windowTitle() == "Staked position"
     assert dialog.ui.NameEdit.isVisibleTo(dialog) and dialog.ui.IconButton.isVisibleTo(dialog)
     for widget in (dialog.ui.CurrencyLbl, dialog.ui.CurrencyCombo, dialog.ui.TypeLbl, dialog.ui.TypeCombo,
-                   dialog.ui.OrganizationLbl, dialog.ui.OrganizationCombo, dialog.ui.ActiveCheck,
+                   dialog.ui.OrganizationLbl, dialog.ui.OrganizationWidget, dialog.ui.ActiveCheck,
                    dialog.ui.InvestingCheck, dialog.ui.ReconciledValue, dialog.ui.DetailsFrame):
         assert not widget.isVisibleTo(dialog), f"{widget.objectName()} is shown in the name-only mode"
 
@@ -165,3 +165,45 @@ def test_name_only_mode_cancel_keeps_the_name(prepare_db):
 
     JalAccount.db_cache.clear_cache()
     assert JalAccount(box.id()).name() == 'stake.link'
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The bank/broker of an account is picked with the same reference selector as a peer anywhere else in the application:
+# it must show the name of the stored peer and write back the id of the chosen one.
+def test_bank_broker_is_picked_with_a_peer_selector(prepare_db):
+    from jal.db.peer import JalPeer
+
+    bank = JalPeer(data={'name': 'Bank of Test', 'parent': 0}, create=True).id()
+    JalAccountCreator(currency_id=2, number='ACC-1', name='Bank', organization=bank,
+                      account_type=PredefinedAccountType.Bank).commit()
+
+    dialog = AccountDialog()
+    dialog.setSelectedId(1)
+    selector = dialog.ui.OrganizationWidget
+    assert selector.selected_id == bank and selector.name.text() == 'Bank of Test'
+
+    another = JalPeer(data={'name': 'Broker of Test', 'parent': 0}, create=True).id()
+    selector.selection_done(another)
+    dialog.accept()
+
+    JalAccount.db_cache.clear_cache()
+    assert JalAccount(1).organization() == another
+
+
+# Clearing the selector stores the predefined 'None' peer: 'accounts.organization_id' is NOT NULL DEFAULT (1)
+def test_cleared_bank_broker_falls_back_to_the_none_peer(prepare_db):
+    from jal.constants import PredefinedAgents
+    from jal.db.peer import JalPeer
+
+    bank = JalPeer(data={'name': 'Bank of Test', 'parent': 0}, create=True).id()
+    JalAccountCreator(currency_id=2, number='ACC-1', name='Bank', organization=bank,
+                      account_type=PredefinedAccountType.Bank).commit()
+
+    dialog = AccountDialog()
+    dialog.setSelectedId(1)
+    dialog.ui.OrganizationWidget.on_clean_button_clicked()
+    assert dialog.ui.OrganizationWidget.selected_id == PredefinedAgents.Empty
+    dialog.accept()
+
+    JalAccount.db_cache.clear_cache()
+    assert JalAccount(1).organization() == PredefinedAgents.Empty

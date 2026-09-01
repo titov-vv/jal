@@ -23,6 +23,7 @@ from PySide6.QtWidgets import (QAbstractButton, QApplication, QCheckBox, QDialog
 from jal.constants import AccountTypeComboBox
 from jal.widgets.custom.db_lookup_combobox import DbLookupComboBox
 from jal.widgets.icon_picker import IconButton
+from jal.widgets.reference_selector import ReferenceSelectorWidget
 
 class Ui_AccountDialog(object):
     def setupUi(self, AccountDialog):
@@ -77,10 +78,10 @@ class Ui_AccountDialog(object):
 
         self.gridLayout_2.addItem(self.horizontalSpacer, 4, 3, 1, 1)
 
-        self.OrganizationCombo = DbLookupComboBox(self.MainFrame)
-        self.OrganizationCombo.setObjectName(u"OrganizationCombo")
+        self.OrganizationWidget = ReferenceSelectorWidget(self.MainFrame)
+        self.OrganizationWidget.setObjectName(u"OrganizationWidget")
 
-        self.gridLayout_2.addWidget(self.OrganizationCombo, 3, 2, 1, 4)
+        self.gridLayout_2.addWidget(self.OrganizationWidget, 3, 2, 1, 4)
 
         self.TypeCombo = AccountTypeComboBox(self.MainFrame)
         self.TypeCombo.setObjectName(u"TypeCombo")
@@ -151,14 +152,14 @@ class Ui_AccountDialog(object):
         self.NameLbl.setBuddy(self.NameEdit)
         self.CurrencyLbl.setBuddy(self.CurrencyCombo)
         self.TypeLbl.setBuddy(self.TypeCombo)
-        self.OrganizationLbl.setBuddy(self.OrganizationCombo)
+        self.OrganizationLbl.setBuddy(self.OrganizationWidget)
         self.DataLbl.setBuddy(self.AddDataButton)
 #endif // QT_CONFIG(shortcut)
         QWidget.setTabOrder(self.NameEdit, self.IconButton)
         QWidget.setTabOrder(self.IconButton, self.CurrencyCombo)
         QWidget.setTabOrder(self.CurrencyCombo, self.TypeCombo)
-        QWidget.setTabOrder(self.TypeCombo, self.OrganizationCombo)
-        QWidget.setTabOrder(self.OrganizationCombo, self.ActiveCheck)
+        QWidget.setTabOrder(self.TypeCombo, self.OrganizationWidget)
+        QWidget.setTabOrder(self.OrganizationWidget, self.ActiveCheck)
         QWidget.setTabOrder(self.ActiveCheck, self.InvestingCheck)
         QWidget.setTabOrder(self.InvestingCheck, self.AddDataButton)
         QWidget.setTabOrder(self.AddDataButton, self.RemoveDataButton)

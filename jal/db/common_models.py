@@ -120,7 +120,7 @@ class AccountListModel(AbstractReferenceListModel):
 # Single-record model of the 'accounts' table, used by AccountDialog via a QDataWidgetMapper to edit one account.
 # The column list must enumerate every 'accounts' field in physical table order, because the mapper addresses model
 # sections by index (fieldIndex() returns the position within this list). No relations are set here so that the mapped
-# lookup fields (currency_id, organization_id) expose their raw ids to the DbLookupComboBox editors.
+# lookup fields (currency_id, organization_id) expose their raw ids to the editors mapped onto them.
 class AccountRecordModel(AbstractReferenceListModel):
     def __init__(self, parent=None):
         columns = [

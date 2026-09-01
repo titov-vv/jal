@@ -8,7 +8,7 @@ from jal.db.helpers import localize_decimal
 from jal.db.clock import local_datetime
 from jal.db.account import JalAccountCreator
 from jal.db.asset import JalAsset
-from jal.db.common_models import AccountRecordModel, AccountDataModel
+from jal.db.common_models import AccountRecordModel, AccountDataModel, PeerTreeModel
 from jal.db.token_blacklist import normalize_address, is_valid_address
 from jal.widgets.custom.db_lookup_combobox import DbLookupComboBox
 from jal.widgets.reference_selector import ReferenceSelectorWidget
@@ -140,9 +140,10 @@ class AccountDialog(QDialog):
         self.ui.CurrencyCombo.setKeyField("id")
         self.ui.CurrencyCombo.setField("symbol")
         self.ui.CurrencyCombo.setTable("currencies")
-        self.ui.OrganizationCombo.setKeyField("id")
-        self.ui.OrganizationCombo.setField("name")
-        self.ui.OrganizationCombo.setTable("agents")
+        # Deferred import to break a circular import: reference_dialogs.py builds this dialog for its account list.
+        from jal.widgets.reference_dialogs import PeerListDialog
+        self.ui.OrganizationWidget.setup_selector(PeerTreeModel, PeerListDialog, self)
+        self.ui.OrganizationWidget.changed.connect(self.onOrganizationChanged)
 
         self._model = AccountRecordModel(self)
         self._mapper = QDataWidgetMapper(self._model)
@@ -151,7 +152,7 @@ class AccountDialog(QDialog):
         self._mapper.addMapping(self.ui.NameEdit, self._model.fieldIndex("name"))
         self._mapper.addMapping(self.ui.CurrencyCombo, self._model.fieldIndex("currency_id"))
         self._mapper.addMapping(self.ui.TypeCombo, self._model.fieldIndex("account_type"))
-        self._mapper.addMapping(self.ui.OrganizationCombo, self._model.fieldIndex("organization_id"))
+        self._mapper.addMapping(self.ui.OrganizationWidget, self._model.fieldIndex("organization_id"))
         self._mapper.addMapping(self.ui.ActiveCheck, self._model.fieldIndex("active"))
         self._mapper.addMapping(self.ui.InvestingCheck, self._model.fieldIndex("investing"))
         # 'reconciled_on' is set by JAL operations, not edited here - it's shown read-only via _load_reconciled().
@@ -194,7 +195,7 @@ class AccountDialog(QDialog):
     def edit_name_only(self, title: str) -> None:
         self.setWindowTitle(title)
         for widget in (self.ui.CurrencyLbl, self.ui.CurrencyCombo, self.ui.TypeLbl, self.ui.TypeCombo,
-                       self.ui.OrganizationLbl, self.ui.OrganizationCombo, self.ui.ActiveCheck,
+                       self.ui.OrganizationLbl, self.ui.OrganizationWidget, self.ui.ActiveCheck,
                        self.ui.InvestingCheck, self.ui.ReconciledValue, self.ui.DetailsFrame):
             widget.setVisible(False)
         # Only the height is given back: the width is the one the form was drawn at, and a name field squeezed to
@@ -248,6 +249,14 @@ class AccountDialog(QDialog):
         self._load_reconciled()
         self._data_model.filterBy("account_id", self._account_id)
         self.ui.IconButton.setElement(IconOwner.Account, self._account_id)
+
+    # 'accounts.organization_id' is NOT NULL DEFAULT (1), so a cleared selector is stored as the predefined
+    # 'None' peer instead of an empty one (same rule as NewDepositDialog uses for a deposit's bank).
+    @Slot()
+    def onOrganizationChanged(self):
+        if not self.ui.OrganizationWidget.selected_id:
+            self.ui.OrganizationWidget.selected_id = PredefinedAgents.Empty
+            self._mapper.submit()
 
     @Slot()
     def onAddData(self):

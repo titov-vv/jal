@@ -82,7 +82,7 @@
          <string>&amp;Bank/Broker:</string>
         </property>
         <property name="buddy">
-         <cstring>OrganizationCombo</cstring>
+         <cstring>OrganizationWidget</cstring>
         </property>
        </widget>
       </item>
@@ -113,7 +113,7 @@
        </spacer>
       </item>
       <item row="3" column="2" colspan="4">
-       <widget class="DbLookupComboBox" name="OrganizationCombo"/>
+       <widget class="ReferenceSelectorWidget" name="OrganizationWidget" native="true"/>
       </item>
       <item row="2" column="2" colspan="4">
        <widget class="AccountTypeComboBox" name="TypeCombo"/>
@@ -225,7 +225,7 @@
   <tabstop>IconButton</tabstop>
   <tabstop>CurrencyCombo</tabstop>
   <tabstop>TypeCombo</tabstop>
-  <tabstop>OrganizationCombo</tabstop>
+  <tabstop>OrganizationWidget</tabstop>
   <tabstop>ActiveCheck</tabstop>
   <tabstop>InvestingCheck</tabstop>
   <tabstop>AddDataButton</tabstop>
@@ -234,6 +234,12 @@
   <tabstop>DialogButtonBox</tabstop>
  </tabstops>
  <customwidgets>
+  <customwidget>
+   <class>ReferenceSelectorWidget</class>
+   <extends>QWidget</extends>
+   <header>jal/widgets/reference_selector.h</header>
+   <container>1</container>
+  </customwidget>
   <customwidget>
    <class>DbLookupComboBox</class>
    <extends>QComboBox</extends>
