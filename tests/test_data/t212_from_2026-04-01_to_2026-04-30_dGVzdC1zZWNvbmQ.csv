@@ -1,0 +1,4 @@
+Action,Time (UTC),ISIN,Ticker,Name,Notes,ID,No. of shares,Price / share,Currency (Price / share),Exchange rate,Total,Currency (Total),Withholding tax,Currency (Withholding tax),Merchant name,Merchant category
+Interest on cash,2026-04-01 01:12:00+00:00,,,,"Interest on cash",00000000-0000-7000-8000-000000000101,,,,,0.54,"EUR",,,,
+Market sell,2026-04-08 07:00:03+00:00,IE00TEST0001,ACME,"Acme Sample Bond Fund (Acc)",,EOF10000000003,1.0000000000,6.4000000000,EUR,1.00000000,6.40,"EUR",,,,
+Card debit,2026-04-14 13:05:00+00:00,,,,,00000000-0000-7000-8000-000000000102,,,,,-21.30,"EUR",,,"BOOK CORNER","MISCELLANEOUS"

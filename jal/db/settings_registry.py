@@ -20,6 +20,7 @@ class SettingType:
     Integer = 2
     Boolean = 3
     Choice = 4     # one of a fixed set of values, listed in the 'options' of the descriptor
+    Account = 5    # id of an account, picked through the same selector every operation form uses
 
 
 # Describes one setting that the user may edit in the preferences dialog. The 'settings' table also holds values
@@ -59,7 +60,7 @@ class SettingDescriptor:
         settings = JalSettings()
         if self.type == SettingType.Boolean:
             return settings.getBool(self.key, bool(self.default))
-        if self.type in (SettingType.Integer, SettingType.Choice):
+        if self.type in (SettingType.Integer, SettingType.Choice, SettingType.Account):
             return settings.getInt(self.key, int(self.default))
         return settings.getStr(self.key, str(self.default))
 

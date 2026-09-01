@@ -20,6 +20,7 @@ blockchain can hand you the data, JAL will read it.
 | **Just2Trade** | `.xlsx` |
 | **KIT Finance** | `.xlsx` |
 | **PSB Broker** | `.xlsx` or `.xls` |
+| **Trading 212** | *History* export, `.csv` |
 | **Tvoy Broker** | `.zip` |
 | **VTB Investments** | `.xlsx` |
 | **KuCoin** (crypto exchange) | export archive, `.zip` |
@@ -28,6 +29,27 @@ blockchain can hand you the data, JAL will read it.
 Pick one or more files and JAL does the rest. For Interactive Brokers, set the Flex Query up once at
 the broker's site to include trades, cash transactions, corporate actions and open positions; after
 that, exporting is a click.
+
+### Trading 212
+
+Two things about this broker are unlike the rest.
+
+**The file names no account.** A Trading 212 export has no account number anywhere — not in the data,
+not in the file name — so JAL cannot work out which of your accounts it belongs to. Say it once in
+**Settings → Preferences → Import**, in *Trading 212 account*; the import refuses to run until you do,
+and stops if the account you named is in another currency than the statement.
+
+**Card purchases are reviewed before they are imported.** The account has a card on it, and a purchase
+you typed in yourself is already in JAL by the time the monthly export exists. Nothing identifies a
+purchase on both sides — the operation has no reference number, and the two clocks rarely agree to the
+minute — so JAL pairs them by the amount, ranks the candidates by how close in time they are, and shows
+you the result: one row per card purchase the statement holds. The ones JAL found in the database are
+unticked and say which operation they matched; the ones it did not are ticked and wait for you to give
+them a **peer** and a **category**. Untick a row to leave it out, tick one to bring it in. Trades, dividends, interest and cashback do not
+go through this step; they are imported straight away.
+
+One consequence to keep in mind: interest and cashback are recorded one operation per statement row,
+and JAL cannot recognise them on a second import. Import each period once.
 
 ### What an import actually does
 

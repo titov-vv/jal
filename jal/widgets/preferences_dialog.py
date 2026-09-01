@@ -1,7 +1,10 @@
 from PySide6.QtWidgets import (QDialog, QWidget, QFormLayout, QLineEdit, QSpinBox, QCheckBox, QComboBox,
                                QListWidgetItem, QStyle)
 from jal.ui.ui_preferences_dlg import Ui_PreferencesDlg
+from jal.db.common_models import AccountListModel
 from jal.db.settings_registry import SettingsRegistry, SettingType
+from jal.widgets.reference_dialogs import AccountListDialog
+from jal.widgets.reference_selector import ReferenceSelectorWidget
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -56,6 +59,10 @@ class PreferencesDialog(QDialog):
             # A setting that needs another range should carry it in its descriptor rather than widen this default.
             editor.setRange(0, 2147483647)
             editor.setValue(value)
+        elif setting.type == SettingType.Account:
+            editor = ReferenceSelectorWidget(self, validate=False)
+            editor.setup_selector(AccountListModel, AccountListDialog, self)
+            editor.selected_id = value
         elif setting.type == SettingType.Choice:
             editor = QComboBox(self)
             for option_value, option_label in setting.translated_options():
@@ -82,4 +89,6 @@ class PreferencesDialog(QDialog):
             return editor.value()
         if setting.type == SettingType.Choice:
             return editor.currentData()
+        if setting.type == SettingType.Account:
+            return editor.selected_id
         return editor.text().strip()
