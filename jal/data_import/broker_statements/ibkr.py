@@ -8,7 +8,7 @@ from lxml import etree
 
 from PySide6.QtWidgets import QApplication
 from jal.constants import PredefinedCategory
-from jal.widgets.helpers import ManipulateDate, ts2dt, ts2d
+from jal.widgets.helpers import ts2dt, ts2d
 from jal.db.helpers import format_decimal
 from jal.db.account import JalAccount
 from jal.db.operations import AssetPayment
@@ -20,9 +20,9 @@ IBKR_CALCULATION_PRECISION = 10
 DIVIDENDS_TABLE_ASSET_FIELD = 8
 
 # The end-of-day stamps IBKR puts on an accounting day. They are not times of day, and they are IBKR's alone - an
-# evening entry on a cash account can legitimately read 20:20 (or 20:24, 20:25), so they are never part of the common
+# evening entry on a cash account can legitimately read 20:20 (or other), so they are never part of the common
 # set that is_day_marker() knows by itself.
-IBKR_DAY_MARKERS = (20 * 3600 + 20 * 60, 20 * 3600 + 24 * 60, 20 * 3600 + 25 * 60)
+IBKR_DAY_MARKERS = (20 * 3600 + 20 * 60, 20 * 3600 + 24 * 60, 20 * 3600 + 25 * 60, 20 * 3600 + 26 * 60)
 
 # -----------------------------------------------------------------------------------------------------------------------
 class IBKRCashOp:
@@ -986,7 +986,7 @@ class StatementIBKR(StatementXML):
                 transfer['account'] = [transfer['account'], 0, 0]
                 transfer['withdrawal'] = transfer['deposit'] = -transfer['amount']
             transfer['fee'] = 0.0
-            self.drop_extra_fields(transfer, ["type", "amount", "currency", "reported", "action_id"])
+            self.drop_extra_fields(transfer, ["type", "amount", "timestamp_day_only", "currency", "reported", "action_id"])
             self._data[JSF.TRANSFERS].append(transfer)
             cnt += 1
 
@@ -1003,7 +1003,7 @@ class StatementIBKR(StatementXML):
             else:
                 category = PredefinedCategory.Fees
             fee['lines'] = [{'amount': fee['amount'], 'category': category, 'description': fee['description']}]
-            self.drop_extra_fields(fee, ["type", "amount", "description", "symbol", "number", "currency", "reported", "tid", "action_id"])
+            self.drop_extra_fields(fee, ["type", "amount", "timestamp_day_only", "description", "symbol", "number", "currency", "reported", "tid", "action_id"])
             self._data[JSF.INCOME_SPENDING].append(fee)
             cnt += 1
 
