@@ -3,7 +3,8 @@ from jal.db.db import JalDB
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Pairs the card purchases a Trading212 statement reports with the ones that are in the database already.
+# Pairs the card operations a statement reports with the ones that are in the database already. Written for
+# Trading 212 and used by Revolut as well - both are accounts whose purchases are typed in by hand as they happen.
 #
 # The same purchase reaches the database from two sides - typed by hand as it happens and read from the monthly
 # statement afterwards - and nothing identifies it on both. The 'actions' table has no reference number column at
@@ -28,8 +29,12 @@ class CardMatcher(JalDB):
     # The lines are summed here rather than by SQL: an amount lives in a TEXT column, and SQLite's own SUM() reads
     # such a column as a float - which turns -18.40 into a value that is not equal to -18.40 any more, and the
     # whole of this matching rests on amounts being equal to the cent.
+    #
+    # 'incomes' keeps the money that came IN as a candidate too. A Trading 212 statement asks only about card
+    # debits, so it leaves them out - an interest or a cashback row of that account is never what a debit pairs
+    # with. A Revolut statement asks about refunds and rewards as well, and those are stored as incomes.
     @classmethod
-    def stored_operations(cls, account_id: int, begin: int, end: int) -> list:
+    def stored_operations(cls, account_id: int, begin: int, end: int, incomes: bool = False) -> list:
         operations = {}
         query = cls._exec("SELECT a.oid, a.timestamp, a.peer_id, p.name AS peer, d.amount "
                           "FROM actions AS a "
@@ -44,8 +49,8 @@ class CardMatcher(JalDB):
                 operations[oid] = {'oid': oid, 'timestamp': int(line['timestamp']), 'peer_id': int(line['peer_id']),
                                    'peer': line['peer'], 'amount': Decimal('0')}
             operations[oid]['amount'] += Decimal(line['amount'])
-        # An income (interest, cashback) is not something a card debit may ever be
-        return [x for x in operations.values() if x['amount'] < 0]
+        # A zero-sum operation is nothing a statement row may pair with, whichever side is asked for
+        return [x for x in operations.values() if x['amount'] < 0 or (incomes and x['amount'] > 0)]
 
     # Proposes a pairing between the statement rows and what is stored, and returns a list with one element per row -
     # the stored operation it was paired with, or None.

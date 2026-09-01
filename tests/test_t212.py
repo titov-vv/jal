@@ -9,7 +9,7 @@ from tests.helpers import dt2t
 
 from jal.constants import PredefinedCategory, PredefinedAccountType
 from jal.data_import.statement import JSF, Statement_ImportError
-from jal.data_import.t212_card_match import CardMatcher
+from jal.data_import.card_match import CardMatcher
 from jal.data_import.broker_statements.trading212 import StatementTrading212, T212_ACCOUNT_SETTING
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.db import JalDB
@@ -315,7 +315,7 @@ def test_t212_account_is_set_in_preferences(prepare_db_t212):
 
     # The module registers the setting itself, so importing it is what puts the page into the dialog
     assert 'Import' in SettingsRegistry.pages()
-    assert [x.key for x in SettingsRegistry.settings_of_page('Import')] == [T212_ACCOUNT_SETTING]
+    assert T212_ACCOUNT_SETTING in [x.key for x in SettingsRegistry.settings_of_page('Import')]
 
     parent = QWidget()
     dialog = PreferencesDialog(parent)

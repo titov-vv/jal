@@ -1,0 +1,18 @@
+Tipo,Produto,Data de início,Data de Conclusão,Descrição,Montante,Comissão,Moeda,Estado,Saldo
+Carregamento,Atual,2026-03-02 10:00:00,2026-03-02 10:00:05,Carregamento de TEST USER,500.00,0.00,EUR,CONCLUÍDA,500.00
+Pagamento com cartão,Atual,2026-03-03 12:15:30,2026-03-04 10:00:00,Green grocer,-18.40,0.00,EUR,CONCLUÍDA,481.60
+Pagamento com cartão,Atual,2026-03-04 09:05:00,2026-03-05 10:00:00,Coffee house,-7.25,0.05,EUR,CONCLUÍDA,474.30
+Pagamento com cartão,Atual,2026-03-05 08:00:00,2026-03-05 08:00:00,Bolt,-5.00,0.00,EUR,REVERTIDA,
+Transferência,Atual,2026-03-06 11:00:00,2026-03-06 11:00:00,Para EUR Boosted account,-400.00,0.00,EUR,CONCLUÍDA,74.30
+Transferência,Depósito,2026-03-06 11:00:00,2026-03-06 11:00:00,Para EUR Boosted account,400.00,0.00,EUR,CONCLUÍDA,400.00
+Juros,Depósito,2026-03-07 01:20:00,2026-03-07 01:20:00,"Pagamento de juros líquidos para subconta ""Boosted account"" relativos a Mar 7, 2026",0.03,0.01,EUR,CONCLUÍDA,400.02
+Devolução do cartão de débito,Atual,2026-03-07 14:00:00,2026-03-08 10:00:00,Coffee house,7.30,0.00,EUR,CONCLUÍDA,81.60
+Juros,Depósito,2026-03-08 01:20:00,2026-03-08 01:20:00,"Pagamento de juros líquidos para subconta ""Boosted account"" relativos a Mar 8, 2026",0.02,0.00,EUR,CONCLUÍDA,400.04
+Transferência,Atual,2026-03-08 16:00:00,2026-03-08 16:00:00,Transferência para TEST PEER,-20.00,0.00,EUR,CONCLUÍDA,61.60
+Transferência,Depósito,2026-03-10 09:30:00,2026-03-10 09:30:00,De EUR Boosted account,-50.00,0.00,EUR,CONCLUÍDA,350.04
+Transferência,Atual,2026-03-10 09:30:00,2026-03-10 09:30:00,De EUR Boosted account,50.00,0.00,EUR,CONCLUÍDA,111.60
+Juros,Depósito,2026-03-11 01:20:00,2026-03-11 01:20:00,"Pagamento de juros líquidos para subconta ""Boosted account"" relativos a Mar 11, 2026",0.03,0.01,EUR,CONCLUÍDA,350.06
+Recompensa,Atual,2026-03-11 10:00:00,2026-03-11 10:00:00,Recompensa por convite,30.00,0.00,EUR,CONCLUÍDA,141.60
+ATM,Atual,2026-03-12 18:00:00,2026-03-13 10:00:00,Levantamento de numerário em Banco Teste,-20.00,0.00,EUR,CONCLUÍDA,121.60
+Taxa,Atual,2026-03-13 08:00:00,2026-03-13 08:00:00,Comissão de entrega de cartão de débito,-6.99,0.00,EUR,CONCLUÍDA,114.61
+Pagamento com cartão,Atual,2026-03-14 19:00:00,,Lidl,-3.93,0.00,EUR,PENDENTE,

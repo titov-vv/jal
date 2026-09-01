@@ -15,7 +15,8 @@ from jal.widgets.reference_dialogs import PeerListDialog, CategoryListDialog
 # ----------------------------------------------------------------------------------------------------------------------
 # One row per card purchase the statement reports, with what the matcher proposed for it and what the user decides.
 # 'peer' and 'category' start empty: a merchant string as the acquirer sent it is not a peer of this ledger, and
-# Trading 212's merchant code is not a spending category, so neither can be filled in without the user.
+# a merchant code the acquirer sent is not a spending category, so neither can be filled in without the user.
+# A statement that has no merchant code at all (Revolut) leaves that column empty.
 class CardOperationsModel(QAbstractTableModel):
     DATE, MERCHANT, MCC, AMOUNT, STORED, IMPORT, PEER, CATEGORY, DESCRIPTION = range(9)
 
@@ -118,7 +119,8 @@ class CardOperationsModel(QAbstractTableModel):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Confirms what a Trading 212 statement adds to the card purchases the ledger already holds.
+# Confirms what a statement adds to the card purchases the ledger already holds. Used by Trading 212 and Revolut,
+# which name themselves through 'title'.
 #
 # Most of those purchases are typed by hand on the day they happen, so the statement mostly repeats what is there -
 # but nothing identifies a purchase on both sides (see CardMatcher), so the pairing is a resemblance and stays the
@@ -130,9 +132,9 @@ class CardImportDialog(QDialog):
     # completer and two buttons) opening inside the cell. They are sized by the text they are meant to hold.
     TYPED_COLUMN_CHARS = 22
 
-    def __init__(self, rows: list, proposal: list, parent=None):
+    def __init__(self, rows: list, proposal: list, parent=None, title: str = ''):
         super().__init__(parent)
-        self.setWindowTitle(self.tr("Trading 212 card purchases"))
+        self.setWindowTitle(title if title else self.tr("Card purchases"))
         self.resize(1100, 500)
         self._model = CardOperationsModel(rows, proposal, self)
 

@@ -11,7 +11,7 @@ from PySide6.QtWidgets import QApplication, QMessageBox
 
 from jal.constants import PredefinedCategory
 from jal.data_import.statement import JSF, Statement, Statement_ImportError, Statement_Capabilities
-from jal.data_import.t212_card_match import CardMatcher
+from jal.data_import.card_match import CardMatcher
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.peer import JalPeer
@@ -406,5 +406,6 @@ class StatementTrading212(Statement):
         # Imported on use: every statement module is imported at start-up just to read its name, and this one is
         # the only thing here that pulls in the widget layer.
         from jal.widgets.card_import_dialog import CardImportDialog
-        dialog = CardImportDialog(self._card_rows, proposal, QApplication.activeWindow())
+        dialog = CardImportDialog(self._card_rows, proposal, QApplication.activeWindow(),
+                                  title=self.tr("Trading 212 card purchases"))
         return dialog.decisions() if dialog.exec() else None
