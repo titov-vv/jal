@@ -22,13 +22,23 @@ from jal.ui.ui_rebuild_window import Ui_ReBuildDialog
 # ----------------------------------------------------------------------------------------------------------------------
 # Class to display window with ledger rebuild configuration options
 class RebuildDialog(QDialog):
+    # Range of operations to rebuild, as it is stored in the settings
+    SETTINGS_KEY = "RebuildLedgerRange"
+    RANGE_ALL = 0
+    RANGE_FRONTIER = 1
+    RANGE_DATE = 2
+
     def __init__(self, parent, frontier):
         super().__init__(parent)
         self.ui = Ui_ReBuildDialog()
         self.ui.setupUi(self)
         set_date_formats(self)
 
-        self.ui.LastRadioButton.toggle()   # Set default option selection
+        self._range_buttons = {self.RANGE_ALL: self.ui.AllRadioButton,
+                               self.RANGE_FRONTIER: self.ui.LastRadioButton,
+                               self.RANGE_DATE: self.ui.DateRadionButton}
+        stored_range = JalSettings().getInt(self.SETTINGS_KEY, self.RANGE_FRONTIER)
+        self._range_buttons.get(stored_range, self.ui.LastRadioButton).setChecked(True)
         self.frontier = frontier
         frontier_text = ts2d(frontier)
         self.ui.FrontierDateLabel.setText(frontier_text)
@@ -38,6 +48,16 @@ class RebuildDialog(QDialog):
         x = parent.x() + parent.width()/2 - self.width()/2
         y = parent.y() + parent.height()/2 - self.height()/2
         self.setGeometry(x, y, self.width(), self.height())
+
+    def selectedRange(self) -> int:
+        for value, button in self._range_buttons.items():
+            if button.isChecked():
+                return value
+        return self.RANGE_ALL
+
+    def accept(self):
+        JalSettings().setValue(self.SETTINGS_KEY, self.selectedRange())
+        super().accept()
 
     def getTimestamp(self):
         if self.ui.LastRadioButton.isChecked():

@@ -4,7 +4,10 @@ from decimal import Decimal
 
 import pytest
 
+from PySide6.QtWidgets import QWidget
+
 from tests.fixtures import project_root, data_path, prepare_db
+from jal.db.ledger import RebuildDialog
 from jal.db.settings import JalSettings
 from jal.db.settings_registry import SettingsRegistry, SettingDescriptor, SettingType
 from jal.data_import.token_filter import TokenFilter
@@ -102,3 +105,33 @@ def test_dust_threshold_setting_reaches_filter(prepare_db):
     # A broken setting falls back to the built-in default rather than breaking every import
     JalSettings().setValue('TokenDustThreshold', 'not-a-number')
     assert TokenFilter(lists=None)._dust_threshold == Decimal('1')
+
+
+def test_rebuild_dialog_remembers_range(prepare_db):
+    parent = QWidget()
+
+    # 'Since last actual' is the choice a database without the setting opens with
+    dialog = RebuildDialog(parent, frontier=0)
+    assert dialog.ui.LastRadioButton.isChecked()
+
+    # Only an accepted dialog stores the choice - a cancelled one leaves the previous one in place
+    dialog.ui.AllRadioButton.setChecked(True)
+    dialog.reject()
+    assert JalSettings().getValue(RebuildDialog.SETTINGS_KEY) is None
+
+    dialog.accept()
+    assert JalSettings().getInt(RebuildDialog.SETTINGS_KEY) == RebuildDialog.RANGE_ALL
+
+    reopened = RebuildDialog(parent, frontier=0)
+    assert reopened.ui.AllRadioButton.isChecked()
+
+    reopened.ui.DateRadionButton.setChecked(True)
+    reopened.accept()
+    assert JalSettings().getInt(RebuildDialog.SETTINGS_KEY) == RebuildDialog.RANGE_DATE
+    assert RebuildDialog(parent, frontier=0).ui.DateRadionButton.isChecked()
+
+    # A value that names no option falls back to the default instead of opening with nothing selected
+    JalSettings().setValue(RebuildDialog.SETTINGS_KEY, 42)
+    assert RebuildDialog(parent, frontier=0).ui.LastRadioButton.isChecked()
+
+    parent.deleteLater()
