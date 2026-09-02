@@ -63,7 +63,9 @@ total. Open it and the account types are inside, exactly as above. A group you o
 open while JAL runs.
 
 Use it for what holds real money but needs no daily attention — an old savings account, a wallet you
-top up once a year — so the accounts you actually work with are the ones you see.
+top up once a year — so the accounts you actually work with are the ones you see. In the picture
+above that is the exchange account, emptied into the wallet long ago and holding the change: it still
+counts in the **Total**, it just no longer takes a line.
 
 ### The pictures beside the names
 

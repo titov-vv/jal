@@ -28,7 +28,7 @@ from jal.db.ledger import Ledger
 from jal.db.residence import JalResidence
 from jal.db.settings import JalSettings
 from jal.constants import (PredefinedCategory, PredefinedAsset, PredefinedAccountType, AssetLocation,
-                           SymbolId, AssetData, AccountData)
+                           SymbolId, AssetData, AccountData, AccountStatus)
 
 EUR, USD, RUB = 3, 2, 1
 
@@ -126,6 +126,10 @@ def create_accounts(peers: dict) -> dict:
     JalDB._exec("INSERT INTO account_data (account_id, datatype, value) VALUES (:id, :type, :value)",
                 [(":id", accounts['card']), (":type", AccountData.Credit), (":value", "1500")], commit=True)
     JalAccount.db_cache.update_data(JalAccount._load_account_data, (accounts['card'],))
+    # The exchange account is emptied into the wallet and keeps a few dollars of change - money that is still real
+    # and needs no daily attention. It is the demo's background account, so that the balances panel and the
+    # portfolio report show the folded group the manual describes.
+    JalAccount(accounts['cex']).set_status(AccountStatus.Background)
     return accounts
 
 
