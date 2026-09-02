@@ -10,7 +10,7 @@ from jal.db.icon import JalIcons
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.country import JalCountry
-from jal.db.common_models_abstract import AbstractReferenceListModel, SqlTreeModel
+from jal.db.common_models_abstract import AbstractReferenceListModel, AttributeListModel, SqlTreeModel
 from jal.db.peer import JalPeer
 from jal.db.residence import JalResidence
 from jal.db.tag import JalTag
@@ -144,7 +144,7 @@ class AccountRecordModel(AbstractReferenceListModel):
 # ----------------------------------------------------------------------------------------------------------------------
 # Editable model of the 'account_data' table - the flexible set of per-account attributes (number/credit/country/
 # precision etc). Bind it to a particular account with filterBy("account_id", account_id).
-class AccountDataModel(AbstractReferenceListModel):
+class AccountDataModel(AttributeListModel):
     def __init__(self, parent=None):
         columns = [
             CmColumn("id", '', hide=True),
@@ -155,16 +155,6 @@ class AccountDataModel(AbstractReferenceListModel):
         super().__init__("account_data", columns, parent)
         self._types = AccountData()
         self.set_default_values({'datatype': AccountData.Number, 'value': ''})
-
-    # (account_id, datatype) must be unique, so adding another row with the default attribute type is refused
-    # while one already exists for this account - the user has to change its type first.
-    def addElement(self, index, in_group=0):
-        if self._read("SELECT id FROM account_data WHERE account_id=:aid AND datatype=:dt",
-                      [(":aid", self._filter_value), (":dt", self._default_values['datatype'])]) is not None:
-            QMessageBox().warning(None, self.tr("Row not added"),
-                                  self.tr("Please fill in the previously added attribute before adding a new one"), QMessageBox.Ok)
-            return
-        super().addElement(index, in_group)
 
     # Displays translated attribute name and value formatted according to its type
     def data(self, index, role=Qt.DisplayRole):

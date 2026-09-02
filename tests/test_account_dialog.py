@@ -95,8 +95,8 @@ def test_account_tag_is_edited_in_the_attribute_grid(prepare_db):
     from jal.widgets.reference_selector import ReferenceSelectorWidget
 
     cash = JalDB._read("SELECT id FROM tags WHERE tag='Cash'")
-    # No number, so the account starts with no attribute rows at all - adding one here would otherwise collide
-    # with the existing 'Number' row and AccountDataModel would refuse it with a modal warning.
+    # No number, so the account starts with no attribute rows at all and the row added below takes the first
+    # attribute type ('Number'), which this test then turns into a tag.
     JalAccountCreator(currency_id=2, number='', name='Bank', organization=1,
                       account_type=PredefinedAccountType.Bank).commit()
 
@@ -123,6 +123,61 @@ def test_account_tag_is_edited_in_the_attribute_grid(prepare_db):
     # ... and the grid shows the tag by name rather than by the id it stores
     assert model.data(value_index, Qt.DisplayRole) == 'Cash'
     parent.deleteLater()
+
+
+# An account that already has an attribute must still accept another one. Adding was refused with a modal warning
+# whenever the account had an attribute of the type a new row is created with - which is the account number, i.e.
+# almost every account. A new row takes the first attribute type the account doesn't have yet instead.
+def test_attribute_is_added_to_an_account_that_has_one_already(prepare_db):
+    JalAccountCreator(currency_id=2, number='ACC-1', name='Bank', organization=1,
+                      account_type=PredefinedAccountType.Bank).commit()
+
+    dialog = AccountDialog()
+    dialog.setSelectedId(1)
+    model = dialog._data_model
+    assert model.rowCount() == 1 and _data_row_by_type(dialog, AccountData.Number) >= 0
+
+    dialog.onAddData()
+    assert model.rowCount() == 2
+    assert _data_row_by_type(dialog, AccountData.Number) >= 0   # the attribute that was there is untouched...
+    assert _data_row_by_type(dialog, AccountData.Credit) >= 0   # ... and the new row got the next free type
+    dialog.reject()
+
+
+# An attribute type may be present only once per account ('account_data' is unique by (account_id, datatype)), so
+# re-assigning a row to a type another row already has is refused as it is picked - it used to be left to the
+# database, which reported it as a failed submit when the dialog was already being closed by OK.
+def test_duplicate_attribute_type_is_refused(prepare_db, monkeypatch):
+    from PySide6.QtWidgets import QWidget, QMessageBox
+    warnings = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda *args, **kwargs: warnings.append(args[2]))
+
+    JalAccountCreator(currency_id=2, number='ACC-1', name='Bank', organization=1,
+                      account_type=PredefinedAccountType.Bank).commit()
+    dialog = AccountDialog()
+    dialog.setSelectedId(1)
+    model = dialog._data_model
+    dialog.onAddData()                                    # a second row, of the next free type
+    row = _data_row_by_type(dialog, AccountData.Credit)
+    value_index = model.index(row, model.fieldIndex("value"))
+    model.setData(value_index, '1000')
+
+    # The user picks 'Account #' for the row that is a credit limit, while another row already keeps it
+    parent = QWidget()
+    type_index = model.index(row, model.fieldIndex("datatype"))
+    editor = dialog._attribute_delegate.createEditor(parent, None, type_index)
+    editor.setCurrentIndex(editor.findData(AccountData.Number))
+    dialog._attribute_delegate.setModelData(editor, model, type_index)
+
+    assert len(warnings) == 1
+    assert _data_row_by_type(dialog, AccountData.Credit) == row     # the row keeps the type it had...
+    assert model.data(value_index, Qt.EditRole) == '1000'           # ... and the value that goes with it
+    parent.deleteLater()
+
+    dialog.accept()   # the grid submits without a UNIQUE violation
+    JalAccount.db_cache.clear_cache()
+    assert JalAccount(1).number() == 'ACC-1'
+    assert JalDB._read("SELECT COUNT(*) FROM account_data WHERE account_id=1") == 2
 
 
 # The currency shown by the dialog must survive a mapper submit - reading the combo's key used to re-select the

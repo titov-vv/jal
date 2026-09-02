@@ -102,7 +102,15 @@ class AccountAttributeDelegate(QStyledItemDelegate):
 
     def setModelData(self, editor, model, index):
         if index.column() == self._key:
-            model.setData(index, editor.currentData())
+            datatype = editor.currentData()
+            # An attribute type may be present only once, so a type another row already has is refused here: left
+            # to the database it would only surface as a failed submit, when the dialog is being closed by 'OK'.
+            if model.is_type_used(datatype, skip_row=index.row()):
+                QMessageBox().warning(None, self.tr("Attribute not changed"),
+                                      self.tr("This attribute is already present: ") + self._types.get_name(datatype),
+                                      QMessageBox.Ok)
+                return
+            model.setData(index, datatype)
             model.setData(index.sibling(index.row(), self._value), '')  # Reset value on attribute-type change
             return
         datatype_of = self._value_type(index)

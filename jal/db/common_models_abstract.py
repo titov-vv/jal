@@ -224,6 +224,35 @@ class AbstractReferenceListModel(BaseReferenceModelMixin, QSqlRelationalTableMod
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# Base for models of the tables that keep a flexible set of typed attributes of a single owner - an account or an
+# asset ('account_data', 'asset_data'). A subclass binds the model to one owner with filterBy() and provides the list
+# of possible attribute types in self._types.
+# (owner_id, datatype) is unique in such a table, so a new row can't simply take the default attribute type - it is
+# given the first type that the owner doesn't have yet instead, and adding is refused when all of them are in use.
+class AttributeListModel(AbstractReferenceListModel):
+    # Attribute types present in the model, the row given as 'skip_row' excluded
+    def _used_types(self, skip_row=-1) -> list:
+        column = self.fieldIndex("datatype")
+        return [self.data(self.index(row, column), Qt.EditRole) for row in range(self.rowCount()) if row != skip_row]
+
+    def addElement(self, index, in_group=0):
+        used = self._used_types()
+        free = [x for x in self._types.get_all_names() if not self._types.is_internal(x) and x not in used]
+        if not free:
+            QMessageBox().warning(None, self.tr("Row not added"),
+                                  self.tr("All possible attributes are present already"), QMessageBox.Ok)
+            return
+        self._default_values['datatype'] = free[0]
+        super().addElement(index, in_group)
+
+    # True if some row other than 'skip_row' already keeps an attribute of the given type. The same uniqueness has
+    # to be kept when the type of an existing row is re-assigned, and an editor asks this before it does so - the
+    # check can't live in setData(), which the model itself calls while it fills a newly inserted row in.
+    def is_type_used(self, datatype, skip_row=-1) -> bool:
+        return datatype in self._used_types(skip_row)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 class SqlTreeModel(BaseReferenceModelMixin, QAbstractItemModel, JalDB):
     ROOT_PID = 0
     DRAG_DROP_MIME_TYPE = "application/vnd.tree_item"

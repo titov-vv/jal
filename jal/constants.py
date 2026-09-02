@@ -135,11 +135,17 @@ class BookAccount:  # PREDEFINED BOOK ACCOUNTS
 
 
 class PredefinedList:
+    _INTERNAL = []   # Values that the application maintains itself - they are shown but never chosen by the user
+
     def __init(self):
         self._names = {}
 
     def __contains__(self, key) -> bool:  # Overriding 'in' operator
         return key in self._names
+
+    @classmethod
+    def is_internal(cls, type_id) -> bool:
+        return type_id in cls._INTERNAL
 
     def get_name(self, name_id, default='') -> str:
         try:
@@ -150,11 +156,14 @@ class PredefinedList:
     def get_all_names(self) -> dict:
         return self._names
 
+    # Internal values are not offered for selection - only the application writes them
     def load2combo(self, combobox, with_empty=False):
         combobox.clear()
         if with_empty:
             combobox.addItem('', userData=None)
         for item in self._names:
+            if self.is_internal(item):
+                continue
             combobox.addItem(self._names[item], userData=item)
 
 
@@ -482,20 +491,6 @@ class AccountData(PredefinedList, QObject):
             return self._types[type_id]
         except KeyError:
             return default
-
-    @classmethod
-    def is_internal(cls, type_id) -> bool:
-        return type_id in cls._INTERNAL
-
-    # Internal attributes are not offered for selection - only the application writes them
-    def load2combo(self, combobox, with_empty=False):
-        combobox.clear()
-        if with_empty:
-            combobox.addItem('', userData=None)
-        for item in self._names:
-            if self.is_internal(item):
-                continue
-            combobox.addItem(self._names[item], userData=item)
 
 
 class AssetLocation(PredefinedList, QObject):

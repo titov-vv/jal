@@ -4,7 +4,7 @@ from PySide6.QtCore import Qt, QModelIndex
 from PySide6.QtSql import QSqlQueryModel, QSqlTableModel
 from PySide6.QtWidgets import QCompleter, QMessageBox
 from jal.db.db import JalDB
-from jal.db.common_models_abstract import AbstractReferenceListModel
+from jal.db.common_models_abstract import AbstractReferenceListModel, AttributeListModel
 from jal.db.asset import JalAsset
 from jal.db.icon import JalIcons
 from jal.db.symbol import JalSymbol
@@ -220,7 +220,7 @@ class SymbolIdentifiersModel(AbstractReferenceListModel):
 # ----------------------------------------------------------------------------------------------------------------------
 # Editable model of 'asset_data' table - a flexible set of typed attributes that belong to an asset as a whole
 # (registration code, expiry date, principal value, tag, ...). Use filterBy("asset_id", asset_id) to bind it.
-class AssetDataModel(AbstractReferenceListModel):
+class AssetDataModel(AttributeListModel):
     def __init__(self, parent=None):
         columns = [
             CmColumn("id", '', hide=True),
@@ -231,16 +231,6 @@ class AssetDataModel(AbstractReferenceListModel):
         super().__init__("asset_data", columns, parent)
         self._types = AssetData()
         self.set_default_values({'datatype': AssetData.ExpiryDate, 'value': ''})
-
-    # (asset_id, datatype) must be unique, so adding another row with the default attribute type is refused
-    # while one already exists for this asset - the user has to change its type first.
-    def addElement(self, index, in_group=0):
-        if self._read("SELECT id FROM asset_data WHERE asset_id=:aid AND datatype=:dt",
-                      [(":aid", self._filter_value), (":dt", self._default_values['datatype'])]) is not None:
-            QMessageBox().warning(None, self.tr("Row not added"),
-                                  self.tr("Please fill in the previously added attribute before adding a new one"), QMessageBox.Ok)
-            return
-        super().addElement(index, in_group)
 
     # Displays translated attribute name and value formatted according to its type
     def data(self, index, role=Qt.DisplayRole):
