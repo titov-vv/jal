@@ -38,6 +38,23 @@ agree, the account stays unreconciled.
 Not a problem: you imported something that was already there, and JAL declined to duplicate it. Usual
 when statements overlap.
 
+### “No account is set for … import — choose one in Settings, Preferences, Import”
+
+A Trading 212 or Revolut export names no account, so JAL has to be told which of yours it is about.
+
+**Fix:** **Settings → Preferences → Import** and pick the account — see
+[chapter 9](09-importing.md#broker-statements). The account has to be in the same currency as the
+statement, or the import stops saying so.
+
+### “Statement balance doesn't match its own operations”
+
+A Revolut export states a running balance on every row, and JAL checks each step against the amount
+and the fee of that row. When they disagree the file is not what JAL takes it for, so nothing is
+imported.
+
+**Fix:** export the period again, unedited. If a fresh export fails the same way, report it — see
+[*Reporting a problem*](#reporting-a-problem) below.
+
 ### “Results value of corporate action doesn't match 100 % of initial asset value. Date: …”
 
 A split, merger or spin-off does not say where all of the original cost went. JAL cannot continue the
@@ -89,8 +106,9 @@ quotes.
 **Totals are in the wrong currency.** The reporting currency comes from *Data → Residence*
 ([chapter 3](03-first-steps.md)).
 
-**An account has disappeared.** It is probably inactive. Tick **Show inactive** in the balances
-right-click menu, or in *Data → Accounts*.
+**An account has disappeared.** It is probably closed, or set to *background*. Widen **Show accounts**
+in the balances right-click menu — a background account is folded into the *Background* group at the
+bottom of the panel — or tick **Show closed** in *Data → Accounts*.
 
 ## Frequently asked questions
 

@@ -28,7 +28,7 @@ The five buttons along the top are the five things a deposit can do.
 
 | Field | Meaning |
 |---|---|
-| **Name** | What you will call it. Must not clash with an existing account. |
+| **Name** | What you will call it. Must not clash with an existing account. Right-click the deposit in the list afterwards and choose **Rename deposit…** to change it, or to give it a picture. |
 | **Funded from** | The account the money comes out of. The deposit takes that account's currency. |
 | **Bank** | The peer that holds it. Left empty, the funding account's bank is used. |
 | **Amount** | How much goes in. |

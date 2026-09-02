@@ -6,7 +6,7 @@
 
 ![The Settings menu](img/menu_settings.png)
 
-**Settings → Preferences** — a small dialog with two pages:
+**Settings → Preferences** — a small dialog with three pages:
 
 ![Preferences](img/dlg_preferences.png)
 
@@ -22,6 +22,13 @@
 
 API keys for the blockchain explorers, and the dust threshold — all explained in
 [chapter 8](08-crypto.md#api-keys).
+
+### Import
+
+Which of your accounts a statement belongs to, for the exports that name no account themselves:
+*Trading 212 account*, *Revolut current account* and *Revolut savings account*. Press **…** beside a
+row to pick the account. Those imports refuse to run until the account they need is set —
+see [chapter 9](09-importing.md#broker-statements).
 
 Changes take effect when you press **OK**; **Cancel** discards them.
 
@@ -69,6 +76,8 @@ impossible.
 * **Since Last actual** — from where JAL stopped last time. This is the default and is what happens
   automatically after every edit.
 * **Since Date** — from a date you choose. Use it when you know when the trouble starts.
+
+JAL remembers which of the three you chose last and offers it again next time.
 
 Rebuilding never changes your operations: it only recomputes what is derived from them. If a figure
 is still wrong afterwards, the operations themselves are wrong.

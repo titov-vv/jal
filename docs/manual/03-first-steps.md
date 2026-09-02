@@ -49,10 +49,10 @@ Fill it in:
 | **Name** | Whatever you will recognise: *Everyday Card*, *Main Bank*, *Cash in wallet*. |
 | **Currency** | The one currency this account holds. |
 | **Type** | *Cash*, *Bank account*, *Card*, *Broker account*, *Wallet* (crypto) or *Crypto exchange*. Used for grouping and for offering you the right things later. |
-| **Bank/Broker** | The institution. Leave it as *None* for cash. You can type a new name into the box. |
-| **Active** | Leave ticked. Untick it when an account is closed, to hide it without deleting its history. |
+| **Bank/Broker** | The institution. Leave it as *None* for cash. Type into the box to search, or press **…** to pick from the list — where a new institution can be added. |
+| **Status** | *Active* for an account you use day to day. *Background* keeps the account fully in the books but folds it away into one summary row. *Closed* is for an account that no longer exists — see [*Accounts you no longer use*](05-everyday-money.md#accounts-you-no-longer-use). |
 | **Investing** | Tick it **only** for accounts that can hold shares, funds, bonds or crypto. |
-| **Account details** | Extra facts, added with the **+** button next to the table: *Account #*, *Credit* (a card's credit limit), *Country*, *Precision* (how many decimals the account counts in — 2 for money), *Tag* (see [*Tags*](05-everyday-money.md#tags)). |
+| **Account details** | Extra facts, added with the **+** button next to the table: *Account #*, *Credit* (a card's credit limit), *Country*, *Precision* (how many decimals the account counts in — 2 for money), *Tag* (see [*Tags*](05-everyday-money.md#tags)), *Opened on* and *Closed on* (the dates, for your own record). |
 
 Click **OK**. Repeat for every account you have, then **Close**.
 

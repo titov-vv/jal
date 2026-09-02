@@ -20,6 +20,7 @@ blockchain can hand you the data, JAL will read it.
 | **Just2Trade** | `.xlsx` |
 | **KIT Finance** | `.xlsx` |
 | **PSB Broker** | `.xlsx` or `.xls` |
+| **Revolut** (bank) | account statement, `.csv` |
 | **Trading 212** | *History* export, `.csv` |
 | **Tvoy Broker** | `.zip` |
 | **VTB Investments** | `.xlsx` |
@@ -50,6 +51,38 @@ go through this step; they are imported straight away.
 
 One consequence to keep in mind: interest and cashback are recorded one operation per statement row,
 and JAL cannot recognise them on a second import. Import each period once.
+
+### Revolut
+
+A bank rather than a broker, and its export is the whole history of the account: card purchases,
+ATM withdrawals, fees, refunds, cashback, the interest of the savings pocket and the money you moved
+between the two. Ask the Revolut app for a statement in **CSV** — one file covers every pocket, and
+both ends of a move between them are in it.
+
+**The file names no account either**, so — as for Trading 212 — you say once which of your accounts
+it is about, in **Settings → Preferences → Import**: *Revolut current account* and *Revolut savings
+account*. Only the ones the file actually holds are demanded, so an export with no savings rows needs
+no savings account. The import stops if a named account is missing or is in another currency than the
+statement, and a file must be in exactly one currency.
+
+**Purchases go through the same review step** as Trading 212's: one row per purchase, refund, ATM
+withdrawal, fee and cashback, already-matched ones unticked, the rest waiting for a peer and a
+category.
+
+What is imported without asking: money moved between the current account and the savings pocket
+(as one transfer, both of its ends being in the file) and the interest of the pocket — the gross Revolut
+credited, with the tax it withheld beside it as a line of its own.
+
+**What JAL will not import** is a movement the file doesn't place: a top-up, a payment to a person,
+a transfer to a pocket other than the savings account you named. The file states the amount and
+nothing about where the money came from or went, and JAL will not invent the other end — such rows are
+counted and reported at the end of the import, and stay yours to type in.
+
+Importing an overlapping period is safer here than with Trading 212: purchases are matched against
+what is already stored, and an interest payment is recognised by its day, so it is not booked twice.
+
+> Revolut writes the export in the language its app is set to. English and Portuguese are recognised;
+> a file in another language stops the import, naming the word it did not know.
 
 ### What an import actually does
 

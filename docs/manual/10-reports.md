@@ -57,8 +57,11 @@ What you own, on a chosen date:
 | **Value, …** | The same, converted into the common currency |
 
 **Group by** rearranges everything — by currency and account, by asset, by country, by the tag on
-the asset, or by the tag on the account it is held in.
-**Show Inactive accounts** brings closed accounts back into the picture.
+the asset, by the tag on the account it is held in, or by the
+[status](03-first-steps.md#step-2--create-your-accounts) of that account.
+**Accounts** says how deep the report reaches: *Active accounts only*, *With background accounts*
+(the default) or *With closed accounts*. Grouped by status, the background positions come as one
+folded group with its own total — open it to see what is inside.
 
 Right-click a position for its [price chart](06-investments.md#looking-at-prices), a
 [tax estimate](06-investments.md#what-a-sale-would-cost-in-tax), or to give the asset a tag.
@@ -108,13 +111,16 @@ the account earned in payments over the period, and what was withheld from it.
 
 ## Deposits
 
-Term deposits — described in full in [chapter 7](07-deposits.md).
+Term deposits — described in full in [chapter 7](07-deposits.md). Right-click a deposit to rename it
+or to give it a picture.
 
 ![The deposits report](img/report_deposits.png)
 
 ## Staked positions
 
-What you have staked, where, what it is worth, and what it has accrued but not yet paid out. See
+What you have staked, where, what it is worth, and what it has accrued but not yet paid out —
+including the [rewards that wait at a distributor](08-crypto.md#rewards-waiting-to-be-claimed) until
+you claim them. Right-click a position to rename it or to chart what it has accrued. See
 [chapter 8](08-crypto.md#staking).
 
 ## Unsettled transfers

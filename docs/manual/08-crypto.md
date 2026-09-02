@@ -153,6 +153,22 @@ venues whose balances JAL can read on chain — how much the position has **accr
 out. Rewards that *were* paid out arrive in your wallet and are recorded there as an *Asset Payment*
 of type **Staking reward**.
 
+A position is named when it is created, from whatever the import recognised, and that guess is
+usually worth correcting: right-click the row and choose **Rename position…** to give it a name of
+your own and a picture.
+
+### Rewards waiting to be claimed
+
+Some rewards are not paid into the wallet at all until you claim them — a
+[Merkl](https://merkl.xyz/) campaign, or the rewards of Aave's Safety Module. They are earned money
+that has not arrived, so JAL lists them in the same report, one row per wallet, asset and
+distributor, with the amount in the **Accrued** column and no position behind it.
+
+They are read from the chain together with the balances, by **Import → Download quotes…** with the
+chains ticked. Right-click such a row for **Show claim history** — how the owed amount has grown
+since JAL started watching it. Nothing is booked: when you finally claim, the coins arrive in the
+wallet and are recorded as the payment they are.
+
 ## Crypto prices
 
 Crypto prices come from DeFiLlama and need no key. They are downloaded with everything else through

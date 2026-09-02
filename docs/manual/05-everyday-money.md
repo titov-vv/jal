@@ -150,8 +150,13 @@ Do not delete a closed account — its history is part of your past. Open **Data
 
 ![The account list](img/dlg_accounts.png)
 
-select the account, press **…** to open it, and untick **Active**. It disappears from the balances panel and from the pickers, while every
-operation it holds stays in the reports. Tick **Show inactive** to see such accounts again.
+select the account, press **…** to open it, and set its **Status** to *Closed*. It disappears from the balances panel and from the pickers, while every
+operation it holds stays in the reports. Tick **Show closed** to see such accounts again here, and use **Show accounts** in the
+[balances right-click menu](04-main-window.md#right-click-on-the-panel) to bring them back into the panel.
+
+An account you still hold but no longer watch does not have to be closed: give it the status
+*Background* instead and it keeps counting in full, folded away into
+[one group](04-main-window.md#background-accounts) at the bottom of the panel.
 
 ---
 

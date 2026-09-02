@@ -54,6 +54,17 @@ In the picture above, the trading account is red because it was last checked in 
 A small **coin icon** beside a balance means the figure includes a credit limit — the card above
 holds −354.44 of its own but has 1,500 of credit, so 1,145.56 is what could still be spent.
 
+### Background accounts
+
+An account whose [status](03-first-steps.md#step-2--create-your-accounts) is *Background* keeps every
+figure it has, but it is not given a row of its own among the account types. All of them gather under
+one **Background** group at the bottom of the panel, which opens folded: what you see is a single
+total. Open it and the account types are inside, exactly as above. A group you open by hand stays
+open while JAL runs.
+
+Use it for what holds real money but needs no daily attention — an old savings account, a wallet you
+top up once a year — so the accounts you actually work with are the ones you see.
+
 ### The pictures beside the names
 
 An account row wears the picture of the account itself; a crypto wallet that has none wears the logo
@@ -68,7 +79,8 @@ a tag with no picture marks nothing.
 
 ![The balances context menu](img/balances_context_menu.png)
 
-* **Show inactive** — also list accounts you have switched off.
+* **Show accounts** — how deep the panel reaches: *Active accounts only*, *With background accounts*
+  or *With closed accounts*. Each choice includes the ones above it.
 * **Use credit limits** — whether card limits are added to balances, as described above.
 * **Group by tag** — put the accounts that share a tag next to each other inside their type group,
   so their marks run down the column together. Untagged accounts gather at the top.

@@ -35,6 +35,7 @@ JAL is tailored for those who want a clear insight into their personal incomes, 
 ### Broker Statement Imports
 - Supports various Russian and international brokers.
 - Supports centralized crypto exchange statements (KuCoin, Bitget).
+- Supports bank and card statements (Revolut), where card purchases are reviewed against what is already recorded before anything is imported.
 ### Tax Reports
 - Assistance for tax declaration in Russia and Portugal.
 - Tax burden estimation for a given asset in the portfolio.
