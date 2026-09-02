@@ -125,6 +125,25 @@ def test_account_tag_is_edited_in_the_attribute_grid(prepare_db):
     parent.deleteLater()
 
 
+# The currency shown by the dialog must survive a mapper submit - reading the combo's key used to re-select the
+# model the combo itself is showing, which reset it to the first currency of the table and stored that instead.
+def test_account_currency_survives_editing(prepare_db):
+    JalAccountCreator(currency_id=2, number='ACC-1', name='Bank', organization=1,
+                      account_type=PredefinedAccountType.Bank).commit()
+    dialog = AccountDialog()
+    dialog.setSelectedId(1)
+    assert dialog.ui.CurrencyCombo.currentText() == 'USD'
+
+    dialog.ui.NameEdit.setText("Bank renamed")
+    dialog._mapper.submit()   # AutoSubmit does this on every focus change while the dialog is open
+    assert dialog.ui.CurrencyCombo.currentText() == 'USD'
+    dialog.accept()
+
+    JalAccount.db_cache.clear_cache()
+    account = JalAccount(1)
+    assert account.name() == "Bank renamed" and account.currency() == 2
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 # An account of a HIDDEN type - a staked position, a term deposit - is shown by this dialog cut down to the two
 # things it may show of itself: its name and its icon. Everything else is hidden rather than disabled, because it

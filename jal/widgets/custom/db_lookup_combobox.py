@@ -47,7 +47,9 @@ class DbLookupComboBox(QComboBox):
     def getKey(self):
         if self._model is None:
             return 0
-        return self._model.get_value(self._key_field, self._field, self.currentText())
+        # Nothing is selected, or what is shown has no row of its own in the looked-up table - the 'key' property
+        # is an int and has to answer with one either way
+        return self._model.get_value(self._key_field, self._field, self.currentText()) or 0
 
     def setKey(self, selected_id):
         if self._selected_id == selected_id:

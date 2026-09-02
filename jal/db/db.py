@@ -535,15 +535,13 @@ class JalModel(QSqlTableModel, JalDB):
         self.setTable(table_name)
         self._table = table_name
 
-    # Returns value of 'field_name' where 'key_field' is equal to 'search_value'
+    # Returns value of 'field_name' where 'key_field' is equal to 'search_value'.
+    # The value is taken with a query of its own and not by filtering the model itself: a model may be the one a
+    # widget is currently showing (DbLookupComboBox reads its key this way), and re-selecting it under the widget
+    # resets the row the widget has selected - which then reads back as the first row of the table.
     def get_value(self, field_name: str, key_field: str, search_value: Union[int, str]) -> str:
         if ' ' in field_name or ' ' in key_field:
             return ''
-        if type(search_value) == str:
-            search_value = "'" + search_value + "'"   # Enclose string into quotes
-        self.setFilter(f"{key_field}={search_value}")
-        self.select()
-        result = self.record(0).field(field_name).value()
-        self.setFilter('')
-        self.select()
-        return result
+        value = self._read(f"SELECT {field_name} FROM {self._table} WHERE {key_field}=:search_value",
+                           [(":search_value", search_value)])
+        return '' if value is None else value
