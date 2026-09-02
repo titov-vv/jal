@@ -21,8 +21,7 @@ read either.
 
 Whatever is in the tree ends up deciding what is in the package. A leftover `jal.egg-info/SOURCES.txt` lists files
 from an earlier build and setuptools will happily reuse it, so a data file can be *in* a release only because of a
-directory nobody meant to keep - and can silently vanish from the next one built elsewhere. That is not a
-hypothetical: the Russian 3-NDFL template shipped that way until 2026-09, named by no packaging rule at all.
+directory nobody meant to keep - and can silently vanish from the next one built elsewhere.
 
 `git archive HEAD` gives a checkout that contains tracked content and nothing else, which is what the release is
 built from. Untracked files cannot reach it, and uncommitted changes cannot either - which is why a dirty tree is
