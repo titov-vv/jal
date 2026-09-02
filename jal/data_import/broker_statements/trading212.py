@@ -297,6 +297,9 @@ class StatementTrading212(Statement):
     # peer of this ledger ("PASTELARIA NILO LDA" is a bakery the user calls something else), and Trading 212's
     # merchant category is an acquirer's code rather than a spending category. Both are chosen by the user in
     # CardImportDialog, for the rows that are not in the database already.
+    #
+    # The merchant string describes the operation and is kept as its note; a line note names a purchased item,
+    # which the statement doesn't report, so it stays empty.
     def _load_card(self, row: dict) -> None:
         operation_id = self._next_id(JSF.INCOME_SPENDING)
         timestamp = self._timestamp(row)
@@ -307,7 +310,8 @@ class StatementTrading212(Statement):
             "timestamp": timestamp,
             "account": self._account_id,
             "peer": 0,
-            "lines": [{"amount": amount, "category": 0, "description": merchant}]
+            "description": merchant,
+            "lines": [{"amount": amount, "category": 0, "description": ''}]
         })
         self._card_rows.append({"id": operation_id, "timestamp": timestamp, "amount": amount,
                                 "merchant": merchant, "merchant_category": row["Merchant category"]})
@@ -393,8 +397,8 @@ class StatementTrading212(Statement):
                 self._data[JSF.INCOME_SPENDING].remove(operation)
                 continue
             operation['peer'] = decision['peer']
+            operation['description'] = decision['description']
             operation['lines'][0]['category'] = decision['category']
-            operation['lines'][0]['description'] = decision['description']
             imported.append(operation)
         logging.info(self.tr("Card purchases to import: ") + f"{len(imported)}/{len(self._card_rows)}")
 

@@ -345,6 +345,8 @@ class StatementRevolut(Statement):
     # sent it, not a peer of this ledger, and there is no category in the file at all. Both are chosen by the user
     # in CardImportDialog, for the rows that are not in the database already.
     #
+    # The merchant string describes the operation and is kept as its note.
+    #
     # What is stored is the amount less the fee - the money that actually left the account - which is how such a
     # purchase is already recorded here.
     def _add_reviewed(self, row: dict) -> None:
@@ -352,8 +354,8 @@ class StatementRevolut(Statement):
         amount = row['amount'] - row['fee']
         self._data[JSF.INCOME_SPENDING].append({
             "id": operation_id, "timestamp": row['timestamp'],
-            "account": self._account_ids[row['product']], "peer": 0,
-            "lines": [{"amount": amount, "category": 0, "description": row['description']}]})
+            "account": self._account_ids[row['product']], "peer": 0, "description": row['description'],
+            "lines": [{"amount": amount, "category": 0, "description": ''}]})
         self._card_rows.append({"id": operation_id, "timestamp": row['timestamp'], "amount": amount,
                                 "merchant": row['description'], "merchant_category": ''})
 
@@ -481,8 +483,8 @@ class StatementRevolut(Statement):
                 self._data[JSF.INCOME_SPENDING].remove(operation)
                 continue
             operation['peer'] = decision['peer']
+            operation['description'] = decision['description']
             operation['lines'][0]['category'] = decision['category']
-            operation['lines'][0]['description'] = decision['description']
             imported.append(operation)
         logging.info(self.tr("Operations to import: ") + f"{len(imported)}/{len(self._card_rows)}")
 

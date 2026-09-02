@@ -168,8 +168,9 @@ def test_statement_t212_import(prepare_db_t212):
     assert JalDB._read("SELECT COUNT(*) FROM asset_payments") == 1
     # Five interest/cashback rows and exactly one of the six card purchases
     assert JalDB._read("SELECT COUNT(*) FROM actions") == stored_before + 6
-    imported = JalDB._read("SELECT a.oid FROM actions AS a JOIN action_details AS d ON d.pid=a.oid "
-                           "WHERE d.note='A book'")
+    # The merchant the user confirmed is the note of the operation; the line names a purchased item and stays empty
+    imported = JalDB._read("SELECT oid FROM actions WHERE note='A book'")
+    assert JalDB._read("SELECT note FROM action_details WHERE pid=:oid", [(":oid", imported)]) == ''
     assert JalAccount(account_id).organization() == JalDB._read("SELECT peer_id FROM actions AS a "
                                                                 "JOIN action_details AS d ON d.pid=a.oid "
                                                                 "WHERE d.note='Interest on cash' LIMIT 1")

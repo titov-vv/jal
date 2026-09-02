@@ -26,7 +26,7 @@ class CardOperationsModel(QAbstractTableModel):
         # only be compared with the one the user typed in if both are read on the same one.
         self._headers = [self.tr("Date"), self.tr("Merchant"), self.tr("Merchant category"), self.tr("Amount"),
                          self.tr("In database"), self.tr("Import"), self.tr("Peer"), self.tr("Category"),
-                         self.tr("Description")]
+                         self.tr("Note")]
         self._rows = []
         for row, match in zip(rows, proposal):
             self._rows.append({

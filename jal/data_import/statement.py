@@ -713,6 +713,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             operation['peer_id'] = operation.pop('peer')   # peers are always direct db references
             if operation['peer_id'] == 0:
                 operation['peer_id'] = JalAccount(operation['account_id']).organization()
+            if 'description' in operation:
+                operation['note'] = operation.pop('description')
             for line in operation['lines']:
                 line['category_id'] = line.pop('category')   # categories are always direct db references
                 if line['category_id'] <= 0:

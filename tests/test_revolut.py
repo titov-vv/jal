@@ -166,6 +166,8 @@ def test_revolut_review_and_import(prepare_db_revolut):
     assert JalDB._read("SELECT COUNT(*) FROM actions") == stored_actions + 4
     assert JalDB._read("SELECT COUNT(*) FROM action_details WHERE category_id=:tax",
                        [(":tax", PredefinedCategory.Taxes)]) == 2
+    reward = JalDB._read("SELECT oid FROM actions WHERE note='Referral'")
+    assert JalDB._read("SELECT note FROM action_details WHERE pid=:oid", [(":oid", reward)]) == ''
     # Interest is recorded against the bank, taken from the account it was paid into
     interest_peer = JalDB._read("SELECT a.peer_id FROM actions AS a JOIN action_details AS d ON d.pid=a.oid "
                                 "WHERE a.account_id=:account AND d.category_id=:interest LIMIT 1",

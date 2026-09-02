@@ -372,6 +372,7 @@ class IncomeSpending(LedgerTransaction):
         "account_id": {"mandatory": True, "validation": False},
         "peer_id": {"mandatory": True, "validation": False},
         "alt_currency_id": {"mandatory": False, "validation": False},
+        "note": {"mandatory": False, "validation": False},
         "lines": {
             "mandatory": True, "validation": False, "children": True,
             "child_table": "action_details", "child_pid": "pid",
