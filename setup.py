@@ -16,6 +16,12 @@ def get_version(rel_path: str) -> str:
     raise RuntimeError("Unable to find version string.")
 
 
+# Runtime dependencies are stated once, in requirements.txt.
+def get_requirements(rel_path: str) -> list:
+    lines = [line.strip() for line in read(rel_path).splitlines()]
+    return [line for line in lines if line and not line.startswith('#')]
+
+
 setup(
     name="jal",
     version=get_version("jal/__init__.py"),
@@ -27,22 +33,43 @@ setup(
     package_dir={'jal': 'jal'},
     python_requires=">=3.9",
     url="https://github.com/titov-vv/jal",
+    project_urls={
+        "User manual": "https://titov-vv.github.io/jal/manual/",
+        "Source": "https://github.com/titov-vv/jal",
+        "Bug Tracker": "https://github.com/titov-vv/jal/issues",
+        "Support": "https://t.me/jal_support"
+    },
+    license="GPL-3.0-or-later",
+    license_files=["docs/LICENSE"],
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Topic :: Office/Business",
         "Topic :: Office/Business :: Financial",
         "Topic :: Office/Business :: Financial :: Accounting",
         "Topic :: Office/Business :: Financial :: Investment",
-        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+        "Intended Audience :: End Users/Desktop",
+        "Environment :: X11 Applications :: Qt",
+        "Natural Language :: English",
+        "Natural Language :: Russian",
         "Operating System :: OS Independent",
-        "Programming Language :: Python"
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
+        "Programming Language :: Python :: 3.14"
     ],
-    install_requires=["lxml", "pandas", "PySide6>=6.5.1", "requests>=2.24", "XlsxWriter>=1.3.3", "bip_utils>=2.9.0", "sqlparse", "oauthlib", "requests-oauthlib", "setuptools", "packaging"],
+    install_requires=get_requirements("requirements.txt"),
     entry_points={
         'console_scripts': ['jal=jal.jal:main', ]
     },
     include_package_data=True,
     package_data={
-        '': ['*.sql', '*.json', 'languages/*.qm', 'languages/*.png', 'pypi_description.md', 'img/*.ico', 'img/*.png']
+        # '*.json' reaches a package's own directory only, so the per-year 3-NDFL templates - which live in a plain
+        # subdirectory of jal/data_export/templates - are named separately or they are left out of the package.
+        '': ['*.sql', '*.json', 'data_export/templates/*/*.json', 'languages/*.qm', 'pypi_description.md',
+             'img/*.ico', 'img/*.png']
     }
 )

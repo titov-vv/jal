@@ -1,5 +1,13 @@
-include jal/languages/*.png jal/languages/*.qm
+include jal/languages/*.qm
 include jal/img/*.png jal/img/*.ico
 include jal/*.sql jal/updates/*.sql
 include jal/pypi_description.md
+recursive-include jal/data_export/templates *.json
+# setup.py reads requirements.txt at build time, so a source distribution that lacks it cannot be built from
+include requirements.txt requirements-dev.txt
+include run.py
 recursive-exclude tests *
+# The manual and its screenshots are published as a web site, not shipped to PyPI - but the license travels with
+# the code (setup.py names docs/LICENSE), so it is added back after the prune that removes everything else
+prune docs
+include docs/LICENSE

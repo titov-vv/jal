@@ -1,0 +1,3 @@
+# What is needed to work on jal, on top of what is needed to run it.
+-r requirements.txt
+pytest
