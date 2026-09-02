@@ -1,5 +1,5 @@
 from decimal import Decimal
-from jal.constants import BookAccount, PredefinedAccountType, AccountData, AssetLocation
+from jal.constants import BookAccount, PredefinedAccountType, AccountStatus, AccountData, AssetLocation
 from jal.db.db import JalDB
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
@@ -167,4 +167,4 @@ class JalStakingBox(JalDB):
     # Closes an emptied box: it stops being active, so it disappears from every default view and from the list of
     # staked positions, while everything it recorded stays in place.
     def close(self) -> None:
-        self._account.set_active(False)
+        self._account.set_status(AccountStatus.Closed)

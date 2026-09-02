@@ -7,7 +7,7 @@ CREATE TABLE accounts (
     id              INTEGER   PRIMARY KEY UNIQUE NOT NULL,
     name            TEXT (64) NOT NULL UNIQUE,                                                                       -- human-readable name of the account
     currency_id     INTEGER   REFERENCES assets (id) ON DELETE RESTRICT ON UPDATE CASCADE NOT NULL,                  -- accounting currency for the account
-    active          INTEGER   DEFAULT (1) NOT NULL ON CONFLICT REPLACE,                                              -- 1 = account is active, 0 = inactive (hidden in UI)
+    status          INTEGER   DEFAULT (20) NOT NULL ON CONFLICT REPLACE,                                             -- how much attention the account is due (see AccountStatus): 20 = active, 10 = background, 0 = closed
     investing       INTEGER   DEFAULT (0) NOT NULL,                                                                  -- 1 if account can hold investment assets, 0 otherwise
     reconciled_on   INTEGER   DEFAULT (0) NOT NULL ON CONFLICT REPLACE,                                              -- timestamp of last confirmed operation
     organization_id INTEGER   REFERENCES agents (id) ON DELETE SET DEFAULT ON UPDATE CASCADE NOT NULL DEFAULT (1),   -- Bank/Broker that handles account
@@ -898,7 +898,7 @@ BEGIN
 END;
 ------------------------------------------------------------------------------------------------------------------------
 -- Initialize default values for settings
-INSERT INTO settings(name, value) VALUES('SchemaVersion', 67);
+INSERT INTO settings(name, value) VALUES('SchemaVersion', 68);
 INSERT INTO settings(name, value) VALUES('Language', 1);
 INSERT INTO settings(name, value) VALUES('RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
 INSERT INTO settings(name, value) VALUES('RuTaxSessionId', '');
@@ -932,7 +932,7 @@ INSERT INTO settings(name, value) VALUES('DlgGeometry_Residence', '');
 INSERT INTO settings(name, value) VALUES('DlgViewState_Residence', '');
 INSERT INTO settings(name, value) VALUES('DlgGeometry_Token blacklist', '');
 INSERT INTO settings(name, value) VALUES('DlgViewState_Token blacklist', '');
-INSERT INTO settings(name, value) VALUES('ShowInactiveAccountBalances', 0);
+INSERT INTO settings(name, value) VALUES('BalancesMinAccountStatus', 10);
 INSERT INTO settings(name, value) VALUES('UseAccountCreditLimit', 1);
 
 -- Initialize available languages

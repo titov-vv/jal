@@ -5,7 +5,7 @@ import sqlparse
 
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import d2t, create_actions
-from constants import PredefinedCategory, PredefinedAccountType, Setup
+from constants import PredefinedCategory, PredefinedAccountType, AccountStatus, Setup
 from jal.db.db import JalDB
 from jal.db.ledger import Ledger
 from jal.db.account import JalAccount, JalAccountCreator
@@ -41,6 +41,11 @@ def _run_migration(project_root):
     with open(project_root + "/jal/updates/jal_delta_61.sql") as delta:
         text = delta.read()
     start, end = text.index(_MIGRATION_FROM), text.index(_MIGRATION_TO)
+    # The delta is replayed against the CURRENT schema, while it was written for version 60 - where an account's
+    # state was still the boolean 'active' that delta 68 renamed to 'status' and re-scaled. Both are translated
+    # here and not in the shipped delta, which has to keep running on the database version it was written for.
+    text = text.replace("currency_id, active, investing", "currency_id, status, investing") \
+               .replace("THEN 1 ELSE 0 END", f"THEN {AccountStatus.Active} ELSE {AccountStatus.Closed} END")
     for statement in sqlparse.split(text[start:end]):
         if not sqlparse.format(statement, strip_comments=True).strip():
             continue   # a run of comment lines is not a statement
@@ -81,7 +86,7 @@ def test_migrated_deposit_reproduces_the_money(prepare_old_deposits):
     JalAccount.db_cache.clear_cache()
     Ledger().rebuild(from_timestamp=0)
 
-    boxes = JalAccount.get_all_accounts(active_only=False, include_hidden=True)
+    boxes = JalAccount.get_all_accounts(min_status=AccountStatus.Closed, include_hidden=True)
     box = [x for x in boxes if x.account_type() == PredefinedAccountType.Deposit]
     assert len(box) == 1 and box[0].name() == "Deposit A"
     assert not box[0].is_active()                     # emptied, so it is out of every default view
@@ -108,7 +113,7 @@ def test_migration_closes_with_the_accumulated_balance(prepare_old_deposits):
     JalAccount.db_cache.clear_cache()
     Ledger().rebuild(from_timestamp=0)
 
-    box = [x for x in JalAccount.get_all_accounts(active_only=False, include_hidden=True)
+    box = [x for x in JalAccount.get_all_accounts(min_status=AccountStatus.Closed, include_hidden=True)
            if x.account_type() == PredefinedAccountType.Deposit][0]
     assert JalDepositBox(box.id()).balance(t_close) == Decimal('0')
     assert JalAccount(1).get_asset_amount(t_close, 2) == Decimal('10054')
@@ -123,7 +128,7 @@ def test_migration_keeps_a_running_deposit_open(prepare_old_deposits):
     JalAccount.db_cache.clear_cache()
     Ledger().rebuild(from_timestamp=0)
 
-    box = [x for x in JalAccount.get_all_accounts(active_only=False, include_hidden=True)
+    box = [x for x in JalAccount.get_all_accounts(min_status=AccountStatus.Closed, include_hidden=True)
            if x.account_type() == PredefinedAccountType.Deposit][0]
     assert box.is_active()
     assert JalDepositBox(box.id()).balance(d2t(210301)) == Decimal('1000')
@@ -138,7 +143,7 @@ def test_migration_makes_names_unique(prepare_old_deposits):
     _run_migration(_project_root())
     JalAccount.db_cache.clear_cache()
 
-    names = sorted(x.name() for x in JalAccount.get_all_accounts(active_only=False, include_hidden=True)
+    names = sorted(x.name() for x in JalAccount.get_all_accounts(min_status=AccountStatus.Closed, include_hidden=True)
                    if x.account_type() == PredefinedAccountType.Deposit)
     assert names == ["Same name #1", "Same name #2"]
 
@@ -152,7 +157,7 @@ def test_migration_handles_a_partial_withdrawal(prepare_old_deposits):
     JalAccount.db_cache.clear_cache()
     Ledger().rebuild(from_timestamp=0)
 
-    box = [x for x in JalAccount.get_all_accounts(active_only=False, include_hidden=True)
+    box = [x for x in JalAccount.get_all_accounts(min_status=AccountStatus.Closed, include_hidden=True)
            if x.account_type() == PredefinedAccountType.Deposit][0]
     deposit = JalDepositBox(box.id())
     assert deposit.balance(t_take) == Decimal('600')
@@ -169,7 +174,7 @@ def test_migration_keeps_a_lonely_tax(prepare_old_deposits):
     JalAccount.db_cache.clear_cache()
     Ledger().rebuild(from_timestamp=0)
 
-    box = [x for x in JalAccount.get_all_accounts(active_only=False, include_hidden=True)
+    box = [x for x in JalAccount.get_all_accounts(min_status=AccountStatus.Closed, include_hidden=True)
            if x.account_type() == PredefinedAccountType.Deposit][0]
     assert box.get_category_turnover(PredefinedCategory.Taxes, 0, t_close) == Decimal('15')
     assert box.get_category_turnover(PredefinedCategory.Interest, 0, t_close) == Decimal('0')

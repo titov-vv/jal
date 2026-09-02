@@ -11,7 +11,7 @@ from PySide6.QtWidgets import QApplication, QWidget
 
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import create_stocks, create_trades
-from constants import PredefinedAccountType, AssetLocation
+from constants import PredefinedAccountType, AccountStatus, AssetLocation
 from jal.db.db import JalDB
 from jal.db.residence import JalResidence
 from jal.db.account import JalAccount, JalAccountCreator
@@ -115,7 +115,7 @@ def test_every_coloured_surface_paints_on_any_ground(ledger, theme):
         app.setPalette(THEMES[theme])
 
         operations = OperationsWidget(None)
-        operations.ui.BalancesTreeView.model().showInactiveAccounts(True)
+        operations.ui.BalancesTreeView.model().setMinStatus(AccountStatus.Closed)
         operations.ui.OperationsTableView.selectRow(1)   # a selected row has to keep its highlight (P1-4)
         assert not _painted(operations, "operations", theme, 1100, 620).isNull()
 

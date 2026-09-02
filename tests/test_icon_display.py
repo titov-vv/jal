@@ -13,7 +13,7 @@ from PySide6.QtWidgets import QWidget
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import d2t, symbol_id_for, create_stocks, create_assets, create_actions, create_trades, \
     create_swaps, create_conversions, create_corporate_actions, create_transfers, create_bridges
-from constants import AssetLocation, IconOwner, IconSource, PredefinedAsset, PredefinedCategory
+from constants import AssetLocation, IconOwner, IconSource, PredefinedAsset, PredefinedCategory, AccountStatus
 from jal.db.db import JalDB
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
@@ -1086,13 +1086,13 @@ def test_the_portfolio_can_group_accounts_by_their_tag(prepare_db):
     column = model.fieldIndex('header')
 
     # Grouped by account: the account row carries the mark of the tag it was put in
-    model.updateView(currency_id=2, date=now_dt().date(), grouping="account_id", show_inactive=False)
+    model.updateView(currency_id=2, date=now_dt().date(), grouping="account_id", min_status=AccountStatus.Active)
     group = model.index(0, column, model.index(-1, -1))
     assert model.data(group, Qt.DisplayRole) == 'Tagged'
     assert _same_picture(model.data(group, TAG_ICON_ROLE), JalIcons.icon(IconOwner.Tag, cash, JalIcons.grid_size()))
 
     # Grouped BY the tag: the group row above says it once, so nothing under it repeats the mark
-    model.updateView(currency_id=2, date=now_dt().date(), grouping="account_tag_id;account_id", show_inactive=False)
+    model.updateView(currency_id=2, date=now_dt().date(), grouping="account_tag_id;account_id", min_status=AccountStatus.Active)
     tag_group = model.index(0, column, model.index(-1, -1))
     assert model.data(tag_group, Qt.DisplayRole) == 'Cash'
     assert _same_picture(model.data(tag_group, Qt.DecorationRole), JalIcons.icon(IconOwner.Tag, cash, JalIcons.grid_size()))

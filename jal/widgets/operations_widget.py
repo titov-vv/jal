@@ -1,9 +1,9 @@
 from functools import partial
 
 from PySide6.QtCore import Qt, Slot, Signal, QSortFilterProxyModel
-from PySide6.QtGui import QAction, QKeySequence
+from PySide6.QtGui import QAction, QActionGroup, QKeySequence
 from PySide6.QtWidgets import QMenu, QMessageBox, QDialog
-from jal.constants import Setup
+from jal.constants import Setup, AccountStatus
 from jal.ui.ui_operations_widget import Ui_OperationsWidget
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.selection_dialog import SelectReferenceDialog
@@ -91,6 +91,8 @@ class OperationsWidget(MdiWidget):
         self.ui.BalancesCurrencyCombo.changed.connect(self.ui.BalancesTreeView.model().setCurrency)
         self.ui.BalancesTreeView.doubleClicked.connect(self.balance_double_click)
         self.ui.BalancesTreeView.customContextMenuRequested.connect(self.balances_context_menu)
+        self.ui.BalancesTreeView.expanded.connect(partial(self.balances_model.setGroupExpanded, expanded=True))
+        self.ui.BalancesTreeView.collapsed.connect(partial(self.balances_model.setGroupExpanded, expanded=False))
         self.ui.DateRange.changed.connect(self.operations_model.setDateRange)
         self.ui.ChooseAccountBtn.changed.connect(self.operations_model.setAccount)
         self.ui.SearchString.editingFinished.connect(self.update_operations_filter)
@@ -251,12 +253,18 @@ class OperationsWidget(MdiWidget):
         index = self.ui.BalancesTreeView.indexAt(pos)
         account_id = self.balances_model.data(index, BalancesModel.ACCOUNT_ROLE) if index.isValid() else 0
         contextMenu = QMenu(self.ui.BalancesTreeView)
-        # Create a menu item to toggle active/inactive accounts
-        actionToggleInactive = QAction(self.tr("Show inactive"), self)
-        actionToggleInactive.setCheckable(True)
-        actionToggleInactive.setChecked(JalSettings().getValue("ShowInactiveAccountBalances", False))
-        actionToggleInactive.toggled.connect(self.ui.BalancesTreeView.model().showInactiveAccounts)
-        contextMenu.addAction(actionToggleInactive)
+        # Which accounts the view reaches down to. The three views nest, so they are one exclusive choice and
+        # not three independent switches: each shows a status and everything above it (see AccountStatus).
+        shown_status = self.balances_model.minStatus()
+        accounts_submenu = contextMenu.addMenu(self.tr("Show accounts"))
+        status_group = QActionGroup(accounts_submenu)
+        for min_status, name in AccountStatus().visibility_names().items():
+            action = QAction(name, accounts_submenu)
+            action.setCheckable(True)
+            action.setChecked(min_status == shown_status)
+            action.triggered.connect(partial(self.ui.BalancesTreeView.model().setMinStatus, min_status))
+            status_group.addAction(action)
+            accounts_submenu.addAction(action)
         # Create a menu item to show account balance with/without credit limit
         actionUseCreditLimit = QAction(self.tr("Use credit limits"), self)
         actionUseCreditLimit.setCheckable(True)

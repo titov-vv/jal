@@ -6,7 +6,7 @@ import jal.db.operations
 import jal.db.closed_trade
 import jal.db.chain_balance
 import jal.db.receivable
-from jal.constants import Setup, BookAccount, PredefinedAsset, PredefinedAgents, PredefinedAccountType, AccountData, AssetLocation
+from jal.constants import Setup, BookAccount, PredefinedAsset, PredefinedAgents, PredefinedAccountType, AccountStatus, AccountData, AssetLocation
 from jal.db.clock import ZONE_SPAN
 from jal.db.country import JalCountry
 from jal.db.tag import JalTag
@@ -44,7 +44,9 @@ class JalAccount(JalDB):
         self._data = self.db_cache.get_data(self._load_account_data, (self._id,))  # Load account data from cache or DB
         self._name = self._data['name'] if self._data is not None else None
         self._currency_id = self._data['currency_id'] if self._data is not None else None
-        self._active = self._data['active'] if self._data is not None else None
+        # An account that does not exist is Closed, not Active: JalAccount(0) is the "no such account"
+        # sentinel that is passed around all over the application, and it must answer is_active() with False.
+        self._status = int(self._data['status']) if self._data is not None else AccountStatus.Closed
         self._investing = bool(self._data['investing']) if self._data is not None else False
         self._organization_id = int(self._data['organization_id']) if self._data is not None else PredefinedAgents.Empty
         self._reconciled = int(self._data['reconciled_on']) if self._data is not None else 0
@@ -76,6 +78,16 @@ class JalAccount(JalDB):
             self._tag = JalTag(int(attributes[AccountData.Tag]))
         except (KeyError, TypeError, ValueError):
             self._tag = JalTag(0)
+        # 0 stands for "not known", which is what every account created before these attributes existed carries.
+        # It is not the same as "opened at the epoch" and no reader may treat it as a date.
+        try:
+            self._opened_on = int(attributes[AccountData.OpenDate])
+        except (KeyError, TypeError, ValueError):
+            self._opened_on = 0
+        try:
+            self._closed_on = int(attributes[AccountData.CloseDate])
+        except (KeyError, TypeError, ValueError):
+            self._closed_on = 0
 
     def invalidate_cache(self):
         self.db_cache.clear_cache()
@@ -121,19 +133,20 @@ class JalAccount(JalDB):
 
     # Method returns a list of JalAccount objects with given filters (combined with AND):
     # investing_only - return only investing accounts (false by default)
-    # active_only - return only active accounts (true by default)
+    # min_status - the lowest AccountStatus to return, i.e. the widest view is AccountStatus.Closed. The default
+    #              keeps out what has been closed and returns everything still in use, which is what 'active_only'
+    #              meant when the status was a boolean.
     # currency_id - return only accounts with given currency (or all if 0)
     # include_hidden - also return accounts of the types the user never sees (PredefinedAccountType._HIDDEN, i.e.
     #                  deposit boxes). It is False by default so that a caller which doesn't know about them - and
     #                  every caller written before they existed - keeps behaving exactly as it did.
     @classmethod
-    def get_all_accounts(cls, investing_only: bool = False, active_only: bool = True, currency_id: int = 0,
-                         include_hidden: bool = False) -> list:
+    def get_all_accounts(cls, investing_only: bool = False, min_status: int = AccountStatus.Background,
+                         currency_id: int = 0, include_hidden: bool = False) -> list:
         accounts = []
-        all_activity = 0 if active_only else 1
         all_types = 0 if investing_only else 1
-        sql_txt = "SELECT id FROM accounts WHERE investing >= (1-:all_types) AND active >= (1-:all)"
-        sql_parameters = [(":all_types", all_types), (":all", all_activity)]
+        sql_txt = "SELECT id FROM accounts WHERE investing >= (1-:all_types) AND status >= :min_status"
+        sql_parameters = [(":all_types", all_types), (":min_status", min_status)]
         if not include_hidden:
             hidden = ','.join(str(int(x)) for x in PredefinedAccountType.hidden_types())
             sql_txt += f" AND account_type NOT IN ({hidden})"
@@ -160,7 +173,7 @@ class JalAccount(JalDB):
         address = normalize_address(location_id, address)
         if not address or not location_id:
             return None
-        matched = [x for x in cls.get_all_accounts(active_only=True, include_hidden=True)
+        matched = [x for x in cls.get_all_accounts(include_hidden=True)
                    if x.account_type() in cls._ADDRESSED_TYPES and x.chain() == location_id
                    and normalize_address(location_id, x.address()) == address]
         return matched[0] if len(matched) == 1 else None
@@ -267,15 +280,16 @@ class JalAccount(JalDB):
     def deposit_rate(self) -> Decimal:
         return self._deposit_rate
 
-    # Opens or closes the account for further use. A deposit box that was emptied is deactivated, which is what
-    # keeps the pile of past deposits out of every default view (they all select active accounts only).
-    def set_active(self, active: bool) -> None:
+    # How much attention the account is due, and whether it is still in use at all - one of AccountStatus.
+    # A deposit box that was emptied is set to Closed, which is what keeps the pile of past deposits out of every
+    # default view (they all ask for a status above Closed).
+    def set_status(self, status: int) -> None:
         if not self._id:
             return
-        _ = self._exec("UPDATE accounts SET active=:active WHERE id=:id",
-                       [(":active", 1 if active else 0), (":id", self._id)])
+        _ = self._exec("UPDATE accounts SET status=:status WHERE id=:id",
+                       [(":status", int(status)), (":id", self._id)])
         self._data = self.db_cache.update_data(self._load_account_data, (self._id,))  # Refresh cached row from DB
-        self._active = 1 if active else 0
+        self._status = int(status)
 
     # Returns the icon filename (a JalIcon key) for a given account type
     @classmethod
@@ -305,12 +319,28 @@ class JalAccount(JalDB):
     def currency(self) -> int:
         return self._currency_id
 
-    # Returns True if account is active and False otherwise
+    # Returns the account status, one of AccountStatus
+    def status(self) -> int:
+        return self._status
+
+    # Returns True if the account is still in use - i.e. anything but closed. This is the test that decides whether
+    # an account may take new operations and whether it is counted at all, and it is deliberately NOT the test for
+    # how prominently it is shown - that one is is_foreground() below.
     def is_active(self) -> bool:
-        if self._active:
-            return True
-        else:
-            return False
+        return self._status > AccountStatus.Closed
+
+    # Returns True if the account is one of those the user works with day to day, so it earns a row of its own in
+    # the balances and holdings views. A background account is active but folded away into a single summary row.
+    def is_foreground(self) -> bool:
+        return self._status >= AccountStatus.Active
+
+    # Date the account was opened, 0 if it isn't known
+    def opened_on(self) -> int:
+        return self._opened_on
+
+    # Date the account was closed, 0 if it isn't known (which includes every account that is still open)
+    def closed_on(self) -> int:
+        return self._closed_on
 
     def organization(self) -> int:
         return self._organization_id
@@ -611,10 +641,11 @@ class JalAccountCreator(JalDB):
             if not name:
                 name = number + '.' + JalAsset(currency_id).symbol()
             query = self._exec(
-                "INSERT INTO accounts (name, active, investing, currency_id, organization_id, account_type) "
-                "VALUES(:name, 1, :investing, :currency, :organization, :account_type)",
-                [(":name", name), (":investing", investing), (":currency", currency_id),
-                 (":organization", organization), (":account_type", account_type)], commit=True)
+                "INSERT INTO accounts (name, status, investing, currency_id, organization_id, account_type) "
+                "VALUES(:name, :status, :investing, :currency, :organization, :account_type)",
+                [(":name", name), (":status", AccountStatus.Active), (":investing", investing),
+                 (":currency", currency_id), (":organization", organization),
+                 (":account_type", account_type)], commit=True)
             self._id = query.lastInsertId()
             self._store_attributes(number=number, country=country, precision=precision, account_type=account_type,
                                    address=address, chain=chain)
@@ -701,8 +732,8 @@ class JalAccountCreator(JalDB):
         else:
             name = similar.name() + '.' + new_currency.symbol()
         query = self._exec(
-            "INSERT INTO accounts (name, currency_id, active, investing, organization_id, account_type) "
-            "SELECT :name, :currency, active, investing, organization_id, account_type "
+            "INSERT INTO accounts (name, currency_id, status, investing, organization_id, account_type) "
+            "SELECT :name, :currency, status, investing, organization_id, account_type "
             "FROM accounts WHERE id=:id", [(":id", similar.id()), (":name", name), (":currency", new_currency.id())])
         new_id = query.lastInsertId()
         # Clone the source account's per-account attributes (number/credit/country/precision, ...) too

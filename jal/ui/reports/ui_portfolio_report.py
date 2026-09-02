@@ -15,10 +15,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateEdit,
-    QFrame, QHBoxLayout, QHeaderView, QLabel,
-    QPushButton, QSizePolicy, QSpacerItem, QTreeView,
-    QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QComboBox, QDateEdit, QFrame,
+    QHBoxLayout, QHeaderView, QLabel, QPushButton,
+    QSizePolicy, QSpacerItem, QTreeView, QVBoxLayout,
+    QWidget)
 
 from jal.widgets.account_select import CurrencyComboBox
 
@@ -70,10 +70,19 @@ class Ui_PortfolioWidget(object):
 
         self.horizontalLayout_8.addWidget(self.PortfolioCurrencyCombo)
 
-        self.ShowInactiveAccounts = QCheckBox(self.PortfolioParamsFrame)
-        self.ShowInactiveAccounts.setObjectName(u"ShowInactiveAccounts")
+        self.accountsGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
 
-        self.horizontalLayout_8.addWidget(self.ShowInactiveAccounts)
+        self.horizontalLayout_8.addItem(self.accountsGroupSpacer)
+
+        self.AccountsLbl = QLabel(self.PortfolioParamsFrame)
+        self.AccountsLbl.setObjectName(u"AccountsLbl")
+
+        self.horizontalLayout_8.addWidget(self.AccountsLbl)
+
+        self.AccountsCombo = QComboBox(self.PortfolioParamsFrame)
+        self.AccountsCombo.setObjectName(u"AccountsCombo")
+
+        self.horizontalLayout_8.addWidget(self.AccountsCombo)
 
         self.horizontalSpacer = QSpacerItem(1411, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
@@ -98,11 +107,12 @@ class Ui_PortfolioWidget(object):
 #if QT_CONFIG(shortcut)
         self.GroupLbl.setBuddy(self.GroupCombo)
         self.PortfolioCurrencyLbl.setBuddy(self.PortfolioCurrencyCombo)
+        self.AccountsLbl.setBuddy(self.AccountsCombo)
 #endif // QT_CONFIG(shortcut)
         QWidget.setTabOrder(self.PortfolioDate, self.GroupCombo)
         QWidget.setTabOrder(self.GroupCombo, self.PortfolioCurrencyCombo)
-        QWidget.setTabOrder(self.PortfolioCurrencyCombo, self.ShowInactiveAccounts)
-        QWidget.setTabOrder(self.ShowInactiveAccounts, self.SaveButton)
+        QWidget.setTabOrder(self.PortfolioCurrencyCombo, self.AccountsCombo)
+        QWidget.setTabOrder(self.AccountsCombo, self.SaveButton)
         QWidget.setTabOrder(self.SaveButton, self.PortfolioTreeView)
 
         self.retranslateUi(PortfolioWidget)
@@ -115,7 +125,7 @@ class Ui_PortfolioWidget(object):
         self.PortfolioDate.setDisplayFormat(QCoreApplication.translate("PortfolioWidget", u"dd/MM/yyyy", None))
         self.GroupLbl.setText(QCoreApplication.translate("PortfolioWidget", u"&Group by:", None))
         self.PortfolioCurrencyLbl.setText(QCoreApplication.translate("PortfolioWidget", u"&Common currency:", None))
-        self.ShowInactiveAccounts.setText(QCoreApplication.translate("PortfolioWidget", u"Show &Inactive accounts", None))
+        self.AccountsLbl.setText(QCoreApplication.translate("PortfolioWidget", u"&Accounts:", None))
         self.SaveButton.setText(QCoreApplication.translate("PortfolioWidget", u"Save...", None))
     # retranslateUi
 

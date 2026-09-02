@@ -767,7 +767,7 @@ class EVMFetcher(ChainFetcher):
         address = self._norm(address)
         if not address:
             return False
-        for account in JalAccount.get_all_accounts(active_only=True):
+        for account in JalAccount.get_all_accounts():
             if account.account_type() == PredefinedAccountType.Wallet and \
                     normalize_address(account.chain(), account.address()) == address:
                 return True

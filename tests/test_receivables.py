@@ -719,7 +719,8 @@ def test_the_migration_creates_the_table_on_an_older_database(prepare_db, projec
 # either re-run the delta or refuse to open the file.
 def test_the_delta_and_the_required_version_agree(project_root):
     from constants import Setup
-    with open(project_root + "/jal/updates/jal_delta_67.sql") as delta:
+    latest_delta = f"/jal/updates/{Setup.UPDATE_PREFIX}{Setup.DB_REQUIRED_VERSION}.sql"
+    with open(project_root + latest_delta) as delta:
         assert f"UPDATE settings SET value={Setup.DB_REQUIRED_VERSION} WHERE name=\'SchemaVersion\'" in delta.read()
     with open(project_root + "/jal/" + Setup.INIT_SCRIPT_PATH) as init:
         assert f"VALUES(\'SchemaVersion\', {Setup.DB_REQUIRED_VERSION})" in init.read()

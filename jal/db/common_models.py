@@ -4,7 +4,7 @@ from PySide6.QtGui import QIcon
 from PySide6.QtSql import QSqlRelation
 from PySide6.QtWidgets import QMessageBox
 from jal.constants import CmColumn, CmWidth, CmDelegate, CmReference, IconOwner, PredefinedAccountType, \
-    PredefinedAgents, AccountData, AssetLocation
+    PredefinedAgents, AccountStatus, AccountData, AssetLocation
 from jal.db.category import JalCategory
 from jal.db.icon import JalIcons
 from jal.db.account import JalAccount
@@ -70,14 +70,15 @@ class AccountListModel(AbstractReferenceListModel):
             CmColumn("id", '', hide=True),
             CmColumn("name", self.tr("Name"), width=CmWidth.WIDTH_STRETCH, sort=True, icon=True),
             CmColumn("currency_id", self.tr("Currency"), delegate_type=CmDelegate.LOOKUP),
-            CmColumn("active", self.tr("Act."), width=64, delegate_type=CmDelegate.BOOL),
+            CmColumn("status", self.tr("Status"), width=100, delegate_type=CmDelegate.CONSTANT, delegate_details=AccountStatus),
             CmColumn("investing", self.tr("Invest."), width=64, delegate_type=CmDelegate.BOOL),
             CmColumn("reconciled_on", self.tr("Reconciled @"), width=CmWidth.WIDTH_DATETIME, delegate_type=CmDelegate.TIMESTAMP),
             CmColumn("organization_id", self.tr("Bank/Broker"), delegate_type=CmDelegate.REFERENCE, delegate_details=CmReference.PEER),
             CmColumn("account_type", self.tr("Type"), group=True, delegate_type=CmDelegate.CONSTANT, delegate_details=PredefinedAccountType)
         ]
         super().__init__("accounts", columns, parent)
-        self.set_default_values({'active': 1, 'reconciled_on': 0, 'account_type': PredefinedAccountType.Cash})
+        self.set_default_values({'status': AccountStatus.Active, 'reconciled_on': 0,
+                                 'account_type': PredefinedAccountType.Cash})
         self.setRelation(self.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "symbol"))
         self.setFilter('')   # applies the baseline filter above (setFilter() re-selects the model)
 
@@ -127,15 +128,16 @@ class AccountRecordModel(AbstractReferenceListModel):
             CmColumn("id", '', hide=True),
             CmColumn("name", self.tr("Name"), default=True, width=CmWidth.WIDTH_STRETCH),
             CmColumn("currency_id", self.tr("Currency")),
-            CmColumn("active", self.tr("Active")),
+            CmColumn("status", self.tr("Status")),
             CmColumn("investing", self.tr("Investing")),
             CmColumn("reconciled_on", self.tr("Reconciled @")),
             CmColumn("organization_id", self.tr("Bank/Broker")),
             CmColumn("account_type", self.tr("Type"))
         ]
         super().__init__("accounts", columns, parent)
-        self.set_default_values({'name': '', 'currency_id': JalAsset.get_base_currency(), 'active': 1,
-                                 'investing': 0, 'reconciled_on': 0, 'organization_id': PredefinedAgents.Empty,
+        self.set_default_values({'name': '', 'currency_id': JalAsset.get_base_currency(),
+                                 'status': AccountStatus.Active, 'investing': 0, 'reconciled_on': 0,
+                                 'organization_id': PredefinedAgents.Empty,
                                  'account_type': PredefinedAccountType.Cash})
 
 

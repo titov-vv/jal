@@ -9,7 +9,7 @@ class Setup:
     INI_FILE = "jal.ini"
     DB_PATH = "jal.sqlite"
     DB_CONNECTION = "JAL.DB"
-    DB_REQUIRED_VERSION = 67
+    DB_REQUIRED_VERSION = 68
     SQLITE_MIN_VERSION = "3.35"
     MAIN_WND_NAME = "JAL_MainWindow"
     SPLITTER_STATE_PREFIX = "SplitterState_"
@@ -265,6 +265,34 @@ class PredefinedAccountType(PredefinedList, QObject):
             combobox.addItem(self._names[item], userData=item)
 
 
+# How much attention an account is due, and whether it is still in use at all. Values are ORDINAL and every filter
+# asks for 'status >= <minimum>', so a wider view is simply a lower bound - which keeps the check a plain indexed
+# comparison on the paths that run once per account. They are spaced by ten so a level can be inserted between two
+# of them without renumbering what is already stored.
+class AccountStatus(PredefinedList, QObject):
+    Closed = 0       # Ceased to exist: no new operations are expected, it is kept for the historical record only
+    Background = 10  # Holds real value but needs no daily attention - shown as one folded group, not row by row
+    Active = 20      # In regular use, shown in full
+
+    def __init__(self):
+        super().__init__()
+        self._names = {
+            self.Closed: self.tr("Closed"),
+            self.Background: self.tr("Background"),
+            self.Active: self.tr("Active")
+        }
+        # What a view calls the same value when it stands for "show this and everything above it"
+        self._visibility_names = {
+            self.Active: self.tr("Active accounts only"),
+            self.Background: self.tr("With background accounts"),
+            self.Closed: self.tr("With closed accounts")
+        }
+
+    # {minimal status: name of the view it opens}, from the narrowest view to the widest
+    def visibility_names(self) -> dict:
+        return self._visibility_names
+
+
 class PredefinedAsset(PredefinedList, QObject):
     Money = 1
     Stock = 2
@@ -405,6 +433,8 @@ class AccountData(PredefinedList, QObject):
                         # same name the protocol registry (net/chain_fetchers/protocols.py) writes into the
                         # description of a custody transfer, which is what ties a box to the legs it settles.
     Tag = 12           # Tag assigned to the account, stored as tags.id.
+    OpenDate = 13      # Date the account was opened (timestamp). Optional.
+    CloseDate = 14     # Date the account was closed (timestamp). Optional.
 
     # Attributes that the application maintains itself and that must never be typed in by hand: they are kept
     # out of the attribute selector and their rows are not editable in the account details grid. A wrong sync
@@ -426,7 +456,9 @@ class AccountData(PredefinedList, QObject):
             self.DepositRate: self.tr("Interest rate, %"),
             self.StakeAccounts: self.tr("Staking state"),
             self.StakeProtocol: self.tr("Staking protocol"),
-            self.Tag: self.tr("Tag")
+            self.Tag: self.tr("Tag"),
+            self.OpenDate: self.tr("Opened on"),
+            self.CloseDate: self.tr("Closed on")
         }
         self._types = {
             self.Number: "str",
@@ -440,7 +472,9 @@ class AccountData(PredefinedList, QObject):
             self.DepositRate: "float",
             self.StakeAccounts: "str",
             self.StakeProtocol: "str",
-            self.Tag: "tag"
+            self.Tag: "tag",
+            self.OpenDate: "date",
+            self.CloseDate: "date"
         }
 
     def get_type(self, type_id, default='') -> str:
@@ -690,6 +724,26 @@ class AccountTypeComboBox(QComboBox):
             # application creates itself. It still has to be shown as what it is: a combo that cannot display its
             # own value reads as "no type chosen" and would write that back over the box's type.
             self.addItem(PredefinedAccountType().get_name(value), userData=value)
+            index = self.findData(value)
+        self.setCurrentIndex(index)
+
+    key = Property(int, get_key, set_key, user=True)
+
+
+class AccountStatusComboBox(QComboBox):
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+        AccountStatus().load2combo(self)
+
+    def get_key(self):
+        return self.currentData()
+
+    def set_key(self, value):
+        index = self.findData(value)
+        if index < 0 and value is not None:
+            # A status the list doesn't know - the value stored is older than the current set of them. It is shown
+            # as what it is rather than silently written back as the first item of the combo.
+            self.addItem(AccountStatus().get_name(value, default=str(value)), userData=value)
             index = self.findData(value)
         self.setCurrentIndex(index)
 

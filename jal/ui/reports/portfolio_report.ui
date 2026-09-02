@@ -102,11 +102,33 @@
        <widget class="CurrencyComboBox" name="PortfolioCurrencyCombo"/>
       </item>
       <item>
-       <widget class="QCheckBox" name="ShowInactiveAccounts">
+       <spacer name="accountsGroupSpacer">
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>0</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QLabel" name="AccountsLbl">
         <property name="text">
-         <string>Show &amp;Inactive accounts</string>
+         <string>&amp;Accounts:</string>
+        </property>
+        <property name="buddy">
+         <cstring>AccountsCombo</cstring>
         </property>
        </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="AccountsCombo"/>
       </item>
       <item>
        <spacer name="horizontalSpacer">
@@ -150,7 +172,7 @@
   <tabstop>PortfolioDate</tabstop>
   <tabstop>GroupCombo</tabstop>
   <tabstop>PortfolioCurrencyCombo</tabstop>
-  <tabstop>ShowInactiveAccounts</tabstop>
+  <tabstop>AccountsCombo</tabstop>
   <tabstop>SaveButton</tabstop>
   <tabstop>PortfolioTreeView</tabstop>
  </tabstops>

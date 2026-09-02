@@ -5,7 +5,7 @@ from decimal import Decimal
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QHeaderView
-from jal.constants import IconOwner
+from jal.constants import IconOwner, AccountStatus
 from jal.db.clock import day_finish, local_reading, today_finish
 from jal.db.helpers import now_ts
 from jal.db.tree_model import AbstractTreeItem, ReportTreeModel
@@ -30,6 +30,7 @@ class AssetTreeItem(AbstractTreeItem):
                 'header': '', 'currency_id': 0, 'currency': '', 'account_id': 0, 'account': '', 'asset_id': 0,
                 'symbol_id': 0,
                 'tag': '', 'account_tag_id': 0, 'account_tag': '',
+                'status_id': AccountStatus.Active, 'status': '',
                 'asset_is_currency': False, 'asset': '', 'asset_name': '', 'country_id': 0, 'country': '',
                 'since': 0, 'qty': None, 'value_i': Decimal('0'), 'paid': Decimal('0'),
                 'open_quote': None, 'quote': None, 'quote_ts': Decimal('0'), 'quote_a': Decimal('0'),
@@ -87,6 +88,12 @@ class AssetTreeItem(AbstractTreeItem):
         else:
             return None
 
+    # The group of background accounts opens folded: its subtotal is the whole of what a reader normally wants from
+    # it, and the positions under it are the ones that were crowding this report out.
+    def isFolded(self) -> bool:
+        group = self.getGroup()
+        return group is not None and group[0] == 'status_id' and group[1] == AccountStatus.Background
+
     # returns an element of tree that will provide right group parent for 'item' with given 'group_fields'
     def getGroupLeaf(self, group_fields: list, item: AssetTreeItem) -> AssetTreeItem:
         if group_fields:
@@ -122,7 +129,7 @@ class HoldingsModel(ReportTreeModel):
         italic_font.setItalic(True)
         self._fonts = {'normal': None, 'bold': bold_font, 'italic': italic_font, 'strikeout': strikeout_font}
         self._currency = 0
-        self._only_active_accounts = True
+        self._min_status = AccountStatus.Background
         self._currency_name = ''
         self._date = today_finish()
         self._columns = [{'name': self.tr("Currency/Account/Asset"), 'field': 'header'},
@@ -229,7 +236,8 @@ class HoldingsModel(ReportTreeModel):
         self._view.setItemDelegateForColumn(self.fieldIndex('value_common'), self._float2_delegate)
         super().configureView()
 
-    def updateView(self, currency_id, date, grouping, show_inactive):
+    # 'min_status' is the lowest AccountStatus the report reaches down to - a wider view is a lower bound
+    def updateView(self, currency_id, date, grouping, min_status):
         update = False
         if self._currency != currency_id:
             self._currency = currency_id
@@ -238,8 +246,8 @@ class HoldingsModel(ReportTreeModel):
         if self._date != day_finish(date):
             self._date = day_finish(date)
             update = True
-        if self._only_active_accounts == show_inactive:  # The logic is reversed inside the report
-            self._only_active_accounts = not self._only_active_accounts
+        if self._min_status != min_status:
+            self._min_status = min_status
             update = True
         if self.setGrouping(grouping) or update:
             self.prepareData()
@@ -283,8 +291,9 @@ class HoldingsModel(ReportTreeModel):
         # has left the wallet and sits in the box, and leaving it out here would understate the portfolio by exactly
         # what is staked. Deposit boxes - the other hidden type - hold money and are not investing, so they stay out
         # through 'investing_only' as they always did.
-        accounts = JalAccount.get_all_accounts(investing_only=True, active_only=self._only_active_accounts,
+        accounts = JalAccount.get_all_accounts(investing_only=True, min_status=self._min_status,
                                                include_hidden=True)
+        account_status_names = AccountStatus()
         for account in accounts:
             account_holdings = []
             assets = account.assets_list(self._date)
@@ -324,6 +333,8 @@ class HoldingsModel(ReportTreeModel):
                     "tag": asset.tag().name() if asset.tag().name() else self.tr("N/A"),  # the ASSET tag
                     "account_tag_id": account.tag().id(),           # the ACCOUNT's tag, unlike an asset 'tag' above
                     "account_tag": account.tag().name() if account.tag().name() else self.tr("N/A"),
+                    "status_id": account.status(),
+                    "status": account_status_names.get_name(account.status()),
                     "since": since,
                     "qty": asset_data['amount'] + accrual['delta'],
                     "value_i": asset_data['value'],
@@ -356,6 +367,8 @@ class HoldingsModel(ReportTreeModel):
                     "tag": self.tr("Money"),
                     "account_tag_id": account.tag().id(),           # the ACCOUNT's tag, unlike 'tag' above
                     "account_tag": account.tag().name() if account.tag().name() else self.tr("N/A"),
+                    "status_id": account.status(),
+                    "status": account_status_names.get_name(account.status()),
                     "since": 0,
                     "qty": money,
                     "value_i": Decimal('0'),

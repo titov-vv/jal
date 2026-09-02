@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from decimal import Decimal
 
+from jal.constants import AccountStatus
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.clock import stored_reading
@@ -46,7 +47,7 @@ class TaxesFlowRus:
         begin = stored_reading(self.year_begin, self.report_timezone)
         end = stored_reading(self.year_end, self.report_timezone)
 
-        accounts = JalAccount.get_all_accounts(active_only=False)
+        accounts = JalAccount.get_all_accounts(min_status=AccountStatus.Closed)
         # collect data for start and end of the period
         values_begin = []
         values_end = []

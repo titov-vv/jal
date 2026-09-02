@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (QAbstractButton, QApplication, QCheckBox, QDialog
     QLabel, QLineEdit, QPushButton, QSizePolicy,
     QSpacerItem, QTableView, QWidget)
 
-from jal.constants import AccountTypeComboBox
+from jal.constants import (AccountStatusComboBox, AccountTypeComboBox)
 from jal.widgets.custom.db_lookup_combobox import DbLookupComboBox
 from jal.widgets.icon_picker import IconButton
 from jal.widgets.reference_selector import ReferenceSelectorWidget
@@ -46,7 +46,7 @@ class Ui_AccountDialog(object):
         self.InvestingCheck = QCheckBox(self.MainFrame)
         self.InvestingCheck.setObjectName(u"InvestingCheck")
 
-        self.gridLayout_2.addWidget(self.InvestingCheck, 4, 2, 1, 1)
+        self.gridLayout_2.addWidget(self.InvestingCheck, 5, 2, 1, 1)
 
         self.CurrencyLbl = QLabel(self.MainFrame)
         self.CurrencyLbl.setObjectName(u"CurrencyLbl")
@@ -58,10 +58,15 @@ class Ui_AccountDialog(object):
 
         self.gridLayout_2.addWidget(self.TypeLbl, 2, 0, 1, 1)
 
-        self.ActiveCheck = QCheckBox(self.MainFrame)
-        self.ActiveCheck.setObjectName(u"ActiveCheck")
+        self.StatusLbl = QLabel(self.MainFrame)
+        self.StatusLbl.setObjectName(u"StatusLbl")
 
-        self.gridLayout_2.addWidget(self.ActiveCheck, 4, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.StatusLbl, 4, 0, 1, 1)
+
+        self.StatusCombo = AccountStatusComboBox(self.MainFrame)
+        self.StatusCombo.setObjectName(u"StatusCombo")
+
+        self.gridLayout_2.addWidget(self.StatusCombo, 4, 2, 1, 4)
 
         self.OrganizationLbl = QLabel(self.MainFrame)
         self.OrganizationLbl.setObjectName(u"OrganizationLbl")
@@ -72,11 +77,11 @@ class Ui_AccountDialog(object):
         self.ReconciledValue.setObjectName(u"ReconciledValue")
         self.ReconciledValue.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByKeyboard|Qt.TextInteractionFlag.TextSelectableByMouse)
 
-        self.gridLayout_2.addWidget(self.ReconciledValue, 4, 5, 1, 1)
+        self.gridLayout_2.addWidget(self.ReconciledValue, 5, 5, 1, 1)
 
         self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.gridLayout_2.addItem(self.horizontalSpacer, 4, 3, 1, 1)
+        self.gridLayout_2.addItem(self.horizontalSpacer, 5, 3, 1, 1)
 
         self.OrganizationWidget = ReferenceSelectorWidget(self.MainFrame)
         self.OrganizationWidget.setObjectName(u"OrganizationWidget")
@@ -152,6 +157,7 @@ class Ui_AccountDialog(object):
         self.NameLbl.setBuddy(self.NameEdit)
         self.CurrencyLbl.setBuddy(self.CurrencyCombo)
         self.TypeLbl.setBuddy(self.TypeCombo)
+        self.StatusLbl.setBuddy(self.StatusCombo)
         self.OrganizationLbl.setBuddy(self.OrganizationWidget)
         self.DataLbl.setBuddy(self.AddDataButton)
 #endif // QT_CONFIG(shortcut)
@@ -159,8 +165,8 @@ class Ui_AccountDialog(object):
         QWidget.setTabOrder(self.IconButton, self.CurrencyCombo)
         QWidget.setTabOrder(self.CurrencyCombo, self.TypeCombo)
         QWidget.setTabOrder(self.TypeCombo, self.OrganizationWidget)
-        QWidget.setTabOrder(self.OrganizationWidget, self.ActiveCheck)
-        QWidget.setTabOrder(self.ActiveCheck, self.InvestingCheck)
+        QWidget.setTabOrder(self.OrganizationWidget, self.StatusCombo)
+        QWidget.setTabOrder(self.StatusCombo, self.InvestingCheck)
         QWidget.setTabOrder(self.InvestingCheck, self.AddDataButton)
         QWidget.setTabOrder(self.AddDataButton, self.RemoveDataButton)
         QWidget.setTabOrder(self.RemoveDataButton, self.DataTable)
@@ -179,7 +185,7 @@ class Ui_AccountDialog(object):
         self.InvestingCheck.setText(QCoreApplication.translate("AccountDialog", u"Investing", None))
         self.CurrencyLbl.setText(QCoreApplication.translate("AccountDialog", u"&Currency:", None))
         self.TypeLbl.setText(QCoreApplication.translate("AccountDialog", u"&Type:", None))
-        self.ActiveCheck.setText(QCoreApplication.translate("AccountDialog", u"Active", None))
+        self.StatusLbl.setText(QCoreApplication.translate("AccountDialog", u"&Status:", None))
         self.OrganizationLbl.setText(QCoreApplication.translate("AccountDialog", u"&Bank/Broker:", None))
 #if QT_CONFIG(tooltip)
         self.ReconciledValue.setToolTip(QCoreApplication.translate("AccountDialog", u"Set automatically when this account is reconciled by an operation", None))

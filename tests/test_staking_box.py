@@ -4,7 +4,7 @@ import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import d2t, create_assets, create_trades, symbol_id_for
-from constants import PredefinedAsset, PredefinedAccountType, AssetLocation
+from constants import PredefinedAsset, PredefinedAccountType, AccountStatus, AssetLocation
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.common_models import AccountListModel
 from jal.db.ledger import Ledger
@@ -158,7 +158,7 @@ def test_staked_asset_stays_in_the_portfolio(wallet):
     Ledger().rebuild(from_timestamp=0)
 
     model = HoldingsModel(QTreeView())
-    model.updateView(currency_id=USD, date=QDate(2021, 3, 1), grouping='', show_inactive=False)
+    model.updateView(currency_id=USD, date=QDate(2021, 3, 1), grouping='', min_status=AccountStatus.Active)
     rows = [model._root.getChild(row).details() for row in range(model._root.childrenCount())]
     held = {(x['account_id'], x['asset_id']): x['qty'] for x in rows}
     # The staked 60 LINK are listed under the box, and the 40 left behind under the wallet: 100 in the portfolio,

@@ -3,7 +3,7 @@ from decimal import Decimal, InvalidOperation
 from PySide6.QtCore import Qt, Slot, QLocale
 from PySide6.QtWidgets import QDialog, QDataWidgetMapper, QStyledItemDelegate, QComboBox, QLineEdit, QMessageBox, QHeaderView
 from jal.ui.ui_account_edit_dlg import Ui_AccountDialog
-from jal.constants import AccountData, IconOwner, PredefinedAccountType, PredefinedAgents, AssetLocation
+from jal.constants import AccountData, IconOwner, PredefinedAccountType, AccountStatus, PredefinedAgents, AssetLocation
 from jal.db.helpers import localize_decimal
 from jal.db.clock import local_datetime
 from jal.db.account import JalAccountCreator
@@ -153,7 +153,7 @@ class AccountDialog(QDialog):
         self._mapper.addMapping(self.ui.CurrencyCombo, self._model.fieldIndex("currency_id"))
         self._mapper.addMapping(self.ui.TypeCombo, self._model.fieldIndex("account_type"))
         self._mapper.addMapping(self.ui.OrganizationWidget, self._model.fieldIndex("organization_id"))
-        self._mapper.addMapping(self.ui.ActiveCheck, self._model.fieldIndex("active"))
+        self._mapper.addMapping(self.ui.StatusCombo, self._model.fieldIndex("status"))
         self._mapper.addMapping(self.ui.InvestingCheck, self._model.fieldIndex("investing"))
         # 'reconciled_on' is set by JAL operations, not edited here - it's shown read-only via _load_reconciled().
         self._model.select()
@@ -195,8 +195,9 @@ class AccountDialog(QDialog):
     def edit_name_only(self, title: str) -> None:
         self.setWindowTitle(title)
         for widget in (self.ui.CurrencyLbl, self.ui.CurrencyCombo, self.ui.TypeLbl, self.ui.TypeCombo,
-                       self.ui.OrganizationLbl, self.ui.OrganizationWidget, self.ui.ActiveCheck,
-                       self.ui.InvestingCheck, self.ui.ReconciledValue, self.ui.DetailsFrame):
+                       self.ui.OrganizationLbl, self.ui.OrganizationWidget, self.ui.StatusLbl,
+                       self.ui.StatusCombo, self.ui.InvestingCheck, self.ui.ReconciledValue,
+                       self.ui.DetailsFrame):
             widget.setVisible(False)
         # Only the height is given back: the width is the one the form was drawn at, and a name field squeezed to
         # its own minimum would show a dozen characters of a name that is a sentence long.
@@ -232,7 +233,7 @@ class AccountDialog(QDialog):
         new_record.setNull("id")
         new_record.setValue("name", '')
         new_record.setValue("currency_id", JalAsset.get_base_currency())
-        new_record.setValue("active", 1)
+        new_record.setValue("status", AccountStatus.Active)
         new_record.setValue("investing", 0)
         new_record.setValue("reconciled_on", 0)
         new_record.setValue("organization_id", PredefinedAgents.Empty)

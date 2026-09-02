@@ -42,7 +42,7 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="2">
+      <item row="5" column="2">
        <widget class="QCheckBox" name="InvestingCheck">
         <property name="text">
          <string>Investing</string>
@@ -70,11 +70,17 @@
        </widget>
       </item>
       <item row="4" column="0">
-       <widget class="QCheckBox" name="ActiveCheck">
+       <widget class="QLabel" name="StatusLbl">
         <property name="text">
-         <string>Active</string>
+         <string>&amp;Status:</string>
+        </property>
+        <property name="buddy">
+         <cstring>StatusCombo</cstring>
         </property>
        </widget>
+      </item>
+      <item row="4" column="2" colspan="4">
+       <widget class="AccountStatusComboBox" name="StatusCombo"/>
       </item>
       <item row="3" column="0">
        <widget class="QLabel" name="OrganizationLbl">
@@ -86,7 +92,7 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="5">
+      <item row="5" column="5">
        <widget class="QLabel" name="ReconciledValue">
         <property name="toolTip">
          <string>Set automatically when this account is reconciled by an operation</string>
@@ -99,7 +105,7 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="3">
+      <item row="5" column="3">
        <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Orientation::Horizontal</enum>
@@ -226,7 +232,7 @@
   <tabstop>CurrencyCombo</tabstop>
   <tabstop>TypeCombo</tabstop>
   <tabstop>OrganizationWidget</tabstop>
-  <tabstop>ActiveCheck</tabstop>
+  <tabstop>StatusCombo</tabstop>
   <tabstop>InvestingCheck</tabstop>
   <tabstop>AddDataButton</tabstop>
   <tabstop>RemoveDataButton</tabstop>
@@ -247,6 +253,11 @@
   </customwidget>
   <customwidget>
    <class>AccountTypeComboBox</class>
+   <extends>QComboBox</extends>
+   <header>jal/constants.h</header>
+  </customwidget>
+  <customwidget>
+   <class>AccountStatusComboBox</class>
    <extends>QComboBox</extends>
    <header>jal/constants.h</header>
   </customwidget>

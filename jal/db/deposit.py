@@ -1,5 +1,5 @@
 from decimal import Decimal
-from jal.constants import BookAccount, PredefinedAccountType, PredefinedCategory, AccountData
+from jal.constants import BookAccount, PredefinedAccountType, AccountStatus, PredefinedCategory, AccountData
 from jal.db.db import JalDB
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
@@ -23,9 +23,11 @@ class JalDepositBox(JalDB):
     # Creates a new deposit box and returns it. 'name' has to be unique among all accounts (the box is one).
     def create(cls, name: str, currency_id: int, organization_id: int,
                end_date: int = 0, rate: Decimal = Decimal('0')) -> "JalDepositBox":
-        query = cls._exec("INSERT INTO accounts (name, currency_id, active, investing, reconciled_on, "
-                          "organization_id, account_type) VALUES(:name, :currency, 1, 0, 0, :organization, :type)",
-                          [(":name", name), (":currency", currency_id), (":organization", organization_id),
+        query = cls._exec("INSERT INTO accounts (name, currency_id, status, investing, reconciled_on, "
+                          "organization_id, account_type) "
+                          "VALUES(:name, :currency, :status, 0, 0, :organization, :type)",
+                          [(":name", name), (":currency", currency_id), (":status", AccountStatus.Active),
+                           (":organization", organization_id),
                            (":type", PredefinedAccountType.Deposit)], commit=True)
         box = cls(query.lastInsertId())
         JalAccount.db_cache.update_data(JalAccount._load_account_data, (box.id(),))
@@ -111,4 +113,4 @@ class JalDepositBox(JalDB):
     # Closes an emptied box: it stops being active, so it disappears from every default view and from the list of
     # deposits, while everything it recorded stays in place.
     def close(self) -> None:
-        self._account.set_active(False)
+        self._account.set_status(AccountStatus.Closed)

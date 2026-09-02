@@ -71,6 +71,11 @@ class AbstractTreeItem:
             return True
         return self._group != ''
 
+    # True for a group the model wants folded when the tree is (re)built - a bucket whose subtotal says everything
+    # the reader normally needs. A model that has no such group leaves this alone and every group opens as before.
+    def isFolded(self) -> bool:
+        return False
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Base class to provide a common functionality of a tree model
@@ -82,6 +87,10 @@ class ReportTreeModel(QAbstractItemModel):
         self._groups = []
         self._columns = []
         self._view_configured = False
+        # Group rows the user has opened by hand since this model was created. A rebuild happens on every ledger
+        # update, so without this a folded group would snap shut under a reader who had just opened it.
+        self._unfolded = set()
+        self._restoring_folds = False   # True while the model itself opens and closes rows - see prepareData()
 
     # An absent index is an INVALID QModelIndex, never None: index() is asked for children that may not exist (the
     # xlsx exporter probes for a second tree level that way, and an empty report has no first one), and a None fed
@@ -161,7 +170,41 @@ class ReportTreeModel(QAbstractItemModel):
     def prepareData(self):
         if not self._view_configured:
             self.configureView()
+        # expandAll() and collapse() below emit the view's own expanded/collapsed signals, which is how the user's
+        # choices are recorded - so what the model does to the tree itself must not be mistaken for one of them.
+        self._restoring_folds = True
         self._view.expandAll()
+        self._fold_groups()
+        self._restoring_folds = False
+
+    # Collapses the groups that ask to be folded, after expandAll() has opened everything. Only top-level groups are
+    # examined: a folded group hides its whole subtree anyway, and the state of what is inside it is not visible.
+    def _fold_groups(self):
+        for row in range(self.rowCount(QModelIndex())):
+            index = self.index(row, 0)
+            item = index.internalPointer()
+            if item is not None and item.isFolded() and self.groupKey(item) not in self._unfolded:
+                self._view.collapse(index)
+
+    # What identifies a group row across rebuilds, so that "the user opened this one" outlives the tree it was in
+    def groupKey(self, item) -> str:
+        group = item.getGroup()
+        return f"{group[0]}={group[1]}" if group else ''
+
+    # Called by the view when the user opens or closes a group, so a folded group stays open once it is opened
+    def setGroupExpanded(self, index, expanded: bool):
+        if self._restoring_folds or not index.isValid():
+            return
+        item = index.internalPointer()
+        if item is None or not item.isGroup():
+            return
+        key = self.groupKey(item)
+        if not key:
+            return
+        if expanded:
+            self._unfolded.add(key)
+        else:
+            self._unfolded.discard(key)
 
     def configureView(self):
         self._view.header().setStretchLastSection(False)

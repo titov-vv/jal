@@ -78,7 +78,7 @@ class ChainFetcher(Statement):
     # previous fetch, so a fetcher never asks the user where to look.
     @classmethod
     def wallets(cls) -> list:
-        accounts = JalAccount.get_all_accounts(active_only=True)
+        accounts = JalAccount.get_all_accounts()
         return [x for x in accounts
                 if x.account_type() == PredefinedAccountType.Wallet and x.chain() == cls.location_id]
 

@@ -173,12 +173,12 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
 
     # validate accounts
     test_accounts = [
-        {'id': 1, 'name': 'Inv. Account', 'currency_id': 2, 'active': 1, 'investing': 1, 'organization_id': 1, 'reconciled_on': 0, 'account_type': 2, 'data': {1: 'U7654321', 4: '10'}},
-        {'id': 2, 'name': 'Inv. Account.RUB', 'currency_id': 1, 'active': 1, 'investing': 1, 'organization_id': 1, 'reconciled_on': 0, 'account_type': 2, 'data': {1: 'U7654321', 4: '10'}},
-        {'id': 3, 'name': 'TEST_ACC.USD', 'currency_id': 2, 'active': 1, 'investing': 1, 'organization_id': 1, 'reconciled_on': 0, 'account_type': 2, 'data': {1: 'TEST_ACC', 4: '10'}},
-        {'id': 4, 'name': 'Inv. Account.CAD', 'currency_id': 7, 'active': 1, 'investing': 1, 'organization_id': 1, 'reconciled_on': 0, 'account_type': 2, 'data': {1: 'U7654321', 4: '10'}},
-        {'id': 5, 'name': 'TEST_ACC.CAD', 'currency_id': 7, 'active': 1, 'investing': 1, 'organization_id': 1, 'reconciled_on': 0, 'account_type': 2, 'data': {1: 'TEST_ACC', 4: '10'}},
-        {'id': 6, 'name': 'Inv. Account.EUR', 'currency_id': 3, 'active': 1, 'investing': 1, 'organization_id': 1, 'reconciled_on': 0, 'account_type': 2, 'data': {1: 'U7654321', 4: '10'}}
+        {'id': 1, 'name': 'Inv. Account', 'currency_id': 2, 'status': 20, 'investing': 1, 'organization_id': 1, 'reconciled_on': 0, 'account_type': 2, 'data': {1: 'U7654321', 4: '10'}},
+        {'id': 2, 'name': 'Inv. Account.RUB', 'currency_id': 1, 'status': 20, 'investing': 1, 'organization_id': 1, 'reconciled_on': 0, 'account_type': 2, 'data': {1: 'U7654321', 4: '10'}},
+        {'id': 3, 'name': 'TEST_ACC.USD', 'currency_id': 2, 'status': 20, 'investing': 1, 'organization_id': 1, 'reconciled_on': 0, 'account_type': 2, 'data': {1: 'TEST_ACC', 4: '10'}},
+        {'id': 4, 'name': 'Inv. Account.CAD', 'currency_id': 7, 'status': 20, 'investing': 1, 'organization_id': 1, 'reconciled_on': 0, 'account_type': 2, 'data': {1: 'U7654321', 4: '10'}},
+        {'id': 5, 'name': 'TEST_ACC.CAD', 'currency_id': 7, 'status': 20, 'investing': 1, 'organization_id': 1, 'reconciled_on': 0, 'account_type': 2, 'data': {1: 'TEST_ACC', 4: '10'}},
+        {'id': 6, 'name': 'Inv. Account.EUR', 'currency_id': 3, 'status': 20, 'investing': 1, 'organization_id': 1, 'reconciled_on': 0, 'account_type': 2, 'data': {1: 'U7654321', 4: '10'}}
     ]
     accounts = JalAccount.get_all_accounts()
     assert [x.dump() for x in accounts] == test_accounts

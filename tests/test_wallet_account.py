@@ -6,7 +6,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QMessageBox
 
 from tests.fixtures import project_root, data_path, prepare_db
-from constants import PredefinedAccountType, AccountData, AssetLocation
+from constants import PredefinedAccountType, AccountStatus, AccountData, AssetLocation
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.net.chain_fetchers.fetchers import ChainFetchers
 from jal.widgets.account_dialog import AccountDialog
@@ -92,7 +92,7 @@ def test_wallet_account_mandatory_attributes(prepare_db):
         JalAccountCreator(currency_id=2, number='', name='No address', organization=1,
                           account_type=PredefinedAccountType.Wallet, chain=AssetLocation.TRX_BLOCKCHAIN)
     # Nothing of the above was left behind - the checks run before the account row is written
-    assert JalAccount.get_all_accounts(active_only=False) == []
+    assert JalAccount.get_all_accounts(min_status=AccountStatus.Closed) == []
 
     # Other account types are not affected by the wallet requirements
     JalAccountCreator(currency_id=2, number='ACC-1', name='Bank', organization=1,

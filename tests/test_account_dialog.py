@@ -139,7 +139,7 @@ def test_name_only_mode_shows_the_name_and_the_icon_alone(prepare_db):
     assert dialog.windowTitle() == "Staked position"
     assert dialog.ui.NameEdit.isVisibleTo(dialog) and dialog.ui.IconButton.isVisibleTo(dialog)
     for widget in (dialog.ui.CurrencyLbl, dialog.ui.CurrencyCombo, dialog.ui.TypeLbl, dialog.ui.TypeCombo,
-                   dialog.ui.OrganizationLbl, dialog.ui.OrganizationWidget, dialog.ui.ActiveCheck,
+                   dialog.ui.OrganizationLbl, dialog.ui.OrganizationWidget, dialog.ui.StatusLbl, dialog.ui.StatusCombo,
                    dialog.ui.InvestingCheck, dialog.ui.ReconciledValue, dialog.ui.DetailsFrame):
         assert not widget.isVisibleTo(dialog), f"{widget.objectName()} is shown in the name-only mode"
 

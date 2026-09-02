@@ -5,6 +5,7 @@ from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMenu, QDialog, QMessageBox
 from jal.ui.reports.ui_portfolio_report import Ui_PortfolioWidget
 from jal.reports.reports import Reports
+from jal.constants import AccountStatus
 from jal.db.clock import day_finish, now_dt
 from jal.db.asset import JalAsset
 from jal.db.holdings_model import HoldingsModel
@@ -48,11 +49,24 @@ class PortfolioReportWindow(MdiWidget):
         self.ui.GroupCombo.addItem(self.tr("Country - Asset"), "country_id;asset_id")
         self.ui.GroupCombo.addItem(self.tr("Tag"), "tag")
         self.ui.GroupCombo.addItem(self.tr("Account tag - Account"), "account_tag_id;account_id")
+        self.ui.GroupCombo.addItem(self.tr("Status - Account"), "status_id;account_id")
+        self.ui.GroupCombo.addItem(self.tr("Status - Currency - Account"), "status_id;currency_id;account_id")
         self.ui.GroupCombo.addItem("None", "")
+
+        # How deep into AccountStatus the report reaches. The views nest, so this is one choice and not a set of
+        # switches: each entry shows a status and everything above it.
+        for min_status, name in AccountStatus().visibility_names().items():
+            self.ui.AccountsCombo.addItem(name, min_status)
+
+        self.ui.AccountsCombo.setCurrentIndex(self.ui.AccountsCombo.findData(AccountStatus.Background))
+        self.ui.GroupCombo.setCurrentIndex(self.ui.GroupCombo.findData("status_id;currency_id;account_id"))
 
         self.holdings_model = HoldingsModel(self.ui.PortfolioTreeView)
         self.ui.PortfolioTreeView.setModel(self.holdings_model)
         self.ui.PortfolioTreeView.setContextMenuPolicy(Qt.CustomContextMenu)
+        # A folded group the reader opens stays open through the rebuilds a ledger update triggers
+        self.ui.PortfolioTreeView.expanded.connect(partial(self.holdings_model.setGroupExpanded, expanded=True))
+        self.ui.PortfolioTreeView.collapsed.connect(partial(self.holdings_model.setGroupExpanded, expanded=False))
 
         # Setup holdings parameters
         self.ui.PortfolioDate.setDate(now_dt().date())
@@ -66,7 +80,7 @@ class PortfolioReportWindow(MdiWidget):
         self.ui.PortfolioCurrencyCombo.changed.connect(self.updateReport)
         self.ui.PortfolioTreeView.customContextMenuRequested.connect(self.onHoldingsContextMenu)
         self.ui.GroupCombo.currentIndexChanged.connect(self.updateReport)
-        self.ui.ShowInactiveAccounts.toggled.connect(self.updateReport)
+        self.ui.AccountsCombo.currentIndexChanged.connect(self.updateReport)
         self.ui.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.ui.PortfolioTreeView.model()))
 
     @Slot()
@@ -74,7 +88,7 @@ class PortfolioReportWindow(MdiWidget):
         self.ui.PortfolioTreeView.model().updateView(currency_id = self.ui.PortfolioCurrencyCombo.selected_id,
                                                      date = self.ui.PortfolioDate.date(),
                                                      grouping = self.ui.GroupCombo.currentData(),
-                                                     show_inactive = self.ui.ShowInactiveAccounts.isChecked())
+                                                     min_status = self.ui.AccountsCombo.currentData())
 
     @Slot()
     def onHoldingsContextMenu(self, pos):

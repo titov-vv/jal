@@ -4,7 +4,7 @@ from PySide6.QtCore import Qt, Slot, Signal, Property, QPoint
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMenu, QDialog, QDialogButtonBox, QMessageBox, QHeaderView, QAbstractItemView
 from PySide6.QtSql import QSqlRelationalDelegate
-from jal.constants import CmWidth, CmDelegate, CmReference
+from jal.constants import CmWidth, CmDelegate, CmReference, AccountStatus
 from jal.db.common_models import AccountListModel, PeerTreeModel, CategoryTreeModel, TagTreeModel, QuotesListModel, \
     ResidenceListModel, TokenBlacklistModel
 from jal.db.asset_models import SymbolsListModel
@@ -53,6 +53,9 @@ class ReferenceDataDialog(QDialog):
         self._filter_value = ''
         self.toggle_state = False
         self.toggle_field = None
+        # The lowest value of 'toggle_field' the un-toggled list shows. The comparison is '>=' so that an ordinal
+        # column (accounts.status) narrows the same way a boolean one does.
+        self.toggle_threshold = 1
         self.search_field = None
         self.search_text = ""
         self.tree_view = False
@@ -384,7 +387,7 @@ class ReferenceDataDialog(QDialog):
 
         if self.toggle_field:
             if not self.toggle_state:
-                conditions.append(f"{self.toggle_field}=1")
+                conditions.append(f"{self.toggle_field}>={self.toggle_threshold}")
 
         self._filter_text = ' AND '.join(conditions)
         self.model.setFilter(self._filter_text)
@@ -450,8 +453,11 @@ class AccountListDialog(ReferenceDataDialog):
         self.search_field = "accounts.name"
         self.ui.SearchFrame.setVisible(True)
         self.ui.Toggle.setVisible(True)
-        self.toggle_field = "active"
-        self.ui.Toggle.setText(self.tr("Show inactive"))
+        # Background accounts are always listed here: this dialog is where an account's status is managed, and
+        # the folding that keeps them out of the way belongs to the balances and holdings views, not to this one.
+        self.toggle_field = "status"
+        self.toggle_threshold = AccountStatus.Background
+        self.ui.Toggle.setText(self.tr("Show closed"))
 
         self.ui.GroupLbl.setVisible(True)
         self.ui.GroupLbl.setText(self.tr("Account type:"))

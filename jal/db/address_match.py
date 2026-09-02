@@ -1,6 +1,6 @@
 from math import ceil, floor, log
 
-from jal.constants import AssetLocation
+from jal.constants import AssetLocation, AccountStatus
 from jal.db.account import JalAccount
 from jal.db.token_blacklist import normalize_address
 from jal.net.chain_fetchers.protocols import protocol_category, protocol_contracts
@@ -142,7 +142,7 @@ def impersonated_target(location_id: int, address: str):
     # would be accused of impersonating the fake as soon as the fake is a candidate.
     if _is_genuine(location_id, address):
         return None
-    for account in JalAccount.get_all_accounts(active_only=False):
+    for account in JalAccount.get_all_accounts(min_status=AccountStatus.Closed):
         if account.address() and is_lookalike(location_id, address, account.address()):
             return {'kind': ACCOUNT, 'name': account.name(), 'account': account}
     for contract, name in protocol_contracts(location_id):
@@ -157,4 +157,4 @@ def _is_genuine(location_id: int, address: str) -> bool:
         return True
     normalized = normalize_address(location_id, address)
     return any(account.address() and normalize_address(location_id, account.address()) == normalized
-               for account in JalAccount.get_all_accounts(active_only=False))
+               for account in JalAccount.get_all_accounts(min_status=AccountStatus.Closed))
