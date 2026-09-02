@@ -281,3 +281,42 @@ def test_cleared_bank_broker_falls_back_to_the_none_peer(prepare_db):
 
     JalAccount.db_cache.clear_cache()
     assert JalAccount(1).organization() == PredefinedAgents.Empty
+
+
+# A date attribute ('Opened on', 'Closed on', deposit maturity) had no editor of its own in the grid: it fell through
+# to the plain line editor, which neither loaded the stored date nor wrote back what was typed into it - the text
+# simply vanished when the cell was left. It gets a calendar editor, and the day it states is stored on no clock.
+def test_date_attribute_is_edited_with_a_date_editor(prepare_db):
+    from PySide6.QtCore import QDate, QDateTime, QTime, QTimeZone
+    from PySide6.QtWidgets import QWidget
+    from jal.widgets.delegates import DateTimeEditWithReset
+
+    JalAccountCreator(currency_id=2, number='ACC-1', name='Bank', organization=1,
+                      account_type=PredefinedAccountType.Bank).commit()
+    dialog = AccountDialog()
+    dialog.setSelectedId(1)
+    model = dialog._data_model
+    dialog.onAddData()
+    row = _data_row_by_type(dialog, AccountData.Credit)     # the new row takes the next free type
+    model.setData(model.index(row, model.fieldIndex("datatype")), AccountData.OpenDate)
+    row = _data_row_by_type(dialog, AccountData.OpenDate)
+    value_index = model.index(row, model.fieldIndex("value"))
+
+    parent = QWidget()
+    editor = dialog._attribute_delegate.createEditor(parent, None, value_index)
+    assert isinstance(editor, DateTimeEditWithReset)
+    dialog._attribute_delegate.setEditorData(editor, value_index)   # an empty value must not throw
+    opened = QDateTime(QDate(2015, 3, 17), QTime(0, 0), QTimeZone(QTimeZone.UTC))
+    editor.setDateTime(opened)
+    dialog._attribute_delegate.setModelData(editor, model, value_index)
+    assert model.data(value_index, Qt.EditRole) == str(opened.toSecsSinceEpoch())
+
+    # The stored date is loaded back into the editor of a re-opened cell
+    reopened = dialog._attribute_delegate.createEditor(parent, None, value_index)
+    dialog._attribute_delegate.setEditorData(reopened, value_index)
+    assert reopened.dateTime().toSecsSinceEpoch() == opened.toSecsSinceEpoch()
+    parent.deleteLater()
+
+    dialog.accept()
+    JalAccount.db_cache.clear_cache()
+    assert JalAccount(1).opened_on() == opened.toSecsSinceEpoch()

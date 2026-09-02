@@ -1,6 +1,6 @@
 import logging
 from decimal import Decimal, InvalidOperation
-from PySide6.QtCore import Qt, Slot, QLocale
+from PySide6.QtCore import Qt, Slot, QLocale, QDate, QDateTime, QTime, QTimeZone
 from PySide6.QtWidgets import QDialog, QDataWidgetMapper, QStyledItemDelegate, QComboBox, QLineEdit, QMessageBox, QHeaderView
 from jal.ui.ui_account_edit_dlg import Ui_AccountDialog
 from jal.constants import AccountData, IconOwner, PredefinedAccountType, AccountStatus, PredefinedAgents, AssetLocation
@@ -11,6 +11,7 @@ from jal.db.asset import JalAsset
 from jal.db.common_models import AccountRecordModel, AccountDataModel, PeerTreeModel
 from jal.db.token_blacklist import normalize_address, is_valid_address
 from jal.widgets.custom.db_lookup_combobox import DbLookupComboBox
+from jal.widgets.delegates import DateTimeEditWithReset
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 from jal.widgets.icons import JalIcon
 from jal.widgets.helpers import set_grids_metrics, DateFormat
@@ -19,7 +20,7 @@ from jal.widgets.helpers import set_grids_metrics, DateFormat
 # ----------------------------------------------------------------------------------------------------------------------
 # Compound delegate for the account details grid (mirrors SymbolDialog's AssetAttributeDelegate): the 'datatype'
 # column picks an AccountData attribute, the 'value' column shows an editor that depends on the picked attribute's
-# type (str/int/float/country/chain/tag).
+# type (str/int/float/date/country/chain/tag).
 class AccountAttributeDelegate(QStyledItemDelegate):
     def __init__(self, key_column, value_column, tag_model_class, tag_dialog_class, parent=None):
         super().__init__(parent=parent)
@@ -63,6 +64,14 @@ class AccountAttributeDelegate(QStyledItemDelegate):
             editor = ReferenceSelectorWidget(aParent, validate=False)
             editor.setup_selector(self._tag_model_class, self._tag_dialog_class, aParent)
             return editor
+        if datatype_of == "date":
+            editor = DateTimeEditWithReset(aParent)
+            # An attribute of type 'date' states a day, which is the same day on every clock - so it is edited and
+            # stored on none (see is_day_marker), and AccountDataModel reads it back the same way.
+            editor.setTimeZone(QTimeZone(QTimeZone.UTC))
+            editor.setDisplayFormat(DateFormat.date(qt=True))
+            return editor
+        assert datatype_of in ("str", "int", "float"), f"Unknown account attribute type '{datatype_of}'"
         return QLineEdit(aParent)  # str / int / float share a plain line editor
 
     def setEditorData(self, editor, index):
@@ -99,6 +108,13 @@ class AccountAttributeDelegate(QStyledItemDelegate):
                 editor.selected_id = int(raw)
             except (TypeError, ValueError):
                 editor.selected_id = 0
+        elif datatype_of == "date":
+            try:
+                editor.setDateTime(QDateTime.fromSecsSinceEpoch(int(raw), QTimeZone(QTimeZone.UTC)))
+            except (TypeError, ValueError):   # A row that has just been given this type carries no date yet
+                editor.setDateTime(QDateTime(QDate.currentDate(), QTime(0, 0), QTimeZone(QTimeZone.UTC)))
+        else:
+            assert False, f"Unknown account attribute type '{datatype_of}'"
 
     def setModelData(self, editor, model, index):
         if index.column() == self._key:
@@ -126,6 +142,10 @@ class AccountAttributeDelegate(QStyledItemDelegate):
             model.setData(index, str(editor.currentData()))
         elif datatype_of == "tag":
             model.setData(index, str(editor.selected_id))
+        elif datatype_of == "date":
+            model.setData(index, str(editor.dateTime().toSecsSinceEpoch()))
+        else:
+            assert False, f"Unknown account attribute type '{datatype_of}'"
 
 
 # ----------------------------------------------------------------------------------------------------------------------
