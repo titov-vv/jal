@@ -20,11 +20,10 @@ from tests.helpers import create_assets
 # ----------------------------------------------------------------------------------------------------------------------
 # Reads a golden JSF fixture and returns (statement data, expected id map).
 # Db matches are stored in the optional 'db_ids' section of the fixture (with string keys as it is JSON).
-# 'decimal' says how to read the fixture's numbers: the golden of an importer that produces Decimal must be read as
-# Decimal too, as Decimal('0.1') == 0.1 is False. IBKR is the last importer still on float, so the flag goes with it.
-def load_expected_statement(filename, decimal=True):
+# Numbers are read as Decimal because every importer produces Decimal - Decimal('0.1') == 0.1 is False.
+def load_expected_statement(filename):
     with open(filename, 'r', encoding='utf-8') as json_file:
-        expected = json.load(json_file, parse_float=Decimal if decimal else float)
+        expected = json.load(json_file, parse_float=Decimal)
     expected_map = {JSF.ACCOUNTS: {}, JSF.ASSETS: {}, JSF.SYMBOLS: {}, JSF.ASSET_PAYMENTS: {}}
     for domain, matches in expected.pop(JSF.DB_IDS, {}).items():
         expected_map[domain] = {int(k): v for k, v in matches.items()}
@@ -34,7 +33,7 @@ def load_expected_statement(filename, decimal=True):
 # ----------------------------------------------------------------------------------------------------------------------
 def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_ibkr):
     # Test rights issue
-    statement, expected_map = load_expected_statement(data_path + 'ibkr_rights.json', decimal=False)
+    statement, expected_map = load_expected_statement(data_path + 'ibkr_rights.json')
     IBKR = StatementIBKR()
     IBKR.load(data_path + 'ibkr_rights.xml')
     assert IBKR._data == statement

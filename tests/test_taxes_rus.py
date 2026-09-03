@@ -128,7 +128,7 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
 # ----------------------------------------------------------------------------------------------------------------------
 def test_taxes_rus_bonds(tmp_path, project_root, data_path, prepare_db_taxes):
     with open(data_path + 'ibkr_bond.json', 'r', encoding='utf-8') as json_file:
-        statement = json.load(json_file)
+        statement = json.load(json_file, parse_float=Decimal)
     with open(data_path + 'taxes_bond_rus.json', 'r', encoding='utf-8') as json_file:
         report = json.load(json_file)
 
@@ -195,7 +195,7 @@ def test_taxes_stock_vesting(data_path, prepare_db_taxes):
 
 def test_taxes_merger_complex(tmp_path, data_path, prepare_db_taxes):
     with open(data_path + 'ibkr_merger_complex.json', 'r', encoding='utf-8') as json_file:
-        statement = json.load(json_file)
+        statement = json.load(json_file, parse_float=Decimal)
     IBKR = StatementIBKR()
     IBKR.load(data_path + 'ibkr_merger_complex.xml')
     assert IBKR._data == statement
@@ -232,7 +232,7 @@ def test_taxes_merger_complex(tmp_path, data_path, prepare_db_taxes):
 
 def test_taxes_spinoff(tmp_path, data_path, prepare_db_taxes):
     with open(data_path + 'ibkr_spinoff.json', 'r', encoding='utf-8') as json_file:
-        statement = json.load(json_file)
+        statement = json.load(json_file, parse_float=Decimal)
     IBKR = StatementIBKR()
     IBKR.load(data_path + 'ibkr_spinoff.xml')
     assert IBKR._data == statement
@@ -305,7 +305,7 @@ def test_taxes_over_years(tmp_path, project_root, data_path, prepare_db_taxes):
 # Load double IBKR statement with mergers and spin-offs
 def test_taxes_merger_spinoff(tmp_path, data_path, prepare_db_taxes):
     with open(data_path + 'ibkr_merger_spinoff.json', 'r', encoding='utf-8') as json_file:
-        statement = json.load(json_file)
+        statement = json.load(json_file, parse_float=Decimal)
     IBKR = StatementIBKR()
     IBKR.load(data_path + 'ibkr_merger_spinoff.xml', index=0)   # Load statement for the first year
     assert IBKR._data == statement[0]
@@ -354,7 +354,7 @@ def test_taxes_merger_spinoff(tmp_path, data_path, prepare_db_taxes):
 # Tests IBKR report with CFD short trades and dividends withdrawn for tax report preparation
 def test_taxes_cfd_short_dividends(tmp_path, data_path, prepare_db_taxes):
     with open(data_path + 'ibkr_cfd.json', 'r', encoding='utf-8') as json_file:
-        statement = json.load(json_file)
+        statement = json.load(json_file, parse_float=Decimal)
     with open(data_path + 'taxes_cfd_rus.json', 'r', encoding='utf-8') as json_file:
         report = json.load(json_file)
 

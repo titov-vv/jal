@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from decimal import Decimal, DecimalException
 from lxml import etree
 from PySide6.QtWidgets import QApplication
 from jal.data_import.statement import Statement, JSF, Statement_ImportError
@@ -21,6 +22,7 @@ class StatementXML(Statement):
         self.attr_loader = {
             str: self.attr_string,
             float: self.attr_number,
+            Decimal: self.attr_decimal,
             datetime: self.attr_timestamp,
             bool: self.attr_day_only
         }
@@ -55,6 +57,17 @@ class StatementXML(Statement):
         try:
             value = float(xml_element.attrib[attr_name].replace(',', '').replace(' ', ''))
         except ValueError:
+            return None
+        return value
+
+    # Convert attribute 'attr_name' value to Decimal or return default value if attribute not found / not a number
+    @staticmethod
+    def attr_decimal(xml_element, attr_name, default_value):
+        if attr_name not in xml_element.attrib:
+            return default_value
+        try:
+            value = Decimal(xml_element.attrib[attr_name].replace(',', '').replace(' ', ''))
+        except (ValueError, DecimalException):
             return None
         return value
 

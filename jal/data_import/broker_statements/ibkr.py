@@ -9,7 +9,7 @@ from lxml import etree
 from PySide6.QtWidgets import QApplication
 from jal.constants import PredefinedCategory
 from jal.widgets.helpers import ts2dt, ts2d
-from jal.db.helpers import format_decimal
+from jal.db.helpers import format_decimal, remove_exponent
 from jal.db.account import JalAccount
 from jal.db.operations import AssetPayment
 from jal.data_import.statement import JSF, Statement_ImportError, Statement_Capabilities
@@ -177,9 +177,9 @@ class StatementIBKR(StatementXML):
                            'level': 'Currency',
                            'values': [('accountId', 'number', str, None),
                                       ('currency', 'currency', IBKR_Currency, None),
-                                      ('startingCash', 'cash_begin', float, None),
-                                      ('endingCash', 'cash_end', float, None),                   # -- this is planned
-                                      ('endingSettledCash', 'cash_end_settled', float, None)],   # -- this is now
+                                      ('startingCash', 'cash_begin', Decimal, None),
+                                      ('endingCash', 'cash_end', Decimal, None),                 # -- this is planned
+                                      ('endingSettledCash', 'cash_end_settled', Decimal, None)],  # -- this is now
                            'loader': self.load_accounts},
             'SecuritiesInfo': {'tag': 'SecurityInfo',
                                'level': '',
@@ -202,11 +202,11 @@ class StatementIBKR(StatementXML):
                                   ('accountId', 'account', IBKR_Account, None),
                                   ('dateTime', 'timestamp', datetime, None),
                                   ('settleDateTarget', 'settlement', datetime, 0),
-                                  ('tradePrice', 'price', float, None),
-                                  ('quantity', 'quantity', float, None),
-                                  ('proceeds', 'proceeds', float, None),
-                                  ('multiplier', 'multiplier', float, None),
-                                  ('ibCommission', 'fee', float, None),
+                                  ('tradePrice', 'price', Decimal, None),
+                                  ('quantity', 'quantity', Decimal, None),
+                                  ('proceeds', 'proceeds', Decimal, None),
+                                  ('multiplier', 'multiplier', Decimal, None),
+                                  ('ibCommission', 'fee', Decimal, None),
                                   ('tradeID', 'number', str, ''),
                                   ('exchange', 'exchange', str, ''),
                                   ('notes', 'notes', str, '')],
@@ -217,10 +217,10 @@ class StatementIBKR(StatementXML):
                                      ('symbol', 'symbol', IBKR_Asset, None),
                                      ('accountId', 'account', IBKR_Account, None),
                                      ('date', 'timestamp', datetime, None),
-                                     ('tradePrice', 'price', float, None),
-                                     ('quantity', 'quantity', float, None),
-                                     ('multiplier', 'multiplier', float, None),
-                                     ('commisionsAndTax', 'fee', float, None),
+                                     ('tradePrice', 'price', Decimal, None),
+                                     ('quantity', 'quantity', Decimal, None),
+                                     ('multiplier', 'multiplier', Decimal, None),
+                                     ('commisionsAndTax', 'fee', Decimal, None),
                                      ('tradeID', 'number', str, ''),
                                      ('notes', 'notes', str, '')],
                           'loader': self.load_options},
@@ -233,9 +233,9 @@ class StatementIBKR(StatementXML):
                                             ('dateTime', 'timestamp', datetime, None),
                                             ('transactionID', 'number', str, ''),
                                             ('description', 'description', str, None),
-                                            ('quantity', 'quantity', float, None),
-                                            ('value', 'value', float, None),
-                                            ('proceeds', 'proceeds', float, None),
+                                            ('quantity', 'quantity', Decimal, None),
+                                            ('value', 'value', Decimal, None),
+                                            ('proceeds', 'proceeds', Decimal, None),
                                             ('code', 'code', str, '')],
                                  'loader': self.load_corporate_actions},
             'CashTransactions': {'tag': 'CashTransaction',
@@ -247,7 +247,7 @@ class StatementIBKR(StatementXML):
                                             ('dateTime', 'timestamp', datetime, None),
                                             ('dateTime', 'timestamp_day_only', bool, False),
                                             ('reportDate', 'reported', datetime, None),
-                                            ('amount', 'amount', float, None),
+                                            ('amount', 'amount', Decimal, None),
                                             ('tradeID', 'number', str, ''),
                                             ('transactionID', 'tid', str, ''),
                                             ('actionID', 'action_id', str, ''),
@@ -261,8 +261,8 @@ class StatementIBKR(StatementXML):
                                                     ('currency', 'currency', IBKR_Currency, None),
                                                     ('date', 'timestamp', datetime, None),
                                                     ('exDate', 'ex_date', datetime, None),
-                                                    ('grossAmount', 'amount', float, None),
-                                                    ('grossRate', 'rate', float, 0)],
+                                                    ('grossAmount', 'amount', Decimal, None),
+                                                    ('grossRate', 'rate', Decimal, 0)],
                                          'loader': self.load_dividend_accruals},
             'StockGrantActivities': {'tag': 'StockGrantActivity',
                                      'level': '',
@@ -271,7 +271,7 @@ class StatementIBKR(StatementXML):
                                                 ('awardDate', 'award_date', datetime, None),
                                                 ('vestingDate', 'vesting_date', datetime, None),
                                                 ('activityDescription', 'description', str, None),
-                                                ('quantity', 'amount', float, None),
+                                                ('quantity', 'amount', Decimal, None),
                                                 ('price', 'price', str, None)],
                                      'loader': self.load_granted_stocks},
             'TransactionTaxes': {'tag': 'TransactionTax',
@@ -279,7 +279,7 @@ class StatementIBKR(StatementXML):
                                  'values': [('accountId', 'account', IBKR_Account, None),
                                             ('symbol', 'symbol', IBKR_Asset, None),
                                             ('date', 'timestamp', datetime, None),
-                                            ('taxAmount', 'amount', float, None),
+                                            ('taxAmount', 'amount', Decimal, None),
                                             ('taxDescription', 'description', str, None),
                                             ('source', 'source', str, None),
                                             ('tradeId', 'number', str, None)],
@@ -289,11 +289,11 @@ class StatementIBKR(StatementXML):
                            'values': [('accountId', 'account', IBKR_Account, None),
                                       ('currency', 'currency', str, None),
                                       ('date', 'timestamp', datetime, None),
-                                      ('salesTax', 'amount', float, None),
+                                      ('salesTax', 'amount', Decimal, None),
                                       ('taxableDescription', 'description', str, None),
                                       ('country', 'country', str, None),
                                       ('taxType', 'tax_type', str, None),
-                                      ('taxableAmount', 'taxable_amount', float, None),
+                                      ('taxableAmount', 'taxable_amount', Decimal, None),
                                       ('taxRate', 'tax_rate', str, None)],
                            'loader': self.load_sales_taxes},
             'CFDCharges': {'tag': 'CFDCharge',
@@ -301,7 +301,7 @@ class StatementIBKR(StatementXML):
                            'values': [('accountId', 'account', IBKR_Account, None),
                                       ('symbol', 'symbol', IBKR_Asset, self.NoAsset),
                                       ('date', 'timestamp', datetime, None),
-                                      ('total', 'amount', float, None),
+                                      ('total', 'amount', Decimal, None),
                                       ('transactionID', 'number', str, ''),
                                       ('activityDescription', 'description', str, None)],
                            'loader': self.load_cfd_charges},
@@ -311,8 +311,8 @@ class StatementIBKR(StatementXML):
                                      ('symbol', 'symbol', IBKR_Asset, self.NoAsset),
                                      ('account', 'account2', IBKR_Account, 0),
                                      ('dateTime', 'timestamp', datetime, None),
-                                     ('quantity', 'quantity', float, None),
-                                     ('cashTransfer', 'amount', float, None),
+                                     ('quantity', 'quantity', Decimal, None),
+                                     ('cashTransfer', 'amount', Decimal, None),
                                      ('type', 'type', str, None),
                                      ('description', 'description', str, None),
                                      ('direction', 'direction', str, None),
@@ -535,8 +535,8 @@ class StatementIBKR(StatementXML):
             asset = self._symbol_asset(trade['symbol'])
             if asset['type'] == JSF.ASSET_BOND:
                 trade['quantity'] = trade['quantity'] / IBKR_Asset.BondPrincipal
-                trade['price'] = trade['price'] * IBKR_Asset.BondPrincipal / 100.0  # Bonds are priced in percents of principal
-            trade['fee'] = -trade['fee'] if trade['fee'] != 0 else 0.0  # otherwise we may have negative 0.0
+                trade['price'] = trade['price'] * IBKR_Asset.BondPrincipal / Decimal('100')  # Bonds are priced in percents of principal
+            trade['fee'] = -trade['fee'] if trade['fee'] != 0 else Decimal('0')  # otherwise we may have negative zero
             if trade['notes'] == StatementIBKR.CancelledFlag:
                 trade['cancelled'] = True
             self.drop_extra_fields(trade, ["type", "proceeds", "multiplier", "exchange", "notes"])
@@ -555,7 +555,7 @@ class StatementIBKR(StatementXML):
                 transfer['quantity'], transfer['proceeds'] = transfer['proceeds'], transfer['quantity']
             transfer['withdrawal'] = abs(transfer.pop('quantity'))
             transfer['deposit'] = abs(transfer.pop('proceeds'))
-            transfer['fee'] = -transfer['fee'] if transfer['fee'] != 0 else 0.0  # otherwise we may have negative 0.0
+            transfer['fee'] = -transfer['fee'] if transfer['fee'] != 0 else Decimal('0')  # otherwise we may have negative zero
             transfer['description'] = transfer['exchange']
             self.drop_extra_fields(transfer, ["type", "settlement", "price", "multiplier", "exchange", "notes"])
             self._data[JSF.TRANSFERS].append(transfer)
@@ -580,7 +580,7 @@ class StatementIBKR(StatementXML):
                     raise Statement_ImportError(self.tr("Unknown transfer direction: ") + f"{transfer}")
                 transfer['symbol'] = [transfer['symbol'], transfer['symbol']]
                 transfer['description'] = transfer.pop('type') + ' ' + transfer['description']
-                transfer['fee'] = 0.0
+                transfer['fee'] = Decimal('0')
                 self.drop_extra_fields(transfer, ["direction", "amount", "company", "quantity"])
             else:
                 if transfer['direction'] != "IN":
@@ -589,7 +589,7 @@ class StatementIBKR(StatementXML):
                 transfer['symbol'] = [transfer['symbol'], transfer['symbol']]
                 transfer['withdrawal'] = transfer['deposit'] = transfer.pop('quantity')
                 transfer['description'] = transfer.pop('type') + f" TRANSFER ({transfer.pop('company')})"
-                transfer['fee'] = 0.0
+                transfer['fee'] = Decimal('0')
                 self.drop_extra_fields(transfer, ["direction", "amount"])
             self._data[JSF.TRANSFERS].append(transfer)
             cnt += 1
@@ -747,16 +747,16 @@ class StatementIBKR(StatementXML):
         if pattern_id == 4:  # Asset converted to money -> store it as a sell trade
             action['id'] = max([0] + [x['id'] for x in self._data[JSF.TRADES]]) + 1
             action['settlement'] = action['timestamp']
-            action['price'] = action['proceeds'] / (-action['quantity'])
+            action['price'] = self._derived_price(action['proceeds'], action['quantity'])
             action['note'] = action.pop('description')
-            action['fee'] = 0.0
+            action['fee'] = Decimal('0')
             self.drop_extra_fields(action, ["type", "value", "proceeds", "code", "asset_type", "jal_processed"])
             self._data[JSF.TRADES].append(action)
             return 1
 
         paired_record = self.find_corp_action_pair(symbol_b, description_b, action, parts_b)
         # Adjust quantity for bonds
-        adj_factor = IBKR_Asset.BondPrincipal if action['asset_type'] == JSF.ASSET_BOND else 1.0
+        adj_factor = IBKR_Asset.BondPrincipal if action['asset_type'] == JSF.ASSET_BOND else Decimal('1')
         existing_action = None
         # Special processing if 1 asset is converted into two other assets
         if pattern_id == 2 or pattern_id == 5:
@@ -764,18 +764,18 @@ class StatementIBKR(StatementXML):
                                                           action['account'], paired_record[0]['symbol'])
         if existing_action is None:
             action['id'] = max([0] + [x['id'] for x in self._data[JSF.CORP_ACTIONS]]) + 1
-            action['outcome'] = [{'symbol': action['symbol'], 'quantity': action['quantity']/adj_factor, 'share': 0.0}]
+            action['outcome'] = [{'symbol': action['symbol'], 'quantity': action['quantity']/adj_factor, 'share': Decimal('0')}]
             action['symbol'] = paired_record[0]['symbol']
             action['quantity'] = -paired_record[0]['quantity']/adj_factor
             # Process cash payment if it is present as part of corporate action
             if pattern_id == 1 or pattern_id == 2:
                 payment = {'symbol': self.currency_symbol_id(parts['currency']),
-                           'quantity': paired_record[0]['proceeds'], 'share': 0.0}
+                           'quantity': paired_record[0]['proceeds'], 'share': Decimal('0')}
                 action['outcome'].insert(0, payment)
             self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "jal_processed"])
             self._data[JSF.CORP_ACTIONS].append(action)
         else:
-            next_outcome = {'symbol': action['symbol'], 'quantity': action['quantity']/adj_factor, 'share': 0.0}
+            next_outcome = {'symbol': action['symbol'], 'quantity': action['quantity']/adj_factor, 'share': Decimal('0')}
             existing_action['outcome'].append(next_outcome)
         paired_record[0]['jal_processed'] = True
         return 2
@@ -806,13 +806,13 @@ class StatementIBKR(StatementXML):
         qty_old = int(spinoff['Y']) * action['quantity'] / int(spinoff['X'])
         rounded_qty_old = round(qty_old)
         # IBKR may report a rounded whole-number spin-off quantity after dropping fractional entitlements.
-        implied_spinoff_qty = rounded_qty_old * int(spinoff['X']) / int(spinoff['Y'])
-        if abs(rounded_qty_old - qty_old) > 0.01 and abs(implied_spinoff_qty - action['quantity']) >= 1.0:
+        implied_spinoff_qty = Decimal(rounded_qty_old) * int(spinoff['X']) / int(spinoff['Y'])
+        if abs(rounded_qty_old - qty_old) > Decimal('0.01') and abs(implied_spinoff_qty - action['quantity']) >= Decimal('1'):
             raise Statement_ImportError(self.tr("Spin-off rounding error is too big ") + f"'{action}'")
         qty_old = rounded_qty_old
         action['id'] = max([0] + [x['id'] for x in self._data[JSF.CORP_ACTIONS]]) + 1
-        action['outcome'] = [{'symbol': symbol_old, 'quantity': qty_old, 'share': 0.0},
-                             {'symbol': action['symbol'], 'quantity': action['quantity'], 'share': 0.0}]
+        action['outcome'] = [{'symbol': symbol_old, 'quantity': qty_old, 'share': Decimal('0')},
+                             {'symbol': action['symbol'], 'quantity': action['quantity'], 'share': Decimal('0')}]
         action['symbol'] = symbol_old
         action['quantity'] = qty_old
         self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "jal_processed"])
@@ -833,7 +833,7 @@ class StatementIBKR(StatementXML):
         symbol_b = self.locate_symbol(isin_change['symbol_old'], isin_change['isin_old'])
         paired_record = self.find_corp_action_pair(symbol_b, description_b, action, parts_b)
         action['id'] = max([0] + [x['id'] for x in self._data[JSF.CORP_ACTIONS]]) + 1
-        action['outcome'] = [{'symbol': action['symbol'], 'quantity': action['quantity'], 'share': 1.0}]
+        action['outcome'] = [{'symbol': action['symbol'], 'quantity': action['quantity'], 'share': Decimal('1')}]
         action['symbol'] = paired_record[0]['symbol']
         action['quantity'] = -paired_record[0]['quantity']
         self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "jal_processed"])
@@ -851,7 +851,7 @@ class StatementIBKR(StatementXML):
 
         action['id'] = max([0] + [x['id'] for x in self._data[JSF.ASSET_PAYMENTS]]) + 1
         action['amount'] = action['quantity']
-        action['price'] = format_decimal(Decimal(str(action['value'])) / Decimal(str(action['quantity'])))
+        action['price'] = self._derived_price(action['value'], action['quantity'])
         action['tax'] = 0
         self.drop_extra_fields(action, ["quantity", "value", "proceeds", "code", "asset_type", "jal_processed"])
         self._data[JSF.ASSET_PAYMENTS].append(action)
@@ -869,10 +869,10 @@ class StatementIBKR(StatementXML):
         split['symbol_old'] = self.normalize_corp_action_symbol(split['symbol_old'])
         if parts['id'] is None or parts['isin_old'] == parts['id']:  # Simple split without ISIN change
             qty_delta = action['quantity']
-            qty_old = qty_delta / (int(split['X']) / int(split['Y']) - 1)
+            qty_old = qty_delta / (Decimal(int(split['X'])) / int(split['Y']) - 1)
             qty_new = qty_old + qty_delta
             action['id'] = max([0] + [x['id'] for x in self._data[JSF.CORP_ACTIONS]]) + 1
-            action['outcome'] = [{'symbol': action['symbol'], 'quantity': qty_new, 'share': 1.0}]
+            action['outcome'] = [{'symbol': action['symbol'], 'quantity': qty_new, 'share': Decimal('1')}]
             action['quantity'] = qty_old
             self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "jal_processed"])
             self._data[JSF.CORP_ACTIONS].append(action)
@@ -882,7 +882,7 @@ class StatementIBKR(StatementXML):
             symbol_b = self.locate_symbol(split['symbol_old'], split['isin_old'])
             paired_record = self.find_corp_action_pair(symbol_b, description_b, action, parts_b)
             action['id'] = max([0] + [x['id'] for x in self._data[JSF.CORP_ACTIONS]]) + 1
-            action['outcome'] = [{'symbol': action['symbol'], 'quantity': action['quantity'], 'share': 1.0}]
+            action['outcome'] = [{'symbol': action['symbol'], 'quantity': action['quantity'], 'share': Decimal('1')}]
             action['symbol'] = paired_record[0]['symbol']
             action['quantity'] = -paired_record[0]['quantity']
             self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "jal_processed"])
@@ -894,10 +894,10 @@ class StatementIBKR(StatementXML):
     def load_bond_maturity(self, action, parts_b) -> int:
         action['id'] = max([0] + [x['id'] for x in self._data[JSF.TRADES]]) + 1
         action['quantity'] = action['quantity'] / IBKR_Asset.BondPrincipal
-        action['price'] = action['proceeds'] / (-action['quantity'])  # Quantity is negative, bonds are withdrawn
+        action['price'] = self._derived_price(action['proceeds'], action['quantity'])
         action['settlement'] = action['timestamp']                    # Settled by the same date
         action['note'] = action['description']
-        action['fee'] = 0.0
+        action['fee'] = Decimal('0')
         self.drop_extra_fields(action, ["description", "value", "proceeds", "type", "code", "asset_type",
                                         "jal_processed", "timestamp_day_only"])
         self._data[JSF.TRADES].append(action)
@@ -985,7 +985,7 @@ class StatementIBKR(StatementXML):
             else:  # Withdrawal
                 transfer['account'] = [transfer['account'], 0, 0]
                 transfer['withdrawal'] = transfer['deposit'] = -transfer['amount']
-            transfer['fee'] = 0.0
+            transfer['fee'] = Decimal('0')
             self.drop_extra_fields(transfer, ["type", "amount", "timestamp_day_only", "currency", "reported", "action_id"])
             self._data[JSF.TRANSFERS].append(transfer)
             cnt += 1
@@ -1065,11 +1065,11 @@ class StatementIBKR(StatementXML):
                 for db_dividend in db_dividends:
                     if db_dividend.timestamp() == tax['timestamp']:
                         dividends.append({
-                            "amount": float(db_dividend.amount()),
+                            "amount": db_dividend.amount(),
                         })
-            tax_amount = abs(Decimal(str(tax['amount'])))
+            tax_amount = abs(tax['amount'])
             for dividend in dividends:
-                dividend_amount = abs(Decimal(str(dividend['amount'])))
+                dividend_amount = abs(dividend['amount'])
                 if abs(Decimal('0.1') * dividend_amount - tax_amount) <= Decimal('0.01'):
                     return True
             return False
@@ -1208,11 +1208,12 @@ class StatementIBKR(StatementXML):
         self.set_asset_country(tax['symbol'], parts.groupdict()['country'].lower())
 
         dividend = self.find_dividend4tax(tax)      # refuses the whole statement if it finds no single payment
-        new_tax = float(Decimal(str(dividend.get('tax', 0))) - Decimal(str(tax['amount'])))
+        new_tax = dividend.get('tax', Decimal('0')) - tax['amount']
         if self.mapped_id(JSF.ASSET_PAYMENTS, dividend['id']):
             # Notification is required if we adjust data for dividend that is already in Jal DB
             logging.info(self.tr("Tax adjustment for dividend: ") +
-                         f"{dividend.get('tax', 0)} -> {new_tax} ({ts2dt(dividend['timestamp'])} {dividend['description']})")
+                         f"{remove_exponent(dividend.get('tax', Decimal('0')))} -> {remove_exponent(new_tax)}"
+                         f" ({ts2dt(dividend['timestamp'])} {dividend['description']})")
         dividend["tax"] = new_tax
         # append new dividend if it came from DB and haven't been loaded in self._data yet
         if len([1 for x in self._data[JSF.ASSET_PAYMENTS] if x['id'] == dividend['id']]) == 0:
@@ -1273,8 +1274,8 @@ class StatementIBKR(StatementXML):
             "symbol": tax['symbol'],
             "timestamp": payment.timestamp(),
             "number": payment.number(),
-            "amount": float(payment.amount()),
-            "tax": float(payment.tax()),
+            "amount": payment.amount(),
+            "tax": payment.tax(),
             "description": payment.note()
         } for payment in stored]
 
@@ -1289,13 +1290,13 @@ class StatementIBKR(StatementXML):
         symbol = self._symbol(tax['symbol'])
         description = (f"{symbol['symbol']} ({symbol.get('isin', '')})"
                        f" {ts2d(tax['timestamp'])} reported {ts2d(tax['reported'])}"
-                       f" amount {tax['amount']} action {tax.get('action_id') or '-'}")
+                       f" amount {remove_exponent(tax['amount'])} action {tax.get('action_id') or '-'}")
         logging.error(self.tr("Withholding tax matches no payment: ") + reason)
         logging.error(f"    {description}")
         logging.error(self.tr("    Payments considered: ") + f"{len(candidates)}")
         for payment in candidates:
-            logging.error(f"      {ts2d(payment['timestamp'])} amount {payment['amount']}"
-                          f" tax {payment.get('tax', 0)} action {payment.get('number') or '-'}")
+            logging.error(f"      {ts2d(payment['timestamp'])} amount {remove_exponent(payment['amount'])}"
+                          f" tax {remove_exponent(payment.get('tax', Decimal('0')))} action {payment.get('number') or '-'}")
         try:
             self.save_debug_info(account=tax['account'], symbol=tax['symbol'])
         except Exception as e:
