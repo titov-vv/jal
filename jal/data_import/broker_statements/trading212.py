@@ -4,7 +4,7 @@ import os
 import re
 import sys
 from datetime import datetime
-from decimal import Decimal, InvalidOperation, localcontext
+from decimal import Decimal, InvalidOperation
 
 from PySide6.QtCore import QT_TRANSLATE_NOOP
 from PySide6.QtWidgets import QApplication, QMessageBox
@@ -15,7 +15,6 @@ from jal.data_import.card_match import CardMatcher
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.peer import JalPeer
-from jal.db.helpers import remove_exponent
 from jal.db.settings import JalSettings
 from jal.db.settings_registry import SettingsRegistry, SettingDescriptor, SettingType
 
@@ -49,11 +48,6 @@ SettingsRegistry.register(SettingDescriptor(
 class StatementTrading212(Statement):
     source_timezone = 'UTC'   # the column is named "Time (UTC)" and every row carries an explicit +00:00
     BrokerName = "Trading212"   # the peer the operations of such an account are recorded against
-    # 'Total' divided by 'No. of shares' at this many SIGNIFICANT digits is the price of a trade. Trading212 reports
-    # the price it quoted, rounded to 10 decimals, and quantity times that price does not give back the money that
-    # actually moved - the quantity is what the amount bought, not the other way round. So the quotient is the
-    # price, and this is the width the quotient is kept at.
-    PRICE_PRECISION = 15
     # Columns of an export that carries the events this module knows. Every one of them must be present; a column
     # beyond them is refused as soon as any row fills it in - see _check_columns().
     Columns = ("Action", "Time (UTC)", "ISIN", "Ticker", "Name", "Notes", "ID", "No. of shares", "Price / share",
@@ -232,9 +226,8 @@ class StatementTrading212(Statement):
         # 'Total' is the money that moved and it is positive on both sides; the side is in the action name.
         if row["Action"].strip() == "Market sell":
             quantity = -quantity
-        with localcontext() as context:
-            context.prec = self.PRICE_PRECISION
-            price = remove_exponent(abs(total) / abs(quantity))
+        # 'Price / share' is reported too, but rounded to 10 decimals - see Statement._derived_price().
+        price = self._derived_price(total, quantity)
         self._data[JSF.TRADES].append({
             "id": self._next_id(JSF.TRADES),
             "number": row["ID"],

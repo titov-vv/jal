@@ -68,16 +68,16 @@ def test_statement_t212_parsing(prepare_db_t212):
     assert 'number' not in account          # the export names no account - the user does, in the preferences
     assert account['currency'] == statement.currency_id('EUR')
 
-    # Trades: the price is the quotient of what moved by what was bought, at 15 significant digits. Multiplying the
+    # Trades: the price is the quotient of what moved by what was bought, at the full context width. Multiplying the
     # reported price by the reported quantity does NOT give the reported total, which is the whole point of it.
     assert len(data[JSF.TRADES]) == 2
     first = one(data[JSF.TRADES], number='EOF10000000001')
     assert first['quantity'] == Decimal('2.15')
-    assert first['price'] == Decimal('6.31627906976744')
+    assert first['price'] == Decimal('6.316279069767441860465116279')
     assert first['fee'] == Decimal('0')
     assert first['timestamp'] == dt2t(2603050700) + 5
     second = one(data[JSF.TRADES], number='EOF10000000002')
-    assert second['price'] == Decimal('6.34285714285714')
+    assert second['price'] == Decimal('6.342857142857142857142857143')
 
     # Dividend: gross is what reached the account plus the tax stated beside it, and the note keeps the per-share
     # rate the way every dividend of this account already spells it.
@@ -164,7 +164,7 @@ def test_statement_t212_import(prepare_db_t212):
     statement.import_into_db()
 
     assert JalDB._read("SELECT COUNT(*) FROM trades") == 2
-    assert JalDB._read("SELECT price FROM trades WHERE number='EOF10000000001'") == '6.31627906976744'
+    assert JalDB._read("SELECT price FROM trades WHERE number='EOF10000000001'") == '6.316279069767441860465116279'
     assert JalDB._read("SELECT COUNT(*) FROM asset_payments") == 1
     # Five interest/cashback rows and exactly one of the six card purchases
     assert JalDB._read("SELECT COUNT(*) FROM actions") == stored_before + 6

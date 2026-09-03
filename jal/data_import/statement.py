@@ -3,7 +3,7 @@ import json
 import sys
 import logging
 from datetime import datetime, timezone
-from decimal import Decimal
+from decimal import Decimal, localcontext
 from copy import deepcopy
 from collections import defaultdict
 
@@ -11,7 +11,7 @@ from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QDialog, QMessageBox
 from jal.constants import Setup, AssetLocation, PredefinedAccountType, PredefinedAsset, PredefinedAgents, SymbolId
 from jal.db.db import JalDB
-from jal.db.helpers import is_day_marker, wall_clock_timestamp
+from jal.db.helpers import is_day_marker, remove_exponent, wall_clock_timestamp
 from jal.db.settings import JalSettings
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset, JalAssetCreator
@@ -105,6 +105,7 @@ class Statement_Capabilities:
 # -----------------------------------------------------------------------------------------------------------------------
 class Statement(QObject):   # derived from QObject to have proper string translation
     RU_PRICE_TOLERANCE = 1e-4   # TODO Probably need to switch imports to Decimal and remove it
+    PRICE_PRECISION = 28   # The width _derived_price() keeps its quotient at, in SIGNIFICANT digits.
 
     currency_substitutions = {}
     # The zone whose wall clock this source's timestamps are readings of. It is a property of the SOURCE rather than of
@@ -274,6 +275,16 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     def _end_of_date(self, timestamp) -> int:   #FIXME - something similar is in helpers.py -> refactor
         end_of_day = datetime.fromtimestamp(timestamp, tz=timezone.utc).replace(hour=23, minute=59, second=59)
         return int(end_of_day.replace(tzinfo=timezone.utc).timestamp())
+
+    # The price of a trade that its source reports the total money of. A source states the price it quoted, rounded
+    # to its own number of decimals, and that price times the reported quantity doesn't give back the money that
+    # actually moved - the quantity is what the amount bought, not the other way round. So the quotient of the two
+    # is the price, and PRICE_PRECISION is the width it is kept at.
+    @staticmethod
+    def _derived_price(amount: Decimal, quantity: Decimal) -> Decimal:
+        with localcontext() as context:
+            context.prec = Statement.PRICE_PRECISION
+            return remove_exponent(abs(amount) / abs(quantity))
 
     # Finds an account in jal database and returns its id
     def _map_db_account(self, account_id: int) -> int:

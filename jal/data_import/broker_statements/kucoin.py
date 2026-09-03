@@ -216,7 +216,7 @@ class StatementKuCoin(StatementCSV):
         self._data[JSF.TRADES].append({
             "id": self._next_id(JSF.TRADES), "number": fill['Order ID'], "timestamp": timestamp,
             "settlement": timestamp, "account": self._account_id, "symbol": self._symbol_of(coin),
-            "quantity": quantity, "price": volume / abs(quantity), "fee": fee})
+            "quantity": quantity, "price": self._derived_price(volume, quantity), "fee": fee})
 
     # A coin-for-coin fill. 'Filled Amount' is always the base coin and 'Filled Volume' the quote one, so a BUY
     # spends the quote and receives the base while a SELL does the reverse.

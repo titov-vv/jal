@@ -221,7 +221,7 @@ class StatementBitget(StatementCSV):
         self._data[JSF.TRADES].append({
             "id": self._next_id(JSF.TRADES), "number": self._order_number(fill), "timestamp": timestamp,
             "settlement": timestamp, "account": self._account_id, "symbol": self._symbol_of(coin),
-            "quantity": quantity, "price": volume / abs(quantity), "fee": Decimal('0')})
+            "quantity": quantity, "price": self._derived_price(volume, quantity), "fee": Decimal('0')})
 
     def _add_swap(self, fill, timestamp: int, base: str, quantity: Decimal, quote: str, volume: Decimal,
                   sign: Decimal) -> None:
