@@ -116,9 +116,9 @@ class StatementFreedomFinance(Statement):
                 'settlement': settlement,
                 'account': account_id,
                 'symbol': symbol_id,
-                'quantity': float(quantity),
-                'price': float(price),
-                'fee': float(fee),
+                'quantity': quantity,
+                'price': price,
+                'fee': fee,
                 'note': self._text(node, 'comment')
             })
             count += 1
@@ -158,8 +158,8 @@ class StatementFreedomFinance(Statement):
                 'timestamp': timestamp,
                 'ex_date': ex_date,
                 'symbol': symbol_id,
-                'amount': float(gross_amount),
-                'tax': float(tax),
+                'amount': gross_amount,
+                'tax': tax,
                 'description': self._text(node, 'comment')
             })
             count += 1
