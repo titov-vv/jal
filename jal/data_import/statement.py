@@ -296,7 +296,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         try:
             with open(filename, 'r', encoding='utf-8') as statement_file:
                 try:
-                    self._data = json.load(statement_file)
+                    self._data = json.load(statement_file, parse_float=Decimal)
                 except json.JSONDecodeError:
                     logging.error(self.tr("Failed to read JSON from file: ") + filename)
         except Exception as err:

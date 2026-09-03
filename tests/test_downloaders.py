@@ -224,15 +224,15 @@ def test_MOEX_downloader_USD(prepare_db_moex):
 # wrappers around Yahoo_Downloader itself) - only the ticker, currency and the downloader method used differ.
 @pytest.mark.parametrize("ticker, currency_id, downloader_name, expected_closes, expected_dates", [
     ('AAPL', 2, 'Yahoo_Downloader',
-     [Decimal('134.42999267578125'), Decimal('132.029998779296875')], [dt2dt(2104131330), dt2dt(2104141330)]),
+     [Decimal('134.43'), Decimal('132.03')], [dt2dt(2104131330), dt2dt(2104141330)]),
     ('PSON', 3, 'YahooLSE_Downloader',
-     [Decimal('792.5999755859375'), Decimal('800.79998779296875')], [dt2dt(2104130700), dt2dt(2104140700)]),
+     [Decimal('792.6'), Decimal('800.8')], [dt2dt(2104130700), dt2dt(2104140700)]),
     ('VOW3', 3, 'YahooFRA_Downloader',
-     [Decimal('233.399993896484375'), Decimal('234.25')], [dt2dt(2104130600), dt2dt(2104140600)]),
+     [Decimal('233.4'), Decimal('234.25')], [dt2dt(2104130600), dt2dt(2104140600)]),
     ('NOKIA', 3, 'YahooHEL_Downloader',
-     [Decimal('3.4934999942779541015625'), Decimal('3.502500057220458984375')], [dt2dt(2104130700), dt2dt(2104140700)]),
+     [Decimal('3.4935'), Decimal('3.5025')], [dt2dt(2104130700), dt2dt(2104140700)]),
     ('CDR', 3, 'YahooWSE_Downloader',
-     [Decimal('186.5'), Decimal('185.7599945068359375')], [dt2dt(2104130700), dt2dt(2104140700)])
+     [Decimal('186.5'), Decimal('185.76')], [dt2dt(2104130700), dt2dt(2104140700)])
 ])
 def test_Yahoo_family_downloaders(prepare_db, ticker, currency_id, downloader_name, expected_closes, expected_dates):
     create_stocks([(ticker, '')], currency_id=currency_id)   # id = 4

@@ -9,6 +9,7 @@ import pandas as pd
 from pandas.errors import ParserError
 import re
 import json
+import struct
 from PySide6.QtCore import Qt, QObject, Signal, Slot, QDate
 from PySide6.QtWidgets import QApplication, QDialog, QListWidgetItem
 
@@ -597,6 +598,23 @@ class QuoteDownloader(QObject):
         close = data.set_index("Date")
         return close
 
+    # Yahoo keeps every '/chart' price as a 32-bit float and widens it to a JSON double on the way out, so the
+    # number on the wire carries digits the source never had: a 132.03 close arrives as 132.02999877929688.
+    # Re-spelling it as the shortest decimal that still round-trips to the same 32-bit float gives back the price
+    # Yahoo quoted and loses nothing - a value that is not an exact 32-bit float is kept exactly as it was sent.
+    @staticmethod
+    def _yahoo_price(value) -> Decimal:
+        if value is None:   # Yahoo reports a day it has no price for as 'null'
+            return Decimal('NaN')
+        as_double = float(value)
+        if struct.unpack('f', struct.pack('f', as_double))[0] != as_double:
+            return value
+        for digits in range(1, 18):   # 9 significant digits always round-trip a 32-bit float, so this terminates
+            shortest = f"{as_double:.{digits}g}"
+            if struct.unpack('f', struct.pack('f', float(shortest)))[0] == as_double:
+                return Decimal(shortest)
+        return value
+
     # noinspection PyMethodMayBeStatic
     def Yahoo_Downloader(self, symbol, currency_id, start_timestamp, end_timestamp, suffix=''):
         url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol.symbol()+suffix}"
@@ -607,7 +625,7 @@ class QuoteDownloader(QObject):
         }
         self._request = WebRequest(WebRequest.GET, url, params=params)
         self._wait_for_event()
-        web_data = json.loads(self._request.data())
+        web_data = json.loads(self._request.data(), parse_float=Decimal)
         web_data = web_data['chart']
         if web_data['error'] is not None:
             logging.error(self.tr("Yahoo returned and error: ") + web_data['error'])
@@ -616,12 +634,11 @@ class QuoteDownloader(QObject):
             logging.error(self.tr("Yahoo returned more then one result: ") + web_data['result'])
             return []
         timestamps = [datetime.fromtimestamp(x, tz=timezone.utc) for x in web_data['result'][0]['timestamp']]
-        closes = web_data['result'][0]['indicators']['quote'][0]['close']
+        closes = [self._yahoo_price(x) for x in web_data['result'][0]['indicators']['quote'][0]['close']]
         try:
             data = pd.DataFrame({'Date': timestamps, 'Close': closes})
         except ParserError:
             return None
-        data['Close'] = data['Close'].apply(Decimal)
         close = data.set_index("Date")
         return close
 

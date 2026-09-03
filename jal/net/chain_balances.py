@@ -99,7 +99,7 @@ class ChainBalanceReader(JalDB):
         web_request = WebRequest(WebRequest.POST_JSON, url, params=request)
         self._wait_for(web_request)
         try:
-            return json.loads(web_request.data())
+            return json.loads(web_request.data(), parse_float=Decimal)
         except (json.JSONDecodeError, TypeError):
             return None
 
@@ -107,7 +107,7 @@ class ChainBalanceReader(JalDB):
         web_request = WebRequest(WebRequest.GET, url, params=params)
         self._wait_for(web_request)
         try:
-            return json.loads(web_request.data())
+            return json.loads(web_request.data(), parse_float=Decimal)
         except (json.JSONDecodeError, TypeError):
             return None
 

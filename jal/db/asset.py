@@ -617,7 +617,7 @@ class JalAsset(JalDB):
             _ = self._exec("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
                            "VALUES(:asset_id, :datatype, :principal)",
                            [(":asset_id", self._id), (":datatype", AssetData.PrincipalValue),
-                            (":principal", str(principal))])
+                            (":principal", principal)])
 
     # Searches for an asset matching the given heuristic data (isin -> reg_number -> symbol(+type+expiry) -> name,
     # in that priority order) and returns a JalAsset for it (whose .id() is 0 if nothing was found).
