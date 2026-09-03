@@ -280,11 +280,14 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     # to its own number of decimals, and that price times the reported quantity doesn't give back the money that
     # actually moved - the quantity is what the amount bought, not the other way round. So the quotient of the two
     # is the price, and PRICE_PRECISION is the width it is kept at.
+    # A whole number in an XLS statement stays an int (statement_xls.py re-spells only float cells), so both sides
+    # are widened here. A float is rejected rather than widened: Decimal(float) expands the binary double.
     @staticmethod
-    def _derived_price(amount: Decimal, quantity: Decimal) -> Decimal:
+    def _derived_price(amount, quantity) -> Decimal:   # both sides are a Decimal or an int
+        assert not isinstance(amount, float) and not isinstance(quantity, float), "Derived price needs exact operands"
         with localcontext() as context:
             context.prec = Statement.PRICE_PRECISION
-            return remove_exponent(abs(amount) / abs(quantity))
+            return remove_exponent(abs(Decimal(amount)) / abs(Decimal(quantity)))
 
     # Finds an account in jal database and returns its id
     def _map_db_account(self, account_id: int) -> int:

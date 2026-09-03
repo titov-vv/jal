@@ -3,6 +3,7 @@
 import logging
 import re
 import json
+from decimal import Decimal, DecimalException
 from datetime import datetime, timezone
 from PySide6.QtWidgets import QApplication
 from jal.widgets.helpers import is_english
@@ -155,10 +156,10 @@ class MOEX:
             asset['symbol'] = asset['short_name'] if asset['symbol'] == asset['isin'] else asset['symbol']
         if 'short_name' in asset:
             del asset['short_name']  # drop short name as we won't use it further
-        if 'principal' in asset:  # Convert principal into float if possible or drop otherwise
+        if 'principal' in asset:  # Convert principal into Decimal if possible or drop otherwise
             try:
-                asset['principal'] = float(asset['principal'])
-            except ValueError:
+                asset['principal'] = Decimal(str(asset['principal']))
+            except DecimalException:
                 del asset['principal']
         if 'expiry' in asset:  # convert YYYY-MM-DD into timestamp
             date_value = datetime.strptime(asset['expiry'], "%Y-%m-%d")

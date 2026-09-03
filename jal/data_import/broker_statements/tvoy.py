@@ -1,5 +1,6 @@
 import logging
 import re
+from decimal import Decimal, DecimalException
 from datetime import datetime
 
 from jal.constants import PredefinedCategory
@@ -138,7 +139,7 @@ class StatementTvoyBroker(StatementXLS):
             fee = self._statement[headers['fee_ex']][row] + self._statement[headers['fee_broker']][row]
             amount = self._statement[headers['amount']][row]
             if abs(abs(price * qty) - amount) >= self.RU_PRICE_TOLERANCE:
-                price = abs(amount / qty)
+                price = self._derived_price(amount, qty)
             ts_string = self._statement[headers['date']][row] + ' ' + self._statement[headers['time']][row]
             timestamp = self._moment(datetime.strptime(ts_string, "%d.%m.%Y %H:%M:%S"))
             settlement = self._date(datetime.strptime(self._statement[headers['settlement']][row], "%d.%m.%Y"))
@@ -211,7 +212,7 @@ class StatementTvoyBroker(StatementXLS):
             fee = self._statement[headers['fee_broker']][row] + self._statement[headers['fee_ex']][row]
             amount = self._statement[headers['amount']][row]
             if abs(abs(price * qty) - amount) >= self.RU_PRICE_TOLERANCE:
-                price = abs(amount / qty)
+                price = self._derived_price(amount, qty)
             ts_string = self._statement[headers['date']][row] + ' ' + self._statement[headers['time']][row]
             timestamp = self._moment(datetime.strptime(ts_string, "%d.%m.%Y %H:%M:%S"))
             settlement = self._date(datetime.strptime(self._statement[headers['settlement']][row], "%d.%m.%Y"))
@@ -291,7 +292,7 @@ class StatementTvoyBroker(StatementXLS):
         account_to = self._find_account_id(transfer['account_to'], currency_name)
         new_id = max([0] + [x['id'] for x in self._data[JSF.TRANSFERS]]) + 1
         transfer = {"id": new_id, "account": [account_from, account_to, 0], "symbol": [symbol, symbol],
-                    "timestamp": timestamp, "withdrawal": qty, "deposit": qty, "fee": 0.0, "description": description}
+                    "timestamp": timestamp, "withdrawal": qty, "deposit": qty, "fee": Decimal('0'), "description": description}
         self._data[JSF.TRANSFERS].append(transfer)
 
     def asset_transfer_in(self, timestamp, number, symbol, qty, description):
@@ -300,7 +301,7 @@ class StatementTvoyBroker(StatementXLS):
         account_id = self._find_account_id(self._account_number, currency_name)
         new_id = max([0] + [x['id'] for x in self._data[JSF.TRANSFERS]]) + 1
         transfer = {"id": new_id, "account": [0, account_id, 0], "symbol": [symbol, symbol],
-                    "timestamp": timestamp, "withdrawal": qty, "deposit": qty, "fee": 0.0, "description": description}
+                    "timestamp": timestamp, "withdrawal": qty, "deposit": qty, "fee": Decimal('0'), "description": description}
         self._data[JSF.TRANSFERS].append(transfer)
 
     def load_cash_transactions(self):
@@ -371,7 +372,7 @@ class StatementTvoyBroker(StatementXLS):
         new_id = max([0] + [x['id'] for x in self._data[JSF.TRANSFERS]]) + 1
         transfer = {"id": new_id, "account": [account_from, account_to, 0], "number": number,
                     "symbol": [currency_symbol, currency_symbol], "timestamp": timestamp,
-                    "withdrawal": amount, "deposit": amount, "fee": 0.0, "description": description}
+                    "withdrawal": amount, "deposit": amount, "fee": Decimal('0'), "description": description}
         self._data[JSF.TRANSFERS].append(transfer)
 
     def transfer_in(self, timestamp, number, account_id, amount, description):
@@ -380,7 +381,7 @@ class StatementTvoyBroker(StatementXLS):
         new_id = max([0] + [x['id'] for x in self._data[JSF.TRANSFERS]]) + 1
         transfer = {"id": new_id, "account": [0, account_id, 0], "number": number,
                     "symbol": [currency_symbol, currency_symbol], "timestamp": timestamp,
-                    "withdrawal": amount, "deposit": amount, "fee": 0.0, "description": description}
+                    "withdrawal": amount, "deposit": amount, "fee": Decimal('0'), "description": description}
         self._data[JSF.TRANSFERS].append(transfer)
 
     def transfer_out(self, timestamp, number, account_id, amount, description):
@@ -389,7 +390,7 @@ class StatementTvoyBroker(StatementXLS):
         new_id = max([0] + [x['id'] for x in self._data[JSF.TRANSFERS]]) + 1
         transfer = {"id": new_id, "account": [account_id, 0, 0], "number": number,
                     "symbol": [currency_symbol, currency_symbol], "timestamp": timestamp,
-                    "withdrawal": -amount, "deposit": -amount, "fee": 0.0, "description": description}
+                    "withdrawal": -amount, "deposit": -amount, "fee": Decimal('0'), "description": description}
         self._data[JSF.TRANSFERS].append(transfer)
 
     def dividend(self, timestamp, number, account_id, amount, description):
@@ -417,11 +418,11 @@ class StatementTvoyBroker(StatementXLS):
             short_description += ' ' + dividend_data['PERIOD'].strip()
         if 'TAX' in dividend_data and dividend_data['TAX']:
             try:
-                tax = float(dividend_data['TAX'])
-            except ValueError:
+                tax = Decimal(dividend_data['TAX'])
+            except DecimalException:
                 raise Statement_ImportError(self.tr("Failed to convert dividend tax ") + f"'{description}'")
         else:
-            tax = 0
+            tax = Decimal('0')
             if 'TAX_TEXT' in dividend_data and dividend_data['TAX_TEXT']:
                 short_description += '; ' + dividend_data['TAX_TEXT'].strip()
         amount = amount + tax   # Statement contains value after taxation while JAL stores value before tax
@@ -460,11 +461,11 @@ class StatementTvoyBroker(StatementXLS):
             raise Statement_ImportError(self.tr("Multiple asset cancellation match for ") + f"'{description}'")
         asset_cancel = match[0]
         qty = asset_cancel['quantity']
-        price = abs(amount / qty)   # Price is always positive
+        price = self._derived_price(amount, qty)
         note = description + ", " + asset_cancel['note']
         new_id = max([0] + [x['id'] for x in self._data[JSF.TRADES]]) + 1
         trade = {"id": new_id, "number": asset_cancel['number'], "timestamp": timestamp, "settlement": timestamp,
-                 "account": account_id, "symbol": symbol_id, "quantity": qty, "price": price, "fee": 0.0, "note": note}
+                 "account": account_id, "symbol": symbol_id, "quantity": qty, "price": price, "fee": Decimal('0'), "note": note}
         self._data[JSF.TRADES].append(trade)
 
     def tax(self, timestamp, _number, account_id, amount, description):

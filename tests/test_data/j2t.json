@@ -154,7 +154,7 @@
    "settlement": 1614902400,
    "account": 1,
    "symbol": 4,
-   "price": 0.5516000000000001,
+   "price": 0.5516,
    "quantity": -50,
    "fee": 0.01
   },
@@ -187,7 +187,7 @@
    "settlement": 1615161600,
    "account": 1,
    "symbol": 8,
-   "price": 79.32062499999999,
+   "price": 79.320625,
    "quantity": -16,
    "fee": 3.8
   },
@@ -198,7 +198,7 @@
    "settlement": 1615161600,
    "account": 1,
    "symbol": 9,
-   "price": 1714.0,
+   "price": 1714,
    "quantity": -0.4,
    "fee": 2.4
   },
@@ -209,7 +209,7 @@
    "settlement": 1615248000,
    "account": 1,
    "symbol": 6,
-   "price": 54615.0,
+   "price": 54615,
    "quantity": -0.01,
    "fee": 1.91
   }
@@ -283,7 +283,7 @@
    "timestamp": 1605744000,
    "withdrawal": 100,
    "deposit": 100,
-   "fee": 0.0,
+   "fee": 0,
    "description": ""
   },
   {
@@ -300,7 +300,7 @@
    "timestamp": 1622592000,
    "withdrawal": 200,
    "deposit": 200,
-   "fee": 0.0,
+   "fee": 0,
    "description": " "
   }
  ],

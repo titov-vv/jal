@@ -1,5 +1,6 @@
 import logging
 import re
+from decimal import Decimal, DecimalException
 from datetime import datetime
 from jal.constants import PredefinedCategory
 from jal.data_import.statement_xls import StatementXLS
@@ -14,7 +15,7 @@ MAX_T_DELTA = 3  # Maximum allowed days between bond maturity and money transfer
 # ----------------------------------------------------------------------------------------------------------------------
 # Helper function to convert string to number, as VTB statement has it localized
 def str2num(value):
-    return float(value.replace(',', ' ').replace(' ', '')) if isinstance(value, str) else value
+    return Decimal(value.replace(',', ' ').replace(' ', '')) if isinstance(value, str) else value
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -162,7 +163,7 @@ class StatementVTB(StatementXLS):
             fee = str2num(self._statement[headers['fee1']][row]) + str2num(self._statement[headers['fee2']][row])
             amount = str2num(self._statement[headers['amount']][row])
             if abs(abs(price * qty) - amount) >= self.RU_PRICE_TOLERANCE:
-                price = abs((amount - bond_interest) / qty)
+                price = self._derived_price(amount - bond_interest, qty)
             timestamp = self._moment(self._statement[headers['datetime']][row])
             settlement = self._date(self._statement[headers['settlement']][row])
             account_id = self._find_account_id(self._account_number, currency)
@@ -305,8 +306,8 @@ class StatementVTB(StatementXLS):
             symbol_id = self._single_symbol_of(assets[0]['id'])
             timestamp = self._date(self._statement[headers['date']][row])
             try:
-                qty = float(self._statement[headers['qty']][row])
-            except ValueError:
+                qty = Decimal(str(self._statement[headers['qty']][row]))
+            except DecimalException:
                 raise Statement_ImportError(self.tr("Failed to convert asset amount ") + f"'{self._statement[headers['qty']][row]}'")
             if operations[operation] is not None:
                 operations[operation](timestamp, symbol_id, qty)
@@ -368,7 +369,7 @@ class StatementVTB(StatementXLS):
         currency_symbol = self._single_symbol_of(account['currency'])
         transfer = {"id": new_id, "account": [0, account_id, 0],
                     "symbol": [currency_symbol, currency_symbol], "timestamp": timestamp,
-                    "withdrawal": amount, "deposit": amount, "fee": 0.0, "description": description}
+                    "withdrawal": amount, "deposit": amount, "fee": Decimal('0'), "description": description}
         self._data[JSF.TRANSFERS].append(transfer)
 
     def transfer_out(self, timestamp, account_id, amount, description):
@@ -377,7 +378,7 @@ class StatementVTB(StatementXLS):
         currency_symbol = self._single_symbol_of(account['currency'])
         transfer = {"id": new_id, "account": [account_id, 0, 0],
                     "symbol": [currency_symbol, currency_symbol], "timestamp": timestamp,
-                    "withdrawal": -amount, "deposit": -amount, "fee": 0.0, "description": description}
+                    "withdrawal": -amount, "deposit": -amount, "fee": Decimal('0'), "description": description}
         self._data[JSF.TRANSFERS].append(transfer)
 
     def interest(self, timestamp, account_id, amount, description):
@@ -400,9 +401,9 @@ class StatementVTB(StatementXLS):
         dividend_data = parts.groupdict()
         asset_id = self._asset_by_identifier('reg_number', dividend_data['reg_number'])['id']
         try:
-            tax = float(dividend_data['tax'])
+            tax = Decimal(dividend_data['tax'])
             amount += tax
-        except ValueError:
+        except DecimalException:
             raise Statement_ImportError(self.tr("Failed to convert dividend tax ") + f"'{description}'")
         new_id = max([0] + [x['id'] for x in self._data[JSF.ASSET_PAYMENTS]]) + 1
         payment = {"id": new_id, "type": JSF.PAYMENT_DIVIDEND, "account": account_id, "timestamp": timestamp,
@@ -423,10 +424,10 @@ class StatementVTB(StatementXLS):
             raise Statement_ImportError(self.tr("Multiple asset cancellation match for ") + f"'{description}'")
         asset_cancel = match[0]
         qty = asset_cancel['quantity']
-        price = abs(amount / qty)  # Price is always positive
+        price = self._derived_price(amount, qty)
         new_id = max([0] + [x['id'] for x in self._data[JSF.TRADES]]) + 1
         trade = {"id": new_id, "timestamp": timestamp, "settlement": timestamp, "account": account_id,
-                 "symbol": symbol_id, "quantity": qty, "price": price, "fee": 0.0, "note": description}
+                 "symbol": symbol_id, "quantity": qty, "price": price, "fee": Decimal('0'), "note": description}
         self._data[JSF.TRADES].append(trade)
 
     def broker_fee(self, timestamp, account_id, amount, description):

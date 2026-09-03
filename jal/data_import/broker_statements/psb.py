@@ -1,4 +1,5 @@
 import logging
+from decimal import Decimal
 from datetime import datetime
 
 from jal.data_import.statement import JSF
@@ -98,7 +99,7 @@ class StatementPSB(StatementXLS):
                       self._statement[headers['fee3']][row] + self._statement[headers['fee_broker']][row]
                 amount = self._statement[headers['amount']][row]
                 if abs(abs(price * qty) - amount) >= self.RU_PRICE_TOLERANCE:
-                    price = abs(amount / qty)
+                    price = self._derived_price(amount, qty)
                 timestamp = self._moment(datetime.strptime(self._statement[headers['timestamp']][row],
                                                            "%d.%m.%Y %H:%M:%S"))
                 if headers['*settlement'] == -1:
@@ -177,7 +178,7 @@ class StatementPSB(StatementXLS):
         currency_symbol = self._single_symbol_of(account['currency'])
         transfer = {"id": new_id, "account": [0, account_id, 0],
                     "symbol": [currency_symbol, currency_symbol], "timestamp": timestamp,
-                    "withdrawal": amount, "deposit": amount, "fee": 0.0}
+                    "withdrawal": amount, "deposit": amount, "fee": Decimal('0')}
         self._data[JSF.TRANSFERS].append(transfer)
 
     def transfer_out(self, timestamp, account_id, amount):
@@ -186,7 +187,7 @@ class StatementPSB(StatementXLS):
         currency_symbol = self._single_symbol_of(account['currency'])
         transfer = {"id": new_id, "account": [account_id, 0, 0],
                     "symbol": [currency_symbol, currency_symbol], "timestamp": timestamp,
-                    "withdrawal": -amount, "deposit": -amount, "fee": 0.0}
+                    "withdrawal": -amount, "deposit": -amount, "fee": Decimal('0')}
         self._data[JSF.TRANSFERS].append(transfer)
 
     def load_coupons(self):
@@ -213,8 +214,8 @@ class StatementPSB(StatementXLS):
                 row += 1
                 continue
             timestamp = self._date(datetime.strptime(self._statement[headers['date']][row], "%d.%m.%Y"))
-            amount = float(self._statement[headers['coupon']][row])
-            tax = float(self._statement[headers['tax']][row])
+            amount = Decimal(str(self._statement[headers['coupon']][row]))
+            tax = Decimal(str(self._statement[headers['tax']][row]))
             account_id = self._find_account_id(self._account_number, self._statement[headers['currency']][row])
             try:
                 code = self.currency_id(self.currency_substitutions[self._statement[headers['currency']][row]])
@@ -251,8 +252,8 @@ class StatementPSB(StatementXLS):
                 break
 
             timestamp = self._date(datetime.strptime(self._statement[headers['date']][row], "%d.%m.%Y"))
-            amount = float(self._statement[headers['amount']][row])
-            tax = float(self._statement[headers['tax']][row])
+            amount = Decimal(str(self._statement[headers['amount']][row]))
+            tax = Decimal(str(self._statement[headers['tax']][row]))
             account_id = self._find_account_id(self._account_number, self._statement[headers['currency']][row])
             try:
                 code = self.currency_id(self.currency_substitutions[self._statement[headers['currency']][row]])

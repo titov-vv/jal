@@ -1,5 +1,6 @@
 import logging
 import re
+from decimal import Decimal
 from datetime import datetime
 
 from jal.constants import PredefinedCategory
@@ -126,13 +127,14 @@ class StatementJ2T(StatementXLS):
                 logging.warning(self.tr("Unknown trade type: ") + self._statement[headers['B/S']][row])
                 continue
             # Collect fees
-            fee = self._statement[headers['fee']][row] if self._statement[headers['fee']][row] else 0.0
+            fee = self._statement[headers['fee']][row] if self._statement[headers['fee']][row] else Decimal('0')
             if self._statement[headers['fee_ex']][row]:
                 fee += self._statement[headers['fee_ex']][row]
             # Calculate price in account currency
             amount = self._statement[headers['amount']][row]
-            price = -(amount + fee) / qty
-            assert price > 0.0
+            total = -(amount + fee)   # money that moved, of the same sign as the quantity in a well-formed deal
+            assert total * qty > 0
+            price = self._derived_price(total, qty)
             # Settlement is stored as date in Excel report file
             settlement = self._date(self._statement[headers['settlement']][row])
             account_id = self._find_account_id(self._account_number, 'USD')   # FIXME - replace hardcoded 'USD'
@@ -182,13 +184,14 @@ class StatementJ2T(StatementXLS):
                 logging.warning(self.tr("Unknown trade type: ") + self._statement[headers['B/S']][row])
                 continue
             # Collect fees
-            fee = self._statement[headers['fee']][row] if self._statement[headers['fee']][row] else 0.0
+            fee = self._statement[headers['fee']][row] if self._statement[headers['fee']][row] else Decimal('0')
             if self._statement[headers['fee_ex']][row]:
                 fee += self._statement[headers['fee_ex']][row]
             # Calculate price in account currency
             amount = self._statement[headers['amount']][row]
-            price = -(amount + fee) / qty
-            assert price > 0.0
+            total = -(amount + fee)   # money that moved, of the same sign as the quantity in a well-formed deal
+            assert total * qty > 0
+            price = self._derived_price(total, qty)
             account_id = self._find_account_id(self._account_number, self._statement[headers['account_currency']][row])
             new_id = max([0] + [x['id'] for x in self._data[JSF.TRADES]]) + 1
             trade = {"id": new_id, "number": deal_number, "timestamp": timestamp, "settlement": settlement,
@@ -353,7 +356,7 @@ class StatementJ2T(StatementXLS):
         currency_symbol = self._single_symbol_of(account['currency'])
         transfer = {"id": new_id, "account": [0, account_id, 0],
                     "symbol": [currency_symbol, currency_symbol], "timestamp": timestamp,
-                    "withdrawal": amount, "deposit": amount, "fee": 0.0, "description": note}
+                    "withdrawal": amount, "deposit": amount, "fee": Decimal('0'), "description": note}
         self._data[JSF.TRANSFERS].append(transfer)
 
     def transfer_out(self, timestamp, account_id, amount, note):
@@ -362,7 +365,7 @@ class StatementJ2T(StatementXLS):
         currency_symbol = self._single_symbol_of(account['currency'])
         transfer = {"id": new_id, "account": [account_id, 0, 0],
                     "symbol": [currency_symbol, currency_symbol], "timestamp": timestamp,
-                    "withdrawal": -amount, "deposit": -amount, "fee": 0.0, "description": note}
+                    "withdrawal": -amount, "deposit": -amount, "fee": Decimal('0'), "description": note}
         self._data[JSF.TRANSFERS].append(transfer)
 
     def skip_warning(self, _timestamp, _account_id, amount, note):

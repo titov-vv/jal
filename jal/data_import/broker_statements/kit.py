@@ -1,4 +1,5 @@
 import logging
+from decimal import Decimal
 from datetime import datetime, timedelta
 
 from jal.constants import Setup, PredefinedCategory
@@ -73,9 +74,9 @@ class StatementKIT(StatementXLS):
                 logging.warning(self.tr("Unknown trade type: ") + self._statement[headers['B/S']][row])
                 continue
             price = self._statement[headers['price']][row]
-            fee = round(abs(self._statement[headers['fee_ex']][row] + self._statement[headers['fee_broker']][row]), 8)
+            fee = abs(self._statement[headers['fee_ex']][row] + self._statement[headers['fee_broker']][row])
             if abs(abs(price * qty) - amount) >= self.RU_PRICE_TOLERANCE:
-                price = abs(amount / qty)
+                price = self._derived_price(amount, qty)
             number = self._statement[headers['number']][row]
             # Dates are loaded as datetime objects but time is loaded as string
             t_date = self._statement[headers['date']][row]
@@ -146,7 +147,7 @@ class StatementKIT(StatementXLS):
         currency_symbol = self._single_symbol_of(account['currency'])
         transfer = {"id": new_id, "account": [0, account_id, 0],
                     "symbol": [currency_symbol, currency_symbol], "timestamp": timestamp,
-                    "withdrawal": amount, "deposit": amount, "fee": 0.0, "description": description}
+                    "withdrawal": amount, "deposit": amount, "fee": Decimal('0'), "description": description}
         self._data[JSF.TRANSFERS].append(transfer)
 
     def transfer_out(self, timestamp, account_id, amount, reason, note):
@@ -156,7 +157,7 @@ class StatementKIT(StatementXLS):
         currency_symbol = self._single_symbol_of(account['currency'])
         transfer = {"id": new_id, "account": [account_id, 0, 0],
                     "symbol": [currency_symbol, currency_symbol], "timestamp": timestamp,
-                    "withdrawal": -amount, "deposit": -amount, "fee": 0.0, "description": description}
+                    "withdrawal": -amount, "deposit": -amount, "fee": Decimal('0'), "description": description}
         self._data[JSF.TRANSFERS].append(transfer)
 
     def fee(self, timestamp, account_id, amount, _reason, description):

@@ -42,7 +42,7 @@
    "id": 3,
    "type": "stock",
    "name": "Аэрофлот-росс.авиалин(ПАО)ао",
-   "principal": 1.0,
+   "principal": 1,
    "symbols": [
     {
      "id": 3,
@@ -73,7 +73,7 @@
    "type": "bond",
    "name": "АО \"Тинькофф Банк\" БО-07",
    "expiry": 1624492800,
-   "principal": 1000.0,
+   "principal": 1000,
    "symbols": [
     {
      "id": 5,
@@ -111,7 +111,7 @@
    "symbol": 4,
    "quantity": 10,
    "price": 987.65,
-   "fee": 6.9
+   "fee": 6.90
   },
   {
    "id": 2,
@@ -203,7 +203,7 @@
    "timestamp": 1615766400,
    "withdrawal": 123,
    "deposit": 123,
-   "fee": 0.0,
+   "fee": 0,
    "description": "зачисление - неторговое поручение от 15.03.2021, НП/в/А/150321/74123"
   }
  ],

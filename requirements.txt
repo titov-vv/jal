@@ -1,6 +1,6 @@
 # Runtime dependencies of jal. setup.py reads this file, so a dependency is added here and nowhere else.
 lxml>=4.5.0
-pandas>=1.1.1
+pandas>=2.1.0
 openpyxl>=3.1.0
 xlrd>=2.0.1
 PySide6>=6.5.1

@@ -1,6 +1,7 @@
 import logging
 import re
 import pandas
+from decimal import Decimal, DecimalException
 from datetime import datetime
 from zipfile import ZipFile
 from jal.data_import.statement import Statement, JSF, Statement_ImportError
@@ -55,6 +56,12 @@ class StatementXLS(Statement):
                     self._statement = pandas.read_excel(report_file, header=None, na_filter=False)
         else:
             self._statement = pandas.read_excel(filename, header=None, na_filter=False)
+        # pandas returns an all-object frame of native str/int/float/datetime. Every float cell is an amount, so it is
+        # re-spelled as a Decimal here - the single point all subclasses read the statement through. Decimal(str(x))
+        # and not Decimal(x): str() of a float is the shortest round-tripping form, i.e. the decimal the broker wrote,
+        # while Decimal(x) would expand the binary double. 'type is float' and not isinstance() keeps int cells int -
+        # they index columns and feed int() conversions.
+        self._statement = self._statement.map(lambda x: Decimal(str(x)) if type(x) is float else x)
 
         self._validate()
         self._load_currencies()
@@ -152,7 +159,7 @@ class StatementXLS(Statement):
         while column < self._statement.shape[1]:                     # Check every column header
             currency_code = str(self._statement[column][_header_row + 1])[-3:]  # assume it's a currency symbol
             if currency_code:
-                amounts[currency_code] = 0
+                amounts[currency_code] = Decimal('0')
                 currency_col[currency_code] = column
             column += 1
 
@@ -161,9 +168,9 @@ class StatementXLS(Statement):
                 if j == _rate_row:
                     continue   # Skip currency rate if present as it doesn't change account balance
                 try:
-                    amount = float(self._statement[currency_col[currency]][j])
-                except ValueError:
-                    amount = 0
+                    amount = Decimal(str(self._statement[currency_col[currency]][j]))
+                except DecimalException:
+                    amount = Decimal('0')
                 amounts[currency] += amount
 
         for currency in amounts:
