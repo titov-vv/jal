@@ -6,6 +6,7 @@ import sys
 import re
 import logging
 import functools
+import importlib
 import sqlparse
 from configparser import ConfigParser
 from packaging.version import Version
@@ -27,6 +28,7 @@ class JalDBError:
     DbDriverFailure = auto()
     NoDeltaFile = auto()
     SQLFailure = auto()
+    UpdateScriptFailure = auto()
     _messages = {
         NoError: "No error",
         DbInitFailure: "Database initialization failure.",
@@ -35,7 +37,8 @@ class JalDBError:
         NewerDbSchema: "Unsupported database schema. Please update the application.",
         DbDriverFailure: "Sqlite driver initialization failed.",
         NoDeltaFile: "DB delta file not found.",
-        SQLFailure: "SQL command was executed with error."
+        SQLFailure: "SQL command was executed with error.",
+        UpdateScriptFailure: "Database update script failed."
     }
 
     def __init__(self, code, details=''):
@@ -180,13 +183,19 @@ class JalDB:
             schema_version = int(self._read("SELECT value FROM settings WHERE name='SchemaVersion'"))
         except ValueError:
             schema_version = 0
-        if schema_version < Setup.DB_REQUIRED_VERSION:
-            db.close()
-            return JalDBError(JalDBError.OutdatedDbSchema)
-        elif schema_version > Setup.DB_REQUIRED_VERSION:
+        if schema_version > Setup.DB_REQUIRED_VERSION:   # checked first: such a db may declare a script this version hasn't got
             db.close()
             return JalDBError(JalDBError.NewerDbSchema,
                               details=f"(expected: {Setup.DB_REQUIRED_VERSION}, got: {schema_version})")
+        # An upgrade that died between a delta and its companion left the companion pending. It is finished
+        # here, before update_db_schema() applies the next delta: the declaration is a single row that the
+        # next delta overwrites, and the schema step it belongs to is already committed.
+        error = self._run_update_script()
+        if error.code != JalDBError.NoError:
+            return error
+        if schema_version < Setup.DB_REQUIRED_VERSION:
+            db.close()
+            return JalDBError(JalDBError.OutdatedDbSchema)
         # Switching of synchronous speeds up execution 6-7 times and is safe for application crash.
         # Database may be corrupted in case of power loss or OS crash.
         self.set_synchronous(False)
@@ -382,6 +391,34 @@ class JalDB:
                 logging.debug(f"EXECUTED OK:\n{clean_statement}")
         return JalDBError(JalDBError.NoError)
 
+    # A schema delta that needs more than SQL declares a code companion by writing its own number into the
+    # 'RunUpdateScript' setting; this method runs jal/updates/jal_delta_<N>.py::update() and clears the declaration
+    # afterwards.
+    # The declaration is the delta number and not a 0/1 flag because one upgrade run may apply several deltas -
+    # a boolean would let a later delta overwrite an earlier declaration and silently skip a conversion of
+    # money data. A value left behind also names the script that was interrupted.
+    # This is the channel for unattended conversion that belongs to a schema step and has to happen before the
+    # application is live against the converted rows; 'RebuildDB' and 'MessageOnce' remain the channels for
+    # what the user is asked about once the main window is up.
+    # A companion is 'def update() -> None', uses JalDB() as the rest of the application does, raises on
+    # failure, imports no UI and commits its own transaction. It runs with the schema already at N, and it
+    # must be idempotent - the declaration is cleared only after update() returns, so a crash in the middle
+    # of its writes means it runs again on the next start.
+    def _run_update_script(self) -> JalDBError:
+        step = self._read("SELECT value FROM settings WHERE name='RunUpdateScript'")
+        if not step:
+            return JalDBError(JalDBError.NoError)
+        script = f"{Setup.UPDATE_PREFIX}{step}"
+        logging.info(f"Running update script {script}")
+        try:
+            importlib.import_module(f"jal.updates.{script}").update()
+        except Exception as e:   # any failure of the script is a failure of the upgrade
+            logging.error(f"Update script {script} failed: {e}")
+            self.connection().close()
+            return JalDBError(JalDBError.UpdateScriptFailure, details=f"{script}: {e}")
+        self._exec("DELETE FROM settings WHERE name='RunUpdateScript'", commit=True)
+        return JalDBError(JalDBError.NoError)
+
     # updates current db schema to the latest available with help of scripts in 'updates' folder
     def update_db_schema(self) -> JalDBError:
         if QMessageBox().warning(None, QApplication.translate('DB', "Database format is outdated"),
@@ -398,6 +435,12 @@ class JalDB:
             delta_file = self.get_app_path() + Setup.UPDATES_PATH + os.sep + Setup.UPDATE_PREFIX + f"{step + 1}.sql"
             logging.info(f"Applying delta schema {step}->{step + 1} from {delta_file}")
             error = self.run_sql_script(delta_file)
+            if error.code != JalDBError.NoError:
+                db.close()
+                return error
+            # Right here and not after the loop: the declaration is a single row, so the next delta would
+            # overwrite it, and the application must not be live against half-converted rows.
+            error = self._run_update_script()
             if error.code != JalDBError.NoError:
                 db.close()
                 return error

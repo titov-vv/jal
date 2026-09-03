@@ -94,7 +94,7 @@ If you want to ask a question, report a bug, provide help or support an author -
 I would like to a mention people who helped me in 2022 and 2023 as I got more donations, help and feedback from users this year. 
 And while I can't name every one of them I would like to confirm my appreciation for this help. They did the project better!
 
-## [Frequently asked questions](https://titov-vv.github.io/jal/manual/13-troubleshooting#frequently-asked-questions)
+## [FAQ](https://titov-vv.github.io/jal/manual/13-troubleshooting#frequently-asked-questions)
 
 ## [Description of error messages](https://github.com/titov-vv/jal/blob/master/docs/error_description.md)
 
