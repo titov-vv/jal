@@ -83,12 +83,13 @@ def test_get_all_accounts_reaches_down_to_the_asked_status(prepare_db):
 # ----------------------------------------------------------------------------------------------------------------------
 # The migration of an existing database. active=0 becomes Closed and not Background, so nothing moves on screen on
 # the day of the upgrade and Background starts empty as a state the user assigns by hand.
+_MIGRATION_DELTA = 68   # the delta that introduced the status column, named explicitly and not as the current version
 _MIGRATION_FROM = "CREATE TABLE temp_accounts AS SELECT * FROM accounts;"
 _MIGRATION_TO = "-- Set new DB schema version"
 
 
 def _replay_the_migration(project_root):
-    with open(project_root + f"/jal/updates/{Setup.UPDATE_PREFIX}{Setup.DB_REQUIRED_VERSION}.sql") as delta:
+    with open(project_root + f"/jal/updates/{Setup.UPDATE_PREFIX}{_MIGRATION_DELTA}.sql") as delta:
         text = delta.read()
     start, end = text.index(_MIGRATION_FROM), text.index(_MIGRATION_TO)
     # The delta turns foreign keys off around this section, outside its transaction where SQLite honours the

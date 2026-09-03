@@ -8,7 +8,7 @@ from PySide6.QtSql import QSqlQueryModel
 from jal.constants import IconOwner, Setup
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 from jal.db.clock import local_datetime, local_time, local_zone, window_bound
-from jal.db.helpers import is_day_marker, localize_decimal, delocalize_decimal
+from jal.db.helpers import is_day_marker, localize_decimal, delocalize_decimal, format_decimal
 from jal.db.account import JalAccount
 from jal.db.icon import JalIcons
 from jal.db.asset import JalAsset
@@ -270,7 +270,7 @@ class FloatDelegate(GridLinesDelegate):
         editor.setText(formatted_text)
 
     def setModelData(self, editor, model, index):
-        model.setData(index, str(delocalize_decimal(editor.text(), percent=self._percent)))
+        model.setData(index, format_decimal(delocalize_decimal(editor.text(), percent=self._percent)))
 
     def initStyleOption(self, option, index):
         super().initStyleOption(option, index)

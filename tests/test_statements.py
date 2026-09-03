@@ -1,13 +1,16 @@
 import json
 import pytest
 
+from PySide6.QtWidgets import QMessageBox
+
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_ibkr, prepare_db_moex
 from data_import.broker_statements.ibkr import StatementIBKR
 from data_import.broker_statements.tvoy import StatementTvoyBroker
 from data_import.broker_statements.kit import StatementKIT
 from data_import.broker_statements.just2trade import StatementJ2T
 from data_import.broker_statements.vtb import StatementVTB
-from jal.data_import.statement import JSF
+from jal.data_import.statement import JSF, Statement
+from jal.db.db import JalDB
 
 from constants import PredefinedAsset
 from tests.helpers import create_assets
@@ -77,3 +80,43 @@ def test_statement_vtb(tmp_path, project_root, data_path, prepare_db_moex):
     vtb.load(data_path + 'vtb.xls')
     assert vtb._data == statement
     assert vtb._id_map == expected_map
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The spelling of a stored amount is part of the duplicate key: locate_operation() matches the 'validation' fields
+# of an operation as text, so a producer that writes '3800.0' where another writes '3.8E+3' never recognizes what is
+# already stored and books the same statement twice. These two tests are the guard for the migration of the importers
+# onto Decimal - one for the XLS family, one for the JSF file reader - and must keep passing at every step of it.
+# 'actions' (income/spending) are deliberately not counted: LedgerTransaction.IncomeSpending declares no
+# 'validation' field at all, so it has no duplicate detection and a re-import doubles it - which is what the
+# database does today and is not what these tests are about.
+def _operation_counts() -> dict:
+    tables = ['trades', 'transfers', 'asset_payments', 'asset_actions']
+    return {table: JalDB._read(f"SELECT COUNT(*) FROM {table}") for table in tables}
+
+
+def _import_statement(statement_class, filename):
+    statement = statement_class()
+    statement.load(filename)
+    statement.validate_format()
+    statement.match_db_ids()
+    statement.import_into_db()
+
+
+def test_reimport_creates_nothing_xls(tmp_path, project_root, data_path, prepare_db_moex, monkeypatch):
+    # Re-importing a period that is already covered is what the test is about, and that asks the user to confirm
+    monkeypatch.setattr(QMessageBox, 'warning', lambda *args, **kwargs: QMessageBox.Yes)
+    _import_statement(StatementKIT, data_path + 'kit.xlsx')
+    imported = _operation_counts()
+    assert sum(imported.values()) > 0
+    _import_statement(StatementKIT, data_path + 'kit.xlsx')
+    assert _operation_counts() == imported
+
+
+def test_reimport_creates_nothing_jsf(tmp_path, project_root, data_path, prepare_db_ibkr, monkeypatch):
+    monkeypatch.setattr(QMessageBox, 'warning', lambda *args, **kwargs: QMessageBox.Yes)
+    _import_statement(Statement, data_path + 'ibkr.json')
+    imported = _operation_counts()
+    assert sum(imported.values()) > 0
+    _import_statement(Statement, data_path + 'ibkr.json')
+    assert _operation_counts() == imported

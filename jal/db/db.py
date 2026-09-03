@@ -251,13 +251,15 @@ class JalDB:
         assert len(query_params) == len(params), f"SQL: wrong number of parameters {params} for '{sql_text}'"
         for param in params:
             # SQLite has no decimal type, so exact amounts live in TEXT columns and Qt has no binding for Decimal.
-            # The conversion belongs here, at the single point every query binds through: doing it per call site
-            # once let an operation be INSERTed while the query that looks for an existing duplicate of it still
-            # passed a raw Decimal, so the duplicate was never found and the operation was written twice.
+            # The conversion belongs here, at the single point every query binds through.
             # format_decimal() is the one canonical spelling of a Decimal in this database - it normalizes, so a
             # round number is stored in exponent form ('40' -> '4E+1'). That is the agreed convention: anything
             # comparing these columns as strings has to expect it. Decimal() and SQLite's CAST both read it back.
-            value = format_decimal(param[1]) if isinstance(param[1], Decimal) else param[1]
+            # A float is spelled the same way, and not left to Qt
+            if isinstance(param[1], float):
+                value = format_decimal(Decimal(str(param[1])))
+            else:
+                value = format_decimal(param[1]) if isinstance(param[1], Decimal) else param[1]
             query.bindValue(param[0], value)
             assert query.boundValue(param[0]) == value, f"SQL: failed to assign parameter {param} in '{sql_text}'"
         if JalDB._trace_sql_requests:
