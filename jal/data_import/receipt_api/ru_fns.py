@@ -10,6 +10,7 @@ from PySide6.QtWidgets import QApplication, QDialog, QDialogButtonBox
 from PySide6.QtWebEngineCore import QWebEngineUrlRequestInterceptor, QWebEngineProfile, QWebEnginePage
 from jal.data_import.receipt_api.receipt_api import ReceiptAPI
 from jal.db.clock import local_zone, now_dt
+from jal.db.helpers import remove_exponent
 from jal.db.settings import JalSettings
 from jal.net.web_request import WebRequest
 from jal.ui.ui_login_fns_dlg import Ui_LoginFNSDialog
@@ -35,7 +36,7 @@ class ReceiptRuFNS(ReceiptAPI):
                         break
                 if not self.date_time:
                     raise ValueError(self.tr("FNS QR available but date/time pattern isn't recognized: " + qr_text))
-                self.amount = float(params['s'][0])
+                self.amount = Decimal(params['s'][0])
                 self.fn = params['fn'][0]
                 self.fd = params['i'][0]
                 self.fp = params['fp'][0]
@@ -47,7 +48,7 @@ class ReceiptRuFNS(ReceiptAPI):
             self.fn = params['ФН']
             self.fd = params['ФД']
             self.fp = params['ФП']
-            self.amount = float(params['Сумма'])
+            self.amount = Decimal(params['Сумма'])
             self.op_type = params['Тип']
         self.web_session = requests.Session()
         self.web_session.headers['ClientVersion'] = '2.9.0'
@@ -138,7 +139,7 @@ class ReceiptRuFNS(ReceiptAPI):
                 logging.error(self.tr("Receipt load failed: ") + f"{response}/{response.text}")
                 self.slip_load_failed.emit()
             logging.info(self.tr("Receipt was loaded: " + response.text))
-            self.slip_json = self.__slip_data(json.loads(response.text))
+            self.slip_json = self.__slip_data(json.loads(response.text, parse_float=Decimal))
             self.slip_load_ok.emit()
         else:
             self.slip_load_failed.emit()
@@ -219,11 +220,12 @@ class ReceiptRuFNS(ReceiptAPI):
             return []
         lines = self.slip_json['items']
         for line in lines:
-            line['unit_price'] = line.pop('price') / 100
+            line['quantity'] = Decimal(line['quantity'])
+            line['unit_price'] = Decimal(line.pop('price')) / 100   # FNS reports amounts in kopecks
             sign = -1 if operation == PURCHASE else +1
-            line['amount'] = sign * line.pop('sum') / 100
+            line['amount'] = sign * Decimal(line.pop('sum')) / 100
             if line['quantity'] != 1:
-                line['name'] = f"{line['name']} ({line['quantity']:g} x {line['unit_price']:.2f})"
+                line['name'] = f"{line['name']} ({remove_exponent(line['quantity'])} x {line['unit_price']:.2f})"
         return lines
 
 
