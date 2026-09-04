@@ -104,7 +104,9 @@ class Statement_Capabilities:
 
 # -----------------------------------------------------------------------------------------------------------------------
 class Statement(QObject):   # derived from QObject to have proper string translation
-    RU_PRICE_TOLERANCE = 1e-4   # TODO Probably need to switch imports to Decimal and remove it
+    # How far a Russian broker's stated amount may sit from price * quantity before the price is re-derived from
+    # the amount - used to distringuish a bond price from a percent of face, i.e. 100.57 against a 1005.70.
+    RU_PRICE_TOLERANCE = Decimal('0.0001')
     PRICE_PRECISION = 28   # The width _derived_price() keeps its quotient at, in SIGNIFICANT digits.
 
     currency_substitutions = {}
@@ -801,7 +803,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             operation['deposit_account'] = accounts[1]
             operation['fee_account'] = accounts[2]
             operation.pop('account')
-            if abs(operation['fee']) < 1e-10:  # FIXME  Need to refactor this module for decimal usage
+            if not operation['fee']:
                 operation.pop('fee_account')
                 operation.pop('fee')
                 operation.pop('fee_symbol_id', None)   # A zero fee has no asset to be paid in either
@@ -973,11 +975,6 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if not operation['symbol_id']:
                 raise Statement_ImportError(self.tr("Unmatched symbol for payment: ") + f"{payment}")
             operation['note'] = operation.pop('description')
-            if 'price' in operation:
-                # The value the source stated for granted shares belongs to the payment it came with and not to
-                # the price series - it is that operation's own price, not the price of a day (see
-                # AssetPayment.price). Bound as a Decimal, which _exec() spells canonically for the column.
-                operation['price'] = Decimal(str(operation['price']))
             db_payment_id = self.mapped_id(JSF.ASSET_PAYMENTS, payment['id'])
             if operation['type'] == JSF.PAYMENT_DIVIDEND:
                 if db_payment_id:  # Dividend exists, only tax to be updated

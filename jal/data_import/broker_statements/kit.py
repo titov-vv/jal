@@ -75,6 +75,8 @@ class StatementKIT(StatementXLS):
                 continue
             price = self._statement[headers['price']][row]
             fee = abs(self._statement[headers['fee_ex']][row] + self._statement[headers['fee_broker']][row])
+            # This module signs the amount and not the quantity, unlike the other Russian ones, so a purchase
+            # always misses this check and takes its price from the amount - the deal as the broker settled it.
             if abs(abs(price * qty) - amount) >= self.RU_PRICE_TOLERANCE:
                 price = self._derived_price(amount, qty)
             number = self._statement[headers['number']][row]

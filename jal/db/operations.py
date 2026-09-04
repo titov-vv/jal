@@ -830,7 +830,7 @@ class AssetPayment(LedgerTransaction):
         self._exec("UPDATE asset_payments SET amount=:amount WHERE oid=:oid",
                    [(":oid", self._oid), (":amount", format_decimal(amount))])
 
-    def update_tax(self, new_tax) -> None:   # FIXME method should take Decimal value, not float
+    def update_tax(self, new_tax: Decimal) -> None:
         _ = self._exec("UPDATE asset_payments SET tax=:tax WHERE oid=:oid",
                        [(":oid", self._oid), (":tax", new_tax)], commit=True)
 

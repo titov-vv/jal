@@ -21,7 +21,6 @@ class StatementXML(Statement):
         self._init_data()
         self.attr_loader = {
             str: self.attr_string,
-            float: self.attr_number,
             Decimal: self.attr_decimal,
             datetime: self.attr_timestamp,
             bool: self.attr_day_only
@@ -48,17 +47,6 @@ class StatementXML(Statement):
         if attr_name not in xml_element.attrib:
             return default_value
         return xml_element.attrib[attr_name].strip()
-
-    # Convert attribute 'attr_name' value to float or return default value if attribute not found / not a number
-    @staticmethod
-    def attr_number(xml_element, attr_name, default_value):
-        if attr_name not in xml_element.attrib:
-            return default_value
-        try:
-            value = float(xml_element.attrib[attr_name].replace(',', '').replace(' ', ''))
-        except ValueError:
-            return None
-        return value
 
     # Convert attribute 'attr_name' value to Decimal or return default value if attribute not found / not a number
     @staticmethod
