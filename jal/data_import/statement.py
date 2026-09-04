@@ -105,7 +105,7 @@ class Statement_Capabilities:
 # -----------------------------------------------------------------------------------------------------------------------
 class Statement(QObject):   # derived from QObject to have proper string translation
     # How far a Russian broker's stated amount may sit from price * quantity before the price is re-derived from
-    # the amount - used to distringuish a bond price from a percent of face, i.e. 100.57 against a 1005.70.
+    # the amount - used to distinguish a bond price from a percent of face, i.e. 100.57 against a 1005.70.
     RU_PRICE_TOLERANCE = Decimal('0.0001')
     PRICE_PRECISION = 28   # The width _derived_price() keeps its quotient at, in SIGNIFICANT digits.
 
