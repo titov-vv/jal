@@ -7,4 +7,5 @@ INSERT OR REPLACE INTO settings(name, value) VALUES('RunUpdateScript', 69);
 --------------------------------------------------------------------------------
 -- Set new DB schema version
 UPDATE settings SET value=69 WHERE name='SchemaVersion';
+INSERT OR REPLACE INTO settings(name, value) VALUES ('RebuildDB', 1);
 COMMIT;
