@@ -29,7 +29,7 @@ class JalAccount(JalDB):
         PredefinedAccountType.Wallet: "atype_wallet.ico",
         PredefinedAccountType.Deposit: "atype_deposit.ico",
         PredefinedAccountType.CEX: "atype_cex.ico",
-        PredefinedAccountType.Staking: "atype_deposit.ico",   # a box like the deposit one, and shares its glyph
+        PredefinedAccountType.Staking: "atype_staking.ico",
     }
 
     # Account types an on-chain address may resolve to. A wallet is the obvious one; a staking box is the other,
