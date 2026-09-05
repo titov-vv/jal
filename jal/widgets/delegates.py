@@ -38,6 +38,18 @@ def cell_bands(index, values: int) -> int:
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# The mode an icon is drawn in by a delegate that paints it itself. It repeats the rule QStyledItemDelegate applies
+# to the decoration it draws for a cell, so a picture painted by hand fades with a disabled view and follows a
+# selected row exactly as the one the style draws beside it does.
+def item_icon_mode(option) -> QIcon.Mode:
+    if not (option.state & QStyle.State_Enabled):
+        return QIcon.Mode.Disabled
+    if option.state & QStyle.State_Selected:
+        return QIcon.Mode.Selected
+    return QIcon.Mode.Normal
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 # Draws the background a view item stands on - the selection highlight, the alternating row colour, the hover state -
 # through the style that owns them. A delegate that overrides paint() completely has to do this itself: nothing else
 # will, and a cell that skips it simply doesn't look selected while the rest of its row does.
@@ -309,7 +321,7 @@ class BoolDelegate(GridLinesDelegate):
             icon = JalIcon[JalIcon.OK]
         else:
             icon = JalIcon[JalIcon.CANCEL]
-        icon.paint(painter, option.rect, Qt.AlignVCenter | Qt.AlignCenter)
+        icon.paint(painter, option.rect, Qt.AlignVCenter | Qt.AlignCenter, item_icon_mode(option))
         painter.restore()
         self.paint_grid(painter, option, index)
 
@@ -478,7 +490,7 @@ class TaggedIconDelegate(GridLinesDelegate):
         draw_item_panel(painter, option)   # the strip the mark takes needs the row highlight as much as the text does
         size = JalIcons.grid_size()
         mark.paint(painter, QRect(option.rect.left(), option.rect.top() + int((option.rect.height() - size) / 2),
-                                  size, size), Qt.AlignCenter)
+                                  size, size), Qt.AlignCenter, item_icon_mode(option))
         shifted = QStyleOptionViewItem(option)
         shifted.rect = option.rect.adjusted(self._indent(option), 0, 0, 0)
         QStyledItemDelegate.paint(self, painter, shifted, index)
@@ -526,10 +538,9 @@ class TickerIconsDelegate(GridLinesDelegate):
             if icon is not None:   # None where a line has no icon - a missing one takes no space of its own
                 # The mode is spelled out because this delegate paints the icon itself: a glyph takes its colour
                 # from it, and on a selected row that is the difference between being read and being lost in the
-                # highlight. A stored picture is painted as it is in either mode.
-                mode = QIcon.Selected if option.state & QStyle.State_Selected else QIcon.Normal
+                # highlight. A stored picture is faded by the style in a disabled view and tinted in a selected row.
                 icon.paint(painter, QRect(option.rect.left(), int(top + (height - size) / 2), size, size),
-                           Qt.AlignCenter, mode)
+                           Qt.AlignCenter, item_icon_mode(option))
                 indent = size + gap
             text_rect = QRect(option.rect.left() + indent, top, option.rect.width() - indent, int(height))
             painter.drawText(text_rect, Qt.AlignLeft | Qt.AlignVCenter,

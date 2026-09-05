@@ -1023,6 +1023,65 @@ def test_the_delegate_asks_for_room_only_where_there_is_a_mark(prepare_db):
     parent.deleteLater()
 
 
+# A view that is disabled - the whole central widget is, while a long operation runs - draws every picture in it
+# faded, and the mark the delegate paints itself has to fade with them: a cell where one icon is greyed out and the
+# one beside it is not simply looks broken. The style makes the faded copy, the delegate only says which mode it
+# wants, so this asks for the visible result rather than for the call.
+def test_the_mark_fades_when_the_view_is_disabled(prepare_db):
+    from PySide6.QtWidgets import QTreeView, QStyle, QStyleOptionViewItem
+    from PySide6.QtCore import QAbstractListModel, QModelIndex, QRect
+    from PySide6.QtGui import QPainter, QPixmap
+    from jal.widgets.delegates import TaggedIconDelegate, TAG_ICON_ROLE
+
+    size = JalIcons.grid_size()
+    picture = QPixmap(size, size)
+    picture.fill(Qt.red)
+
+    class _Rows(QAbstractListModel):
+        def rowCount(self, parent=QModelIndex()):
+            return 1
+
+        def data(self, index, role=Qt.DisplayRole):
+            if role == Qt.DisplayRole:
+                return "Tagged"
+            if role == TAG_ICON_ROLE:
+                return QIcon(picture)
+            return None
+
+    parent = QWidget()
+    view = QTreeView(parent)
+    rows = _Rows()
+    view.setModel(rows)
+    delegate = TaggedIconDelegate(view)
+
+    ground = QColor(Qt.white)
+
+    def painted(enabled: bool) -> QColor:
+        image = QImage(8 * size, 2 * size, QImage.Format_ARGB32)
+        image.fill(ground)
+        option = QStyleOptionViewItem()
+        option.initFrom(view)
+        option.rect = QRect(0, 0, image.width(), image.height())
+        if enabled:
+            option.state |= QStyle.State_Enabled
+        else:
+            option.state &= ~QStyle.State_Enabled
+        painter = QPainter(image)
+        delegate.paint(painter, option, rows.index(0, 0))
+        painter.end()
+        return image.pixelColor(int(size / 2), int(image.height() / 2))   # the centre of the mark
+
+    def distance(color: QColor) -> float:
+        return ((color.red() - ground.red()) ** 2 + (color.green() - ground.green()) ** 2
+                + (color.blue() - ground.blue()) ** 2) ** 0.5
+
+    enabled, disabled = painted(True), painted(False)
+    assert distance(enabled) > 0                  # the mark is drawn at all, and this test looks at it
+    assert enabled != disabled                    # ... and a disabled view does not get the same picture
+    assert distance(disabled) < distance(enabled)  # ... it gets one that stands out less against the row
+    parent.deleteLater()
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 # What the marks are FOR: with clustering on, the accounts that share a tag are put next to each other inside their
 # type group, so the marks form an unbroken run down the column instead of being scattered through it. It is an
