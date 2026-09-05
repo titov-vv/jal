@@ -99,22 +99,28 @@ class JalIcon(UserDict):
     DIVIDEND = auto()
     DUST = auto()
     FEE = auto()
+    GAS_FEE = auto()
     INTEREST = auto()
     LIST = auto()
     MERGER = auto()
     MINUS = auto()
     OK = auto()
     PLUS = auto()
+    REBASE = auto()
     REMOVE = auto()
+    REWARD = auto()
     SELL = auto()
     SPINOFF = auto()
     SWAP = auto()
     SPLIT = auto()
+    STAKING_REWARD = auto()
     STOCK_DIVIDEND = auto()
     STOCK_VESTING = auto()
     SYMBOL_CHANGE = auto()
     TAG = auto()
     TAX = auto()
+    TOKEN_RENT = auto()
+    TOKEN_RENT_RETURN = auto()
     TOTAL = auto()
     TRANSFER_IN = auto()
     TRANSFER_OUT = auto()
@@ -147,22 +153,28 @@ class JalIcon(UserDict):
         DIVIDEND: "dividend.ico",
         DUST: "dust.ico",
         FEE: "fee.ico",
+        GAS_FEE: "gas_fee.ico",
         INTEREST: "interest.ico",
         LIST: "list.ico",
         MERGER: "merger.ico",
         MINUS: "minus.ico",
         OK: "ok.ico",
         PLUS: "plus.ico",
+        REBASE: "rebase.ico",
         REMOVE: "remove.ico",
+        REWARD: "reward.ico",
         SELL: "sell.ico",
         SPINOFF: "spinoff.ico",
         SWAP: "swap.ico",
         SPLIT: "split.ico",
+        STAKING_REWARD: "staking_reward.ico",
         STOCK_DIVIDEND: "dividend_stock.ico",
         STOCK_VESTING: "vesting.ico",
         SYMBOL_CHANGE: "renaming.ico",
         TAG: "tag.ico",
         TAX: "tax.ico",
+        TOKEN_RENT: "token_rent.ico",
+        TOKEN_RENT_RETURN: "token_rent_return.ico",
         TOTAL: "total.ico",
         TRANSFER_IN: "transfer_in.ico",
         TRANSFER_OUT: "transfer_out.ico",
@@ -194,12 +206,18 @@ class JalIcon(UserDict):
         BOND_INTEREST: Meaning.POSITIVE,
         BOND_AMORTIZATION: Meaning.POSITIVE,
         INTEREST: Meaning.POSITIVE,
+        STAKING_REWARD: Meaning.POSITIVE,
+        REWARD: Meaning.POSITIVE,
+        # REBASE is absent on purpose - the quantity it books is worth nothing, so it is not a gain
+        TOKEN_RENT_RETURN: Meaning.POSITIVE,
         TRANSFER_IN: Meaning.POSITIVE,
         TRANSFER_ASSET_IN: Meaning.POSITIVE,
         OK: Meaning.POSITIVE,
         SELL: Meaning.NEGATIVE,
         MINUS: Meaning.NEGATIVE,
         FEE: Meaning.NEGATIVE,
+        GAS_FEE: Meaning.NEGATIVE,
+        TOKEN_RENT: Meaning.NEGATIVE,
         TAX: Meaning.NEGATIVE,
         TRANSFER_OUT: Meaning.NEGATIVE,
         TRANSFER_ASSET_OUT: Meaning.NEGATIVE,

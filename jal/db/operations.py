@@ -578,13 +578,13 @@ class AssetPayment(LedgerTransaction):
             AssetPayment.StockVesting: JalIcon.STOCK_VESTING,
             AssetPayment.BondAmortization: JalIcon.BOND_AMORTIZATION,
             AssetPayment.Fee: JalIcon.FEE,
-            AssetPayment.GasFee: JalIcon.FEE,
-            AssetPayment.StakingReward: JalIcon.INTEREST,
-            AssetPayment.Reward: JalIcon.INTEREST,
+            AssetPayment.GasFee: JalIcon.GAS_FEE,
+            AssetPayment.StakingReward: JalIcon.STAKING_REWARD,
+            AssetPayment.Reward: JalIcon.REWARD,
             AssetPayment.DustAttack: JalIcon.DUST,
-            AssetPayment.RebaseAdjustment: JalIcon.TRANSFER_IN,
-            AssetPayment.TokenRent: JalIcon.FEE,
-            AssetPayment.TokenRentReturn: JalIcon.TRANSFER_IN
+            AssetPayment.RebaseAdjustment: JalIcon.REBASE,
+            AssetPayment.TokenRent: JalIcon.TOKEN_RENT,
+            AssetPayment.TokenRentReturn: JalIcon.TOKEN_RENT_RETURN
         }
         self.names = {
             AssetPayment.NA: self.tr("UNDEFINED"),
