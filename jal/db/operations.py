@@ -2,7 +2,7 @@ import logging
 from decimal import Decimal
 from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QIcon
-from jal.constants import Setup, BookAccount, PredefinedCategory, PredefinedAsset
+from jal.constants import Setup, BookAccount, PredefinedCategory, PredefinedAsset, PredefinedAccountType
 from jal.db.helpers import format_decimal
 from jal.db.db import JalDB
 import jal.db.account
@@ -1447,7 +1447,7 @@ class Transfer(LedgerTransaction):
         self._note = self._data['note']
         # Icon and name describe the transfer itself, so they are resolved from the transferred asset before the
         # fee part re-points self._asset/_account below
-        self._icon = JalIcon[icons[(opart, self._asset.id() == 0)]]
+        self._icon = JalIcon[self._deposit_box_icon() or icons[(opart, self._asset.id() == 0)]]
         self._oname = self.names[(opart, self._asset.id() == 0)]
         if self._opart == Transfer.Fee and self._fee_asset.id():
             # A fee paid in an asset is withdrawn from the fee account, not from the account the transfer starts at.
@@ -1461,6 +1461,18 @@ class Transfer(LedgerTransaction):
             self._reconciled = self._has_in and self._deposit_account.reconciled_at() >= self._deposit_timestamp
         if self._opart == Transfer.Fee:
             self._reconciled = self._fee_account.reconciled_at() >= self._withdrawal_timestamp
+
+    # A movement with a term deposit at one of its ends is drawn as what it does to that deposit - money put into
+    # it or taken out of it - instead of a plain transfer arrow.
+    def _deposit_box_icon(self):
+        is_box = lambda account: account is not None and account.account_type() == PredefinedAccountType.Deposit
+        if self._opart == Transfer.Fee or self._asset.id():
+            return None
+        if is_box(self._deposit_account):
+            return JalIcon.DEPOSIT_OPEN
+        if is_box(self._withdrawal_account):
+            return JalIcon.DEPOSIT_CLOSE
+        return None
 
     # A transfer is pending while one of its two ends is still unknown (the value is in transit, or it arrived from
     # a source that hasn't been imported yet)

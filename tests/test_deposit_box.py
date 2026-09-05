@@ -9,6 +9,8 @@ from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.common_models import AccountListModel
 from jal.db.deposit import JalDepositBox
+from jal.db.operations import LedgerTransaction, Transfer
+from jal.widgets.icons import JalIcon
 from jal.widgets.deposit_dialogs import move_money, record_interest
 
 
@@ -137,3 +139,29 @@ def test_deposit_money_reaches_the_balances(prepare_bank_account):
     assert JalAccount(box.id()).type_icon() == 'atype_deposit.ico'
     # The total of the bank account and the deposit is what the bank account held before the deposit was opened
     assert JalAccount(1).balance(t_open) + JalAccount(box.id()).balance(t_open) == Decimal('10000')
+
+
+# A movement in or out of a deposit is drawn as what it does to that deposit, not as a plain transfer arrow. Both
+# legs wear the same glyph, as they are two sightings of one movement; a transfer that touches no deposit and the
+# fee of a deposit transfer keep the icons they have anywhere else.
+def test_deposit_transfers_wear_the_deposit_glyphs(prepare_bank_account):
+    JalIcon()   # the glyph table is built by MainWindow in the application, and by hand where there is none
+    box = JalDepositBox.create("Deposit A", currency_id=2, organization_id=1)
+    other = JalAccountCreator(currency_id=2, number='B7654321', name='Other bank account',
+                              organization=1, account_type=PredefinedAccountType.Bank).commit()
+    move_money(1, box.id(), Decimal('1000'), d2t(210201))      # 1: money put into the deposit
+    move_money(box.id(), 1, Decimal('1000'), d2t(210301))      # 2: money taken back out of it
+    move_money(1, other.id(), Decimal('100'), d2t(210401))     # 3: a transfer that touches no deposit
+    LedgerTransaction.create_new(LedgerTransaction.Transfer,   # 4: a deposit transfer that cost a fee
+                                 {"withdrawal_timestamp": d2t(210501), "withdrawal_account": 1,
+                                  "withdrawal": Decimal('200'), "deposit_timestamp": d2t(210501),
+                                  "deposit_account": box.id(), "deposit": Decimal('200'),
+                                  "fee_account": 1, "fee": Decimal('5')})
+
+    glyph = lambda oid, part: Transfer(oid, part).icon().cacheKey()
+    for part in (Transfer.Outgoing, Transfer.Incoming):
+        assert glyph(1, part) == JalIcon[JalIcon.DEPOSIT_OPEN].cacheKey()
+        assert glyph(2, part) == JalIcon[JalIcon.DEPOSIT_CLOSE].cacheKey()
+    assert glyph(3, Transfer.Outgoing) == JalIcon[JalIcon.TRANSFER_OUT].cacheKey()
+    assert glyph(3, Transfer.Incoming) == JalIcon[JalIcon.TRANSFER_IN].cacheKey()
+    assert glyph(4, Transfer.Fee) == JalIcon[JalIcon.FEE].cacheKey()

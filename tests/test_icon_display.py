@@ -265,7 +265,9 @@ def test_portfolio_rows_wear_the_icon_of_their_listing(prepare_db):
     from PySide6.QtWidgets import QTreeView
     from jal.db.holdings_model import HoldingsModel
     from jal.db.ledger import Ledger
+    from jal.widgets.icons import JalIcon
 
+    JalIcon()   # the glyph table is built by MainWindow in the application, and by hand where there is none
     account = JalAccountCreator(currency_id=2, number='U1', name='Inv', investing=1, organization=1).commit()
     create_stocks([('AAPL', 'Apple Inc.')], currency_id=2)
     create_actions([(d2t(220101), account.id(), 1, [(PredefinedCategory.StartingBalance, 10000.0)])])
@@ -292,9 +294,9 @@ def test_portfolio_rows_wear_the_icon_of_their_listing(prepare_db):
     assert rows[0].details()['symbol_id'] == listing            # the listing the ticker was taken from
     icon = model.row_icon(rows[0])
     assert isinstance(icon, QIcon) and not icon.isNull()
-    # ... while the money row of the same account has no logo stored, and keeps the space instead
+    # ... while the money row of the same account has no logo stored, so it falls back to its currency's sign
     money = [x for x in holdings if x.details()['asset_id'] == 2]
-    assert money and model.row_icon(money[0]).availableSizes()[0].width() == JalIcons.grid_size()
+    assert money and model.row_icon(money[0]).cacheKey() == JalIcon.money_glyph('USD').cacheKey()
 
 
 # ----------------------------------------------------------------------------------------------------------------------
