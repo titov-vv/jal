@@ -17,6 +17,9 @@ jal_faults.log
 # build artifacts
 /dist
 
+# icon design workspace
+/design/icons_ui
+
 # personal working data
 /data
 
