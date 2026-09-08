@@ -21,7 +21,8 @@ from jal.db.symbol import JalSymbol
 from jal.db.icon import JalIcons
 from jal.db.common_models import AccountListModel, TagTreeModel
 from jal.db.asset_models import SymbolsListModel
-from jal.db.operations import LedgerTransaction, AssetPayment, CorporateAction, Transfer, Swap, Bridge
+from jal.db.operations import LedgerTransaction, AssetPayment, CorporateAction, Transfer, Swap, \
+    Conversion, Bridge
 from jal.widgets.helpers import grid_icon_size, grid_row_height, set_grids_metrics
 from jal.widgets.reference_dialogs import AccountListDialog, TagsListDialog
 
@@ -170,7 +171,7 @@ def test_listing_id_matches_the_ticker_shown(prepare_db):
 def test_operations_keep_tickers_and_icons_in_step(prepare_db):
     JalAccountCreator(currency_id=2, number='U1', name='Acc', investing=1, organization=1).commit()
     JalAccountCreator(currency_id=2, number='U2', name='Other', investing=1, organization=1).commit()
-    create_stocks([('AAPL', 'Apple Inc.'), ('MSFT', 'Microsoft')], currency_id=2)   # assets 4 and 5
+    create_stocks([('AAPL', 'Apple Inc.'), ('MSFT', 'Microsoft'), ('GAS', 'Native coin')], currency_id=2)  # 4, 5, 6
 
     create_actions([(d2t(220101), 1, 1, [(PredefinedCategory.StartingBalance, 10000.0)])])
     create_trades(1, [(d2t(220201), d2t(220203), 4, 10.0, 100.0, 1.0)])
@@ -180,8 +181,9 @@ def test_operations_keep_tickers_and_icons_in_step(prepare_db):
     LedgerTransaction.create_new(LedgerTransaction.AssetPayment,
                                  {'timestamp': d2t(220302), 'type': AssetPayment.StockDividend, 'account_id': 1,
                                   'symbol_id': symbol_id_for(4, 2), 'amount': '1', 'tax': '0.1', 'note': ''})
-    create_swaps(1, [(d2t(220401), 4, 1.0, 5, 2.0)])
-    create_conversions(1, [(d2t(220501), 4, 1.0, 5, 2.0)])
+    # With a fee, so that the gas part of each is a real part to ask about
+    create_swaps(1, [(d2t(220401), 4, 1.0, 5, 2.0, 6, 0.1)])
+    create_conversions(1, [(d2t(220501), 4, 1.0, 5, 2.0, 6, 0.1)])
     create_corporate_actions(1, [(d2t(220601), CorporateAction.Split, 4, 10.0, '', [(4, 20.0, 1.0)])])
     create_transfers([(d2t(220701), 1, 100.0, 2, 100.0, None)])
     create_transfers([(d2t(220702), 1, 1.0, 2, 1.0, 4)])
@@ -191,7 +193,8 @@ def test_operations_keep_tickers_and_icons_in_step(prepare_db):
                      'fee_asset': 5, 'fee_qty': 0.1}])
 
     parts = {LedgerTransaction.Transfer: (Transfer.Outgoing, Transfer.Incoming, Transfer.Fee),
-             LedgerTransaction.Swap: (0, Swap.Incoming),
+             LedgerTransaction.Swap: (Swap.Whole, Swap.Incoming, Swap.Fee),
+             LedgerTransaction.Conversion: (Conversion.Whole, Conversion.Fee),
              LedgerTransaction.Bridge: (0, Bridge.Incoming, Bridge.Fee)}
     tables = {LedgerTransaction.IncomeSpending: "actions", LedgerTransaction.AssetPayment: "asset_payments",
               LedgerTransaction.Trade: "trades", LedgerTransaction.Transfer: "transfers",

@@ -613,11 +613,15 @@ FROM
     UNION ALL
     SELECT otype, 6 AS seq, oid, 0 AS opart, timestamp, account_id FROM conversions
     UNION ALL
+    SELECT otype, 6 AS seq, oid, 2 AS opart, timestamp, account_id FROM conversions WHERE NOT fee_qty IS NULL
+    UNION ALL
     SELECT otype, 7 AS seq, oid, 0 AS opart, timestamp, account_id FROM swaps WHERE in_account_id IS NULL OR in_account_id=account_id
     UNION ALL
     SELECT otype, 7 AS seq, oid, -1 AS opart, timestamp, account_id FROM swaps WHERE NOT in_account_id IS NULL AND in_account_id<>account_id
     UNION ALL
     SELECT otype, 7 AS seq, oid, 1 AS opart, COALESCE(in_timestamp, timestamp) AS timestamp, in_account_id AS account_id FROM swaps WHERE NOT in_account_id IS NULL AND in_account_id<>account_id
+    UNION ALL
+    SELECT otype, 7 AS seq, oid, 2 AS opart, timestamp, account_id FROM swaps WHERE NOT fee_qty IS NULL
     UNION ALL
     SELECT otype, 8 AS seq, oid, -1 AS opart, out_timestamp AS timestamp, out_account_id AS account_id FROM bridges
     UNION ALL
@@ -898,7 +902,7 @@ BEGIN
 END;
 ------------------------------------------------------------------------------------------------------------------------
 -- Initialize default values for settings
-INSERT INTO settings(name, value) VALUES('SchemaVersion', 69);
+INSERT INTO settings(name, value) VALUES('SchemaVersion', 70);
 INSERT INTO settings(name, value) VALUES('Language', 1);
 INSERT INTO settings(name, value) VALUES('RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
 INSERT INTO settings(name, value) VALUES('RuTaxSessionId', '');

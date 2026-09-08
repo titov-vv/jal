@@ -1107,6 +1107,7 @@ class Swap(LedgerTransaction):
     Whole = 0       # A same-chain swap: disposal and acquisition happen at once, on one account
     Outgoing = -1   # Cross-chain: the disposal leg (source account, source chain)
     Incoming = 1    # Cross-chain: the acquisition leg (destination account, destination chain)
+    Fee = 2         # The gas paid for the swap - a row of its own, as it is for a transfer and for a bridge
     _db_table = "swaps"
     _db_fields = {
         "timestamp": {"mandatory": True, "validation": True},
@@ -1149,19 +1150,26 @@ class Swap(LedgerTransaction):
         self._in_timestamp = int(self._data['in_timestamp']) if present(self._data['in_timestamp']) \
             else int(self._data['timestamp'])
         self._cross_chain = self._in_account.id() != self._account.id()
-        if not self._cross_chain:
+        if opart == Swap.Fee:   # Gas is burned on the source chain, so the fee rides the leg that starts the swap
+            self._opart = Swap.Fee
+        elif not self._cross_chain:
             self._opart = Swap.Whole
         else:   # A leg must be named for a cross-chain swap; default to the one that starts it
             self._opart = Swap.Outgoing if opart is None or opart == Swap.Whole else opart
-        assert self._opart in [Swap.Whole, Swap.Outgoing, Swap.Incoming], "Unknown swap part"
+        assert self._opart in [Swap.Whole, Swap.Outgoing, Swap.Incoming, Swap.Fee], "Unknown swap part"
         self._fee_symbol = JalSymbol(self._data['fee_symbol_id'])
         self._fee_asset = self._fee_symbol.asset()
         self._fee_qty = Decimal(self._data['fee_qty']) if self._data['fee_qty'] else Decimal('0')
-        self._symbol = self._in_symbol if self._opart == Swap.Incoming else self._out_symbol
-        # Operation's main asset is the one its part deals in (FIFO closing of the disposal works with the out asset)
+        symbols = {Swap.Whole: self._out_symbol, Swap.Outgoing: self._out_symbol,
+                   Swap.Incoming: self._in_symbol, Swap.Fee: self._fee_symbol}
+        self._symbol = symbols[self._opart]
+        # Operation's main asset is the one its part deals in (FIFO closing of the disposal works with the out asset,
+        # and the fee part disposes of the gas coin instead - see Transfer.__init__ where a fee part does the same)
         self._asset = self._symbol.asset()
-        icons = {Swap.Whole: JalIcon.SWAP, Swap.Outgoing: JalIcon.TRANSFER_ASSET_OUT, Swap.Incoming: JalIcon.TRANSFER_ASSET_IN}
-        names = {Swap.Whole: self.tr("Swap"), Swap.Outgoing: self.tr("Outgoing swap"), Swap.Incoming: self.tr("Incoming swap")}
+        icons = {Swap.Whole: JalIcon.SWAP, Swap.Outgoing: JalIcon.TRANSFER_ASSET_OUT,
+                 Swap.Incoming: JalIcon.TRANSFER_ASSET_IN, Swap.Fee: JalIcon.FEE}
+        names = {Swap.Whole: self.tr("Swap"), Swap.Outgoing: self.tr("Outgoing swap"),
+                 Swap.Incoming: self.tr("Incoming swap"), Swap.Fee: self.tr("Swap fee")}
         self._icon = JalIcon[icons[self._opart]]
         self._oname = names[self._opart]
         # Each leg of a cross-chain swap is a transaction of its own chain, so the part decides time, account and hash
@@ -1172,12 +1180,7 @@ class Swap(LedgerTransaction):
         self._reconciled = self._leg_account().reconciled_at() >= self._timestamp
         self._note = self._data['note']
         self._peer_id = self._leg_account().organization()
-        if self._opart == Swap.Whole:
-            self._view_rows = 3 if self._fee_asset.id() else 2
-        elif self._opart == Swap.Outgoing:
-            self._view_rows = 2 if self._fee_asset.id() else 1
-        else:
-            self._view_rows = 1
+        self._view_rows = 2 if self._opart == Swap.Whole else 1   # The gas draws its own row, never a line of these
         self._value = None   # Cached disposal value of the swap in the source account currency
 
     # The account the current part is booked on (the destination account only for the acquiring leg)
@@ -1189,6 +1192,8 @@ class Swap(LedgerTransaction):
         return self._in_timestamp
 
     def qty(self) -> Decimal:
+        if self._opart == Swap.Fee:
+            return self._fee_qty
         return self._in_qty if self._opart == Swap.Incoming else self._out_qty
 
     def account_name(self):
@@ -1225,46 +1230,44 @@ class Swap(LedgerTransaction):
         return self._note
 
     def description(self, part_only=False) -> str:
+        if self._opart == Swap.Fee:
+            note = f" ({self._note})" if self._note else ''
+            return self.tr("Swap fee") + note
         text = f"{self._out_qty} {self._out_symbol.symbol()} -> {self._in_qty} {self._in_symbol.symbol()}"
-        if self._fee_asset.id() and self._opart != Swap.Incoming:   # Gas is paid on the source chain only
-            text += " " + self.tr("Fee:") + f" {self._fee_qty} {self._fee_symbol.symbol()}"
         if self._note:
             text += "\n" + self._note
         return text
 
     def value_change(self, part_only=False) -> list:
+        if self._opart == Swap.Fee:
+            return [-self._fee_qty]
         if self._opart == Swap.Incoming:
             return [self._in_qty]
-        result = [-self._out_qty] if self._cross_chain else [-self._out_qty, self._in_qty]
-        if self._fee_asset.id():
-            result.append(-self._fee_qty)
-        return result
+        return [-self._out_qty] if self._cross_chain else [-self._out_qty, self._in_qty]
 
     def value_currency(self) -> str:
+        if self._opart == Swap.Fee:
+            return f"{self._fee_symbol.symbol()}"
         if self._opart == Swap.Incoming:
             return f"{self._in_symbol.symbol()}"
-        text = f"{self._out_symbol.symbol()}" if self._cross_chain \
+        return f"{self._out_symbol.symbol()}" if self._cross_chain \
             else f"{self._out_symbol.symbol()}\n{self._in_symbol.symbol()}"
-        if self._fee_asset.id():
-            text += f"\n{self._fee_symbol.symbol()}"
-        return text
 
     def value_currency_icons(self) -> list:
+        if self._opart == Swap.Fee:
+            return [self._fee_symbol.id()]
         if self._opart == Swap.Incoming:
             return [self._in_symbol.id()]
-        icons = [self._out_symbol.id()] if self._cross_chain else [self._out_symbol.id(), self._in_symbol.id()]
-        if self._fee_asset.id():
-            icons.append(self._fee_symbol.id())
-        return icons
+        return [self._out_symbol.id()] if self._cross_chain else [self._out_symbol.id(), self._in_symbol.id()]
 
     def value_total(self) -> list:
+        if self._opart == Swap.Fee:
+            return [self._asset_total(self._account.id(), self._fee_asset.id())]
         if self._opart == Swap.Incoming:
             return [self._asset_total(self._in_account.id(), self._in_asset.id())]
         balance = [self._asset_total(self._account.id(), self._out_asset.id())]
         if not self._cross_chain:
             balance.append(self._asset_total(self._account.id(), self._in_asset.id()))
-        if self._fee_asset.id():
-            balance.append(self._asset_total(self._account.id(), self._fee_asset.id()))
         return balance
 
     def processLedger(self, ledger):
@@ -1279,6 +1282,11 @@ class Swap(LedgerTransaction):
             raise LedgerError(self.tr("Swap quantities must be positive. Operation: ") + self.dump())
         if self._in_timestamp < int(self._data['timestamp']):
             raise LedgerError(self.tr("Swap can't receive an asset before it was exchanged. Operation: ") + self.dump())
+        if self._opart == Swap.Fee:
+            if not self._fee_asset.id() or self._fee_qty <= Decimal('0'):
+                raise LedgerError(self.tr("Swap fee asset isn't set. Operation: ") + self.dump())
+            self.processFee(ledger)
+            return
         if self._opart == Swap.Incoming:
             self.processIncoming(ledger)
             return
@@ -1310,8 +1318,6 @@ class Swap(LedgerTransaction):
             # Deposit the acquired asset as a new open position at the swap-implied cost
             self._account.open_trade(JalOpenTrade(self, value / self._in_qty, self._in_qty), self._in_asset)
             ledger.appendTransaction(self, BookAccount.Assets, self._in_qty, asset_id=self._in_asset.id(), value=value)
-        if self._fee_asset.id():
-            self._process_swap_fee(ledger)
 
     # Opens the acquired asset on the destination account, valued at the proceeds the disposing leg parked in transit
     # (converted into the destination account currency if the two accounts are kept in different currencies).
@@ -1337,7 +1343,7 @@ class Swap(LedgerTransaction):
     # The gas paid for the swap is disposed at its cost basis to Costs/Fees - the same treatment the standalone
     # GasFee operation gives it, so no profit/loss is realized on the tiny amount of native coin spent on gas.
     # It is always burned on the source chain, so it rides the disposing leg of a cross-chain swap.
-    def _process_swap_fee(self, ledger):
+    def processFee(self, ledger):
         available = ledger.getAmount(BookAccount.Assets, self._account.id(), self._fee_asset.id())
         if available < self._fee_qty:
             raise LedgerError(self.tr("Asset amount is not enough to pay the swap fee. Date: ")
@@ -2200,6 +2206,8 @@ class CorporateAction(LedgerTransaction):
 # as a separate inflow with no counterpart (Merkl claims, staking payouts) are a different thing and stay
 # StakingReward payments. See CRYPTO_PATH decisions #52-#54.
 class Conversion(LedgerTransaction):
+    Whole = 0   # The conversion itself: the position leaves one asset and enters another at the same instant
+    Fee = 2     # The gas paid for it - a row of its own, as it is for a transfer, a swap and a bridge
     _db_table = "conversions"
     _db_fields = {
         "timestamp": {"mandatory": True, "validation": True},
@@ -2215,9 +2223,12 @@ class Conversion(LedgerTransaction):
     }
     PART_FEE = 1
 
-    def __init__(self, operation_data=None, opart=0):
+    def __init__(self, operation_data=None, opart=Whole):
         super().__init__(operation_data)
         self._otype = LedgerTransaction.Conversion
+        # Anything else means "the conversion itself": the 'ledger' book keeps the POSTING part (PART_FEE = 1) in a
+        # field of the same name, and JalAccount.open_trades_list() asks for a lot's operation by a transfer's part.
+        self._opart = Conversion.Fee if opart == Conversion.Fee else Conversion.Whole
         self._data = self._read("SELECT c.timestamp, c.account_id, c.tx_hash, c.out_symbol_id, c.out_qty, "
                                 "c.in_symbol_id, c.in_qty, c.fee_symbol_id, c.fee_qty, c.note FROM conversions AS c "
                                 "WHERE c.oid=:oid", [(":oid", self._oid)], named=True)
@@ -2236,23 +2247,25 @@ class Conversion(LedgerTransaction):
         self._fee_symbol = JalSymbol(self._data['fee_symbol_id'])
         self._fee_asset = self._fee_symbol.asset()
         self._fee_qty = Decimal(self._data['fee_qty']) if self._data['fee_qty'] else Decimal('0')
-        # The converted asset is the operation's own one - it is the position FIFO consumes
-        self._symbol = self._out_symbol
-        self._asset = self._out_asset
+        # The converted asset is the operation's own one - it is the position FIFO consumes. The fee part disposes
+        # of the gas coin instead, so it names that one (see Transfer.__init__, where a fee part does the same).
+        self._symbol = self._fee_symbol if self._opart == Conversion.Fee else self._out_symbol
+        self._asset = self._symbol.asset()
         self._number = self._data['tx_hash']
         self._note = self._data['note']
-        self._icon = JalIcon[JalIcon.CONVERSION]
-        self._oname = self.tr("Conversion")
+        is_fee = self._opart == Conversion.Fee
+        self._icon = JalIcon[JalIcon.FEE if is_fee else JalIcon.CONVERSION]
+        self._oname = self.tr("Conversion fee") if is_fee else self.tr("Conversion")
         self._peer_id = self._account.organization()
         self._reconciled = self._account.reconciled_at() >= self._timestamp
-        self._view_rows = 3 if self._fee_asset.id() else 2
+        self._view_rows = 1 if is_fee else 2   # The gas draws its own row, never a third line of the conversion
 
     # A conversion happens immediately
     def settlement(self) -> int:
         return self._timestamp
 
     def qty(self) -> Decimal:
-        return self._out_qty
+        return self._fee_qty if self._opart == Conversion.Fee else self._out_qty
 
     # Price is undefined for a conversion as it keeps the cost basis (FIFO then creates zero profit/loss deals)
     def price(self):
@@ -2262,37 +2275,34 @@ class Conversion(LedgerTransaction):
         return self._note
 
     def description(self, part_only=False) -> str:
+        if self._opart == Conversion.Fee:
+            note = f" ({self._note})" if self._note else ''
+            return self.tr("Conversion fee") + note
         text = f"{self._out_qty} {self._out_symbol.symbol()} -> {self._in_qty} {self._in_symbol.symbol()}"
-        if self._fee_asset.id():
-            text += " " + self.tr("Fee:") + f" {self._fee_qty} {self._fee_symbol.symbol()}"
         if self._note:
             text += "\n" + self._note
         return text
 
     def value_change(self, part_only=False) -> list:
-        result = [-self._out_qty, self._in_qty]
-        if self._fee_asset.id():
-            result.append(-self._fee_qty)
-        return result
+        if self._opart == Conversion.Fee:
+            return [-self._fee_qty]
+        return [-self._out_qty, self._in_qty]
 
     def value_currency(self) -> str:
-        text = f"{self._out_symbol.symbol()}\n{self._in_symbol.symbol()}"
-        if self._fee_asset.id():
-            text += f"\n{self._fee_symbol.symbol()}"
-        return text
+        if self._opart == Conversion.Fee:
+            return f"{self._fee_symbol.symbol()}"
+        return f"{self._out_symbol.symbol()}\n{self._in_symbol.symbol()}"
 
     def value_currency_icons(self) -> list:
-        icons = [self._out_symbol.id(), self._in_symbol.id()]
-        if self._fee_asset.id():
-            icons.append(self._fee_symbol.id())
-        return icons
+        if self._opart == Conversion.Fee:
+            return [self._fee_symbol.id()]
+        return [self._out_symbol.id(), self._in_symbol.id()]
 
     def value_total(self) -> list:
-        balance = [self._asset_total(self._account.id(), self._out_asset.id()),
-                   self._asset_total(self._account.id(), self._in_asset.id())]
-        if self._fee_asset.id():
-            balance.append(self._asset_total(self._account.id(), self._fee_asset.id()))
-        return balance
+        if self._opart == Conversion.Fee:
+            return [self._asset_total(self._account.id(), self._fee_asset.id())]
+        return [self._asset_total(self._account.id(), self._out_asset.id()),
+                self._asset_total(self._account.id(), self._in_asset.id())]
 
     def processLedger(self, ledger):
         if self._out_asset.id() == 0 or self._in_asset.id() == 0:
@@ -2301,6 +2311,11 @@ class Conversion(LedgerTransaction):
             raise LedgerError(self.tr("Can't process conversion of an asset into itself. Operation: ") + self.dump())
         if self._out_qty <= Decimal('0') or self._in_qty <= Decimal('0'):
             raise LedgerError(self.tr("Conversion quantities must be positive. Operation: ") + self.dump())
+        if self._opart == Conversion.Fee:
+            if not self._fee_asset.id() or self._fee_qty <= Decimal('0'):
+                raise LedgerError(self.tr("Conversion fee asset isn't set. Operation: ") + self.dump())
+            self.processFee(ledger)
+            return
         available = ledger.getAmount(BookAccount.Assets, self._account.id(), self._out_asset.id())
         if available < self._out_qty:
             # Raised with the shortage in fields and not only in the message: the out leg of a conversion is where a
@@ -2329,13 +2344,11 @@ class Conversion(LedgerTransaction):
                                      price_adjustment=self._out_qty / self._in_qty)
         ledger.appendTransaction(self, BookAccount.Assets, self._in_qty,
                                  asset_id=self._in_asset.id(), value=processed_value)
-        if self._fee_asset.id():
-            self._process_conversion_fee(ledger)
 
     # Gas paid for the conversion is disposed at its cost basis to Costs/Fees - the same treatment Swap and Bridge
     # give it, so no profit or loss is realized on the native coin spent. See Transfer.processAssetFee() for the
     # jurisdiction caveat that applies here word for word.
-    def _process_conversion_fee(self, ledger):
+    def processFee(self, ledger):
         if not self._peer_id:
             raise LedgerError(self.tr("Can't process the conversion fee as organization isn't set for account: ")
                               + self._account_name)

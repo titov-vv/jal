@@ -9,7 +9,7 @@ from constants import BookAccount, PredefinedAsset, PredefinedCategory, Predefin
 from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
-from jal.db.operations import LedgerTransaction, LedgerError
+from jal.db.operations import LedgerTransaction, LedgerError, Swap
 
 _WITH_SWAP = (LedgerTransaction.Trade, LedgerTransaction.Swap)   # what the Deals report asks for
 
@@ -86,6 +86,46 @@ def test_swap_fee_is_disposed_to_costs(prepare_db_fifo):
     assert amounts[(BookAccount.Costs, 1, 2)] == Decimal('5')
     # The gas disposal doesn't create a closed deal, so it never pollutes the Deals/tax reports
     assert len(JalAccount(1).closed_trades_list(close_otypes=_WITH_SWAP)) == 1
+
+
+# The gas is a sequence part of its own, so the operations table draws it as a row beside the swap instead of a
+# third line inside it. The part answers with the gas coin - its quantity, its ticker and its balance.
+def test_swap_fee_is_a_row_of_its_own(prepare_db_fifo):
+    create_stocks([('A', 'Asset A'), ('B', 'Asset B'), ('GAS', 'Native coin')], currency_id=2)  # GAS -> asset 6
+    t_buy, t_swap = d2t(220101), d2t(220201)
+    create_quotes(4, 2, [(t_swap, 150.0)])
+    create_trades(1, [(t_buy, t_buy, 4, 10.0, 100.0, 0.0)])
+    create_trades(1, [(t_buy, t_buy, 6, 1.0, 10.0, 0.0)])
+    create_swaps(1, [(t_swap, 4, 10, 5, 20, 6, Decimal('0.5'))])
+    Ledger().rebuild(from_timestamp=0)
+
+    parts = [x['opart'] for x in Ledger.get_operations_sequence(0, d2t(220301)) if x['otype'] == LedgerTransaction.Swap]
+    assert parts == [Swap.Whole, Swap.Fee]                        # the swap itself, then its gas
+
+    swap = LedgerTransaction.get_operation(LedgerTransaction.Swap, 1, Swap.Whole)
+    fee = LedgerTransaction.get_operation(LedgerTransaction.Swap, 1, Swap.Fee)
+    assert swap.view_rows() == 2 and fee.view_rows() == 1          # 3 lines before, 2 + 1 after
+    assert swap.value_change() == [Decimal('-10'), Decimal('20')]  # the gas has left the swap's own row
+    assert 'GAS' not in swap.description()
+    assert fee.value_change() == [Decimal('-0.5')]
+    assert fee.value_currency() == 'GAS'
+    assert fee.value_total() == [Decimal('0.5')]                   # the gas balance, not the swapped asset's
+    assert fee.asset().symbol() == 'GAS'
+    # Both rows are the same operation at the same moment, on the account the gas was burned on
+    assert fee.timestamp() == swap.timestamp() and fee.account_id() == swap.account_id()
+
+
+# A swap with no gas has no fee part at all - the sequence must not offer a row that books nothing.
+def test_swap_without_gas_has_no_fee_row(prepare_db_fifo):
+    create_stocks([('A', 'Asset A'), ('B', 'Asset B')], currency_id=2)
+    t_buy, t_swap = d2t(220101), d2t(220201)
+    create_quotes(4, 2, [(t_swap, 150.0)])
+    create_trades(1, [(t_buy, t_buy, 4, 10.0, 100.0, 0.0)])
+    create_swaps(1, [(t_swap, 4, 10, 5, 20)])
+    Ledger().rebuild(from_timestamp=0)
+
+    parts = [x['opart'] for x in Ledger.get_operations_sequence(0, d2t(220301)) if x['otype'] == LedgerTransaction.Swap]
+    assert parts == [Swap.Whole]
 
 
 # A rejected swap must report a ledger error - the message is built from the operation's own fields, and the receiving

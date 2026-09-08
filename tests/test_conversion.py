@@ -8,7 +8,7 @@ from constants import AccountData, BookAccount, PredefinedCategory
 from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
-from jal.db.operations import LedgerTransaction, LedgerError, LedgerAssetShortage
+from jal.db.operations import LedgerTransaction, LedgerError, LedgerAssetShortage, Conversion
 from jal.db.db import JalDB
 from jal.db.rebase_residue import RebaseResidue
 
@@ -100,6 +100,45 @@ def test_conversion_fee_is_disposed_to_costs(prepare_db_fifo):
     costs = JalAccount(1).get_category_turnover(PredefinedCategory.Fees, 0, d2t(220301))
     assert costs == Decimal('5')                                         # 0.5 * 10, the gas at its own basis
     assert JalAccount(1).closed_trades_list(close_otypes=_WITH_SWAP) == []   # gas realizes nothing either
+
+
+# The gas is a sequence part of its own, so the operations table draws it as a row beside the conversion instead
+# of a third line inside it. The part answers with the gas coin - its quantity, its ticker and its balance.
+def test_conversion_fee_is_a_row_of_its_own(prepare_db_fifo):
+    create_stocks([('ETH', 'Coin'), ('WETH', 'Wrapped coin'), ('GAS', 'Native coin')], currency_id=2)
+    t_buy, t_convert = d2t(220101), d2t(220201)
+    create_trades(1, [(t_buy, t_buy, 4, 2.0, 150.0, 0.0)])
+    create_trades(1, [(t_buy, t_buy, 6, 1.0, 10.0, 0.0)])
+    create_conversions(1, [(t_convert, 4, 2, 5, 2, 6, Decimal('0.5'))])
+    Ledger().rebuild(from_timestamp=0)
+
+    otype = LedgerTransaction.Conversion
+    parts = [x['opart'] for x in Ledger.get_operations_sequence(0, d2t(220301)) if x['otype'] == otype]
+    assert parts == [Conversion.Whole, Conversion.Fee]   # the conversion itself, then its gas
+
+    conversion = LedgerTransaction.get_operation(otype, 1, Conversion.Whole)
+    fee = LedgerTransaction.get_operation(otype, 1, Conversion.Fee)
+    assert conversion.view_rows() == 2 and fee.view_rows() == 1     # 3 lines before, 2 + 1 after
+    assert conversion.value_change() == [Decimal('-2'), Decimal('2')]
+    assert 'GAS' not in conversion.description()
+    assert fee.value_change() == [Decimal('-0.5')]
+    assert fee.value_currency() == 'GAS'
+    assert fee.value_total() == [Decimal('0.5')]                    # the gas balance, not the converted asset's
+    assert fee.asset().symbol() == 'GAS'
+    assert fee.timestamp() == conversion.timestamp() and fee.account_id() == conversion.account_id()
+
+
+# A conversion with no gas has no fee part at all - the sequence must not offer a row that books nothing.
+def test_conversion_without_gas_has_no_fee_row(prepare_db_fifo):
+    create_stocks([('ETH', 'Coin'), ('WETH', 'Wrapped coin')], currency_id=2)
+    t_buy, t_convert = d2t(220101), d2t(220201)
+    create_trades(1, [(t_buy, t_buy, 4, 2.0, 150.0, 0.0)])
+    create_conversions(1, [(t_convert, 4, 2, 5, 2)])
+    Ledger().rebuild(from_timestamp=0)
+
+    parts = [x['opart'] for x in Ledger.get_operations_sequence(0, d2t(220301))
+             if x['otype'] == LedgerTransaction.Conversion]
+    assert parts == [Conversion.Whole]
 
 
 # Converting more than the account holds is an error, not a silently negative position.
