@@ -2421,9 +2421,9 @@ class Bridge(LedgerTransaction):
     def __init__(self, operation_data=None, opart=Outgoing):
         assert opart in [Bridge.Outgoing, Bridge.Incoming, Bridge.Fee], "Unknown bridge part"
         # Both legs wear the bridge itself - the asset-transfer arrows made a crossing look like any other
-        # transfer. Which leg a row is stays legible from its name and the sign of its amount.
-        icons = {Bridge.Outgoing: JalIcon.BRIDGE,
-                 Bridge.Incoming: JalIcon.BRIDGE,
+        # transfer. The leg is named by a corner dot, the same marker JalIcon.TRANSFER_ASSET_* use.
+        icons = {Bridge.Outgoing: JalIcon.BRIDGE_OUT,
+                 Bridge.Incoming: JalIcon.BRIDGE_IN,
                  Bridge.Fee: JalIcon.FEE}
         self.names = {Bridge.Outgoing: self.tr("Outgoing bridge"),
                       Bridge.Incoming: self.tr("Incoming bridge"),

@@ -84,7 +84,8 @@ class JalIcon(UserDict):
     APP_MAIN = auto()
     BOND_AMORTIZATION = auto()
     BOND_INTEREST = auto()
-    BRIDGE = auto()
+    BRIDGE_IN = auto()
+    BRIDGE_OUT = auto()
     BUY = auto()
     CANCEL = auto()
     CHART = auto()
@@ -138,7 +139,8 @@ class JalIcon(UserDict):
         APP_MAIN: "jal.png",
         BOND_AMORTIZATION: "amortization.ico",
         BOND_INTEREST: "coupon.ico",
-        BRIDGE: "bridge.ico",
+        BRIDGE_IN: "bridge_in.ico",
+        BRIDGE_OUT: "bridge_out.ico",
         BUY: "buy.ico",
         CANCEL: "cancel.ico",
         CHART: "chart.ico",
@@ -212,6 +214,7 @@ class JalIcon(UserDict):
         TOKEN_RENT_RETURN: Meaning.POSITIVE,
         TRANSFER_IN: Meaning.POSITIVE,
         TRANSFER_ASSET_IN: Meaning.POSITIVE,
+        BRIDGE_IN: Meaning.POSITIVE,
         OK: Meaning.POSITIVE,
         SELL: Meaning.NEGATIVE,
         MINUS: Meaning.NEGATIVE,
@@ -221,6 +224,7 @@ class JalIcon(UserDict):
         TAX: Meaning.NEGATIVE,
         TRANSFER_OUT: Meaning.NEGATIVE,
         TRANSFER_ASSET_OUT: Meaning.NEGATIVE,
+        BRIDGE_OUT: Meaning.NEGATIVE,
         CANCEL: Meaning.NEGATIVE,
         REMOVE: Meaning.NEGATIVE,
         WITH_CREDIT: Meaning.WARNING
