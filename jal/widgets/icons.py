@@ -145,7 +145,7 @@ class JalIcon(UserDict):
         CANCEL: "cancel.ico",
         CHART: "chart.ico",
         CLEAN: "clean.ico",
-        CONVERSION: "conversion.ico",
+        CONVERSION: "wrapping.ico",
         COPY: "copy.ico",
         DELISTING: "delisting.ico",
         DEPOSIT_ACCOUNT: "deposit_account.ico",
