@@ -1188,7 +1188,7 @@ class Swap(LedgerTransaction):
         self._reconciled = self._leg_account().reconciled_at() >= self._timestamp
         self._note = self._data['note']
         self._peer_id = self._leg_account().organization()
-        self._view_rows = 2 if self._opart == Swap.Whole else 1   # The gas draws its own row, never a line of these
+        self._view_rows = 1 if self._opart == Swap.Fee else 2   # The gas draws its own row, never a line of these
         self._value = None   # Cached disposal value of the swap in the source account currency
 
     def is_fee_row(self) -> bool:
@@ -1245,9 +1245,7 @@ class Swap(LedgerTransaction):
             note = f" ({self._note})" if self._note else ''
             return self.tr("Swap fee") + note
         text = f"{self._out_qty} {self._out_symbol.symbol()} -> {self._in_qty} {self._in_symbol.symbol()}"
-        if self._note:
-            text += "\n" + self._note
-        return text
+        return text + "\n" + self._note
 
     def value_change(self, part_only=False) -> list:
         if self._opart == Swap.Fee:
@@ -2296,9 +2294,7 @@ class Conversion(LedgerTransaction):
             note = f" ({self._note})" if self._note else ''
             return self.tr("Conversion fee") + note
         text = f"{self._out_qty} {self._out_symbol.symbol()} -> {self._in_qty} {self._in_symbol.symbol()}"
-        if self._note:
-            text += "\n" + self._note
-        return text
+        return text + "\n" + self._note
 
     def value_change(self, part_only=False) -> list:
         if self._opart == Conversion.Fee:
@@ -2550,9 +2546,7 @@ class Bridge(LedgerTransaction):
             text = f"{out_s} -> {in_s}"
             if self._in_qty != self._out_qty:
                 text += " [" + self.tr("In-kind fee:") + f" {self._out_qty - self._in_qty} {in_s}]"
-        if self._note:
-            text += " " + self._note
-        return text
+        return text + "\n" + self._note
 
     def value_change(self, part_only=False) -> list:
         if self._opart == Bridge.Outgoing:
