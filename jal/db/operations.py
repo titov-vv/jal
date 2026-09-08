@@ -328,8 +328,16 @@ class LedgerTransaction(JalDB):
         else:
             return self._asset.name()
 
+    # True when this row is the fee of an operation rather than the operation itself. It reads the SEQUENCE part
+    # (the thing that decides which row is drawn), not PART_FEE, which is the posting part written into the ledger.
+    # A stand-alone gas payment is an operation of its own and is therefore NOT a fee row - see AssetPayment.GasFee.
+    def is_fee_row(self) -> bool:
+        return False
+
+    # A hash or a statement number identifies the TRANSACTION, and the fee is one of the things that transaction did,
+    # not a transaction of its own. The operation it belongs to prints the number on its own row right above.
     def number(self):
-        return self._number
+        return '' if self.is_fee_row() else self._number
 
     def amount(self):
         return 0
@@ -1183,6 +1191,9 @@ class Swap(LedgerTransaction):
         self._view_rows = 2 if self._opart == Swap.Whole else 1   # The gas draws its own row, never a line of these
         self._value = None   # Cached disposal value of the swap in the source account currency
 
+    def is_fee_row(self) -> bool:
+        return self._opart == Swap.Fee
+
     # The account the current part is booked on (the destination account only for the acquiring leg)
     def _leg_account(self):
         return self._in_account if self._opart == Swap.Incoming else self._account
@@ -1479,6 +1490,9 @@ class Transfer(LedgerTransaction):
         if is_box(self._withdrawal_account):
             return JalIcon.DEPOSIT_CLOSE
         return None
+
+    def is_fee_row(self) -> bool:
+        return self._opart == Transfer.Fee
 
     # A transfer is pending while one of its two ends is still unknown (the value is in transit, or it arrived from
     # a source that hasn't been imported yet)
@@ -2260,6 +2274,9 @@ class Conversion(LedgerTransaction):
         self._reconciled = self._account.reconciled_at() >= self._timestamp
         self._view_rows = 1 if is_fee else 2   # The gas draws its own row, never a third line of the conversion
 
+    def is_fee_row(self) -> bool:
+        return self._opart == Conversion.Fee
+
     # A conversion happens immediately
     def settlement(self) -> int:
         return self._timestamp
@@ -2452,6 +2469,12 @@ class Bridge(LedgerTransaction):
             self._reconciled = self._has_in and self._in_account.reconciled_at() >= self._in_timestamp
         else:
             self._reconciled = self._out_account.reconciled_at() >= self._out_timestamp
+        # A leg names its own transaction and the asset it moves on a second line, as a trade and a swap do; the fee
+        # names neither (see is_fee_row) and is the one-line row of the family.
+        self._view_rows = 1 if opart == Bridge.Fee else 2
+
+    def is_fee_row(self) -> bool:
+        return self._opart == Bridge.Fee
 
     # A bridge is pending while its arriving leg is unknown (the sent value is still in transit)
     def is_pending(self) -> bool:

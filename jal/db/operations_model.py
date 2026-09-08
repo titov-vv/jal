@@ -96,7 +96,8 @@ class OperationsModel(QAbstractTableModel):
                 date_time += f"\n# {operation.number()}"
             return date_time
         elif column == 1:
-            if operation.asset_name() and operation.type() != LedgerTransaction.Transfer:
+            if operation.asset_name() and operation.type() != LedgerTransaction.Transfer \
+                    and not operation.is_fee_row():
                 return operation.account_name() + "\n" + operation.asset_name()
             else:
                 return operation.account_name()
