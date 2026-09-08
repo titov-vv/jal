@@ -100,6 +100,22 @@ def capture_main_window(window, operations):
     save(operations.ui.BalanceBox, "balances_panel")
 
 
+# The wallet is where an operation stops being a single line: a swap shows what it gave and what it got, and its
+# gas fee is drawn as a row of its own underneath. Only the table is taken, and only as tall as its rows are, so
+# the picture is about the rows and not about the window they sit in.
+def capture_crypto_operations(operations):
+    view = operations.ui.OperationsTableView
+    operations.ui.ChooseAccountBtn.account_id = 6          # 'Cold Wallet'
+    set_range(operations.ui.DateRange, "2025-09-01", "2026-12-31")
+    limits = (view.minimumHeight(), view.maximumHeight())
+    rows = view.verticalHeader().length()   # the rows as they are drawn, of uneven height and with their grid lines
+    view.setFixedHeight(rows + view.horizontalHeader().height() + 2 * view.frameWidth())
+    QApplication.processEvents()
+    save(view, "crypto_operations")
+    view.setMinimumHeight(limits[0])         # give the height back to the splitter the view lives in
+    view.setMaximumHeight(limits[1])
+
+
 # An operation editor sits in the lower half of the operations window and is only as wide as that split allows,
 # which crops its fields. For a picture of the editor itself it is stretched to a width where nothing is cut.
 def save_editor(widget, name: str) -> None:
@@ -436,6 +452,7 @@ def main():
     QApplication.processEvents()
 
     capture_main_window(window, operations)
+    capture_crypto_operations(operations)
     capture_operation_editors(window, operations)
     capture_menus(window)
     operations.ui.ChooseAccountBtn.account_id = 2

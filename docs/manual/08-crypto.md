@@ -84,6 +84,15 @@ after all.
 Beside the ordinary Buy/Sell and Transfer, crypto needs three more. Which of them fits depends on
 one question: **did the value change hands, and did it stay on one account?**
 
+![A wallet in the operations list](img/crypto_operations.png)
+
+A wallet's operations read a little differently from a bank account's, as the picture shows. An
+operation that touches two assets keeps both in one row — the ETH that left above the USDC that
+arrived — and the gas it cost is a row of its own below it, with the operation's own note in
+brackets. Amounts too small for two decimals are written compactly (`0.0₂21` is 0.0021), and an
+underlined figure is a rounded one you can hover over to see in full; both are explained in
+[chapter 4](04-main-window.md#how-the-amounts-are-shown).
+
 ### Swap — one asset exchanged for another
 
 ![The swap editor](img/op_swap.png)

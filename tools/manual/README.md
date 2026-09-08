@@ -5,7 +5,7 @@ after a change to the interface and stays consistent with itself.
 
 ```bash
 python tools/manual/make_demo_db.py       # builds the demo ledger  -> tools/manual/demo/jal.sqlite
-python tools/manual/capture.py            # ~54 screenshots         -> docs/manual/img/*.png
+python tools/manual/capture.py            # ~55 screenshots         -> docs/manual/img/*.png
                                           #  + 2 for the README     -> docs/img/*.png
 python tools/manual/capture_first_run.py  # the empty-database ones -> docs/manual/img/first_run_*.png
 ```

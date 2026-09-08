@@ -51,7 +51,7 @@ This is a reminder, not an error: it says *"nobody has confirmed these numbers l
 [*Reconciling*](05-everyday-money.md#reconciling-checking-jal-against-reality) in the next chapter.
 In the picture above, the trading account is red because it was last checked in March.
 
-A small **coin icon** beside a balance means the figure includes a credit limit — the card above
+A small **upward arrow** beside a balance means the figure includes a credit limit — the card above
 holds −354.44 of its own but has 1,500 of credit, so 1,145.56 is what could still be spent.
 
 ### Background accounts
@@ -92,8 +92,13 @@ a tag with no picture marks nothing.
 
 ## The Operations list
 
-Every operation, oldest first, one per line — with a running **Balance** column so you can follow the
-account from line to line. The icon at the left says what kind of operation it is.
+Every operation, oldest first — with a running **Balance** column so you can follow the account from
+line to line. The icon at the left says what kind of operation it is.
+
+Most operations take one line, but not all of them. An operation that moves two different assets at
+once — a swap, a bridge, a conversion — writes both of them into the same row, one above the other;
+and a fee, in money or in gas, is a row of its own underneath the operation that paid it. Selecting
+any of those rows opens the same operation in the editor below.
 
 Three controls above the list decide what is shown:
 
@@ -101,6 +106,16 @@ Three controls above the list decide what is shown:
   date you can set by hand. The presets count backwards from today; the dates are yours to override.
 * **Account** — one account, or *ANY* for all of them at once.
 * **Search** — free text; only the operations whose text matches stay on screen.
+
+### How the amounts are shown
+
+**Amount** and **Balance** are written with two decimals, which is what money needs and what a coin
+rarely fits. A figure that has more decimals than it shows is **underlined**: it is rounded, and
+hovering over it shows the exact number with the asset it is in.
+
+An amount too small to be seen at two decimals is not shown as `0.00` but compactly, the way crypto
+wallets write it: `0.0₂21` is 0.0021, `0.0₃80` is 0.0008 — the small figure counts the zeros that
+follow the decimal point, and two significant digits follow them.
 
 ### The buttons on the right
 
