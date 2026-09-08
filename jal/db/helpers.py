@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from decimal import Decimal, InvalidOperation, localcontext
+from decimal import Decimal, InvalidOperation, localcontext, ROUND_HALF_UP
 from zoneinfo import ZoneInfo
 from PySide6.QtCore import QLocale
 from jal.constants import Setup, JalGlobals
@@ -85,6 +85,34 @@ def localize_amount(value: Decimal, minimum: int = Setup.DEFAULT_ACCOUNT_PRECISI
     if value != Decimal('0') and round(value, decimals) == Decimal('0'):
         return localize_decimal(value)          # too small to be shown rounded, and it is not nothing
     return localize_decimal(value, precision=decimals)
+
+
+# Digits that spell the number of zeros of a compact amount, see localize_compact_amount()
+SUBSCRIPT_DIGITS = "₀₁₂₃₄₅₆₇₈₉"
+
+
+# Make a locale-specific string from an amount that is too small to be seen with 'precision' decimals: a gas fee of
+# 0.00000021 ETH is not '0.00', while spelling it out in full makes a wall of zeros out of a column of money sums.
+# The zeros that follow the decimal point are replaced by their count written in subscript - '0,0₆21' - the notation
+# crypto wallets use, and 'digits' significant digits follow it. An amount that is visible with 'precision' decimals -
+# every money sum among them - is left to localize_decimal() and looks exactly as it always did.
+def localize_compact_amount(value: Decimal, precision: int = Setup.DEFAULT_ACCOUNT_PRECISION,
+                            digits: int = 2, sign: bool = False) -> str:
+    plain = localize_decimal(value, precision=precision, sign=sign)
+    if type(value) != Decimal or value.is_nan() or value == Decimal('0'):
+        return plain
+    if any([char in '123456789' for char in plain]):   # it is visible with 'precision' decimals, whatever it rounds to
+        return plain
+    amount = abs(value)
+    zeros = -amount.adjusted() - 1     # adjusted() is the power of ten of the first significant digit
+    # Scaling by the zeros and the digits asked for puts exactly those digits before the decimal point
+    significant = int(amount.scaleb(zeros + digits).to_integral_value(rounding=ROUND_HALF_UP))
+    if significant >= 10 ** digits:    # rounding up carried into one more digit: 9.99E-7 is 0,0₅10 and not 0,0₆100
+        zeros -= 1
+        significant //= 10
+    prefix = '-' if value < Decimal('0') else ('+' if sign else '')
+    zeros_text = ''.join([SUBSCRIPT_DIGITS[int(digit)] for digit in str(zeros)])
+    return prefix + '0' + JalGlobals().number_decimal_point + '0' + zeros_text + str(significant)
 
 
 # Make number not locale-specific - i.e. replace decimal separator with '.' and remove any thousand separators

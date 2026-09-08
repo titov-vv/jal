@@ -8,7 +8,7 @@ from PySide6.QtSql import QSqlQueryModel
 from jal.constants import IconOwner, Setup
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 from jal.db.clock import local_datetime, local_time, local_zone, window_bound
-from jal.db.helpers import is_day_marker, localize_decimal, delocalize_decimal, format_decimal
+from jal.db.helpers import is_day_marker, localize_decimal, localize_compact_amount, delocalize_decimal, format_decimal
 from jal.db.account import JalAccount
 from jal.db.icon import JalIcons
 from jal.db.asset import JalAsset
@@ -579,7 +579,7 @@ class ColoredAmountsDelegate(QStyledItemDelegate):
     # Displays given value as formatted number with required color (or Green/Red if colored is True)
     # If value is None - do nothing, If value is Decimal.NaN - displays Setup.NULL_VALUE
     def draw_value(self, rect, painter, value, color=None, colored=True):
-        text = localize_decimal(value, precision=2, sign=self._signs)
+        text = localize_compact_amount(value, sign=self._signs)
         pen = painter.pen()
         try:
             if self._view.isEnabled():
@@ -594,7 +594,7 @@ class ColoredAmountsDelegate(QStyledItemDelegate):
                         pen.setColor(color)
             painter.setPen(pen)
             painter.drawText(rect, Qt.AlignRight | Qt.AlignVCenter, text)
-            if long_fraction(value):  # Underline decimal part
+            if long_fraction(value):  # Underline the decimal part - the significant digits of a compact amount
                 shift = painter.fontMetrics().horizontalAdvance(text[-Setup.DEFAULT_ACCOUNT_PRECISION:])
                 painter.drawLine(rect.right() - shift, rect.bottom(), rect.right(), rect.bottom())
         except (TypeError, AttributeError):

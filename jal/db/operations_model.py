@@ -75,9 +75,14 @@ class OperationsModel(QAbstractTableModel):
             if index.column() == 0:
                 return operation.name()
             elif index.column() == 3 or index.column() == 4:
+                # The cell rounds an amount to two decimals and writes a smaller one in compact form, so the exact
+                # number is only here. It is named with the listing of its own line, as the Currency column is.
                 data = self.data_text(operation, index.column())
                 if any([long_fraction(x) for x in data]):
-                    return '\n'.join([localize_decimal(x) for x in data])
+                    symbols = operation.value_currency().split('\n')
+                    lines = [' '.join([localize_decimal(value), symbols[i] if i < len(symbols) else ''])
+                             for i, value in enumerate(data)]
+                    return '\n'.join([line.strip() for line in lines])
         if role == Qt.TextAlignmentRole:
             if index.column() == 3 or index.column() == 4:
                 return int(Qt.AlignRight | Qt.AlignVCenter)

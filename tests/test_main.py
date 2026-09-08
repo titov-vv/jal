@@ -13,7 +13,7 @@ from jal.constants import JalGlobals as JalGlobalsPackage   # a distinct class -
 from jal.db.db import JalDB, JalDBError
 from jal.db.settings import JalSettings
 from jal.db.asset import JalAsset
-from jal.db.helpers import localize_decimal, localize_amount
+from jal.db.helpers import localize_decimal, localize_amount, localize_compact_amount
 from jal.widgets.helpers import is_english
 from jal.db.backup_restore import JalBackup
 from tests.helpers import pop2minor_digits, d2t, d2dt, dt2t
@@ -74,6 +74,24 @@ def test_amount_formatting(russian_locale):
     assert localize_amount(Decimal('1.23456'), minimum=0, maximum=2) == '1,23'
     assert localize_amount(Decimal('7'), minimum=0, maximum=2) == '7'
     assert localize_amount(None) == '' and localize_amount(Decimal('NaN')) == Setup.NULL_VALUE
+
+
+# An amount that two decimals show as zero is written with the count of its zeros, so that a gas fee of
+# 0.00000021 ETH is neither '0,00' nor a wall of zeros in a column of money sums.
+def test_compact_amount_formatting(russian_locale):
+    assert localize_compact_amount(Decimal('0.00000021')) == '0,0₆21'
+    assert localize_compact_amount(Decimal('-0.0000123456')) == '-0,0₄12'
+    assert localize_compact_amount(Decimal('0.004')) == '0,0₂40'   # both digits kept, so the width is fixed
+    assert localize_compact_amount(Decimal('9.99E-7')) == '0,0₅10'  # rounding up carries into fewer zeros
+    assert localize_compact_amount(Decimal('1E-18')) == '0,0₁₇10'   # a count of two digits
+    assert localize_compact_amount(Decimal('0.00000021'), sign=True) == '+0,0₆21'
+    assert localize_compact_amount(Decimal('0.0000004'), digits=3) == '0,0₆400'
+    # An amount that two decimals do show is formatted exactly as it was before
+    assert localize_compact_amount(Decimal('1234.5678')) == '1\xa0234,57'
+    assert localize_compact_amount(Decimal('-2.5'), sign=True) == '-2,50'
+    assert localize_compact_amount(Decimal('0')) == '0,00'
+    assert localize_compact_amount(Decimal('0.0051')) == '0,01'  # it rounds to a visible amount, so it stays plain
+    assert localize_compact_amount(None) == '' and localize_compact_amount(Decimal('NaN')) == Setup.NULL_VALUE
 
 
 def test_helpers():
