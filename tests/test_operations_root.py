@@ -9,7 +9,7 @@ from PySide6.QtWidgets import QWidget
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo
 from tests.helpers import d2t, create_assets, create_actions, create_dividends, create_trades, create_transfers, \
-    create_corporate_actions, create_conversions, create_swaps, create_bridges, symbol_id_for
+    create_corporate_actions, create_conversions, create_swaps, create_bridges, symbol_id_for, operation_id
 from constants import PredefinedAsset, PredefinedCategory, Setup
 from jal.db.db import JalDB
 from jal.db.account import JalAccountCreator
@@ -330,3 +330,41 @@ def test_a_failed_save_leaves_no_root_row(prepare_db_fifo, project_root):
 
     assert JalDB._read("SELECT COUNT(*) FROM trades") == 0
     assert JalDB._read("SELECT COUNT(*) FROM operations") == before
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# 'ledger_sequence' ships empty and nothing reads it yet. What is checked here is the contract the stages that fill
+# it will be built on - that it really is keyed on the root, and that the root really does clear it.
+def test_the_sequence_table_ships_empty(prepare_db_fifo, project_root):
+    _operations_of_every_type()
+
+    assert JalDB._read("SELECT COUNT(*) FROM ledger_sequence") == 0
+
+
+# The single-column foreign key is the whole reason the root exists: '(otype, oid)' could never be one
+def test_a_deleted_operation_takes_its_sequence_rows_with_it(prepare_db_fifo, project_root):
+    _operations_of_every_type()
+    oid = operation_id(LedgerTransaction.Transfer)
+    for part in (-1, 0, 1):
+        JalDB._exec("INSERT INTO ledger_sequence (operation_id, opart, timestamp, account_id) "
+                    "VALUES (:oid, :part, :ts, 1)", [(":oid", oid), (":part", part), (":ts", d2t(210107))])
+    JalDB().commit()
+    assert JalDB._read("SELECT COUNT(*) FROM ledger_sequence") == 3
+
+    LedgerTransaction.get_operation(LedgerTransaction.Transfer, oid).delete()
+
+    assert JalDB._read("SELECT COUNT(*) FROM ledger_sequence") == 0
+
+
+# One row per PART, so an operation may hold several - but only one of each part
+def test_a_part_of_an_operation_is_listed_once(prepare_db_fifo, project_root):
+    _operations_of_every_type()
+    oid = operation_id(LedgerTransaction.Transfer)
+    JalDB._exec("INSERT INTO ledger_sequence (operation_id, opart, timestamp, account_id) "
+                "VALUES (:oid, 0, :ts, 1)", [(":oid", oid), (":ts", d2t(210107))], commit=True)
+
+    duplicate = JalDB._exec("INSERT INTO ledger_sequence (operation_id, opart, timestamp, account_id) "
+                            "VALUES (:oid, 0, :ts, 1)", [(":oid", oid), (":ts", d2t(210107))], commit=True)
+
+    assert duplicate is None    # UNIQUE (operation_id, opart)
+    assert JalDB._read("SELECT COUNT(*) FROM ledger_sequence") == 1

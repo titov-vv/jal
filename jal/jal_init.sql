@@ -37,6 +37,24 @@ CREATE TABLE operations (
 );
 CREATE INDEX operations_by_type ON operations (otype);
 
+-- Table: ledger_sequence - the order the ledger is processed in, one row per PART of an operation.
+-- The part is the unit of the sequence and not the operation: a transfer contributes three parts at two timestamps
+-- on three accounts, and its deposit leg can fall months after its withdrawal, between other operations.
+-- DERIVED data, and the opposite of 'operations' above: it is wiped and repopulated wholesale on every refresh, so
+-- nothing source-side may ever reference it. A table that is deleted and rebuilt cannot be a foreign-key target for
+-- source data; a table that is a foreign-key target must never be deleted and rebuilt.
+DROP TABLE IF EXISTS ledger_sequence;
+CREATE TABLE ledger_sequence (
+    seq_no       INTEGER PRIMARY KEY,        -- The processing order itself, assigned at refresh (it is the rowid,
+                                             -- so reading in order costs no sort)
+    operation_id INTEGER NOT NULL REFERENCES operations (id) ON DELETE CASCADE,
+    opart        INTEGER NOT NULL,           -- Which part of the operation this row is
+    timestamp    INTEGER NOT NULL,           -- THIS part's moment, which is not always the operation's own
+    account_id   INTEGER REFERENCES accounts (id),
+    UNIQUE (operation_id, opart)
+);
+CREATE INDEX ledger_sequence_acct ON ledger_sequence (account_id, seq_no);
+
 ------------------------------------------------------------------------------------------------------------------------
 -- tables to store information about Income/Spending transactions
 -- action_details keeps details about each transaction
@@ -924,7 +942,7 @@ BEGIN
 END;
 ------------------------------------------------------------------------------------------------------------------------
 -- Initialize default values for settings
-INSERT INTO settings(name, value) VALUES('SchemaVersion', 71);
+INSERT INTO settings(name, value) VALUES('SchemaVersion', 72);
 INSERT INTO settings(name, value) VALUES('Language', 1);
 INSERT INTO settings(name, value) VALUES('RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
 INSERT INTO settings(name, value) VALUES('RuTaxSessionId', '');
