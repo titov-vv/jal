@@ -24,6 +24,20 @@ CREATE TABLE account_data (
 DROP INDEX IF EXISTS account_data_uniqueness;
 CREATE UNIQUE INDEX account_data_uniqueness ON account_data (account_id, datatype);
 ------------------------------------------------------------------------------------------------------------------------
+-- Table: operations - the identity of an operation, and nothing else.
+-- Each of the eight operation tables holds the SHAPE of one kind of operation; this table holds the fact that an
+-- operation exists and which of them describes it. It is what any reference to an operation can be a foreign key
+-- to: before it, '(otype, oid)' was an operation's address everywhere and a key nowhere, so a child of ANY
+-- operation could have no integrity at all.
+-- SOURCE data: permanent, never deleted and rebuilt, which is exactly what lets other source rows point at it.
+DROP TABLE IF EXISTS operations;
+CREATE TABLE operations (
+    id    INTEGER PRIMARY KEY NOT NULL,  -- The global operation id; it is the 'oid' of the row in the type table
+    otype INTEGER NOT NULL               -- Which table holds the rest of the operation
+);
+CREATE INDEX operations_by_type ON operations (otype);
+
+------------------------------------------------------------------------------------------------------------------------
 -- tables to store information about Income/Spending transactions
 -- action_details keeps details about each transaction
 DROP TABLE IF EXISTS action_details;
@@ -594,7 +608,7 @@ CREATE TABLE conversions (
 -- View that contains a list of all operations with their important parts
 -- seq field defines an order of operations to be displayed/processed
 DROP VIEW IF EXISTS operation_sequence;
-CREATE VIEW operation_sequence AS SELECT m.otype, m.oid, opart, m.timestamp, m.account_id
+CREATE VIEW operation_sequence AS SELECT m.otype, m.oid, m.seq, opart, m.timestamp, m.account_id
 FROM
 (
     SELECT otype, 1 AS seq, oid, 0 AS opart, timestamp, account_id FROM actions
@@ -686,6 +700,7 @@ CREATE TRIGGER actions_after_delete AFTER DELETE ON actions FOR EACH ROW
 BEGIN
     DELETE FROM action_details WHERE pid = OLD.oid;
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
+    DELETE FROM operations WHERE id = OLD.oid;
 END;
 -- Ledger cleanup after modification
 DROP TRIGGER IF EXISTS actions_after_insert;
@@ -705,6 +720,7 @@ CREATE TRIGGER asset_payments_after_delete AFTER DELETE ON asset_payments FOR EA
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp;
+    DELETE FROM operations WHERE id = OLD.oid;
 END;
 -- Ledger and trades cleanup after modification
 DROP TRIGGER IF EXISTS asset_payments_after_insert;
@@ -726,6 +742,7 @@ CREATE TRIGGER trades_after_delete AFTER DELETE ON trades FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp;
+    DELETE FROM operations WHERE id = OLD.oid;
 END;
 -- Ledger and trades cleanup after modification
 DROP TRIGGER IF EXISTS trades_after_insert;
@@ -747,6 +764,7 @@ CREATE TRIGGER swaps_after_delete AFTER DELETE ON swaps FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp;
+    DELETE FROM operations WHERE id = OLD.oid;
 END;
 DROP TRIGGER IF EXISTS swaps_after_insert;
 CREATE TRIGGER swaps_after_insert AFTER INSERT ON swaps FOR EACH ROW
@@ -770,6 +788,7 @@ CREATE TRIGGER bridges_after_delete AFTER DELETE ON bridges FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.out_timestamp OR timestamp >= OLD.in_timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.out_timestamp OR timestamp >= OLD.in_timestamp;
+    DELETE FROM operations WHERE id = OLD.oid;
 END;
 DROP TRIGGER IF EXISTS bridges_after_insert;
 CREATE TRIGGER bridges_after_insert AFTER INSERT ON bridges FOR EACH ROW
@@ -790,6 +809,7 @@ BEGIN
     DELETE FROM asset_action_results WHERE action_id = OLD.oid;
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp;
+    DELETE FROM operations WHERE id = OLD.oid;
 END;
 -- Ledger and trades cleanup after modification
 DROP TRIGGER IF EXISTS asset_action_after_insert;
@@ -828,6 +848,7 @@ DROP TRIGGER IF EXISTS transfers_after_delete;
 CREATE TRIGGER transfers_after_delete AFTER DELETE ON transfers FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.withdrawal_timestamp OR timestamp >= OLD.deposit_timestamp;
+    DELETE FROM operations WHERE id = OLD.oid;
 END;
 -- Ledger cleanup after modification
 DROP TRIGGER IF EXISTS transfers_after_insert;
@@ -848,6 +869,7 @@ CREATE TRIGGER conversions_after_delete AFTER DELETE ON conversions FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp;
+    DELETE FROM operations WHERE id = OLD.oid;
 END;
 -- Ledger and trades cleanup after modification
 DROP TRIGGER IF EXISTS conversions_after_insert;
@@ -902,7 +924,7 @@ BEGIN
 END;
 ------------------------------------------------------------------------------------------------------------------------
 -- Initialize default values for settings
-INSERT INTO settings(name, value) VALUES('SchemaVersion', 70);
+INSERT INTO settings(name, value) VALUES('SchemaVersion', 71);
 INSERT INTO settings(name, value) VALUES('Language', 1);
 INSERT INTO settings(name, value) VALUES('RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
 INSERT INTO settings(name, value) VALUES('RuTaxSessionId', '');
