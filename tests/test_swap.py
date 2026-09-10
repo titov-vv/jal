@@ -4,7 +4,8 @@ import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo
 from tests.helpers import d2t, create_stocks, create_trades, create_quotes, create_swaps, create_assets, \
-    create_actions, create_cross_chain_swaps
+    create_actions, create_cross_chain_swaps, \
+    nth_operation
 from constants import BookAccount, PredefinedAsset, PredefinedCategory, PredefinedAccountType
 from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount, JalAccountCreator
@@ -102,8 +103,8 @@ def test_swap_fee_is_a_row_of_its_own(prepare_db_fifo):
     parts = [x['opart'] for x in Ledger.get_operations_sequence(0, d2t(220301)) if x['otype'] == LedgerTransaction.Swap]
     assert parts == [Swap.Whole, Swap.Fee]                        # the swap itself, then its gas
 
-    swap = LedgerTransaction.get_operation(LedgerTransaction.Swap, 1, Swap.Whole)
-    fee = LedgerTransaction.get_operation(LedgerTransaction.Swap, 1, Swap.Fee)
+    swap = nth_operation(LedgerTransaction.Swap, 1, Swap.Whole)
+    fee = nth_operation(LedgerTransaction.Swap, 1, Swap.Fee)
     assert swap.view_rows() == 2 and fee.view_rows() == 1          # 3 lines before, 2 + 1 after
     assert swap.value_change() == [Decimal('-10'), Decimal('20')]  # the gas has left the swap's own row
     assert 'GAS' not in swap.description()

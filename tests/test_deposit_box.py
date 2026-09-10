@@ -3,7 +3,7 @@ from decimal import Decimal
 import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db
-from tests.helpers import d2t, create_actions
+from tests.helpers import d2t, create_actions, operation_id
 from constants import BookAccount, PredefinedCategory, PredefinedAccountType
 from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount, JalAccountCreator
@@ -158,7 +158,7 @@ def test_deposit_transfers_wear_the_deposit_glyphs(prepare_bank_account):
                                   "deposit_account": box.id(), "deposit": Decimal('200'),
                                   "fee_account": 1, "fee": Decimal('5')})
 
-    glyph = lambda oid, part: Transfer(oid, part).icon().cacheKey()
+    glyph = lambda n, part: Transfer(operation_id(LedgerTransaction.Transfer, n), part).icon().cacheKey()
     for part in (Transfer.Outgoing, Transfer.Incoming):
         assert glyph(1, part) == JalIcon[JalIcon.DEPOSIT_OPEN].cacheKey()
         assert glyph(2, part) == JalIcon[JalIcon.DEPOSIT_CLOSE].cacheKey()

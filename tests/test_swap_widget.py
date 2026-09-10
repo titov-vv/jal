@@ -5,7 +5,8 @@ from decimal import Decimal
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo
 from tests.helpers import d2t, create_stocks, create_trades, create_quotes, create_swaps, \
-    create_cross_chain_swaps
+    create_cross_chain_swaps, \
+    operation_id
 from constants import PredefinedAccountType
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.operations import LedgerTransaction
@@ -36,7 +37,7 @@ def test_swap_widget_shows_existing_swap(prepare_db_fifo):
     create_swaps(1, [(t_swap, 4, 10, 5, 20)])
 
     widget = SwapWidget()
-    widget.set_id(1)                       # oid of the swap
+    widget.set_id(operation_id(LedgerTransaction.Swap))
     assert widget.model.rowCount() == 1
     row = widget.model.record(0)
     assert Decimal(row.value("out_qty")) == Decimal('10')
@@ -52,7 +53,7 @@ def test_swap_widget_hides_cross_chain_fields_for_same_chain_swap(prepare_db_fif
     create_swaps(1, [(t_swap, 4, 10, 5, 20)])
 
     widget = SwapWidget()
-    widget.set_id(1)
+    widget.set_id(operation_id(LedgerTransaction.Swap))
     assert not widget.ui.cross_chain_check.isChecked()
     assert widget.model.record(0).isNull("in_account_id")
 
@@ -69,7 +70,7 @@ def test_swap_widget_shows_cross_chain_swap(prepare_db_fifo):
                                'in_ts': t_in, 'in_acc': 2, 'in_asset': 5, 'in_qty': 20, 'in_hash': '0xabc'}])
 
     widget = SwapWidget()
-    widget.set_id(1)
+    widget.set_id(operation_id(LedgerTransaction.Swap))
     row = widget.model.record(0)
     assert int(row.value("in_account_id")) == 2
     assert int(row.value("in_timestamp")) == t_in

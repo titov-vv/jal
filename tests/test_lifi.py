@@ -8,7 +8,9 @@ import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import d2t, dt2t, create_assets, create_actions, create_trades, create_quotes, create_bridges, \
-    create_swaps, create_transfers, symbol_id_for
+    create_swaps, create_transfers, symbol_id_for, \
+    operation_id
+from jal.db.operations import LedgerTransaction
 from constants import PredefinedAsset, PredefinedAccountType, PredefinedCategory, AssetLocation, SymbolId
 from jal.data_import.statement import Statement, JSF
 from jal.db.account import JalAccount, JalAccountCreator
@@ -343,7 +345,7 @@ def test_audit_finds_a_cross_chain_move_booked_as_a_same_chain_swap(wallets, lif
 
     last_oid, findings = ArrivalReconciler().audit_swaps()
 
-    assert last_oid == 1 and len(findings) == 1
+    assert last_oid == operation_id(LedgerTransaction.Swap) and len(findings) == 1
     assert 'cross-chain move' in findings[0] and 'paid back on the source chain' in findings[0]
 
 
@@ -513,8 +515,10 @@ def _second_gho_to_usdc_answer():
 def two_misbooked_swaps(wallets, lifi_answers):
     create_swaps(ETH_WALLET, [(dt2t(2101031200), GHO, 100, USDC, Decimal('0.1')),
                               (dt2t(2101041200), GHO, 100, USDC, Decimal('0.1'))])
-    JalDB._exec("UPDATE swaps SET tx_hash=:hash WHERE oid=1", [(":hash", SEND_HASH)], commit=True)
-    JalDB._exec("UPDATE swaps SET tx_hash=:hash WHERE oid=2", [(":hash", SEND_HASH_2)], commit=True)
+    JalDB._exec("UPDATE swaps SET tx_hash=:hash WHERE oid=:oid",
+                [(":hash", SEND_HASH), (":oid", operation_id(LedgerTransaction.Swap, 1))], commit=True)
+    JalDB._exec("UPDATE swaps SET tx_hash=:hash WHERE oid=:oid",
+                [(":hash", SEND_HASH_2), (":oid", operation_id(LedgerTransaction.Swap, 2))], commit=True)
     lifi_answers[SEND_HASH] = _gho_to_usdc_answer()
     lifi_answers[SEND_HASH_2] = _second_gho_to_usdc_answer()
     yield lifi_answers
@@ -530,7 +534,8 @@ def _audit_stopping_after_the_first_swap(from_oid=0) -> tuple:
 def test_a_stopped_audit_reports_what_it_checked_and_a_watermark_covering_only_that(two_misbooked_swaps):
     last_oid, findings = _audit_stopping_after_the_first_swap()
 
-    assert last_oid == 1            # the second swap was never looked at, so it is not counted as checked
+    # the second swap was never looked at, so it is not counted as checked
+    assert last_oid == operation_id(LedgerTransaction.Swap, 1)
     assert len(findings) == 1
 
 
@@ -539,5 +544,5 @@ def test_the_run_after_a_stopped_audit_carries_on_from_where_it_stopped(two_misb
 
     last_oid, findings = ArrivalReconciler().audit_swaps(last_oid)
 
-    assert last_oid == 2            # it starts above the watermark and finishes the history ...
+    assert last_oid == operation_id(LedgerTransaction.Swap, 2)   # it starts above the watermark ...
     assert len(findings) == 1       # ... finding the swap the stopped run had not reached

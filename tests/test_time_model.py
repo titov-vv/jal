@@ -39,7 +39,9 @@ from jal.db.ledger import Ledger
 from jal.widgets.helpers import ts2axis, axis2ts, ts2d, ts2dt
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from tests.helpers import (create_assets, create_actions, create_dividends, create_quotes, create_stock_dividends,
-                          create_trades, create_transfers, create_corporate_actions, d2t, pinned_tz, symbol_id_for)
+                          create_trades, create_transfers, create_corporate_actions, d2t, pinned_tz, symbol_id_for,
+                          nth_operation, operation_id)
+
 
 
 # The offset is handed out so a test can state the shift it expects in terms of it instead of repeating the number.
@@ -492,7 +494,7 @@ def test_a_payment_that_states_its_day_is_read_on_no_clock(prepare_db_taxes):
                                  {'timestamp': stamped, 'timestamp_day_only': True,
                                   'type': AssetPayment.Dividend, 'account_id': 1, 'symbol_id': symbol_id_for(4),
                                   'amount': Decimal('10'), 'tax': Decimal('1'), 'note': "Stamped with its day"})
-    payment = LedgerTransaction.get_operation(LedgerTransaction.AssetPayment, 1)
+    payment = nth_operation(LedgerTransaction.AssetPayment, 1)
     _resident_in('Asia/Tokyo')                             # far enough east to push 20:20 into the next day
 
     assert payment.timestamp() == stamped                  # the digits the source wrote, and nothing else
@@ -513,7 +515,7 @@ def test_a_tax_report_does_not_re_read_a_payment_that_states_its_day(prepare_db_
                                  {'timestamp': stamped, 'timestamp_day_only': True,
                                   'type': AssetPayment.Dividend, 'account_id': 1, 'symbol_id': symbol_id_for(4),
                                   'amount': Decimal('10'), 'tax': Decimal('1'), 'note': "Stamped with its day"})
-    payment = LedgerTransaction.get_operation(LedgerTransaction.AssetPayment, 1)
+    payment = nth_operation(LedgerTransaction.AssetPayment, 1)
     _resident_in('Asia/Tokyo')
     report = TaxesRussia()
 
@@ -771,9 +773,10 @@ def test_the_dates_of_an_operation_are_never_re_read(reclock_db):
     JalDB._exec("UPDATE asset_payments SET ex_date=:ex_date", [(":ex_date", d2t(210630))])
 
     reclock('Europe/Moscow', 'Europe/Lisbon', apply=True)
-    assert _stored('trades', 'timestamp', 1) == moment - 2 * 3600      # the moment beside them did move...
-    assert _stored('trades', 'settlement', 1) == d2t(210705)           # ... and neither of these did
-    assert _stored('asset_payments', 'ex_date', 1) == d2t(210630)
+    trade = operation_id(LedgerTransaction.Trade)
+    assert _stored('trades', 'timestamp', trade) == moment - 2 * 3600      # the moment beside them did move...
+    assert _stored('trades', 'settlement', trade) == d2t(210705)           # ... and neither of these did
+    assert _stored('asset_payments', 'ex_date', operation_id(LedgerTransaction.AssetPayment)) == d2t(210630)
 
 
 # Two local times cannot be re-read without a choice being made: the hour a clock repeats when it goes back is two
@@ -919,7 +922,7 @@ def test_a_priced_payment_keeps_its_price_and_leaves_the_series_alone(reclock_db
 
     reclock('Europe/Moscow', 'Europe/Lisbon', apply=True)
     assert _stored(PAYMENTS, 'timestamp', 1) == moment - 2 * 3600
-    vesting = LedgerTransaction.get_operation(LedgerTransaction.AssetPayment, 1)
+    vesting = nth_operation(LedgerTransaction.AssetPayment, 1)
     assert vesting.price() == Decimal('100')
     # Neither quote is touched - not the day of the series, and not the one stamped on the hour the payment used
     # to sit on, which is now just another row of the same series and nobody's own price to keep in step.
@@ -963,7 +966,7 @@ def test_the_findings_are_exported_for_review(reclock_db, tmp_path):
     report = reclock('Europe/Lisbon', 'Europe/Moscow', accounts=[1])
     legs = _exported(tool.export_reordered_legs(prefix, report))
     assert legs[0][:2] == ["operation", "id"] and legs[0][6] == "already_reordered"
-    assert legs[1][:6] == ["transfers", "1", "2021-07-01 10:00:00", "2021-07-01 12:00:00",
+    assert legs[1][:6] == ["transfers", str(oid), "2021-07-01 10:00:00", "2021-07-01 12:00:00",
                            "2021-07-01 10:30:00", "2021-07-01 10:30:00"]
     assert legs[1][6:9] == ["", "Moscow broker", "Lisbon bank"]
 

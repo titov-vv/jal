@@ -4,7 +4,9 @@ from decimal import Decimal
 import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db
-from tests.helpers import d2t, create_assets, create_actions, create_trades, create_quotes, symbol_id_for
+from tests.helpers import d2t, create_assets, create_actions, create_trades, create_quotes, symbol_id_for, \
+    nth_operation, \
+    operation_id
 from constants import PredefinedAsset, PredefinedCategory, PredefinedAccountType, AssetLocation, AccountData, \
     BookAccount
 from jal.db.db import JalDB
@@ -59,7 +61,7 @@ def test_staking_reward_opens_lot_at_market(wallet):
     assert _amount() == Decimal('100')            # the reward increases the position
     assert _open_lots() == Decimal('100')         # ... as an open lot, so it has a cost basis to sell against
     # Valued at the last known quote, not at an exact-timestamp one - crypto quotes are daily
-    assert AssetPayment(1).price() == Decimal('0.30')
+    assert nth_operation(LedgerTransaction.AssetPayment, 1).price() == Decimal('0.30')
 
 
 @pytest.mark.parametrize('subtype', [AssetPayment.StakingReward, AssetPayment.TokenRentReturn])
@@ -91,7 +93,7 @@ def test_dust_attack_opens_lot_at_zero_without_a_quote(wallet):
 
     assert _amount() == Decimal('0.000001')       # the dust still increases the position...
     assert _open_lots() == Decimal('0.000001')     # ... as an open lot, opened at a zero basis
-    assert AssetPayment(1).price() == Decimal('0')
+    assert nth_operation(LedgerTransaction.AssetPayment, 1).price() == Decimal('0')
 
 
 def test_unquoted_dust_is_valued_at_zero_and_reported_as_no_miss(wallet, caplog):
@@ -103,7 +105,7 @@ def test_unquoted_dust_is_valued_at_zero_and_reported_as_no_miss(wallet, caplog)
     _payment(AssetPayment.DustAttack, d2t(210202), '0.000001')
 
     with caplog.at_level(logging.ERROR):
-        assert AssetPayment(1).amount(currency_id=2) == Decimal('0')
+        assert nth_operation(LedgerTransaction.AssetPayment, 1).amount(currency_id=2) == Decimal('0')
     assert caplog.records == []
 
 
@@ -113,7 +115,7 @@ def test_an_unquoted_gas_fee_is_still_reported(wallet, caplog):
     _payment(AssetPayment.GasFee, d2t(210202), '10')
 
     with caplog.at_level(logging.ERROR):
-        assert AssetPayment(1).amount(currency_id=2) == Decimal('0')
+        assert nth_operation(LedgerTransaction.AssetPayment, 1).amount(currency_id=2) == Decimal('0')
     assert len(caplog.records) == 1
 
 
@@ -123,7 +125,7 @@ def test_dust_attack_uses_quote_when_one_exists(wallet):
     Ledger().rebuild(from_timestamp=0)
 
     assert _amount() == Decimal('100')
-    assert AssetPayment(1).price() == Decimal('0.30')     # priced normally when a quote is actually available
+    assert nth_operation(LedgerTransaction.AssetPayment, 1).price() == Decimal('0.30')     # priced normally when a quote is actually available
 
 
 def test_staking_reward_basis_is_used_on_sale(wallet):
@@ -174,7 +176,7 @@ def test_unpriced_reward_recovers_after_quotes_arrive(wallet):
 
     assert _amount() == Decimal('100')
     assert _open_lots() == Decimal('100')
-    assert AssetPayment(1).price() == Decimal('0.30')
+    assert nth_operation(LedgerTransaction.AssetPayment, 1).price() == Decimal('0.30')
 
 
 def test_decimal_values_are_deduplicated(wallet):
@@ -193,7 +195,8 @@ def test_decimal_values_are_deduplicated(wallet):
     # number is stored in exponent form - the agreed convention, which anything comparing these columns as strings
     # has to expect. What matters is that the value round-trips exactly and that both the insert and the duplicate
     # check spell it the same way, which is what makes the count above 1 and not 2.
-    stored = JalDB._read("SELECT qty FROM trades WHERE oid=1")
+    stored = JalDB._read("SELECT qty FROM trades WHERE oid=:oid",
+                         [(":oid", operation_id(LedgerTransaction.Trade))])
     assert stored == '1E+1'
     assert Decimal(stored) == Decimal('10')
 

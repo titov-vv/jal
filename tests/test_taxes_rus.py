@@ -5,7 +5,8 @@ from decimal import Decimal
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from data_import.broker_statements.ibkr import StatementIBKR
 from tests.helpers import d2t, create_assets, create_quotes, create_dividends, create_coupons, create_trades, \
-    create_actions, create_corporate_actions, create_stock_dividends, json_decimal2float, save_test_xls_report
+    create_actions, create_corporate_actions, create_stock_dividends, json_decimal2float, save_test_xls_report, \
+    nth_operation
 from constants import PredefinedAsset, PredefinedCategory
 from jal.db.ledger import Ledger
 from jal.db.account import JalAccount, JalAccountCreator
@@ -147,7 +148,7 @@ def test_taxes_rus_bonds(tmp_path, project_root, data_path, prepare_db_taxes):
     IBKR.import_into_db()
 
     # Adjust share of result allocation to 100% of initial bond
-    LedgerTransaction.get_operation(LedgerTransaction.CorporateAction, 1).set_result_share(JalAsset(5), Decimal('1.0'))
+    nth_operation(LedgerTransaction.CorporateAction, 1).set_result_share(JalAsset(5), Decimal('1.0'))
 
     ledger = Ledger()  # Build ledger to have FIFO deals table
     ledger.rebuild(from_timestamp=0)
@@ -212,7 +213,7 @@ def test_taxes_merger_complex(tmp_path, data_path, prepare_db_taxes):
     create_quotes(2, 1, usd_rates)
 
     # Adjust share of resulting assets: 100% SRNGU -> 95% DNA + 5% DNA WS
-    action = LedgerTransaction.get_operation(LedgerTransaction.CorporateAction, 1)
+    action = nth_operation(LedgerTransaction.CorporateAction, 1)
     action.set_result_share(JalAsset(5), Decimal('0.95'))
     action.set_result_share(JalAsset(4), Decimal('0.05'))
 
@@ -248,7 +249,7 @@ def test_taxes_spinoff(tmp_path, data_path, prepare_db_taxes):
     create_quotes(2, 1, usd_rates)
 
     # Adjust share of resulting assets: 100% GE -> 90% GE + 10% WAB
-    action = LedgerTransaction.get_operation(LedgerTransaction.CorporateAction, 1)
+    action = nth_operation(LedgerTransaction.CorporateAction, 1)
     action.set_result_share(JalAsset(4), Decimal('0.9'))
     action.set_result_share(JalAsset(5), Decimal('0.1'))
 
@@ -322,10 +323,10 @@ def test_taxes_merger_spinoff(tmp_path, data_path, prepare_db_taxes):
 
     # Adjust share of resulting assets:
     # Merger: 100% NTRP -> 100% PTPI
-    action = LedgerTransaction.get_operation(LedgerTransaction.CorporateAction, 1)
+    action = nth_operation(LedgerTransaction.CorporateAction, 1)
     action.set_result_share(JalAsset(5), Decimal('1.0'))
     # Spin-off: 100% NTRP -> 100% NTRP + 0% SNPX
-    action = LedgerTransaction.get_operation(LedgerTransaction.CorporateAction, 2)
+    action = nth_operation(LedgerTransaction.CorporateAction, 2)
     action.set_result_share(JalAsset(4), Decimal('1.0'))
 
     ledger = Ledger()  # Build ledger to have everything in place

@@ -3,7 +3,7 @@ from PySide6.QtCore import Qt, Slot, Signal
 from PySide6.QtGui import QKeySequence
 from PySide6.QtWidgets import QWidget, QDataWidgetMapper
 from PySide6.QtSql import QSqlTableModel
-from jal.db.db import JalModel
+from jal.db.db import JalDB, JalModel
 from jal.widgets.icons import JalIcon
 from jal.widgets.helpers import set_grids_metrics, set_date_formats, assign_shortcut
 
@@ -44,8 +44,15 @@ class AbstractOperationDetails(QWidget):
         self.mapper.setSubmitPolicy(QDataWidgetMapper.AutoSubmit)
 
         self.model.dataChanged.connect(self.onDataChange)
+        self.model.beforeInsert.connect(self.assignOperationId)
         self.ui.commit_button.clicked.connect(self.saveChanges)
         self.ui.revert_button.clicked.connect(self.revertChanges)
+
+    # An operation takes its id from the 'operations' root. Done at INSERT and not in prepareNew(): a new operation
+    # the user starts and then abandons never reaches here, so it leaves no id behind.
+    @Slot()
+    def assignOperationId(self, record):
+        record.setValue("oid", JalDB().allocate_operation_id(self.operation_type))
 
     def set_id(self, oid):
         self.model.setFilter(f"oid={oid}")
@@ -65,10 +72,15 @@ class AbstractOperationDetails(QWidget):
     def _validated(self):   # May be used in descendant classes
         return True
 
+    # In a transaction, because saving a new operation writes two rows: the root one that assignOperationId() takes
+    # the id from, and the operation itself. A submit that fails would otherwise leave the root row behind.
     def _save(self):
+        JalDB().start_transaction()
         if not self.model.submitAll():
+            JalDB().rollback_transaction()
             logging.fatal(self.tr("Operation submit failed: ") + self.model.lastError().text())
             return False
+        JalDB().commit_transaction()
         self.modified = False
         self.ui.commit_button.setEnabled(False)
         self.ui.revert_button.setEnabled(False)

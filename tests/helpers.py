@@ -102,6 +102,23 @@ def json_decimal2float(json_obj):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# The id of the n-th operation of a kind, counted in the order the operations were created (n is 1-based).
+# Operation ids come from the 'operations' root and are global, so the first trade of a fixture is not id 1 - it
+# carries whatever number was free when it was stored. A test that means "the corporate action I just created"
+# has to ask for it by position rather than write a literal.
+def operation_id(otype: int, index: int = 1) -> int:
+    oid = JalDB._read("SELECT id FROM operations WHERE otype=:otype ORDER BY id LIMIT 1 OFFSET :offset",
+                      [(":otype", otype), (":offset", index - 1)])
+    assert oid, f"No operation of type {otype} at position {index}"
+    return int(oid)
+
+
+# The n-th operation of a kind itself - see operation_id() for what "n-th" counts
+def nth_operation(otype: int, index: int = 1, opart: int = 0):
+    return LedgerTransaction.get_operation(otype, operation_id(otype, index), opart)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 # Create assets in database with PredefinedAsset.Stock type : assets is a list of tuples (symbol, full_name)
 def create_stocks(assets, currency_id):
     for item in assets:

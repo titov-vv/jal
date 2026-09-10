@@ -3,7 +3,8 @@ from decimal import Decimal
 import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db
-from tests.helpers import d2t, create_assets, create_actions, create_quotes, pinned_tz, symbol_id_for
+from tests.helpers import d2t, create_assets, create_actions, create_quotes, pinned_tz, symbol_id_for, \
+    nth_operation
 from constants import AssetLocation, PredefinedAccountType, PredefinedAsset, PredefinedCategory
 from jal.data_import.statement import JSF, Statement, Statement_ImportError
 from jal.data_import.broker_statements.kucoin import StatementKuCoin
@@ -372,4 +373,4 @@ def test_reward_payment_is_valued_like_a_staking_reward(prepare_db):
     lots = JalAccount(1).open_trades_list(JalAsset(4))
     assert sum((lot.open_qty() for lot in lots), Decimal('0')) == Decimal('10')
     # valued at the last known quote rather than at one stamped at its own second
-    assert AssetPayment(1).price() == Decimal('0.98')
+    assert nth_operation(LedgerTransaction.AssetPayment, 1).price() == Decimal('0.98')

@@ -3,7 +3,8 @@ from decimal import Decimal
 import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo
-from tests.helpers import d2t, create_stocks, create_trades, create_quotes, create_conversions, symbol_id_for
+from tests.helpers import d2t, create_stocks, create_trades, create_quotes, create_conversions, symbol_id_for, \
+    operation_id
 from constants import AccountData, BookAccount, PredefinedCategory
 from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount
@@ -116,8 +117,8 @@ def test_conversion_fee_is_a_row_of_its_own(prepare_db_fifo):
     parts = [x['opart'] for x in Ledger.get_operations_sequence(0, d2t(220301)) if x['otype'] == otype]
     assert parts == [Conversion.Whole, Conversion.Fee]   # the conversion itself, then its gas
 
-    conversion = LedgerTransaction.get_operation(otype, 1, Conversion.Whole)
-    fee = LedgerTransaction.get_operation(otype, 1, Conversion.Fee)
+    conversion = LedgerTransaction.get_operation(otype, operation_id(otype), Conversion.Whole)
+    fee = LedgerTransaction.get_operation(otype, operation_id(otype), Conversion.Fee)
     assert conversion.view_rows() == 2 and fee.view_rows() == 1     # 3 lines before, 2 + 1 after
     assert conversion.value_change() == [Decimal('-2'), Decimal('2')]
     assert 'GAS' not in conversion.description()

@@ -479,20 +479,22 @@ class JalDB:
     # 'mandatory'=True if this piece must be present, 'validation'=True if it is used to check if operation is
     # present in database already (and 'default' is used for this check if no value provided in 'data')
     # 'duplicate_before' bounds that check - see locate_operation()
-    def create_operation(self, table_name, fields, data, duplicate_before=None):
+    # 'otype' names the kind of operation being stored.
+    def create_operation(self, table_name, fields, data, duplicate_before=None, otype=None):
         self.validate_operation_data(table_name, fields, data)
         oid = self.locate_operation(table_name, fields, data, duplicate_before)
         if oid:
             logging.warning(self.tr("Operation already present in db and was skipped: ") + f"{table_name}, {data}")
             return oid
         else:
-            oid = self.insert_operation(table_name, fields, data)
+            oid = self.insert_operation(table_name, fields, data, otype)
         children = [x for x in fields if 'children' in fields[x] and fields[x]['children']]
         for child in children:
             for item in data[child]:
                 item[fields[child]['child_pid']] = oid
                 # No bound for the children: they are keyed by the parent id that was just inserted, so an existing
-                # child row of another parent can't be mistaken for one of these
+                # child row of another parent can't be mistaken for one of these.
+                # And no 'otype': a child is not an operation and gets no row in the root
                 self.create_operation(fields[child]['child_table'], fields[child]['child_fields'], item)
         return oid
 
@@ -554,12 +556,27 @@ class JalDB:
             return int(oid)
         return 0
 
+    # Registers a new operation of type 'otype' in the root table and returns the id it was given.
+    # It does NOT commit: the allocation belongs to whatever transaction its caller has open, and an operation and
+    # its root row have to be written together or not at all. Committing here would also end a transaction opened
+    # through Qt directly - IncomeSpendingWidget._save() holds one across the parent insert and its child rows.
+    def allocate_operation_id(self, otype: int) -> int:
+        query = self._exec("INSERT INTO operations (otype) VALUES (:otype)", [(":otype", otype)])
+        return query.lastInsertId()
+
     # Method stores given operation in the database 'table_name'.
     # Returns 'id' of inserted operation.
-    def insert_operation(self, table_name, fields, data) -> int:
+    # With 'otype' given the row is an operation and its id comes from the root; without it the row is a child of
+    # one and keeps its own table's numbering.
+    def insert_operation(self, table_name, fields, data, otype=None) -> int:
         query_text = f"INSERT INTO {table_name} ("
         params = []
         values_text = "VALUES ("
+        if otype is not None:
+            oid = self.allocate_operation_id(otype)
+            query_text += "oid, "
+            values_text += ":oid, "
+            params.append((":oid", oid))
         for field in fields:
             if 'children' in fields[field] and fields[field]['children']:
                 continue   # Skip children for separate processing by create_operation()

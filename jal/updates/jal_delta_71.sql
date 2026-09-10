@@ -67,11 +67,6 @@ UPDATE asset_action_results SET action_id = -(SELECT m.new_id FROM opmap m WHERE
 UPDATE conversions          SET oid       = -(SELECT m.new_id FROM opmap m WHERE m.otype=6 AND m.old_id=conversions.oid);
 UPDATE swaps                SET oid       = -(SELECT m.new_id FROM opmap m WHERE m.otype=7 AND m.old_id=swaps.oid);
 UPDATE bridges              SET oid       = -(SELECT m.new_id FROM opmap m WHERE m.otype=8 AND m.old_id=bridges.oid);
--- One stored oid lives outside the operation tables: 'LiFiAuditedSwap' is the highest swap already audited against
--- the route it came from (jal/net/chain_fetchers/fetchers.py). Left alone it would point into the old numbering;
--- reset to 0 it would re-audit every swap over the network.
-UPDATE settings SET value = CAST(-(SELECT m.new_id FROM opmap m WHERE m.otype=7 AND m.old_id=CAST(settings.value AS INTEGER)) AS TEXT)
-    WHERE settings.name = 'LiFiAuditedSwap' AND CAST(settings.value AS INTEGER) > 0;
 
 -- Pass 2: back up; the positive half is empty at this point
 UPDATE actions              SET oid       = -oid;
@@ -84,8 +79,17 @@ UPDATE asset_action_results SET action_id = -action_id;
 UPDATE conversions          SET oid       = -oid;
 UPDATE swaps                SET oid       = -oid;
 UPDATE bridges              SET oid       = -oid;
-UPDATE settings SET value = CAST(-CAST(settings.value AS INTEGER) AS TEXT)
-    WHERE settings.name = 'LiFiAuditedSwap' AND CAST(settings.value AS INTEGER) < 0;
+
+-- One stored oid lives outside the operation tables: 'LiFiAuditedSwap' is the highest swap already audited against
+-- the route it came from (jal/net/chain_fetchers/fetchers.py). Left alone it would point into the old numbering;
+-- reset to 0 it would re-audit every swap over the network.
+-- It is a WATERMARK, so it is moved as one: the highest new id at or below it, rather than the new id of that exact
+-- row. The swap it names may have been deleted since it was audited, and an exact lookup would then yield NULL -
+-- which 'settings.value' is NOT NULL against, failing the whole upgrade. The renumbering preserves each type's
+-- order, so "everything up to here" survives the move unchanged. 0 means no swap is at or below it: nothing audited.
+UPDATE settings SET value = CAST(COALESCE((SELECT MAX(m.new_id) FROM opmap m
+        WHERE m.otype=7 AND m.old_id<=CAST(settings.value AS INTEGER)), 0) AS TEXT)
+    WHERE settings.name = 'LiFiAuditedSwap' AND CAST(settings.value AS INTEGER) > 0;
 
 -- The map is the same query that populates the root, so the two cannot disagree
 INSERT INTO operations (id, otype) SELECT new_id, otype FROM opmap;

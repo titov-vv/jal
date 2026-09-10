@@ -10,7 +10,8 @@ from decimal import Decimal
 import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo
-from tests.helpers import d2t, create_stocks, create_trades, create_bridges, create_quotes, symbol_id_for
+from tests.helpers import d2t, create_stocks, create_trades, create_bridges, create_quotes, symbol_id_for, \
+    nth_operation
 from constants import PredefinedCategory
 from jal.db.db import JalDB
 from jal.db.asset import JalAsset
@@ -53,7 +54,7 @@ def test_every_carrier_states_its_fee(accounts_and_assets):
                                   'in_ts': d2t(220205), 'in_acc': 2, 'in_qty': 5.0, 'asset': 4,
                                   'fee_asset': 5, 'fee_qty': 0.0625}])[0]
     expected = [
-        (Trade(1),                      Decimal('3'),      0,   1, FeeKind.Commission),
+        (nth_operation(LedgerTransaction.Trade, 1),                      Decimal('3'),      0,   1, FeeKind.Commission),
         (Swap(swap.oid()),              Decimal('0.5'),    gas, 1, FeeKind.Gas),
         (Conversion(conversion.oid()),  Decimal('0.25'),   gas, 1, FeeKind.Gas),
         (Transfer(transfer.oid()),      Decimal('0.125'),  gas, 1, FeeKind.Gas),
@@ -81,7 +82,7 @@ def test_fee_scalar_counts_money_only(accounts_and_assets):
     assert Transfer(money_fee.oid()).fee() == Decimal('7')
     assert Transfer(gas_fee.oid()).fee() == Decimal('0')       # an expense at basis, never a component of the deal
     assert Transfer(gas_fee.oid()).fees()[0].amount() == Decimal('0.5')   # ... but the fee itself is still there
-    assert Trade(1).fee() == Decimal('3')
+    assert nth_operation(LedgerTransaction.Trade, 1).fee() == Decimal('3')
 
 
 # A fee carries its own account: a transfer may be charged on the sending leg, on the receiving one, or on neither
@@ -95,7 +96,7 @@ def test_a_fee_names_the_account_that_bore_it(accounts_and_assets):
 # An operation that carries no fee has no fee to state, and its accessors say so rather than raising
 def test_an_operation_without_a_fee(accounts_and_assets):
     create_trades(1, [(d2t(220101), d2t(220101), 4, 10.0, 100.0, 0.0)])
-    trade = Trade(1)
+    trade = nth_operation(LedgerTransaction.Trade, 1)
     assert trade.fees() == []
     assert trade.fee() == Decimal('0')
     assert trade.fee_symbol_id() == 0

@@ -185,51 +185,51 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
 
     # validate income/spending
     assert JalAccount(1).dump_actions() == [
-        [1, 1, 1578073286, 1, 1, '', '', [1, 1, 5, '', '-7.96', '0', 'BALANCE OF MONTHLY MINIMUM FEE FOR DEC 2019']],
-        [2, 1, 1601462520, 1, 1, '', '', [2, 2, 5, '', '0.6905565', '0', 'COMMISS COMPUTED AFTER TRADE REPORTED (EWLL)']],
-        [4, 1, 1604534400, 1, 1, '', '', [4, 4, 6, '', '-0.0105', '0', 'VAT Spain 21%: 0.05 USD t*****71:Global Snapshot PnP']]
+        [3, 1, 1578073286, 1, 1, '', '', [1, 3, 5, '', '-7.96', '0', 'BALANCE OF MONTHLY MINIMUM FEE FOR DEC 2019']],
+        [4, 1, 1601462520, 1, 1, '', '', [2, 4, 5, '', '0.6905565', '0', 'COMMISS COMPUTED AFTER TRADE REPORTED (EWLL)']],
+        [6, 1, 1604534400, 1, 1, '', '', [4, 6, 6, '', '-0.0105', '0', 'VAT Spain 21%: 0.05 USD t*****71:Global Snapshot PnP']]
     ]
     assert JalAccount(2).dump_actions() == [
-        [3, 1, 1591142400, 2, 1, '', '', [3, 3, 8, '', '0.5', '0', 'RUB CREDIT INT FOR MAY-2020']]
+        [5, 1, 1591142400, 2, 1, '', '', [3, 5, 8, '', '0.5', '0', 'RUB CREDIT INT FOR MAY-2020']]
     ]
 
     # validate transfers
     # A transfer the statement gives only one end of ('account' holding a 0) keeps the other end NULL - it is
-    # "money on the way" until the counterpart is imported. Transfer 4 therefore belongs to account 2 alone and
-    # isn't listed here at all, while 5, 6 and 7 carry an empty side instead of the account a prompt used to guess.
+    # "money on the way" until the counterpart is imported. Transfer 10 therefore belongs to account 2 alone and
+    # isn't listed here at all, while 11, 12 and 13 carry an empty side instead of the account a prompt used to guess.
     assert JalAccount(1).dump_transfers() == [
-        [1, 4, 1580443370, 6, '890.47', 1580443370, 1, '1E+3', 1, '3', '2674343226', '', '', '', 'IDEALFX'],
-        [2, 4, 1581322108, 2, '78986.6741', 1581322108, 1, '1234', 1, '2', '2645393202', '', '', '', 'IDEALFX'],
-        [3, 4, 1590522832, 2, '44.07', 1590522832, 1, '0.621778209', '', '', '2845906676', '', '', '', 'IDEALFX'],
-        [5, 4, 1605744000, 1, '1234', 1605744000, '', '1234', '', '', '14333901913', '', '', '', 'DISBURSEMENT INITIATED BY John Doe'],
-        [6, 4, 1663372800, '', '1E+2', 1663372800, 1, '1E+2', '', '', '1234567890', '', '', '', 'CASH RECEIPTS / ELECTRONIC FUND TRANSFERS'],
-        [7, 4, 1663372800, '', '1E+2', 1663372800, 1, '1E+2', '', '', '1234567891', '', '', '', 'CASH RECEIPTS / ELECTRONIC FUND TRANSFERS'],
-        [8, 4, 1685702720, 3, '7', 1685702720, 1, '7', '', '', '24055511103', '', 8, '', 'INTERNAL TRANSFER (--)'],
-        [9, 4, 1694777165, 1, '12345', 1694777165, 3, '12345', '', '', '21632131212', '', '', '', 'INTERNAL TRANSFER FROM U7654321 TO TEST_ACC'],
-        [10, 4, 1683361518, 3, '1.5E+2', 1683361518, 1, '1.5E+2', '', '', '16377745681', '', '', '', 'INTERNAL TRANSFER FROM TEST_ACC TO U7654321']
+        [7, 4, 1580443370, 6, '890.47', 1580443370, 1, '1E+3', 1, '3', '2674343226', '', '', '', 'IDEALFX'],
+        [8, 4, 1581322108, 2, '78986.6741', 1581322108, 1, '1234', 1, '2', '2645393202', '', '', '', 'IDEALFX'],
+        [9, 4, 1590522832, 2, '44.07', 1590522832, 1, '0.621778209', '', '', '2845906676', '', '', '', 'IDEALFX'],
+        [11, 4, 1605744000, 1, '1234', 1605744000, '', '1234', '', '', '14333901913', '', '', '', 'DISBURSEMENT INITIATED BY John Doe'],
+        [12, 4, 1663372800, '', '1E+2', 1663372800, 1, '1E+2', '', '', '1234567890', '', '', '', 'CASH RECEIPTS / ELECTRONIC FUND TRANSFERS'],
+        [13, 4, 1663372800, '', '1E+2', 1663372800, 1, '1E+2', '', '', '1234567891', '', '', '', 'CASH RECEIPTS / ELECTRONIC FUND TRANSFERS'],
+        [14, 4, 1685702720, 3, '7', 1685702720, 1, '7', '', '', '24055511103', '', 8, '', 'INTERNAL TRANSFER (--)'],
+        [15, 4, 1694777165, 1, '12345', 1694777165, 3, '12345', '', '', '21632131212', '', '', '', 'INTERNAL TRANSFER FROM U7654321 TO TEST_ACC'],
+        [16, 4, 1683361518, 3, '1.5E+2', 1683361518, 1, '1.5E+2', '', '', '16377745681', '', '', '', 'INTERNAL TRANSFER FROM TEST_ACC TO U7654321']
     ]
-    # The deposit whose source the statement couldn't name (4) is booked on the account that received it, and on no
+    # The deposit whose source the statement couldn't name (10) is booked on the account that received it, and on no
     # other - the end it lacks belongs to nobody until the transfer is settled
     assert JalAccount(2).dump_transfers() == [
-        [2, 4, 1581322108, 2, '78986.6741', 1581322108, 1, '1234', 1, '2', '2645393202', '', '', '', 'IDEALFX'],
-        [3, 4, 1590522832, 2, '44.07', 1590522832, 1, '0.621778209', '', '', '2845906676', '', '', '', 'IDEALFX'],
-        [4, 4, 1600374600, '', '123456.78', 1600374600, 2, '123456.78', '', '', '13778635822', '', '', '', 'CASH RECEIPTS / ELECTRONIC FUND TRANSFERS']
+        [8, 4, 1581322108, 2, '78986.6741', 1581322108, 1, '1234', 1, '2', '2645393202', '', '', '', 'IDEALFX'],
+        [9, 4, 1590522832, 2, '44.07', 1590522832, 1, '0.621778209', '', '', '2845906676', '', '', '', 'IDEALFX'],
+        [10, 4, 1600374600, '', '123456.78', 1600374600, 2, '123456.78', '', '', '13778635822', '', '', '', 'CASH RECEIPTS / ELECTRONIC FUND TRANSFERS']
     ]
 
     # validate trades
     test_trades = [
-        [1, 3, 1553545500, 1553545500, '', 1, 9, '-0.777', '168.37', '0', ''],
-        [2, 3, 1579094694, 1579219200, '2661774904', 1, 23, '4.5E+4', '0.0012', '0.54', ''],
-        [3, 3, 1580215513, 1580215513, '2674740000', 1, 4, '-1.24E+3', '54.84', '7.75519312', ''],
-        [4, 3, 1580215566, 1580342400, '2674741000', 1, 32, '-148', '316.68', '-5.007792848', ''],
-        [5, 3, 1590595065, 1590710400, '2882737839', 1, 12, '2', '637.09', '2', ''],
-        [6, 3, 1592575273, 1592784000, '2931083780', 1, 33, '-1E+2', '4.54', '1.1058334', ''],
-        [7, 3, 1595607600, 1595808000, '2997636969', 1, 33, '1E+2', '0', '0', 'Option assignment'],
-        [8, 3, 1595607600, 1595607600, '2997636973', 1, 34, '1E+2', '64', '0', 'Option assignment/exercise'],
-        [9, 3, 1603882231, 1604016000, '3183801882', 1, 24, '5E+5', '0.0001', '0.7503675', ''],
-        [10, 3, 1640895900, 1640895900, '18952523919', 1, 31, '-3E+1', '0.1', '0', 'BKSY WS(US09263B1162) MERGED(Liquidation) FOR USD 0.10 PER SHARE (BKSY WS, BKSY 30OCT24 11.5 C, US09263B1162)'],
-        [11, 3, 1638822300, 1638822300, '18694975077', 1, 38, '-8', '1103.06815', '0', '(US345370CV02) FULL CALL / EARLY REDEMPTION FOR USD 1.10306815 PER BOND (F 8 1/2 04/21/23, F 8 1/2 04/21/23, US345370CV02)'],
-        [12, 3, 1640031900, 1640031900, '18882610202', 1, 44, '-99', '20.75', '0', 'CORT.OD2(US218NSPODD6) MERGED(Voluntary Offer Allocation) FOR USD 20.75 PER SHARE (CORT.OD2, CORCEPT THERAPEUTICS INC - TENDER ODD LOT, US218NSPODD6)']
+        [17, 3, 1553545500, 1553545500, '', 1, 9, '-0.777', '168.37', '0', ''],
+        [18, 3, 1579094694, 1579219200, '2661774904', 1, 23, '4.5E+4', '0.0012', '0.54', ''],
+        [19, 3, 1580215513, 1580215513, '2674740000', 1, 4, '-1.24E+3', '54.84', '7.75519312', ''],
+        [20, 3, 1580215566, 1580342400, '2674741000', 1, 32, '-148', '316.68', '-5.007792848', ''],
+        [21, 3, 1590595065, 1590710400, '2882737839', 1, 12, '2', '637.09', '2', ''],
+        [22, 3, 1592575273, 1592784000, '2931083780', 1, 33, '-1E+2', '4.54', '1.1058334', ''],
+        [23, 3, 1595607600, 1595808000, '2997636969', 1, 33, '1E+2', '0', '0', 'Option assignment'],
+        [24, 3, 1595607600, 1595607600, '2997636973', 1, 34, '1E+2', '64', '0', 'Option assignment/exercise'],
+        [25, 3, 1603882231, 1604016000, '3183801882', 1, 24, '5E+5', '0.0001', '0.7503675', ''],
+        [26, 3, 1640895900, 1640895900, '18952523919', 1, 31, '-3E+1', '0.1', '0', 'BKSY WS(US09263B1162) MERGED(Liquidation) FOR USD 0.10 PER SHARE (BKSY WS, BKSY 30OCT24 11.5 C, US09263B1162)'],
+        [27, 3, 1638822300, 1638822300, '18694975077', 1, 38, '-8', '1103.06815', '0', '(US345370CV02) FULL CALL / EARLY REDEMPTION FOR USD 1.10306815 PER BOND (F 8 1/2 04/21/23, F 8 1/2 04/21/23, US345370CV02)'],
+        [28, 3, 1640031900, 1640031900, '18882610202', 1, 44, '-99', '20.75', '0', 'CORT.OD2(US218NSPODD6) MERGED(Voluntary Offer Allocation) FOR USD 20.75 PER SHARE (CORT.OD2, CORCEPT THERAPEUTICS INC - TENDER ODD LOT, US218NSPODD6)']
     ]
     trades = JalAccount(1).dump_trades()
     assert len(trades) == len(test_trades)
@@ -240,14 +240,14 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
     test_payments = [
         [1, 2, 1529612400, 0, 0, '', 1, 1, 5, '16.76', '0', '', 'EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)'],
         [2, 2, 1533673200, 0, 0, '', 1, 1, 5, '20.35', '0.54', '', 'EDV(US9219107094) CASH DIVIDEND 0.10175000 USD PER SHARE (Ordinary Dividend)'],
-        [3, 2, 1633033200, 0, 0, '16054321038', 3, 1, 4, '5.887', '15', '25.73', 'VUG (US9229087369) Stock Dividend US9229087369 196232339 for 10000000000'],
-        [4, 2, 1595017200, 0, 0, '13259965038', 3, 1, 19, '3', '0', '4.73', 'TEF (US8793822086) STOCK DIVIDEND US8793822086 416666667 FOR 10000000000'],
-        [5, 2, 1591215600, 0, 0, '12882908488', 3, 1, 35, '3', '0', '8.59', 'MAC (US5543821012) CASH DIVIDEND USD 0.10, STOCK DIVIDEND US5543821012 548275673 FOR 10000000000'],
-        [6, 2, 1578082800, 0, 1577664000, '', 1, 1, 6, '60.2', '6.02', '', 'ZROZ(US72201R8824) CASH DIVIDEND USD 0.86 PER SHARE (Ordinary Dividend)'],
-        [7, 2, 1633033200, 0, 0, '', 1, 1, 4, '158.6', '15.86', '', 'VUG (US9229087369) CASH DIVIDEND USD 0.52 (Ordinary Dividend)'],
-        [8, 2, 1590595065, 0, 0, '2882737839', 2, 1, 12, '-25.69', '0', '', 'PURCHASE ACCRUED INT X 6 1/4 03/15/26'],
-        [9, 2, 1600128000, 0, 0, '', 2, 1, 12, '62.5', '0', '', 'BOND COUPON PAYMENT (X 6 1/4 03/15/26)'],
-        [10, 2, 1549843200, 0, 0, '', 6, 1, 9, '-0.249018', '0', '', 'French Transaction Tax']
+        [29, 2, 1633033200, 0, 0, '16054321038', 3, 1, 4, '5.887', '15', '25.73', 'VUG (US9229087369) Stock Dividend US9229087369 196232339 for 10000000000'],
+        [30, 2, 1595017200, 0, 0, '13259965038', 3, 1, 19, '3', '0', '4.73', 'TEF (US8793822086) STOCK DIVIDEND US8793822086 416666667 FOR 10000000000'],
+        [31, 2, 1591215600, 0, 0, '12882908488', 3, 1, 35, '3', '0', '8.59', 'MAC (US5543821012) CASH DIVIDEND USD 0.10, STOCK DIVIDEND US5543821012 548275673 FOR 10000000000'],
+        [32, 2, 1578082800, 0, 1577664000, '', 1, 1, 6, '60.2', '6.02', '', 'ZROZ(US72201R8824) CASH DIVIDEND USD 0.86 PER SHARE (Ordinary Dividend)'],
+        [33, 2, 1633033200, 0, 0, '', 1, 1, 4, '158.6', '15.86', '', 'VUG (US9229087369) CASH DIVIDEND USD 0.52 (Ordinary Dividend)'],
+        [34, 2, 1590595065, 0, 0, '2882737839', 2, 1, 12, '-25.69', '0', '', 'PURCHASE ACCRUED INT X 6 1/4 03/15/26'],
+        [35, 2, 1600128000, 0, 0, '', 2, 1, 12, '62.5', '0', '', 'BOND COUPON PAYMENT (X 6 1/4 03/15/26)'],
+        [36, 2, 1549843200, 0, 0, '', 6, 1, 9, '-0.249018', '0', '', 'French Transaction Tax']
     ]
     payments = JalAccount(1).dump_asset_payments()
     assert len(payments) == len(test_payments)
@@ -256,7 +256,7 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
 
     # The price a stock dividend or a vesting came in with is stored ON THE PAYMENT (see AssetPayment.price) and
     # asked of it, not of the price series - the rows above carry it, and it is what values them.
-    for oid, price in ((3, '25.73'), (4, '4.73'), (5, '8.59')):
+    for oid, price in ((29, '25.73'), (30, '4.73'), (31, '8.59')):
         assert LedgerTransaction.get_operation(LedgerTransaction.AssetPayment, oid).price() == Decimal(price)
     # ... and nothing was written into the series on their behalf: an asset the statement only ever granted has
     # no quote of its own at all.
@@ -266,21 +266,21 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
 
     # validate corp actions
     test_asset_actions = [
-        [1, 5, 1618345500, 0, '16074977038', 1, 4, 8, '217', 'AMZN(US0231351067) SPLIT 5 FOR 4 (AMZN, AMAZON.COM INC, US0231351067)', [1, 1, 8, '271.25', '1']],
-        [2, 5, 1605731100, 0, '10162291403', 1, 1, 11, '7E+1', 'DM(US2574541080) MERGED(Acquisition) WITH US25746U1097 2492 FOR 10000 (D, DOMINION ENERGY INC, 25746U109)', [2, 2, 10, '17.444', '0']],
-        [3, 5, 1605558300, 0, '14302257657', 1, 3, 15, '5', 'MYL(NL0011031208) CUSIP/ISIN CHANGE TO (US92556V1061) (VTRS, VIATRIS INC-W/I, US92556V1061)', [3, 3, 16, '5', '1']],
-        [4, 5, 1605817500, 0, '10302900848', 1, 2, 22, '100', 'GE(US3696041033) SPINOFF  5371 FOR 1000000 (WAB, WABTEC CORP, 929740108)', [4, 4, 22, '100', '0'], [5, 4, 17, '0.5371', '0']],
-        [5, 5, 1592339100, 0, '13006963996', 1, 1, 20, '7E+1', 'EQM(US26885B1008) MERGED(Voluntary Offer Allocation) WITH US2946001011 244 FOR 100 (ETRN, EQUITRANS MIDSTREAM CORP, US2946001011)', [6, 5, 21, '170.8', '0']],
-        [6, 5, 1604089500, 0, '14147163475', 1, 1, 25, '1E+1', 'LVGO(US5391831030) CASH and STOCK MERGER (Acquisition) US87918A1051 592 FOR 1000 AND EUR 4.24 (TDOC, TELADOC HEALTH INC, US87918A1051)', [7, 6, 3, '42.4', '0'], [8, 6, 26, '5.92', '0']],
-        [7, 5, 1611260700, 0, '15015004953', 1, 1, 28, '2E+2', 'LUMN.OLD(US1567001060) MERGED(Acquisition) WITH US5502411037 1 FOR 1 (LUMN, LUMEN TECHNOLOGIES INC, US5502411037)', [9, 7, 27, '2E+2', '0']],
-        [8, 5, 1630007100, 0, '17569476329', 1, 1, 12, '2', 'X 6 1/4 03/15/26(US912909AN84) TENDERED TO US912CALAN84 1 FOR 1 (X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, US912CALAN84)', [10, 8, 29, '2', '0']],
-        [9, 5, 1631219100, 0, '17667047189', 1, 3, 30, '2E+1', 'SFTW WS(US68839R1207) CUSIP/ISIN CHANGE TO (US09263B1162) (BKSY WS, BKSY 30OCT24 11.5 C, US09263B1162)', [11, 9, 31, '2E+1', '1']],
-        [10, 5, 1581452700, 0, '12029570527', 1, 4, 23, '4.5E+4', 'EWLL(US30051D1063) SPLIT 1 FOR 50 (EWLLD, EWELLNESS HEALTHCARE CORP, US30051D2053)', [12, 10, 36, '9E+2', '1']],
-        [11, 5, 1627676700, 0, '17240033443', 1, 4, 22, '104', 'GE(US3696041033) SPLIT 1 FOR 8 (GE, GENERAL ELECTRIC CO, US3696043013)', [13, 11, 37, '13', '1']],
-        [12, 5, 1627331100, 0, '17200082800', 1, 1, 41, '6.1E+2', 'BPYU(US11282X1037) CASH and STOCK MERGER (Acquisition) BAM 9133631 FOR 100000000, G1624R107 6572057 FOR 100000000 AND USD 12.38424741 (BAM, BROOKFIELD ASSET MANAGE-CL A, CA1125851040)', [14, 12, 2, '7554.3909201', '0'], [15, 12, 39, '55.7151', '0'], [16, 12, 40, '40.0895', '0']],
-        [13, 5, 1633033500, 0, '17897699521', 1, 2, 22, '320', 'GE(US3696041033) SPINOFF  1 FOR 11 (SLVM, SYLVAMO CORP, US8713321029)', [17, 13, 22, '320', '0'], [18, 13, 42, '29.0909', '0']],
-        [14, 5, 1639597500, 0, '18787960371', 1, 1, 43, '99', 'CORT(US2183521028) TENDERED TO US218NSPODD6 1 FOR 1 (CORT.OD2, CORCEPT THERAPEUTICS INC - TENDER ODD LOT, US218NSPODD6)', [19, 14, 44, '99', '0']],
-        [15, 5, 1612470300, 0, '15238437826', 1, 5, 45, '2E+4', '(CA6295231014) DELISTED (NABIF, NABIS HOLDINGS INC, CA6295231014)']
+        [37, 5, 1618345500, 0, '16074977038', 1, 4, 8, '217', 'AMZN(US0231351067) SPLIT 5 FOR 4 (AMZN, AMAZON.COM INC, US0231351067)', [1, 37, 8, '271.25', '1']],
+        [38, 5, 1605731100, 0, '10162291403', 1, 1, 11, '7E+1', 'DM(US2574541080) MERGED(Acquisition) WITH US25746U1097 2492 FOR 10000 (D, DOMINION ENERGY INC, 25746U109)', [2, 38, 10, '17.444', '0']],
+        [39, 5, 1605558300, 0, '14302257657', 1, 3, 15, '5', 'MYL(NL0011031208) CUSIP/ISIN CHANGE TO (US92556V1061) (VTRS, VIATRIS INC-W/I, US92556V1061)', [3, 39, 16, '5', '1']],
+        [40, 5, 1605817500, 0, '10302900848', 1, 2, 22, '100', 'GE(US3696041033) SPINOFF  5371 FOR 1000000 (WAB, WABTEC CORP, 929740108)', [4, 40, 22, '100', '0'], [5, 40, 17, '0.5371', '0']],
+        [41, 5, 1592339100, 0, '13006963996', 1, 1, 20, '7E+1', 'EQM(US26885B1008) MERGED(Voluntary Offer Allocation) WITH US2946001011 244 FOR 100 (ETRN, EQUITRANS MIDSTREAM CORP, US2946001011)', [6, 41, 21, '170.8', '0']],
+        [42, 5, 1604089500, 0, '14147163475', 1, 1, 25, '1E+1', 'LVGO(US5391831030) CASH and STOCK MERGER (Acquisition) US87918A1051 592 FOR 1000 AND EUR 4.24 (TDOC, TELADOC HEALTH INC, US87918A1051)', [7, 42, 3, '42.4', '0'], [8, 42, 26, '5.92', '0']],
+        [43, 5, 1611260700, 0, '15015004953', 1, 1, 28, '2E+2', 'LUMN.OLD(US1567001060) MERGED(Acquisition) WITH US5502411037 1 FOR 1 (LUMN, LUMEN TECHNOLOGIES INC, US5502411037)', [9, 43, 27, '2E+2', '0']],
+        [44, 5, 1630007100, 0, '17569476329', 1, 1, 12, '2', 'X 6 1/4 03/15/26(US912909AN84) TENDERED TO US912CALAN84 1 FOR 1 (X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, US912CALAN84)', [10, 44, 29, '2', '0']],
+        [45, 5, 1631219100, 0, '17667047189', 1, 3, 30, '2E+1', 'SFTW WS(US68839R1207) CUSIP/ISIN CHANGE TO (US09263B1162) (BKSY WS, BKSY 30OCT24 11.5 C, US09263B1162)', [11, 45, 31, '2E+1', '1']],
+        [46, 5, 1581452700, 0, '12029570527', 1, 4, 23, '4.5E+4', 'EWLL(US30051D1063) SPLIT 1 FOR 50 (EWLLD, EWELLNESS HEALTHCARE CORP, US30051D2053)', [12, 46, 36, '9E+2', '1']],
+        [47, 5, 1627676700, 0, '17240033443', 1, 4, 22, '104', 'GE(US3696041033) SPLIT 1 FOR 8 (GE, GENERAL ELECTRIC CO, US3696043013)', [13, 47, 37, '13', '1']],
+        [48, 5, 1627331100, 0, '17200082800', 1, 1, 41, '6.1E+2', 'BPYU(US11282X1037) CASH and STOCK MERGER (Acquisition) BAM 9133631 FOR 100000000, G1624R107 6572057 FOR 100000000 AND USD 12.38424741 (BAM, BROOKFIELD ASSET MANAGE-CL A, CA1125851040)', [14, 48, 2, '7554.3909201', '0'], [15, 48, 39, '55.7151', '0'], [16, 48, 40, '40.0895', '0']],
+        [49, 5, 1633033500, 0, '17897699521', 1, 2, 22, '320', 'GE(US3696041033) SPINOFF  1 FOR 11 (SLVM, SYLVAMO CORP, US8713321029)', [17, 49, 22, '320', '0'], [18, 49, 42, '29.0909', '0']],
+        [50, 5, 1639597500, 0, '18787960371', 1, 1, 43, '99', 'CORT(US2183521028) TENDERED TO US218NSPODD6 1 FOR 1 (CORT.OD2, CORCEPT THERAPEUTICS INC - TENDER ODD LOT, US218NSPODD6)', [19, 50, 44, '99', '0']],
+        [51, 5, 1612470300, 0, '15238437826', 1, 5, 45, '2E+4', '(CA6295231014) DELISTED (NABIF, NABIS HOLDINGS INC, CA6295231014)']
     ]
     actions = JalAccount(1).dump_corporate_actions()
     assert len(actions) == len(test_asset_actions)

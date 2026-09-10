@@ -4,7 +4,9 @@ import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo, prepare_db_ledger
 from tests.helpers import d2t, create_stocks, create_actions, create_trades, create_quotes, \
-    create_corporate_actions, create_stock_dividends, create_transfers, create_dividends, symbol_id_for
+    create_corporate_actions, create_stock_dividends, create_transfers, create_dividends, symbol_id_for, \
+    nth_operation, \
+    operation_id
 from constants import BookAccount, PredefinedCategory, AssetLocation, Setup
 from jal.db.db import JalDB
 from jal.db.ledger import Ledger, LedgerAmounts
@@ -134,7 +136,7 @@ def test_buy_sell_change(prepare_db_fifo):
     assert trades[0].qty() == Decimal('7')
 
     # Modify closing deal quantity
-    LedgerTransaction.get_operation(LedgerTransaction.Trade, 2).update_qty(Decimal('-5'))
+    nth_operation(LedgerTransaction.Trade, 2).update_qty(Decimal('-5'))
 
     # Re-build ledger from last actual data
     ledger.rebuild()
@@ -159,7 +161,7 @@ def test_buy_sell_change(prepare_db_fifo):
     open_trades = JalAccount(1).open_trades_list(JalAsset(4))
     assert len(open_trades) == 1
 
-    LedgerTransaction.get_operation(LedgerTransaction.Trade, 2).delete()
+    nth_operation(LedgerTransaction.Trade, 2).delete()
 
     open_trades = JalAccount(1).open_trades_list(JalAsset(4))
     assert len(open_trades) == 1
@@ -204,7 +206,7 @@ def test_stock_dividend_change(prepare_db_fifo):
     assert len(trades) == 4
 
     # Modify stock dividend
-    LedgerTransaction.get_operation(LedgerTransaction.AssetPayment, 1).update_amount(Decimal('3.0'))
+    nth_operation(LedgerTransaction.AssetPayment, 1).update_amount(Decimal('3.0'))
 
     # Re-build ledger from last actual data
     ledger.rebuild()
@@ -536,7 +538,7 @@ def test_asset_transfer(prepare_db):
     assert sum([x.profit() for x in trades]) == Decimal('2345')
 
     # Modify closing deal quantity
-    LedgerTransaction.get_operation(LedgerTransaction.Trade, 3).update_price(Decimal('7700'))
+    nth_operation(LedgerTransaction.Trade, 3).update_price(Decimal('7700'))
 
     # Build ledger from given date
     ledger = Ledger()
@@ -579,7 +581,7 @@ def test_a_vesting_keeps_its_price_when_its_timestamp_is_edited(prepare_db_fifo)
     ledger = Ledger()
     ledger.rebuild(from_timestamp=0)
 
-    assert LedgerTransaction.get_operation(LedgerTransaction.AssetPayment, 1).price() == Decimal('54')
+    assert nth_operation(LedgerTransaction.AssetPayment, 1).price() == Decimal('54')
     assert LedgerAmounts("value")[BookAccount.Assets, 1, 4] == Decimal('108')
 
 
@@ -590,7 +592,8 @@ def test_a_vesting_keeps_its_price_when_its_timestamp_is_edited(prepare_db_fifo)
 def test_a_vesting_without_a_price_stops_the_rebuild_recoverably(prepare_db_fifo):
     create_stocks([('A', 'A SHARE')], currency_id=2)   # id = 4
     create_stock_dividends([(AssetPayment.StockVesting, 1643907900, 1, 4, 2.0, 2, 54.0, 0.0, 'Vested +2 A')])
-    JalDB._exec("UPDATE asset_payments SET price='' WHERE oid=1")   # ... while the series still holds the price
+    JalDB._exec("UPDATE asset_payments SET price='' WHERE oid=:oid",   # ... while the series still holds the price
+                [(":oid", operation_id(LedgerTransaction.AssetPayment))])
 
     ledger = Ledger()
     with pytest.raises(LedgerError):      # re-raised under pytest, reported to the user in the running application

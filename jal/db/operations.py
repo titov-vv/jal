@@ -49,16 +49,18 @@ class LedgerTransaction(JalDB):
     Swap = 7
     Bridge = 8
     _db_table = ''   # Table where operation is stored in DB
+    _otype = NA      # Operation type - a class attribute, because it identifies the operation before there is one:
+                     # create_operation() below allocates the id from 'operations' and has to name the type there
     _db_fields = {}
 
     def __init__(self, operation_data=None, duplicate_before=None):
         super().__init__()
         if type(operation_data) == dict:
-            oid = self.create_operation(self._db_table, self._db_fields, operation_data, duplicate_before)
+            oid = self.create_operation(self._db_table, self._db_fields, operation_data, duplicate_before,
+                                        otype=self._otype)
         else:
             oid = operation_data
         self._oid = oid
-        self._otype = 0
         self._oname = ''
         self._subtype = 0
         self._data = None
@@ -525,6 +527,7 @@ class FeeCarrier:
 # ----------------------------------------------------------------------------------------------------------------------
 class IncomeSpending(LedgerTransaction):
     _db_table = "actions"
+    _otype = LedgerTransaction.IncomeSpending
     _dump_assets = ('currency',)   # 'alt_currency_id' is selected as 'currency'
     _db_fields = {
         "timestamp": {"mandatory": True, "validation": False},
@@ -548,7 +551,6 @@ class IncomeSpending(LedgerTransaction):
 
     def __init__(self, oid=None, opart=None):
         super().__init__(oid)
-        self._otype = LedgerTransaction.IncomeSpending
         self._opart = opart
         self._data = self._read("SELECT a.timestamp, a.account_id, a.peer_id, p.name AS peer, "
                                 "a.alt_currency_id AS currency FROM actions AS a "
@@ -711,6 +713,7 @@ class AssetPayment(LedgerTransaction):
     _ASSET_DENOMINATED = (StockDividend, StockVesting, StakingReward, Reward, GasFee, DustAttack,
                           RebaseAdjustment, TokenRent, TokenRentReturn)
     _db_table = "asset_payments"
+    _otype = LedgerTransaction.AssetPayment
     _dump_timestamps = ('ex_date',)
     _db_fields = {
         "timestamp": {"mandatory": True, "validation": True},
@@ -762,7 +765,6 @@ class AssetPayment(LedgerTransaction):
             AssetPayment.TokenRentReturn: self.tr("Token account rent returned")
         }
         super().__init__(oid)
-        self._otype = LedgerTransaction.AssetPayment
         self._opart = opart
         self._view_rows = 2
         self._data = self._read("SELECT p.type, p.timestamp, p.timestamp_day_only, p.ex_date, p.number, p.account_id, "
@@ -1070,6 +1072,7 @@ class AssetPayment(LedgerTransaction):
 # ----------------------------------------------------------------------------------------------------------------------
 class Trade(FeeCarrier, LedgerTransaction):
     _db_table = "trades"
+    _otype = LedgerTransaction.Trade
     _dump_timestamps = ('settlement',)
     _db_fields = {
         "timestamp": {"mandatory": True, "validation": True},
@@ -1089,7 +1092,6 @@ class Trade(FeeCarrier, LedgerTransaction):
     # to create a new operation in database and then select it
     def __init__(self, operation_data=None, opart=None, duplicate_before=None):
         super().__init__(operation_data, duplicate_before=duplicate_before)
-        self._otype = LedgerTransaction.Trade
         self._opart = opart
         self._view_rows = 2
         self._data = self._read("SELECT t.timestamp, t.settlement, t.number, t.account_id, "
@@ -1262,6 +1264,7 @@ class Swap(FeeCarrier, LedgerTransaction):
     Incoming = 1    # Cross-chain: the acquisition leg (destination account, destination chain)
     Fee = 2         # The gas paid for the swap - a row of its own, as it is for a transfer and for a bridge
     _db_table = "swaps"
+    _otype = LedgerTransaction.Swap
     _db_fields = {
         "timestamp": {"mandatory": True, "validation": True},
         "tx_hash": {"mandatory": False, "validation": True, "default": ''},
@@ -1283,7 +1286,6 @@ class Swap(FeeCarrier, LedgerTransaction):
 
     def __init__(self, operation_data=None, opart=None):
         super().__init__(operation_data)
-        self._otype = LedgerTransaction.Swap
         self._data = self._read("SELECT s.timestamp, s.tx_hash, s.account_id, s.out_symbol_id, s.out_qty, "
                                 "s.in_timestamp, s.in_account_id, s.in_symbol_id, s.in_qty, s.in_tx_hash, "
                                 "s.fee_symbol_id, s.fee_qty, s.note FROM swaps AS s "
@@ -1510,6 +1512,7 @@ class Transfer(FeeCarrier, LedgerTransaction):
     Incoming = 1
     PART_FEE = Fee          # The fee posts into the part it is drawn as - see FeeCarrier.PART_FEE
     _db_table = "transfers"
+    _otype = LedgerTransaction.Transfer
     _db_fields = {
         "withdrawal_timestamp": {"mandatory": True, "validation": True},
         "withdrawal_account": {"mandatory": False, "validation": True, "default": None},
@@ -1548,7 +1551,6 @@ class Transfer(FeeCarrier, LedgerTransaction):
             (Transfer.Fee, False): self.tr("Asset transfer fee"),
         }
         super().__init__(oid, duplicate_before)
-        self._otype = LedgerTransaction.Transfer
         self._opart = opart
         self._data = self._read("SELECT t.withdrawal_timestamp, t.withdrawal_account, t.withdrawal, "
                                 "t.deposit_timestamp, t.deposit_account, t.deposit, t.fee_account, t.fee, "
@@ -2076,6 +2078,7 @@ class CorporateAction(LedgerTransaction):
     Split = 4
     Delisting = 5
     _db_table = "asset_actions"
+    _otype = LedgerTransaction.CorporateAction
     _db_fields = {
         "timestamp": {"mandatory": True, "validation": True},
         "timestamp_day_only": {"mandatory": False, "validation": False},
@@ -2115,7 +2118,6 @@ class CorporateAction(LedgerTransaction):
             CorporateAction.Delisting: self.tr("Delisting")
         }
         super().__init__(oid)
-        self._otype = LedgerTransaction.CorporateAction
         self._data = self._read("SELECT a.type, a.timestamp, a.timestamp_day_only, a.number, a.account_id, "
                                 "a.qty, a.symbol_id, a.note "
                                 "FROM asset_actions AS a WHERE a.oid=:oid",
@@ -2302,6 +2304,7 @@ class Conversion(FeeCarrier, LedgerTransaction):
     Whole = 0   # The conversion itself: the position leaves one asset and enters another at the same instant
     Fee = 2     # The gas paid for it - a row of its own, as it is for a transfer, a swap and a bridge
     _db_table = "conversions"
+    _otype = LedgerTransaction.Conversion
     _db_fields = {
         "timestamp": {"mandatory": True, "validation": True},
         "account_id": {"mandatory": True, "validation": True},
@@ -2319,7 +2322,6 @@ class Conversion(FeeCarrier, LedgerTransaction):
 
     def __init__(self, operation_data=None, opart=Whole):
         super().__init__(operation_data)
-        self._otype = LedgerTransaction.Conversion
         # Anything else means "the conversion itself". The 'ledger' book keeps the POSTING part in a field of the
         # same name and an operation is rebuilt from it (see reports/operations_base.py), so the two numbering
         # spaces have to agree - which is why PART_FEE above IS the fee part rather than a number of its own.
@@ -2464,6 +2466,7 @@ class Bridge(FeeCarrier, LedgerTransaction):
     # the posting part and an operation is rebuilt from it (reports/operations_base.py).
     InKindFee = 2
     _db_table = "bridges"
+    _otype = LedgerTransaction.Bridge
     _db_fields = {
         "out_timestamp": {"mandatory": True, "validation": True},
         "out_account_id": {"mandatory": True, "validation": True},
@@ -2495,7 +2498,6 @@ class Bridge(FeeCarrier, LedgerTransaction):
                       Bridge.Fee: self.tr("Bridge fee"),
                       Bridge.InKindFee: self.tr("Bridge in-kind fee")}
         super().__init__(operation_data)
-        self._otype = LedgerTransaction.Bridge
         self._opart = opart
         self._data = self._read("SELECT out_timestamp, out_account_id, out_symbol_id, out_qty, out_tx_hash, "
                                 "in_timestamp, in_account_id, in_symbol_id, in_qty, in_tx_hash, "

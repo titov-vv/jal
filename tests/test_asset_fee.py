@@ -3,7 +3,8 @@ from decimal import Decimal
 import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db
-from tests.helpers import d2t, create_assets, create_actions, create_trades, symbol_id_for
+from tests.helpers import d2t, create_assets, create_actions, create_trades, symbol_id_for, \
+    nth_operation
 from constants import PredefinedAsset, PredefinedCategory, PredefinedAccountType, AssetLocation
 from jal.db.db import JalDB
 from jal.db.account import JalAccount, JalAccountCreator
@@ -87,7 +88,7 @@ def test_gas_fee_in_another_asset(wallets):
     assert _closed_deals_of(TRX) == []
 
     # It is shown in its own asset/currency, not the account currency, and at its own value
-    fee = Transfer(1, Transfer.Fee)
+    fee = nth_operation(LedgerTransaction.Transfer, 1, Transfer.Fee)
     assert fee.value_currency() == 'TRX'               # the asset the fee was paid in, not the account currency
     assert fee.value_change() == [Decimal('-10')]
 
@@ -115,6 +116,6 @@ def test_money_fee_is_unaffected(wallets):
     _transfer(USDT, 500, d2t(210103), fee=3)
     Ledger().rebuild(from_timestamp=0)
 
-    fee = Transfer(1, Transfer.Fee)
+    fee = nth_operation(LedgerTransaction.Transfer, 1, Transfer.Fee)
     assert fee.value_currency() == 'USD'               # the currency of the fee account
     assert _amount(WALLET_A, USDT) == Decimal('500')

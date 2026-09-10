@@ -6,11 +6,13 @@ from decimal import Decimal
 import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db
-from tests.helpers import d2t, create_assets, create_stock_dividends
+from tests.helpers import d2t, create_assets, create_stock_dividends, \
+    nth_operation
 from constants import PredefinedAsset, PredefinedAccountType
 from PySide6.QtWidgets import QMessageBox
 from jal.db.account import JalAccountCreator
 from jal.db.operations import AssetPayment
+from jal.db.operations import LedgerTransaction
 from jal.widgets.asset_payment_widget import AssetPaymentWidget
 
 ACCOUNT = 1
@@ -39,7 +41,7 @@ def test_stock_dividend_price_is_editable(account):
     assert Decimal(widget.model.record(0).value("price")) == Decimal('123.4567')
     assert widget._validated()
     widget._save()
-    assert AssetPayment(1).price() == Decimal('123.4567')
+    assert nth_operation(LedgerTransaction.AssetPayment, 1).price() == Decimal('123.4567')
 
 
 # A non-numeric price becomes a zero, which validation refuses - shares granted for nothing is not a valid input.
