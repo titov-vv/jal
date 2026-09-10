@@ -4,14 +4,14 @@ import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo, prepare_db_ledger
 from tests.helpers import d2t, create_stocks, create_actions, create_trades, create_quotes, \
-    create_corporate_actions, create_stock_dividends, create_transfers
-from constants import BookAccount, PredefinedCategory, AssetLocation
+    create_corporate_actions, create_stock_dividends, create_transfers, create_dividends, symbol_id_for
+from constants import BookAccount, PredefinedCategory, AssetLocation, Setup
 from jal.db.db import JalDB
 from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
 from jal.db.peer import JalPeer
-from jal.db.operations import LedgerTransaction, LedgerError, AssetPayment
+from jal.db.operations import LedgerTransaction, LedgerError, AssetPayment, CorporateAction, Transfer
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -598,3 +598,99 @@ def test_a_vesting_without_a_price_stops_the_rebuild_recoverably(prepare_db_fifo
 
     assert ledger.stopped_by is not None
     assert LedgerAmounts("value")[BookAccount.Assets, 1, 4] == Decimal('0')
+
+
+#-----------------------------------------------------------------------------------------------------------------------
+# The processing order of the ledger. Until it was stated at the call sites it rested on the ORDER BY inside the
+# 'operation_sequence' view, which a flattened query plan is free to ignore - and processing out of order does not
+# raise, it consumes the wrong FIFO lots and gets the basis silently wrong.
+_COLLISION = d2t(220301)   # every operation below happens at this one second, so only the rank decides
+_EARLIER = d2t(220101)
+
+
+@pytest.fixture
+def two_accounts_and_an_asset(prepare_db_fifo):
+    other = JalAccountCreator(currency_id=2, number='U2', name='Other', investing=1, organization=1).commit()
+    create_stocks([('A', 'Asset A')], currency_id=2)   # asset id 4
+    yield other.id()
+
+
+# The rank is not the operation type, and this is the case that proves it: a corporate action is otype 5 and a trade
+# is otype 3, yet the corporate action must be processed FIRST - a split has to resize the lots before a sale of the
+# same second consumes them.
+def test_the_sequence_ranks_a_corporate_action_ahead_of_a_trade(two_accounts_and_an_asset):
+    create_actions([(_COLLISION, 1, 1, [(PredefinedCategory.Spending, 10.0)])])
+    create_dividends([(_COLLISION, 1, 4, Decimal('5'), Decimal('0'), '')])
+    create_trades(1, [(_COLLISION, _COLLISION, 4, Decimal('10'), Decimal('100'), Decimal('0'))])
+    create_corporate_actions(1, [(_COLLISION, CorporateAction.Split, 4, Decimal('10'), '',
+                                  [(4, Decimal('20'), Decimal('1'))])])
+    create_transfers([(_COLLISION, 1, Decimal('1'), two_accounts_and_an_asset, Decimal('1'), None)])
+
+    order = [row['otype'] for row in Ledger.get_operations_sequence(_COLLISION, _COLLISION)]
+
+    assert order.index(LedgerTransaction.CorporateAction) < order.index(LedgerTransaction.Trade)
+    assert order.index(LedgerTransaction.CorporateAction) < order.index(LedgerTransaction.Transfer)
+    # The whole rank in one go. The transfer contributes a part per leg, so it is counted once here
+    assert [o for o in order if o != LedgerTransaction.Transfer] == \
+           [LedgerTransaction.IncomeSpending, LedgerTransaction.AssetPayment,
+            LedgerTransaction.CorporateAction, LedgerTransaction.Trade]
+
+
+# One operation contributes several parts and they carry their own order: a transfer is withdrawn (-1), charged its
+# fee (0) and deposited (1). 'reports/operations_base.py' rebuilds an operation from that number, so it is not free.
+# Two transfers, because the part outranks the id: every withdrawal of the second goes before any fee of it, and
+# that interleaving is what tells this order apart from one that groups by operation instead.
+def test_the_part_outranks_the_id_within_one_kind(two_accounts_and_an_asset):
+    for _ in range(2):
+        LedgerTransaction.create_new(LedgerTransaction.Transfer, {
+            'withdrawal_timestamp': _COLLISION, 'withdrawal_account': 1, 'withdrawal': Decimal('5'),
+            'deposit_timestamp': _COLLISION, 'deposit_account': two_accounts_and_an_asset, 'deposit': Decimal('5'),
+            'symbol_id': symbol_id_for(4, 2), 'fee_account': 1, 'fee': Decimal('1'), 'number': str(_)})
+    first, second = JalDB._read_to_list("SELECT oid FROM transfers ORDER BY oid")
+
+    parts = [(row['opart'], row['oid']) for row in Ledger.get_operations_sequence(_COLLISION, _COLLISION)]
+
+    assert parts == [(Transfer.Outgoing, first), (Transfer.Outgoing, second),
+                     (Transfer.Fee, first), (Transfer.Fee, second),
+                     (Transfer.Incoming, first), (Transfer.Incoming, second)]
+
+
+# Within one kind at one second the id is the last tie-break - which is what makes the renumbering of delta 71 safe
+# only as far as it preserves each type's own order. This one states the contract rather than guards it: a branch of
+# the view reads a single table, and SQLite scans a rowid table in id order, so the rows arrive sorted even when the
+# tie-break is not asked for. It is written down because the rule is load-bearing, not because it can fail today.
+def test_operations_of_one_kind_break_the_tie_by_id(two_accounts_and_an_asset):
+    create_trades(1, [(_COLLISION, _COLLISION, 4, Decimal('1'), Decimal('10'), Decimal('0')),
+                      (_COLLISION, _COLLISION, 4, Decimal('2'), Decimal('10'), Decimal('0')),
+                      (_COLLISION, _COLLISION, 4, Decimal('3'), Decimal('10'), Decimal('0'))])
+
+    oids = [row['oid'] for row in Ledger.get_operations_sequence(_COLLISION, _COLLISION)]
+
+    assert len(oids) == 3 and oids == sorted(oids)
+
+
+# The rebuild reads the same sequence the operations tab does, so it must post in the order the sequence lists.
+# The split is what makes this measurable: it doubles the position, and the sale of the same second is priced
+# against the doubled one - which only holds if the corporate action really is processed first.
+def test_the_rebuild_posts_in_the_order_the_sequence_lists(two_accounts_and_an_asset):
+    create_trades(1, [(_EARLIER, _EARLIER, 4, Decimal('10'), Decimal('100'), Decimal('0'))])
+    create_corporate_actions(1, [(_COLLISION, CorporateAction.Split, 4, Decimal('10'), '',
+                                  [(4, Decimal('20'), Decimal('1'))])])
+    create_trades(1, [(_COLLISION, _COLLISION, 4, Decimal('-20'), Decimal('60'), Decimal('0'))])
+    sale = JalDB._read("SELECT MAX(oid) FROM trades")
+
+    Ledger().rebuild(from_timestamp=0)
+
+    # Compared by operation and not by part: 'ledger.opart' is the POSTING part, a different numbering that shares
+    # small integers with the sequence part (a trade posts Trade.PART_PROFIT and PART_FEE, neither of which the
+    # sequence ever lists). Only the operation is common to both.
+    action_rows = JalDB._read_to_list("SELECT id FROM ledger WHERE otype=:t", [(":t", LedgerTransaction.CorporateAction)])
+    sale_rows = JalDB._read_to_list("SELECT id FROM ledger WHERE otype=:t AND oid=:oid",
+                                    [(":t", LedgerTransaction.Trade), (":oid", sale)])
+    assert action_rows and sale_rows
+    assert max(action_rows) < min(sale_rows), "the sale was posted before the split that resized its lots"
+    # The whole doubled position was sold, so the split had been applied to it first. The split books a closed deal
+    # of its own (it closes the pre-split lot and opens the post-split one), so the sale is selected by its id.
+    closed = JalDB._read_to_list("SELECT close_qty FROM trades_closed WHERE close_otype=:t AND close_oid=:oid",
+                                 [(":t", LedgerTransaction.Trade), (":oid", sale)])
+    assert len(closed) == 1 and Decimal(closed[0]) == Decimal('20')

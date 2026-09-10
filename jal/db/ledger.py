@@ -127,6 +127,14 @@ class Ledger(QObject, JalDB):
             current_frontier = 0
         return current_frontier
 
+    # The processing order is stated here and not left to the view's own ORDER BY: a view may be flattened into the
+    # enclosing query, and then the order is whatever the query plan happens to produce. Nothing raises when it comes
+    # out wrong - FIFO simply consumes the wrong lots and the basis is silently off.
+    # 'seq' is NOT 'otype', and the difference is a domain rule: a corporate action (otype 5) is processed BEFORE a
+    # trade (otype 3) and before a transfer (otype 4) of the same second. Ordering by 'otype' would move lot
+    # consumption on every timestamp where those meet.
+    _SEQUENCE_ORDER = " ORDER BY timestamp, seq, opart, oid"
+
     @classmethod
     def get_operations_sequence(cls, begin: int, end: int, account_id: int = 0) -> list:
         sequence = []
@@ -136,7 +144,7 @@ class Ledger(QObject, JalDB):
         if account_id:
             query_text += " AND account_id=:account"
             params += [(":account", account_id)]
-        query = cls._exec(query_text, params, forward_only=True)
+        query = cls._exec(query_text + cls._SEQUENCE_ORDER, params, forward_only=True)
         while query.next():
             sequence.append(cls._read_record(query, named=True))
         return sequence
@@ -286,7 +294,7 @@ class Ledger(QObject, JalDB):
         _ = self._exec("DELETE FROM trades_opened WHERE timestamp >= :frontier", [(":frontier", frontier)])
         try:
             query = self._exec("SELECT otype, oid, opart, timestamp, account_id FROM operation_sequence "
-                               "WHERE timestamp >= :frontier", [(":frontier", frontier)])
+                               "WHERE timestamp >= :frontier" + self._SEQUENCE_ORDER, [(":frontier", frontier)])
             while query.next():
                 data = self._read_record(query, named=True)
                 last_timestamp = data['timestamp']
