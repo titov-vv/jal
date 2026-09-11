@@ -135,6 +135,14 @@ class Ledger(QObject, JalDB):
     # consumption on every timestamp where those meet.
     _SEQUENCE_ORDER = " ORDER BY timestamp, seq, opart, oid"
 
+    # Rebuilds 'ledger_sequence' from scratch.
+    @classmethod
+    def refresh_sequence(cls):
+        _ = cls._exec("DELETE FROM ledger_sequence")
+        _ = cls._exec("INSERT INTO ledger_sequence (operation_id, opart, timestamp, account_id) "
+                      "SELECT s.oid, s.opart, s.timestamp, s.account_id FROM operation_sequence AS s"
+                      + cls._SEQUENCE_ORDER)
+
     @classmethod
     def get_operations_sequence(cls, begin: int, end: int, account_id: int = 0) -> list:
         sequence = []

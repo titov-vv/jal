@@ -5,6 +5,7 @@ import pytest
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo, prepare_db_ledger
 from tests.helpers import d2t, create_stocks, create_actions, create_trades, create_quotes, \
     create_corporate_actions, create_stock_dividends, create_transfers, create_dividends, symbol_id_for, \
+    create_conversions, create_swaps, create_bridges, \
     nth_operation, \
     operation_id
 from constants import BookAccount, PredefinedCategory, AssetLocation, Setup
@@ -697,3 +698,55 @@ def test_the_rebuild_posts_in_the_order_the_sequence_lists(two_accounts_and_an_a
     closed = JalDB._read_to_list("SELECT close_qty FROM trades_closed WHERE close_otype=:t AND close_oid=:oid",
                                  [(":t", LedgerTransaction.Trade), (":oid", sale)])
     assert len(closed) == 1 and Decimal(closed[0]) == Decimal('20')
+
+
+# The stored sequence must be the view, exactly - it is the only claim commit-worthy at this stage, because nothing
+# reads 'ledger_sequence' yet. Every branch of the view is present below (each operation type, both transfer legs and
+# its fee, the fee of a conversion, a swap and a bridge), and half of them collide on one second so that the type
+# rank, the part and the id all have to decide something. Compared row for row IN ORDER: 'seq_no' is the rowid, so
+# what is asserted is that INSERT ... SELECT ... ORDER BY really did lay the rows down in the order it was given.
+def test_the_stored_sequence_repeats_the_view_row_for_row(two_accounts_and_an_asset):
+    other = two_accounts_and_an_asset
+    create_stocks([('GAS', 'Native coin')], currency_id=2)    # asset 5
+    create_actions([(_EARLIER, 1, 1, [(PredefinedCategory.Spending, 10.0)])])
+    create_trades(1, [(_EARLIER, _EARLIER, 4, Decimal('10'), Decimal('100'), Decimal('1'))])
+    create_dividends([(_COLLISION, 1, 4, Decimal('5'), Decimal('0'), '')])
+    create_corporate_actions(1, [(_COLLISION, CorporateAction.Split, 4, Decimal('10'), '',
+                                  [(4, Decimal('20'), Decimal('1'))])])
+    create_trades(1, [(_COLLISION, _COLLISION, 4, Decimal('-1'), Decimal('120'), Decimal('0'))])
+    for number in ('1', '2'):     # two of them, so that the part has to outrank the id and not merely agree with it
+        LedgerTransaction.create_new(LedgerTransaction.Transfer, {
+            'withdrawal_timestamp': _COLLISION, 'withdrawal_account': 1, 'withdrawal': Decimal('5'),
+            'deposit_timestamp': _COLLISION, 'deposit_account': other, 'deposit': Decimal('5'),
+            'symbol_id': symbol_id_for(4, 2), 'fee_account': 1, 'fee': Decimal('1'), 'number': number})
+    create_conversions(1, [(_COLLISION, 4, Decimal('2'), 5, Decimal('2'), 5, Decimal('0.5'))])
+    create_swaps(1, [(_COLLISION, 4, Decimal('1'), 5, Decimal('3'), 5, Decimal('0.5'))])
+    create_bridges([{'out_ts': _COLLISION, 'out_acc': 1, 'out_qty': 1, 'in_ts': _COLLISION, 'in_acc': other,
+                     'in_qty': 1, 'asset': 4, 'fee_asset': 5, 'fee_qty': '0.5'}])
+
+    Ledger.refresh_sequence()
+
+    stored = JalDB._read_to_list("SELECT operation_id, opart, timestamp, account_id FROM ledger_sequence "
+                                 "ORDER BY seq_no")
+    # The order is spelled out here rather than taken from Ledger._SEQUENCE_ORDER: an oracle that reads the
+    # constant under test agrees with it by construction and would pass whatever it was changed to.
+    expected = JalDB._read_to_list("SELECT oid, opart, timestamp, account_id FROM operation_sequence "
+                                   "ORDER BY timestamp, seq, opart, oid")
+    assert len(stored) > 18      # the branches above really are all there, and none of them is empty
+    assert stored == expected
+
+
+# A refresh is a full replacement and not an accumulation - absorb_residues() calls it up to 32 times in a row.
+# The second claim is the foreign key: every part names an operation that exists, and 'operations.id' IS the 'oid'
+# the view reports since delta 71, so the row count is also the count of parts with a root.
+def test_a_refresh_replaces_the_sequence_and_leaves_no_orphan(two_accounts_and_an_asset):
+    create_trades(1, [(_EARLIER, _EARLIER, 4, Decimal('10'), Decimal('100'), Decimal('1'))])
+    create_transfers([(_COLLISION, 1, Decimal('1'), two_accounts_and_an_asset, Decimal('1'), None)])
+
+    Ledger.refresh_sequence()
+    once = JalDB._read("SELECT COUNT(*) FROM ledger_sequence")
+    Ledger.refresh_sequence()
+
+    assert once == JalDB._read("SELECT COUNT(*) FROM ledger_sequence")
+    assert once == JalDB._read("SELECT COUNT(*) FROM ledger_sequence AS s "
+                               "JOIN operations AS o ON o.id=s.operation_id")
