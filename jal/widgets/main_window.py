@@ -60,6 +60,7 @@ class MainWindow(QMainWindow):
         restore_splitters(self, Setup.SPLITTER_STATE_PREFIX)
 
         self.ledger = Ledger()
+        self.ledger.refresh_sequence_if_missing()
 
         # Customize Status bar and logs
         self.ProgressBar = QProgressBar(self)  # Use default range 0 - 100

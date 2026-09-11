@@ -6,6 +6,7 @@ from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.cost_basis import carried_basis
 from jal.db.db import JalDB
+from jal.db.ledger import Ledger
 from jal.db.helpers import remove_exponent
 from jal.db.address_match import impersonated_target
 from jal.db.operations import AssetPayment, LedgerTransaction
@@ -340,7 +341,8 @@ class TransferSettlement(JalDB):
     def _lots_are_calculated_at(self, timestamp: int) -> bool:
         frontier = self._read("SELECT ledger_frontier FROM frontier")
         frontier = int(frontier) if frontier else 0
-        unprocessed = self._read("SELECT COUNT(*) FROM operation_sequence "
+        Ledger.refresh_sequence()   # the pass asking this has written transfers of its own, and no rebuild has run
+        unprocessed = self._read("SELECT COUNT(*) FROM ledger_sequence "
                                  "WHERE timestamp>:frontier AND timestamp<=:timestamp",
                                  [(":frontier", frontier), (":timestamp", timestamp)])
         return not int(unprocessed)

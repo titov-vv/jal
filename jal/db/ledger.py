@@ -144,16 +144,23 @@ class Ledger(QObject, JalDB):
                          "SELECT s.oid, s.opart, s.timestamp, s.account_id FROM operation_sequence AS s"
                          + cls._SEQUENCE_ORDER) is not None
 
+    # A database can arrive without a sequence - a schema upgrade, a re-clocked file, a rebuild the user declined -
+    # and until one is built no operation is listed at all.
+    def refresh_sequence_if_missing(self):
+        if JalSettings().getValue('RebuildDB', 0) == 1 or self._read("SELECT seq_no FROM ledger_sequence LIMIT 1") is None:
+            self.refresh_sequence()
+
     @classmethod
     def get_operations_sequence(cls, begin: int, end: int, account_id: int = 0) -> list:
         sequence = []
-        query_text = "SELECT otype, oid, opart, timestamp, account_id " \
-                     "FROM operation_sequence WHERE timestamp>=:begin AND timestamp<=:end"
+        query_text = "SELECT o.otype, s.operation_id AS oid, s.opart, s.timestamp, s.account_id " \
+                     "FROM ledger_sequence AS s JOIN operations AS o ON o.id=s.operation_id " \
+                     "WHERE s.timestamp>=:begin AND s.timestamp<=:end"
         params = [(":begin", begin), (":end", end)]
         if account_id:
-            query_text += " AND account_id=:account"
+            query_text += " AND s.account_id=:account"
             params += [(":account", account_id)]
-        query = cls._exec(query_text + cls._SEQUENCE_ORDER, params, forward_only=True)
+        query = cls._exec(query_text + " ORDER BY s.seq_no", params, forward_only=True)
         while query.next():
             sequence.append(cls._read_record(query, named=True))
         return sequence

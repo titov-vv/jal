@@ -14,6 +14,7 @@ from constants import PredefinedAsset, PredefinedCategory, Setup
 from jal.db.db import JalDB
 from jal.db.account import JalAccountCreator
 from jal.db.operations import CorporateAction, LedgerTransaction
+from jal.db.ledger import Ledger
 from jal.widgets.trade_widget import TradeWidget
 
 # Where the renumbering starts and ends inside the delta. It is run from the shipped file rather than copied here,
@@ -337,12 +338,16 @@ def test_a_failed_save_leaves_no_root_row(prepare_db_fifo, project_root):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# 'ledger_sequence' ships empty and nothing reads it yet. What is checked here is the contract the stages that fill
-# it will be built on - that it really is keyed on the root, and that the root really does clear it.
-def test_the_sequence_table_ships_empty(prepare_db_fifo, project_root):
+# The sequence is REFRESHED and never maintained by the writes, which is why anything storing operations outside
+# the application has to ask for one (the rebuild does it first thing).
+def test_the_sequence_table_is_filled_by_a_refresh_and_not_by_the_writes(prepare_db_fifo, project_root):
     _operations_of_every_type()
-
     assert JalDB._read("SELECT COUNT(*) FROM ledger_sequence") == 0
+
+    Ledger.refresh_sequence()
+
+    assert JalDB._read("SELECT COUNT(*) FROM ledger_sequence") == \
+           JalDB._read("SELECT COUNT(*) FROM operation_sequence")
 
 
 # The single-column foreign key is the whole reason the root exists: '(otype, oid)' could never be one

@@ -630,6 +630,10 @@ def test_the_sequence_ranks_a_corporate_action_ahead_of_a_trade(two_accounts_and
                                   [(4, Decimal('20'), Decimal('1'))])])
     create_transfers([(_COLLISION, 1, Decimal('1'), two_accounts_and_an_asset, Decimal('1'), None)])
 
+    # Operations written straight to the database emit no dbUpdated, so nothing has refreshed the stored
+    # sequence for them - see the rebuild, which refreshes before it reads.
+    Ledger.refresh_sequence()
+
     order = [row['otype'] for row in Ledger.get_operations_sequence(_COLLISION, _COLLISION)]
 
     assert order.index(LedgerTransaction.CorporateAction) < order.index(LedgerTransaction.Trade)
@@ -652,6 +656,8 @@ def test_the_part_outranks_the_id_within_one_kind(two_accounts_and_an_asset):
             'symbol_id': symbol_id_for(4, 2), 'fee_account': 1, 'fee': Decimal('1'), 'number': str(_)})
     first, second = JalDB._read_to_list("SELECT oid FROM transfers ORDER BY oid")
 
+    Ledger.refresh_sequence()
+
     parts = [(row['opart'], row['oid']) for row in Ledger.get_operations_sequence(_COLLISION, _COLLISION)]
 
     assert parts == [(Transfer.Outgoing, first), (Transfer.Outgoing, second),
@@ -667,6 +673,8 @@ def test_operations_of_one_kind_break_the_tie_by_id(two_accounts_and_an_asset):
     create_trades(1, [(_COLLISION, _COLLISION, 4, Decimal('1'), Decimal('10'), Decimal('0')),
                       (_COLLISION, _COLLISION, 4, Decimal('2'), Decimal('10'), Decimal('0')),
                       (_COLLISION, _COLLISION, 4, Decimal('3'), Decimal('10'), Decimal('0'))])
+
+    Ledger.refresh_sequence()
 
     oids = [row['oid'] for row in Ledger.get_operations_sequence(_COLLISION, _COLLISION)]
 

@@ -404,9 +404,8 @@ class JalAccount(JalDB):
     # If future=True then include future operations
     def last_operation_date(self, future=False) -> int:
         limit = Setup.MAX_TIMESTAMP if future else now_ts()
-        last_timestamp = self._read("SELECT MAX(o.timestamp) FROM operation_sequence AS o "
-                                    "LEFT JOIN accounts AS a ON o.account_id=a.id "
-                                    "WHERE a.id=:account_id AND o.timestamp<=:now",
+        last_timestamp = self._read("SELECT MAX(timestamp) FROM ledger_sequence "
+                                    "WHERE account_id=:account_id AND timestamp<=:now",
                                     [(":account_id", self._id), (":now", limit)])
         last_timestamp = 0 if last_timestamp == '' else last_timestamp
         return last_timestamp
