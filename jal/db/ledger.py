@@ -135,13 +135,14 @@ class Ledger(QObject, JalDB):
     # consumption on every timestamp where those meet.
     _SEQUENCE_ORDER = " ORDER BY timestamp, seq, opart, oid"
 
-    # Rebuilds 'ledger_sequence' from scratch.
+    # Rebuilds 'ledger_sequence' from scratch. False when an operation has no row in 'operations': the foreign
+    # key refuses it, and a rebuild over an empty sequence would zero the whole ledger in silence.
     @classmethod
-    def refresh_sequence(cls):
+    def refresh_sequence(cls) -> bool:
         _ = cls._exec("DELETE FROM ledger_sequence")
-        _ = cls._exec("INSERT INTO ledger_sequence (operation_id, opart, timestamp, account_id) "
-                      "SELECT s.oid, s.opart, s.timestamp, s.account_id FROM operation_sequence AS s"
-                      + cls._SEQUENCE_ORDER)
+        return cls._exec("INSERT INTO ledger_sequence (operation_id, opart, timestamp, account_id) "
+                         "SELECT s.oid, s.opart, s.timestamp, s.account_id FROM operation_sequence AS s"
+                         + cls._SEQUENCE_ORDER) is not None
 
     @classmethod
     def get_operations_sequence(cls, begin: int, end: int, account_id: int = 0) -> list:
@@ -276,13 +277,18 @@ class Ledger(QObject, JalDB):
         last_timestamp = 0
         self.amounts.clear()
         self.values.clear()
+        # First, build the sequence of operations (it takes <<1 sec, so it is fine here). Nothing is deleted yet,
+        # so a sequence that can't be built leaves the existing ledger as it was.
+        if not self.refresh_sequence():
+            logging.error(self.tr("Processing order can't be built, ledger is left untouched"))
+            return
         if from_timestamp >= 0:
             frontier = from_timestamp
-            operations_count = self._read("SELECT COUNT(oid) FROM operation_sequence WHERE timestamp >= :frontier",
+            operations_count = self._read("SELECT COUNT(*) FROM ledger_sequence WHERE timestamp >= :frontier",
                                           [(":frontier", frontier)])
         else:
             frontier = self.getCurrentFrontier()
-            operations_count = self._read("SELECT COUNT(oid) FROM operation_sequence WHERE timestamp >= :frontier",
+            operations_count = self._read("SELECT COUNT(*) FROM ledger_sequence WHERE timestamp >= :frontier",
                                           [(":frontier", frontier)])
             if operations_count > self.SILENT_REBUILD_THRESHOLD:
                 if QMessageBox().warning(None, self.tr("Confirmation"), f"{operations_count}" +
@@ -301,8 +307,10 @@ class Ledger(QObject, JalDB):
         _ = self._exec("DELETE FROM ledger_totals WHERE timestamp >= :frontier", [(":frontier", frontier)])
         _ = self._exec("DELETE FROM trades_opened WHERE timestamp >= :frontier", [(":frontier", frontier)])
         try:
-            query = self._exec("SELECT otype, oid, opart, timestamp, account_id FROM operation_sequence "
-                               "WHERE timestamp >= :frontier" + self._SEQUENCE_ORDER, [(":frontier", frontier)])
+            # 'seq_no' IS the order of _SEQUENCE_ORDER, assigned when the rows were stored above
+            query = self._exec("SELECT o.otype, s.operation_id AS oid, s.opart, s.timestamp, s.account_id "
+                               "FROM ledger_sequence AS s JOIN operations AS o ON o.id=s.operation_id "
+                               "WHERE s.timestamp >= :frontier ORDER BY s.seq_no", [(":frontier", frontier)])
             while query.next():
                 data = self._read_record(query, named=True)
                 last_timestamp = data['timestamp']

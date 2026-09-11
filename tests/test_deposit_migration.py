@@ -10,6 +10,7 @@ from jal.db.db import JalDB
 from jal.db.ledger import Ledger
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.deposit import JalDepositBox
+from jal.db.operations import LedgerTransaction
 
 # Where the term-deposit migration starts and ends inside the delta. It is run from the shipped file rather than
 # copied here, so this test breaks if the migration text stops doing what it says.
@@ -50,6 +51,29 @@ def _run_migration(project_root):
         if not sqlparse.format(statement, strip_comments=True).strip():
             continue   # a run of comment lines is not a statement
         assert JalDB._exec(statement.strip()) is not None, f"Migration statement failed: {statement}"
+    _renumber_into_the_operations_root()
+
+
+# Delta 61 predates the operations root of delta 71: it writes its operations by raw SQL and each table numbers its
+# own rows from 1, so the ids collide across tables and none of them has a root. Delta 71 renumbered every operation
+# into one id space and filled the root from it; replaying 61 against today's schema has to do the same, or the
+# sequence draws a transfer as the action that shares its id. A delta written today allocates the root itself.
+# The move goes through the negative ids so that no row lands on one that hasn't been moved yet; the children follow
+# by ON UPDATE CASCADE.
+_OPERATION_TABLES = ((LedgerTransaction.IncomeSpending, "actions"), (LedgerTransaction.Transfer, "transfers"))
+
+
+def _renumber_into_the_operations_root():
+    JalDB._exec("DELETE FROM operations")     # nothing references it yet in this database - no fee, no sequence row
+    next_id = 0
+    for _otype, table in _OPERATION_TABLES:
+        for oid in JalDB._read_to_list(f"SELECT oid FROM {table} ORDER BY oid"):
+            next_id += 1
+            JalDB._exec(f"UPDATE {table} SET oid=:new WHERE oid=:old", [(":new", -next_id), (":old", oid)])
+    for otype, table in _OPERATION_TABLES:
+        JalDB._exec(f"UPDATE {table} SET oid=-oid WHERE oid<0")
+        JalDB._exec(f"INSERT INTO operations (id, otype, timestamp) SELECT oid, :otype, 0 FROM {table}",
+                    [(":otype", otype)])
 
 
 def _make_deposit(oid, account_id, note, actions):
