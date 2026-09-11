@@ -32,8 +32,18 @@ CREATE UNIQUE INDEX account_data_uniqueness ON account_data (account_id, datatyp
 -- SOURCE data: permanent, never deleted and rebuilt, which is exactly what lets other source rows point at it.
 DROP TABLE IF EXISTS operations;
 CREATE TABLE operations (
-    id    INTEGER PRIMARY KEY NOT NULL,  -- The global operation id; it is the 'oid' of the row in the type table
-    otype INTEGER NOT NULL               -- Which table holds the rest of the operation
+    id        INTEGER PRIMARY KEY NOT NULL,  -- The global operation id; it is the 'oid' of the row in the type table
+    otype     INTEGER NOT NULL,              -- Which table holds the rest of the operation
+    timestamp INTEGER NOT NULL DEFAULT (0)   -- NOT the operation's date for display: it is the EARLIEST moment the
+                                             -- operation touches the ledger, so for the three kinds that have two
+                                             -- legs it is the earlier leg. A child of an operation invalidates the
+                                             -- ledger from here, and that is the only reason the value is copied out
+                                             -- of the type table: without it every such child would have to know all
+                                             -- eight of them by name, which is what this root exists to stop.
+                                             -- Kept in step by the after-insert and after-update trigger of each type
+                                             -- table. It defaults to 0 - invalidate everything - because that is the
+                                             -- safe direction to fail in; a NULL would make 'timestamp >= NULL' never
+                                             -- true and invalidate NOTHING.
 );
 CREATE INDEX operations_by_type ON operations (otype);
 
@@ -54,6 +64,30 @@ CREATE TABLE ledger_sequence (
     UNIQUE (operation_id, opart)
 );
 CREATE INDEX ledger_sequence_acct ON ledger_sequence (account_id, seq_no);
+
+-- Table: fees - what an operation was charged for happening, one row per charge.
+-- A fee is a PROPERTY of the operation that bears it and carries no description of its own: every fee has a parent,
+-- and saying what happened is the parent's job. What it does carry is who bore it, in what it was paid and what sort
+-- of charge it was - none of which the single fee column of an operation table could express.
+-- SOURCE data, keyed on the operations root: the cascade there reaches these rows by every path an operation can
+-- leave by, not only its own deletion - an account, an asset listing or an agent takes its operations with it.
+DROP TABLE IF EXISTS fees;
+CREATE TABLE fees (
+    id           INTEGER PRIMARY KEY,
+    operation_id INTEGER NOT NULL REFERENCES operations (id) ON DELETE CASCADE,     -- The operation bearing the fee
+    idx          INTEGER NOT NULL DEFAULT (0),   -- Stability and not the order the user sees: it keeps two fees of
+                                                 -- one operation in the same relative order across a rebuild, and
+                                                 -- gives each of them a sequence part of its own. Assigned by
+                                                 -- whoever writes the row and never edited afterwards.
+    account_id   INTEGER NOT NULL REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,   -- Who bore it: not
+                                                 -- always a leg of the operation, as a transfer charged on a third
+                                                 -- account shows
+    symbol_id    INTEGER REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,  -- NULL = account currency
+    amount       TEXT    NOT NULL,               -- A quantity when 'symbol_id' names an asset, a sum of money when
+                                                 -- it doesn't - the same split the fee columns live with today
+    kind         INTEGER NOT NULL DEFAULT (0)    -- What sort of charge it is: FeeKind in jal/db/operations.py
+);
+CREATE INDEX fees_by_operation ON fees (operation_id);
 
 ------------------------------------------------------------------------------------------------------------------------
 -- tables to store information about Income/Spending transactions
@@ -725,12 +759,14 @@ DROP TRIGGER IF EXISTS actions_after_insert;
 CREATE TRIGGER actions_after_insert AFTER INSERT ON actions FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
+    UPDATE operations SET timestamp = COALESCE(NEW.timestamp, 0) WHERE id = NEW.oid;
 END;
 -- Ledger cleanup after modification
 DROP TRIGGER IF EXISTS actions_after_update;
 CREATE TRIGGER actions_after_update AFTER UPDATE OF timestamp, account_id, peer_id ON actions FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+    UPDATE operations SET timestamp = COALESCE(NEW.timestamp, 0) WHERE id = NEW.oid;
 END;
 -- Ledger and trades cleanup after modification
 DROP TRIGGER IF EXISTS asset_payments_after_delete;
@@ -746,6 +782,7 @@ CREATE TRIGGER asset_payments_after_insert AFTER INSERT ON asset_payments FOR EA
 BEGIN
     DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= NEW.timestamp;
+    UPDATE operations SET timestamp = COALESCE(NEW.timestamp, 0) WHERE id = NEW.oid;
 END;
 -- Ledger and trades cleanup after modification
 DROP TRIGGER IF EXISTS asset_payments_after_update;
@@ -753,6 +790,7 @@ CREATE TRIGGER asset_payments_after_update AFTER UPDATE OF timestamp, type, acco
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+    UPDATE operations SET timestamp = COALESCE(NEW.timestamp, 0) WHERE id = NEW.oid;
 END;
 -- Ledger and trades cleanup after modification
 DROP TRIGGER IF EXISTS trades_after_delete;
@@ -768,6 +806,7 @@ CREATE TRIGGER trades_after_insert AFTER INSERT ON trades FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= NEW.timestamp;
+    UPDATE operations SET timestamp = COALESCE(NEW.timestamp, 0) WHERE id = NEW.oid;
 END;
 -- Ledger and trades cleanup after modification
 DROP TRIGGER IF EXISTS trades_after_update;
@@ -775,6 +814,7 @@ CREATE TRIGGER trades_after_update AFTER UPDATE OF timestamp, account_id, symbol
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+    UPDATE operations SET timestamp = COALESCE(NEW.timestamp, 0) WHERE id = NEW.oid;
 END;
 -- Ledger and trades cleanup after modification
 DROP TRIGGER IF EXISTS swaps_after_delete;
@@ -789,6 +829,7 @@ CREATE TRIGGER swaps_after_insert AFTER INSERT ON swaps FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= NEW.timestamp;
+    UPDATE operations SET timestamp = COALESCE(MIN(NEW.timestamp, COALESCE(NEW.in_timestamp, NEW.timestamp)), 0) WHERE id = NEW.oid;
 END;
 -- A cross-chain swap receives later than it sends, so wiping the ledger from 'timestamp' (the sending leg) forward
 -- always covers the receiving leg as well - there is no need to look at 'in_timestamp' here.
@@ -797,6 +838,7 @@ CREATE TRIGGER swaps_after_update AFTER UPDATE OF timestamp, account_id, out_sym
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+    UPDATE operations SET timestamp = COALESCE(MIN(NEW.timestamp, COALESCE(NEW.in_timestamp, NEW.timestamp)), 0) WHERE id = NEW.oid;
 END;
 -- The receiving leg of a pending half-bridge is NULL; `>= NULL` is NULL (never true), so the OR simply ignores it
 -- and the sending leg (always present, always the earlier one) governs the wipe. Matching fills the receiving leg,
@@ -813,12 +855,18 @@ CREATE TRIGGER bridges_after_insert AFTER INSERT ON bridges FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= NEW.out_timestamp OR timestamp >= NEW.in_timestamp;
     DELETE FROM trades_opened WHERE timestamp >= NEW.out_timestamp OR timestamp >= NEW.in_timestamp;
+    UPDATE operations SET timestamp = COALESCE(MIN(COALESCE(NEW.out_timestamp, NEW.in_timestamp),
+                                                   COALESCE(NEW.in_timestamp, NEW.out_timestamp)), 0)
+        WHERE id = NEW.oid;
 END;
 DROP TRIGGER IF EXISTS bridges_after_update;
 CREATE TRIGGER bridges_after_update AFTER UPDATE OF out_timestamp, in_timestamp, out_account_id, in_account_id, out_symbol_id, in_symbol_id, out_qty, in_qty, fee_symbol_id, fee_qty ON bridges FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.out_timestamp OR timestamp >= OLD.in_timestamp OR timestamp >= NEW.out_timestamp OR timestamp >= NEW.in_timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.out_timestamp OR timestamp >= OLD.in_timestamp OR timestamp >= NEW.out_timestamp OR timestamp >= NEW.in_timestamp;
+    UPDATE operations SET timestamp = COALESCE(MIN(COALESCE(NEW.out_timestamp, NEW.in_timestamp),
+                                                   COALESCE(NEW.in_timestamp, NEW.out_timestamp)), 0)
+        WHERE id = NEW.oid;
 END;
 -- Ledger and trades cleanup after modification
 DROP TRIGGER IF EXISTS asset_action_after_delete;
@@ -835,6 +883,7 @@ CREATE TRIGGER asset_action_after_insert AFTER INSERT ON asset_actions FOR EACH 
 BEGIN
     DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= NEW.timestamp;
+    UPDATE operations SET timestamp = COALESCE(NEW.timestamp, 0) WHERE id = NEW.oid;
 END;
 -- Ledger and trades cleanup after modification
 DROP TRIGGER IF EXISTS asset_action_after_update;
@@ -842,6 +891,7 @@ CREATE TRIGGER asset_action_after_update AFTER UPDATE OF timestamp, account_id, 
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp  OR timestamp >= NEW.timestamp;
+    UPDATE operations SET timestamp = COALESCE(NEW.timestamp, 0) WHERE id = NEW.oid;
 END;
 -- Ledger cleanup after modification
 DROP TRIGGER IF EXISTS asset_result_after_delete;
@@ -873,6 +923,9 @@ DROP TRIGGER IF EXISTS transfers_after_insert;
 CREATE TRIGGER transfers_after_insert AFTER INSERT ON transfers FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= NEW.withdrawal_timestamp OR timestamp >= NEW.deposit_timestamp;
+    UPDATE operations SET timestamp = COALESCE(MIN(COALESCE(NEW.withdrawal_timestamp, NEW.deposit_timestamp),
+                                                   COALESCE(NEW.deposit_timestamp, NEW.withdrawal_timestamp)), 0)
+        WHERE id = NEW.oid;
 END;
 -- Ledger cleanup after modification
 DROP TRIGGER IF EXISTS transfers_after_update;
@@ -880,6 +933,9 @@ CREATE TRIGGER transfers_after_update AFTER UPDATE OF withdrawal_timestamp, depo
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.withdrawal_timestamp OR timestamp >= OLD.deposit_timestamp OR
                 timestamp >= NEW.withdrawal_timestamp OR timestamp >= NEW.deposit_timestamp;
+    UPDATE operations SET timestamp = COALESCE(MIN(COALESCE(NEW.withdrawal_timestamp, NEW.deposit_timestamp),
+                                                   COALESCE(NEW.deposit_timestamp, NEW.withdrawal_timestamp)), 0)
+        WHERE id = NEW.oid;
 END;
 -- Ledger and trades cleanup after modification
 DROP TRIGGER IF EXISTS conversions_after_delete;
@@ -895,6 +951,7 @@ CREATE TRIGGER conversions_after_insert AFTER INSERT ON conversions FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= NEW.timestamp;
+    UPDATE operations SET timestamp = COALESCE(NEW.timestamp, 0) WHERE id = NEW.oid;
 END;
 -- Ledger and trades cleanup after modification
 DROP TRIGGER IF EXISTS conversions_after_update;
@@ -902,6 +959,28 @@ CREATE TRIGGER conversions_after_update AFTER UPDATE OF timestamp, account_id, o
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+    UPDATE operations SET timestamp = COALESCE(NEW.timestamp, 0) WHERE id = NEW.oid;
+END;
+-- A fee edits the ledger as much as the operation it belongs to does, so the three triggers below invalidate it the
+-- way the parent's own triggers do. Without them a fee could be added, changed or removed and the ledger would keep
+-- the balance it had.
+DROP TRIGGER IF EXISTS fees_after_insert;
+CREATE TRIGGER fees_after_insert AFTER INSERT ON fees FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM operations WHERE id = NEW.operation_id);
+    DELETE FROM trades_opened WHERE timestamp >= (SELECT timestamp FROM operations WHERE id = NEW.operation_id);
+END;
+DROP TRIGGER IF EXISTS fees_after_update;
+CREATE TRIGGER fees_after_update AFTER UPDATE ON fees FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM operations WHERE id = OLD.operation_id);
+    DELETE FROM trades_opened WHERE timestamp >= (SELECT timestamp FROM operations WHERE id = OLD.operation_id);
+END;
+DROP TRIGGER IF EXISTS fees_after_delete;
+CREATE TRIGGER fees_after_delete AFTER DELETE ON fees FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= (SELECT timestamp FROM operations WHERE id = OLD.operation_id);
+    DELETE FROM trades_opened WHERE timestamp >= (SELECT timestamp FROM operations WHERE id = OLD.operation_id);
 END;
 -- Trigger ledger update and peers cleanup after peer(agent) deletion
 DROP TRIGGER IF EXISTS agents_after_delete;
@@ -942,7 +1021,7 @@ BEGIN
 END;
 ------------------------------------------------------------------------------------------------------------------------
 -- Initialize default values for settings
-INSERT INTO settings(name, value) VALUES('SchemaVersion', 72);
+INSERT INTO settings(name, value) VALUES('SchemaVersion', 73);
 INSERT INTO settings(name, value) VALUES('Language', 1);
 INSERT INTO settings(name, value) VALUES('RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
 INSERT INTO settings(name, value) VALUES('RuTaxSessionId', '');

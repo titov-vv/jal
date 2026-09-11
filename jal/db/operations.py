@@ -407,7 +407,7 @@ class LedgerTransaction(JalDB):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# What sort of charge a fee is. Nothing stores it yet.
+# What sort of charge a fee is - stored in 'fees.kind'.
 class FeeKind:
     Commission = 0   # A charge in money, taken by the institution the operation runs through
     Gas = 1          # An on-chain charge, paid in an asset and consumed by the transaction

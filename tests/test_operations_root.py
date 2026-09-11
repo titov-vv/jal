@@ -74,6 +74,10 @@ def _replay_the_migration(project_root):
             assert JalDB._exec(statement.strip()) is not None, f"Migration statement failed: {statement}"
     finally:
         JalDB().enable_fk(True)
+    # Delta 71 builds 'operations' as it stood THEN, and delta 73 gave it the moment an operation happens - which the
+    # after-insert and after-update trigger of every type table now writes. Without the column back, any operation
+    # stored after a replay would fail on a trigger rather than on anything this file is about.
+    JalDB._exec("ALTER TABLE operations ADD COLUMN timestamp INTEGER NOT NULL DEFAULT (0)")
     JalDB().commit()
 
 
@@ -368,3 +372,87 @@ def test_a_part_of_an_operation_is_listed_once(prepare_db_fifo, project_root):
 
     assert duplicate is None    # UNIQUE (operation_id, opart)
     assert JalDB._read("SELECT COUNT(*) FROM ledger_sequence") == 1
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The moment an operation happens is kept on the root as well as in the type table. It is a copy, so what these tests
+# watch is that it cannot drift: a child of an operation invalidates the ledger from it, and a value that lags behind
+# would leave the ledger holding a balance that is quietly wrong.
+#
+# The expression below is the one the delta fills the column with, and it is the only place the eight tables are
+# listed. A test that recomputed it differently would agree with a bug.
+_EXPECTED_MOMENT = """COALESCE(
+    (SELECT timestamp FROM actions        WHERE oid = operations.id),
+    (SELECT timestamp FROM asset_payments WHERE oid = operations.id),
+    (SELECT timestamp FROM asset_actions  WHERE oid = operations.id),
+    (SELECT timestamp FROM trades         WHERE oid = operations.id),
+    (SELECT timestamp FROM conversions    WHERE oid = operations.id),
+    (SELECT MIN(COALESCE(withdrawal_timestamp, deposit_timestamp),
+                COALESCE(deposit_timestamp, withdrawal_timestamp)) FROM transfers WHERE oid = operations.id),
+    (SELECT MIN(timestamp, COALESCE(in_timestamp, timestamp)) FROM swaps WHERE oid = operations.id),
+    (SELECT MIN(COALESCE(out_timestamp, in_timestamp),
+                COALESCE(in_timestamp, out_timestamp)) FROM bridges WHERE oid = operations.id), 0)"""
+
+
+def _operations_whose_moment_is_stale() -> int:
+    return JalDB._read(f"SELECT COUNT(*) FROM operations WHERE timestamp <> {_EXPECTED_MOMENT}")
+
+
+def test_every_operation_remembers_when_it_happens(prepare_db_fifo):
+    _operations_of_every_type()
+
+    assert JalDB._read("SELECT COUNT(*) FROM operations") > 0
+    assert JalDB._read("SELECT COUNT(*) FROM operations WHERE timestamp = 0") == 0
+    assert _operations_whose_moment_is_stale() == 0
+
+
+# An operation that has two legs starts at the earlier of them, because that is the point from which the ledger has to
+# be rebuilt - not the date the operation is filed under
+def test_a_two_legged_operation_remembers_its_earlier_leg(prepare_db_fifo):
+    _operations_of_every_type()
+    for otype, table, column in ((LedgerTransaction.Transfer, 'transfers', 'withdrawal_timestamp'),
+                                 (LedgerTransaction.Bridge, 'bridges', 'out_timestamp'),
+                                 (LedgerTransaction.Swap, 'swaps', 'timestamp')):
+        oid = operation_id(otype)
+        assert JalDB._read("SELECT timestamp FROM operations WHERE id=:oid", [(":oid", oid)]) == \
+               JalDB._read(f"SELECT {column} FROM {table} WHERE oid=:oid", [(":oid", oid)]), table
+
+
+# Moving an operation in time moves the moment with it - this is the half that a copy gets wrong when nobody watches
+def test_the_moment_follows_an_edited_operation(prepare_db_fifo):
+    _operations_of_every_type()
+    moved = d2t(200101)   # earlier than anything the fixture stores, so it is the operation's earliest leg either way
+    for otype, table, column in ((LedgerTransaction.Trade, 'trades', 'timestamp'),
+                                 (LedgerTransaction.Transfer, 'transfers', 'withdrawal_timestamp'),
+                                 (LedgerTransaction.Bridge, 'bridges', 'out_timestamp')):
+        oid = operation_id(otype)
+        JalDB._exec(f"UPDATE {table} SET {column}=:ts WHERE oid=:oid", [(":ts", moved), (":oid", oid)], commit=True)
+        assert JalDB._read("SELECT timestamp FROM operations WHERE id=:oid", [(":oid", oid)]) == moved, table
+    assert _operations_whose_moment_is_stale() == 0
+
+
+# Pushing one leg PAST the other hands the moment to the leg that is now first. The ledger has to be rebuilt from the
+# earliest point the operation still touches, and after such an edit that is no longer the leg that was edited.
+def test_a_leg_moved_past_the_other_hands_the_moment_over(prepare_db_fifo):
+    _operations_of_every_type()
+    oid = operation_id(LedgerTransaction.Transfer)
+    deposit = JalDB._read("SELECT deposit_timestamp FROM transfers WHERE oid=:oid", [(":oid", oid)])
+
+    JalDB._exec("UPDATE transfers SET withdrawal_timestamp=:ts WHERE oid=:oid",
+                [(":ts", deposit + 86400), (":oid", oid)], commit=True)
+
+    assert JalDB._read("SELECT timestamp FROM operations WHERE id=:oid", [(":oid", oid)]) == deposit
+    assert _operations_whose_moment_is_stale() == 0
+
+
+# 'shift_clock.py' and the reclocking of a whole account rewrite timestamps by plain UPDATE, so the moment follows
+# them the same way - which is what makes the copy safe to keep
+def test_the_moment_follows_a_whole_account_being_reclocked(prepare_db_fifo):
+    _operations_of_every_type()
+    for table, column in (('actions', 'timestamp'), ('asset_payments', 'timestamp'), ('trades', 'timestamp'),
+                          ('asset_actions', 'timestamp'), ('conversions', 'timestamp'), ('swaps', 'timestamp'),
+                          ('transfers', 'withdrawal_timestamp'), ('bridges', 'out_timestamp')):
+        JalDB._exec(f"UPDATE {table} SET {column} = {column} + 3600")
+    JalDB().commit()
+
+    assert _operations_whose_moment_is_stale() == 0
