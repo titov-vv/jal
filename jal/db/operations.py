@@ -51,6 +51,10 @@ class LedgerTransaction(JalDB):
     _db_table = ''   # Table where operation is stored in DB
     _otype = NA      # Operation type - a class attribute, because it identifies the operation before there is one:
                      # create_operation() below allocates the id from 'operations' and has to name the type there
+    # Where this kind of operation sorts among others of the same second. NOT '_otype': a corporate action is
+    # processed BEFORE a trade and before a transfer of the same second, so that a split resizes the lots before
+    # a sale consumes them. Ordering by type instead moves lot consumption wherever those meet.
+    LedgerRank = 0
     _db_fields = {}
 
     def __init__(self, operation_data=None, duplicate_before=None):
@@ -101,6 +105,11 @@ class LedgerTransaction(JalDB):
             elif key == 'type':   # Operation subtype, already resolved into _oname
                 data[key] = self._oname
         return str(data)
+
+    # Every operation class, for the code that has to treat them as a set rather than dispatch on one of them
+    @staticmethod
+    def operation_classes() -> list:
+        return [IncomeSpending, AssetPayment, Trade, Transfer, CorporateAction, Conversion, Swap, Bridge]
 
     @staticmethod
     def get_operation(operation_type, oid, opart=0):
@@ -528,6 +537,7 @@ class FeeCarrier:
 class IncomeSpending(LedgerTransaction):
     _db_table = "actions"
     _otype = LedgerTransaction.IncomeSpending
+    LedgerRank = 1
     _dump_assets = ('currency',)   # 'alt_currency_id' is selected as 'currency'
     _db_fields = {
         "timestamp": {"mandatory": True, "validation": False},
@@ -714,6 +724,7 @@ class AssetPayment(LedgerTransaction):
                           RebaseAdjustment, TokenRent, TokenRentReturn)
     _db_table = "asset_payments"
     _otype = LedgerTransaction.AssetPayment
+    LedgerRank = 2
     _dump_timestamps = ('ex_date',)
     _db_fields = {
         "timestamp": {"mandatory": True, "validation": True},
@@ -1073,6 +1084,7 @@ class AssetPayment(LedgerTransaction):
 class Trade(FeeCarrier, LedgerTransaction):
     _db_table = "trades"
     _otype = LedgerTransaction.Trade
+    LedgerRank = 4
     _dump_timestamps = ('settlement',)
     _db_fields = {
         "timestamp": {"mandatory": True, "validation": True},
@@ -1265,6 +1277,7 @@ class Swap(FeeCarrier, LedgerTransaction):
     Fee = 2         # The gas paid for the swap - a row of its own, as it is for a transfer and for a bridge
     _db_table = "swaps"
     _otype = LedgerTransaction.Swap
+    LedgerRank = 7
     _db_fields = {
         "timestamp": {"mandatory": True, "validation": True},
         "tx_hash": {"mandatory": False, "validation": True, "default": ''},
@@ -1513,6 +1526,7 @@ class Transfer(FeeCarrier, LedgerTransaction):
     PART_FEE = Fee          # The fee posts into the part it is drawn as - see FeeCarrier.PART_FEE
     _db_table = "transfers"
     _otype = LedgerTransaction.Transfer
+    LedgerRank = 5
     _db_fields = {
         "withdrawal_timestamp": {"mandatory": True, "validation": True},
         "withdrawal_account": {"mandatory": False, "validation": True, "default": None},
@@ -2079,6 +2093,7 @@ class CorporateAction(LedgerTransaction):
     Delisting = 5
     _db_table = "asset_actions"
     _otype = LedgerTransaction.CorporateAction
+    LedgerRank = 3
     _db_fields = {
         "timestamp": {"mandatory": True, "validation": True},
         "timestamp_day_only": {"mandatory": False, "validation": False},
@@ -2305,6 +2320,7 @@ class Conversion(FeeCarrier, LedgerTransaction):
     Fee = 2     # The gas paid for it - a row of its own, as it is for a transfer, a swap and a bridge
     _db_table = "conversions"
     _otype = LedgerTransaction.Conversion
+    LedgerRank = 6
     _db_fields = {
         "timestamp": {"mandatory": True, "validation": True},
         "account_id": {"mandatory": True, "validation": True},
@@ -2467,6 +2483,7 @@ class Bridge(FeeCarrier, LedgerTransaction):
     InKindFee = 2
     _db_table = "bridges"
     _otype = LedgerTransaction.Bridge
+    LedgerRank = 8
     _db_fields = {
         "out_timestamp": {"mandatory": True, "validation": True},
         "out_account_id": {"mandatory": True, "validation": True},

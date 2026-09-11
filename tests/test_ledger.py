@@ -14,7 +14,8 @@ from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
 from jal.db.peer import JalPeer
-from jal.db.operations import LedgerTransaction, LedgerError, AssetPayment, CorporateAction, Transfer
+from jal.db.operations import LedgerTransaction, LedgerError, AssetPayment, CorporateAction, Transfer, \
+    Conversion, Swap, Bridge
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -713,8 +714,10 @@ def test_the_rebuild_posts_in_the_order_the_sequence_lists(two_accounts_and_an_a
 # its fee, the fee of a conversion, a swap and a bridge), and half of them collide on one second so that the type
 # rank, the part and the id all have to decide something. Compared row for row IN ORDER: 'seq_no' is the rowid, so
 # what is asserted is that INSERT ... SELECT ... ORDER BY really did lay the rows down in the order it was given.
-def test_the_stored_sequence_repeats_the_view_row_for_row(two_accounts_and_an_asset):
-    other = two_accounts_and_an_asset
+# One of every operation type and of every part they contribute, with all but two of them on ONE second, so that the
+# type rank, the part and the id each have to decide something. Two transfers, because the part has to outrank the
+# id and not merely agree with it.
+def _a_ledger_with_every_branch(other) -> None:
     create_stocks([('GAS', 'Native coin')], currency_id=2)    # asset 5
     create_actions([(_EARLIER, 1, 1, [(PredefinedCategory.Spending, 10.0)])])
     create_trades(1, [(_EARLIER, _EARLIER, 4, Decimal('10'), Decimal('100'), Decimal('1'))])
@@ -722,7 +725,7 @@ def test_the_stored_sequence_repeats_the_view_row_for_row(two_accounts_and_an_as
     create_corporate_actions(1, [(_COLLISION, CorporateAction.Split, 4, Decimal('10'), '',
                                   [(4, Decimal('20'), Decimal('1'))])])
     create_trades(1, [(_COLLISION, _COLLISION, 4, Decimal('-1'), Decimal('120'), Decimal('0'))])
-    for number in ('1', '2'):     # two of them, so that the part has to outrank the id and not merely agree with it
+    for number in ('1', '2'):
         LedgerTransaction.create_new(LedgerTransaction.Transfer, {
             'withdrawal_timestamp': _COLLISION, 'withdrawal_account': 1, 'withdrawal': Decimal('5'),
             'deposit_timestamp': _COLLISION, 'deposit_account': other, 'deposit': Decimal('5'),
@@ -732,12 +735,16 @@ def test_the_stored_sequence_repeats_the_view_row_for_row(two_accounts_and_an_as
     create_bridges([{'out_ts': _COLLISION, 'out_acc': 1, 'out_qty': 1, 'in_ts': _COLLISION, 'in_acc': other,
                      'in_qty': 1, 'asset': 4, 'fee_asset': 5, 'fee_qty': '0.5'}])
 
+
+def test_the_stored_sequence_repeats_the_view_row_for_row(two_accounts_and_an_asset):
+    _a_ledger_with_every_branch(two_accounts_and_an_asset)
+
     Ledger.refresh_sequence()
 
     stored = JalDB._read_to_list("SELECT operation_id, opart, timestamp, account_id FROM ledger_sequence "
                                  "ORDER BY seq_no")
-    # The order is spelled out here rather than taken from Ledger._SEQUENCE_ORDER: an oracle that reads the
-    # constant under test agrees with it by construction and would pass whatever it was changed to.
+    # The view's own 'seq' literal is the oracle: since the rank moved into the classes these are two independent
+    # implementations of one rule, and the view is the one that has been right since 2022.
     expected = JalDB._read_to_list("SELECT oid, opart, timestamp, account_id FROM operation_sequence "
                                    "ORDER BY timestamp, seq, opart, oid")
     assert len(stored) > 18      # the branches above really are all there, and none of them is empty
@@ -758,3 +765,53 @@ def test_a_refresh_replaces_the_sequence_and_leaves_no_orphan(two_accounts_and_a
     assert once == JalDB._read("SELECT COUNT(*) FROM ledger_sequence")
     assert once == JalDB._read("SELECT COUNT(*) FROM ledger_sequence AS s "
                                "JOIN operations AS o ON o.id=s.operation_id")
+
+
+# THE GOLDEN ORDER. The rank is a class attribute now, so changing it needs no migration and leaves no trace - a
+# one-character edit moves FIFO lot consumption on every timestamp where two kinds meet, and nothing else in the
+# suite would notice. This is what pays for that: the whole sequence of a ledger holding every branch, written out.
+# Read it as the domain rule it is - a corporate action settles the lots before a trade or a transfer of the same
+# second touches them, and an income/spending entry and a payment come before all three.
+_GOLDEN_ORDER = [
+    # (operation type, part) at _EARLIER - only two operations, and they still rank action before trade
+    (LedgerTransaction.IncomeSpending, 0),
+    (LedgerTransaction.Trade, 0),
+    # ... and at _COLLISION, where everything else happens at one and the same second
+    (LedgerTransaction.AssetPayment, 0),
+    (LedgerTransaction.CorporateAction, 0),      # rank 3: BEFORE the trade and the transfers, though otype 5
+    (LedgerTransaction.Trade, 0),                # rank 4, otype 3
+    (LedgerTransaction.Transfer, Transfer.Outgoing),   # rank 5, otype 4 - both transfers, part before id
+    (LedgerTransaction.Transfer, Transfer.Outgoing),
+    (LedgerTransaction.Transfer, Transfer.Fee),
+    (LedgerTransaction.Transfer, Transfer.Fee),
+    (LedgerTransaction.Transfer, Transfer.Incoming),
+    (LedgerTransaction.Transfer, Transfer.Incoming),
+    (LedgerTransaction.Conversion, Conversion.Whole),
+    (LedgerTransaction.Conversion, Conversion.Fee),
+    (LedgerTransaction.Swap, Swap.Whole),
+    (LedgerTransaction.Swap, Swap.Fee),
+    (LedgerTransaction.Bridge, Bridge.Outgoing),
+    (LedgerTransaction.Bridge, Bridge.Fee),
+    (LedgerTransaction.Bridge, Bridge.Incoming),
+]
+
+
+def test_the_sequence_holds_the_golden_order(two_accounts_and_an_asset):
+    _a_ledger_with_every_branch(two_accounts_and_an_asset)
+
+    Ledger.refresh_sequence()
+
+    # From _EARLIER, so that the list below is exactly what _a_ledger_with_every_branch() built - the fixture
+    # opens the account with a starting balance of its own, years before any of it.
+    order = [(row['otype'], row['opart']) for row in Ledger.get_operations_sequence(_EARLIER, _COLLISION)]
+    assert order == _GOLDEN_ORDER
+
+
+# The ranks themselves, stated once so that a class losing its declaration is a failure here and not a silent
+# reordering. 0 is the base class default and no operation may keep it.
+def test_every_operation_class_declares_its_rank():
+    ranks = {x.__name__: x.LedgerRank for x in LedgerTransaction.operation_classes()}
+
+    assert ranks == {'IncomeSpending': 1, 'AssetPayment': 2, 'CorporateAction': 3, 'Trade': 4,
+                     'Transfer': 5, 'Conversion': 6, 'Swap': 7, 'Bridge': 8}
+    assert len(set(ranks.values())) == len(ranks)     # a shared rank would make the order depend on the id

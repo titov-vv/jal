@@ -127,13 +127,14 @@ class Ledger(QObject, JalDB):
             current_frontier = 0
         return current_frontier
 
-    # The processing order is stated here and not left to the view's own ORDER BY: a view may be flattened into the
-    # enclosing query, and then the order is whatever the query plan happens to produce. Nothing raises when it comes
-    # out wrong - FIFO simply consumes the wrong lots and the basis is silently off.
-    # 'seq' is NOT 'otype', and the difference is a domain rule: a corporate action (otype 5) is processed BEFORE a
-    # trade (otype 3) and before a transfer (otype 4) of the same second. Ordering by 'otype' would move lot
-    # consumption on every timestamp where those meet.
-    _SEQUENCE_ORDER = " ORDER BY timestamp, seq, opart, oid"
+    # The processing order, built from the rank each operation class declares (LedgerTransaction.LedgerRank) instead
+    # of the view's own 'seq' literal - the rank belongs with the class whose lots it moves. It is NOT 'otype': a
+    # corporate action is processed BEFORE a trade and before a transfer of the same second. Nothing raises when
+    # this comes out wrong - FIFO simply consumes the wrong lots and the basis is silently off.
+    @classmethod
+    def _sequence_order(cls) -> str:
+        ranks = " ".join([f"WHEN {x._otype} THEN {x.LedgerRank}" for x in LedgerTransaction.operation_classes()])
+        return f" ORDER BY timestamp, CASE otype {ranks} END, opart, oid"
 
     # Rebuilds 'ledger_sequence' from scratch. False when an operation has no row in 'operations': the foreign
     # key refuses it, and a rebuild over an empty sequence would zero the whole ledger in silence.
@@ -142,7 +143,7 @@ class Ledger(QObject, JalDB):
         _ = cls._exec("DELETE FROM ledger_sequence")
         return cls._exec("INSERT INTO ledger_sequence (operation_id, opart, timestamp, account_id) "
                          "SELECT s.oid, s.opart, s.timestamp, s.account_id FROM operation_sequence AS s"
-                         + cls._SEQUENCE_ORDER) is not None
+                         + cls._sequence_order()) is not None
 
     # A database can arrive without a sequence - a schema upgrade, a re-clocked file, a rebuild the user declined -
     # and until one is built no operation is listed at all.
@@ -314,7 +315,7 @@ class Ledger(QObject, JalDB):
         _ = self._exec("DELETE FROM ledger_totals WHERE timestamp >= :frontier", [(":frontier", frontier)])
         _ = self._exec("DELETE FROM trades_opened WHERE timestamp >= :frontier", [(":frontier", frontier)])
         try:
-            # 'seq_no' IS the order of _SEQUENCE_ORDER, assigned when the rows were stored above
+            # 'seq_no' is the processing order itself, assigned when the rows were stored above
             query = self._exec("SELECT o.otype, s.operation_id AS oid, s.opart, s.timestamp, s.account_id "
                                "FROM ledger_sequence AS s JOIN operations AS o ON o.id=s.operation_id "
                                "WHERE s.timestamp >= :frontier ORDER BY s.seq_no", [(":frontier", frontier)])
