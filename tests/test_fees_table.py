@@ -14,7 +14,7 @@ from constants import Setup
 from jal.db.db import JalDB
 from jal.db.account import JalAccountCreator
 from jal.db.ledger import Ledger
-from jal.db.operations import LedgerTransaction
+from jal.db.operations import LedgerTransaction, FeeKind
 
 
 # Two accounts - the ends of the transfers below - and two assets: 4 'A', the one that moves, and 5 'GAS', the coin
@@ -211,6 +211,110 @@ def _replay_the_triggers(project_root):
     JalDB().commit()
 
 
+# The populate, replayed the same way. It sits between the table and the triggers in the delta and the order is
+# load-bearing, which is what the ledger test below actually checks.
+_POPULATE_FROM = "-- THE FEES THAT ARE ALREADY STORED"
+_POPULATE_TO = "-- A FEE EDIT MUST INVALIDATE THE LEDGER"
+
+
+def _replay_the_populate(project_root):
+    with open(project_root + f"/jal/updates/{Setup.UPDATE_PREFIX}{_MIGRATION_DELTA}.sql") as delta:
+        text = delta.read()
+    start, end = text.index(_POPULATE_FROM), text.index(_POPULATE_TO)
+    JalDB._exec("DELETE FROM fees", commit=True)   # the state the delta finds the table in
+    # ... and the state the LEDGER is in when it runs: in the delta the populate comes before the section that
+    # creates these, so six thousand inserts pass without one of them clearing the ledger. A replay that left them
+    # in place would be replaying a different migration - and the ordering itself is pinned by its own test below.
+    for event in ('insert', 'update', 'delete'):
+        JalDB._exec(f"DROP TRIGGER IF EXISTS fees_after_{event}")
+    for statement in sqlparse.split(text[start:end]):
+        stripped = sqlparse.format(statement, strip_comments=True).strip()
+        if not stripped:
+            continue
+        assert JalDB._exec(stripped) is not None, f"Migration statement failed: {statement}"
+    JalDB().commit()
+
+
+# What every stored fee has to become. The parity these assertions state is the bar of the stage: the fee row and the
+# columns it was copied from must say the same thing, down to the spelling of the amount.
+_PARITY = {
+    'trades':      "SELECT oid, account_id, NULL, fee FROM trades WHERE CAST(fee AS REAL) <> 0",
+    'transfers':   "SELECT oid, COALESCE(fee_account, withdrawal_account, deposit_account), fee_symbol_id, fee "
+                   "FROM transfers WHERE CAST(fee AS REAL) <> 0",
+    'conversions': "SELECT oid, account_id, fee_symbol_id, fee_qty FROM conversions WHERE CAST(fee_qty AS REAL) <> 0",
+    'swaps':       "SELECT oid, account_id, fee_symbol_id, fee_qty FROM swaps WHERE CAST(fee_qty AS REAL) <> 0",
+    'bridges':     "SELECT oid, out_account_id, fee_symbol_id, fee_qty FROM bridges WHERE CAST(fee_qty AS REAL) <> 0",
+}
+
+
+def _sources() -> list:
+    rows = []
+    for query in _PARITY.values():
+        rows += JalDB._read_to_list(query)
+    return sorted(rows)
+
+
+def _stored_fees() -> list:
+    return sorted(JalDB._read_to_list("SELECT operation_id, account_id, symbol_id, amount FROM fees WHERE idx = 0"))
+
+
+def test_the_migration_moves_every_stored_fee(prepare_db_fifo, project_root):
+    _operations_with_fees()
+    _replay_the_populate(project_root)
+
+    assert JalDB._read("SELECT COUNT(*) FROM fees") == 5    # a trade, a swap, a conversion, a transfer, a bridge
+    assert _stored_fees() == _sources()
+    assert JalDB._read("SELECT COUNT(*) FROM fees WHERE idx <> 0") == 0
+
+
+# A fee paid in money is a commission and one denominated in an asset is gas. For a transfer that is a reading of the
+# data and not a fact in it, which is the one place a finer 'kind' set would first be wrong.
+def test_the_migration_tells_a_commission_from_gas(prepare_db_fifo, project_root):
+    _operations_with_fees()
+    _replay_the_populate(project_root)
+
+    kinds = dict(JalDB._read_to_list("SELECT kind, COUNT(*) FROM fees GROUP BY kind"))
+    assert kinds == {FeeKind.Commission: 1, FeeKind.Gas: 4}   # the trade pays in money, the other four in the coin
+    assert JalDB._read("SELECT COUNT(*) FROM fees WHERE (symbol_id IS NULL) <> (kind = :money)",
+                       [(":money", FeeKind.Commission)]) == 0
+
+
+# The zero test is numeric. 'trades.fee' is NOT NULL DEFAULT ('0') and its zeros are spelled several ways, so a
+# textual filter migrates fees that are not fees - 337 of them on the live ledger.
+def test_a_fee_that_is_zero_however_it_is_spelled_migrates_nothing(prepare_db_fifo, project_root):
+    _operations_with_fees()
+    for spelling in ('0', '0.0', '0.00', ''):
+        create_trades(1, [(d2t(220102), d2t(220102), 4, 1.0, 100.0, 0.0)])
+        JalDB._exec("UPDATE trades SET fee=:fee WHERE oid=:oid",
+                    [(":fee", spelling), (":oid", JalDB._read("SELECT MAX(oid) FROM trades"))], commit=True)
+
+    _replay_the_populate(project_root)
+
+    assert JalDB._read("SELECT COUNT(*) FROM fees") == 5     # the same five, and not one of the four zeros
+
+
+# The amount is carried over exactly as it is stored. Canonicalising it here would make the parity above unable to
+# tell a migration bug from a change of spelling.
+def test_the_migration_copies_the_amount_verbatim(prepare_db_fifo, project_root):
+    _operations_with_fees()
+    oid = operation_id(LedgerTransaction.Trade, 2)
+    JalDB._exec("UPDATE trades SET fee='3.1400' WHERE oid=:oid", [(":oid", oid)], commit=True)
+
+    _replay_the_populate(project_root)
+
+    assert JalDB._read("SELECT amount FROM fees WHERE operation_id=:oid", [(":oid", oid)]) == '3.1400'
+
+
+# The populate has to come before the triggers are created, and nothing but the order of the file says so. Move the
+# section down and every one of six thousand inserts clears the ledger from its operation's moment - the delta would
+# still be correct, and it would leave the user with an empty ledger and no word about it.
+def test_the_delta_populates_before_it_creates_the_fee_triggers(project_root):
+    with open(project_root + f"/jal/updates/{Setup.UPDATE_PREFIX}{_MIGRATION_DELTA}.sql") as delta:
+        text = delta.read()
+
+    assert text.index("CREATE TABLE fees") < text.index(_POPULATE_FROM) < text.index("CREATE TRIGGER fees_after_insert")
+
+
 # Nothing this delta does touches the ledger: it adds a column, fills it from data the ledger was already built
 # from, and re-states sixteen triggers. That is why it ships without asking for a rebuild - and if it ever stopped
 # being true, a user would be told the ledger is current when it is not.
@@ -222,6 +326,7 @@ def test_the_delta_leaves_the_ledger_alone(prepare_db_fifo, project_root):
     assert ledger and closed
 
     _replay_the_fill(project_root)
+    _replay_the_populate(project_root)
     _replay_the_triggers(project_root)
 
     assert JalDB._read_to_list("SELECT * FROM ledger ORDER BY id") == ledger

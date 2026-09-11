@@ -165,6 +165,24 @@ CREATE TABLE fees (
 );
 CREATE INDEX fees_by_operation ON fees (operation_id);
 --------------------------------------------------------------------------------
+-- THE FEES THAT ARE ALREADY STORED
+--------------------------------------------------------------------------------
+-- One row per fee an operation table already holds.
+-- 'kind' is FeeKind in jal/db/operations.py - Commission for a charge in money, Gas for one denominated in an asset.
+INSERT INTO fees (operation_id, idx, account_id, symbol_id, amount, kind)
+    SELECT oid, 0, account_id, NULL, fee, 0 FROM trades WHERE CAST(fee AS REAL) <> 0;
+INSERT INTO fees (operation_id, idx, account_id, symbol_id, amount, kind)
+    SELECT oid, 0, COALESCE(fee_account, withdrawal_account, deposit_account), fee_symbol_id, fee,
+           CASE WHEN fee_symbol_id IS NULL THEN 0 ELSE 1 END
+      FROM transfers WHERE CAST(fee AS REAL) <> 0;
+INSERT INTO fees (operation_id, idx, account_id, symbol_id, amount, kind)
+    SELECT oid, 0, account_id, fee_symbol_id, fee_qty, 1 FROM conversions WHERE CAST(fee_qty AS REAL) <> 0;
+INSERT INTO fees (operation_id, idx, account_id, symbol_id, amount, kind)
+    SELECT oid, 0, account_id, fee_symbol_id, fee_qty, 1 FROM swaps WHERE CAST(fee_qty AS REAL) <> 0;
+-- Gas is burned on the source chain, so a bridge's fee is borne by the sending account
+INSERT INTO fees (operation_id, idx, account_id, symbol_id, amount, kind)
+    SELECT oid, 0, out_account_id, fee_symbol_id, fee_qty, 1 FROM bridges WHERE CAST(fee_qty AS REAL) <> 0;
+--------------------------------------------------------------------------------
 -- A FEE EDIT MUST INVALIDATE THE LEDGER
 --------------------------------------------------------------------------------
 -- A fee edits the ledger as much as the operation it belongs to does, so the three triggers below invalidate it the
