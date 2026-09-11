@@ -127,14 +127,18 @@ class Ledger(QObject, JalDB):
             current_frontier = 0
         return current_frontier
 
-    # The processing order, built from the rank each operation class declares (LedgerTransaction.LedgerRank) instead
-    # of the view's own 'seq' literal - the rank belongs with the class whose lots it moves. It is NOT 'otype': a
-    # corporate action is processed BEFORE a trade and before a transfer of the same second. Nothing raises when
-    # this comes out wrong - FIFO simply consumes the wrong lots and the basis is silently off.
+    # Every operation's parts, each branch asked of the class that owns it and tagged with the rank that class
+    # declares. This is what the 'operation_sequence' view used to be, and moving it here is what makes a new
+    # operation type or a new part a code change instead of a migration.
+    # The order is the domain rule and nothing raises when it comes out wrong - FIFO simply consumes the wrong lots
+    # and the basis is silently off. 'seq' is NOT 'otype': a corporate action is processed BEFORE a trade and
+    # before a transfer of the same second, so that a split resizes the lots before a sale consumes them.
     @classmethod
-    def _sequence_order(cls) -> str:
-        ranks = " ".join([f"WHEN {x._otype} THEN {x.LedgerRank}" for x in LedgerTransaction.operation_classes()])
-        return f" ORDER BY timestamp, CASE otype {ranks} END, opart, oid"
+    def _sequence_population(cls) -> str:
+        branches = [f"SELECT {x.LedgerRank} AS seq, m.* FROM ({x.sequence_parts()}) AS m"
+                    for x in LedgerTransaction.operation_classes()]
+        return ("SELECT oid, opart, timestamp, account_id FROM (" + " UNION ALL ".join(branches) + ") "
+                "ORDER BY timestamp, seq, opart, oid")
 
     # Rebuilds 'ledger_sequence' from scratch. False when an operation has no row in 'operations': the foreign
     # key refuses it, and a rebuild over an empty sequence would zero the whole ledger in silence.
@@ -142,8 +146,7 @@ class Ledger(QObject, JalDB):
     def refresh_sequence(cls) -> bool:
         _ = cls._exec("DELETE FROM ledger_sequence")
         return cls._exec("INSERT INTO ledger_sequence (operation_id, opart, timestamp, account_id) "
-                         "SELECT s.oid, s.opart, s.timestamp, s.account_id FROM operation_sequence AS s"
-                         + cls._sequence_order()) is not None
+                         + cls._sequence_population()) is not None
 
     # A database can arrive without a sequence - a schema upgrade, a re-clocked file, a rebuild the user declined -
     # and until one is built no operation is listed at all.

@@ -134,7 +134,7 @@ class TransferWidget(AbstractOperationDetails):
 
     # A transfer may be left with one of its ends unknown - "money on the way" that is settled when the counterpart is
     # met (see the Transfer class). An empty selector reads back as 0, which the database must not be given: 0 is a
-    # value, and only NULL says "not known yet" to the operation and to 'operation_sequence'. Both ends empty is not
+    # value, and only NULL says "not known yet" to the operation and to the ledger sequence. Both ends empty is not
     # a transfer at all, though - nothing would be moving.
     def _validated_accounts(self, fields) -> bool:
         empty = 0

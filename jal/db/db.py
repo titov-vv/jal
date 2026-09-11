@@ -77,7 +77,7 @@ class JalSqlError:
 
 # ----------------------------------------------------------------------------------------------------------------------
 class JalDB:
-    # Every (symbol, account, timestamp) an operation puts on the books - the counterpart of the 'operation_sequence'
+    # Every (symbol, account, timestamp) an operation puts on the books - the counterpart of the ledger sequence
     # view, which lists the same operations by account only. A symbol that is optional for an operation (the asset of
     # a cash transfer, a fee paid in no asset at all) is NULL here and drops out on the join that reads this.
     # Meant for the few questions the ledger can't answer because they are about operations it doesn't cover yet

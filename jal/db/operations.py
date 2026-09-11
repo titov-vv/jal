@@ -111,6 +111,15 @@ class LedgerTransaction(JalDB):
     def operation_classes() -> list:
         return [IncomeSpending, AssetPayment, Trade, Transfer, CorporateAction, Conversion, Swap, Bridge]
 
+    # The parts this kind of operation contributes to the ledger sequence, as SQL over its own table: one row per
+    # PART, as (operation id, part, that part's own moment, the account it is on). The column names are what the
+    # population selects by, so every branch spells them out. The default is one part for the whole operation - a
+    # class with legs or with a fee overrides it and builds its branches from its own part constants, which is what
+    # keeps the numbering in one place instead of in a view that has to agree with it.
+    @classmethod
+    def sequence_parts(cls) -> str:
+        return f"SELECT oid AS oid, 0 AS opart, timestamp AS timestamp, account_id AS account_id FROM {cls._db_table}"
+
     @staticmethod
     def get_operation(operation_type, oid, opart=0):
         if operation_type == LedgerTransaction.IncomeSpending:
@@ -472,7 +481,11 @@ class OperationFee:
 # basis, exactly as gas is. That is what fee() returns and what processAssetFee() books. It is a rule about the DEAL
 # MATHS and not about where a fee is stored.
 class FeeCarrier:
-    Fee = None             # The part a fee of this operation is drawn as (None - the class draws no fee row of its own)
+    Fee = None             # The part the FIRST fee of this operation is drawn as (None - the class draws no fee row)
+    # Where a second and further fee lands. The first one keeps the class's own 'Fee', so that every ledger built
+    # before this block stays identical - a transfer charged on both legs is the case that needs more, and none is
+    # stored yet. Well above any leg part, so an extra fee never sorts between the legs it belongs to.
+    ExtraFee = 1000
     PART_FEE = 0           # The part a fee of this operation is POSTED into ('ledger.opart' - the default of
                            # Ledger.appendTransaction() is the same 0)
     AssetFeeOnly = False   # True when the fee columns of the operation can only hold a charge paid in an asset (gas)
@@ -492,7 +505,16 @@ class FeeCarrier:
         return self._part_fee().account_id()
 
     def is_fee_row(self) -> bool:
-        return self.Fee is not None and self._opart == self.Fee
+        return self.Fee is not None and (self._opart == self.Fee or self._opart > self.ExtraFee)
+
+    # The parts the fees of this operation contribute, read from 'fees'. 'moment' is the column of the operation's
+    # own table the fee is charged at - a transfer's fee rides its withdrawal, a bridge's gas the leg that starts
+    # the crossing - and not 'operations.timestamp', which is the EARLIER of two legs and so not always the same.
+    @classmethod
+    def fee_parts(cls, moment: str) -> str:
+        return (f"SELECT f.operation_id AS oid, CASE WHEN f.idx=0 THEN {cls.Fee} ELSE {cls.ExtraFee}+f.idx END "
+                f"AS opart, t.{moment} AS timestamp, f.account_id AS account_id "
+                f"FROM fees AS f JOIN {cls._db_table} AS t ON t.oid=f.operation_id")
 
     # The account that bears a fee of this operation when the operation itself doesn't say (it has none stored yet)
     def _fee_payer(self):
@@ -1275,6 +1297,18 @@ class Swap(FeeCarrier, LedgerTransaction):
     Outgoing = -1   # Cross-chain: the disposal leg (source account, source chain)
     Incoming = 1    # Cross-chain: the acquisition leg (destination account, destination chain)
     Fee = 2         # The gas paid for the swap - a row of its own, as it is for a transfer and for a bridge
+
+    # One part when both sides are on one account, two when the asset arrives on another one: the same swap is
+    # either a single instant or a crossing, and which of the two it is, is what the account columns say.
+    @classmethod
+    def sequence_parts(cls) -> str:
+        _CROSS_CHAIN = "NOT in_account_id IS NULL AND in_account_id<>account_id"
+        return (f"SELECT oid AS oid, {cls.Whole} AS opart, timestamp AS timestamp, account_id AS account_id "
+                "FROM swaps WHERE in_account_id IS NULL OR in_account_id=account_id "
+                f"UNION ALL SELECT oid, {cls.Outgoing}, timestamp, account_id FROM swaps WHERE {_CROSS_CHAIN} "
+                f"UNION ALL SELECT oid, {cls.Incoming}, COALESCE(in_timestamp, timestamp), in_account_id "
+                f"FROM swaps WHERE {_CROSS_CHAIN} "
+                "UNION ALL " + cls.fee_parts("timestamp"))
     _db_table = "swaps"
     _otype = LedgerTransaction.Swap
     LedgerRank = 7
@@ -1517,7 +1551,7 @@ class Swap(FeeCarrier, LedgerTransaction):
 # then the value sits in the Transfers book, which turns an unanswered question into a visible balance rather than a
 # silent wrong one. See the description of the table in jal_init.sql.
 #
-# Only the legs that exist are processed: 'operation_sequence' leaves out the part whose account is NULL, so a pending
+# Only the legs that exist are processed: sequence_parts() below leaves out the part whose account is NULL, so a pending
 # transfer contributes exactly one part to the ledger.
 class Transfer(FeeCarrier, LedgerTransaction):
     Fee = 0
@@ -1647,6 +1681,16 @@ class Transfer(FeeCarrier, LedgerTransaction):
     # resolves into the missing account, and the only exact statement about that end JAL ever holds.
     def counterparty_address(self) -> str:
         return self._counterparty_address if self._counterparty_address else ''
+
+    # A leg whose account isn't known yet is left out: nothing processes a leg that doesn't exist (see the
+    # description of 'transfers' in jal_init.sql).
+    @classmethod
+    def sequence_parts(cls) -> str:
+        return (f"SELECT oid AS oid, {cls.Outgoing} AS opart, withdrawal_timestamp AS timestamp, "
+                "withdrawal_account AS account_id FROM transfers WHERE NOT withdrawal_account IS NULL "
+                f"UNION ALL SELECT oid, {cls.Incoming}, deposit_timestamp, deposit_account FROM transfers "
+                "WHERE NOT deposit_account IS NULL "
+                "UNION ALL " + cls.fee_parts("withdrawal_timestamp"))
 
     def timestamp(self):
         if self._opart == Transfer.Incoming:
@@ -2318,6 +2362,12 @@ class CorporateAction(LedgerTransaction):
 class Conversion(FeeCarrier, LedgerTransaction):
     Whole = 0   # The conversion itself: the position leaves one asset and enters another at the same instant
     Fee = 2     # The gas paid for it - a row of its own, as it is for a transfer, a swap and a bridge
+
+    @classmethod
+    def sequence_parts(cls) -> str:
+        return (f"SELECT oid AS oid, {cls.Whole} AS opart, timestamp AS timestamp, account_id AS account_id "
+                "FROM conversions "
+                "UNION ALL " + cls.fee_parts("timestamp"))
     _db_table = "conversions"
     _otype = LedgerTransaction.Conversion
     LedgerRank = 6
@@ -2477,10 +2527,20 @@ class Bridge(FeeCarrier, LedgerTransaction):
     Outgoing = -1
     Incoming = 1
     # The bridge kept part of what it was given (in_qty < out_qty). It is a fee of the arrival and it is POSTED only:
-    # nothing stores it - it is what the two quantities say - so 'operation_sequence' emits no row for it and it is
+    # nothing stores it - it is what the two quantities say - so sequence_parts() emits no row for it and it is
     # never drawn in the operations table. It still has to be a part the class understands, because the ledger keeps
     # the posting part and an operation is rebuilt from it (reports/operations_base.py).
     InKindFee = 2
+
+    # The arriving leg exists only once the crossing has been matched - a pending half contributes the send alone.
+    @classmethod
+    def sequence_parts(cls) -> str:
+        return (f"SELECT oid AS oid, {cls.Outgoing} AS opart, out_timestamp AS timestamp, "
+                "out_account_id AS account_id FROM bridges "
+                f"UNION ALL SELECT oid, {cls.Incoming}, in_timestamp, in_account_id FROM bridges "
+                "WHERE NOT in_account_id IS NULL "
+                "UNION ALL " + cls.fee_parts("out_timestamp"))
+
     _db_table = "bridges"
     _otype = LedgerTransaction.Bridge
     LedgerRank = 8
@@ -2565,7 +2625,7 @@ class Bridge(FeeCarrier, LedgerTransaction):
 
     # Both fees of a bridge are fee rows - the gas it cost to send, and the part of the delivery it kept
     def is_fee_row(self) -> bool:
-        return self._opart in (Bridge.Fee, Bridge.InKindFee)
+        return self._opart in (Bridge.Fee, Bridge.InKindFee) or self._opart > self.ExtraFee
 
     # Gas is burned on the source chain, so the fee rides the leg that starts the crossing
     def _fee_payer(self):
@@ -2720,7 +2780,7 @@ class Bridge(FeeCarrier, LedgerTransaction):
         ledger.appendTransaction(self, BookAccount.Assets, -processed_qty, asset_id=self._asset.id(), value=-processed_value)
         ledger.appendTransaction(self, BookAccount.Transfers, self._out_qty, asset_id=self._asset.id(), value=processed_value)
 
-    # The arriving leg only ever runs for a complete bridge (a pending half has no such part in 'operation_sequence'):
+    # The arriving leg only ever runs for a complete bridge (a pending half has no such part in the sequence):
     # take the deals closed by the outgoing leg (created strictly before the fee leg's, and summing to out_qty), then
     # drain the value the outgoing leg parked in the Transfers book.
     def processIncoming(self, ledger):

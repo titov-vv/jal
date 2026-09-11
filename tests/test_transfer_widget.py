@@ -236,7 +236,7 @@ def test_switching_between_fee_kinds_shows_own_values(prepare_db):
 
 # A transfer may be saved with one of its ends left unknown - "money on the way", settled when the counterpart is
 # met. An empty selector reads back as 0, which must reach the database as NULL: 0 is a value, and only NULL says
-# "not known yet" to the operation and to 'operation_sequence'.
+# "not known yet" to the operation and to the ledger sequence.
 def test_empty_account_is_stored_as_unknown_not_as_zero(prepare_db):
     wallet, _other = _make_accounts()
     widget = TransferWidget()

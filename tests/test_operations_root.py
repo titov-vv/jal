@@ -346,8 +346,10 @@ def test_the_sequence_table_is_filled_by_a_refresh_and_not_by_the_writes(prepare
 
     Ledger.refresh_sequence()
 
-    assert JalDB._read("SELECT COUNT(*) FROM ledger_sequence") == \
-           JalDB._read("SELECT COUNT(*) FROM operation_sequence")
+    # Every operation contributes at least one part, and no part belongs to anything but an operation
+    assert JalDB._read("SELECT COUNT(*) FROM ledger_sequence") > 0
+    assert JalDB._read("SELECT COUNT(DISTINCT operation_id) FROM ledger_sequence") == \
+           JalDB._read("SELECT COUNT(*) FROM operations")
 
 
 # The single-column foreign key is the whole reason the root exists: '(otype, oid)' could never be one

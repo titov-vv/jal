@@ -193,15 +193,16 @@ def test_pending_money_transfer_is_money_in_transit(wallets):
     assert _in_transit(usd) == Decimal('0')       # two opposite pending legs cancel just as one settled pair does
 
 
-# A pending leg contributes exactly one part to the ledger: 'operation_sequence' leaves out the side whose account
+# A pending leg contributes exactly one part to the ledger: Transfer.sequence_parts() leaves out the side whose account
 # is NULL, so nothing tries to process a leg that doesn't exist.
 @pytest.mark.parametrize("accounts, parts", [((WALLET_A, None), [-1]), ((None, WALLET_B), [1]),
                                              ((WALLET_A, WALLET_B), [-1, 1])])
 def test_only_existing_legs_are_sequenced(funded, accounts, parts):
     oid = _transfer(accounts[0], accounts[1], 400, d2t(210103)).oid()
 
-    query = LedgerTransaction._exec("SELECT opart FROM operation_sequence WHERE otype=:otype AND oid=:oid "
-                                    "ORDER BY opart", [(":otype", LedgerTransaction.Transfer), (":oid", oid)])
+    Ledger.refresh_sequence()
+    query = LedgerTransaction._exec("SELECT opart FROM ledger_sequence WHERE operation_id=:oid ORDER BY opart",
+                                    [(":oid", oid)])
     sequenced = []
     while query.next():
         sequenced.append(int(LedgerTransaction._read_record(query)))

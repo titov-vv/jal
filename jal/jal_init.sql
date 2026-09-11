@@ -606,7 +606,7 @@ CREATE TABLE trades_closed (
 --                                bridge arrival lands long before the account it came from is imported)
 -- At least one of the two is always set (a CHECK constraint - a transfer with neither end describes no movement at
 -- all). The timestamp and the amount of an unknown side mirror the known one until the transfer is settled - the leg
--- they describe isn't processed while it is NULL, as 'operation_sequence' below leaves it out.
+-- they describe isn't processed while it is NULL, as Transfer.sequence_parts() leaves it out.
 -- 'counterparty_address' is what the unknown end actually IS: an on-chain movement always names the address it paid
 -- or was paid by, and that address is a fact of the transaction rather than a guess about it. Held as a column it
 -- settles the leg the moment an account with that address exists, with no transaction hash having to coincide and
@@ -655,47 +655,6 @@ CREATE TABLE conversions (
     fee_qty       TEXT,
     note          TEXT                                         -- Free text comment
 );
-
-
--- View that contains a list of all operations with their important parts
--- seq field defines an order of operations to be displayed/processed
-DROP VIEW IF EXISTS operation_sequence;
-CREATE VIEW operation_sequence AS SELECT m.otype, m.oid, m.seq, opart, m.timestamp, m.account_id
-FROM
-(
-    SELECT otype, 1 AS seq, oid, 0 AS opart, timestamp, account_id FROM actions
-    UNION ALL
-    SELECT otype, 2 AS seq, oid, 0 AS opart, timestamp, account_id FROM asset_payments
-    UNION ALL
-    SELECT otype, 3 AS seq, oid, 0 AS opart, timestamp, account_id FROM asset_actions
-    UNION ALL
-    SELECT otype, 4 AS seq, oid, 0 AS opart, timestamp, account_id FROM trades
-    UNION ALL
-    SELECT otype, 5 AS seq, oid, -1 AS opart, withdrawal_timestamp AS timestamp, withdrawal_account AS account_id FROM transfers WHERE NOT withdrawal_account IS NULL
-    UNION ALL
-    SELECT otype, 5 AS seq, oid, 0 AS opart, withdrawal_timestamp AS timestamp, fee_account AS account_id FROM transfers WHERE NOT fee IS NULL
-    UNION ALL
-    SELECT otype, 5 AS seq, oid, 1 AS opart, deposit_timestamp AS timestamp, deposit_account AS account_id FROM transfers WHERE NOT deposit_account IS NULL
-    UNION ALL
-    SELECT otype, 6 AS seq, oid, 0 AS opart, timestamp, account_id FROM conversions
-    UNION ALL
-    SELECT otype, 6 AS seq, oid, 2 AS opart, timestamp, account_id FROM conversions WHERE NOT fee_qty IS NULL
-    UNION ALL
-    SELECT otype, 7 AS seq, oid, 0 AS opart, timestamp, account_id FROM swaps WHERE in_account_id IS NULL OR in_account_id=account_id
-    UNION ALL
-    SELECT otype, 7 AS seq, oid, -1 AS opart, timestamp, account_id FROM swaps WHERE NOT in_account_id IS NULL AND in_account_id<>account_id
-    UNION ALL
-    SELECT otype, 7 AS seq, oid, 1 AS opart, COALESCE(in_timestamp, timestamp) AS timestamp, in_account_id AS account_id FROM swaps WHERE NOT in_account_id IS NULL AND in_account_id<>account_id
-    UNION ALL
-    SELECT otype, 7 AS seq, oid, 2 AS opart, timestamp, account_id FROM swaps WHERE NOT fee_qty IS NULL
-    UNION ALL
-    SELECT otype, 8 AS seq, oid, -1 AS opart, out_timestamp AS timestamp, out_account_id AS account_id FROM bridges
-    UNION ALL
-    SELECT otype, 8 AS seq, oid, 0 AS opart, out_timestamp AS timestamp, out_account_id AS account_id FROM bridges WHERE NOT fee_qty IS NULL
-    UNION ALL
-    SELECT otype, 8 AS seq, oid, 1 AS opart, in_timestamp AS timestamp, in_account_id AS account_id FROM bridges WHERE NOT in_account_id IS NULL
-) AS m
-ORDER BY m.timestamp, m.seq, m.opart, m.oid;  -- First sort by sequence and part to enforce right operation processing order
 
 
 -- View that shows only currencies from assets
@@ -1109,7 +1068,7 @@ BEGIN
 END;
 ------------------------------------------------------------------------------------------------------------------------
 -- Initialize default values for settings
-INSERT INTO settings(name, value) VALUES('SchemaVersion', 73);
+INSERT INTO settings(name, value) VALUES('SchemaVersion', 74);
 INSERT INTO settings(name, value) VALUES('Language', 1);
 INSERT INTO settings(name, value) VALUES('RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
 INSERT INTO settings(name, value) VALUES('RuTaxSessionId', '');

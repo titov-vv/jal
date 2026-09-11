@@ -368,7 +368,9 @@ def _created_objects(text: str) -> dict:
 def test_the_delta_and_the_init_script_declare_the_same_objects(project_root):
     with open(project_root + "/jal/" + Setup.INIT_SCRIPT_PATH) as init:
         from_init = _created_objects(init.read())
-    with open(project_root + f"/jal/updates/{Setup.UPDATE_PREFIX}{Setup.DB_REQUIRED_VERSION}.sql") as delta:
+    # Delta 73 by number and not Setup.DB_REQUIRED_VERSION: this test is about the objects THIS delta declares, and
+    # keyed on the current version it would quietly retarget itself at every later one.
+    with open(project_root + f"/jal/updates/{Setup.UPDATE_PREFIX}73.sql") as delta:
         from_delta = _created_objects(delta.read())
 
     assert len(from_delta) == 31     # the table, its index, and twenty-nine triggers

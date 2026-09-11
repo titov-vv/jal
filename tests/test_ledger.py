@@ -1,3 +1,4 @@
+from collections import defaultdict
 from decimal import Decimal
 
 import pytest
@@ -607,7 +608,7 @@ def test_a_vesting_without_a_price_stops_the_rebuild_recoverably(prepare_db_fifo
 
 #-----------------------------------------------------------------------------------------------------------------------
 # The processing order of the ledger. Until it was stated at the call sites it rested on the ORDER BY inside the
-# 'operation_sequence' view, which a flattened query plan is free to ignore - and processing out of order does not
+# 'operation_sequence' view, which a flattened query plan was free to ignore - and processing out of order does not
 # raise, it consumes the wrong FIFO lots and gets the basis silently wrong.
 _COLLISION = d2t(220301)   # every operation below happens at this one second, so only the rank decides
 _EARLIER = d2t(220101)
@@ -736,19 +737,26 @@ def _a_ledger_with_every_branch(other) -> None:
                      'in_qty': 1, 'asset': 4, 'fee_asset': 5, 'fee_qty': '0.5'}])
 
 
-def test_the_stored_sequence_repeats_the_view_row_for_row(two_accounts_and_an_asset):
+# Every branch the classes declare is reachable and none of them is empty. Until delta 74 this was a parity test
+# against the view; what outlives that oracle is the half it was never the view's to confirm - that asking eight
+# classes for their own parts produces every part, once each.
+def test_every_declared_branch_produces_its_part(two_accounts_and_an_asset):
     _a_ledger_with_every_branch(two_accounts_and_an_asset)
 
     Ledger.refresh_sequence()
 
-    stored = JalDB._read_to_list("SELECT operation_id, opart, timestamp, account_id FROM ledger_sequence "
-                                 "ORDER BY seq_no")
-    # The view's own 'seq' literal is the oracle: since the rank moved into the classes these are two independent
-    # implementations of one rule, and the view is the one that has been right since 2022.
-    expected = JalDB._read_to_list("SELECT oid, opart, timestamp, account_id FROM operation_sequence "
-                                   "ORDER BY timestamp, seq, opart, oid")
-    assert len(stored) > 18      # the branches above really are all there, and none of them is empty
-    assert stored == expected
+    parts = defaultdict(set)
+    for otype, opart in JalDB._read_to_list("SELECT o.otype, s.opart FROM ledger_sequence AS s "
+                                            "JOIN operations AS o ON o.id=s.operation_id"):
+        parts[otype].add(opart)
+
+    assert parts[LedgerTransaction.Transfer] == {Transfer.Outgoing, Transfer.Fee, Transfer.Incoming}
+    assert parts[LedgerTransaction.Conversion] == {Conversion.Whole, Conversion.Fee}
+    assert parts[LedgerTransaction.Swap] == {Swap.Whole, Swap.Fee}
+    assert parts[LedgerTransaction.Bridge] == {Bridge.Outgoing, Bridge.Fee, Bridge.Incoming}
+    for without_parts in (LedgerTransaction.IncomeSpending, LedgerTransaction.AssetPayment,
+                          LedgerTransaction.CorporateAction, LedgerTransaction.Trade):
+        assert parts[without_parts] == {0}, "an operation with no legs and no fee part contributes exactly one row"
 
 
 # A refresh is a full replacement and not an accumulation - absorb_residues() calls it up to 32 times in a row.
