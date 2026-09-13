@@ -15,7 +15,7 @@ from tests.helpers import d2t, create_stocks, create_trades, create_quotes, crea
     create_cross_chain_swaps
 from jal.db.ledger import Ledger
 from jal.db.account import JalAccountCreator
-from jal.db.operations import LedgerTransaction, AssetPayment
+from jal.db.operations import LedgerTransaction, AssetPayment, ChainAction
 from jal.db.operations_model import OperationsModel
 
 
@@ -39,10 +39,10 @@ def _ledger_with_every_fee(gas_symbol, asset):
     create_bridges([{'out_ts': d2t(220204), 'out_acc': 1, 'out_qty': 5.0, 'out_hash': '0xbridge',
                      'in_ts': d2t(220205), 'in_acc': 2, 'in_qty': 5.0, 'asset': asset,
                      'fee_asset': gas_symbol, 'fee_qty': 0.5}])
-    LedgerTransaction.create_new(LedgerTransaction.AssetPayment,
-                                 {'timestamp': d2t(220206), 'type': AssetPayment.GasFee, 'account_id': 1,
-                                  'symbol_id': gas_symbol, 'amount': '0.5', 'tax': '0',
-                                  'number': '0xstandalone', 'note': ''})
+    LedgerTransaction.create_new(LedgerTransaction.ChainAction,
+                                 {'timestamp': d2t(220206), 'type': ChainAction.Authorization, 'account_id': 1,
+                                  'number': '0xstandalone', 'note': '',
+                                  'fee': Decimal('0.5'), 'fee_symbol_id': gas_symbol, 'fee_account': 1})
     create_cross_chain_swaps([{'ts': d2t(220207), 'acc': 1, 'out_asset': asset, 'out_qty': 10.0, 'hash': '0xleg',
                                'in_ts': d2t(220208), 'in_acc': 2, 'in_asset': 5, 'in_qty': 20.0,
                                'fee_asset': gas_symbol, 'fee_qty': 0.5, 'note': 'a note'}])
@@ -73,14 +73,19 @@ def test_a_fee_row_names_no_transaction(drawn_rows):
     fee_rows = [(op, cells) for op, cells in drawn_rows if op.is_fee_row()]
     assert [op.type() for op, _ in fee_rows] == [LedgerTransaction.Swap, LedgerTransaction.Conversion,
                                                  LedgerTransaction.Transfer, LedgerTransaction.Bridge,
-                                                 LedgerTransaction.Swap]
+                                                 LedgerTransaction.ChainAction, LedgerTransaction.Swap]
     for operation, (timestamp, account, description) in fee_rows:
         where = operation.name()
         assert operation.number() == '', where          # the hash belongs to the transaction, not to its gas
         assert "\n" not in timestamp, where
         assert "\n" not in account, where               # ... and neither does the asset name: 1 line, 1 row
         assert operation.view_rows() == 1, where
-        assert description.split(" (")[0].endswith("fee"), where   # the note rides the same line, so still 1
+        if operation.type() == LedgerTransaction.ChainAction:
+            # The cost of an event is the whole of it, so the row says what the charge WAS instead of repeating the
+            # event the row above already names - and a rent is not called a fee, being locked and not consumed.
+            assert description in (operation.tr("Gas"), operation.tr("Rent")), where
+        else:
+            assert description.split(" (")[0].endswith("fee"), where   # the note rides the same line, so still 1
 
 
 # Every column of a row is drawn inside the height the operation asked for, so a column that writes more lines than
@@ -106,12 +111,13 @@ def test_the_notes_column_fills_the_height_of_its_row(drawn_rows):
     assert misaligned == []
 
 
-# The scope of that rule is a fee PART. A stand-alone gas payment is an operation in its own right and the hash is
-# the only thing that identifies it, so it keeps it.
-def test_a_stand_alone_gas_payment_keeps_its_hash(drawn_rows):
-    gas = [(op, cells) for op, cells in drawn_rows if op.subtype() == AssetPayment.GasFee]
-    assert len(gas) == 1
-    operation, (timestamp, _account, _description) = gas[0]
-    assert not operation.is_fee_row()
-    assert operation.number() == '0xstandalone'
+# The scope of that rule is a fee PART. The event that burned the gas is an operation in its own right and the
+# hash is the only thing that identifies it, so it keeps it - while the cost row beneath it does not.
+def test_a_chain_action_keeps_its_hash(drawn_rows):
+    rows = [(op, cells) for op, cells in drawn_rows if op.type() == LedgerTransaction.ChainAction]
+    assert len(rows) == 2                      # the event, and what it cost
+    event, (timestamp, _account, _description) = [x for x in rows if not x[0].is_fee_row()][0]
+    assert event.number() == '0xstandalone'
     assert timestamp.endswith("\n# 0xstandalone")
+    cost, (cost_timestamp, _account, _description) = [x for x in rows if x[0].is_fee_row()][0]
+    assert "0xstandalone" not in cost_timestamp

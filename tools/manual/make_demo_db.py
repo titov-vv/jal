@@ -23,7 +23,7 @@ from jal.db.category import JalCategory
 from jal.db.peer import JalPeer
 from jal.db.tag import JalTag
 from jal.db.deposit import JalDepositBox
-from jal.db.operations import LedgerTransaction, AssetPayment
+from jal.db.operations import LedgerTransaction, AssetPayment, ChainAction
 from jal.db.ledger import Ledger
 from jal.db.residence import JalResidence
 from jal.db.settings import JalSettings
@@ -343,8 +343,12 @@ def create_crypto(accounts: dict, assets: dict) -> None:
                                   'in_symbol_id': sid(assets['usdc'], USD), 'in_qty': Decimal('468.75'),
                                   'fee_symbol_id': sid(assets['eth'], USD), 'fee_qty': Decimal('0.0021'),
                                   'note': "Swapped on a decentralized exchange"})
-    payment(ts("2026-05-06"), AssetPayment.GasFee, wallet, assets['eth'], '0.0008',
-            note="Token approval")
+    LedgerTransaction.create_new(LedgerTransaction.ChainAction,
+                                 {'timestamp': ts("2026-05-06"), 'type': ChainAction.Authorization,
+                                  'account_id': wallet, 'number': "0x6b1f0e9a3d47c82b5fe1409d7ac36b28d5e0f194",
+                                  'symbol_id': sid(assets['usdc'], USD), 'note': "approve(Uniswap v3 Router)",
+                                  'fee': Decimal('0.0008'), 'fee_symbol_id': sid(assets['eth'], USD),
+                                  'fee_account': wallet})
     # A withdrawal whose far end is not known yet - what the Unsettled transfers report is worked through
     asset_transfer(ts("2026-08-18 21:05"), wallet, None, assets['eth'], '0.05',
                    note="Sent out, destination not recorded yet")

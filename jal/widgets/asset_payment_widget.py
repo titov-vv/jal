@@ -77,16 +77,12 @@ class AssetPaymentWidget(AbstractOperationDetails):
             self.ui.amount_label.setText(self.tr("Repayment"))
         elif dividend_type_id == AssetPayment.AssetFee:
             self.ui.amount_label.setText(self.tr("Fee / Tax"))
-        elif dividend_type_id == AssetPayment.GasFee:
-            self.ui.amount_label.setText(self.tr("Gas spent"))      # a quantity of the coin, not a sum of money
         elif dividend_type_id in (AssetPayment.StakingReward, AssetPayment.Reward):
             self.ui.amount_label.setText(self.tr("Coins received"))
         elif dividend_type_id == AssetPayment.DustAttack:
             self.ui.amount_label.setText(self.tr("Dust received"))      # a quantity of the coin, not a sum of money
         elif dividend_type_id == AssetPayment.RebaseAdjustment:
             self.ui.amount_label.setText(self.tr("Quantity gained"))    # a quantity of the token, booked at zero
-        elif dividend_type_id == AssetPayment.TokenRent:
-            self.ui.amount_label.setText(self.tr("Rent locked"))        # a quantity of the coin, not a sum of money
         elif dividend_type_id == AssetPayment.TokenRentReturn:
             self.ui.amount_label.setText(self.tr("Rent returned"))
         else:

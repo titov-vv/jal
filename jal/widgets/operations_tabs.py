@@ -9,6 +9,7 @@ from jal.widgets.transfer_widget import TransferWidget
 from jal.widgets.conversion_widget import ConversionWidget
 from jal.widgets.swap_widget import SwapWidget
 from jal.widgets.bridge_widget import BridgeWidget
+from jal.widgets.chain_action_widget import ChainActionWidget
 from jal.db.operations import LedgerTransaction
 
 
@@ -25,7 +26,8 @@ class JalOperationsTabs(QStackedWidget):
                                     (LedgerTransaction.CorporateAction, CorporateActionWidget),
                                     (LedgerTransaction.Conversion, ConversionWidget),
                                     (LedgerTransaction.Swap, SwapWidget),
-                                    (LedgerTransaction.Bridge, BridgeWidget))
+                                    (LedgerTransaction.Bridge, BridgeWidget),
+                                    (LedgerTransaction.ChainAction, ChainActionWidget))
         for key, widget_class in operation_widget_classes:
             try:
                 self.widgets[key] = widget_class(self)
@@ -95,7 +97,7 @@ class JalOperationsTabs(QStackedWidget):
     def show_operation(self, otype, oid) -> bool:
         if not self._check_for_changes():
             return False
-        self.setCurrentIndex(otype)
+        self.setCurrentWidget(self.widgets[otype])
         if otype != LedgerTransaction.NA:
             self.widgets[otype].set_id(oid)
         return True
@@ -104,12 +106,17 @@ class JalOperationsTabs(QStackedWidget):
         if not self._check_for_changes():
             return False
         self.widgets[otype].createNew(account_id=account_id)
-        self.setCurrentIndex(otype)
+        self.setCurrentWidget(self.widgets[otype])
         return True
+
+    # Which operation the page on view edits. Asked of the page itself, because the stack index is an order of
+    # insertion and says nothing about a type.
+    def _current_otype(self) -> int:
+        return getattr(self.currentWidget(), "operation_type", LedgerTransaction.NA)
 
     @Slot()
     def copy_operation(self) -> bool:
-        otype = self.currentIndex()
+        otype = self._current_otype()
         if otype == LedgerTransaction.NA:
             return False
         if not self._check_for_changes():

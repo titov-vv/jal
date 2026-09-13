@@ -16,7 +16,7 @@ from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
 from jal.db.peer import JalPeer
 from jal.db.operations import LedgerTransaction, LedgerError, AssetPayment, CorporateAction, Transfer, \
-    Conversion, Swap, Bridge
+    Conversion, Swap, Bridge, ChainAction
 
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -723,6 +723,9 @@ def _a_ledger_with_every_branch(other) -> None:
     create_actions([(_EARLIER, 1, 1, [(PredefinedCategory.Spending, 10.0)])])
     create_trades(1, [(_EARLIER, _EARLIER, 4, Decimal('10'), Decimal('100'), Decimal('1'))])
     create_dividends([(_COLLISION, 1, 4, Decimal('5'), Decimal('0'), '')])
+    LedgerTransaction.create_new(LedgerTransaction.ChainAction, {
+        'timestamp': _COLLISION, 'type': ChainAction.Authorization, 'account_id': 1, 'number': 'approve',
+        'fee': Decimal('0.5'), 'fee_symbol_id': symbol_id_for(5, 2), 'fee_account': 1})
     create_corporate_actions(1, [(_COLLISION, CorporateAction.Split, 4, Decimal('10'), '',
                                   [(4, Decimal('20'), Decimal('1'))])])
     create_trades(1, [(_COLLISION, _COLLISION, 4, Decimal('-1'), Decimal('120'), Decimal('0'))])
@@ -754,6 +757,7 @@ def test_every_declared_branch_produces_its_part(two_accounts_and_an_asset):
     assert parts[LedgerTransaction.Conversion] == {Conversion.Whole, Conversion.Fee}
     assert parts[LedgerTransaction.Swap] == {Swap.Whole, Swap.Fee}
     assert parts[LedgerTransaction.Bridge] == {Bridge.Outgoing, Bridge.Fee, Bridge.Incoming}
+    assert parts[LedgerTransaction.ChainAction] == {ChainAction.Whole, ChainAction.Fee}
     for without_parts in (LedgerTransaction.IncomeSpending, LedgerTransaction.AssetPayment,
                           LedgerTransaction.CorporateAction, LedgerTransaction.Trade):
         assert parts[without_parts] == {0}, "an operation with no legs and no fee part contributes exactly one row"
@@ -786,6 +790,10 @@ _GOLDEN_ORDER = [
     (LedgerTransaction.Trade, 0),
     # ... and at _COLLISION, where everything else happens at one and the same second
     (LedgerTransaction.AssetPayment, 0),
+    # rank 2 as well, and otype 10: the three halves of the payment split share one place in the order, so the part
+    # number is what separates them here and the id is what orders the two base rows
+    (LedgerTransaction.ChainAction, ChainAction.Whole),
+    (LedgerTransaction.ChainAction, ChainAction.Fee),
     (LedgerTransaction.CorporateAction, 0),      # rank 3: BEFORE the trade and the transfers, though otype 5
     (LedgerTransaction.Trade, 0),                # rank 4, otype 3
     (LedgerTransaction.Transfer, Transfer.Outgoing),   # rank 5, otype 4 - both transfers, part before id
@@ -820,6 +828,11 @@ def test_the_sequence_holds_the_golden_order(two_accounts_and_an_asset):
 def test_every_operation_class_declares_its_rank():
     ranks = {x.__name__: x.LedgerRank for x in LedgerTransaction.operation_classes()}
 
-    assert ranks == {'IncomeSpending': 1, 'AssetPayment': 2, 'CorporateAction': 3, 'Trade': 4,
+    assert ranks == {'IncomeSpending': 1, 'AssetPayment': 2, 'ChainAction': 2, 'CorporateAction': 3, 'Trade': 4,
                      'Transfer': 5, 'Conversion': 6, 'Swap': 7, 'Bridge': 8}
-    assert len(set(ranks.values())) == len(ranks)     # a shared rank would make the order depend on the id
+    # Rank 2 is the one that is SHARED, and on purpose: the halves of the split payment are one place in the
+    # processing order, and a rank of its own for any of them would move FIFO lot consumption wherever two of them
+    # meet in the same second. Every other rank belongs to one class alone.
+    payment_family = {name for name, rank in ranks.items() if rank == AssetPayment.LedgerRank}
+    assert payment_family == {'AssetPayment', 'ChainAction'}
+    assert len(set(ranks.values())) == len(ranks) - len(payment_family) + 1

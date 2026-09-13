@@ -227,6 +227,26 @@ CREATE TABLE asset_payments (
     note       TEXT                                   -- Free text comment
 );
 
+-- Table: chain_actions
+-- An on-chain event that moved no value: an approval, a reverted transaction, a command to a position, a call that
+-- asked for nothing, and the rent locked by a token account. What it cost is a row of 'fees'; this table holds only
+-- what happened. See the ChainAction class for why the gas is not the operation.
+DROP TABLE IF EXISTS chain_actions;
+CREATE TABLE chain_actions (
+    oid        INTEGER PRIMARY KEY UNIQUE NOT NULL,   -- Unique operation id
+    otype      INTEGER NOT NULL DEFAULT (10),         -- Operation type (10 = chain action)
+    timestamp  INTEGER NOT NULL,                      -- Timestamp of the transaction the event happened in
+    timestamp_day_only INTEGER NOT NULL DEFAULT (0),  -- 1 when the source stated the DAY and no time within it
+    number     TEXT    NOT NULL DEFAULT (''),         -- Hash of that transaction
+    type       INTEGER NOT NULL,                      -- What happened (see ChainAction class)
+    account_id INTEGER REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,   -- where it happened
+    symbol_id  INTEGER REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,        -- what it was ABOUT
+                                                     -- (the token approved), NOT the coin spent. NULL when JAL
+                                                     -- doesn't know that asset - the address then stays in the note
+                                                     -- and no asset record is created for it
+    note       TEXT                                   -- Free text comment
+);
+
 DROP TABLE IF EXISTS languages;
 CREATE TABLE languages (
     id       INTEGER  PRIMARY KEY AUTOINCREMENT UNIQUE NOT NULL,
@@ -742,6 +762,30 @@ BEGIN
     UPDATE operations SET timestamp = COALESCE(NEW.timestamp, 0) WHERE id = NEW.oid;
 END;
 -- Ledger and trades cleanup after modification
+DROP TRIGGER IF EXISTS chain_actions_after_delete;
+CREATE TRIGGER chain_actions_after_delete AFTER DELETE ON chain_actions FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp;
+    DELETE FROM operations WHERE id = OLD.oid;
+END;
+-- Ledger and trades cleanup after modification
+DROP TRIGGER IF EXISTS chain_actions_after_insert;
+CREATE TRIGGER chain_actions_after_insert AFTER INSERT ON chain_actions FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= NEW.timestamp;
+    UPDATE operations SET timestamp = COALESCE(NEW.timestamp, 0) WHERE id = NEW.oid;
+END;
+-- Ledger and trades cleanup after modification
+DROP TRIGGER IF EXISTS chain_actions_after_update;
+CREATE TRIGGER chain_actions_after_update AFTER UPDATE OF timestamp, type, account_id, symbol_id ON chain_actions FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+    UPDATE operations SET timestamp = COALESCE(NEW.timestamp, 0) WHERE id = NEW.oid;
+END;
+-- Ledger and trades cleanup after modification
 DROP TRIGGER IF EXISTS trades_after_delete;
 CREATE TRIGGER trades_after_delete AFTER DELETE ON trades FOR EACH ROW
 BEGIN
@@ -970,7 +1014,7 @@ BEGIN
 END;
 ------------------------------------------------------------------------------------------------------------------------
 -- Initialize default values for settings
-INSERT INTO settings(name, value) VALUES('SchemaVersion', 75);
+INSERT INTO settings(name, value) VALUES('SchemaVersion', 76);
 INSERT INTO settings(name, value) VALUES('Language', 1);
 INSERT INTO settings(name, value) VALUES('RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
 INSERT INTO settings(name, value) VALUES('RuTaxSessionId', '');

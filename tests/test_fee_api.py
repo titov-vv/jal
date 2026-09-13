@@ -17,7 +17,8 @@ from jal.db.db import JalDB
 from jal.db.asset import JalAsset
 from jal.db.ledger import Ledger
 from jal.db.account import JalAccountCreator
-from jal.db.operations import LedgerTransaction, AssetPayment, FeeKind, Trade, Transfer, Conversion, Swap, Bridge
+from jal.db.operations import LedgerTransaction, AssetPayment, ChainAction, FeeKind, Trade, Transfer, \
+    Conversion, Swap, Bridge
 
 
 # Three accounts - 1 and 2 are the ends of the transfers below, 3 exists to bear a fee of a transfer that is
@@ -138,9 +139,10 @@ def ledger_with_every_fee(accounts_and_assets):
     create_bridges([{'out_ts': d2t(220206), 'out_acc': 1, 'out_qty': 5.0,          # ... and an in-kind fee as well
                      'in_ts': d2t(220207), 'in_acc': 2, 'in_qty': 4.0, 'asset': 4,
                      'fee_asset': 5, 'fee_qty': 0.05}])
-    LedgerTransaction.create_new(LedgerTransaction.AssetPayment,
-                                 {'timestamp': d2t(220208), 'type': AssetPayment.GasFee, 'account_id': 1,
-                                  'symbol_id': gas, 'amount': '0.5', 'tax': '0', 'number': '', 'note': ''})
+    LedgerTransaction.create_new(LedgerTransaction.ChainAction,
+                                 {'timestamp': d2t(220208), 'type': ChainAction.Authorization, 'account_id': 1,
+                                  'number': '0xapprove', 'note': '',
+                                  'fee': Decimal('0.5'), 'fee_symbol_id': gas, 'fee_account': 1})
     Ledger().rebuild(from_timestamp=0)
     yield
 
@@ -157,8 +159,8 @@ def test_every_fee_posting_rebuilds_as_the_fee_it_is(ledger_with_every_fee):
                 (LedgerTransaction.Conversion, True): [Decimal('-0.25')],
                 (LedgerTransaction.Transfer, True): [Decimal('-0.1')],
                 (LedgerTransaction.Bridge, True): [Decimal('-0.05'), Decimal('-1')],   # gas, and the in-kind fee
-                (LedgerTransaction.Trade, False): None,          # a trade's fee is inside the deal it paid for
-                (LedgerTransaction.AssetPayment, False): None}   # a stand-alone gas payment IS the operation
+                (LedgerTransaction.ChainAction, True): [Decimal('-0.5')],
+                (LedgerTransaction.Trade, False): None}          # a trade's fee is inside the deal it paid for
     seen = {}
     for posting in postings:
         operation = LedgerTransaction().get_operation(posting['otype'], posting['oid'], posting['opart'])
@@ -191,7 +193,7 @@ def test_a_fee_carries_the_tag_of_the_asset_it_was_paid_in(ledger_with_every_fee
                               (LedgerTransaction.Transfer, True, coin): 1,
                               (LedgerTransaction.Bridge, True, coin): 2,
                               (LedgerTransaction.Bridge, True, moved): 1,
-                              (LedgerTransaction.AssetPayment, False, coin): 1})
+                              (LedgerTransaction.ChainAction, True, coin): 1})
 
 
 # ----------------------------------------------------------------------------------------------------------------------

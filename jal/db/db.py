@@ -87,6 +87,7 @@ class JalDB:
         "SELECT symbol_id, account_id, timestamp FROM trades " \
         "UNION ALL SELECT symbol_id, account_id, timestamp FROM asset_payments " \
         "UNION ALL SELECT symbol_id, account_id, timestamp FROM asset_actions " \
+        "UNION ALL SELECT symbol_id, account_id, timestamp FROM chain_actions " \
         "UNION ALL SELECT r.symbol_id, a.account_id, a.timestamp FROM asset_action_results AS r " \
         "LEFT JOIN asset_actions AS a ON a.oid=r.action_id " \
         "UNION ALL SELECT symbol_id, withdrawal_account, withdrawal_timestamp FROM transfers " \

@@ -46,6 +46,7 @@ RECLOCKED_COLUMNS = (
     ("actions", "timestamp", "o.account_id", "o.note"),
     ("asset_actions", "timestamp", "o.account_id", "o.note"),
     (PAYMENTS, "timestamp", "o.account_id", "o.note"),
+    ("chain_actions", "timestamp", "o.account_id", "o.note"),
     ("conversions", "timestamp", "o.account_id", "o.note"),
     ("swaps", "timestamp", "o.account_id", "o.note"),
     ("swaps", "in_timestamp", "COALESCE(o.in_account_id, o.account_id)", "o.note"),
@@ -62,7 +63,8 @@ RECLOCKED_COLUMNS = (
 )
 
 # The timestamps that say for themselves whether they state a day, in a column named after them.
-FLAGGED_COLUMNS = (("asset_payments", "timestamp"), ("asset_actions", "timestamp"))
+FLAGGED_COLUMNS = (("asset_payments", "timestamp"), ("asset_actions", "timestamp"),
+                   ("chain_actions", "timestamp"))
 
 
 # The operations that hold two moments, as (table, earlier leg, later leg). Moving one leg and not the other can put

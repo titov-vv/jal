@@ -1,4 +1,5 @@
 from PySide6.QtCore import Qt, Slot, QAbstractTableModel, QModelIndex
+from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QHeaderView
 from jal.constants import Setup
 from jal.db.ledger import Ledger
@@ -67,6 +68,10 @@ class OperationsModel(QAbstractTableModel):
             # below line isn't related with font, it is put here to be called for each row minimal times (ideally 1)
             if index.column() == 0:
                 self._view.setRowHeight(row, grid_row_height(self._view, operation.view_rows()))
+            if index.column() == 2 and operation.is_failed():
+                font = QFont(self._view.font())
+                font.setStrikeOut(True)   # what it tried to do never happened; what it cost still did
+                return font
             return self._view.font()
         if role == Qt.ForegroundRole and self._view.isEnabled():
             if index.column() == 4 and operation.reconciled():

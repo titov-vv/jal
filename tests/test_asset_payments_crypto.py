@@ -13,7 +13,7 @@ from jal.db.db import JalDB
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
 from jal.db.ledger import Ledger
-from jal.db.operations import LedgerTransaction, AssetPayment, LedgerError
+from jal.db.operations import LedgerTransaction, AssetPayment, ChainAction, FeeKind, LedgerError
 
 WALLET = 1
 TRX = 4
@@ -33,6 +33,14 @@ def _payment(subtype, timestamp, amount):
     data = {'timestamp': timestamp, 'type': subtype, 'account_id': WALLET, 'symbol_id': symbol_id_for(TRX),
             'amount': str(amount), 'tax': '0', 'number': 'txhash', 'note': 'test'}
     return LedgerTransaction.create_new(LedgerTransaction.AssetPayment, data)
+
+
+# The cost of an on-chain event, which is what a gas payment became: the event is the operation and the coin it
+# burned is a fee of it.
+def _action(subtype, timestamp, amount, kind=FeeKind.Gas):
+    data = {'timestamp': timestamp, 'type': subtype, 'account_id': WALLET, 'number': 'txhash', 'note': 'test',
+            'fee': str(amount), 'fee_symbol_id': symbol_id_for(TRX), 'fee_account': WALLET, 'fee_kind': kind}
+    return LedgerTransaction.create_new(LedgerTransaction.ChainAction, data)
 
 
 def _amount(asset_id=TRX, timestamp=None):
@@ -109,10 +117,10 @@ def test_unquoted_dust_is_valued_at_zero_and_reported_as_no_miss(wallet, caplog)
     assert caplog.records == []
 
 
-def test_an_unquoted_gas_fee_is_still_reported(wallet, caplog):
+def test_an_unquoted_staking_reward_is_still_reported(wallet, caplog):
     # ... while the same miss on any other asset-denominated payment IS worth saying: those coins are the chain's
-    # own, they are quoted everywhere, and a value of zero there means the books understate what was spent
-    _payment(AssetPayment.GasFee, d2t(210202), '10')
+    # own, they are quoted everywhere, and a value of zero there means the books understate what was received
+    _payment(AssetPayment.StakingReward, d2t(210202), '10')
 
     with caplog.at_level(logging.ERROR):
         assert nth_operation(LedgerTransaction.AssetPayment, 1).amount(currency_id=2) == Decimal('0')
@@ -140,9 +148,9 @@ def test_staking_reward_basis_is_used_on_sale(wallet):
     assert _amount() == Decimal('0')
 
 
-def test_gas_fee_consumes_position_at_cost_basis(wallet):
+def test_gas_consumes_position_at_cost_basis(wallet):
     create_trades(WALLET, [(d2t(210201), d2t(210201), TRX, 100.0, 0.20, 0.0)])
-    _payment(AssetPayment.GasFee, d2t(210202), '10')
+    _action(ChainAction.Authorization, d2t(210202), '10')
     Ledger().rebuild(from_timestamp=0)
 
     assert _amount() == Decimal('90')             # the coins are gone from the wallet
@@ -151,14 +159,32 @@ def test_gas_fee_consumes_position_at_cost_basis(wallet):
 
     # 10 coins at a basis of 0.20 leave the position and arrive in Costs - equal values, so no P&L anywhere
     costs = JalDB._read("SELECT SUM(CAST(amount AS REAL)) FROM ledger WHERE book_account=:book AND otype=:otype",
-                        [(":book", BookAccount.Costs), (":otype", LedgerTransaction.AssetPayment)])
+                        [(":book", BookAccount.Costs), (":otype", LedgerTransaction.ChainAction)])
     assert abs(float(costs) - 2.0) < 1e-9
 
 
-@pytest.mark.parametrize('subtype', [AssetPayment.GasFee, AssetPayment.TokenRent])
-def test_payment_needs_enough_of_the_asset(wallet, subtype):
+# The event itself moves nothing at all: its whole ledger footprint is the cost above
+def test_the_event_itself_posts_nothing(wallet):
+    create_trades(WALLET, [(d2t(210201), d2t(210201), TRX, 100.0, 0.20, 0.0)])
+    oid = _action(ChainAction.Authorization, d2t(210202), '10').id()
+    Ledger().rebuild(from_timestamp=0)
+
+    parts = JalDB._read_to_list("SELECT DISTINCT opart FROM ledger WHERE otype=:otype AND oid=:oid ORDER BY opart",
+                                [(":otype", LedgerTransaction.ChainAction), (":oid", oid)])
+    assert parts == [ChainAction.Whole, ChainAction.Fee]   # the disposal at basis, and the cost - and nothing else
+    assert JalDB._read("SELECT COUNT(*) FROM ledger WHERE otype=:otype AND oid=:oid AND opart=:part",
+                       [(":otype", LedgerTransaction.ChainAction), (":oid", oid),
+                        (":part", ChainAction.Whole)]) == 1
+    event = LedgerTransaction.get_operation(LedgerTransaction.ChainAction, oid)
+    assert event.value_change() == [Decimal('0')]
+    assert event.value_currency() == ''
+
+
+@pytest.mark.parametrize('subtype, kind', [(ChainAction.Authorization, FeeKind.Gas),
+                                           (ChainAction.TokenAccountRent, FeeKind.Rent)])
+def test_an_action_needs_enough_of_the_asset(wallet, subtype, kind):
     create_trades(WALLET, [(d2t(210201), d2t(210201), TRX, 5.0, 0.20, 0.0)])
-    _payment(subtype, d2t(210202), '10')
+    _action(subtype, d2t(210202), '10', kind=kind)
     with pytest.raises(Exception):
         Ledger().rebuild(from_timestamp=0)
 
@@ -217,11 +243,11 @@ def test_format_decimal_is_lossless():
 # ----------------------------------------------------------------------------------------------------------------------
 # Rent of a token account: the coin leaves the wallet the way gas does, but is not consumed - it sits in the token
 # account and is paid to that account's OWNER if it is ever closed. The payer never gets it back, which is why it is
-# booked as a cost here and never as a movement to the owner (whose balance does not rise - see AssetPayment.TokenRent).
+# booked as a cost here and never as a movement to the owner (whose balance does not rise - see ChainAction.TokenAccountRent).
 
 def test_token_rent_leaves_the_wallet_at_its_own_basis(wallet):
     create_trades(WALLET, [(d2t(210201), d2t(210201), TRX, 100.0, 0.20, 0.0)])
-    _payment(AssetPayment.TokenRent, d2t(210202), '10')
+    oid = _action(ChainAction.TokenAccountRent, d2t(210202), '10', kind=FeeKind.Rent).id()
     Ledger().rebuild(from_timestamp=0)
 
     assert _amount() == Decimal('90')             # the coins are gone from the payer
@@ -229,8 +255,10 @@ def test_token_rent_leaves_the_wallet_at_its_own_basis(wallet):
     assert _closed_deals() == []                  # nothing is realized - it leaves at the basis it was held at
 
     costs = JalDB._read("SELECT SUM(CAST(amount AS REAL)) FROM ledger WHERE book_account=:book AND otype=:otype",
-                        [(":book", BookAccount.Costs), (":otype", LedgerTransaction.AssetPayment)])
+                        [(":book", BookAccount.Costs), (":otype", LedgerTransaction.ChainAction)])
     assert abs(float(costs) - 2.0) < 1e-9         # 10 coins at 0.20, so no P&L anywhere
+    # A rent is locked and not consumed, and the cost row is the only place that difference is recorded
+    assert JalDB._read("SELECT kind FROM fees WHERE operation_id=:oid", [(":oid", oid)]) == FeeKind.Rent
 
 
 # The return arrives on whoever OWNED the token account, which need not be whoever paid, so nothing links it back to

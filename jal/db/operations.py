@@ -39,7 +39,7 @@ class LedgerAssetShortage(LedgerError):
 # ----------------------------------------------------------------------------------------------------------------------
 class LedgerTransaction(JalDB):
     NoOpException = 'NoLedgerOperation'
-    NA = 0                  # Transaction types - these are aligned with tabs in main window
+    NA = 0                  # Transaction types
     IncomeSpending = 1
     AssetPayment = 2
     Trade = 3
@@ -48,6 +48,8 @@ class LedgerTransaction(JalDB):
     Conversion = 6
     Swap = 7
     Bridge = 8
+    AssetIncome = 9         # Reserved: the asset half of the payment split, which follows in its own delta
+    ChainAction = 10
     _db_table = ''   # Table where operation is stored in DB
     _otype = NA      # Operation type - a class attribute, because it identifies the operation before there is one:
                      # create_operation() below allocates the id from 'operations' and has to name the type there
@@ -115,7 +117,8 @@ class LedgerTransaction(JalDB):
     # Every operation class, for the code that has to treat them as a set rather than dispatch on one of them
     @staticmethod
     def operation_classes() -> list:
-        return [IncomeSpending, AssetPayment, Trade, Transfer, CorporateAction, Conversion, Swap, Bridge]
+        return [IncomeSpending, AssetPayment, Trade, Transfer, CorporateAction, Conversion, Swap, Bridge,
+                ChainAction]
 
     # The parts this kind of operation contributes to the ledger sequence, as SQL over its own table: one row per
     # PART, as (operation id, part, that part's own moment, the account it is on). The column names are what the
@@ -144,6 +147,8 @@ class LedgerTransaction(JalDB):
             return Swap(oid, opart=opart)
         elif operation_type == LedgerTransaction.Bridge:
             return Bridge(oid, opart=opart)
+        elif operation_type == LedgerTransaction.ChainAction:
+            return ChainAction(oid, opart=opart)
         else:
             raise ValueError(f"An attempt to select unknown operation type: {operation_type}")
 
@@ -170,6 +175,8 @@ class LedgerTransaction(JalDB):
             return Swap(operation_data)
         elif operation_type == LedgerTransaction.Bridge:
             return Bridge(operation_data, Bridge.Outgoing)
+        elif operation_type == LedgerTransaction.ChainAction:
+            return ChainAction(operation_data)
         else:
             raise ValueError(f"An attempt to create unknown operation type: {operation_type}")
 
@@ -367,8 +374,12 @@ class LedgerTransaction(JalDB):
 
     # True when this row is the fee of an operation rather than the operation itself. It reads the SEQUENCE part
     # (the thing that decides which row is drawn), not PART_FEE, which is the posting part written into the ledger.
-    # A stand-alone gas payment is an operation of its own and is therefore NOT a fee row - see AssetPayment.GasFee.
     def is_fee_row(self) -> bool:
+        return False
+
+    # True when what the operation set out to do never happened. Its description is struck through and its amounts
+    # are not: the intent failed, the cost did not.
+    def is_failed(self) -> bool:
         return False
 
     # A hash or a statement number identifies the TRANSACTION, and the fee is one of the things that transaction did,
@@ -519,7 +530,8 @@ class FeeCarrier:
             return
         if not fee.get('account_id'):
             fee['account_id'] = next((data[x] for x in cls.FeeAccountFields if data.get(x)), None)
-        fee['kind'] = FeeKind.Gas if fee.get('symbol_id') else FeeKind.Commission
+        if 'kind' not in fee:
+            fee['kind'] = FeeKind.Gas if fee.get('symbol_id') else FeeKind.Commission
         data.setdefault('fees', []).append(fee)
 
     # Every fee this operation bears, in a stable order. A class fills it in its constructor with _read_fees(),
@@ -747,7 +759,6 @@ class AssetPayment(FeeCarrier, LedgerTransaction):
     StockVesting = 4
     BondAmortization = 5
     AssetFee = 6   # A charge or a tax that belongs to the asset itself - an ADR fee, a transaction tax
-    GasFee = 7             # Gas burned by a transaction that moved nothing - an approval, a failed call, ...
     StakingReward = 8      # Coins received for staking; lending interest is recorded the same way
     DustAttack = 9         # Unsolicited native-coin dust from address-poisoning, below the per-chain threshold
     # Coins received for something other than staking - a referral or platform bonus, a fee rebate paid out too late
@@ -765,32 +776,17 @@ class AssetPayment(FeeCarrier, LedgerTransaction):
     # Never written by hand - see RebaseResidue.absorb(), which is the only thing that may create one and refuses
     # anything whose value is not negligible.
     RebaseAdjustment = 11
-    # Native coin locked as the rent of a token account, and the same coin coming back when that account is closed.
-    #
-    # Solana charges a rent-exempt deposit for every account that holds a token (2 039 280 lamports for a standard
-    # SPL token account), and whoever SENDS a token to an address that has none pays it. The coin is not consumed the
-    # way gas is - it sits in the token account and is returned in full if that account is ever closed - but it does
-    # leave the paying wallet for good: the token account belongs to its OWNER, so a rent paid to deliver a token to
-    # somebody else's address (including another wallet of the user's) is never coming back to the payer.
-    #
-    # That is why it is booked as a cost rather than as a movement to the owner's account: the owner's balance does
-    # NOT rise. A token account is an account of its own on the chain, its lamports are not part of the owner's
-    # balance, and no balance query will ever show them - so crediting the owner would invent coins the chain does
-    # not report there (verified on the real wallet: the payer's and the owner's balances both match the chain to the
-    # lamport with the rent booked as a cost). What is lost by this is the household view - the coins do still exist
-    # and are still the user's, just in a container no account holds. That is the same gap JAL has wherever it has no
-    # notion of a locked balance, and the place to close it is that notion, not a lie about who holds what.
-    TokenRent = 12
-    # ... and the other side. It arrives on the account that OWNED the token account, which is not necessarily the
-    # one that paid, so nothing here can link it back to the TokenRent it reverses. It is therefore valued like any
+    # The coin coming back when a token account is closed (see ChainAction.TokenAccountRent for the side that pays).
+    # It arrives on the account that OWNED the token account, which is not necessarily the
+    # one that paid, so nothing here can link it back to the rent it reverses. It is therefore valued like any
     # other inflow that cost the receiving account nothing - at the quote of the moment it arrives - rather than at
     # the value it left the payer at, which this account never bore.
     TokenRentReturn = 13
     # Payments whose amount is a QUANTITY OF THE ASSET and not a sum of money: shares received as a dividend,
     # coins earned by staking, coins burned as gas. What the amount is denominated in decides what the totals
     # count and what the last column of the operations list names, so it is stated once here.
-    _ASSET_DENOMINATED = (StockDividend, StockVesting, StakingReward, Reward, GasFee, DustAttack,
-                          RebaseAdjustment, TokenRent, TokenRentReturn)
+    _ASSET_DENOMINATED = (StockDividend, StockVesting, StakingReward, Reward, DustAttack,
+                          RebaseAdjustment, TokenRentReturn)
     _db_table = "asset_payments"
     _otype = LedgerTransaction.AssetPayment
     LedgerRank = 2
@@ -838,12 +834,10 @@ class AssetPayment(FeeCarrier, LedgerTransaction):
             AssetPayment.StockVesting: cls.tr("Stock Vesting"),
             AssetPayment.BondAmortization: cls.tr("Bond Amortization"),
             AssetPayment.AssetFee: cls.tr("Asset fee/tax"),
-            AssetPayment.GasFee: cls.tr("Gas fee"),
             AssetPayment.StakingReward: cls.tr("Staking reward"),
             AssetPayment.DustAttack: cls.tr("Dust attack"),
             AssetPayment.Reward: cls.tr("Reward"),
             AssetPayment.RebaseAdjustment: cls.tr("Rebase adjustment"),
-            AssetPayment.TokenRent: cls.tr("Token account rent"),
             AssetPayment.TokenRentReturn: cls.tr("Token account rent returned")
         }
 
@@ -855,12 +849,10 @@ class AssetPayment(FeeCarrier, LedgerTransaction):
             AssetPayment.StockVesting: JalIcon.STOCK_VESTING,
             AssetPayment.BondAmortization: JalIcon.BOND_AMORTIZATION,
             AssetPayment.AssetFee: JalIcon.FEE,
-            AssetPayment.GasFee: JalIcon.GAS_FEE,
             AssetPayment.StakingReward: JalIcon.STAKING_REWARD,
             AssetPayment.Reward: JalIcon.REWARD,
             AssetPayment.DustAttack: JalIcon.DUST,
             AssetPayment.RebaseAdjustment: JalIcon.REBASE,
-            AssetPayment.TokenRent: JalIcon.TOKEN_RENT,
             AssetPayment.TokenRentReturn: JalIcon.TOKEN_RENT_RETURN
         }
         self.names = self.subtype_names()
@@ -1004,9 +996,8 @@ class AssetPayment(FeeCarrier, LedgerTransaction):
             # already owned, not something acquired, so pricing it at market here would report money the account
             # never received and would disagree with the zero the position's value carries on the books.
             amount = Decimal('0')
-        elif self._subtype in (AssetPayment.StakingReward, AssetPayment.Reward, AssetPayment.GasFee,
-                               AssetPayment.DustAttack, AssetPayment.TokenRent,
-                               AssetPayment.TokenRentReturn):
+        elif self._subtype in (AssetPayment.StakingReward, AssetPayment.Reward,
+                               AssetPayment.DustAttack, AssetPayment.TokenRentReturn):
             # A crypto quote is daily, so it never falls on the exact block timestamp the way an exchange quote
             # does for a stock dividend - the last known price is the best available and is not an error.
             timestamp, price = self._asset.quote(self._timestamp, self._account.currency())
@@ -1060,8 +1051,7 @@ class AssetPayment(FeeCarrier, LedgerTransaction):
                 return [-self._tax]
             else:
                 return [Decimal('NaN')]
-        amount = -self._amount if self._subtype in (AssetPayment.GasFee, AssetPayment.TokenRent) \
-            else self._amount
+        amount = self._amount
         if self._tax:
             return [amount, -self._tax]
         else:
@@ -1128,12 +1118,6 @@ class AssetPayment(FeeCarrier, LedgerTransaction):
                              AssetPayment.TokenRentReturn):
             self.processStockDividendOrVesting(ledger)
             return
-        # Rent leaves the account exactly as gas does - the coin goes out at the basis the account holds it at, so
-        # nothing is realized - and differs only in never having been consumed. See the subtype for why the owner of
-        # the token account is not credited with it.
-        if self._subtype in (AssetPayment.GasFee, AssetPayment.TokenRent):
-            self.processGasFee(ledger)
-            return
         if self._subtype == AssetPayment.BondAmortization:
             self.processBondAmortization(ledger)
             return
@@ -1173,14 +1157,6 @@ class AssetPayment(FeeCarrier, LedgerTransaction):
             ledger.appendTransaction(self, BookAccount.Money, -self._tax)
             ledger.appendTransaction(self, BookAccount.Costs, self._tax,
                                      part=self.PART_TAX, category=PredefinedCategory.Taxes, peer=self._peer_id, tag=self._asset.tag().id())
-
-    # Gas burned by a transaction that moved nothing - a token approval, a contract call, or a transaction that
-    # ran out of energy and failed while still costing its fee.
-    #
-    # This payment is not a FeeCarrier: the gas IS the operation here rather than a charge attached to one, which is
-    # also why is_fee_row() stays False for it and why it books into the operation's own value part.
-    def processGasFee(self, ledger):
-        self._dispose_at_basis(ledger, self._amount, self._asset, self._account, self.PART_VALUE, self._peer_id)
 
     def processBondAmortization(self, ledger):
         operation_value = (self._amount - self._tax)
@@ -2891,3 +2867,161 @@ class Bridge(FeeCarrier, LedgerTransaction):
             # say - and it is borne by the arriving account rather than by the sending one.
             self._dispose_at_basis(ledger, self._out_qty - self._in_qty, self._asset, self._in_account,
                                    self.InKindFee, self._in_account.organization())
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# An on-chain event that moved no value at all: a token approval, a transaction that reverted, a command to a position,
+# a call that asked for nothing. Gas is spent by an EVENT, so the operation is the event and the gas is a fee of it -
+# these were stored the other way round until now, as a payment whose amount was the coin burned and whose description
+# was a translated sentence about what had happened, so nothing about the event could be counted or queried.
+#
+# It has no value leg. Its base part posts NOTHING to the ledger and is kept all the same: it gives the event a line
+# of its own to be named on, with its cost beneath it, and it lets the sequence, the editors and the reports treat a
+# chain action like any other operation instead of special-casing a one-part one.
+#
+# 'symbol_id' is the SUBJECT - the token an approval was granted for - and not the coin that was spent, which is named
+# by the fee row. It is NULL whenever JAL doesn't already know that asset: a wallet phished into approving a scam token
+# keeps a full record of what happened (the address goes into the note) without the token entering the asset list.
+class ChainAction(FeeCarrier, LedgerTransaction):
+    Authorization = 1      # A right was granted to a contract - an ERC-20 'approve', an operator toggled on
+    FailedTransaction = 2  # It reverted: the only one of these where the gas bought nothing at all
+    PositionCommand = 3    # A lifecycle command on a position that moves nothing by itself - a cooldown, an unstake
+    NoOp = 4               # It did what it was asked and what it was asked moved nothing - a claim that claimed zero
+    ContractCall = 5       # Something finer is not known; what the importer can't yet tell apart lands here
+    # Native coin locked as the rent of a token account. Not consumed the way gas is - it is returned in full if that
+    # account is ever closed - so its cost row is told apart by FeeKind.Rent and it stays an operation of its own
+    # rather than becoming a second fee of the send that caused it (see AssetPayment.TokenRentReturn for the other side).
+    TokenAccountRent = 6
+
+    Whole = 0    # The event itself. It posts nothing - what it cost is the fee part below
+    # The part the fee is drawn and posted as. 3 like every other half of the payment family, where 1 and 2 are the
+    # value and the tax - this class has neither, and one numbering across the three is worth more than a free number.
+    Fee = 3
+    PART_FEE = Fee
+    AssetFeeOnly = True    # Gas and rent are paid in a coin of the chain; a cost naming no asset is a data error
+
+    @classmethod
+    def sequence_parts(cls) -> str:
+        return (f"SELECT oid AS oid, {cls.Whole} AS opart, timestamp AS timestamp, account_id AS account_id "
+                "FROM chain_actions "
+                "UNION ALL " + cls.fee_parts("timestamp"))
+
+    _db_table = "chain_actions"
+    _otype = LedgerTransaction.ChainAction
+    LedgerRank = 2    # The rank the whole payment family shares - three tables, one place in the processing order
+    # What identifies one: the transaction it happened in, on the account that signed it. 'type' is deliberately NOT
+    # part of it - the importer recognises two of the six events today and will be taught the rest, and a finer answer
+    # to "what was this" must not make a second copy of a record that is already stored.
+    _db_fields = {
+        "timestamp": {"mandatory": True, "validation": True},
+        "timestamp_day_only": {"mandatory": False, "validation": False},
+        "number": {"mandatory": False, "validation": True, "default": '', "matches_empty": True},
+        "type": {"mandatory": True, "validation": False},
+        "account_id": {"mandatory": True, "validation": True},
+        "symbol_id": {"mandatory": False, "validation": False, "default": None},
+        "note": {"mandatory": False, "validation": False},
+        **FeeCarrier.FEE_CHILD
+    }
+    FeeFields = {'fee': 'amount', 'fee_symbol_id': 'symbol_id', 'fee_account': 'account_id', 'fee_kind': 'kind'}
+    FeeAccountFields = ('account_id',)
+
+    @classmethod
+    def subtype_names(cls) -> dict:
+        return {
+            ChainAction.NA: cls.tr("UNDEFINED"),
+            ChainAction.Authorization: cls.tr("Authorization"),
+            ChainAction.FailedTransaction: cls.tr("Failed transaction"),
+            ChainAction.PositionCommand: cls.tr("Position command"),
+            ChainAction.NoOp: cls.tr("No-op"),
+            ChainAction.ContractCall: cls.tr("Contract call"),
+            ChainAction.TokenAccountRent: cls.tr("Token account rent")
+        }
+
+    def __init__(self, oid=None, opart=Whole):
+        icons = {
+            ChainAction.Authorization: JalIcon.GAS_FEE,
+            ChainAction.FailedTransaction: JalIcon.GAS_FEE,
+            ChainAction.PositionCommand: JalIcon.GAS_FEE,
+            ChainAction.NoOp: JalIcon.GAS_FEE,
+            ChainAction.ContractCall: JalIcon.GAS_FEE,
+            ChainAction.TokenAccountRent: JalIcon.TOKEN_RENT
+        }
+        self.names = self.subtype_names()
+        super().__init__(oid)
+        self._opart = ChainAction.Fee if opart == ChainAction.Fee else ChainAction.Whole
+        self._data = self._read("SELECT type, timestamp, timestamp_day_only, number, account_id, symbol_id, note "
+                                "FROM chain_actions WHERE oid=:oid", [(":oid", self._oid)], named=True)
+        if self._data is None:
+            raise IndexError(LedgerTransaction.NoOpException)
+        self._subtype = self._data['type']
+        self._timestamp = self._data['timestamp']
+        self._timestamp_day_only = bool(self._data['timestamp_day_only'])
+        self._account = jal.db.account.JalAccount(self._data['account_id'])
+        self._number = self._data['number']
+        self._note = self._data['note']
+        # The event names itself on the first line and describes itself on the second, the way every operation that
+        # carries a transaction hash does; its cost is a row of its own and needs one line.
+        self._view_rows = 1 if opart == ChainAction.Fee else 2
+        self._fees = self._read_fees()
+        is_fee = self.is_fee_row()
+        if is_fee:   # The cost is charged in its own coin, on the account that bore it - it names both
+            self._account = self._part_fee().account()
+            self._symbol = self._part_fee().symbol()
+        else:
+            self._symbol = JalSymbol(self._data['symbol_id']) if self._data['symbol_id'] else JalSymbol()
+        self._asset = self._symbol.asset()
+        self._account_name = self._account.name()
+        self._account_currency = JalAsset(self._account.currency()).symbol()
+        self._icon = JalIcon[JalIcon.FEE if is_fee else icons[self._subtype]]
+        self._oname = self._charge_name() if is_fee else self.names[self._subtype]
+        self._peer_id = self._account.organization()
+        self._reconciled = self._account.reconciled_at() >= self._timestamp
+
+    # A chain action happens in one transaction, at one moment
+    def settlement(self) -> int:
+        return self._timestamp
+
+    def qty(self) -> Decimal:
+        return self._part_fee().amount() if self.is_fee_row() else Decimal('0')
+
+    def price(self):
+        return None
+
+    def note(self) -> str:
+        return self._note
+
+    # The event failed, so what it was trying to do never happened - the description is struck through and the cost
+    # is not. The intent failed; the gas did not come back.
+    def is_failed(self) -> bool:
+        return self._subtype == ChainAction.FailedTransaction and not self.is_fee_row()
+
+    # What the event cost, named by what sort of charge it is. It does not repeat the event - the row above says
+    # that - and a rent is deliberately not called a fee: it is locked rather than consumed.
+    def _charge_name(self) -> str:
+        return {FeeKind.Rent: self.tr("Rent")}.get(self._part_fee().kind(), self.tr("Gas"))
+
+    def description(self, part_only=False) -> str:
+        if self.is_fee_row():
+            return self._charge_name()
+        return self.names[self._subtype] + "\n" + (self._note if self._note else '')
+
+    # The event moves nothing, and saying so with a zero is the point of the part: a cost happened and no value did
+    def value_change(self, part_only=False) -> list:
+        return [-self._part_fee().amount()] if self.is_fee_row() else [Decimal('0')]
+
+    # ... and a part that changes no balance has none to state
+    def value_total(self) -> list:
+        if self.is_fee_row():
+            return [self._asset_total(self._account.id(), self._part_fee().asset().id())]
+        return [None]
+
+    def value_currency(self) -> str:
+        return self._part_fee().symbol().symbol() if self.is_fee_row() else ''
+
+    def value_currency_icons(self) -> list:
+        return [self._part_fee().symbol_id()] if self.is_fee_row() else []
+
+    def processLedger(self, ledger):
+        if self.is_fee_row():
+            self.processFee(ledger)
+        # ... and the event itself posts nothing at all: there was no value leg to post

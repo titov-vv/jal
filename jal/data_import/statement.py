@@ -17,7 +17,7 @@ from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.symbol import JalSymbol
 from jal.db.token_blacklist import normalize_address, JalTokenBlacklist
-from jal.db.operations import LedgerTransaction, AssetPayment, CorporateAction, Trade, Transfer
+from jal.db.operations import LedgerTransaction, AssetPayment, ChainAction, CorporateAction, Trade, Transfer, FeeKind
 from jal.db.bridge_matcher import BridgeMatcher
 from jal.db.transfer_settlement import TransferSettlement
 from jal.widgets.token_select import SelectTokenActionDialog
@@ -1002,9 +1002,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             elif operation['type'] == JSF.PAYMENT_FEE:
                 operation['type'] = AssetPayment.AssetFee
                 LedgerTransaction.create_new(LedgerTransaction.AssetPayment, operation)
-            elif operation['type'] == JSF.PAYMENT_GAS_FEE:
-                operation['type'] = AssetPayment.GasFee
-                LedgerTransaction.create_new(LedgerTransaction.AssetPayment, operation)
+            elif operation['type'] in (JSF.PAYMENT_GAS_FEE, JSF.PAYMENT_TOKEN_RENT):
+                LedgerTransaction.create_new(LedgerTransaction.ChainAction, self._as_chain_action(operation))
             elif operation['type'] == JSF.PAYMENT_STAKING_REWARD:
                 operation['type'] = AssetPayment.StakingReward
                 LedgerTransaction.create_new(LedgerTransaction.AssetPayment, operation)
@@ -1014,14 +1013,32 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             elif operation['type'] == JSF.PAYMENT_DUST_ATTACK:
                 operation['type'] = AssetPayment.DustAttack
                 LedgerTransaction.create_new(LedgerTransaction.AssetPayment, operation)
-            elif operation['type'] == JSF.PAYMENT_TOKEN_RENT:
-                operation['type'] = AssetPayment.TokenRent
-                LedgerTransaction.create_new(LedgerTransaction.AssetPayment, operation)
             elif operation['type'] == JSF.PAYMENT_TOKEN_RENT_RETURN:
                 operation['type'] = AssetPayment.TokenRentReturn
                 LedgerTransaction.create_new(LedgerTransaction.AssetPayment, operation)
             else:
                 raise Statement_ImportError(self.tr("Unsupported payment type: ") + f"{payment}")
+
+    # What a gas record says in the statement format and what a chain action stores are the same facts read the
+    # other way round: the asset and the amount are what the event COST, not what it moved, so they become its fee.
+    # 'subject' names what the event was about and is stored only when the statement matched it to an asset JAL
+    # already has - otherwise the address stays in the note and no asset record is created for it.
+    # What the record says by default, as (the event, what sort of charge its cost is). A rent is paid in the same
+    # coin as gas and is told apart from it by nothing but this.
+    _CHAIN_EVENTS = {JSF.PAYMENT_GAS_FEE: (ChainAction.ContractCall, FeeKind.Gas),
+                     JSF.PAYMENT_TOKEN_RENT: (ChainAction.TokenAccountRent, FeeKind.Rent)}
+
+    def _as_chain_action(self, operation: dict) -> dict:
+        event, kind = self._CHAIN_EVENTS[operation['type']]
+        action = {key: operation[key] for key in ('timestamp', 'account_id', 'note') if key in operation}
+        action['number'] = operation.get('number', '')
+        action['type'] = operation.get('event', event)
+        action['symbol_id'] = self.mapped_id(JSF.SYMBOLS, operation['subject']) if operation.get('subject') else None
+        action['fee'] = operation['amount']
+        action['fee_symbol_id'] = operation['symbol_id']
+        action['fee_account'] = operation['account_id']
+        action['fee_kind'] = kind
+        return action
 
     def _import_corporate_actions(self, actions):
         for action in actions:
