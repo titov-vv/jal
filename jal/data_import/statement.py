@@ -1000,7 +1000,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 operation['type'] = AssetPayment.StockVesting
                 LedgerTransaction.create_new(LedgerTransaction.AssetPayment, operation)
             elif operation['type'] == JSF.PAYMENT_FEE:
-                operation['type'] = AssetPayment.Fee
+                operation['type'] = AssetPayment.AssetFee
                 LedgerTransaction.create_new(LedgerTransaction.AssetPayment, operation)
             elif operation['type'] == JSF.PAYMENT_GAS_FEE:
                 operation['type'] = AssetPayment.GasFee

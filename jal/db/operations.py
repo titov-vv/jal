@@ -80,7 +80,8 @@ class LedgerTransaction(JalDB):
         self._number = ''
         self._reconciled = False
 
-    def tr(self, text):
+    @classmethod
+    def tr(cls, text):
         return QApplication.translate("LedgerTransaction", text)
 
     # Columns that dump() can't recognize by name - a timestamp not named 'timestamp', an asset id not named 'symbol_id'
@@ -549,7 +550,9 @@ class FeeCarrier:
         return self._part_fee().account_id()
 
     def is_fee_row(self) -> bool:
-        return self.Fee is not None and (self._opart == self.Fee or self._opart > self.ExtraFee)
+        if self.Fee is None or self._opart is None:
+            return False
+        return self._opart == self.Fee or self._opart > self.ExtraFee
 
     # The parts the fees of this operation contribute, read from 'fees'. 'moment' is the column of the operation's
     # own table the fee is charged at - a transfer's fee rides its withdrawal, a bridge's gas the leg that starts
@@ -737,13 +740,13 @@ class IncomeSpending(LedgerTransaction):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class AssetPayment(LedgerTransaction):
+class AssetPayment(FeeCarrier, LedgerTransaction):
     Dividend = 1
     BondInterest = 2
     StockDividend = 3
     StockVesting = 4
     BondAmortization = 5
-    Fee = 6
+    AssetFee = 6   # A charge or a tax that belongs to the asset itself - an ADR fee, a transaction tax
     GasFee = 7             # Gas burned by a transaction that moved nothing - an approval, a failed call, ...
     StakingReward = 8      # Coins received for staking; lending interest is recorded the same way
     DustAttack = 9         # Unsolicited native-coin dust from address-poisoning, below the per-chain threshold
@@ -804,10 +807,45 @@ class AssetPayment(LedgerTransaction):
         "amount": {"mandatory": True, "validation": True},
         "tax": {"mandatory": False, "validation": False},
         "price": {"mandatory": False, "validation": False},
-        "note": {"mandatory": False, "validation": True}
+        "note": {"mandatory": False, "validation": True},
+        **FeeCarrier.FEE_CHILD
     }
     PART_VALUE = 1
     PART_TAX = 2
+    # The part the fee is drawn and posted as - NOT the 'AssetFee' subtype above. 1 and 2 are the value and the
+    # tax, which are both drawn and posted under those numbers, so 3 is the next free one.
+    Fee = 3
+    PART_FEE = Fee   # The fee posts into the part it is drawn as - see FeeCarrier.PART_FEE
+    # The fee of a payment arrives in the same three fields a transfer's does, and may be borne by another account:
+    # the gas of a claim is not always paid by the wallet that receives it.
+    FeeFields = {'fee': 'amount', 'fee_symbol_id': 'symbol_id', 'fee_account': 'account_id'}
+    FeeAccountFields = ('account_id',)
+
+    @classmethod
+    def sequence_parts(cls) -> str:
+        return ("SELECT oid AS oid, 0 AS opart, timestamp AS timestamp, account_id AS account_id "
+                "FROM asset_payments "
+                "UNION ALL " + cls.fee_parts("timestamp"))
+
+    # The translated name of every subtype. A classmethod because the editor's type selector is built from it too.
+    @classmethod
+    def subtype_names(cls) -> dict:
+        return {
+            AssetPayment.NA: cls.tr("UNDEFINED"),
+            AssetPayment.Dividend: cls.tr("Dividend"),
+            AssetPayment.BondInterest: cls.tr("Bond Interest"),
+            AssetPayment.StockDividend: cls.tr("Stock Dividend"),
+            AssetPayment.StockVesting: cls.tr("Stock Vesting"),
+            AssetPayment.BondAmortization: cls.tr("Bond Amortization"),
+            AssetPayment.AssetFee: cls.tr("Asset fee/tax"),
+            AssetPayment.GasFee: cls.tr("Gas fee"),
+            AssetPayment.StakingReward: cls.tr("Staking reward"),
+            AssetPayment.DustAttack: cls.tr("Dust attack"),
+            AssetPayment.Reward: cls.tr("Reward"),
+            AssetPayment.RebaseAdjustment: cls.tr("Rebase adjustment"),
+            AssetPayment.TokenRent: cls.tr("Token account rent"),
+            AssetPayment.TokenRentReturn: cls.tr("Token account rent returned")
+        }
 
     def __init__(self, oid=None, opart=None):
         icons = {
@@ -816,7 +854,7 @@ class AssetPayment(LedgerTransaction):
             AssetPayment.StockDividend: JalIcon.STOCK_DIVIDEND,
             AssetPayment.StockVesting: JalIcon.STOCK_VESTING,
             AssetPayment.BondAmortization: JalIcon.BOND_AMORTIZATION,
-            AssetPayment.Fee: JalIcon.FEE,
+            AssetPayment.AssetFee: JalIcon.FEE,
             AssetPayment.GasFee: JalIcon.GAS_FEE,
             AssetPayment.StakingReward: JalIcon.STAKING_REWARD,
             AssetPayment.Reward: JalIcon.REWARD,
@@ -825,22 +863,7 @@ class AssetPayment(LedgerTransaction):
             AssetPayment.TokenRent: JalIcon.TOKEN_RENT,
             AssetPayment.TokenRentReturn: JalIcon.TOKEN_RENT_RETURN
         }
-        self.names = {
-            AssetPayment.NA: self.tr("UNDEFINED"),
-            AssetPayment.Dividend: self.tr("Dividend"),
-            AssetPayment.BondInterest: self.tr("Bond Interest"),
-            AssetPayment.StockDividend: self.tr("Stock Dividend"),
-            AssetPayment.StockVesting: self.tr("Stock Vesting"),
-            AssetPayment.BondAmortization: self.tr("Bond Amortization"),
-            AssetPayment.Fee: self.tr("Asset fee/tax"),
-            AssetPayment.GasFee: self.tr("Gas fee"),
-            AssetPayment.StakingReward: self.tr("Staking reward"),
-            AssetPayment.DustAttack: self.tr("Dust attack"),
-            AssetPayment.Reward: self.tr("Reward"),
-            AssetPayment.RebaseAdjustment: self.tr("Rebase adjustment"),
-            AssetPayment.TokenRent: self.tr("Token account rent"),
-            AssetPayment.TokenRentReturn: self.tr("Token account rent returned")
-        }
+        self.names = self.subtype_names()
         super().__init__(oid)
         self._opart = opart
         self._view_rows = 2
@@ -873,6 +896,16 @@ class AssetPayment(LedgerTransaction):
         self._price = Decimal(self._data['price']) if self._data['price'] else None  # Empty is "the price was never stated", which is not the same as a stated zero - a zero is a real price, and a wrong one for shares that were granted.
         self._note = self._data['note']
         self._peer_id = self._account.organization()
+        self._fees = self._read_fees()
+        if self.is_fee_row():   # The fee is charged in its own asset, on its own account - it names both
+            self._symbol = self._part_fee().symbol()
+            self._asset = self._symbol.asset()
+            self._account = self._part_fee().account()
+            self._account_name = self._account.name()
+            self._account_currency = JalAsset(self._account.currency()).symbol()
+            self._icon = JalIcon[JalIcon.FEE]
+            self._oname = self.tr("Payment fee")
+            self._view_rows = 1
 
     # Returns a list of Dividend objects for given asset, account and subtype
     # if asset_id is 0 - return for all assets, if subtype is 0 - return all types
@@ -953,12 +986,8 @@ class AssetPayment(LedgerTransaction):
                                       self._asset.symbol(self._account.currency()), ts2d(self._timestamp)))
         return self._price
 
-    # There are no any fee possible for Dividend
-    def fee(self) -> Decimal:
-        return Decimal('0')
-
     def qty(self) -> Decimal:
-        return self.amount()
+        return self._part_fee().amount() if self.is_fee_row() else self.amount()
 
     # Returns amount of dividend:
     # if currency_id = 0 - return unadjusted value of amount assigned to dividend (for example stock number for vesting)
@@ -1006,6 +1035,9 @@ class AssetPayment(LedgerTransaction):
         return self._note
 
     def description(self, part_only=False) -> str:
+        if self.is_fee_row():
+            note = f" ({self._note})" if self._note else ''
+            return self.tr("Payment fee") + note
         text = self._note if self._note else self.tr("Dividend payment for:") + f" {self._symbol.symbol()} ({self._asset.name()})"
         tax_text = self.tr("Tax: ") + self._asset.country_name()
         if part_only and self._opart is not None:
@@ -1019,6 +1051,8 @@ class AssetPayment(LedgerTransaction):
         return text
 
     def value_change(self, part_only=False) -> list:
+        if self.is_fee_row():
+            return [-self._part_fee().amount()]
         if part_only and self._opart is not None:
             if self._opart == self.PART_VALUE:
                 return [self._amount]
@@ -1034,6 +1068,9 @@ class AssetPayment(LedgerTransaction):
             return [amount, None]
 
     def value_currency(self) -> str:
+        if self.is_fee_row():
+            fee = self._part_fee()
+            return fee.symbol().symbol() if fee.is_asset_fee() else self._account_currency
         if self._subtype in self._ASSET_DENOMINATED and not self._opart:
             if self._tax:
                 return f"{self._symbol.symbol()}\n{self._account_currency}"
@@ -1043,6 +1080,9 @@ class AssetPayment(LedgerTransaction):
             return f"{self._account_currency}"
 
     def value_currency_icons(self) -> list:
+        if self.is_fee_row():
+            fee = self._part_fee()
+            return [fee.symbol_id() if fee.is_asset_fee() else JalAsset(self._account.currency()).listing_id()]
         if self._subtype in self._ASSET_DENOMINATED and not self._opart:
             icons = [self._symbol.id()]
             if self._tax:
@@ -1051,6 +1091,11 @@ class AssetPayment(LedgerTransaction):
         return [JalAsset(self._account.currency()).listing_id()]
 
     def value_total(self) -> list:
+        if self.is_fee_row():
+            fee = self._part_fee()
+            if fee.is_asset_fee():
+                return [self._asset_total(self._account.id(), fee.asset().id())]
+            return [self._money_total(self._account.id())]
         balance = []
         amount = self._money_total(self._account.id())
         if self._subtype in self._ASSET_DENOMINATED:
@@ -1073,6 +1118,9 @@ class AssetPayment(LedgerTransaction):
                        [(":oid", self._oid), (":tax", new_tax)], commit=True)
 
     def processLedger(self, ledger):
+        if self.is_fee_row():
+            self.processFee(ledger)
+            return
         if not self._peer_id:
             raise LedgerError(self.tr("Can't process dividend as bank isn't set for investment account: ") + self._account_name)
         if self._subtype in (AssetPayment.StockDividend, AssetPayment.StockVesting, AssetPayment.StakingReward,
@@ -1093,7 +1141,7 @@ class AssetPayment(LedgerTransaction):
             category = PredefinedCategory.Dividends
         elif self._subtype == AssetPayment.BondInterest:
             category = PredefinedCategory.Interest
-        elif self._subtype == AssetPayment.Fee:
+        elif self._subtype == AssetPayment.AssetFee:
             category = PredefinedCategory.Fees
         else:
             raise LedgerError(self.tr("Unsupported dividend type.") + f" Operation: {self.dump()}")

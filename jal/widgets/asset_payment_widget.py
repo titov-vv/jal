@@ -6,7 +6,7 @@ from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.widgets.helpers import set_visible_retaining_size
 from jal.widgets.delegates import WidgetMapperDelegateBase
 from jal.db.helpers import db_row2dict, now_ts
-from jal.db.operations import LedgerTransaction, AssetPayment
+from jal.db.operations import LedgerTransaction, AssetPayment, FeeKind
 from jal.db.common_models import AccountListModel
 from jal.db.asset_models import SymbolsListModel
 from jal.widgets.reference_dialogs import AccountListDialog
@@ -33,20 +33,11 @@ class AssetPaymentWidget(AbstractOperationDetails):
         self.ui.account_widget.setup_selector(AccountListModel, AccountListDialog, self)
         self.ui.symbol_widget.setup_selector(SymbolsListModel, SymbolListDialog, self)
         super()._init_db("asset_payments")
-        self.combo_model = QStringListModel([self.tr("N/A"),
-                                             self.tr("Dividend"),
-                                             self.tr("Bond Interest"),
-                                             self.tr("Stock Dividend"),
-                                             self.tr("Stock Vesting"),
-                                             self.tr("Bond Amortization"),
-                                             self.tr("Fee / Tax"),
-                                             self.tr("Gas fee"),
-                                             self.tr("Staking reward"),
-                                             self.tr("Dust attack"),
-                                             self.tr("Reward"),
-                                             self.tr("Rebase adjustment"),
-                                             self.tr("Token account rent"),
-                                             self.tr("Token account rent returned")])   # index == AssetPayment subtype
+        # A payment is charged in money (an ADR fee on a dividend) or in on-chain gas, and the gas of a claim is not
+        # always paid by the wallet that receives it.
+        super()._init_fees([FeeKind.Commission, FeeKind.Gas], account_may_differ=True, precision=2)
+        names = AssetPayment.subtype_names()
+        self.combo_model = QStringListModel([names[x] for x in sorted(names)])   # index == AssetPayment subtype
         self.ui.type.setModel(self.combo_model)
         set_visible_retaining_size(self.ui.price_label, False)
         set_visible_retaining_size(self.ui.price_edit, False)
@@ -54,6 +45,7 @@ class AssetPaymentWidget(AbstractOperationDetails):
         self.mapper.setItemDelegate(AssetPaymentWidgetDelegate(self.mapper))
 
         self.ui.account_widget.changed.connect(self.mapper.submit)
+        self.ui.account_widget.changed.connect(self.fee_account_changed)
         self.ui.symbol_widget.changed.connect(self.mapper.submit)
         self.ui.type.currentIndexChanged.connect(self.typeChanged)
 
@@ -71,11 +63,19 @@ class AssetPaymentWidget(AbstractOperationDetails):
 
         self.model.select()
 
+    # A payment happens on one account, which bears its fee unless the operation says otherwise
+    def _fee_payer(self) -> int:
+        return self.ui.account_widget.selected_id
+
+    @Slot()
+    def fee_account_changed(self):
+        self.fee_widget.set_fee_account(self._fee_payer())
+
     @Slot()
     def typeChanged(self, dividend_type_id):
         if dividend_type_id == AssetPayment.BondAmortization:
             self.ui.amount_label.setText(self.tr("Repayment"))
-        elif dividend_type_id == AssetPayment.Fee:
+        elif dividend_type_id == AssetPayment.AssetFee:
             self.ui.amount_label.setText(self.tr("Fee / Tax"))
         elif dividend_type_id == AssetPayment.GasFee:
             self.ui.amount_label.setText(self.tr("Gas spent"))      # a quantity of the coin, not a sum of money

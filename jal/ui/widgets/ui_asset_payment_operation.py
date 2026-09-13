@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (QApplication, QComboBox, QDateEdit, QDateTimeEdit
     QPushButton, QSizePolicy, QSpacerItem, QWidget)
 
 from jal.widgets.account_select import AccountCurrencyLabel
+from jal.widgets.fee_widget import FeeWidget
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 
 class Ui_AssetPaymentOperation(object):
@@ -32,7 +33,7 @@ class Ui_AssetPaymentOperation(object):
         self.note = QLineEdit(AssetPaymentOperation)
         self.note.setObjectName(u"note")
 
-        self.layout.addWidget(self.note, 4, 1, 1, 12)
+        self.layout.addWidget(self.note, 5, 1, 1, 12)
 
         self.date_label = QLabel(AssetPaymentOperation)
         self.date_label.setObjectName(u"date_label")
@@ -83,7 +84,7 @@ class Ui_AssetPaymentOperation(object):
 
         self.vertical_spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
-        self.layout.addItem(self.vertical_spacer, 5, 0, 1, 1)
+        self.layout.addItem(self.vertical_spacer, 6, 0, 1, 1)
 
         self.main_label = QLabel(AssetPaymentOperation)
         self.main_label.setObjectName(u"main_label")
@@ -116,11 +117,22 @@ class Ui_AssetPaymentOperation(object):
 
         self.layout.addWidget(self.symbol_widget, 3, 1, 1, 5)
 
+        self.fee_label = QLabel(AssetPaymentOperation)
+        self.fee_label.setObjectName(u"fee_label")
+        self.fee_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
+
+        self.layout.addWidget(self.fee_label, 4, 0, 1, 1)
+
+        self.fee_widget = FeeWidget(AssetPaymentOperation)
+        self.fee_widget.setObjectName(u"fee_widget")
+
+        self.layout.addWidget(self.fee_widget, 4, 1, 1, 5)
+
         self.note_label = QLabel(AssetPaymentOperation)
         self.note_label.setObjectName(u"note_label")
         self.note_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
-        self.layout.addWidget(self.note_label, 4, 0, 1, 1)
+        self.layout.addWidget(self.note_label, 5, 0, 1, 1)
 
         self.account_label = QLabel(AssetPaymentOperation)
         self.account_label.setObjectName(u"account_label")
@@ -205,6 +217,7 @@ class Ui_AssetPaymentOperation(object):
         self.type_label.setBuddy(self.type)
         self.tax_label.setBuddy(self.tax_edit)
         self.symbol_label.setBuddy(self.symbol_widget)
+        self.fee_label.setBuddy(self.fee_widget)
         self.note_label.setBuddy(self.note)
         self.account_label.setBuddy(self.account_widget)
         self.ex_date_label.setBuddy(self.ex_date_editor)
@@ -219,7 +232,8 @@ class Ui_AssetPaymentOperation(object):
         QWidget.setTabOrder(self.symbol_widget, self.dividend_edit)
         QWidget.setTabOrder(self.dividend_edit, self.price_edit)
         QWidget.setTabOrder(self.price_edit, self.tax_edit)
-        QWidget.setTabOrder(self.tax_edit, self.note)
+        QWidget.setTabOrder(self.tax_edit, self.fee_widget)
+        QWidget.setTabOrder(self.fee_widget, self.note)
         QWidget.setTabOrder(self.note, self.commit_button)
         QWidget.setTabOrder(self.commit_button, self.revert_button)
 
@@ -242,6 +256,7 @@ class Ui_AssetPaymentOperation(object):
         self.main_label.setText(QCoreApplication.translate("AssetPaymentOperation", u"Asset Payment", None))
         self.ex_date_editor.setSpecialValueText(QCoreApplication.translate("AssetPaymentOperation", u"unknown", None))
         self.ex_date_editor.setDisplayFormat(QCoreApplication.translate("AssetPaymentOperation", u"dd/MM/yyyy", None))
+        self.fee_label.setText(QCoreApplication.translate("AssetPaymentOperation", u"&Fee", None))
         self.note_label.setText(QCoreApplication.translate("AssetPaymentOperation", u"&Note", None))
         self.account_label.setText(QCoreApplication.translate("AssetPaymentOperation", u"A&ccount", None))
         self.ex_date_label.setText(QCoreApplication.translate("AssetPaymentOperation", u"Ex-Date", None))

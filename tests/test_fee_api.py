@@ -11,8 +11,8 @@ import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo
 from tests.helpers import d2t, create_stocks, create_trades, create_bridges, create_quotes, symbol_id_for, \
-    nth_operation
-from constants import PredefinedCategory
+    nth_operation, operation_id
+from constants import PredefinedCategory, BookAccount
 from jal.db.db import JalDB
 from jal.db.asset import JalAsset
 from jal.db.ledger import Ledger
@@ -192,3 +192,57 @@ def test_a_fee_carries_the_tag_of_the_asset_it_was_paid_in(ledger_with_every_fee
                               (LedgerTransaction.Bridge, True, coin): 2,
                               (LedgerTransaction.Bridge, True, moved): 1,
                               (LedgerTransaction.AssetPayment, False, coin): 1})
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# A payment bears a fee like every other operation. Until now it could not: 'asset_payments' had no fee column, so a
+# charge that belonged to a payment became a stand-alone gas operation of its own.
+@pytest.fixture
+def payment_with_a_fee(accounts_and_assets):
+    gas = symbol_id_for(5, 2)
+    create_quotes(4, 2, [(d2t(220101), 100.0)])
+    create_trades(1, [(d2t(220101), d2t(220101), 5, 10.0, 10.0, 0.0)])   # the coin the gas is paid in
+    LedgerTransaction.create_new(LedgerTransaction.AssetPayment, {
+        'timestamp': d2t(220201), 'type': AssetPayment.StakingReward, 'account_id': 1, 'symbol_id': gas,
+        'amount': Decimal('2'), 'tax': Decimal('0'), 'number': 'tx', 'note': 'Reward claim',
+        'fee': Decimal('0.25'), 'fee_symbol_id': gas, 'fee_account': 1})
+    create_quotes(5, 2, [(d2t(220201), 10.0)])
+    Ledger().rebuild(from_timestamp=0)
+    yield operation_id(LedgerTransaction.AssetPayment)
+
+
+def test_a_payment_stores_the_flat_fee_it_arrived_with(payment_with_a_fee):
+    payment = LedgerTransaction.get_operation(LedgerTransaction.AssetPayment, payment_with_a_fee)
+    assert [(x.amount(), x.symbol_id(), x.account_id(), x.kind()) for x in payment.fees()] == \
+           [(Decimal('0.25'), symbol_id_for(5, 2), 1, FeeKind.Gas)]
+    assert payment.fee() == Decimal('0')   # the deal-maths scalar counts money only, and this fee is a coin
+
+
+# The fee gets a part of its own, so it is a row in the operations list and a posting of its own in the ledger -
+# a cost borne by another wallet has to appear in THAT wallet's ledger, which a third line of the payment could not do.
+def test_a_payment_fee_is_a_part_of_its_own(payment_with_a_fee):
+    parts = JalDB._read_to_list("SELECT opart FROM ledger_sequence WHERE operation_id=:oid ORDER BY opart",
+                                [(":oid", payment_with_a_fee)])
+    assert parts == [0, AssetPayment.Fee]
+    fee_row = LedgerTransaction.get_operation(LedgerTransaction.AssetPayment, payment_with_a_fee, AssetPayment.Fee)
+    assert fee_row.is_fee_row()
+    assert fee_row.value_change(part_only=True) == [Decimal('-0.25')]
+    assert fee_row.value_currency() == 'GAS'
+    whole = LedgerTransaction.get_operation(LedgerTransaction.AssetPayment, payment_with_a_fee)
+    assert not whole.is_fee_row()
+
+
+def test_a_payment_fee_is_expensed_at_its_own_basis(payment_with_a_fee):
+    postings = Ledger.get_operations_by_category(0, d2t(230101), PredefinedCategory.Fees)
+    assert len(postings) == 1
+    assert int(postings[0]['oid']) == payment_with_a_fee
+    assert int(postings[0]['opart']) == AssetPayment.PART_FEE
+    # Bought at 10 and burned at that basis: the coin leaves the position at what it cost, never at market
+    assert JalDB._read("SELECT amount FROM ledger WHERE otype=:otype AND oid=:oid AND opart=:part "
+                       "AND book_account=:book",
+                       [(":otype", LedgerTransaction.AssetPayment), (":oid", payment_with_a_fee),
+                        (":part", AssetPayment.PART_FEE), (":book", BookAccount.Costs)]) == '2.5'
+    assert JalDB._read("SELECT value FROM ledger WHERE otype=:otype AND oid=:oid AND book_account=:book "
+                       "AND CAST(amount AS REAL) < 0",
+                       [(":otype", LedgerTransaction.AssetPayment), (":oid", payment_with_a_fee),
+                        (":book", BookAccount.Assets)]) == '-2.5'

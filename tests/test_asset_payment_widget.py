@@ -9,7 +9,8 @@ from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import d2t, create_assets, create_stock_dividends, \
     nth_operation
 from constants import PredefinedAsset, PredefinedAccountType
-from PySide6.QtWidgets import QMessageBox
+from PySide6.QtWidgets import QMessageBox, QWidget
+from jal.db.db import JalDB
 from jal.db.account import JalAccountCreator
 from jal.db.operations import AssetPayment
 from jal.db.operations import LedgerTransaction
@@ -56,3 +57,24 @@ def test_stock_dividend_price_is_validated(account, monkeypatch):
     widget.mapper.submit()
     assert Decimal(widget.model.record(0).value("price")) == Decimal('0')
     assert not widget._validated()
+
+
+# The payment editor drives the fee through the same FeeWidget the other five use, so a fee typed here is a child
+# row of the payment and not a stand-alone gas operation of its own.
+def test_the_editor_stores_the_fee_of_a_payment(account):
+    create_stock_dividends([(AssetPayment.StockDividend, d2t(210101), ACCOUNT, AAPL, Decimal('10'), 2,
+                             Decimal('100'), Decimal('0'), '')])
+    oid = nth_operation(LedgerTransaction.AssetPayment, 1).id()
+    parent = QWidget()          # a parentless dialog is collected in a way that aborts the process
+    widget = AssetPaymentWidget(parent=parent)
+    widget.set_id(oid)
+    assert widget.fee_widget.fees() == []
+
+    widget.fee_widget.attach()
+    widget.fee_widget.amount.setText('0.75')
+    widget.fee_widget._mapper.submit()
+    widget._save()
+
+    assert JalDB._read_to_list("SELECT account_id, symbol_id, amount FROM fees WHERE operation_id=:oid",
+                               [(":oid", oid)]) == [[ACCOUNT, '', '0.75']]
+    assert nth_operation(LedgerTransaction.AssetPayment, 1).fee() == Decimal('0.75')
