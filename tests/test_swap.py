@@ -71,7 +71,7 @@ def test_swap_values_from_in_asset_when_out_has_no_quote(prepare_db_fifo):
     assert deals[0].profit() == Decimal('600')                           # 1600 - 1000 basis
 
 
-# Gas paid for the swap is disposed at its cost basis to Costs (no P&L on the gas), like the standalone GasFee.
+# Gas paid for the swap is disposed at its cost basis to Costs (no P&L on the gas), like a chain action's cost.
 def test_swap_fee_is_disposed_to_costs(prepare_db_fifo):
     create_stocks([('A', 'Asset A'), ('B', 'Asset B'), ('GAS', 'Native coin')], currency_id=2)  # GAS -> asset 6
     t_buy, t_swap = d2t(220101), d2t(220201)

@@ -95,7 +95,7 @@ def test_statement_vtb(tmp_path, project_root, data_path, prepare_db_moex):
 # 'fees' is counted with them: a fee is a child of its operation and an import that meets an operation it already
 # stored appends the fee it brings, so a re-import must be recognized there too or every fee would be booked twice.
 def _operation_counts() -> dict:
-    tables = ['trades', 'transfers', 'asset_payments', 'asset_actions', 'fees']
+    tables = ['trades', 'transfers', 'asset_payments', 'asset_actions', 'chain_actions', 'fees']
     return {table: JalDB._read(f"SELECT COUNT(*) FROM {table}") for table in tables}
 
 

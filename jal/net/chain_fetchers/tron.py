@@ -108,7 +108,7 @@ class TronFetcher(ChainFetcher):
         latest = self._min_timestamp() - 1
 
         # Tokens first, so that the gas of a transaction is charged to the assets it moved and only what is left of
-        # it - a call that moved nothing out - becomes a GasFee payment of its own
+        # it - a call that moved nothing out - becomes the chain action that burned it
         for record in tokens:
             latest = max(latest, int(record.get('block_timestamp', 0)))
             self._process_token_transfer(record)
@@ -193,8 +193,8 @@ class TronFetcher(ChainFetcher):
             return
         if tx_type == 'TriggerSmartContract':
             # A contract call either carried a token transfer - already imported from the token endpoint, where the
-            # amounts are - or moved nothing and only burned gas, which needs the GasFee operation that doesn't
-            # exist yet. Either way there is nothing to add here.
+            # amounts are - or moved nothing and only burned gas, which the chain action below records. Either
+            # way there is nothing to add here.
             data = contract.get('parameter', {}).get('value', {}).get('data', '')
             if data[:8] in (_METHOD_TRANSFER, _METHOD_TRANSFER_FROM):
                 return
@@ -260,7 +260,7 @@ class TronFetcher(ChainFetcher):
             self._skip(self.tr("contract call with no gas left to charge"), tx_hash)
             return
         self._add_payment(JSF.PAYMENT_GAS_FEE, self._timestamp_of(record), self._native_asset_id(), fee,
-                          tx_hash, note=self._gas_note(record, data))
+                          tx_hash, note=self._gas_note(record, data), event=self._gas_event(record, data))
 
     # Describes what the gas was spent on. Tron reports a failed transaction through 'contractRet', and the
     # method selector tells an approval from any other call - the distinction decision #32 asks to keep.
@@ -271,6 +271,16 @@ class TronFetcher(ChainFetcher):
         if data[:8] == _METHOD_APPROVE:
             return self.tr("Gas: token approval")
         return self.tr("Gas: contract call")
+
+    # ... and the same two facts as a stored value. The approved token is not resolved here the way evm.py resolves
+    # it: this fetcher has no address lookup of its own yet, so the subject stays in the note until it does.
+    def _gas_event(self, record: dict, data: str) -> str:
+        result = record.get('ret', [{}])[0].get('contractRet', '')
+        if result and result != 'SUCCESS':
+            return JSF.EVENT_FAILED
+        if data[:8] == _METHOD_APPROVE:
+            return JSF.EVENT_AUTHORIZATION
+        return JSF.EVENT_CONTRACT_CALL
 
     # Staking rewards accumulate on-chain and are credited to the wallet when they are claimed. The claimed amount
     # isn't in the contract parameters - it is the 'withdraw_amount' the node reports for the transaction.

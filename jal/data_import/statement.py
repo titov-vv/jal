@@ -79,6 +79,14 @@ class JSF:
     PAYMENT_TOKEN_RENT = 'token_rent'            # native coin locked as the rent of a token account
     PAYMENT_TOKEN_RENT_RETURN = 'token_rent_return'   # ... and the same coin back when that account is closed
 
+    # What a gas record says HAPPENED, when its producer knows. Optional: a record that names none keeps the
+    # generic value, which is what a fetcher that can't tell the events apart yet produces.
+    EVENT_AUTHORIZATION = 'authorization'          # a right was granted to a contract
+    EVENT_FAILED = 'failed_transaction'            # it reverted, so the gas bought nothing
+    EVENT_POSITION_COMMAND = 'position_command'    # a lifecycle command on a position - a cooldown, an unstake
+    EVENT_NO_OP = 'no_op'                          # it did what it was asked, and that moved nothing
+    EVENT_CONTRACT_CALL = 'contract_call'          # nothing finer is known
+
     def __init__(self):
         pass
 
@@ -975,6 +983,17 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if not operation['symbol_id']:
                 raise Statement_ImportError(self.tr("Unmatched symbol for payment: ") + f"{payment}")
             operation['note'] = operation.pop('description')
+            # A payment may be charged a fee of its own - the gas of the claim it records, which is not always paid
+            # by the wallet that received it. Named exactly as a transfer's is, and mapped the same way.
+            if 'fee_symbol' in operation:
+                fee_symbol_id = self.mapped_id(JSF.SYMBOLS, operation.pop('fee_symbol'))
+                if not fee_symbol_id:
+                    raise Statement_ImportError(self.tr("Unmatched fee symbol for payment: ") + f"{payment}")
+                operation['fee_symbol_id'] = fee_symbol_id
+            if 'fee_account' in operation:
+                operation['fee_account'] = self.mapped_id(JSF.ACCOUNTS, operation['fee_account'])
+                if not operation['fee_account']:
+                    raise Statement_ImportError(self.tr("Unmatched fee account for payment: ") + f"{payment}")
             db_payment_id = self.mapped_id(JSF.ASSET_PAYMENTS, payment['id'])
             if operation['type'] == JSF.PAYMENT_DIVIDEND:
                 if db_payment_id:  # Dividend exists, only tax to be updated
@@ -1027,12 +1046,15 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     # coin as gas and is told apart from it by nothing but this.
     _CHAIN_EVENTS = {JSF.PAYMENT_GAS_FEE: (ChainAction.ContractCall, FeeKind.Gas),
                      JSF.PAYMENT_TOKEN_RENT: (ChainAction.TokenAccountRent, FeeKind.Rent)}
+    _EVENTS = {JSF.EVENT_AUTHORIZATION: ChainAction.Authorization, JSF.EVENT_FAILED: ChainAction.FailedTransaction,
+               JSF.EVENT_POSITION_COMMAND: ChainAction.PositionCommand, JSF.EVENT_NO_OP: ChainAction.NoOp,
+               JSF.EVENT_CONTRACT_CALL: ChainAction.ContractCall}
 
     def _as_chain_action(self, operation: dict) -> dict:
         event, kind = self._CHAIN_EVENTS[operation['type']]
         action = {key: operation[key] for key in ('timestamp', 'account_id', 'note') if key in operation}
         action['number'] = operation.get('number', '')
-        action['type'] = operation.get('event', event)
+        action['type'] = self._EVENTS[operation['event']] if operation.get('event') else event
         action['symbol_id'] = self.mapped_id(JSF.SYMBOLS, operation['subject']) if operation.get('subject') else None
         action['fee'] = operation['amount']
         action['fee_symbol_id'] = operation['symbol_id']

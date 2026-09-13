@@ -200,20 +200,20 @@ class SolanaFetcher(ChainFetcher):
         # receipt, so the user pairs it with its sending half in the matcher instead (CRYPTO_PATH decision #47).
         self._emit_transfers(timestamp, deltas, signature, gas, own)
 
-    # Emits the wallet's movements as plain transfers, one per asset. The gas of an outgoing transaction rides its
-    # outgoing leg the way a broker's transfer fee does; a transaction that only received pays it as a GasFee.
+    # Emits the wallet's movements as plain transfers, one per asset. The gas rides one of them the way a broker's
+    # transfer fee does - the outgoing leg where there is one, and otherwise the first leg by asset id, the same
+    # deterministic rule evm.py follows. A transaction that moved something is never a gas operation of its own.
     def _emit_transfers(self, timestamp: int, deltas: dict, signature: str, gas: Decimal, own: bool) -> None:
-        remaining_gas = gas
-        for asset_id, data in sorted(deltas.items()):
-            incoming = data['amount'] > Decimal('0')
-            fee = Decimal('0')
-            if not incoming and remaining_gas > Decimal('0'):
-                fee, remaining_gas = remaining_gas, Decimal('0')
-            self._add_transfer(timestamp, asset_id, abs(data['amount']), incoming, signature, note=data['note'],
+        legs = sorted(deltas.items())
+        carrier = self._gas_carrier(legs)
+        for asset_id, data in legs:
+            fee = gas if asset_id == carrier else Decimal('0')
+            self._add_transfer(timestamp, asset_id, abs(data['amount']), data['amount'] > Decimal('0'), signature,
+                               note=data['note'],
                                fee=fee, fee_asset_id=self._native_asset_id() if fee > Decimal('0') else None,
                                counterparty=data['counterparty'] or '')
-        if own and remaining_gas > Decimal('0'):
-            self._add_payment(JSF.PAYMENT_GAS_FEE, timestamp, self._native_asset_id(), remaining_gas, signature,
+        if own and carrier is None and gas > Decimal('0'):
+            self._add_payment(JSF.PAYMENT_GAS_FEE, timestamp, self._native_asset_id(), gas, signature,
                               note=self.tr("Gas: contract call"))
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -237,7 +237,7 @@ class SolanaFetcher(ChainFetcher):
             # hands, so there is nothing to record beyond the gas it cost.
             if gas > Decimal('0'):
                 self._add_payment(JSF.PAYMENT_GAS_FEE, timestamp, self._native_asset_id(), gas, signature,
-                                  note=self.tr("Gas: unstaking"))
+                                  note=self.tr("Gas: unstaking"), event=JSF.EVENT_POSITION_COMMAND)
             return
         native = self._native_delta(tx)
         if kind == _STAKE_DEPOSIT and native < Decimal('0'):

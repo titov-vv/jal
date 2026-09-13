@@ -396,8 +396,8 @@ def test_rent_returned_when_the_token_account_is_closed(fetcher, sol_wallet, mon
 
 
 # The gas of the transaction must not go missing when the rent is pulled out of the deltas: with nothing else of the
-# wallet's moving, the fee falls through to the GasFee that _emit_transfers() charges for a transaction that only
-# paid. Without this the wallet quietly keeps the fee it really spent.
+# wallet's moving, the fee falls through to the chain action that _emit_transfers() charges for a transaction that
+# only paid. Without this the wallet quietly keeps the fee it really spent.
 def test_the_gas_of_a_rent_payment_is_still_charged(fetcher, sol_wallet, monkeypatch):
     recorded = _recorded(fetcher)
     rent = _rent_tx(recorded[0])

@@ -271,11 +271,13 @@ class EVMFetcher(ChainFetcher):
         protocol = protocol_name(self.location_id, contract)
 
         # Nothing moved: an approval, a reverted transaction, or a contract call whose only effect was spam we
-        # filtered out. If it was the wallet's own transaction its gas is still charged as a GasFee.
+        # filtered out. If it was the wallet's own transaction the event itself is recorded, with its gas as the cost.
         if not outs and not ins:
             if own and gas > Decimal('0'):
                 self._add_payment(JSF.PAYMENT_GAS_FEE, timestamp, self._native_asset_id(), gas, tx['hash'],
-                                  note=self._gas_note(own_record, is_error))
+                                  note=self._gas_note(own_record, is_error),
+                                  event=self._gas_event(own_record, is_error),
+                                  subject_asset_id=self._gas_subject(own_record))
             return
         contract, category, protocol = self._forwarded_protocol(own, outs, ins, contract, category, protocol)
 
@@ -287,14 +289,14 @@ class EVMFetcher(ChainFetcher):
             # A protocol may also just pay out - a reward accrued on the supplied position, delivered with nothing
             # going the other way. That is a real inflow with no counterpart, which is what a StakingReward is.
             if ins and not outs:
-                return self._emit_rewards(timestamp, ins, tx['hash'], gas, is_error, own_record)
+                return self._emit_rewards(timestamp, ins, tx['hash'], gas)
             raise _HaltImport(self.tr("unrecognized lending/wrap shape"))
         if category == ProtocolCategory.BRIDGE:
             return self._emit_cross_chain_leg(timestamp, deltas, outs, ins, tx['hash'], gas, own_record, is_error,
                                               protocol, contract)
         if category == ProtocolCategory.REWARD:
             if ins and not outs:
-                return self._emit_rewards(timestamp, ins, tx['hash'], gas, is_error, own_record)
+                return self._emit_rewards(timestamp, ins, tx['hash'], gas)
             raise _HaltImport(self.tr("unrecognized reward-claim shape"))
         if category == ProtocolCategory.CUSTODY:
             # The contract keeps the asset on the wallet's behalf and hands back no receipt token, so nothing about
@@ -347,7 +349,7 @@ class EVMFetcher(ChainFetcher):
         #
         # Gas is taken as zero because the wallet paid none; whoever signed the claim books it on their own account.
         if not own and ins and not outs and self._claimed_reward_protocol(ins):
-            return self._emit_rewards(timestamp, ins, tx['hash'], Decimal('0'), is_error, None)
+            return self._emit_rewards(timestamp, ins, tx['hash'], Decimal('0'))
 
         # From here the contract (if any) is unregistered. A transaction the wallet signed that both spends and
         # receives an asset is a swap/lending/bridge through an unknown contract - it must never be guessed at
@@ -365,27 +367,29 @@ class EVMFetcher(ChainFetcher):
         # outside world (an ordinary receive, an airdrop that passed the spam filter).
         self._emit_transfers(timestamp, deltas, tx['hash'], gas, own_record, is_error)
 
-    # Emits the wallet's movements as plain transfers, one per asset. The gas of the wallet's own send rides its
-    # outgoing leg, the way a broker's transfer fee does; a transaction that only received pays it as a GasFee.
+    # Emits the wallet's movements as plain transfers, one per asset. The gas rides one of them the way a broker's
+    # transfer fee does - the outgoing leg where there is one, and otherwise the first leg by asset id, which is the
+    # same deterministic rule a multi-asset claim follows. A transaction that moved something is never a gas
+    # operation of its own: the movement is the event, and the gas is what it cost.
     #
     # 'mark' is set when a transfer is all this classification can record of something bigger (a custody movement, an
     # arriving bridge leg): it goes in front of the counterparty note, so both the ledger and the account-selection
     # dialog of the import say what the operation still needs - see TransferMark.
     def _emit_transfers(self, timestamp: int, deltas: dict, tx_hash: str, gas: Decimal,
                         own_record, is_error: bool, mark: str = '') -> None:
-        remaining_gas = gas
-        for asset_id, data in sorted(deltas.items()):
-            incoming = data['amount'] > Decimal('0')
-            fee = Decimal('0')
-            if not incoming and remaining_gas > Decimal('0'):
-                fee, remaining_gas = remaining_gas, Decimal('0')
-            self._add_transfer(timestamp, asset_id, abs(data['amount']), incoming, tx_hash,
+        legs = sorted(deltas.items())
+        carrier = self._gas_carrier(legs)
+        for asset_id, data in legs:
+            fee = gas if asset_id == carrier else Decimal('0')
+            self._add_transfer(timestamp, asset_id, abs(data['amount']), data['amount'] > Decimal('0'), tx_hash,
                                note=self._joined_note(mark, data['note']),
                                fee=fee, fee_asset_id=self._native_asset_id() if fee > Decimal('0') else None,
                                counterparty=data['counterparty'] or '')
-        if own_record is not None and remaining_gas > Decimal('0'):
-            self._add_payment(JSF.PAYMENT_GAS_FEE, timestamp, self._native_asset_id(), remaining_gas, tx_hash,
-                              note=self._gas_note(own_record, is_error))
+        if own_record is not None and carrier is None and gas > Decimal('0'):
+            self._add_payment(JSF.PAYMENT_GAS_FEE, timestamp, self._native_asset_id(), gas, tx_hash,
+                              note=self._gas_note(own_record, is_error),
+                              event=self._gas_event(own_record, is_error),
+                              subject_asset_id=self._gas_subject(own_record))
 
     # ------------------------------------------------------------------------------------------------------------------
     # Resolves a protocol the wallet reached THROUGH a token instead of calling it, as the (contract, category,
@@ -673,16 +677,16 @@ class EVMFetcher(ChainFetcher):
                              fee=gas, fee_asset_id=self._native_asset_id() if gas > Decimal('0') else None)
 
     # Emits claimed rewards as StakingReward payments (each opens a lot at market value, so a reward has a cost
-    # basis), plus the claim's gas as a separate GasFee. One claim can pay out in SEVERAL assets at once - a single
-    # Merkl claim delivered stkGHO and aEthUSDG together - so each received asset gets a payment of its own.
-    def _emit_rewards(self, timestamp: int, ins: dict, tx_hash: str, gas: Decimal,
-                      is_error: bool, own_record: dict) -> None:
-        for asset_id, data in sorted(ins.items()):
+    # basis). One claim can pay out in SEVERAL assets at once - a single Merkl claim delivered stkGHO and aEthUSDG
+    # together - so each received asset gets a payment of its own, and the gas of the claim rides the FIRST of them
+    # by asset id. Arbitrary and deliberate: the cost was never divided, the rule has to be one a re-import can
+    # reproduce exactly, and attaching it to one of the two is strictly more than the gas used to say for itself.
+    def _emit_rewards(self, timestamp: int, ins: dict, tx_hash: str, gas: Decimal) -> None:
+        for position, (asset_id, data) in enumerate(sorted(ins.items())):
+            carried = gas if position == 0 else Decimal('0')
             self._add_payment(JSF.PAYMENT_STAKING_REWARD, timestamp, asset_id, data['amount'], tx_hash,
-                              note=self.tr("Reward claim"))
-        if gas > Decimal('0'):
-            self._add_payment(JSF.PAYMENT_GAS_FEE, timestamp, self._native_asset_id(), gas, tx_hash,
-                              note=self._gas_note(own_record, is_error))
+                              note=self.tr("Reward claim"), fee=carried,
+                              fee_asset_id=self._native_asset_id() if carried > Decimal('0') else None)
 
     # The wallet's own top-level record of the transaction (from == wallet), or None when the wallet only received or
     # was merely named by an event it never signed. Its presence is what "the wallet initiated this" means, and it
@@ -720,6 +724,29 @@ class EVMFetcher(ChainFetcher):
         if record.get('methodId', '') == _METHOD_APPROVE:
             return self.tr("Gas: token approval")
         return self.tr("Gas: contract call")
+
+    # The same two facts as a STORED value rather than as a sentence. Position commands and no-ops are events this
+    # fetcher cannot yet tell from any other call, and they are deliberately not guessed at: the generic value says
+    # "not known to be anything finer", which is true, where a wrong one would be indistinguishable from a right one.
+    def _gas_event(self, record: dict, is_error: bool) -> str:
+        if is_error:
+            return JSF.EVENT_FAILED
+        if record.get('methodId', '') == _METHOD_APPROVE:
+            return JSF.EVENT_AUTHORIZATION
+        return JSF.EVENT_CONTRACT_CALL
+
+    # What an approval was FOR. The wallet sent the transaction to the token's own contract, so the address is in
+    # hand - but it is stored only when JAL already holds that asset. A wallet phished into approving a scam token
+    # keeps the full record of what happened (the address is in the note) without the token entering the asset list.
+    def _gas_subject(self, record: dict):
+        if record.get('methodId', '') != _METHOD_APPROVE:
+            return None
+        address = self._norm(record.get('to', ''))
+        symbol = JalSymbol.find_by_identifier(AssetLocation.address_id_of(self.location_id), address)
+        if not symbol.id():
+            return None
+        return self._token_asset_id(symbol.symbol(), symbol.asset().name(), address=address)
+
 
     # ------------------------------------------------------------------------------------------------------------------
     # Value of the transfer in the account currency, or None when the token can't be priced. A token JAL already

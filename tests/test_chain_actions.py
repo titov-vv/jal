@@ -253,3 +253,125 @@ def test_the_delta_puts_the_payment_triggers_back(project_root):
     for event in ('delete', 'insert', 'update'):
         assert text.index(f"DROP TRIGGER IF EXISTS asset_payments_after_{event}") \
                < text.index(f"CREATE TRIGGER asset_payments_after_{event}")
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# WHAT AN IMPORT WRITES, AND WHAT A SECOND ONE MUST NOT.
+#
+# An action's identity is thin - a transaction hash, an account and a moment - because the value fields the duplicate
+# check usually leans on are empty by definition. This is where that rule is paid for: a mistake here does not raise,
+# it silently duplicates or silently drops a real record. 'type' is deliberately NOT part of the identity, so that
+# teaching the importer to recognise a finer event later re-classifies nothing and duplicates nothing.
+from tests.test_evm_fetcher import eth_wallet, _drive, _tx, _token_tx, WALLET, USDC_CONTRACT   # noqa: E402
+from jal.db.symbol import JalSymbol                                                            # noqa: E402
+from jal.data_import.statement import JSF                                                      # noqa: E402
+from jal.net.chain_fetchers.ethereum import EthereumFetcher                                    # noqa: E402
+from jal.constants import AssetLocation, SymbolId                                              # noqa: E402
+
+_APPROVE = '0x095ea7b3'
+_MERKL = "0x3ef3d8ba38ebe18db133cec108f4d14ce00dd9ae"     # registered as ProtocolCategory.REWARD
+
+
+def _counts() -> dict:
+    tables = ['chain_actions', 'asset_payments', 'transfers', 'fees', 'operations']
+    return {table: JalDB._read(f"SELECT COUNT(*) FROM {table}") for table in tables}
+
+
+# Imports what the fetcher produced. A second call re-fetches from the same recorded history - the sync cursor is
+# stored by the caller and not by the import - so it is exactly the statement the first one already stored.
+def _fetch_and_import(eth_wallet, monkeypatch, pages):
+    fetcher, _data = _drive(eth_wallet, monkeypatch, pages)
+    fetcher.match_db_ids()
+    fetcher.import_into_db()
+
+
+def test_an_approval_is_stored_as_the_event_it_was(eth_wallet, monkeypatch):
+    a1 = "0xa1" + "0" * 62
+    _fetch_and_import(eth_wallet, monkeypatch,
+                      {"txlist": [_tx(a1, 100, WALLET, USDC_CONTRACT, value=0, method=_APPROVE)],
+                       "tokentx": [], "txlistinternal": []})
+
+    assert _actions() == [[1, ChainAction.Authorization, a1, '', 'Gas: token approval']]
+    assert JalDB._read("SELECT COUNT(*) FROM fees WHERE operation_id=1 AND kind=:gas",
+                       [(":gas", FeeKind.Gas)]) == 1
+
+
+# The subject is stored only when JAL already holds the asset. Here it does not: the token was never traded, so the
+# approval names it in the note and creates no asset record for it - a scam token approved once stays out of the list.
+def test_an_approval_of_an_unknown_token_stores_no_subject(eth_wallet, monkeypatch):
+    scam = "0x7777777777777777777777777777777777777777"
+    a2 = "0xa2" + "0" * 62
+    _fetch_and_import(eth_wallet, monkeypatch,
+                      {"txlist": [_tx(a2, 100, WALLET, scam, value=0, method=_APPROVE)],
+                       "tokentx": [], "txlistinternal": []})
+
+    assert [row[3] for row in _actions()] == ['']
+    assert JalSymbol.find_by_identifier(SymbolId.ETH_ADDRESS, scam).id() == 0   # ... and no asset was created for it
+
+
+# ... and when it does, the approval says what it was for
+def test_an_approval_of_a_known_token_stores_its_subject(eth_wallet, monkeypatch):
+    a3 = "0xa3" + "0" * 62
+    _fetch_and_import(eth_wallet, monkeypatch,        # a receive first, so that USDC becomes an asset JAL knows
+                      {"txlist": [], "tokentx": [_token_tx("0xb0" + "0" * 62, 99, WALLET, WALLET, 1)],
+                       "txlistinternal": []})
+    _fetch_and_import(eth_wallet, monkeypatch,
+                      {"txlist": [_tx(a3, 100, WALLET, USDC_CONTRACT, value=0, method=_APPROVE)],
+                       "tokentx": [], "txlistinternal": []})
+
+    subject = [row[3] for row in _actions()]
+    assert len(subject) == 1 and subject[0]
+    assert JalSymbol(int(subject[0])).symbol() == 'USDC'
+
+
+def test_a_reverted_transaction_is_stored_as_a_failure(eth_wallet, monkeypatch):
+    a4 = "0xa4" + "0" * 62
+    _fetch_and_import(eth_wallet, monkeypatch,
+                      {"txlist": [_tx(a4, 100, WALLET, USDC_CONTRACT, value=0, is_error='1')],
+                       "tokentx": [], "txlistinternal": []})
+
+    assert [row[1] for row in _actions()] == [ChainAction.FailedTransaction]
+
+
+# The one that gap 5 exists for. Everything the check has to work with is here: the same hash, the same account and
+# the same second, on an operation whose value fields are empty.
+def test_re_importing_an_action_stores_nothing_a_second_time(eth_wallet, monkeypatch):
+    pages = {"txlist": [_tx("0xa5" + "0" * 62, 100, WALLET, USDC_CONTRACT, value=0, method=_APPROVE),
+                        _tx("0xa6" + "0" * 62, 101, WALLET, USDC_CONTRACT, value=0, is_error='1')],
+             "tokentx": [], "txlistinternal": []}
+    _fetch_and_import(eth_wallet, monkeypatch, pages)
+    imported = _counts()
+    assert imported['chain_actions'] == 2 and imported['fees'] == 2
+
+    _fetch_and_import(eth_wallet, monkeypatch, pages)
+
+    assert _counts() == imported
+
+
+# A claim's gas is a fee of the claim now, so the re-import has to recognise the PAYMENT and then refuse to append
+# the fee it brings again - the two halves of D2, which a thin identity makes easy to get half right.
+def test_re_importing_a_claim_appends_its_gas_only_once(eth_wallet, monkeypatch):
+    pages = {"txlist": [_tx("0xa7" + "0" * 62, 100, WALLET, _MERKL, value=0, method='0xb61d27f6')],
+             "tokentx": [_token_tx("0xa7" + "0" * 62, 100, _MERKL, WALLET, 50 * 10 ** 6)],
+             "txlistinternal": []}
+    _fetch_and_import(eth_wallet, monkeypatch, pages)
+    imported = _counts()
+    assert imported['asset_payments'] == 1 and imported['fees'] == 1 and imported['chain_actions'] == 0
+
+    _fetch_and_import(eth_wallet, monkeypatch, pages)
+
+    assert _counts() == imported
+
+
+# The event is not part of what identifies an action, on purpose: the importer recognises two of the six today and
+# will be taught the rest. A finer answer to "what was this" must re-classify nothing and duplicate nothing.
+def test_a_finer_event_on_a_stored_action_is_not_a_second_action(eth_wallet, monkeypatch):
+    pages = {"txlist": [_tx("0xa8" + "0" * 62, 100, WALLET, USDC_CONTRACT, value=0, method='0xdeadbeef')],
+             "tokentx": [], "txlistinternal": []}
+    _fetch_and_import(eth_wallet, monkeypatch, pages)
+    assert [row[1] for row in _actions()] == [ChainAction.ContractCall]
+
+    monkeypatch.setattr(EthereumFetcher, "_gas_event", lambda self, record, is_error: JSF.EVENT_POSITION_COMMAND)
+    _fetch_and_import(eth_wallet, monkeypatch, pages)
+
+    assert len(_actions()) == 1                       # the same event met again, described better

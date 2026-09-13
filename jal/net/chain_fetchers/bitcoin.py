@@ -61,7 +61,7 @@ class _HaltImport(Exception):
 #   - the wallet spent nothing (no input of its own)  ->  incoming transfer of the delta; the sender paid the fee
 #   - the wallet funded the transaction               ->  outgoing transfer of (-delta - fee), the fee being its own
 #   - ... and that amount comes out zero              ->  a move between the wallet's own addresses: only the miner
-#                                                         was paid, so it is a GasFee payment and no transfer at all
+#                                                         was paid, so it is a chain action and no transfer at all
 #
 # The wallet's addresses are the second half of the problem. A modern wallet is a key tree, not an address: the
 # account holds the extended public key of an HD account and every address of it is derived locally (hd_wallet.py),
@@ -334,7 +334,8 @@ class BitcoinFetcher(ChainFetcher):
             # Everything came back to the wallet's own addresses: a consolidation, or a move between its own
             # branches. No asset left the wallet - only the miner was paid.
             self._add_payment(JSF.PAYMENT_GAS_FEE, timestamp, self._native_asset_id(), fee, tx_hash,
-                              note=self.tr("Miner fee of a transfer between the wallet's own addresses"))
+                              note=self.tr("Miner fee of a transfer between the wallet's own addresses"),
+                              event=JSF.EVENT_NO_OP)
             return
         receivers = self._external_addresses(transaction.get('vout', []), own, inputs=False)
         counterparty = receivers[0] if len(receivers) == 1 else ''

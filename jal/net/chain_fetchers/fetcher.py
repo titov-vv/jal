@@ -298,6 +298,16 @@ class ChainFetcher(Statement):
     def _mark(tag: str, protocol: str, hint: str) -> str:
         return f"{tag} {protocol}: {hint}" if protocol else f"{tag} {hint}"
 
+    # The leg a transaction's gas is charged to, out of the legs it produced (sorted by asset id), or None when it
+    # produced none at all. An outgoing leg carries it the way a broker's transfer fee does; where nothing went out
+    # the first leg does, which is arbitrary and deterministic - a re-import has to put the cost back in the same
+    # place, and the same rule gives a multi-asset claim's gas to its first asset.
+    @staticmethod
+    def _gas_carrier(legs: list):
+        if not legs:
+            return None
+        return next((asset_id for asset_id, data in legs if data['amount'] < Decimal('0')), legs[0][0])
+
     # Joins the parts of a description, dropping those that are empty - a counterparty note is empty whenever both
     # ends of the transfer are accounts JAL already knows.
     @staticmethod
@@ -343,12 +353,22 @@ class ChainFetcher(Statement):
 
     # Adds an asset payment: coins that arrive without being bought (a staking reward) or leave without anything
     # moving in return (gas burned by a transaction that transferred nothing).
+    #
+    # 'fee' is what the payment itself cost - the gas of the claim it records. 'event' and 'subject' belong to a gas
+    # record only: what happened and what it was about, which is all a transaction that moved nothing has to say.
     def _add_payment(self, payment_type: str, timestamp: int, asset_id: int, amount: Decimal,
-                     tx_hash: str, note: str = '') -> None:
-        self._data.setdefault(JSF.ASSET_PAYMENTS, []).append(
-            {"id": self._next_id(JSF.ASSET_PAYMENTS), "type": payment_type, "account": 1,
-             "symbol": self._single_symbol_of(asset_id), "timestamp": timestamp,
-             "amount": amount, "tax": Decimal('0'), "number": tx_hash, "description": note})
+                     tx_hash: str, note: str = '', fee: Decimal = Decimal('0'), fee_asset_id: int = None,
+                     event: str = '', subject_asset_id: int = None) -> None:
+        payment = {"id": self._next_id(JSF.ASSET_PAYMENTS), "type": payment_type, "account": 1,
+                   "symbol": self._single_symbol_of(asset_id), "timestamp": timestamp,
+                   "amount": amount, "tax": Decimal('0'), "number": tx_hash, "description": note}
+        if fee > Decimal('0') and fee_asset_id is not None:
+            payment.update({"fee": fee, "fee_symbol": self._single_symbol_of(fee_asset_id), "fee_account": 1})
+        if event:
+            payment["event"] = event
+        if subject_asset_id is not None:
+            payment["subject"] = self._single_symbol_of(subject_asset_id)
+        self._data.setdefault(JSF.ASSET_PAYMENTS, []).append(payment)
 
     # Adds a swap: one asset is disposed (out) and another acquired (in) in a single on-chain transaction. The gas is
     # burned in the chain's native coin (fee_asset_id) - passed separately from the swapped assets, since it may equal

@@ -115,7 +115,7 @@ def test_outgoing_spend_excludes_its_own_change(fetcher, btc_wallet):
 
 
 # A transaction that only shuffles coins between the wallet's own addresses moves no asset: the miner is the only
-# one paid, so it is a GasFee payment and not a transfer of any amount.
+# one paid, so it is a chain action and not a transfer of any amount.
 def test_self_move_is_only_a_miner_fee(fetcher, btc_wallet):
     data = fetcher.fetch(btc_wallet)
     fees = _payments(data, JSF.PAYMENT_GAS_FEE)

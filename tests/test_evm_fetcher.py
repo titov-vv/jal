@@ -647,8 +647,10 @@ def test_custody_return_is_a_transfer_not_a_reward(eth_wallet, monkeypatch):
     transfers = _transfers(data)
     assert len(transfers) == 1
     assert transfers[0]['account'] == [0, 1, 1] and transfers[0]['withdrawal'] == Decimal('1000')
-    # The wallet signed the withdrawal, so its gas is charged - but nothing here is income
-    assert [p['type'] for p in data.get(JSF.ASSET_PAYMENTS, [])] == [JSF.PAYMENT_GAS_FEE]
+    # The wallet signed the withdrawal, so its gas is charged - as a fee of the movement it paid for, and not as
+    # an operation of its own. Nothing here is income either.
+    assert data.get(JSF.ASSET_PAYMENTS, []) == []
+    assert transfers[0]['fee'] > Decimal('0') and transfers[0]['account'][2] == 1
     assert fetcher.skipped() == {} and fetcher._new_cursor == '100'
     assert transfers[0]['description'].startswith(f"{TransferMark.CUSTODY} stake.link PriorityPool: ")
 
@@ -846,7 +848,8 @@ def test_bridge_receive_via_own_tx_is_emitted_as_a_plain_transfer(eth_wallet, mo
     transfers = _transfers(data)
     assert len(transfers) == 1 and transfers[0]['withdrawal'] == Decimal('900')
     assert transfers[0]['account'][0] == 0                              # incoming: the source account is unknown
-    assert any(p['type'] == JSF.PAYMENT_GAS_FEE for p in data[JSF.ASSET_PAYMENTS])   # its own claim gas is charged
+    assert data.get(JSF.ASSET_PAYMENTS, []) == []                       # its own claim gas rides the leg it paid for
+    assert transfers[0]['fee'] > Decimal('0')
     # ... and the transfer says that this is what it is, so the pending half it belongs to can be found by hand
     assert transfers[0]['description'].startswith(f"{TransferMark.BRIDGE} LI.FI Diamond (Jumper): ")
 
@@ -863,7 +866,8 @@ def test_reward_claim_is_booked_as_a_staking_reward(eth_wallet, monkeypatch):
 
     rewards = [p for p in data[JSF.ASSET_PAYMENTS] if p['type'] == JSF.PAYMENT_STAKING_REWARD]
     assert len(rewards) == 1 and rewards[0]['amount'] == Decimal('50')
-    assert any(p['type'] == JSF.PAYMENT_GAS_FEE for p in data[JSF.ASSET_PAYMENTS])   # the claim's gas is charged too
+    assert len(data[JSF.ASSET_PAYMENTS]) == 1                  # the claim's gas is a fee of it, not a second record
+    assert rewards[0]['fee'] > Decimal('0') and rewards[0]['fee_account'] == 1
     assert _transfers(data) == [] and _swaps(data) == []
 
 
@@ -884,6 +888,8 @@ def test_reward_claim_of_several_assets_pays_each_one(eth_wallet, monkeypatch):
     rewards = [p for p in data[JSF.ASSET_PAYMENTS] if p['type'] == JSF.PAYMENT_STAKING_REWARD]
     assert sorted(p['amount'] for p in rewards) == [Decimal('23'), Decimal('46')]
     assert len({p['symbol'] for p in rewards}) == 2                     # one payment per received asset
+    # One gas row, two owners: it goes to the FIRST asset by id and the rule is what makes a re-import reproduce it
+    assert [p.get('fee', Decimal('0')) > Decimal('0') for p in rewards] == [True, False]
     assert fetcher.skipped() == {}
 
 

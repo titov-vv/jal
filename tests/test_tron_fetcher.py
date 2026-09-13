@@ -535,7 +535,7 @@ def test_several_legs_of_one_transaction_are_all_imported(tron_wallet, monkeypat
 # The same fee, counted the other way: a multisend or a router call is not a bare transfer(), so the native record
 # isn't recognized as "already imported from the token endpoint" and takes the gas-only path - even though the token
 # endpoint has already reported everything the call moved. What it moved carries the gas on its outgoing leg, so
-# there is nothing left to pay as a GasFee.
+# there is nothing left to pay as a chain action.
 def test_gas_carried_by_a_transfer_is_not_paid_again_as_a_fee(tron_wallet, monkeypatch):
     _second_wallet(COUNTERPARTY_OUT)
     history = ([_trc20(WALLET, COUNTERPARTY_OUT)], [_trigger(fee=1100000, selector='deadbeef')])
@@ -548,7 +548,7 @@ def test_gas_carried_by_a_transfer_is_not_paid_again_as_a_fee(tron_wallet, monke
     assert len(fees) == 1 and Decimal(fees[0][_FEE]) == Decimal('1.1')
 
 
-# ... and a call that really did move nothing still pays it: that is the whole purpose of the GasFee operation
+# ... and a call that really did move nothing still pays it: that is the whole purpose of the chain action
 def test_a_call_that_moved_nothing_still_pays_its_gas(tron_wallet, monkeypatch):
     instance = _import_history(tron_wallet, monkeypatch, [], [_trigger(fee=1100000, selector='deadbeef')])
 
