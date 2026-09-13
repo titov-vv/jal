@@ -5,6 +5,8 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from decimal import Decimal
 
+import importlib
+
 import sqlparse
 
 from PySide6.QtWidgets import QWidget
@@ -14,6 +16,7 @@ from tests.helpers import d2t, create_stocks, create_trades, create_transfers, c
     create_quotes, symbol_id_for, operation_id
 from constants import Setup, BookAccount
 from jal.db.db import JalDB
+from jal.db.helpers import format_decimal
 from jal.db.account import JalAccountCreator
 from jal.db.ledger import Ledger
 from jal.widgets.trade_widget import TradeWidget
@@ -539,3 +542,98 @@ def test_a_trade_fee_in_another_denomination_is_no_part_of_the_deal(prepare_db_f
     assert JalDB._read("SELECT SUM(CAST(amount AS REAL)) FROM ledger WHERE otype=:otype AND oid=:oid "
                        "AND book_account=:book", [(":otype", LedgerTransaction.Trade), (":oid", oid),
                                                   (":book", BookAccount.Costs)]) == 3.0
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# What writes it. A fee is a CHILD of its operation, declared once on FeeCarrier and spliced into every carrier, so
+# an operation states its fees the way an income/spending states its lines. Nothing passes them this way yet - the
+# importers still fill the parent column - but the mechanism and its one new rule are proved here.
+def _trade(fees=None, number='T1', qty='10'):
+    data = {'timestamp': d2t(220101), 'settlement': d2t(220101), 'number': number, 'account_id': 1,
+            'symbol_id': symbol_id_for(4, 2), 'qty': Decimal(qty), 'price': Decimal('100'),
+            'fee': Decimal('0'), 'note': ''}
+    if fees is not None:
+        data['fees'] = fees
+    return LedgerTransaction.create_new(LedgerTransaction.Trade, data).oid()
+
+
+def _fee(amount, account_id=1, symbol_id=None, kind=FeeKind.Commission) -> dict:
+    fee = {'account_id': account_id, 'amount': Decimal(amount), 'kind': kind}
+    if symbol_id is not None:
+        fee['symbol_id'] = symbol_id
+    return fee
+
+
+def _rows_of(oid) -> list:
+    return JalDB._read_to_list("SELECT idx, account_id, symbol_id, amount, kind FROM fees WHERE operation_id=:oid "
+                               "ORDER BY idx", [(":oid", oid)])
+
+
+def test_an_operation_stores_the_fees_it_declares(prepare_db_fifo):
+    _accounts_and_assets()
+    oid = _trade(fees=[_fee('3'), _fee('0.5', symbol_id=symbol_id_for(5, 2), kind=FeeKind.Gas)])
+
+    assert _rows_of(oid) == [[0, 1, '', '3', FeeKind.Commission], [1, 1, symbol_id_for(5, 2), '0.5', FeeKind.Gas]]
+
+
+# D2, the late-arriving fee: a statement that carries a fee for an operation JAL already holds is describing that
+# operation more completely, and the fee is APPENDED. Before the child table there was nowhere to put it - the fee
+# was part of the parent's identity, so the same record made a spurious second operation instead.
+def test_a_fee_that_arrives_after_its_operation_is_appended(prepare_db_fifo):
+    _accounts_and_assets()
+    oid = _trade(fees=[_fee('3')])
+
+    assert _trade(fees=[_fee('0.25')]) == oid       # the same trade, met again with a charge it didn't carry
+    assert _rows_of(oid) == [[0, 1, '', '3', FeeKind.Commission], [1, 1, '', '0.25', FeeKind.Commission]]
+
+
+# ... and the other half of that rule, which is what keeps it safe: a fee the operation ALREADY carries is not
+# appended, so re-importing a statement stores nothing new however many times it is run.
+def test_a_re_import_appends_no_fee_it_already_stored(prepare_db_fifo):
+    _accounts_and_assets()
+    oid = _trade(fees=[_fee('3')])
+
+    for _ in range(3):
+        assert _trade(fees=[_fee('3')]) == oid
+    assert _rows_of(oid) == [[0, 1, '', '3', FeeKind.Commission]]
+
+
+# The amount is matched as TEXT, so it is only ever stored in the canonical spelling - '1.5' and '1.50' are the
+# same number and two different strings, and a fee spelled the other way would be appended a second time. Every
+# writer goes through format_decimal(); the rows the migration copied verbatim are normalised by its companion.
+# See [[jal-amount-text-is-duplicate-key]].
+def test_every_writer_stores_a_fee_in_the_canonical_spelling(prepare_db_fifo):
+    _accounts_and_assets()
+    oid = _trade(fees=[_fee('1.50')])
+    _add_fee(oid, amount=format_decimal(Decimal('2.500')), idx=1)
+
+    assert [row[3] for row in _rows_of(oid)] == ['1.5', '2.5']
+    assert _trade(fees=[_fee('1.5')]) == oid           # the same fee, offered again by a re-import
+    assert len(_rows_of(oid)) == 2
+
+
+# ... which is what the companion of delta 73 leaves behind: the rows it created were copied out of the fee columns
+# verbatim, so they arrived spelled however those columns held them.
+def test_the_companion_normalises_every_stored_fee(prepare_db_fifo):
+    _accounts_and_assets()
+    oid = _trade()
+    for spelling in ('1.50', '2.0', '3.000'):
+        _add_fee(oid, amount=spelling, idx=len(_rows_of(oid)))
+    JalDB._exec("UPDATE trades SET fee='4.50' WHERE oid=:oid", [(":oid", oid)], commit=True)
+
+    importlib.import_module(f"jal.updates.{Setup.UPDATE_PREFIX}73").update()
+
+    assert JalDB._read("SELECT fee FROM trades WHERE oid=:oid", [(":oid", oid)]) == '4.5'
+    assert [row[3] for row in _rows_of(oid)] == ['4.5', '2', '3']
+
+
+# What tells two fees apart is what the fee IS - who bore it, in what, how much and what sort of charge. 'idx' is
+# not one of them: it says where a fee sits among the others, and the writer assigns it (D4).
+def test_a_fee_differing_in_any_identifying_field_is_a_different_fee(prepare_db_fifo):
+    _accounts_and_assets()
+    oid = _trade(fees=[_fee('3')])
+
+    _trade(fees=[_fee('3', account_id=2)])                                    # borne by another account
+    _trade(fees=[_fee('3', symbol_id=symbol_id_for(5, 2), kind=FeeKind.Gas)])  # paid in an asset
+    _trade(fees=[_fee('3', kind=FeeKind.Rent)])                               # another sort of charge
+    assert [row[0] for row in _rows_of(oid)] == [0, 1, 2, 3]

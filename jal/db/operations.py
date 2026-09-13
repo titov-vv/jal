@@ -491,6 +491,24 @@ class FeeCarrier:
     AssetFeeOnly = False   # True when the operation can only be charged in an asset (gas)
     _fees = []             # Until the constructor has read them - a part may be built before it asks for the list
 
+    # The fee as a child of its operation, spliced into each carrier's _db_fields so that one shape is declared once.
+    # The validation set is what says WHICH fee it is, and 'idx' is not part of it: it says where a fee sits  and
+    # the writer assigns it. 'amount' is matched as text, so every writer spells it canonically.
+    FEE_CHILD = {
+        "fees": {
+            "mandatory": False, "validation": False, "children": True, "append_on_duplicate": True,
+            "child_table": "fees", "child_pid": "operation_id", "child_index": "idx",
+            "child_fields": {
+                "operation_id": {"mandatory": True, "validation": True},
+                "idx": {"mandatory": False, "validation": False},
+                "account_id": {"mandatory": True, "validation": True},
+                "symbol_id": {"mandatory": False, "validation": True, "default": None},
+                "amount": {"mandatory": True, "validation": True},
+                "kind": {"mandatory": False, "validation": True, "default": FeeKind.Commission}
+            }
+        }
+    }
+
     # Every fee this operation bears, in a stable order. A class fills it in its constructor with _read_fees(),
     # because a part may name the fee's asset or account before anything asks for the list.
     def fees(self) -> list:
@@ -1131,7 +1149,8 @@ class Trade(FeeCarrier, LedgerTransaction):
         "qty": {"mandatory": True, "validation": True},
         "price": {"mandatory": True, "validation": True},
         "fee": {"mandatory": True, "validation": False},
-        "note": {"mandatory": False, "validation": False}
+        "note": {"mandatory": False, "validation": False},
+        **FeeCarrier.FEE_CHILD
     }
     PART_PROFIT = 1
     PART_FEE = 2
@@ -1332,7 +1351,8 @@ class Swap(FeeCarrier, LedgerTransaction):
         "in_tx_hash": {"mandatory": False, "validation": True, "default": ''},
         "fee_symbol_id": {"mandatory": False, "validation": True, "default": None},
         "fee_qty": {"mandatory": False, "validation": True, "default": None},
-        "note": {"mandatory": False, "validation": False}
+        "note": {"mandatory": False, "validation": False},
+        **FeeCarrier.FEE_CHILD
     }
     PART_PROFIT = 1
     PART_FEE = Fee          # The fee posts into the part it is drawn as - see FeeCarrier.Fee
@@ -1579,7 +1599,8 @@ class Transfer(FeeCarrier, LedgerTransaction):
         # two records of one movement look like two movements (the same reason 'note' isn't one).
         "counterparty_address": {"mandatory": False, "validation": False, "default": None},
         "symbol_id": {"mandatory": False, "validation": True, "default": None},
-        "note": {"mandatory": False, "validation": False}
+        "note": {"mandatory": False, "validation": False},
+        **FeeCarrier.FEE_CHILD
     }
 
     def __init__(self, oid=None, opart=0, duplicate_before=None):
@@ -2380,7 +2401,8 @@ class Conversion(FeeCarrier, LedgerTransaction):
         "in_qty": {"mandatory": True, "validation": True},
         "fee_symbol_id": {"mandatory": False, "validation": True, "default": None},
         "fee_qty": {"mandatory": False, "validation": True, "default": None},
-        "note": {"mandatory": False, "validation": False}
+        "note": {"mandatory": False, "validation": False},
+        **FeeCarrier.FEE_CHILD
     }
     PART_FEE = Fee          # The fee posts into the part it is drawn as - see FeeCarrier.PART_FEE
     AssetFeeOnly = True     # A conversion is charged in gas, so a fee that names no asset is a data error
@@ -2551,7 +2573,8 @@ class Bridge(FeeCarrier, LedgerTransaction):
         "in_tx_hash": {"mandatory": False, "validation": True, "default": ''},
         "fee_symbol_id": {"mandatory": False, "validation": True, "default": None},
         "fee_qty": {"mandatory": False, "validation": True, "default": None},
-        "note": {"mandatory": False, "validation": False}
+        "note": {"mandatory": False, "validation": False},
+        **FeeCarrier.FEE_CHILD
     }
     PART_FEE = Fee          # The fee posts into the part it is drawn as - see FeeCarrier.PART_FEE
     AssetFeeOnly = True     # A bridge is charged in gas, so a fee that names no asset is a data error

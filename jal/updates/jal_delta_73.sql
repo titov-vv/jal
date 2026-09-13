@@ -300,6 +300,11 @@ BEGIN
          WHERE CAST(NEW.fee_qty AS REAL) <> 0;
 END;
 --------------------------------------------------------------------------------
+-- CANONICAL SPELLING OF STORED FEES
+--------------------------------------------------------------------------------
+-- The rewrite itself is in the companion jal_delta_73.py
+INSERT OR REPLACE INTO settings(name, value) VALUES('RunUpdateScript', 73);
+--------------------------------------------------------------------------------
 -- Set new DB schema version
 UPDATE settings SET value=73 WHERE name='SchemaVersion';
 COMMIT;

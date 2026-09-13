@@ -483,18 +483,29 @@ class JalDB:
         oid = self.locate_operation(table_name, fields, data, duplicate_before)
         if oid:
             logging.warning(self.tr("Operation already present in db and was skipped: ") + f"{table_name}, {data}")
-            return oid
+            # A child that may ARRIVE LATER is still stored.
+            children = [x for x in fields if fields[x].get('children') and fields[x].get('append_on_duplicate')]
         else:
             oid = self.insert_operation(table_name, fields, data, otype)
-        children = [x for x in fields if 'children' in fields[x] and fields[x]['children']]
+            children = [x for x in fields if fields[x].get('children')]
         for child in children:
-            for item in data[child]:
+            for item in data.get(child, []):
                 item[fields[child]['child_pid']] = oid
-                # No bound for the children: they are keyed by the parent id that was just inserted, so an existing
-                # child row of another parent can't be mistaken for one of these.
+                if fields[child].get('child_index'):   # what orders the children of one parent - never given by the caller
+                    item[fields[child]['child_index']] = \
+                        self._next_child_index(fields[child]['child_table'], fields[child]['child_pid'],
+                                               oid, fields[child]['child_index'])
+                # No bound for the children: they are keyed by the parent id, so an existing child row of another
+                # parent can't be mistaken for one of these.
                 # And no 'otype': a child is not an operation and gets no row in the root
                 self.create_operation(fields[child]['child_table'], fields[child]['child_fields'], item)
         return oid
+
+    # The next free ordering value among the children of one parent, so that a child appended later sits after the
+    # ones stored before it and no two of them share a place.
+    def _next_child_index(self, table_name, pid_field, oid, index_field) -> int:
+        return int(self._read(f"SELECT COALESCE(MAX({index_field}), -1) + 1 FROM {table_name} WHERE {pid_field}=:oid",
+                              [(":oid", oid)]))
 
     # Verify that 'data' contains no more fields than described in 'fields'
     # Next it checks that 'data' has all fields described with 'mandatory'=True in 'fields'
