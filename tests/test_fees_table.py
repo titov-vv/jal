@@ -637,3 +637,43 @@ def test_a_fee_differing_in_any_identifying_field_is_a_different_fee(prepare_db_
     _trade(fees=[_fee('3', symbol_id=symbol_id_for(5, 2), kind=FeeKind.Gas)])  # paid in an asset
     _trade(fees=[_fee('3', kind=FeeKind.Rent)])                               # another sort of charge
     assert [row[0] for row in _rows_of(oid)] == [0, 1, 2, 3]
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The mirror's reach. Its 'UPDATE OF' lists name the ACCOUNT columns as well as the fee ones, so without a guard any
+# statement that moves an operation to another account would delete a fee that was written straight to the table -
+# and settling a pending transfer does exactly that. The guard is what lets the two write paths overlap.
+def test_a_fee_written_straight_to_the_table_survives_an_account_edit(prepare_db_fifo):
+    _accounts_and_assets()
+    oid = _trade()
+    _add_fee(oid, amount='3')
+
+    JalDB._exec("UPDATE trades SET account_id=2 WHERE oid=:oid", [(":oid", oid)], commit=True)
+
+    assert _rows_of(oid) == [[0, 1, '', '3', FeeKind.Commission]]
+
+
+def test_settling_a_transfer_keeps_the_fee_of_the_leg(prepare_db_fifo):
+    _accounts_and_assets()
+    transfer = LedgerTransaction.create_new(LedgerTransaction.Transfer, {
+        'withdrawal_timestamp': d2t(220501), 'withdrawal_account': 1, 'withdrawal': Decimal('5'),
+        'deposit_timestamp': d2t(220501), 'deposit_account': None, 'deposit': Decimal('5'),
+        'symbol_id': symbol_id_for(4, 2)})
+    _add_fee(transfer.oid(), amount='0.125', symbol_id=symbol_id_for(5, 2), kind=FeeKind.Gas)
+
+    JalDB._exec("UPDATE transfers SET deposit_account=2 WHERE oid=:oid", [(":oid", transfer.oid())], commit=True)
+
+    assert _rows_of(transfer.oid()) == [[0, 1, symbol_id_for(5, 2), '0.125', FeeKind.Gas]]
+
+
+# ... and the mirror still does its own job: while the parent column is what the application writes, a fee set there
+# reaches the table and a fee cleared there leaves it.
+def test_the_mirror_still_follows_the_parent_column(prepare_db_fifo):
+    _accounts_and_assets()
+    oid = _trade()
+
+    JalDB._exec("UPDATE trades SET fee='2.5' WHERE oid=:oid", [(":oid", oid)], commit=True)
+    assert _rows_of(oid) == [[0, 1, '', '2.5', FeeKind.Commission]]
+
+    JalDB._exec("UPDATE trades SET fee='0' WHERE oid=:oid", [(":oid", oid)], commit=True)
+    assert _rows_of(oid) == []

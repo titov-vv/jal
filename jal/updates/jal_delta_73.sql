@@ -221,6 +221,8 @@ END;
 -- Delete needs no trigger: the parent's own '*_after_delete' clears its row from 'operations' and the cascade follows.
 -- Each pair deletes and re-inserts rather than updating, because one body then covers a fee appearing, changing and
 -- being cleared. Only 'idx = 0' is theirs; a second fee written by hand is never touched.
+-- The WHEN guard keeps each update away from a fee the column doesn't describe: its 'UPDATE OF' list names the
+-- account columns too, so editing an account would otherwise delete a fee that lives only in 'fees'.
 -- A renumbering would need them by hand, as delta 71 needed 'action_details.pid': 'oid' is in no 'UPDATE OF' list.
 DROP TRIGGER IF EXISTS trades_fee_mirror_insert;
 CREATE TRIGGER trades_fee_mirror_insert AFTER INSERT ON trades FOR EACH ROW
@@ -231,6 +233,7 @@ BEGIN
 END;
 DROP TRIGGER IF EXISTS trades_fee_mirror_update;
 CREATE TRIGGER trades_fee_mirror_update AFTER UPDATE OF fee, account_id ON trades FOR EACH ROW
+WHEN CAST(NEW.fee AS REAL) <> 0 OR CAST(OLD.fee AS REAL) <> 0
 BEGIN
     DELETE FROM fees WHERE operation_id = NEW.oid AND idx = 0;
     INSERT INTO fees (operation_id, idx, account_id, symbol_id, amount, kind)
@@ -247,6 +250,7 @@ BEGIN
 END;
 DROP TRIGGER IF EXISTS transfers_fee_mirror_update;
 CREATE TRIGGER transfers_fee_mirror_update AFTER UPDATE OF fee, fee_account, fee_symbol_id, withdrawal_account, deposit_account ON transfers FOR EACH ROW
+WHEN CAST(NEW.fee AS REAL) <> 0 OR CAST(OLD.fee AS REAL) <> 0
 BEGIN
     DELETE FROM fees WHERE operation_id = NEW.oid AND idx = 0;
     INSERT INTO fees (operation_id, idx, account_id, symbol_id, amount, kind)
@@ -263,6 +267,7 @@ BEGIN
 END;
 DROP TRIGGER IF EXISTS conversions_fee_mirror_update;
 CREATE TRIGGER conversions_fee_mirror_update AFTER UPDATE OF fee_qty, fee_symbol_id, account_id ON conversions FOR EACH ROW
+WHEN CAST(NEW.fee_qty AS REAL) <> 0 OR CAST(OLD.fee_qty AS REAL) <> 0
 BEGIN
     DELETE FROM fees WHERE operation_id = NEW.oid AND idx = 0;
     INSERT INTO fees (operation_id, idx, account_id, symbol_id, amount, kind)
@@ -278,6 +283,7 @@ BEGIN
 END;
 DROP TRIGGER IF EXISTS swaps_fee_mirror_update;
 CREATE TRIGGER swaps_fee_mirror_update AFTER UPDATE OF fee_qty, fee_symbol_id, account_id ON swaps FOR EACH ROW
+WHEN CAST(NEW.fee_qty AS REAL) <> 0 OR CAST(OLD.fee_qty AS REAL) <> 0
 BEGIN
     DELETE FROM fees WHERE operation_id = NEW.oid AND idx = 0;
     INSERT INTO fees (operation_id, idx, account_id, symbol_id, amount, kind)
@@ -293,6 +299,7 @@ BEGIN
 END;
 DROP TRIGGER IF EXISTS bridges_fee_mirror_update;
 CREATE TRIGGER bridges_fee_mirror_update AFTER UPDATE OF fee_qty, fee_symbol_id, out_account_id ON bridges FOR EACH ROW
+WHEN CAST(NEW.fee_qty AS REAL) <> 0 OR CAST(OLD.fee_qty AS REAL) <> 0
 BEGIN
     DELETE FROM fees WHERE operation_id = NEW.oid AND idx = 0;
     INSERT INTO fees (operation_id, idx, account_id, symbol_id, amount, kind)
