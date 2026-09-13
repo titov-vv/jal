@@ -12,7 +12,7 @@ from PySide6.QtWidgets import QWidget
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo
 from tests.helpers import d2t, create_stocks, create_trades, create_transfers, create_bridges, \
     create_quotes, symbol_id_for, operation_id
-from constants import Setup
+from constants import Setup, BookAccount
 from jal.db.db import JalDB
 from jal.db.account import JalAccountCreator
 from jal.db.ledger import Ledger
@@ -492,3 +492,50 @@ def test_a_second_fee_survives_a_parent_write(prepare_db_fifo):
 
     assert JalDB._read_to_list("SELECT idx, amount, kind FROM fees WHERE operation_id=:oid ORDER BY idx",
                                [(":oid", oid)]) == [[0, '9', FeeKind.Commission], [1, '0.01', FeeKind.Rent]]
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# What reads it. The operation classes take their fees from this table and from nowhere else, so a row written here
+# is a fee the operation bears even when the parent column that used to hold one says nothing.
+def test_an_operation_reads_a_fee_the_parent_column_never_held(prepare_db_fifo):
+    _accounts_and_assets()
+    create_trades(1, [(d2t(220101), d2t(220101), 4, 10.0, 100.0, 0.0)])   # a trade stored without a fee
+    oid = operation_id(LedgerTransaction.Trade, 1)
+    _add_fee(oid, amount='3.5')
+
+    trade = LedgerTransaction.get_operation(LedgerTransaction.Trade, oid)
+    assert trade.fee() == Decimal('3.5')
+    assert trade.fee_account_id() == 1
+    assert JalDB._read("SELECT fee FROM trades WHERE oid=:oid", [(":oid", oid)]) == '0'
+
+
+# Two fees of one operation are all stated, in the order 'idx' fixes - which is what makes the column more than a
+# decoration (D4). Nothing writes a second one yet; the read path does not wait for that to be able to.
+def test_every_fee_of_an_operation_is_stated_in_idx_order(prepare_db_fifo):
+    _accounts_and_assets()
+    create_trades(1, [(d2t(220101), d2t(220101), 4, 10.0, 100.0, 3.0)])
+    oid = operation_id(LedgerTransaction.Trade, 1)
+    _add_fee(oid, amount='1.25', idx=1)
+
+    assert [fee.amount() for fee in LedgerTransaction.get_operation(LedgerTransaction.Trade, oid).fees()] \
+           == [Decimal('3'), Decimal('1.25')]
+
+
+# The scalar rule, which the schema used to enforce by having nowhere to put an asset fee on a trade and which the
+# routine now has to keep on its own: a charge in another denomination is an expense at its own basis and no part of
+# the deal - so it is not in fee(), not in the deal value, and not posted as money.
+def test_a_trade_fee_in_another_denomination_is_no_part_of_the_deal(prepare_db_fifo):
+    _accounts_and_assets()
+    create_quotes(5, 2, [(d2t(220101), 100.0)])
+    create_trades(1, [(d2t(220101), d2t(220101), 5, 100.0, 1.0, 0.0)])    # the gas coin to pay with
+    create_trades(1, [(d2t(220201), d2t(220201), 4, 10.0, 100.0, 3.0)])
+    oid = operation_id(LedgerTransaction.Trade, 2)
+    _add_fee(oid, amount='0.5', idx=1, symbol_id=symbol_id_for(5, 2), kind=FeeKind.Gas)
+
+    trade = LedgerTransaction.get_operation(LedgerTransaction.Trade, oid)
+    assert len(trade.fees()) == 2
+    assert trade.fee() == Decimal('3')
+    Ledger().rebuild(from_timestamp=0)
+    assert JalDB._read("SELECT SUM(CAST(amount AS REAL)) FROM ledger WHERE otype=:otype AND oid=:oid "
+                       "AND book_account=:book", [(":otype", LedgerTransaction.Trade), (":oid", oid),
+                                                  (":book", BookAccount.Costs)]) == 3.0

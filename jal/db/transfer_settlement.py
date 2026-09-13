@@ -13,6 +13,10 @@ from jal.db.operations import AssetPayment, LedgerTransaction
 from jal.db.symbol import JalSymbol
 from jal.widgets.helpers import ts2dt
 
+# The fee a transfer bears, joined onto the row that describes the leg. A transfer carries one, so it is the first
+# one - 'idx' is what fixes which (see the 'fees' table in jal_init.sql).
+FIRST_FEE = "LEFT JOIN fees AS f ON f.operation_id=t.oid AND f.idx=0 "
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Settles one-legged transfers by pairing the two records of one and the same movement.
@@ -77,8 +81,10 @@ class TransferSettlement(JalDB):
         groups = {}
         query = self._exec(
             "SELECT t.oid, t.withdrawal_timestamp, t.withdrawal_account, t.withdrawal, t.deposit_timestamp, "
-            "t.deposit_account, t.deposit, t.fee_account, t.fee, t.fee_symbol_id, t.number, t.symbol_id, t.note, "
+            "t.deposit_account, t.deposit, f.account_id AS fee_account, f.amount AS fee, "
+            "f.symbol_id AS fee_symbol_id, t.number, t.symbol_id, t.note, "
             "s.asset_id FROM transfers AS t JOIN asset_symbol AS s ON s.id=t.symbol_id "
+            + FIRST_FEE +
             "WHERE t.number!='' AND EXISTS "
             "(SELECT 1 FROM transfers AS p JOIN asset_symbol AS ps ON ps.id=p.symbol_id "
             "WHERE p.number=t.number AND ps.asset_id=s.asset_id "
@@ -514,9 +520,11 @@ class TransferSettlement(JalDB):
     # One transfer record, but only while the named end of it is still unknown - what was true when the sources were
     # asked may have been settled by anything else since.
     def _pending_leg(self, oid: int, unknown_end: str):
-        return self._read("SELECT oid, withdrawal_timestamp, withdrawal_account, withdrawal, deposit_timestamp, "
-                          "deposit_account, deposit, fee_account, fee, fee_symbol_id, number, symbol_id, note "
-                          f"FROM transfers WHERE oid=:oid AND {unknown_end} IS NULL", [(":oid", oid)], named=True)
+        return self._read("SELECT t.oid, t.withdrawal_timestamp, t.withdrawal_account, t.withdrawal, "
+                          "t.deposit_timestamp, t.deposit_account, t.deposit, f.account_id AS fee_account, "
+                          "f.amount AS fee, f.symbol_id AS fee_symbol_id, t.number, t.symbol_id, t.note "
+                          "FROM transfers AS t " + FIRST_FEE +
+                          f"WHERE t.oid=:oid AND t.{unknown_end} IS NULL", [(":oid", oid)], named=True)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Folds the arriving record into the sending one, which is the record to keep: the gas of an on-chain movement is

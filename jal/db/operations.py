@@ -488,11 +488,25 @@ class FeeCarrier:
     ExtraFee = 1000
     PART_FEE = 0           # The part a fee of this operation is POSTED into ('ledger.opart' - the default of
                            # Ledger.appendTransaction() is the same 0)
-    AssetFeeOnly = False   # True when the fee columns of the operation can only hold a charge paid in an asset (gas)
+    AssetFeeOnly = False   # True when the operation can only be charged in an asset (gas)
+    _fees = []             # Until the constructor has read them - a part may be built before it asks for the list
 
-    # Every fee this operation bears, in a stable order
+    # Every fee this operation bears, in a stable order. A class fills it in its constructor with _read_fees(),
+    # because a part may name the fee's asset or account before anything asks for the list.
     def fees(self) -> list:
-        return []
+        return self._fees
+
+    # The fees stored for this operation, in the order 'idx' fixes - the ONE place a fee is read from storage.
+    def _read_fees(self) -> list:
+        fees = []
+        query = self._exec("SELECT account_id, symbol_id, amount, kind FROM fees WHERE operation_id=:oid ORDER BY idx",
+                           [(":oid", self._oid)])
+        while query.next():
+            row = self._read_record(query, named=True)
+            symbol = JalSymbol(int(row['symbol_id'])) if row['symbol_id'] else None
+            fees.append(OperationFee(Decimal(row['amount']), jal.db.account.JalAccount(int(row['account_id'])),
+                                     symbol, int(row['kind'])))
+        return fees
 
     # The deal-maths scalar of the rule above: the fees paid in money, in the currency of the account bearing them.
     def fee(self) -> Decimal:
@@ -1129,7 +1143,7 @@ class Trade(FeeCarrier, LedgerTransaction):
         self._opart = opart
         self._view_rows = 2
         self._data = self._read("SELECT t.timestamp, t.settlement, t.number, t.account_id, "
-                                "t.symbol_id, t.qty, t.price, t.fee, t.note FROM trades AS t "
+                                "t.symbol_id, t.qty, t.price, t.note FROM trades AS t "
                                 "WHERE t.oid=:oid",
                                 [(":oid", self._oid)], named=True)
         self._timestamp = int(self._data['timestamp'])
@@ -1143,7 +1157,7 @@ class Trade(FeeCarrier, LedgerTransaction):
         self._number = self._data['number']
         self._qty = Decimal(self._data['qty'])
         self._price = Decimal(self._data['price'])
-        self._fee = Decimal(self._data['fee'])
+        self._fees = self._read_fees()
         self._note = self._data['note']
         self._peer_id = self._broker = self._account.organization()
         if self._qty < Decimal('0'):
@@ -1176,15 +1190,6 @@ class Trade(FeeCarrier, LedgerTransaction):
 
     def update_qty(self, qty: Decimal) -> None:
         self._exec("UPDATE trades SET qty=:qty WHERE oid=:oid", [(":oid", self._oid), (":qty", format_decimal(qty))])
-
-    # A trade is charged in the currency of the account it happens on, so its fee is the deal-maths scalar itself
-    # (see the scalar rule on FeeCarrier). It is stated here rather than summed by FeeCarrier.fee() because every
-    # closed deal this trade opens or closes divides it.
-    def fees(self) -> list:
-        return [OperationFee(self._fee, self._account, kind=FeeKind.Commission)] if self._fee else []
-
-    def fee(self) -> Decimal:
-        return self._fee
 
     def amount(self) -> Decimal:
         return self._price * self._qty
@@ -1272,9 +1277,11 @@ class Trade(FeeCarrier, LedgerTransaction):
             ledger.appendTransaction(self, BookAccount.Assets, deal_sign * (qty - processed_qty),
                                      asset_id=self._asset.id(), value=deal_sign * (qty - processed_qty) * self._price)
         # The money side of a trade's fee is not a payment of its own - it is already inside 'trade_value' above,
-        # which is what the deal cost the account - so only the expense is booked here.
+        # which is what the deal cost the account - so only the expense is booked here. The money side is also all
+        # of it: a charge in another denomination is not part of the deal at all (the scalar rule on FeeCarrier).
         for fee in self.fees():
-            self._post_fee_cost(ledger, fee.amount(), self.PART_FEE, self._broker, tag=self._asset.tag().id())
+            if not fee.is_asset_fee():
+                self._post_fee_cost(ledger, fee.amount(), self.PART_FEE, self._broker, tag=self._asset.tag().id())
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1335,7 +1342,7 @@ class Swap(FeeCarrier, LedgerTransaction):
         super().__init__(operation_data)
         self._data = self._read("SELECT s.timestamp, s.tx_hash, s.account_id, s.out_symbol_id, s.out_qty, "
                                 "s.in_timestamp, s.in_account_id, s.in_symbol_id, s.in_qty, s.in_tx_hash, "
-                                "s.fee_symbol_id, s.fee_qty, s.note FROM swaps AS s "
+                                "s.note FROM swaps AS s "
                                 "WHERE s.oid=:oid", [(":oid", self._oid)], named=True)
         if self._data is None:
             raise IndexError(LedgerTransaction.NoOpException)
@@ -1360,9 +1367,7 @@ class Swap(FeeCarrier, LedgerTransaction):
         else:   # A leg must be named for a cross-chain swap; default to the one that starts it
             self._opart = Swap.Outgoing if opart is None or opart == Swap.Whole else opart
         assert self._opart in [Swap.Whole, Swap.Outgoing, Swap.Incoming, Swap.Fee], "Unknown swap part"
-        self._fees = [OperationFee(Decimal(self._data['fee_qty']), self._account,
-                                   JalSymbol(self._data['fee_symbol_id']), FeeKind.Gas)] \
-            if self._data['fee_qty'] else []
+        self._fees = self._read_fees()
         symbols = {Swap.Whole: self._out_symbol, Swap.Outgoing: self._out_symbol,
                    Swap.Incoming: self._in_symbol, Swap.Fee: self._part_fee().symbol()}
         self._symbol = symbols[self._opart]
@@ -1385,9 +1390,6 @@ class Swap(FeeCarrier, LedgerTransaction):
         self._peer_id = self._leg_account().organization()
         self._view_rows = 1 if self._opart == Swap.Fee else 2   # The gas draws its own row, never a line of these
         self._value = None   # Cached disposal value of the swap in the source account currency
-
-    def fees(self) -> list:
-        return self._fees
 
     # The account the current part is booked on (the destination account only for the acquiring leg)
     def _leg_account(self):
@@ -1601,8 +1603,8 @@ class Transfer(FeeCarrier, LedgerTransaction):
         super().__init__(oid, duplicate_before)
         self._opart = opart
         self._data = self._read("SELECT t.withdrawal_timestamp, t.withdrawal_account, t.withdrawal, "
-                                "t.deposit_timestamp, t.deposit_account, t.deposit, t.fee_account, t.fee, "
-                                "t.fee_symbol_id, t.symbol_id, t.number, t.counterparty_address, t.note "
+                                "t.deposit_timestamp, t.deposit_account, t.deposit, "
+                                "t.symbol_id, t.number, t.counterparty_address, t.note "
                                 "FROM transfers AS t WHERE t.oid=:oid",
                                 [(":oid", self._oid)], named=True)
         if self._data is None:
@@ -1620,13 +1622,11 @@ class Transfer(FeeCarrier, LedgerTransaction):
         self._deposit = Decimal(self._data['deposit'])
         self._deposit_currency = JalAsset(self._deposit_account.currency()).symbol() if self._has_in else ''
         self._deposit_timestamp = int(self._data['deposit_timestamp'])
-        self._fee_account = jal.db.account.JalAccount(self._data['fee_account'])
+        self._fees = self._read_fees()
+        # The fee part is drawn on the account that bore the fee, which is a leg of the transfer or a third account
+        self._fee_account = self._part_fee().account()
         self._fee_currency = JalAsset(self._fee_account.currency()).symbol()
         self._fee_account_name = self._fee_account.name()
-        fee_symbol = JalSymbol(self._data['fee_symbol_id'])
-        self._fees = [OperationFee(Decimal(self._data['fee']), self._fee_account, fee_symbol,
-                                   FeeKind.Gas if fee_symbol.id() else FeeKind.Commission)] \
-            if self._data['fee'] else []
         self._symbol = JalSymbol(self._data['symbol_id'])
         self._asset = self._symbol.asset()
         self._number = self._data['number']
@@ -1665,12 +1665,9 @@ class Transfer(FeeCarrier, LedgerTransaction):
             return JalIcon.DEPOSIT_CLOSE
         return None
 
-    def fees(self) -> list:
-        return self._fees
-
-    # The fee of a transfer names the account that bore it, so an empty one falls back to it rather than to a leg
+    # A transfer states who bore its fee, so a transfer with no fee has no payer to fall back to either
     def _fee_payer(self):
-        return self._fee_account
+        return jal.db.account.JalAccount()
 
     # A transfer is pending while one of its two ends is still unknown (the value is in transit, or it arrived from
     # a source that hasn't been imported yet)
@@ -1973,8 +1970,10 @@ class Transfer(FeeCarrier, LedgerTransaction):
                        "WHERE oid=:oid",
                        [(":oid", self._oid), (":fee", fee), (":fee_account", fee_account_id),
                         (":fee_symbol_id", fee_symbol_id)], commit=True)
-        self._fees = [OperationFee(fee, jal.db.account.JalAccount(fee_account_id), JalSymbol(fee_symbol_id),
-                                   FeeKind.Gas if fee_symbol_id else FeeKind.Commission)]
+        self._fees = self._read_fees()
+        self._fee_account = self._part_fee().account()
+        self._fee_currency = JalAsset(self._fee_account.currency()).symbol()
+        self._fee_account_name = self._fee_account.name()
         return True
 
     # Price is undefined for transfer but method is required in FIFO processing of asset transfer
@@ -2393,7 +2392,7 @@ class Conversion(FeeCarrier, LedgerTransaction):
         # spaces have to agree - which is why PART_FEE above IS the fee part rather than a number of its own.
         self._opart = Conversion.Fee if opart == Conversion.Fee else Conversion.Whole
         self._data = self._read("SELECT c.timestamp, c.account_id, c.tx_hash, c.out_symbol_id, c.out_qty, "
-                                "c.in_symbol_id, c.in_qty, c.fee_symbol_id, c.fee_qty, c.note FROM conversions AS c "
+                                "c.in_symbol_id, c.in_qty, c.note FROM conversions AS c "
                                 "WHERE c.oid=:oid", [(":oid", self._oid)], named=True)
         if self._data is None:
             raise IndexError(LedgerTransaction.NoOpException)
@@ -2407,9 +2406,7 @@ class Conversion(FeeCarrier, LedgerTransaction):
         self._in_symbol = JalSymbol(self._data['in_symbol_id'])
         self._in_asset = self._in_symbol.asset()
         self._in_qty = Decimal(self._data['in_qty'])
-        self._fees = [OperationFee(Decimal(self._data['fee_qty']), self._account,
-                                   JalSymbol(self._data['fee_symbol_id']), FeeKind.Gas)] \
-            if self._data['fee_qty'] else []
+        self._fees = self._read_fees()
         # The converted asset is the operation's own one - it is the position FIFO consumes. The fee part disposes
         # of the gas coin instead, so it names that one (see Transfer.__init__, where a fee part does the same).
         self._symbol = self._part_fee().symbol() if self._opart == Conversion.Fee else self._out_symbol
@@ -2422,9 +2419,6 @@ class Conversion(FeeCarrier, LedgerTransaction):
         self._peer_id = self._account.organization()
         self._reconciled = self._account.reconciled_at() >= self._timestamp
         self._view_rows = 1 if is_fee else 2   # The gas draws its own row, never a third line of the conversion
-
-    def fees(self) -> list:
-        return self._fees
 
     # A conversion happens immediately
     def settlement(self) -> int:
@@ -2577,8 +2571,8 @@ class Bridge(FeeCarrier, LedgerTransaction):
         super().__init__(operation_data)
         self._opart = opart
         self._data = self._read("SELECT out_timestamp, out_account_id, out_symbol_id, out_qty, out_tx_hash, "
-                                "in_timestamp, in_account_id, in_symbol_id, in_qty, in_tx_hash, "
-                                "fee_symbol_id, fee_qty, note FROM bridges WHERE oid=:oid",
+                                "in_timestamp, in_account_id, in_symbol_id, in_qty, in_tx_hash, note "
+                                "FROM bridges WHERE oid=:oid",
                                 [(":oid", self._oid)], named=True)
         if self._data is None:
             raise IndexError(LedgerTransaction.NoOpException)
@@ -2592,9 +2586,7 @@ class Bridge(FeeCarrier, LedgerTransaction):
         self._in_symbol = JalSymbol(self._data['in_symbol_id']) if self._has_in else None
         self._out_qty = Decimal(self._data['out_qty'])
         self._in_qty = Decimal(self._data['in_qty']) if present(self._data['in_qty']) else None
-        self._fees = [OperationFee(Decimal(self._data['fee_qty']), self._out_account,
-                                   JalSymbol(self._data['fee_symbol_id']), FeeKind.Gas)] \
-            if present(self._data['fee_qty']) else []
+        self._fees = self._read_fees()
         # The bridged asset - both legs carry the same one, so the sending leg (always present) names it
         self._symbol = self._out_symbol
         self._asset = self._symbol.asset()
@@ -2619,9 +2611,6 @@ class Bridge(FeeCarrier, LedgerTransaction):
     # what it delivered. Gas, by contrast, is burned where the crossing starts.
     def _on_arrival(self) -> bool:
         return self._opart in (Bridge.Incoming, Bridge.InKindFee)
-
-    def fees(self) -> list:
-        return self._fees
 
     # Both fees of a bridge are fee rows - the gas it cost to send, and the part of the delivery it kept
     def is_fee_row(self) -> bool:

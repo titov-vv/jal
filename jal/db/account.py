@@ -231,7 +231,8 @@ class JalAccount(JalDB):
     def dump_transfers(self):
         transfers = []
         query = self._exec(
-            "SELECT * FROM transfers WHERE withdrawal_account=:id OR deposit_account=:id OR fee_account=:id",
+            "SELECT * FROM transfers WHERE withdrawal_account=:id OR deposit_account=:id "
+            "OR oid IN (SELECT operation_id FROM fees WHERE account_id=:id)",
             [(":id", self._id)])
         while query.next():
             transfers.append(self._read_record(query))

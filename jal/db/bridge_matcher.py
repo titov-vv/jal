@@ -227,8 +227,10 @@ class BridgeMatcher(JalDB):
     # 'out_timestamp' is the moment the disposal is stamped with, which is the half's own unless the pair had to
     # agree one (see _adopt) - a swap that acquires before it disposes is as wrong as a bridge that does.
     def _create_swap(self, out_oid, in_leg: dict, out_timestamp: int = None) -> int:
-        out = self._read("SELECT out_timestamp, out_account_id, out_symbol_id, out_qty, out_tx_hash, "
-                         "fee_symbol_id, fee_qty, note FROM bridges WHERE oid=:oid", [(":oid", out_oid)], named=True)
+        out = self._read("SELECT b.out_timestamp, b.out_account_id, b.out_symbol_id, b.out_qty, b.out_tx_hash, "
+                         "f.symbol_id AS fee_symbol_id, f.amount AS fee_qty, b.note FROM bridges AS b "
+                         "LEFT JOIN fees AS f ON f.operation_id=b.oid AND f.idx=0 "
+                         "WHERE b.oid=:oid", [(":oid", out_oid)], named=True)
         present = lambda v: v is not None and v != ''   # _read() returns '' (not None) for a SQL NULL
         if out_timestamp is None:
             out_timestamp = int(out['out_timestamp'])

@@ -91,16 +91,14 @@ class JalDB:
         "LEFT JOIN asset_actions AS a ON a.oid=r.action_id " \
         "UNION ALL SELECT symbol_id, withdrawal_account, withdrawal_timestamp FROM transfers " \
         "UNION ALL SELECT symbol_id, deposit_account, deposit_timestamp FROM transfers " \
-        "UNION ALL SELECT fee_symbol_id, fee_account, withdrawal_timestamp FROM transfers " \
         "UNION ALL SELECT out_symbol_id, account_id, timestamp FROM conversions " \
         "UNION ALL SELECT in_symbol_id, account_id, timestamp FROM conversions " \
-        "UNION ALL SELECT fee_symbol_id, account_id, timestamp FROM conversions " \
         "UNION ALL SELECT out_symbol_id, account_id, timestamp FROM swaps " \
         "UNION ALL SELECT in_symbol_id, COALESCE(in_account_id, account_id), COALESCE(in_timestamp, timestamp) FROM swaps " \
-        "UNION ALL SELECT fee_symbol_id, account_id, timestamp FROM swaps " \
         "UNION ALL SELECT out_symbol_id, out_account_id, out_timestamp FROM bridges " \
         "UNION ALL SELECT in_symbol_id, COALESCE(in_account_id, out_account_id), COALESCE(in_timestamp, out_timestamp) FROM bridges " \
-        "UNION ALL SELECT fee_symbol_id, out_account_id, out_timestamp FROM bridges"
+        "UNION ALL SELECT f.symbol_id, f.account_id, o.timestamp FROM fees AS f " \
+        "LEFT JOIN operations AS o ON o.id=f.operation_id"
     _tables = []
     _instances_with_cache = []
     _sql_call_count = 0
