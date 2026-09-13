@@ -14,6 +14,7 @@ from designer_plugins.plugin_jal_operations_tabs import JalOperationsTabsPlugin
 from designer_plugins.plugin_tabbed_window_area import TabbedWindowAreaPlugin
 from designer_plugins.plugin_account_type_combobox import AccountTypeComboBoxPlugin
 from designer_plugins.plugin_asset_type_combobox import AssetTypeComboBoxPlugin
+from designer_plugins.plugin_fee_widget import FeeWidgetPlugin
 
 from PySide6.QtDesigner import QPyDesignerCustomWidgetCollection
 
@@ -32,3 +33,4 @@ if __name__ == '__main__':
     QPyDesignerCustomWidgetCollection.addCustomWidget(TabbedWindowAreaPlugin())
     QPyDesignerCustomWidgetCollection.addCustomWidget(AccountTypeComboBoxPlugin())
     QPyDesignerCustomWidgetCollection.addCustomWidget(AssetTypeComboBoxPlugin())
+    QPyDesignerCustomWidgetCollection.addCustomWidget(FeeWidgetPlugin())
