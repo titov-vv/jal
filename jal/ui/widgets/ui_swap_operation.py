@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (QApplication, QCheckBox, QDateTimeEdit, QGridLayo
     QLabel, QLineEdit, QPushButton, QSizePolicy,
     QSpacerItem, QWidget)
 
+from jal.widgets.fee_widget import FeeWidget
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 
 class Ui_SwapOperation(object):
@@ -82,11 +83,11 @@ class Ui_SwapOperation(object):
 
         self.layout.addWidget(self.account_label, 1, 5, 1, 1)
 
-        self.fee_check = QCheckBox(SwapOperation)
-        self.fee_check.setObjectName(u"fee_check")
-        self.fee_check.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
+        self.fee_label = QLabel(SwapOperation)
+        self.fee_label.setObjectName(u"fee_label")
+        self.fee_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
-        self.layout.addWidget(self.fee_check, 6, 5, 1, 1)
+        self.layout.addWidget(self.fee_label, 6, 5, 1, 1)
 
         self.in_tx_hash = QLineEdit(SwapOperation)
         self.in_tx_hash.setObjectName(u"in_tx_hash")
@@ -128,11 +129,10 @@ class Ui_SwapOperation(object):
 
         self.layout.addItem(self.txHashGroupSpacer, 1, 10, 1, 1)
 
-        self.fee_qty = QLineEdit(SwapOperation)
-        self.fee_qty.setObjectName(u"fee_qty")
-        self.fee_qty.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
+        self.fee_widget = FeeWidget(SwapOperation)
+        self.fee_widget.setObjectName(u"fee_widget")
 
-        self.layout.addWidget(self.fee_qty, 6, 7, 1, 1)
+        self.layout.addWidget(self.fee_widget, 6, 7, 1, 1)
 
         self.amountGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
 
@@ -172,11 +172,6 @@ class Ui_SwapOperation(object):
 
         self.layout.addWidget(self.note, 7, 2, 1, 10)
 
-        self.fee_symbol_widget = ReferenceSelectorWidget(SwapOperation)
-        self.fee_symbol_widget.setObjectName(u"fee_symbol_widget")
-
-        self.layout.addWidget(self.fee_symbol_widget, 6, 9, 1, 1)
-
         self.main_label = QLabel(SwapOperation)
         self.main_label.setObjectName(u"main_label")
         font = QFont()
@@ -205,6 +200,7 @@ class Ui_SwapOperation(object):
 
 #if QT_CONFIG(shortcut)
         self.note_label.setBuddy(self.note)
+        self.fee_label.setBuddy(self.fee_widget)
         self.to_label.setBuddy(self.in_timestamp)
         self.main_label.setBuddy(self.cross_chain_check)
         self.from_label.setBuddy(self.timestamp)
@@ -219,10 +215,8 @@ class Ui_SwapOperation(object):
         QWidget.setTabOrder(self.in_account_widget, self.in_qty)
         QWidget.setTabOrder(self.in_qty, self.in_symbol_widget)
         QWidget.setTabOrder(self.in_symbol_widget, self.in_tx_hash)
-        QWidget.setTabOrder(self.in_tx_hash, self.fee_check)
-        QWidget.setTabOrder(self.fee_check, self.fee_qty)
-        QWidget.setTabOrder(self.fee_qty, self.fee_symbol_widget)
-        QWidget.setTabOrder(self.fee_symbol_widget, self.note)
+        QWidget.setTabOrder(self.in_tx_hash, self.fee_widget)
+        QWidget.setTabOrder(self.fee_widget, self.note)
         QWidget.setTabOrder(self.note, self.commit_button)
         QWidget.setTabOrder(self.commit_button, self.revert_button)
 
@@ -246,7 +240,7 @@ class Ui_SwapOperation(object):
         self.revert_button.setText("")
         self.date_label.setText(QCoreApplication.translate("SwapOperation", u"Date/Time", None))
         self.account_label.setText(QCoreApplication.translate("SwapOperation", u"Account", None))
-        self.fee_check.setText(QCoreApplication.translate("SwapOperation", u"Include &fee", None))
+        self.fee_label.setText(QCoreApplication.translate("SwapOperation", u"&Fee", None))
         self.to_label.setText(QCoreApplication.translate("SwapOperation", u"T&o", None))
         self.timestamp.setDisplayFormat(QCoreApplication.translate("SwapOperation", u"dd/MM/yyyy hh:mm:ss", None))
         self.tx_hash_label.setText(QCoreApplication.translate("SwapOperation", u"Tx hash", None))

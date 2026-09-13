@@ -116,12 +116,17 @@ class FeeWidget(QWidget):
         self._model.select()
         self._show_current_fee()
 
-    # The account the parent has selected, where the fee can only be borne by it. Pushed on the user's change and
-    # never on display: a stored fee whose account disagrees with its parent (an importer can write one) must not be
-    # rewritten by merely opening the operation.
+    # The account a fee attached from here is charged to. Only the default: it does not touch a fee that is already
+    # attached, so opening an operation whose stored fee names another account (an importer can write one) changes
+    # nothing about it.
+    def set_default_account(self, account_id: int):
+        self._linked_account = account_id
+
+    # The parent's account, as the USER has just changed it. Where the fee cannot be borne by any other account it
+    # follows along; where it can, this only moves the default for the next fee.
     @Slot(int)
     def set_fee_account(self, account_id: int):
-        self._linked_account = account_id
+        self.set_default_account(account_id)
         if self._current_row() is not None and not self._account_may_differ:
             self.account.selected_id = account_id
             self._mapper.submit()

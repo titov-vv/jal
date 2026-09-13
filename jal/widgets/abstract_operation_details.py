@@ -1,7 +1,7 @@
 import logging
 from PySide6.QtCore import Qt, Slot, Signal
 from PySide6.QtGui import QKeySequence
-from PySide6.QtWidgets import QWidget, QDataWidgetMapper
+from PySide6.QtWidgets import QWidget, QDataWidgetMapper, QMessageBox
 from PySide6.QtSql import QSqlTableModel
 from jal.db.db import JalDB, JalModel
 from jal.widgets.icons import JalIcon
@@ -27,6 +27,7 @@ class AbstractOperationDetails(QWidget):
         self.modified = False
         self.name = self.name = self.ui.main_label.text()
         self.operation_type = None
+        self.fee_widget = None
 
         self.ui.commit_button.setIcon(JalIcon[JalIcon.OK])
         self.ui.revert_button.setIcon(JalIcon[JalIcon.CANCEL])
@@ -48,6 +49,23 @@ class AbstractOperationDetails(QWidget):
         self.ui.commit_button.clicked.connect(self.saveChanges)
         self.ui.revert_button.clicked.connect(self.revertChanges)
 
+    # Binds the fee block of this editor to the fee of the operation. 'kinds' are the FeeKind values the operation
+    # may be charged in and 'account_may_differ' whether the fee can be borne by an account that is not its own -
+    # the whole per-type policy, which the widget then enforces alone.
+    def _init_fees(self, kinds, account_may_differ=False, precision=2):
+        self.fee_widget = self.ui.fee_widget
+        self.fee_widget.setup_fees(kinds, account_may_differ, precision, parent=self)
+        self.fee_widget.changed.connect(self.onFeeChange)
+
+    @Slot()
+    def onFeeChange(self):
+        self.onDataChange(None, None, None)
+
+    # The account a fee attached in this editor is charged to. Stated by the editor because only it knows which of
+    # the operation's accounts bears one.
+    def _fee_payer(self) -> int:
+        return 0
+
     # An operation takes its id from the 'operations' root. Done at INSERT and not in prepareNew(): a new operation
     # the user starts and then abandons never reaches here, so it leaves no id behind.
     @Slot()
@@ -55,8 +73,12 @@ class AbstractOperationDetails(QWidget):
         record.setValue("oid", JalDB().allocate_operation_id(self.operation_type))
 
     def set_id(self, oid):
+        if self.fee_widget is not None:
+            self.fee_widget.set_operation(oid)   # the child rows first, as CorporateActionWidget filters its results
         self.model.setFilter(f"oid={oid}")
         self.mapper.setCurrentModelIndex(self.model.index(0, 0))
+        if self.fee_widget is not None:
+            self.fee_widget.set_default_account(self._fee_payer())
 
     @Slot()
     def onDataChange(self, _index_start, _index_stop, _role):
@@ -66,8 +88,16 @@ class AbstractOperationDetails(QWidget):
 
     @Slot()
     def saveChanges(self):
-        if self._validated():
+        if self._validated_fee() and self._validated():
             self._save()
+
+    # The fee validates itself - the editor only reports what its widget says is wrong with it
+    def _validated_fee(self) -> bool:
+        error = self.fee_widget.validation_error() if self.fee_widget is not None else ''
+        if error:
+            QMessageBox().warning(self, self.tr("Incomplete data"), error, QMessageBox.Ok)
+            return False
+        return True
 
     def _validated(self):   # May be used in descendant classes
         return True
@@ -80,15 +110,27 @@ class AbstractOperationDetails(QWidget):
             JalDB().rollback_transaction()
             logging.fatal(self.tr("Operation submit failed: ") + self.model.lastError().text())
             return False
+        if self.fee_widget is not None and not self.fee_widget.submit(self._saved_oid()):
+            JalDB().rollback_transaction()
+            logging.fatal(self.tr("Operation fee submit failed: "))
+            return False
         JalDB().commit_transaction()
         self.modified = False
         self.ui.commit_button.setEnabled(False)
         self.ui.revert_button.setEnabled(False)
         self.dbUpdated.emit()
 
+    # The id the operation was just saved under. A new one is still filtered on 'oid = 0', so it is the id the
+    # insert took from the root - the same fallback CorporateActionWidget makes for its own children.
+    def _saved_oid(self):
+        oid = self.model.data(self.model.index(0, self.model.fieldIndex("oid")))
+        return self.model.last_insert_id() if oid is None else oid
+
     @Slot()
     def revertChanges(self):
         self.model.revertAll()
+        if self.fee_widget is not None:
+            self.fee_widget.revert()
         self.modified = False
         self.ui.commit_button.setEnabled(False)
         self.ui.revert_button.setEnabled(False)
@@ -98,6 +140,9 @@ class AbstractOperationDetails(QWidget):
             self.revertChanges()
             logging.warning(self.tr("Unsaved changes were reverted to create new operation"))
         self.model.setFilter(f"{self.table_name}.oid = 0")
+        if self.fee_widget is not None:
+            self.fee_widget.set_operation(0)
+            self.fee_widget.set_default_account(account_id)
         new_record = self.prepareNew(account_id)
         assert self.model.insertRows(0, 1)
         self.model.setRecord(0, new_record)
@@ -113,6 +158,8 @@ class AbstractOperationDetails(QWidget):
         row = self.mapper.currentIndex()
         new_record = self.copyToNew(row)
         self.model.setFilter(f"{self.table_name}.oid = 0")
+        if self.fee_widget is not None:
+            self.fee_widget.copy_to_new()
         assert self.model.insertRows(0, 1)
         self.model.setRecord(0, new_record)
         self.mapper.toLast()

@@ -394,71 +394,16 @@ def test_the_delta_and_the_init_script_declare_the_same_objects(project_root):
     with open(project_root + f"/jal/updates/{Setup.UPDATE_PREFIX}73.sql") as delta:
         from_delta = _created_objects(delta.read())
 
-    assert len(from_delta) == 31     # the table, its index, and twenty-nine triggers
+    assert len(from_delta) == 21     # the table, its index, and nineteen triggers
     for name, declaration in from_delta.items():
         assert name in from_init, f"{name} is created by the delta and by nothing else"
         assert declaration == from_init[name], name
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# The second copy. Until the fee columns are dropped, the parent column is what the application writes and 'fees'
-# follows it - written by nothing but the ten mirror triggers. What these tests watch is that the copy is complete
-# whichever of the eight write paths a fee arrives by, because from the stage that makes the ledger sequence read
-# 'fees' a fee missing from the table is a fee missing from the ledger.
-def test_every_kind_of_operation_mirrors_its_fee(prepare_db_fifo):
-    _operations_with_column_fees()
-
-    assert JalDB._read("SELECT COUNT(*) FROM fees") == 5    # a trade, a swap, a conversion, a transfer, a bridge
-    assert _stored_fees() == _sources()
-
-
-# The migration and the mirror have to say the same thing, or the parity between them would mean nothing. This is the
-# one test that compares the two directly - the same operations, stored once by each.
-def test_the_mirror_writes_what_the_migration_would_have(prepare_db_fifo, project_root):
-    _operations_with_column_fees()
-    mirrored = JalDB._read_to_list("SELECT operation_id, idx, account_id, symbol_id, amount, kind FROM fees "
-                                   "ORDER BY operation_id")
-
-    _replay_the_populate(project_root)
-
-    assert JalDB._read_to_list("SELECT operation_id, idx, account_id, symbol_id, amount, kind FROM fees "
-                               "ORDER BY operation_id") == mirrored
-
-
-def test_an_edited_fee_is_mirrored(prepare_db_fifo):
-    _operations_with_column_fees()
-    oid = operation_id(LedgerTransaction.Trade, 2)
-
-    JalDB._exec("UPDATE trades SET fee='7.5' WHERE oid=:oid", [(":oid", oid)], commit=True)
-
-    assert JalDB._read("SELECT amount FROM fees WHERE operation_id=:oid", [(":oid", oid)]) == '7.5'
-    assert JalDB._read("SELECT COUNT(*) FROM fees WHERE operation_id=:oid", [(":oid", oid)]) == 1
-    assert _stored_fees() == _sources()
-
-
-def test_a_cleared_fee_takes_its_row_with_it(prepare_db_fifo):
-    _operations_with_column_fees()
-    oid = operation_id(LedgerTransaction.Trade, 2)
-    assert JalDB._read("SELECT COUNT(*) FROM fees WHERE operation_id=:oid", [(":oid", oid)]) == 1
-
-    JalDB._exec("UPDATE trades SET fee='0' WHERE oid=:oid", [(":oid", oid)], commit=True)
-
-    assert JalDB._read("SELECT COUNT(*) FROM fees WHERE operation_id=:oid", [(":oid", oid)]) == 0
-    assert _stored_fees() == _sources()
-
-
-# A fee arriving on an operation that was stored without one - which is what an import adopting a late fee does
-def test_a_fee_added_later_is_mirrored(prepare_db_fifo):
-    _operations_with_column_fees()
-    oid = operation_id(LedgerTransaction.Trade, 1)                 # the gas-coin trade, bought without a fee
-    assert JalDB._read("SELECT COUNT(*) FROM fees WHERE operation_id=:oid", [(":oid", oid)]) == 0
-
-    JalDB._exec("UPDATE trades SET fee='0.25' WHERE oid=:oid", [(":oid", oid)], commit=True)
-
-    assert JalDB._read("SELECT amount FROM fees WHERE operation_id=:oid", [(":oid", oid)]) == '0.25'
-    assert _stored_fees() == _sources()
-
-
+# The write paths that never see the operation dictionary. A fee written by one of them still has to reach the
+# table, because a fee missing from it is a fee missing from the ledger.
+#
 # 'Transfer.update_fee()' is what a statement import calls when it brings a fee for a transfer JAL already stores -
 # the gas of a movement whose other side reached the database first, and which would otherwise be lost with the
 # record that brought it
@@ -474,18 +419,20 @@ def test_a_fee_adopted_after_the_transfer_is_stored(prepare_db_fifo):
     assert not Transfer(oid).update_fee(Decimal('0.9'), 2, None)   # a transfer has one fee, whoever paid it
 
 
-# The editors are the other path that never sees the operation dictionary: they insert and update through a Qt model,
-# which writes its own SQL. The trigger does not care, which is the whole reason the copy is kept in the database.
-def test_the_editor_mirrors_the_fee_it_saves(prepare_db_fifo):
+# The editors are the other one: they write through a Qt model, and their fee is a child row of its own that the
+# parent's save has to carry with it.
+def test_the_editor_stores_the_fee_it_saves(prepare_db_fifo):
     _accounts_and_assets()
     parent = QWidget()          # a parentless dialog is collected in a way that aborts the process
     widget = TradeWidget(parent=parent)
     widget.createNew(account_id=1)
     record = widget.model.record(0)
-    for field, value in (("symbol_id", symbol_id_for(4, 2)), ("qty", '10'), ("price", '100'),
-                         ("fee", '1.75'), ("note", '')):
+    for field, value in (("symbol_id", symbol_id_for(4, 2)), ("qty", '10'), ("price", '100'), ("note", '')):
         record.setValue(field, value)
     widget.model.setRecord(0, record)
+    widget.fee_widget.attach()
+    widget.fee_widget.amount.setText('1.75')
+    widget.fee_widget._mapper.submit()
 
     widget._save()
 
@@ -494,26 +441,28 @@ def test_the_editor_mirrors_the_fee_it_saves(prepare_db_fifo):
                                [(":oid", oid)]) == [[1, '', '1.75', FeeKind.Commission]]
 
     widget.set_id(oid)                       # ... and the same editor re-opened on it, changing the fee
-    record = widget.model.record(0)
-    record.setValue("fee", '2.5')
-    widget.model.setRecord(0, record)
+    widget.fee_widget.amount.setText('2.5')
+    widget.fee_widget._mapper.submit()
     widget._save()
 
     assert JalDB._read("SELECT amount FROM fees WHERE operation_id=:oid", [(":oid", oid)]) == '2.5'
-    assert _stored_fees() == _sources()
+    assert _fees_of(oid) == 1                # changed, not added to
 
 
-# The mirror owns 'idx = 0' and nothing else. A second fee - the Solana rent, a charge on the other leg of a transfer -
-# is written by hand until the write path moves, and a parent being saved must not sweep it away.
-def test_a_second_fee_survives_a_parent_write(prepare_db_fifo):
-    _operations_with_fees()
-    oid = operation_id(LedgerTransaction.Trade, 2)
-    _add_fee(oid, amount='0.01', idx=1, kind=FeeKind.Rent)
+# The editor detaches a fee as it attaches one, and the row goes at the save
+def test_the_editor_detaches_a_fee(prepare_db_fifo):
+    _accounts_and_assets()
+    parent = QWidget()
+    create_trades(1, [(d2t(220101), d2t(220101), 4, 10.0, 100.0, 3.0)])
+    oid = operation_id(LedgerTransaction.Trade, 1)
+    widget = TradeWidget(parent=parent)
+    widget.set_id(oid)
+    assert widget.fee_widget.fees()[0]['amount'] == Decimal('3')
 
-    JalDB._exec("UPDATE trades SET fee='9' WHERE oid=:oid", [(":oid", oid)], commit=True)
+    widget.fee_widget.detach()
+    widget._save()
 
-    assert JalDB._read_to_list("SELECT idx, amount, kind FROM fees WHERE operation_id=:oid ORDER BY idx",
-                               [(":oid", oid)]) == [[0, '9', FeeKind.Commission], [1, '0.01', FeeKind.Rent]]
+    assert _fees_of(oid) == 0
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -643,7 +592,7 @@ def test_the_companion_normalises_every_stored_fee(prepare_db_fifo):
     importlib.import_module(f"jal.updates.{Setup.UPDATE_PREFIX}73").update()
 
     assert JalDB._read("SELECT fee FROM trades WHERE oid=:oid", [(":oid", oid)]) == '4.5'
-    assert [row[3] for row in _rows_of(oid)] == ['4.5', '2', '3']
+    assert [row[3] for row in _rows_of(oid)] == ['1.5', '2', '3']
 
 
 # What tells two fees apart is what the fee IS - who bore it, in what, how much and what sort of charge. 'idx' is
@@ -656,43 +605,3 @@ def test_a_fee_differing_in_any_identifying_field_is_a_different_fee(prepare_db_
     _trade(fees=[_fee('3', symbol_id=symbol_id_for(5, 2), kind=FeeKind.Gas)])  # paid in an asset
     _trade(fees=[_fee('3', kind=FeeKind.Rent)])                               # another sort of charge
     assert [row[0] for row in _rows_of(oid)] == [0, 1, 2, 3]
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-# The mirror's reach. Its 'UPDATE OF' lists name the ACCOUNT columns as well as the fee ones, so without a guard any
-# statement that moves an operation to another account would delete a fee that was written straight to the table -
-# and settling a pending transfer does exactly that. The guard is what lets the two write paths overlap.
-def test_a_fee_written_straight_to_the_table_survives_an_account_edit(prepare_db_fifo):
-    _accounts_and_assets()
-    oid = _trade()
-    _add_fee(oid, amount='3')
-
-    JalDB._exec("UPDATE trades SET account_id=2 WHERE oid=:oid", [(":oid", oid)], commit=True)
-
-    assert _rows_of(oid) == [[0, 1, '', '3', FeeKind.Commission]]
-
-
-def test_settling_a_transfer_keeps_the_fee_of_the_leg(prepare_db_fifo):
-    _accounts_and_assets()
-    transfer = LedgerTransaction.create_new(LedgerTransaction.Transfer, {
-        'withdrawal_timestamp': d2t(220501), 'withdrawal_account': 1, 'withdrawal': Decimal('5'),
-        'deposit_timestamp': d2t(220501), 'deposit_account': None, 'deposit': Decimal('5'),
-        'symbol_id': symbol_id_for(4, 2)})
-    _add_fee(transfer.oid(), amount='0.125', symbol_id=symbol_id_for(5, 2), kind=FeeKind.Gas)
-
-    JalDB._exec("UPDATE transfers SET deposit_account=2 WHERE oid=:oid", [(":oid", transfer.oid())], commit=True)
-
-    assert _rows_of(transfer.oid()) == [[0, 1, symbol_id_for(5, 2), '0.125', FeeKind.Gas]]
-
-
-# ... and the mirror still does its own job: while the parent column is what the application writes, a fee set there
-# reaches the table and a fee cleared there leaves it.
-def test_the_mirror_still_follows_the_parent_column(prepare_db_fifo):
-    _accounts_and_assets()
-    oid = _trade()
-
-    JalDB._exec("UPDATE trades SET fee='2.5' WHERE oid=:oid", [(":oid", oid)], commit=True)
-    assert _rows_of(oid) == [[0, 1, '', '2.5', FeeKind.Commission]]
-
-    JalDB._exec("UPDATE trades SET fee='0' WHERE oid=:oid", [(":oid", oid)], commit=True)
-    assert _rows_of(oid) == []

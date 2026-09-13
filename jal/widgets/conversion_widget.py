@@ -4,11 +4,10 @@ from PySide6.QtCore import Qt, Slot, QByteArray
 from PySide6.QtWidgets import QMessageBox
 from jal.ui.widgets.ui_conversion_operation import Ui_ConversionOperation
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
-from jal.widgets.helpers import set_visible_retaining_size
 from jal.widgets.delegates import WidgetMapperDelegateBase
 from jal.widgets.reference_dialogs import AccountListDialog
 from jal.widgets.assets_dialogs import SymbolListDialog
-from jal.db.operations import LedgerTransaction
+from jal.db.operations import LedgerTransaction, FeeKind
 from jal.db.helpers import db_row2dict, now_ts
 from jal.db.symbol import JalSymbol
 from jal.db.common_models import AccountListModel
@@ -21,8 +20,7 @@ class ConversionWidgetDelegate(WidgetMapperDelegateBase):
         super().__init__(parent=parent)
         self.delegates = {'timestamp': self.timestamp_delegate,
                           'out_qty': self.decimal_long_delegate,
-                          'in_qty': self.decimal_long_delegate,
-                          'fee_qty': self.decimal_long_delegate}
+                          'in_qty': self.decimal_long_delegate}
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -34,20 +32,17 @@ class ConversionWidget(AbstractOperationDetails):
         self.ui.account_widget.setup_selector(AccountListModel, AccountListDialog, self)
         self.ui.out_symbol_widget.setup_selector(SymbolsListModel, SymbolListDialog, self)
         self.ui.in_symbol_widget.setup_selector(SymbolsListModel, SymbolListDialog, self)
-        self.ui.fee_symbol_widget.setup_selector(SymbolsListModel, SymbolListDialog, self)
 
-        self.ui.fee_symbol_widget.setValidation(False)
 
-        self.ui.fee_check.clicked.connect(self.fee_toggled)
 
         super()._init_db("conversions")
+        super()._init_fees([FeeKind.Gas], precision=2)   # on-chain gas, burned in a coin of the chain
         self.mapper.setItemDelegate(ConversionWidgetDelegate(self.mapper))
 
         self.ui.account_widget.changed.connect(self.mapper.submit)
+        self.ui.account_widget.changed.connect(self.fee_account_changed)
         self.ui.out_symbol_widget.changed.connect(self.mapper.submit)
         self.ui.in_symbol_widget.changed.connect(self.mapper.submit)
-        self.ui.fee_symbol_widget.changed.connect(self.mapper.submit)
-        self.mapper.currentIndexChanged.connect(self.record_changed)
 
         self.mapper.addMapping(self.ui.timestamp, self.model.fieldIndex("timestamp"))
         self.mapper.addMapping(self.ui.account_widget, self.model.fieldIndex("account_id"))
@@ -56,11 +51,17 @@ class ConversionWidget(AbstractOperationDetails):
         self.mapper.addMapping(self.ui.out_qty, self.model.fieldIndex("out_qty"))
         self.mapper.addMapping(self.ui.in_symbol_widget, self.model.fieldIndex("in_symbol_id"))
         self.mapper.addMapping(self.ui.in_qty, self.model.fieldIndex("in_qty"))
-        self.mapper.addMapping(self.ui.fee_symbol_widget, self.model.fieldIndex("fee_symbol_id"), QByteArray("selected_id_str"))
-        self.mapper.addMapping(self.ui.fee_qty, self.model.fieldIndex("fee_qty"))
         self.mapper.addMapping(self.ui.note, self.model.fieldIndex("note"))
 
         self.model.select()
+
+    # A conversion happens on one account, which pays the gas
+    def _fee_payer(self) -> int:
+        return self.ui.account_widget.selected_id
+
+    @Slot()
+    def fee_account_changed(self):
+        self.fee_widget.set_fee_account(self._fee_payer())
 
     def _validated(self):
         fields = db_row2dict(self.model, 0)
@@ -79,18 +80,7 @@ class ConversionWidget(AbstractOperationDetails):
         except (InvalidOperation, TypeError):
             QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("Conversion quantities should be positive"), QMessageBox.Ok)
             return False
-        # Set related fields NULL if we don't have fee. This is required for correct conversion processing
-        if not fields['fee_qty'] or Decimal(fields['fee_qty']) == Decimal('0'):
-            self.model.setData(self.model.index(0, self.model.fieldIndex("fee_symbol_id")), None)
-            self.model.setData(self.model.index(0, self.model.fieldIndex("fee_qty")), None)
-        elif fields['fee_symbol_id'] in (0, '0'):
-            QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("A symbol isn't chosen for the conversion fee"), QMessageBox.Ok)
-            return False
         return True
-
-    def revertChanges(self):
-        super().revertChanges()
-        self.record_changed(0)
 
     def prepareNew(self, account_id):
         new_record = super().prepareNew(account_id)
@@ -101,8 +91,6 @@ class ConversionWidget(AbstractOperationDetails):
         new_record.setValue("out_qty", '0')
         new_record.setValue("in_symbol_id", 0)
         new_record.setValue("in_qty", '0')
-        new_record.setNull("fee_symbol_id")
-        new_record.setValue("fee_qty", '0')
         new_record.setValue("note", None)
         return new_record
 
@@ -112,24 +100,3 @@ class ConversionWidget(AbstractOperationDetails):
         new_record.setValue("timestamp", now_ts())
         return new_record
 
-    @Slot()
-    def record_changed(self, idx):
-        if self.ui.fee_symbol_widget.selected_id:
-            self.ui.fee_check.setCheckState(Qt.CheckState.Checked)
-            self.set_fee_data_visible(True)
-        else:
-            self.ui.fee_check.setCheckState(Qt.CheckState.Unchecked)
-            self.set_fee_data_visible(False)
-
-    def set_fee_data_visible(self, visible: bool):
-        set_visible_retaining_size(self.ui.fee_symbol_widget, visible)
-        set_visible_retaining_size(self.ui.fee_qty, visible)
-
-    @Slot()
-    def fee_toggled(self, _state):
-        with_fee = self.ui.fee_check.isChecked()
-        self.set_fee_data_visible(with_fee)
-        if not with_fee:
-            self.ui.fee_symbol_widget.selected_id = 0
-            self.ui.fee_qty.setText('')
-        self.mapper.submit()

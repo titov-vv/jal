@@ -15,10 +15,11 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QCheckBox, QDateTimeEdit, QGridLayout,
-    QHBoxLayout, QLabel, QLineEdit, QPushButton,
-    QSizePolicy, QSpacerItem, QWidget)
+from PySide6.QtWidgets import (QApplication, QDateTimeEdit, QGridLayout, QHBoxLayout,
+    QLabel, QLineEdit, QPushButton, QSizePolicy,
+    QSpacerItem, QWidget)
 
+from jal.widgets.fee_widget import FeeWidget
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 
 class Ui_ConversionOperation(object):
@@ -142,29 +143,16 @@ class Ui_ConversionOperation(object):
 
         self.layout.addWidget(self.basis_hint, 3, 5, 1, 2)
 
-        self.fee_check = QCheckBox(ConversionOperation)
-        self.fee_check.setObjectName(u"fee_check")
-        self.fee_check.setLayoutDirection(Qt.LayoutDirection.RightToLeft)
+        self.fee_label = QLabel(ConversionOperation)
+        self.fee_label.setObjectName(u"fee_label")
+        self.fee_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
-        self.layout.addWidget(self.fee_check, 4, 0, 1, 1)
+        self.layout.addWidget(self.fee_label, 4, 0, 1, 1)
 
-        self.feeQtyBox = QHBoxLayout()
-        self.feeQtyBox.setSpacing(3)
-        self.feeQtyBox.setObjectName(u"feeQtyBox")
-        self.feeQtyBox.setContentsMargins(0, 0, 0, 0)
-        self.fee_qty = QLineEdit(ConversionOperation)
-        self.fee_qty.setObjectName(u"fee_qty")
-        self.fee_qty.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
+        self.fee_widget = FeeWidget(ConversionOperation)
+        self.fee_widget.setObjectName(u"fee_widget")
 
-        self.feeQtyBox.addWidget(self.fee_qty)
-
-        self.fee_symbol_widget = ReferenceSelectorWidget(ConversionOperation)
-        self.fee_symbol_widget.setObjectName(u"fee_symbol_widget")
-
-        self.feeQtyBox.addWidget(self.fee_symbol_widget)
-
-
-        self.layout.addLayout(self.feeQtyBox, 4, 1, 1, 3)
+        self.layout.addWidget(self.fee_widget, 4, 1, 1, 3)
 
         self.note_label = QLabel(ConversionOperation)
         self.note_label.setObjectName(u"note_label")
@@ -191,6 +179,7 @@ class Ui_ConversionOperation(object):
         self.tx_hash_label.setBuddy(self.tx_hash)
         self.converted_label.setBuddy(self.out_qty)
         self.received_label.setBuddy(self.in_qty)
+        self.fee_label.setBuddy(self.fee_widget)
         self.note_label.setBuddy(self.note)
 #endif // QT_CONFIG(shortcut)
         QWidget.setTabOrder(self.timestamp, self.account_widget)
@@ -199,10 +188,8 @@ class Ui_ConversionOperation(object):
         QWidget.setTabOrder(self.out_qty, self.out_symbol_widget)
         QWidget.setTabOrder(self.out_symbol_widget, self.in_qty)
         QWidget.setTabOrder(self.in_qty, self.in_symbol_widget)
-        QWidget.setTabOrder(self.in_symbol_widget, self.fee_check)
-        QWidget.setTabOrder(self.fee_check, self.fee_qty)
-        QWidget.setTabOrder(self.fee_qty, self.fee_symbol_widget)
-        QWidget.setTabOrder(self.fee_symbol_widget, self.note)
+        QWidget.setTabOrder(self.in_symbol_widget, self.fee_widget)
+        QWidget.setTabOrder(self.fee_widget, self.note)
         QWidget.setTabOrder(self.note, self.commit_button)
         QWidget.setTabOrder(self.commit_button, self.revert_button)
 
@@ -229,7 +216,7 @@ class Ui_ConversionOperation(object):
         self.converted_label.setText(QCoreApplication.translate("ConversionOperation", u"C&onverted", None))
         self.received_label.setText(QCoreApplication.translate("ConversionOperation", u"R&eceived", None))
         self.basis_hint.setText(QCoreApplication.translate("ConversionOperation", u"Cost basis is carried over - no profit or loss is realized", None))
-        self.fee_check.setText(QCoreApplication.translate("ConversionOperation", u"Include &fee", None))
+        self.fee_label.setText(QCoreApplication.translate("ConversionOperation", u"&Fee", None))
         self.note_label.setText(QCoreApplication.translate("ConversionOperation", u"&Note", None))
     # retranslateUi
 

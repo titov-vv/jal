@@ -4,11 +4,10 @@ from PySide6.QtCore import Qt, Slot, QByteArray
 from PySide6.QtWidgets import QMessageBox
 from jal.ui.widgets.ui_bridge_operation import Ui_BridgeOperation
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
-from jal.widgets.helpers import set_visible_retaining_size
 from jal.widgets.delegates import WidgetMapperDelegateBase
 from jal.widgets.reference_dialogs import AccountListDialog
 from jal.widgets.assets_dialogs import SymbolListDialog
-from jal.db.operations import LedgerTransaction
+from jal.db.operations import LedgerTransaction, FeeKind
 from jal.db.helpers import db_row2dict, now_ts
 from jal.db.symbol import JalSymbol
 from jal.db.common_models import AccountListModel
@@ -22,8 +21,7 @@ class BridgeWidgetDelegate(WidgetMapperDelegateBase):
         self.delegates = {'out_timestamp': self.timestamp_delegate,
                           'in_timestamp': self.timestamp_delegate,
                           'out_qty': self.decimal_long_delegate,
-                          'in_qty': self.decimal_long_delegate,
-                          'fee_qty': self.decimal_long_delegate}
+                          'in_qty': self.decimal_long_delegate}
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -36,26 +34,23 @@ class BridgeWidget(AbstractOperationDetails):
         self.ui.to_account_widget.setup_selector(AccountListModel, AccountListDialog, self)
         self.ui.out_symbol_widget.setup_selector(SymbolsListModel, SymbolListDialog, self)
         self.ui.in_symbol_widget.setup_selector(SymbolsListModel, SymbolListDialog, self)
-        self.ui.fee_symbol_widget.setup_selector(SymbolsListModel, SymbolListDialog, self)
 
-        self.ui.fee_symbol_widget.setValidation(False)
         # The arriving leg is empty while the bridge is a pending half, so neither of its selectors may demand a value
         self.ui.to_account_widget.setValidation(False)
         self.ui.in_symbol_widget.setValidation(False)
 
         self.ui.copy_date_btn.clicked.connect(self.onCopyDate)
         self.ui.copy_amount_btn.clicked.connect(self.onCopyAmount)
-        self.ui.fee_check.clicked.connect(self.fee_toggled)
 
         super()._init_db("bridges")
+        super()._init_fees([FeeKind.Gas], precision=2)   # on-chain gas, burned in a coin of the chain
         self.mapper.setItemDelegate(BridgeWidgetDelegate(self.mapper))
 
         self.ui.from_account_widget.changed.connect(self.mapper.submit)
+        self.ui.from_account_widget.changed.connect(self.fee_account_changed)
         self.ui.to_account_widget.changed.connect(self.mapper.submit)
         self.ui.out_symbol_widget.changed.connect(self.mapper.submit)
         self.ui.in_symbol_widget.changed.connect(self.mapper.submit)
-        self.ui.fee_symbol_widget.changed.connect(self.mapper.submit)
-        self.mapper.currentIndexChanged.connect(self.record_changed)
 
         self.mapper.addMapping(self.ui.out_timestamp, self.model.fieldIndex("out_timestamp"))
         self.mapper.addMapping(self.ui.from_account_widget, self.model.fieldIndex("out_account_id"))
@@ -65,8 +60,6 @@ class BridgeWidget(AbstractOperationDetails):
         self.mapper.addMapping(self.ui.to_account_widget, self.model.fieldIndex("in_account_id"), QByteArray("selected_id_str"))
         self.mapper.addMapping(self.ui.in_qty, self.model.fieldIndex("in_qty"))
         self.mapper.addMapping(self.ui.in_symbol_widget, self.model.fieldIndex("in_symbol_id"), QByteArray("selected_id_str"))
-        self.mapper.addMapping(self.ui.fee_symbol_widget, self.model.fieldIndex("fee_symbol_id"), QByteArray("selected_id_str"))
-        self.mapper.addMapping(self.ui.fee_qty, self.model.fieldIndex("fee_qty"))
         self.mapper.addMapping(self.ui.out_tx_hash, self.model.fieldIndex("out_tx_hash"))
         self.mapper.addMapping(self.ui.in_tx_hash, self.model.fieldIndex("in_tx_hash"))
         self.mapper.addMapping(self.ui.note, self.model.fieldIndex("note"))
@@ -77,6 +70,14 @@ class BridgeWidget(AbstractOperationDetails):
     @staticmethod
     def _empty(value) -> bool:
         return value in (0, '0', '', None)
+
+    # Gas is burned on the source chain, so the sending account pays it
+    def _fee_payer(self) -> int:
+        return self.ui.from_account_widget.selected_id
+
+    @Slot()
+    def fee_account_changed(self):
+        self.fee_widget.set_fee_account(self._fee_payer())
 
     def _validated(self):
         fields = db_row2dict(self.model, 0)
@@ -98,7 +99,7 @@ class BridgeWidget(AbstractOperationDetails):
             for field in ("in_timestamp", "in_account_id", "in_symbol_id", "in_qty"):
                 self.model.setData(self.model.index(0, self.model.fieldIndex(field)), None)
             self.model.setData(self.model.index(0, self.model.fieldIndex("in_tx_hash")), '')
-            return self._validated_fee(fields)
+            return True
         if self._empty(fields['in_account_id']) or self._empty(fields['in_symbol_id']):
             QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("Both the account and the symbol should be set for a received asset (leave the whole leg empty if it hasn't arrived yet)"), QMessageBox.Ok)
             return False
@@ -120,21 +121,7 @@ class BridgeWidget(AbstractOperationDetails):
         except (InvalidOperation, TypeError):
             QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("Bridge quantities should be positive"), QMessageBox.Ok)
             return False
-        return self._validated_fee(fields)
-
-    def _validated_fee(self, fields) -> bool:
-        # Set related fields NULL if we don't have fee. This is required for correct bridge processing
-        if not fields['fee_qty'] or Decimal(fields['fee_qty']) == Decimal('0'):
-            self.model.setData(self.model.index(0, self.model.fieldIndex("fee_symbol_id")), None)
-            self.model.setData(self.model.index(0, self.model.fieldIndex("fee_qty")), None)
-        elif fields['fee_symbol_id'] in (0, '0'):
-            QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("A symbol isn't chosen for the bridge fee"), QMessageBox.Ok)
-            return False
         return True
-
-    def revertChanges(self):
-        super().revertChanges()
-        self.record_changed(0)
 
     def prepareNew(self, account_id):
         new_record = super().prepareNew(account_id)
@@ -146,8 +133,6 @@ class BridgeWidget(AbstractOperationDetails):
         new_record.setNull("in_account_id")
         new_record.setNull("in_symbol_id")
         new_record.setNull("in_qty")
-        new_record.setNull("fee_symbol_id")
-        new_record.setValue("fee_qty", '0')
         new_record.setValue("out_tx_hash", None)
         new_record.setValue("in_tx_hash", None)
         new_record.setValue("note", None)
@@ -171,24 +156,3 @@ class BridgeWidget(AbstractOperationDetails):
         self.ui.in_qty.setText(self.ui.out_qty.text())
         self.mapper.submit()
 
-    @Slot()
-    def record_changed(self, idx):
-        if self.ui.fee_symbol_widget.selected_id:
-            self.ui.fee_check.setCheckState(Qt.CheckState.Checked)
-            self.set_fee_data_visible(True)
-        else:
-            self.ui.fee_check.setCheckState(Qt.CheckState.Unchecked)
-            self.set_fee_data_visible(False)
-
-    def set_fee_data_visible(self, visible: bool):
-        set_visible_retaining_size(self.ui.fee_symbol_widget, visible)
-        set_visible_retaining_size(self.ui.fee_qty, visible)
-
-    @Slot()
-    def fee_toggled(self, _state):
-        with_fee = self.ui.fee_check.isChecked()
-        self.set_fee_data_visible(with_fee)
-        if not with_fee:
-            self.ui.fee_symbol_widget.selected_id = 0
-            self.ui.fee_qty.setText('')
-        self.mapper.submit()

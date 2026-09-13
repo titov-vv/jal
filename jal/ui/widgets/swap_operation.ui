@@ -107,12 +107,15 @@
     </widget>
    </item>
    <item row="6" column="5">
-    <widget class="QCheckBox" name="fee_check">
-     <property name="layoutDirection">
-      <enum>Qt::LayoutDirection::LeftToRight</enum>
-     </property>
+    <widget class="QLabel" name="fee_label">
      <property name="text">
-      <string>Include &amp;fee</string>
+      <string>&amp;Fee</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+     </property>
+     <property name="buddy">
+      <cstring>fee_widget</cstring>
      </property>
     </widget>
    </item>
@@ -197,11 +200,7 @@
     </spacer>
    </item>
    <item row="6" column="7">
-    <widget class="QLineEdit" name="fee_qty">
-     <property name="alignment">
-      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-     </property>
-    </widget>
+    <widget class="FeeWidget" name="fee_widget" native="true"/>
    </item>
    <item row="1" column="6">
     <spacer name="amountGroupSpacer">
@@ -274,9 +273,6 @@
    <item row="7" column="2" colspan="10">
     <widget class="QLineEdit" name="note"/>
    </item>
-   <item row="6" column="9">
-    <widget class="ReferenceSelectorWidget" name="fee_symbol_widget"/>
-   </item>
    <item row="0" column="0">
     <widget class="QLabel" name="main_label">
      <property name="font">
@@ -329,6 +325,12 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>FeeWidget</class>
+   <extends>QWidget</extends>
+   <header>jal/widgets/fee_widget.h</header>
+   <container>0</container>
+  </customwidget>
+  <customwidget>
    <class>ReferenceSelectorWidget</class>
    <extends>QWidget</extends>
    <header>jal/widgets/reference_selector.h</header>
@@ -347,9 +349,7 @@
   <tabstop>in_qty</tabstop>
   <tabstop>in_symbol_widget</tabstop>
   <tabstop>in_tx_hash</tabstop>
-  <tabstop>fee_check</tabstop>
-  <tabstop>fee_qty</tabstop>
-  <tabstop>fee_symbol_widget</tabstop>
+  <tabstop>fee_widget</tabstop>
   <tabstop>note</tabstop>
   <tabstop>commit_button</tabstop>
   <tabstop>revert_button</tabstop>

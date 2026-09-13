@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (QApplication, QDateEdit, QDateTimeEdit, QGridLayo
     QSizePolicy, QSpacerItem, QWidget)
 
 from jal.widgets.account_select import AccountCurrencyLabel
+from jal.widgets.fee_widget import FeeWidget
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 
 class Ui_TradeOperation(object):
@@ -65,23 +66,10 @@ class Ui_TradeOperation(object):
 
         self.layout.addLayout(self.priceCurrencyBox, 2, 10, 1, 1)
 
-        self.feeCurrencyBox = QHBoxLayout()
-        self.feeCurrencyBox.setSpacing(3)
-        self.feeCurrencyBox.setObjectName(u"feeCurrencyBox")
-        self.feeCurrencyBox.setContentsMargins(0, 0, 0, 0)
-        self.fee_edit = QLineEdit(TradeOperation)
-        self.fee_edit.setObjectName(u"fee_edit")
-        self.fee_edit.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
+        self.fee_widget = FeeWidget(TradeOperation)
+        self.fee_widget.setObjectName(u"fee_widget")
 
-        self.feeCurrencyBox.addWidget(self.fee_edit)
-
-        self.currency_fee = AccountCurrencyLabel(TradeOperation)
-        self.currency_fee.setObjectName(u"currency_fee")
-
-        self.feeCurrencyBox.addWidget(self.currency_fee)
-
-
-        self.layout.addLayout(self.feeCurrencyBox, 3, 10, 1, 1)
+        self.layout.addWidget(self.fee_widget, 3, 10, 1, 1)
 
         self.date_label = QLabel(TradeOperation)
         self.date_label.setObjectName(u"date_label")
@@ -201,7 +189,7 @@ class Ui_TradeOperation(object):
         self.settlement_label.setBuddy(self.settlement_editor)
         self.comment_label.setBuddy(self.note)
         self.account_label.setBuddy(self.account_widget)
-        self.fee_label.setBuddy(self.fee_edit)
+        self.fee_label.setBuddy(self.fee_widget)
         self.qty_label.setBuddy(self.qty_edit)
         self.number_label.setBuddy(self.number)
 #endif // QT_CONFIG(shortcut)
@@ -211,8 +199,8 @@ class Ui_TradeOperation(object):
         QWidget.setTabOrder(self.account_widget, self.symbol_widget)
         QWidget.setTabOrder(self.symbol_widget, self.qty_edit)
         QWidget.setTabOrder(self.qty_edit, self.price_edit)
-        QWidget.setTabOrder(self.price_edit, self.fee_edit)
-        QWidget.setTabOrder(self.fee_edit, self.note)
+        QWidget.setTabOrder(self.price_edit, self.fee_widget)
+        QWidget.setTabOrder(self.fee_widget, self.note)
         QWidget.setTabOrder(self.note, self.commit_button)
         QWidget.setTabOrder(self.commit_button, self.revert_button)
 
@@ -229,7 +217,6 @@ class Ui_TradeOperation(object):
 #endif // QT_CONFIG(tooltip)
         self.commit_button.setText("")
         self.currency_price.setText(QCoreApplication.translate("TradeOperation", u"CUR", None))
-        self.currency_fee.setText(QCoreApplication.translate("TradeOperation", u"CUR", None))
         self.date_label.setText(QCoreApplication.translate("TradeOperation", u"D&ate/Time", None))
         self.symbol_label.setText(QCoreApplication.translate("TradeOperation", u"Ass&et", None))
         self.main_label.setText(QCoreApplication.translate("TradeOperation", u"Buy / Sell", None))

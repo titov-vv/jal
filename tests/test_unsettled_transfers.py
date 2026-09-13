@@ -1140,9 +1140,9 @@ def test_legs_on_two_accounts_become_a_cross_chain_swap(wallets):
 # A fee a leg paid is money that was really spent, so it moves onto the swap rather than vanishing with the row
 def test_the_fee_of_a_leg_is_carried_onto_the_swap(wallets):
     sent, arrived, _other = _swap_pair()
-    JalDB()._exec("UPDATE transfers SET fee=:fee, fee_account=:account, fee_symbol_id=:symbol WHERE oid=:oid",
-                  [(":fee", Decimal('0.5')), (":account", WALLET_A), (":symbol", symbol_id_for(USDT)),
-                   (":oid", sent)], commit=True)
+    JalDB()._exec("INSERT INTO fees (operation_id, idx, account_id, symbol_id, amount, kind) "
+                  "VALUES (:oid, 0, :account, :symbol, :amount, 1)",
+                  [(":oid", sent), (":account", WALLET_A), (":symbol", symbol_id_for(USDT)), (":amount", Decimal('0.5'))], commit=True)
 
     assert TransferSettlement().convert_to_swap(sent, arrived) == ''
 
@@ -1233,11 +1233,12 @@ def test_the_ledger_processes_the_converted_swap(wallets):
 # with part of it dropped
 def test_conversion_refuses_fees_one_swap_cannot_hold(wallets):
     sent, arrived, other = _swap_pair()
-    JalDB()._exec("UPDATE transfers SET fee=:fee, fee_account=:account, fee_symbol_id=:symbol WHERE oid=:oid",
-                  [(":fee", Decimal('0.5')), (":account", WALLET_A), (":symbol", symbol_id_for(USDT)), (":oid", sent)])
-    JalDB()._exec("UPDATE transfers SET fee=:fee, fee_account=:account, fee_symbol_id=:symbol WHERE oid=:oid",
-                  [(":fee", Decimal('0.5')), (":account", WALLET_A), (":symbol", other), (":oid", arrived)],
-                  commit=True)
+    JalDB()._exec("INSERT INTO fees (operation_id, idx, account_id, symbol_id, amount, kind) "
+                  "VALUES (:oid, 0, :account, :symbol, :amount, 1)",
+                  [(":oid", sent), (":account", WALLET_A), (":symbol", symbol_id_for(USDT)), (":amount", Decimal('0.5'))])
+    JalDB()._exec("INSERT INTO fees (operation_id, idx, account_id, symbol_id, amount, kind) "
+                  "VALUES (:oid, 0, :account, :symbol, :amount, 1)",
+                  [(":oid", arrived), (":account", WALLET_A), (":symbol", other), (":amount", Decimal('0.5'))], commit=True)
 
     assert 'different assets' in TransferSettlement().convert_to_swap(sent, arrived)
     assert len(Transfer.pending_legs()) == 2
@@ -1245,9 +1246,9 @@ def test_conversion_refuses_fees_one_swap_cannot_hold(wallets):
 
 def test_conversion_refuses_a_fee_charged_on_another_account(wallets):
     sent, arrived, _other = _swap_pair()
-    JalDB()._exec("UPDATE transfers SET fee=:fee, fee_account=:account, fee_symbol_id=:symbol WHERE oid=:oid",
-                  [(":fee", Decimal('0.5')), (":account", WALLET_B), (":symbol", symbol_id_for(USDT)), (":oid", sent)],
-                  commit=True)
+    JalDB()._exec("INSERT INTO fees (operation_id, idx, account_id, symbol_id, amount, kind) "
+                  "VALUES (:oid, 0, :account, :symbol, :amount, 1)",
+                  [(":oid", sent), (":account", WALLET_B), (":symbol", symbol_id_for(USDT)), (":amount", Decimal('0.5'))], commit=True)
 
     assert 'another account' in TransferSettlement().convert_to_swap(sent, arrived)
 

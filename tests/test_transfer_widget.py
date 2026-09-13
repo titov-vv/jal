@@ -26,17 +26,6 @@ def _make_accounts():
     return JalAccount(wallet), JalAccount(other)
 
 
-# The page order of a QStackedWidget is not tied to the item order of the combo that drives it - the two were
-# swapped when the form was drawn. Selecting "Fee" must show FeePage and "Gas" must show GasPage.
-def test_fee_kind_selects_matching_page(prepare_db):
-    widget = TransferWidget()
-    for index, expected in ((TransferWidget.NO_FEE, "NoFeePage"),
-                            (TransferWidget.MONEY_FEE, "FeePage"),
-                            (TransferWidget.ASSET_GAS, "GasPage")):
-        widget.ui.FeeGasCombo.setCurrentIndex(index)
-        assert widget.ui.FeeGasPages.currentWidget().objectName() == expected
-
-
 def test_transfer_type_selects_matching_page(prepare_db):
     widget = TransferWidget()
     for index, expected in ((TransferWidget.MONEY_TRANSFER, "MoneyTransferPage"),
@@ -58,11 +47,6 @@ def test_only_visible_page_editor_is_mapped(prepare_db):
     assert _mapped_widgets(widget, "withdrawal") == [widget.ui.asset_amount]
     assert _mapped_widgets(widget, "deposit") == [widget.ui.asset_cost_basis]
 
-    widget.ui.FeeGasCombo.setCurrentIndex(TransferWidget.MONEY_FEE)
-    assert _mapped_widgets(widget, "fee") == [widget.ui.fee]
-
-    widget.ui.FeeGasCombo.setCurrentIndex(TransferWidget.ASSET_GAS)
-    assert _mapped_widgets(widget, "fee") == [widget.ui.gas]
 
 
 # Both combos start at index 0, so a record that is also at index 0 emits no currentIndexChanged. The starting
@@ -71,24 +55,24 @@ def test_initial_mapping_is_applied_without_any_combo_change(prepare_db):
     widget = TransferWidget()
     assert _mapped_widgets(widget, "withdrawal") == [widget.ui.withdrawal]
     assert _mapped_widgets(widget, "deposit") == [widget.ui.deposit]
-    assert _mapped_widgets(widget, "fee") == [widget.ui.fee]
 
 
-# Gas is burned by the wallet signing the transaction and GasPage has no account selector, so the fee account has
-# to follow 'From' - Transfer.processLedger() refuses a fee without an account.
-def test_gas_takes_fee_account_from_source(prepare_db):
+# A fee needs an account to be collected from - Transfer.processLedger() refuses one without - and the sending
+# wallet is what a new one starts on, because that is the side that pays on-chain gas.
+def test_a_new_fee_starts_on_the_sending_account(prepare_db):
     wallet, other = _make_accounts()
     widget = TransferWidget()
     widget.createNew(account_id=wallet.id())
     widget.ui.from_account_widget.selected_id = wallet.id()
+    widget.fee_account_changed()
 
-    widget.ui.FeeGasCombo.setCurrentIndex(TransferWidget.ASSET_GAS)
-    widget.fee_kind_selected(TransferWidget.ASSET_GAS)
-    assert widget.ui.fee_account_widget.selected_id == wallet.id()
+    widget.fee_widget.attach()
+    assert widget.fee_widget.fees()[0]['account_id'] == wallet.id()
 
+    # ... and a transfer may be charged anywhere, so changing 'From' moves the default and not the stored fee
     widget.ui.from_account_widget.selected_id = other.id()
-    widget.account_changed()
-    assert widget.ui.fee_account_widget.selected_id == other.id()
+    widget.fee_account_changed()
+    assert widget.fee_widget.fees()[0]['account_id'] == wallet.id()
 
 
 # Switching to a money transfer must drop the asset, otherwise Transfer would keep processing the operation as an
@@ -108,21 +92,6 @@ def test_switching_to_money_transfer_clears_asset(prepare_db):
     assert widget.ui.symbol_widget.selected_id == 0
 
 
-# Selecting a money fee must drop the gas asset - 'fee_symbol_id' is what makes Transfer book the fee against an
-# asset position instead of money.
-def test_switching_to_money_fee_clears_gas_asset(prepare_db):
-    wallet, _other = _make_accounts()
-    widget = TransferWidget()
-    widget.createNew(account_id=wallet.id())
-    symbol = JalSymbol(JalDB()._read("SELECT id FROM asset_symbol LIMIT 1"))
-
-    widget.ui.FeeGasCombo.setCurrentIndex(TransferWidget.ASSET_GAS)
-    widget.ui.gas_symbol_widget.selected_id = symbol.id()
-    widget.ui.FeeGasCombo.setCurrentIndex(TransferWidget.MONEY_FEE)
-    widget.fee_kind_selected(TransferWidget.MONEY_FEE)
-    assert widget.ui.gas_symbol_widget.selected_id == 0
-
-
 # Loading a record must derive both selectors from the data, and must not clear anything while doing so:
 # setCurrentIndex() emits currentIndexChanged but never 'activated'.
 def test_record_load_derives_modes_without_clearing(prepare_db):
@@ -133,14 +102,11 @@ def test_record_load_derives_modes_without_clearing(prepare_db):
     widget.ui.from_account_widget.selected_id = wallet.id()
     widget.ui.to_account_widget.selected_id = other.id()
     widget.ui.symbol_widget.selected_id = symbol.id()
-    widget.ui.gas_symbol_widget.selected_id = symbol.id()
     widget.mapper.submit()
 
     widget.record_changed(0)
     assert widget.ui.TransferTypeCombo.currentIndex() == TransferWidget.ASSET_TRANSFER
-    assert widget.ui.FeeGasCombo.currentIndex() == TransferWidget.ASSET_GAS
     assert widget.ui.symbol_widget.selected_id == symbol.id()      # nothing was cleared by the reload
-    assert widget.ui.gas_symbol_widget.selected_id == symbol.id()
 
 
 # The consequence the mapping swap exists to prevent, checked on the stored value rather than on the mapping
@@ -159,11 +125,10 @@ def test_hidden_page_editor_does_not_clobber_stored_amount(prepare_db):
     stored = widget.model.data(widget.model.index(0, widget.model.fieldIndex("withdrawal")))
     assert Decimal(stored) == Decimal('12.5')
 
-    widget.ui.FeeGasCombo.setCurrentIndex(TransferWidget.ASSET_GAS)
-    widget.ui.gas.setText('0.271828')
-    widget.mapper.submit()
-    stored_fee = widget.model.data(widget.model.index(0, widget.model.fieldIndex("fee")))
-    assert Decimal(stored_fee) == Decimal('0.271828')
+    widget.fee_widget.attach()
+    widget.fee_widget.amount.setText('0.271828')
+    widget.fee_widget._mapper.submit()
+    assert widget.fee_widget.fees()[0]['amount'] == Decimal('0.271828')
 
 
 # Reproduces switching between operations in the Operations table: pick a money transfer, then an asset transfer,
@@ -195,47 +160,6 @@ def test_switching_between_records_shows_own_values(prepare_db):
 
     widget.set_id(asset_oid)
     assert delocalize_decimal(widget.ui.asset_amount.text()) == Decimal('490'), "asset editor kept the money transfer's value"
-
-
-# Same one-record-behind failure as above, on the other pair of editors that share a field: 'fee' is written by
-# ui.fee on FeePage and by ui.gas on GasPage. Switching between a transfer with a money fee and one paying gas
-# has to move both the mode selector and the mapping, and load the editor that becomes visible.
-def test_switching_between_fee_kinds_shows_own_values(prepare_db):
-    wallet, other = _make_accounts()
-    create_stocks([('AAPL', 'Apple Inc.')], currency_id=2)
-    symbol_id = JalDB()._read("SELECT id FROM asset_symbol WHERE symbol='AAPL'")
-    common = {"withdrawal_account": wallet.id(), "deposit_account": other.id(),
-              "withdrawal": Decimal('100'), "deposit": Decimal('100'), "fee_account": wallet.id()}
-    money_oid = LedgerTransaction.create_new(
-        LedgerTransaction.Transfer,
-        {**common, "withdrawal_timestamp": 1640995200, "deposit_timestamp": 1640995200}).oid()
-    gas_oid = LedgerTransaction.create_new(
-        LedgerTransaction.Transfer,
-        {**common, "withdrawal_timestamp": 1641081600, "deposit_timestamp": 1641081600}).oid()
-    # The fee goes into the transfer's own columns because that is what this editor still maps; it moves to
-    # FeeWidget with the rest of the fee block.
-    JalDB()._exec("UPDATE transfers SET fee='7.5', fee_account=:acc WHERE oid=:oid",
-                  [(":acc", wallet.id()), (":oid", money_oid)])
-    JalDB()._exec("UPDATE transfers SET fee='0.271828', fee_account=:acc, fee_symbol_id=:symbol WHERE oid=:oid",
-                  [(":acc", wallet.id()), (":symbol", symbol_id), (":oid", gas_oid)], commit=True)
-
-    widget = TransferWidget()
-
-    widget.set_id(money_oid)
-    assert widget.ui.FeeGasCombo.currentIndex() == TransferWidget.MONEY_FEE
-    assert delocalize_decimal(widget.ui.fee.text()) == Decimal('7.5')
-
-    widget.set_id(gas_oid)
-    assert widget.ui.FeeGasCombo.currentIndex() == TransferWidget.ASSET_GAS
-    assert widget.ui.gas.text() != '', "gas editor was left empty by the mapping swap"
-    assert delocalize_decimal(widget.ui.gas.text()) == Decimal('0.271828')
-
-    widget.set_id(money_oid)
-    assert widget.ui.FeeGasCombo.currentIndex() == TransferWidget.MONEY_FEE
-    assert delocalize_decimal(widget.ui.fee.text()) == Decimal('7.5'), "fee editor kept the gas value"
-
-    widget.set_id(gas_oid)
-    assert delocalize_decimal(widget.ui.gas.text()) == Decimal('0.271828'), "gas editor kept the money fee value"
 
 
 # A transfer may be saved with one of its ends left unknown - "money on the way", settled when the counterpart is

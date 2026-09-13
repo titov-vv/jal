@@ -6,8 +6,8 @@ from jal.db.helpers import format_decimal
 # same for the four columns that were compared that way before it. The rows this delta creates were copied out of
 # the fee columns verbatim, so they inherit whatever spelling those held, and a fee offered by a re-import would
 # not be recognized as the one already stored.
-# The fee columns go with it although they are about to be dropped: until then the mirror triggers copy them into
-# 'fees' on every parent write, which would put a non-canonical spelling straight back.
+# The fee columns go with it although they are about to be dropped: a database read by an older version of the
+# application would show a spelling that disagrees with the fee row beside it.
 CANONICAL_COLUMNS = {
     'trades': ['fee'],
     'transfers': ['fee'],
@@ -20,8 +20,6 @@ CANONICAL_COLUMNS = {
 
 # Rewrites every stored fee into the canonical spelling of the database. The conversion preserves the value -
 # Decimal() reads both spellings - so it may be repeated, as an interrupted companion is required to allow.
-# The fee columns come first: the mirror carries each one into 'fees' as it is rewritten, so the last pass finds
-# most of the table canonical already.
 # Clearing the ledger costs nothing here - delta 71 emptied it and asked for a rebuild.
 def update() -> None:
     for table, columns in CANONICAL_COLUMNS.items():

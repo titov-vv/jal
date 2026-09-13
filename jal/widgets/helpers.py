@@ -285,7 +285,7 @@ def assign_shortcut(button, key, scope, context=Qt.WidgetWithChildrenShortcut):
     return shortcut
 
 # -----------------------------------------------------------------------------------------------------------------------
-# A form that shows/hides a few fields based on a checkbox (fee_check, cross_chain_check, etc...) normally does so with
+# A form that shows/hides a few fields based on a checkbox (cross_chain_check, etc...) normally does so with
 # a plain widget.setVisible() - but a hidden widget's row still resizes to whatever's left visible in it, so the row
 # (and everything below it) shifts by a few pixels up/down each time the checkbox is toggled.
 # Setting retainSizeWhenHidden keeps the widget's normal size reserved even while hidden, so the row height - and the

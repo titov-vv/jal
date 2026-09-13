@@ -111,134 +111,7 @@
     </widget>
    </item>
    <item row="5" column="5" colspan="5">
-    <widget class="QStackedWidget" name="FeeGasPages">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="frameShape">
-      <enum>QFrame::Shape::NoFrame</enum>
-     </property>
-     <property name="currentIndex">
-      <number>0</number>
-     </property>
-     <widget class="QWidget" name="NoFeePage"/>
-     <widget class="QWidget" name="FeePage">
-      <layout class="QGridLayout" name="gridLayout">
-       <property name="leftMargin">
-        <number>0</number>
-       </property>
-       <property name="topMargin">
-        <number>0</number>
-       </property>
-       <property name="rightMargin">
-        <number>0</number>
-       </property>
-       <property name="bottomMargin">
-        <number>0</number>
-       </property>
-       <item row="0" column="0">
-        <widget class="ReferenceSelectorWidget" name="fee_account_widget" native="true"/>
-       </item>
-       <item row="0" column="1">
-        <spacer name="feeGroupSpacer">
-         <property name="orientation">
-          <enum>Qt::Orientation::Horizontal</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Fixed</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>0</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="0" column="2">
-        <layout class="QHBoxLayout" name="feeCurrencyBox">
-         <property name="spacing">
-          <number>3</number>
-         </property>
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QLineEdit" name="fee">
-           <property name="alignment">
-            <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="AccountCurrencyLabel" name="fee_currency">
-           <property name="text">
-            <string>CUR</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="GasPage">
-      <layout class="QGridLayout" name="gridLayout_2">
-       <property name="leftMargin">
-        <number>0</number>
-       </property>
-       <property name="topMargin">
-        <number>0</number>
-       </property>
-       <property name="rightMargin">
-        <number>0</number>
-       </property>
-       <property name="bottomMargin">
-        <number>0</number>
-       </property>
-       <item row="0" column="0">
-        <layout class="QHBoxLayout" name="gasSymbolBox">
-         <property name="spacing">
-          <number>3</number>
-         </property>
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QLineEdit" name="gas">
-           <property name="alignment">
-            <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="ReferenceSelectorWidget" name="gas_symbol_widget" native="true"/>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </widget>
-    </widget>
+    <widget class="FeeWidget" name="fee_widget" native="true"/>
    </item>
    <item row="1" column="5">
     <widget class="QLabel" name="number_label">
@@ -425,22 +298,16 @@
     </widget>
    </item>
    <item row="5" column="2" colspan="2">
-    <widget class="QComboBox" name="FeeGasCombo">
-     <item>
-      <property name="text">
-       <string>No fee</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Fee</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Gas</string>
-      </property>
-     </item>
+    <widget class="QLabel" name="fee_label">
+     <property name="text">
+      <string>F&amp;ee</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+     </property>
+     <property name="buddy">
+      <cstring>fee_widget</cstring>
+     </property>
     </widget>
    </item>
    <item row="0" column="12">
@@ -520,6 +387,12 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>FeeWidget</class>
+   <extends>QWidget</extends>
+   <header>jal/widgets/fee_widget.h</header>
+   <container>0</container>
+  </customwidget>
+  <customwidget>
    <class>ReferenceSelectorWidget</class>
    <extends>QWidget</extends>
    <header>jal/widgets/reference_selector.h</header>
@@ -545,11 +418,7 @@
   <tabstop>to_account_widget</tabstop>
   <tabstop>deposit</tabstop>
   <tabstop>asset_cost_basis</tabstop>
-  <tabstop>FeeGasCombo</tabstop>
-  <tabstop>fee_account_widget</tabstop>
-  <tabstop>fee</tabstop>
-  <tabstop>gas</tabstop>
-  <tabstop>gas_symbol_widget</tabstop>
+  <tabstop>fee_widget</tabstop>
   <tabstop>note</tabstop>
   <tabstop>commit_button</tabstop>
   <tabstop>revert_button</tabstop>

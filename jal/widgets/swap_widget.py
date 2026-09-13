@@ -8,7 +8,7 @@ from jal.widgets.helpers import set_visible_retaining_size
 from jal.widgets.delegates import WidgetMapperDelegateBase
 from jal.widgets.reference_dialogs import AccountListDialog
 from jal.widgets.assets_dialogs import SymbolListDialog
-from jal.db.operations import LedgerTransaction
+from jal.db.operations import LedgerTransaction, FeeKind
 from jal.db.helpers import db_row2dict, now_ts
 from jal.db.symbol import JalSymbol
 from jal.db.common_models import AccountListModel
@@ -22,8 +22,7 @@ class SwapWidgetDelegate(WidgetMapperDelegateBase):
         self.delegates = {'timestamp': self.timestamp_delegate,
                           'in_timestamp': self.timestamp_delegate,
                           'out_qty': self.decimal_long_delegate,
-                          'in_qty': self.decimal_long_delegate,
-                          'fee_qty': self.decimal_long_delegate}
+                          'in_qty': self.decimal_long_delegate}
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -36,22 +35,20 @@ class SwapWidget(AbstractOperationDetails):
         self.ui.in_account_widget.setup_selector(AccountListModel, AccountListDialog, self)
         self.ui.out_symbol_widget.setup_selector(SymbolsListModel, SymbolListDialog, self)
         self.ui.in_symbol_widget.setup_selector(SymbolsListModel, SymbolListDialog, self)
-        self.ui.fee_symbol_widget.setup_selector(SymbolsListModel, SymbolListDialog, self)
 
-        self.ui.fee_symbol_widget.setValidation(False)
         self.ui.in_account_widget.setValidation(False)
 
-        self.ui.fee_check.clicked.connect(self.fee_toggled)
         self.ui.cross_chain_check.clicked.connect(self.cross_chain_toggled)
 
         super()._init_db("swaps")
+        super()._init_fees([FeeKind.Gas], precision=2)   # on-chain gas, burned in a coin of the chain
         self.mapper.setItemDelegate(SwapWidgetDelegate(self.mapper))
 
         self.ui.account_widget.changed.connect(self.mapper.submit)
+        self.ui.account_widget.changed.connect(self.fee_account_changed)
         self.ui.in_account_widget.changed.connect(self.mapper.submit)
         self.ui.out_symbol_widget.changed.connect(self.mapper.submit)
         self.ui.in_symbol_widget.changed.connect(self.mapper.submit)
-        self.ui.fee_symbol_widget.changed.connect(self.mapper.submit)
         self.mapper.currentIndexChanged.connect(self.record_changed)
 
         self.mapper.addMapping(self.ui.timestamp, self.model.fieldIndex("timestamp"))
@@ -64,11 +61,17 @@ class SwapWidget(AbstractOperationDetails):
         self.mapper.addMapping(self.ui.in_timestamp, self.model.fieldIndex("in_timestamp"))
         self.mapper.addMapping(self.ui.in_account_widget, self.model.fieldIndex("in_account_id"), QByteArray("selected_id_str"))
         self.mapper.addMapping(self.ui.in_tx_hash, self.model.fieldIndex("in_tx_hash"))
-        self.mapper.addMapping(self.ui.fee_symbol_widget, self.model.fieldIndex("fee_symbol_id"), QByteArray("selected_id_str"))
-        self.mapper.addMapping(self.ui.fee_qty, self.model.fieldIndex("fee_qty"))
         self.mapper.addMapping(self.ui.note, self.model.fieldIndex("note"))
 
         self.model.select()
+
+    # Gas is burned on the source chain, so the account the swap starts from pays it
+    def _fee_payer(self) -> int:
+        return self.ui.account_widget.selected_id
+
+    @Slot()
+    def fee_account_changed(self):
+        self.fee_widget.set_fee_account(self._fee_payer())
 
     def _validated(self):
         fields = db_row2dict(self.model, 0)
@@ -103,13 +106,6 @@ class SwapWidget(AbstractOperationDetails):
             self.model.setData(self.model.index(0, self.model.fieldIndex("in_timestamp")), None)
             self.model.setData(self.model.index(0, self.model.fieldIndex("in_account_id")), None)
             self.model.setData(self.model.index(0, self.model.fieldIndex("in_tx_hash")), '')
-        # Set related fields NULL if we don't have fee. This is required for correct swap processing
-        if not fields['fee_qty'] or Decimal(fields['fee_qty']) == Decimal('0'):
-            self.model.setData(self.model.index(0, self.model.fieldIndex("fee_symbol_id")), None)
-            self.model.setData(self.model.index(0, self.model.fieldIndex("fee_qty")), None)
-        elif fields['fee_symbol_id'] == '0' or fields['fee_symbol_id'] == 0:
-            QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("A symbol isn't chosen for the swap fee"), QMessageBox.Ok)
-            return False
         return True
 
     def revertChanges(self):
@@ -128,8 +124,6 @@ class SwapWidget(AbstractOperationDetails):
         new_record.setNull("in_timestamp")      # a new swap is same-chain until told otherwise
         new_record.setNull("in_account_id")
         new_record.setValue("in_tx_hash", None)
-        new_record.setNull("fee_symbol_id")
-        new_record.setValue("fee_qty", '0')
         new_record.setValue("note", None)
         return new_record
 
@@ -143,33 +137,14 @@ class SwapWidget(AbstractOperationDetails):
 
     @Slot()
     def record_changed(self, idx):
-        if self.ui.fee_symbol_widget.selected_id:
-            self.ui.fee_check.setCheckState(Qt.CheckState.Checked)
-            self.set_fee_data_visible(True)
-        else:
-            self.ui.fee_check.setCheckState(Qt.CheckState.Unchecked)
-            self.set_fee_data_visible(False)
         cross_chain = bool(self.ui.in_account_widget.selected_id)
         self.ui.cross_chain_check.setCheckState(Qt.CheckState.Checked if cross_chain else Qt.CheckState.Unchecked)
         self.set_cross_chain_data_visible(cross_chain)
-
-    def set_fee_data_visible(self, visible: bool):
-        set_visible_retaining_size(self.ui.fee_symbol_widget, visible)
-        set_visible_retaining_size(self.ui.fee_qty, visible)
 
     def set_cross_chain_data_visible(self, visible: bool):
         set_visible_retaining_size(self.ui.in_account_widget, visible)
         set_visible_retaining_size(self.ui.in_timestamp, visible)
         set_visible_retaining_size(self.ui.in_tx_hash, visible)
-
-    @Slot()
-    def fee_toggled(self, _state):
-        with_fee = self.ui.fee_check.isChecked()
-        self.set_fee_data_visible(with_fee)
-        if not with_fee:
-            self.ui.fee_symbol_widget.selected_id = 0
-            self.ui.fee_qty.setText('')
-        self.mapper.submit()
 
     @Slot()
     def cross_chain_toggled(self, _state):

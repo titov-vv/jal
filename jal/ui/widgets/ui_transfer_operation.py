@@ -15,12 +15,12 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QComboBox, QDateTimeEdit, QFrame,
-    QGridLayout, QHBoxLayout, QLabel, QLineEdit,
-    QPushButton, QSizePolicy, QSpacerItem, QStackedWidget,
-    QToolButton, QWidget)
+from PySide6.QtWidgets import (QApplication, QComboBox, QDateTimeEdit, QGridLayout,
+    QLabel, QLineEdit, QPushButton, QSizePolicy,
+    QSpacerItem, QStackedWidget, QToolButton, QWidget)
 
 from jal.widgets.account_select import AccountCurrencyLabel
+from jal.widgets.fee_widget import FeeWidget
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 
 class Ui_TransferOperation(object):
@@ -78,76 +78,10 @@ class Ui_TransferOperation(object):
 
         self.layout.addWidget(self.date_label, 2, 2, 1, 1)
 
-        self.FeeGasPages = QStackedWidget(TransferOperation)
-        self.FeeGasPages.setObjectName(u"FeeGasPages")
-        sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.FeeGasPages.sizePolicy().hasHeightForWidth())
-        self.FeeGasPages.setSizePolicy(sizePolicy)
-        self.FeeGasPages.setFrameShape(QFrame.Shape.NoFrame)
-        self.NoFeePage = QWidget()
-        self.NoFeePage.setObjectName(u"NoFeePage")
-        self.FeeGasPages.addWidget(self.NoFeePage)
-        self.FeePage = QWidget()
-        self.FeePage.setObjectName(u"FeePage")
-        self.gridLayout = QGridLayout(self.FeePage)
-        self.gridLayout.setObjectName(u"gridLayout")
-        self.gridLayout.setContentsMargins(0, 0, 0, 0)
-        self.fee_account_widget = ReferenceSelectorWidget(self.FeePage)
-        self.fee_account_widget.setObjectName(u"fee_account_widget")
+        self.fee_widget = FeeWidget(TransferOperation)
+        self.fee_widget.setObjectName(u"fee_widget")
 
-        self.gridLayout.addWidget(self.fee_account_widget, 0, 0, 1, 1)
-
-        self.feeGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
-
-        self.gridLayout.addItem(self.feeGroupSpacer, 0, 1, 1, 1)
-
-        self.feeCurrencyBox = QHBoxLayout()
-        self.feeCurrencyBox.setSpacing(3)
-        self.feeCurrencyBox.setObjectName(u"feeCurrencyBox")
-        self.feeCurrencyBox.setContentsMargins(0, 0, 0, 0)
-        self.fee = QLineEdit(self.FeePage)
-        self.fee.setObjectName(u"fee")
-        self.fee.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
-
-        self.feeCurrencyBox.addWidget(self.fee)
-
-        self.fee_currency = AccountCurrencyLabel(self.FeePage)
-        self.fee_currency.setObjectName(u"fee_currency")
-
-        self.feeCurrencyBox.addWidget(self.fee_currency)
-
-
-        self.gridLayout.addLayout(self.feeCurrencyBox, 0, 2, 1, 1)
-
-        self.FeeGasPages.addWidget(self.FeePage)
-        self.GasPage = QWidget()
-        self.GasPage.setObjectName(u"GasPage")
-        self.gridLayout_2 = QGridLayout(self.GasPage)
-        self.gridLayout_2.setObjectName(u"gridLayout_2")
-        self.gridLayout_2.setContentsMargins(0, 0, 0, 0)
-        self.gasSymbolBox = QHBoxLayout()
-        self.gasSymbolBox.setSpacing(3)
-        self.gasSymbolBox.setObjectName(u"gasSymbolBox")
-        self.gasSymbolBox.setContentsMargins(0, 0, 0, 0)
-        self.gas = QLineEdit(self.GasPage)
-        self.gas.setObjectName(u"gas")
-        self.gas.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
-
-        self.gasSymbolBox.addWidget(self.gas)
-
-        self.gas_symbol_widget = ReferenceSelectorWidget(self.GasPage)
-        self.gas_symbol_widget.setObjectName(u"gas_symbol_widget")
-
-        self.gasSymbolBox.addWidget(self.gas_symbol_widget)
-
-
-        self.gridLayout_2.addLayout(self.gasSymbolBox, 0, 0, 1, 1)
-
-        self.FeeGasPages.addWidget(self.GasPage)
-
-        self.layout.addWidget(self.FeeGasPages, 5, 5, 1, 5)
+        self.layout.addWidget(self.fee_widget, 5, 5, 1, 5)
 
         self.number_label = QLabel(TransferOperation)
         self.number_label.setObjectName(u"number_label")
@@ -163,6 +97,9 @@ class Ui_TransferOperation(object):
 
         self.MoneyAssetPages = QStackedWidget(TransferOperation)
         self.MoneyAssetPages.setObjectName(u"MoneyAssetPages")
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.MoneyAssetPages.sizePolicy().hasHeightForWidth())
         self.MoneyAssetPages.setSizePolicy(sizePolicy)
         self.MoneyTransferPage = QWidget()
@@ -262,13 +199,11 @@ class Ui_TransferOperation(object):
 
         self.layout.addWidget(self.withdrawal_timestamp, 3, 2, 1, 2)
 
-        self.FeeGasCombo = QComboBox(TransferOperation)
-        self.FeeGasCombo.addItem("")
-        self.FeeGasCombo.addItem("")
-        self.FeeGasCombo.addItem("")
-        self.FeeGasCombo.setObjectName(u"FeeGasCombo")
+        self.fee_label = QLabel(TransferOperation)
+        self.fee_label.setObjectName(u"fee_label")
+        self.fee_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
-        self.layout.addWidget(self.FeeGasCombo, 5, 2, 1, 2)
+        self.layout.addWidget(self.fee_label, 5, 2, 1, 2)
 
         self.revert_button = QPushButton(TransferOperation)
         self.revert_button.setObjectName(u"revert_button")
@@ -321,6 +256,7 @@ class Ui_TransferOperation(object):
         self.note_label.setBuddy(self.note)
         self.value_label.setBuddy(self.asset_cost_basis)
         self.AssetLabel.setBuddy(self.asset_amount)
+        self.fee_label.setBuddy(self.fee_widget)
         self.from_account_label.setBuddy(self.withdrawal_timestamp)
 #endif // QT_CONFIG(shortcut)
         QWidget.setTabOrder(self.TransferTypeCombo, self.number)
@@ -335,18 +271,13 @@ class Ui_TransferOperation(object):
         QWidget.setTabOrder(self.deposit_timestamp, self.to_account_widget)
         QWidget.setTabOrder(self.to_account_widget, self.deposit)
         QWidget.setTabOrder(self.deposit, self.asset_cost_basis)
-        QWidget.setTabOrder(self.asset_cost_basis, self.FeeGasCombo)
-        QWidget.setTabOrder(self.FeeGasCombo, self.fee_account_widget)
-        QWidget.setTabOrder(self.fee_account_widget, self.fee)
-        QWidget.setTabOrder(self.fee, self.gas)
-        QWidget.setTabOrder(self.gas, self.gas_symbol_widget)
-        QWidget.setTabOrder(self.gas_symbol_widget, self.note)
+        QWidget.setTabOrder(self.asset_cost_basis, self.fee_widget)
+        QWidget.setTabOrder(self.fee_widget, self.note)
         QWidget.setTabOrder(self.note, self.commit_button)
         QWidget.setTabOrder(self.commit_button, self.revert_button)
 
         self.retranslateUi(TransferOperation)
 
-        self.FeeGasPages.setCurrentIndex(0)
         self.MoneyAssetPages.setCurrentIndex(1)
 
 
@@ -366,7 +297,6 @@ class Ui_TransferOperation(object):
         self.commit_button.setText("")
         self.TransferTypeLabel.setText(QCoreApplication.translate("TransferOperation", u"T&ype", None))
         self.date_label.setText(QCoreApplication.translate("TransferOperation", u"Date/Time", None))
-        self.fee_currency.setText(QCoreApplication.translate("TransferOperation", u"CUR", None))
         self.number_label.setText(QCoreApplication.translate("TransferOperation", u"#", None))
         self.note_label.setText(QCoreApplication.translate("TransferOperation", u"&Note", None))
         self.from_currency.setText(QCoreApplication.translate("TransferOperation", u"CUR", None))
@@ -381,10 +311,7 @@ class Ui_TransferOperation(object):
         self.CostBasisCurrencyLabel.setText(QCoreApplication.translate("TransferOperation", u"CUR", None))
         self.AmountLabel.setText(QCoreApplication.translate("TransferOperation", u"Amount", None))
         self.withdrawal_timestamp.setDisplayFormat(QCoreApplication.translate("TransferOperation", u"dd/MM/yyyy hh:mm:ss", None))
-        self.FeeGasCombo.setItemText(0, QCoreApplication.translate("TransferOperation", u"No fee", None))
-        self.FeeGasCombo.setItemText(1, QCoreApplication.translate("TransferOperation", u"Fee", None))
-        self.FeeGasCombo.setItemText(2, QCoreApplication.translate("TransferOperation", u"Gas", None))
-
+        self.fee_label.setText(QCoreApplication.translate("TransferOperation", u"F&ee", None))
 #if QT_CONFIG(tooltip)
         self.revert_button.setToolTip(QCoreApplication.translate("TransferOperation", u"Cancel changes", None))
 #endif // QT_CONFIG(tooltip)

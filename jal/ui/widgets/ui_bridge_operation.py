@@ -15,10 +15,11 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QCheckBox, QDateTimeEdit, QGridLayout,
-    QLabel, QLineEdit, QPushButton, QSizePolicy,
-    QSpacerItem, QToolButton, QWidget)
+from PySide6.QtWidgets import (QApplication, QDateTimeEdit, QGridLayout, QLabel,
+    QLineEdit, QPushButton, QSizePolicy, QSpacerItem,
+    QToolButton, QWidget)
 
+from jal.widgets.fee_widget import FeeWidget
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 
 class Ui_BridgeOperation(object):
@@ -158,21 +159,16 @@ class Ui_BridgeOperation(object):
 
         self.layout.addWidget(self.in_symbol_widget, 3, 8, 1, 1)
 
-        self.fee_check = QCheckBox(BridgeOperation)
-        self.fee_check.setObjectName(u"fee_check")
+        self.fee_label = QLabel(BridgeOperation)
+        self.fee_label.setObjectName(u"fee_label")
+        self.fee_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
-        self.layout.addWidget(self.fee_check, 4, 1, 1, 2, Qt.AlignmentFlag.AlignRight)
+        self.layout.addWidget(self.fee_label, 4, 1, 1, 2, Qt.AlignmentFlag.AlignRight)
 
-        self.fee_qty = QLineEdit(BridgeOperation)
-        self.fee_qty.setObjectName(u"fee_qty")
-        self.fee_qty.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
+        self.fee_widget = FeeWidget(BridgeOperation)
+        self.fee_widget.setObjectName(u"fee_widget")
 
-        self.layout.addWidget(self.fee_qty, 4, 6, 1, 2)
-
-        self.fee_symbol_widget = ReferenceSelectorWidget(BridgeOperation)
-        self.fee_symbol_widget.setObjectName(u"fee_symbol_widget")
-
-        self.layout.addWidget(self.fee_symbol_widget, 4, 8, 1, 1)
+        self.layout.addWidget(self.fee_widget, 4, 6, 1, 2)
 
         self.note_label = QLabel(BridgeOperation)
         self.note_label.setObjectName(u"note_label")
@@ -196,6 +192,7 @@ class Ui_BridgeOperation(object):
 #if QT_CONFIG(shortcut)
         self.from_account_label.setBuddy(self.out_timestamp)
         self.to_account_label.setBuddy(self.in_timestamp)
+        self.fee_label.setBuddy(self.fee_widget)
         self.note_label.setBuddy(self.note)
 #endif // QT_CONFIG(shortcut)
         QWidget.setTabOrder(self.out_timestamp, self.copy_date_btn)
@@ -209,10 +206,8 @@ class Ui_BridgeOperation(object):
         QWidget.setTabOrder(self.to_account_widget, self.in_qty)
         QWidget.setTabOrder(self.in_qty, self.in_symbol_widget)
         QWidget.setTabOrder(self.in_symbol_widget, self.in_tx_hash)
-        QWidget.setTabOrder(self.in_tx_hash, self.fee_check)
-        QWidget.setTabOrder(self.fee_check, self.fee_qty)
-        QWidget.setTabOrder(self.fee_qty, self.fee_symbol_widget)
-        QWidget.setTabOrder(self.fee_symbol_widget, self.note)
+        QWidget.setTabOrder(self.in_tx_hash, self.fee_widget)
+        QWidget.setTabOrder(self.fee_widget, self.note)
         QWidget.setTabOrder(self.note, self.commit_button)
         QWidget.setTabOrder(self.commit_button, self.revert_button)
 
@@ -249,7 +244,7 @@ class Ui_BridgeOperation(object):
         self.copy_amount_btn.setText(QCoreApplication.translate("BridgeOperation", u"\u2193", None))
         self.to_account_label.setText(QCoreApplication.translate("BridgeOperation", u"To", None))
         self.in_timestamp.setDisplayFormat(QCoreApplication.translate("BridgeOperation", u"dd/MM/yyyy hh:mm:ss", None))
-        self.fee_check.setText(QCoreApplication.translate("BridgeOperation", u"Include &fee", None))
+        self.fee_label.setText(QCoreApplication.translate("BridgeOperation", u"&Fee", None))
         self.note_label.setText(QCoreApplication.translate("BridgeOperation", u"&Note", None))
     # retranslateUi
 
