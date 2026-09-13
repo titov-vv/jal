@@ -190,6 +190,8 @@ class JalAccount(JalDB):
         accounts = []
         query = cls._exec("SELECT account_id FROM asset_payments WHERE timestamp>=:y_b AND timestamp<=:y_e "
                           "UNION "
+                          "SELECT account_id FROM asset_incomes WHERE timestamp>=:y_b AND timestamp<=:y_e "
+                          "UNION "
                           "SELECT account_id FROM trades WHERE timestamp>=:y_b AND timestamp<=:y_e AND qty<0",
                           [(":y_b", begin), (":y_e", end)])
         while query.next():
@@ -218,6 +220,14 @@ class JalAccount(JalDB):
         while query.next():
             payments.append(self._read_record(query))
         return payments
+
+    # Returns everything from 'asset_incomes' table associated with current account - used in test cases only
+    def dump_asset_incomes(self):
+        incomes = []
+        query = self._exec("SELECT * FROM asset_incomes WHERE account_id=:id", [(":id", self._id)])
+        while query.next():
+            incomes.append(self._read_record(query))
+        return incomes
 
     # Returns everything from 'trades' table associated with current account - used in test cases only
     def dump_trades(self):
@@ -571,6 +581,7 @@ class JalAccount(JalDB):
     # payment is between start and end timestamps
     def asset_payments_amount(self, asset, start_ts, end_ts) -> Decimal:
         payments = jal.db.operations.AssetPayment.get_list(self._id, asset.id())
+        payments += jal.db.operations.AssetIncome.get_list(self._id, asset.id())
         payments = [x for x in payments if (start_ts <= x.ex_date() <= end_ts) or (x.ex_date() == 0 and (start_ts <= x.timestamp() <= end_ts))]
         if payments:
             amount = sum([x.amount(currency_id=self._currency_id) for x in payments])

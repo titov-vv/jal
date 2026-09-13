@@ -13,7 +13,7 @@ from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset, AssetData
 from jal.db.db import JalDB
-from jal.db.operations import AssetPayment
+from jal.db.operations import AssetPayment, AssetIncome
 from jal.constants import PredefinedAsset, BookAccount, SymbolId, AssetLocation
 
 
@@ -203,12 +203,15 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
         [6, 2, 1592770800, 1, 0, '', 1, 1, 6, '16.76', '0.21', '', 'XOM (US30231G1022) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)'],
         [7, 2, 1596054000, 1, 0, '', 1, 1, 9, '51', '0.01', '', 'TWO(US90187B4086) PAYMENT IN LIEU OF DIVIDEND (Ordinary Dividend)'],
         [8, 2, 1588191600, 1, 0, '', 1, 1, 10, '25', '1.04', '', 'NRZ(US64828T2015) CASH DIVIDEND USD 0.25 PER SHARE (Ordinary Dividend)'],
-        [14, 2, 1659484800, 0, 0, '', 4, 1, 11, '0.3052', '0', '59.21', 'Stock Award Vesting']
     ]
     payments = JalAccount(1).dump_asset_payments()
     assert len(payments) == len(test_dividends)
     for i, payment in enumerate(test_dividends):
         assert payments[i] == payment
+
+    # ... and the vesting, which is the asset itself arriving and is stored as such
+    assert JalAccount(1).dump_asset_incomes() == [
+        [14, 9, 1659484800, 0, 0, '', AssetIncome.StockVesting, 1, 11, '0.3052', '0', '59.21', 'Stock Award Vesting']]
 
     # validate corp actions
     test_asset_actions = [
@@ -393,8 +396,8 @@ def test_ibkr_find_db_stock_dividend_for_tax_correction(prepare_db, monkeypatch)
         def tax(self): return Decimal('0.48')
         def note(self): return 'BCV (US0596951063) STOCK DIVIDEND US0596951063 18507808 FOR 1000000000'
 
-    monkeypatch.setattr('data_import.broker_statements.ibkr.AssetPayment.get_list',
-                        lambda account, asset, subtype: [StoredPayment()] if subtype == 3 else [])
+    monkeypatch.setattr('data_import.broker_statements.ibkr.AssetIncome.get_list',
+                        lambda account, asset, subtype: [StoredPayment()] if subtype == AssetIncome.StockDividend else [])
 
     ibkr = StatementIBKR()
     ibkr._data = {JSF.ASSET_PAYMENTS: [],

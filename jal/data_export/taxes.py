@@ -10,7 +10,7 @@ from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.category import JalCategory
 from jal.db.helpers import is_day_marker
-from jal.db.operations import AssetPayment
+from jal.db.operations import AssetPayment, AssetIncome
 from jal.db.clock import ZONE_SPAN, wall_clock_reading
 
 REPORT_METHOD = 0
@@ -146,8 +146,8 @@ class TaxReport:
     # Returns a list of dividends that should be included into the report for given year
     def dividends_list(self) -> list:
         dividends = AssetPayment.get_list(self.account.id(), subtype=AssetPayment.Dividend)
-        dividends += AssetPayment.get_list(self.account.id(), subtype=AssetPayment.StockDividend)
-        dividends += AssetPayment.get_list(self.account.id(), subtype=AssetPayment.StockVesting)
+        dividends += AssetIncome.get_list(self.account.id(), subtype=AssetIncome.StockDividend)
+        dividends += AssetIncome.get_list(self.account.id(), subtype=AssetIncome.StockVesting)
         dividends = [x for x in dividends if self.year_begin <= self._moment(x.timestamp()) < self.year_end]
         return dividends
 

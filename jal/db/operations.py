@@ -48,7 +48,7 @@ class LedgerTransaction(JalDB):
     Conversion = 6
     Swap = 7
     Bridge = 8
-    AssetIncome = 9         # Reserved: the asset half of the payment split, which follows in its own delta
+    AssetIncome = 9
     ChainAction = 10
     _db_table = ''   # Table where operation is stored in DB
     _otype = NA      # Operation type - a class attribute, because it identifies the operation before there is one:
@@ -117,8 +117,8 @@ class LedgerTransaction(JalDB):
     # Every operation class, for the code that has to treat them as a set rather than dispatch on one of them
     @staticmethod
     def operation_classes() -> list:
-        return [IncomeSpending, AssetPayment, Trade, Transfer, CorporateAction, Conversion, Swap, Bridge,
-                ChainAction]
+        return [IncomeSpending, AssetPayment, AssetIncome, Trade, Transfer, CorporateAction, Conversion, Swap,
+                Bridge, ChainAction]
 
     # The parts this kind of operation contributes to the ledger sequence, as SQL over its own table: one row per
     # PART, as (operation id, part, that part's own moment, the account it is on). The column names are what the
@@ -135,6 +135,8 @@ class LedgerTransaction(JalDB):
             return IncomeSpending(oid, opart=opart)
         elif operation_type == LedgerTransaction.AssetPayment:
             return AssetPayment(oid, opart=opart)
+        elif operation_type == LedgerTransaction.AssetIncome:
+            return AssetIncome(oid, opart=opart)
         elif operation_type == LedgerTransaction.Trade:
             return Trade(oid, opart=opart)
         elif operation_type == LedgerTransaction.Transfer:
@@ -175,6 +177,8 @@ class LedgerTransaction(JalDB):
             return Swap(operation_data)
         elif operation_type == LedgerTransaction.Bridge:
             return Bridge(operation_data, Bridge.Outgoing)
+        elif operation_type == LedgerTransaction.AssetIncome:
+            return AssetIncome(operation_data)
         elif operation_type == LedgerTransaction.ChainAction:
             return ChainAction(operation_data)
         else:
@@ -752,116 +756,50 @@ class IncomeSpending(LedgerTransaction):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-class AssetPayment(FeeCarrier, LedgerTransaction):
-    Dividend = 1
-    BondInterest = 2
-    StockDividend = 3
-    StockVesting = 4
-    BondAmortization = 5
-    AssetFee = 6   # A charge or a tax that belongs to the asset itself - an ADR fee, a transaction tax
-    StakingReward = 8      # Coins received for staking; lending interest is recorded the same way
-    DustAttack = 9         # Unsolicited native-coin dust from address-poisoning, below the per-chain threshold
-    # Coins received for something other than staking - a referral or platform bonus, a fee rebate paid out too late
-    # to belong to the trade it came from. Accounted exactly as a StakingReward (an inflow with no counterpart,
-    # valued at the last known quote and opening a lot at that basis); it exists only to keep the two apart, since
-    # what earned the coins may well be taxed differently from what staking earns.
-    Reward = 10
-    # Quantity a rebasing receipt token gained without ever announcing it. An aToken balance is a scaled number times
-    # the protocol's index, and the amount each Transfer event reports is re-derived from that ray math and truncates,
-    # so the sum of every event a wallet ever saw is a few units of the last decimal BELOW the balance the protocol
-    # will actually hand back. The gap stays invisible until the position is closed in full - a "withdraw max" burns
-    # the true balance - and the books are then short by the accumulated truncation. This operation books that
-    # quantity, and books it at ZERO value: the position's cost basis is whatever was paid for it and none of it
-    # belongs to the crumb, so the crumb comes in free and the per-unit basis of the rest is left exactly as it was.
-    # Never written by hand - see RebaseResidue.absorb(), which is the only thing that may create one and refuses
-    # anything whose value is not negligible.
-    RebaseAdjustment = 11
-    # The coin coming back when a token account is closed (see ChainAction.TokenAccountRent for the side that pays).
-    # It arrives on the account that OWNED the token account, which is not necessarily the
-    # one that paid, so nothing here can link it back to the rent it reverses. It is therefore valued like any
-    # other inflow that cost the receiving account nothing - at the quote of the moment it arrives - rather than at
-    # the value it left the payer at, which this account never bore.
-    TokenRentReturn = 13
-    # Payments whose amount is a QUANTITY OF THE ASSET and not a sum of money: shares received as a dividend,
-    # coins earned by staking, coins burned as gas. What the amount is denominated in decides what the totals
-    # count and what the last column of the operations list names, so it is stated once here.
-    _ASSET_DENOMINATED = (StockDividend, StockVesting, StakingReward, Reward, DustAttack,
-                          RebaseAdjustment, TokenRentReturn)
-    _db_table = "asset_payments"
-    _otype = LedgerTransaction.AssetPayment
-    LedgerRank = 2
+# What the two halves of an asset payment share. Both are recorded on one account, about one asset, at one moment,
+# with a tax that may have been withheld and a fee that may have been charged. They differ in what the amount is
+# DENOMINATED in and in what the ledger then does with it, which is the axis the class was split along: money paid on
+# account of an asset is an AssetPayment, and the asset itself arriving is an AssetIncome. Never instantiated itself.
+class AssetPaymentBase(FeeCarrier, LedgerTransaction):
+    LedgerRank = 2   # The rank the whole family shares - one place in the processing order for all of its tables
     _dump_timestamps = ('ex_date',)
-    _db_fields = {
-        "timestamp": {"mandatory": True, "validation": True},
-        "timestamp_day_only": {"mandatory": False, "validation": False},
-        "ex_date": {"mandatory": False, "validation": False},
-        # Payments stored before 2026 have an empty one, so the re-import check treats an empty stored value as the same payment rather than as a different one.
-        "number": {"mandatory": False, "validation": True, "default": '', "matches_empty": True},
-        "type": {"mandatory": True, "validation": True},
-        "account_id": {"mandatory": True, "validation": True},
-        "symbol_id": {"mandatory": True, "validation": True},
-        "amount": {"mandatory": True, "validation": True},
-        "tax": {"mandatory": False, "validation": False},
-        "price": {"mandatory": False, "validation": False},
-        "note": {"mandatory": False, "validation": True},
-        **FeeCarrier.FEE_CHILD
-    }
+    _extra_columns = ()   # Columns only one of the halves stores
     PART_VALUE = 1
     PART_TAX = 2
-    # The part the fee is drawn and posted as - NOT the 'AssetFee' subtype above. 1 and 2 are the value and the
-    # tax, which are both drawn and posted under those numbers, so 3 is the next free one.
+    # The part the fee is drawn and posted as. 1 and 2 are the value and the tax, which are both drawn and posted
+    # under those numbers, so 3 is the next free one.
     Fee = 3
-    PART_FEE = Fee   # The fee posts into the part it is drawn as - see FeeCarrier.PART_FEE
-    # The fee of a payment arrives in the same three fields a transfer's does, and may be borne by another account:
-    # the gas of a claim is not always paid by the wallet that receives it.
+    PART_FEE = Fee
+    # The fee arrives in the same three fields a transfer's does, and may be borne by another account: the gas of a
+    # claim is not always paid by the wallet that receives it.
     FeeFields = {'fee': 'amount', 'fee_symbol_id': 'symbol_id', 'fee_account': 'account_id'}
     FeeAccountFields = ('account_id',)
 
     @classmethod
     def sequence_parts(cls) -> str:
         return ("SELECT oid AS oid, 0 AS opart, timestamp AS timestamp, account_id AS account_id "
-                "FROM asset_payments "
+                f"FROM {cls._db_table} "
                 "UNION ALL " + cls.fee_parts("timestamp"))
 
-    # The translated name of every subtype. A classmethod because the editor's type selector is built from it too.
+    # The translated name of every subtype, and the glyph each of them wears. The editor's type selector is built
+    # from the first of the two, which is why it is a classmethod and not a dict filled in the constructor.
     @classmethod
     def subtype_names(cls) -> dict:
-        return {
-            AssetPayment.NA: cls.tr("UNDEFINED"),
-            AssetPayment.Dividend: cls.tr("Dividend"),
-            AssetPayment.BondInterest: cls.tr("Bond Interest"),
-            AssetPayment.StockDividend: cls.tr("Stock Dividend"),
-            AssetPayment.StockVesting: cls.tr("Stock Vesting"),
-            AssetPayment.BondAmortization: cls.tr("Bond Amortization"),
-            AssetPayment.AssetFee: cls.tr("Asset fee/tax"),
-            AssetPayment.StakingReward: cls.tr("Staking reward"),
-            AssetPayment.DustAttack: cls.tr("Dust attack"),
-            AssetPayment.Reward: cls.tr("Reward"),
-            AssetPayment.RebaseAdjustment: cls.tr("Rebase adjustment"),
-            AssetPayment.TokenRentReturn: cls.tr("Token account rent returned")
-        }
+        raise NotImplementedError
+
+    @classmethod
+    def subtype_icons(cls) -> dict:
+        raise NotImplementedError
 
     def __init__(self, oid=None, opart=None):
-        icons = {
-            AssetPayment.Dividend: JalIcon.DIVIDEND,
-            AssetPayment.BondInterest: JalIcon.BOND_INTEREST,
-            AssetPayment.StockDividend: JalIcon.STOCK_DIVIDEND,
-            AssetPayment.StockVesting: JalIcon.STOCK_VESTING,
-            AssetPayment.BondAmortization: JalIcon.BOND_AMORTIZATION,
-            AssetPayment.AssetFee: JalIcon.FEE,
-            AssetPayment.StakingReward: JalIcon.STAKING_REWARD,
-            AssetPayment.Reward: JalIcon.REWARD,
-            AssetPayment.DustAttack: JalIcon.DUST,
-            AssetPayment.RebaseAdjustment: JalIcon.REBASE,
-            AssetPayment.TokenRentReturn: JalIcon.TOKEN_RENT_RETURN
-        }
         self.names = self.subtype_names()
         super().__init__(oid)
         self._opart = opart
         self._view_rows = 2
-        self._data = self._read("SELECT p.type, p.timestamp, p.timestamp_day_only, p.ex_date, p.number, p.account_id, "
-                                "p.symbol_id, p.amount, p.tax, p.price, l.amount_acc AS t_qty, p.note AS note "
-                                "FROM asset_payments AS p "
+        columns = ("p.type, p.timestamp, p.timestamp_day_only, p.ex_date, p.number, p.account_id, p.symbol_id, "
+                   "p.amount, p.tax, p.note AS note, l.amount_acc AS t_qty")
+        columns += ''.join(f", p.{column}" for column in self._extra_columns)
+        self._data = self._read(f"SELECT {columns} FROM {self._db_table} AS p "
                                 "LEFT JOIN ledger_totals AS l ON l.otype=p.otype AND l.oid=p.oid "
                                 "AND l.book_account = :book_assets WHERE p.oid=:oid",
                                 [(":book_assets", BookAccount.Assets), (":oid", self._oid)], named=True)
@@ -870,9 +808,9 @@ class AssetPayment(FeeCarrier, LedgerTransaction):
         self._subtype = self._data['type']
         self._oname = self.names[self._subtype]
         try:
-            self._icon = JalIcon[icons[self._subtype]]
+            self._icon = JalIcon[self.subtype_icons()[self._subtype]]
         except KeyError:
-            assert False, "Unknown dividend type"
+            assert False, f"Unknown subtype of {type(self).__name__}"
         self._timestamp = self._data['timestamp']
         self._timestamp_day_only = bool(self._data['timestamp_day_only'])
         self._ex_date = self._data['ex_date'] if self._data['ex_date'] else 0
@@ -885,7 +823,6 @@ class AssetPayment(FeeCarrier, LedgerTransaction):
         self._number = self._data['number']
         self._amount = Decimal(self._data['amount'])
         self._tax = Decimal(self._data['tax'])
-        self._price = Decimal(self._data['price']) if self._data['price'] else None  # Empty is "the price was never stated", which is not the same as a stated zero - a zero is a real price, and a wrong one for shares that were granted.
         self._note = self._data['note']
         self._peer_id = self._account.organization()
         self._fees = self._read_fees()
@@ -899,20 +836,20 @@ class AssetPayment(FeeCarrier, LedgerTransaction):
             self._oname = self.tr("Payment fee")
             self._view_rows = 1
 
-    # Returns a list of Dividend objects for given asset, account and subtype
+    # Returns a list of operations of this kind for given asset, account and subtype
     # if asset_id is 0 - return for all assets, if subtype is 0 - return all types
     # skip_accrued=True - don't include accrued interest in resulting list
     @classmethod
     def get_list(cls, account_id: int, asset_id: int = 0, subtype: int = 0, skip_accrued: bool = False) -> list:
         payments = []
         if skip_accrued:  # Paired trade is matched via asset, not symbol (consistent with Trade.accrued_interest())
-            query = "SELECT p.oid FROM asset_payments p LEFT JOIN asset_symbol ps ON p.symbol_id=ps.id "\
+            query = f"SELECT p.oid FROM {cls._db_table} p LEFT JOIN asset_symbol ps ON p.symbol_id=ps.id "\
                     "LEFT JOIN trades t ON p.account_id=t.account_id "\
                     "AND t.symbol_id IN (SELECT id FROM asset_symbol WHERE asset_id=ps.asset_id) "\
                     "AND p.number=t.number AND t.number!='' "\
                     "WHERE p.account_id=:account AND t.oid IS NULL"
         else:
-            query = "SELECT p.oid FROM asset_payments p WHERE p.account_id=:account"
+            query = f"SELECT p.oid FROM {cls._db_table} p WHERE p.account_id=:account"
         params = [(":account", account_id)]
         if asset_id:
             query += " AND p.symbol_id IN (SELECT id FROM asset_symbol WHERE asset_id=:asset)"
@@ -922,100 +859,23 @@ class AssetPayment(FeeCarrier, LedgerTransaction):
             params += [(":type", subtype)]
         query = cls._exec(query, params)
         while query.next():
-            payments.append(AssetPayment(cls._read_record(query, cast=[int])))
+            payments.append(cls(cls._read_record(query, cast=[int])))
         return payments
 
     # Settlement returns timestamp - it is required for stock dividend/vesting
     def settlement(self) -> int:
         return self._timestamp
 
-    # Returns ex-dividend date if it is present for this dividend
+    # Returns ex-dividend date if it is present
     def ex_date(self) -> int:
         return self._ex_date
-
-    # Return price of asset for stock dividend and vesting
-    def price(self) -> Decimal:
-        if self._subtype == AssetPayment.RebaseAdjustment:
-            # Zero by definition, not for want of a quote: this operation only books quantity that a rebasing token
-            # gained without announcing it, and the cost basis of the position it belongs to was paid in full long
-            # before. Pricing the crumb at market would move basis into it and out of the units that were bought.
-            return Decimal('0')
-        if self._subtype in (AssetPayment.StakingReward, AssetPayment.Reward, AssetPayment.TokenRentReturn):
-            # A reward arrives at a block timestamp, which no daily quote series will ever match exactly, so the
-            # last known price is used instead of demanding a quote of that very second. A reward that can't be
-            # priced at all opens a lot at zero and would show the whole proceeds as gain when sold, so it is
-            # refused rather than silently mis-stating the basis.
-            quote_timestamp, price = self._asset.quote(self._timestamp, self._account.currency())
-            if not quote_timestamp:
-                # Refused rather than opened at a zero basis, which would silently report the whole proceeds as
-                # gain when the coins are sold. This is recoverable and needs no re-import: the reward itself is
-                # already stored with the right amount, it is only the valuation that is missing, so downloading
-                # the quotes and rebuilding the ledger completes it. That also resolves the ordering problem of a
-                # first-ever import, where the asset is created by that very import and can have no quotes yet.
-                # A LedgerError and not an unexpected one: the ledger stops here but nothing is wrong with the
-                # data, so the user is told what to download instead of being shown a traceback. The operation
-                # dump goes to the log for diagnosis and is kept out of the message the user reads.
-                logging.debug(f"Unpriced reward. Operation: {self.dump()}")
-                raise LedgerError(self.tr("No quote to value a staking reward: {} on {}. "
-                                          "Download quotes from an earlier date and rebuild the ledger.").format(
-                                          self._asset.symbol(self._account.currency()), ts2d(self._timestamp)))
-            return price
-        if self._subtype == AssetPayment.DustAttack:
-            # Unlike a staking reward, a zero basis here is not a mis-statement to guard against - it is the
-            # correct one: the coins were unsolicited and cost nothing, so their whole proceeds are rightly a gain
-            # when sold. Refusing the import for want of a quote would be wrong besides being pointless - a fresh
-            # wallet's first fetch is exactly the case with no local price history yet (see the native dust
-            # threshold in ChainFetcher._is_native_dust), and nobody has reason to go download one for dust.
-            quote_timestamp, price = self._asset.quote(self._timestamp, self._account.currency())
-            return price if quote_timestamp else Decimal('0')
-        if self._subtype != AssetPayment.StockDividend and self._subtype != AssetPayment.StockVesting:
-            return Decimal('0')
-        if self._price is None:
-            logging.debug(f"Unpriced stock dividend/vesting. Operation: {self.dump()}")
-            raise LedgerError(self.tr("No price for a stock dividend or vesting: {} on {}. "
-                                      "Open the operation, state the price it was granted at "
-                                      "and rebuild the ledger.").format(
-                                      self._asset.symbol(self._account.currency()), ts2d(self._timestamp)))
-        return self._price
 
     def qty(self) -> Decimal:
         return self._part_fee().amount() if self.is_fee_row() else self.amount()
 
-    # Returns amount of dividend:
-    # if currency_id = 0 - return unadjusted value of amount assigned to dividend (for example stock number for vesting)
-    # if currency is given - then converts dividend amount into given currency
-    def amount(self, currency_id: int = 0) -> Decimal:
-        if not currency_id:
-            return self._amount
-        if self._subtype == AssetPayment.StockDividend or self._subtype == AssetPayment.StockVesting:
-            if self._price is None:
-                logging.error(self.tr("No price data for stock dividend/vesting: ") + f"{self.dump()}")
-            amount = self._amount * (self._price if self._price is not None else Decimal('0'))
-        elif self._subtype == AssetPayment.RebaseAdjustment:
-            # Worth nothing by definition, the same zero price() gives the ledger: this books quantity a position
-            # already owned, not something acquired, so pricing it at market here would report money the account
-            # never received and would disagree with the zero the position's value carries on the books.
-            amount = Decimal('0')
-        elif self._subtype in (AssetPayment.StakingReward, AssetPayment.Reward,
-                               AssetPayment.DustAttack, AssetPayment.TokenRentReturn):
-            # A crypto quote is daily, so it never falls on the exact block timestamp the way an exchange quote
-            # does for a stock dividend - the last known price is the best available and is not an error.
-            timestamp, price = self._asset.quote(self._timestamp, self._account.currency())
-            if not timestamp and self._subtype != AssetPayment.DustAttack:
-                # Dust is the one of these with nothing to report: the coins arrived unsolicited and a token
-                # nobody trades has no quote to be found anywhere, so zero is the right value and not a miss -
-                # exactly what price() states for the same operation.
-                logging.error(self.tr("No price data to value an asset-denominated payment: ") + f"{self.dump()}")
-            amount = self._amount * price
-        else:
-            amount = self._amount
-        if currency_id != self._account.currency():
-            amount *= JalAsset(self._account.currency()).quote(self._timestamp, currency_id)[1]
-        return amount
-
-    # Returns tax of dividend:
-    # if currency_id = 0 - return unadjusted value of tax assigned to dividend
-    # if currency is given - then converts tax amount into given currency
+    # Returns tax of the operation:
+    # if currency_id = 0 - return unadjusted value of tax assigned to it
+    # if currency is given - then converts the tax into given currency
     def tax(self, currency_id: int = 0) -> Decimal:
         if currency_id and currency_id != self._account.currency():
             return self._tax * JalAsset(self._account.currency()).quote(self._timestamp, currency_id)[1]
@@ -1025,11 +885,21 @@ class AssetPayment(FeeCarrier, LedgerTransaction):
     def note(self) -> str:
         return self._note
 
+    def update_amount(self, amount: Decimal) -> None:
+        self._exec(f"UPDATE {self._db_table} SET amount=:amount WHERE oid=:oid",
+                   [(":oid", self._oid), (":amount", format_decimal(amount))])
+
+    def update_tax(self, new_tax: Decimal) -> None:
+        _ = self._exec(f"UPDATE {self._db_table} SET tax=:tax WHERE oid=:oid",
+                       [(":oid", self._oid), (":tax", new_tax)], commit=True)
+
+    # The value part and the tax part are drawn and posted under their own numbers, so each of them answers for
+    # itself; the fee is a row of its own, named by the subclass-independent block above.
     def description(self, part_only=False) -> str:
         if self.is_fee_row():
             note = f" ({self._note})" if self._note else ''
             return self.tr("Payment fee") + note
-        text = self._note if self._note else self.tr("Dividend payment for:") + f" {self._symbol.symbol()} ({self._asset.name()})"
+        text = self._note if self._note else self._subject_text()
         tax_text = self.tr("Tax: ") + self._asset.country_name()
         if part_only and self._opart is not None:
             if self._opart == self.PART_VALUE:
@@ -1041,6 +911,10 @@ class AssetPayment(FeeCarrier, LedgerTransaction):
         text = f"{text}\n{tax_text}" if self._tax else f"{text}\n"
         return text
 
+    # What the operation is about, when it says nothing of its own
+    def _subject_text(self) -> str:
+        return f"{self._symbol.symbol()} ({self._asset.name()})"
+
     def value_change(self, part_only=False) -> list:
         if self.is_fee_row():
             return [-self._part_fee().amount()]
@@ -1051,33 +925,21 @@ class AssetPayment(FeeCarrier, LedgerTransaction):
                 return [-self._tax]
             else:
                 return [Decimal('NaN')]
-        amount = self._amount
         if self._tax:
-            return [amount, -self._tax]
+            return [self._amount, -self._tax]
         else:
-            return [amount, None]
+            return [self._amount, None]
 
     def value_currency(self) -> str:
         if self.is_fee_row():
             fee = self._part_fee()
             return fee.symbol().symbol() if fee.is_asset_fee() else self._account_currency
-        if self._subtype in self._ASSET_DENOMINATED and not self._opart:
-            if self._tax:
-                return f"{self._symbol.symbol()}\n{self._account_currency}"
-            else:
-                return f"{self._symbol.symbol()}"
-        else:
-            return f"{self._account_currency}"
+        return f"{self._account_currency}"
 
     def value_currency_icons(self) -> list:
         if self.is_fee_row():
             fee = self._part_fee()
             return [fee.symbol_id() if fee.is_asset_fee() else JalAsset(self._account.currency()).listing_id()]
-        if self._subtype in self._ASSET_DENOMINATED and not self._opart:
-            icons = [self._symbol.id()]
-            if self._tax:
-                icons.append(JalAsset(self._account.currency()).listing_id())
-            return icons
         return [JalAsset(self._account.currency()).listing_id()]
 
     def value_total(self) -> list:
@@ -1086,26 +948,64 @@ class AssetPayment(FeeCarrier, LedgerTransaction):
             if fee.is_asset_fee():
                 return [self._asset_total(self._account.id(), fee.asset().id())]
             return [self._money_total(self._account.id())]
-        balance = []
-        amount = self._money_total(self._account.id())
-        if self._subtype in self._ASSET_DENOMINATED:
-            qty = self._asset_total(self._account.id(), self._asset.id())
-            if qty is None:
-                return [Decimal('NaN')]
-            balance.append(qty)
-        if not amount.is_nan():
-            balance.append(amount)
-        if len(balance) < 2:
-            balance.append(None)
-        return balance
+        return [self._money_total(self._account.id()), None]
 
-    def update_amount(self, amount: Decimal) -> None:
-        self._exec("UPDATE asset_payments SET amount=:amount WHERE oid=:oid",
-                   [(":oid", self._oid), (":amount", format_decimal(amount))])
 
-    def update_tax(self, new_tax: Decimal) -> None:
-        _ = self._exec("UPDATE asset_payments SET tax=:tax WHERE oid=:oid",
-                       [(":oid", self._oid), (":tax", new_tax)], commit=True)
+# ----------------------------------------------------------------------------------------------------------------------
+# Money paid on account of an asset, and money charged on account of one: a dividend, a bond coupon, an ADR fee. The
+# amount is a sum in the account's own currency and it moves the Money book - which is the whole of what separates it
+# from an AssetIncome, where the asset itself arrives and a lot is opened.
+class AssetPayment(AssetPaymentBase):
+    Dividend = 1
+    BondInterest = 2
+    BondAmortization = 5
+    AssetFee = 6   # A charge or a tax that belongs to the asset itself - an ADR fee, a transaction tax
+    _db_table = "asset_payments"
+    _otype = LedgerTransaction.AssetPayment
+    _db_fields = {
+        "timestamp": {"mandatory": True, "validation": True},
+        "timestamp_day_only": {"mandatory": False, "validation": False},
+        "ex_date": {"mandatory": False, "validation": False},
+        # Payments stored before 2026 have an empty one, so the re-import check treats an empty stored value as the same payment rather than as a different one.
+        "number": {"mandatory": False, "validation": True, "default": '', "matches_empty": True},
+        "type": {"mandatory": True, "validation": True},
+        "account_id": {"mandatory": True, "validation": True},
+        "symbol_id": {"mandatory": True, "validation": True},
+        "amount": {"mandatory": True, "validation": True},
+        "tax": {"mandatory": False, "validation": False},
+        "note": {"mandatory": False, "validation": True},
+        **FeeCarrier.FEE_CHILD
+    }
+
+    @classmethod
+    def subtype_names(cls) -> dict:
+        return {
+            AssetPayment.NA: cls.tr("UNDEFINED"),
+            AssetPayment.Dividend: cls.tr("Dividend"),
+            AssetPayment.BondInterest: cls.tr("Bond Interest"),
+            AssetPayment.BondAmortization: cls.tr("Bond Amortization"),
+            AssetPayment.AssetFee: cls.tr("Asset fee/tax")
+        }
+
+    @classmethod
+    def subtype_icons(cls) -> dict:
+        return {
+            AssetPayment.Dividend: JalIcon.DIVIDEND,
+            AssetPayment.BondInterest: JalIcon.BOND_INTEREST,
+            AssetPayment.BondAmortization: JalIcon.BOND_AMORTIZATION,
+            AssetPayment.AssetFee: JalIcon.FEE
+        }
+
+    def _subject_text(self) -> str:
+        return self.tr("Dividend payment for:") + f" {self._symbol.symbol()} ({self._asset.name()})"
+
+    # Returns the amount paid:
+    # if currency_id = 0 - return the sum as it is stored
+    # if currency is given - then converts it into that currency
+    def amount(self, currency_id: int = 0) -> Decimal:
+        if not currency_id or currency_id == self._account.currency():
+            return self._amount
+        return self._amount * JalAsset(self._account.currency()).quote(self._timestamp, currency_id)[1]
 
     def processLedger(self, ledger):
         if self.is_fee_row():
@@ -1113,11 +1013,6 @@ class AssetPayment(FeeCarrier, LedgerTransaction):
             return
         if not self._peer_id:
             raise LedgerError(self.tr("Can't process dividend as bank isn't set for investment account: ") + self._account_name)
-        if self._subtype in (AssetPayment.StockDividend, AssetPayment.StockVesting, AssetPayment.StakingReward,
-                             AssetPayment.Reward, AssetPayment.DustAttack, AssetPayment.RebaseAdjustment,
-                             AssetPayment.TokenRentReturn):
-            self.processStockDividendOrVesting(ledger)
-            return
         if self._subtype == AssetPayment.BondAmortization:
             self.processBondAmortization(ledger)
             return
@@ -1145,19 +1040,6 @@ class AssetPayment(FeeCarrier, LedgerTransaction):
         if self._tax:
             ledger.appendTransaction(self, BookAccount.Costs, self._tax, part=self.PART_TAX, category=PredefinedCategory.Taxes, peer=self._peer_id, tag=self._asset.tag().id())
 
-    def processStockDividendOrVesting(self, ledger):
-        asset_amount = ledger.getAmount(BookAccount.Assets, self._account.id(), self._asset.id())
-        if asset_amount < Decimal('0'):
-            raise NotImplemented(self.tr("Not supported action: stock dividend or vesting closes short trade.") +
-                                 f" Operation: {self.dump()}")
-        self._account.open_trade(JalOpenTrade(self, self.price(), self._amount), self._asset)
-        ledger.appendTransaction(self, BookAccount.Assets, self._amount,
-                                 asset_id=self._asset.id(), value=self._amount * self.price())
-        if self._tax:
-            ledger.appendTransaction(self, BookAccount.Money, -self._tax)
-            ledger.appendTransaction(self, BookAccount.Costs, self._tax,
-                                     part=self.PART_TAX, category=PredefinedCategory.Taxes, peer=self._peer_id, tag=self._asset.tag().id())
-
     def processBondAmortization(self, ledger):
         operation_value = (self._amount - self._tax)
         assert operation_value > Decimal('0'), "Bond amortization is expected to increase account balance"
@@ -1168,6 +1050,205 @@ class AssetPayment(FeeCarrier, LedgerTransaction):
             ledger.appendTransaction(self, BookAccount.Costs, self._tax,
                                      part=self.PART_TAX, category=PredefinedCategory.Taxes, peer=self._peer_id, tag=self._asset.tag().id())
         ledger.appendTransaction(self, BookAccount.Assets, Decimal('0'), asset_id=self._asset.id(), value=-self._amount)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The asset itself arriving, at no cost to the account that receives it: shares granted as a dividend or a vesting,
+# coins earned by staking, dust nobody asked for. The amount is a QUANTITY of that asset and never a sum of money,
+# and what the ledger does with it is always the same - it opens a lot, at the price this class is able to state.
+# The tax, where a broker withheld one, is money and leaves the Money book like any other tax.
+class AssetIncome(AssetPaymentBase):
+    StockDividend = 1
+    StockVesting = 2
+    StakingReward = 3      # Coins received for staking; lending interest is recorded the same way
+    # Coins received for something other than staking - a referral or platform bonus, a fee rebate paid out too late
+    # to belong to the trade it came from. Accounted exactly as a StakingReward (an inflow with no counterpart,
+    # valued at the last known quote and opening a lot at that basis); it exists only to keep the two apart, since
+    # what earned the coins may well be taxed differently from what staking earns.
+    Reward = 4
+    DustAttack = 5         # Unsolicited native-coin dust from address-poisoning, below the per-chain threshold
+    # Quantity a rebasing receipt token gained without ever announcing it. An aToken balance is a scaled number times
+    # the protocol's index, and the amount each Transfer event reports is re-derived from that ray math and truncates,
+    # so the sum of every event a wallet ever saw is a few units of the last decimal BELOW the balance the protocol
+    # will actually hand back. The gap stays invisible until the position is closed in full - a "withdraw max" burns
+    # the true balance - and the books are then short by the accumulated truncation. This operation books that
+    # quantity, and books it at ZERO value: the position's cost basis is whatever was paid for it and none of it
+    # belongs to the crumb, so the crumb comes in free and the per-unit basis of the rest is left exactly as it was.
+    # Never written by hand - see RebaseResidue.absorb(), which is the only thing that may create one and refuses
+    # anything whose value is not negligible.
+    RebaseAdjustment = 6
+    # The coin coming back when a token account is closed (see ChainAction.TokenAccountRent for the side that pays).
+    # It arrives on the account that OWNED the token account, which is not necessarily the one that paid, so nothing
+    # here can link it back to the rent it reverses. It is therefore valued like any other inflow that cost the
+    # receiving account nothing - at the quote of the moment it arrives - rather than at the value it left the payer
+    # at, which this account never bore.
+    TokenRentReturn = 7
+    _db_table = "asset_incomes"
+    _otype = LedgerTransaction.AssetIncome
+    _extra_columns = ('price',)   # The price a grant was made at, which only a source can state
+    _db_fields = {
+        "timestamp": {"mandatory": True, "validation": True},
+        "timestamp_day_only": {"mandatory": False, "validation": False},
+        "ex_date": {"mandatory": False, "validation": False},
+        "number": {"mandatory": False, "validation": True, "default": '', "matches_empty": True},
+        "type": {"mandatory": True, "validation": True},
+        "account_id": {"mandatory": True, "validation": True},
+        "symbol_id": {"mandatory": True, "validation": True},
+        "amount": {"mandatory": True, "validation": True},
+        "tax": {"mandatory": False, "validation": False},
+        "price": {"mandatory": False, "validation": False},
+        "note": {"mandatory": False, "validation": True},
+        **FeeCarrier.FEE_CHILD
+    }
+
+    @classmethod
+    def subtype_names(cls) -> dict:
+        return {
+            AssetIncome.NA: cls.tr("UNDEFINED"),
+            AssetIncome.StockDividend: cls.tr("Stock Dividend"),
+            AssetIncome.StockVesting: cls.tr("Stock Vesting"),
+            AssetIncome.StakingReward: cls.tr("Staking reward"),
+            AssetIncome.Reward: cls.tr("Reward"),
+            AssetIncome.DustAttack: cls.tr("Dust attack"),
+            AssetIncome.RebaseAdjustment: cls.tr("Rebase adjustment"),
+            AssetIncome.TokenRentReturn: cls.tr("Token account rent returned")
+        }
+
+    @classmethod
+    def subtype_icons(cls) -> dict:
+        return {
+            AssetIncome.StockDividend: JalIcon.STOCK_DIVIDEND,
+            AssetIncome.StockVesting: JalIcon.STOCK_VESTING,
+            AssetIncome.StakingReward: JalIcon.STAKING_REWARD,
+            AssetIncome.Reward: JalIcon.REWARD,
+            AssetIncome.DustAttack: JalIcon.DUST,
+            AssetIncome.RebaseAdjustment: JalIcon.REBASE,
+            AssetIncome.TokenRentReturn: JalIcon.TOKEN_RENT_RETURN
+        }
+
+    def __init__(self, oid=None, opart=None):
+        super().__init__(oid, opart=opart)
+        # Empty is "the price was never stated", which is not the same as a stated zero - a zero is a real price,
+        # and a wrong one for shares that were granted.
+        self._price = Decimal(self._data['price']) if self._data['price'] else None
+
+    def _subject_text(self) -> str:
+        return self.tr("Received:") + f" {self._symbol.symbol()} ({self._asset.name()})"
+
+    # The per-unit value the lot is opened at. Where it comes from is the one thing the subtypes disagree about.
+    def price(self) -> Decimal:
+        if self._subtype == AssetIncome.RebaseAdjustment:
+            # Zero by definition, not for want of a quote: this operation only books quantity that a rebasing token
+            # gained without announcing it, and the cost basis of the position it belongs to was paid in full long
+            # before. Pricing the crumb at market would move basis into it and out of the units that were bought.
+            return Decimal('0')
+        if self._subtype in (AssetIncome.StockDividend, AssetIncome.StockVesting):
+            if self._price is None:
+                logging.debug(f"Unpriced stock dividend/vesting. Operation: {self.dump()}")
+                raise LedgerError(self.tr("No price for a stock dividend or vesting: {} on {}. "
+                                          "Open the operation, state the price it was granted at "
+                                          "and rebuild the ledger.").format(
+                                          self._asset.symbol(self._account.currency()), ts2d(self._timestamp)))
+            return self._price
+        quote_timestamp, price = self._asset.quote(self._timestamp, self._account.currency())
+        if self._subtype == AssetIncome.DustAttack:
+            # Unlike a staking reward, a zero basis here is not a mis-statement to guard against - it is the
+            # correct one: the coins were unsolicited and cost nothing, so their whole proceeds are rightly a gain
+            # when sold. Refusing the import for want of a quote would be wrong besides being pointless - a fresh
+            # wallet's first fetch is exactly the case with no local price history yet (see the native dust
+            # threshold in ChainFetcher._is_native_dust), and nobody has reason to go download one for dust.
+            return price if quote_timestamp else Decimal('0')
+        # A reward arrives at a block timestamp, which no daily quote series will ever match exactly, so the last
+        # known price is used instead of demanding a quote of that very second. A reward that can't be priced at all
+        # opens a lot at zero and would show the whole proceeds as gain when sold, so it is refused rather than
+        # silently mis-stating the basis.
+        if not quote_timestamp:
+            # Recoverable and needing no re-import: the income itself is already stored with the right amount, it is
+            # only the valuation that is missing, so downloading the quotes and rebuilding the ledger completes it.
+            # That also resolves the ordering problem of a first-ever import, where the asset is created by that
+            # very import and can have no quotes yet. A LedgerError and not an unexpected one: the ledger stops here
+            # but nothing is wrong with the data, so the user is told what to download instead of being shown a
+            # traceback. The operation dump goes to the log for diagnosis and is kept out of the message.
+            logging.debug(f"Unpriced reward. Operation: {self.dump()}")
+            raise LedgerError(self.tr("No quote to value a staking reward: {} on {}. "
+                                      "Download quotes from an earlier date and rebuild the ledger.").format(
+                                      self._asset.symbol(self._account.currency()), ts2d(self._timestamp)))
+        return price
+
+    # Returns the quantity received, or what it was worth when a currency is asked for
+    def amount(self, currency_id: int = 0) -> Decimal:
+        if not currency_id:
+            return self._amount
+        if self._subtype in (AssetIncome.StockDividend, AssetIncome.StockVesting):
+            if self._price is None:
+                logging.error(self.tr("No price data for stock dividend/vesting: ") + f"{self.dump()}")
+            amount = self._amount * (self._price if self._price is not None else Decimal('0'))
+        elif self._subtype == AssetIncome.RebaseAdjustment:
+            # Worth nothing by definition, the same zero price() gives the ledger: this books quantity a position
+            # already owned, not something acquired, so pricing it at market here would report money the account
+            # never received and would disagree with the zero the position's value carries on the books.
+            amount = Decimal('0')
+        else:
+            # A crypto quote is daily, so it never falls on the exact block timestamp the way an exchange quote
+            # does for a stock dividend - the last known price is the best available and is not an error.
+            timestamp, price = self._asset.quote(self._timestamp, self._account.currency())
+            if not timestamp and self._subtype != AssetIncome.DustAttack:
+                # Dust is the one of these with nothing to report: the coins arrived unsolicited and a token
+                # nobody trades has no quote to be found anywhere, so zero is the right value and not a miss -
+                # exactly what price() states for the same operation.
+                logging.error(self.tr("No price data to value an asset-denominated payment: ") + f"{self.dump()}")
+            amount = self._amount * price
+        if currency_id != self._account.currency():
+            amount *= JalAsset(self._account.currency()).quote(self._timestamp, currency_id)[1]
+        return amount
+
+    # The amount is a quantity of the asset, so that is what the row names - and the account currency beside it
+    # whenever a tax was withheld in money.
+    def value_currency(self) -> str:
+        if self.is_fee_row() or self._opart:
+            return super().value_currency()
+        return f"{self._symbol.symbol()}\n{self._account_currency}" if self._tax else f"{self._symbol.symbol()}"
+
+    def value_currency_icons(self) -> list:
+        if self.is_fee_row() or self._opart:
+            return super().value_currency_icons()
+        icons = [self._symbol.id()]
+        if self._tax:
+            icons.append(JalAsset(self._account.currency()).listing_id())
+        return icons
+
+    def value_total(self) -> list:
+        if self.is_fee_row():
+            return super().value_total()
+        qty = self._asset_total(self._account.id(), self._asset.id())
+        if qty is None:
+            return [Decimal('NaN')]
+        balance = [qty]
+        amount = self._money_total(self._account.id())
+        if not amount.is_nan():
+            balance.append(amount)
+        if len(balance) < 2:
+            balance.append(None)
+        return balance
+
+    def processLedger(self, ledger):
+        if self.is_fee_row():
+            self.processFee(ledger)
+            return
+        if not self._peer_id:
+            raise LedgerError(self.tr("Can't process asset income as bank isn't set for investment account: ")
+                              + self._account_name)
+        asset_amount = ledger.getAmount(BookAccount.Assets, self._account.id(), self._asset.id())
+        if asset_amount < Decimal('0'):
+            raise NotImplemented(self.tr("Not supported action: asset income closes short trade.") +
+                                 f" Operation: {self.dump()}")
+        self._account.open_trade(JalOpenTrade(self, self.price(), self._amount), self._asset)
+        ledger.appendTransaction(self, BookAccount.Assets, self._amount,
+                                 asset_id=self._asset.id(), value=self._amount * self.price())
+        if self._tax:
+            ledger.appendTransaction(self, BookAccount.Money, -self._tax)
+            ledger.appendTransaction(self, BookAccount.Costs, self._tax,
+                                     part=self.PART_TAX, category=PredefinedCategory.Taxes, peer=self._peer_id, tag=self._asset.tag().id())
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -2538,7 +2619,7 @@ class Conversion(FeeCarrier, LedgerTransaction):
         if available < self._out_qty:
             # Raised with the shortage in fields and not only in the message: the out leg of a conversion is where a
             # rebasing receipt token reveals the quantity it gained without announcing it (see
-            # AssetPayment.RebaseAdjustment), and RebaseResidue.absorb() needs the numbers to decide whether this is
+            # AssetIncome.RebaseAdjustment), and RebaseResidue.absorb() needs the numbers to decide whether this is
             # that crumb or a real gap in the data. It stops the ledger here exactly as any other LedgerError does.
             raise LedgerAssetShortage(self.tr("Asset amount is not enough for conversion processing. Date: ")
                                       + f"{ts2dt(self._timestamp)}, Asset amount: {available}, "
@@ -2890,7 +2971,7 @@ class ChainAction(FeeCarrier, LedgerTransaction):
     ContractCall = 5       # Something finer is not known; what the importer can't yet tell apart lands here
     # Native coin locked as the rent of a token account. Not consumed the way gas is - it is returned in full if that
     # account is ever closed - so its cost row is told apart by FeeKind.Rent and it stays an operation of its own
-    # rather than becoming a second fee of the send that caused it (see AssetPayment.TokenRentReturn for the other side).
+    # rather than becoming a second fee of the send that caused it (see AssetIncome.TokenRentReturn for the other side).
     TokenAccountRent = 6
 
     Whole = 0    # The event itself. It posts nothing - what it cost is the fee part below

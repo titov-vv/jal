@@ -9,7 +9,7 @@ class Setup:
     INI_FILE = "jal.ini"
     DB_PATH = "jal.sqlite"
     DB_CONNECTION = "JAL.DB"
-    DB_REQUIRED_VERSION = 76
+    DB_REQUIRED_VERSION = 77
     SQLITE_MIN_VERSION = "3.35"
     MAIN_WND_NAME = "JAL_MainWindow"
     SPLITTER_STATE_PREFIX = "SplitterState_"
@@ -43,7 +43,7 @@ class Setup:
     # the smallest difference that may be real (one unit of an 18-decimals token, ~1E-22 of a four-digit amount).
     LOT_QTY_TOLERANCE = '1E-25'
     # Bounds on the quantity a rebasing receipt token may be found to have gained without announcing it, which is
-    # what AssetPayment.RebaseAdjustment books (see RebaseResidue.absorb()). The shortage has to pass BOTH.
+    # what AssetIncome.RebaseAdjustment books (see RebaseResidue.absorb()). The shortage has to pass BOTH.
     # The relative one is the real gate and needs no quote: the residue is the truncation of a scaled balance, some
     # units of the token's last decimal against a whole position - 6E-11 in the case this was built from - while the
     # smallest genuinely missing operation would be many orders of magnitude larger. The value one is a second fence

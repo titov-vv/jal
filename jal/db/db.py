@@ -86,6 +86,9 @@ class JalDB:
     _OPERATION_SYMBOLS = \
         "SELECT symbol_id, account_id, timestamp FROM trades " \
         "UNION ALL SELECT symbol_id, account_id, timestamp FROM asset_payments " \
+        "UNION ALL SELECT symbol_id, account_id, timestamp FROM asset_incomes " \
+        "UNION ALL SELECT symbol_id, account_id, timestamp FROM asset_incomes " \
+        "UNION ALL SELECT symbol_id, account_id, timestamp FROM asset_incomes " \
         "UNION ALL SELECT symbol_id, account_id, timestamp FROM asset_actions " \
         "UNION ALL SELECT symbol_id, account_id, timestamp FROM chain_actions " \
         "UNION ALL SELECT r.symbol_id, a.account_id, a.timestamp FROM asset_action_results AS r " \

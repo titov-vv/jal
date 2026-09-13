@@ -21,7 +21,7 @@ from jal.db.symbol import JalSymbol
 from jal.db.icon import JalIcons
 from jal.db.common_models import AccountListModel, TagTreeModel
 from jal.db.asset_models import SymbolsListModel
-from jal.db.operations import LedgerTransaction, AssetPayment, CorporateAction, Transfer, Swap, \
+from jal.db.operations import LedgerTransaction, AssetPayment, AssetIncome, CorporateAction, Transfer, Swap, \
     Conversion, Bridge
 from jal.widgets.helpers import grid_icon_size, grid_row_height, set_grids_metrics
 from jal.widgets.reference_dialogs import AccountListDialog, TagsListDialog
@@ -179,7 +179,7 @@ def test_operations_keep_tickers_and_icons_in_step(prepare_db):
                                  {'timestamp': d2t(220301), 'type': AssetPayment.Dividend, 'account_id': 1,
                                   'symbol_id': symbol_id_for(4, 2), 'amount': '5', 'tax': '0.5', 'note': ''})
     LedgerTransaction.create_new(LedgerTransaction.AssetPayment,
-                                 {'timestamp': d2t(220302), 'type': AssetPayment.StockDividend, 'account_id': 1,
+                                 {'timestamp': d2t(220302), 'type': AssetIncome.StockDividend, 'account_id': 1,
                                   'symbol_id': symbol_id_for(4, 2), 'amount': '1', 'tax': '0.1', 'note': ''})
     # With a fee, so that the gas part of each is a real part to ask about
     create_swaps(1, [(d2t(220401), 4, 1.0, 5, 2.0, 6, 0.1)])

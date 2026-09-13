@@ -15,7 +15,7 @@ from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
 from jal.db.peer import JalPeer
-from jal.db.operations import LedgerTransaction, LedgerError, AssetPayment, CorporateAction, Transfer, \
+from jal.db.operations import LedgerTransaction, LedgerError, AssetPayment, AssetIncome, CorporateAction, Transfer, \
     Conversion, Swap, Bridge, ChainAction
 
 
@@ -193,7 +193,7 @@ def test_stock_dividend_change(prepare_db_fifo):
 
     # Insert a stock dividend between trades
     stock_dividends = [
-        (AssetPayment.StockDividend, 1643907900, 1, 4, 2.0, 2, 54.0, 0.0, 'Stock dividend +2 A')
+        (AssetIncome.StockDividend, 1643907900, 1, 4, 2.0, 2, 54.0, 0.0, 'Stock dividend +2 A')
     ]
     create_stock_dividends(stock_dividends)
 
@@ -209,7 +209,7 @@ def test_stock_dividend_change(prepare_db_fifo):
     assert len(trades) == 4
 
     # Modify stock dividend
-    nth_operation(LedgerTransaction.AssetPayment, 1).update_amount(Decimal('3.0'))
+    nth_operation(LedgerTransaction.AssetIncome, 1).update_amount(Decimal('3.0'))
 
     # Re-build ledger from last actual data
     ledger.rebuild()
@@ -268,7 +268,7 @@ def test_fifo(prepare_db_fifo):
     create_corporate_actions(1, test_corp_actions)
 
     stock_dividends = [
-        (AssetPayment.StockDividend, 1608368400, 1, 16, 1.0, 2, 1050.0, 60.0, 'Stock dividend +1 N')
+        (AssetIncome.StockDividend, 1608368400, 1, 16, 1.0, 2, 1050.0, 60.0, 'Stock dividend +1 N')
     ]
     create_stock_dividends(stock_dividends)
 
@@ -562,7 +562,7 @@ def test_asset_transfer(prepare_db):
 # price lived in 'quotes' and a first-ever import, which creates the asset, could have none.
 def test_a_vesting_is_valued_by_its_own_price_without_any_quote(prepare_db_fifo):
     create_stocks([('A', 'A SHARE')], currency_id=2)   # id = 4
-    create_stock_dividends([(AssetPayment.StockVesting, 1643907900, 1, 4, 2.0, 2, 54.0, 0.0, 'Vested +2 A')])
+    create_stock_dividends([(AssetIncome.StockVesting, 1643907900, 1, 4, 2.0, 2, 54.0, 0.0, 'Vested +2 A')])
     JalDB._exec("DELETE FROM quotes")      # not one price of this asset is known to the database
 
     ledger = Ledger()
@@ -577,14 +577,14 @@ def test_a_vesting_is_valued_by_its_own_price_without_any_quote(prepare_db_fifo)
 # longer value.
 def test_a_vesting_keeps_its_price_when_its_timestamp_is_edited(prepare_db_fifo):
     create_stocks([('A', 'A SHARE')], currency_id=2)   # id = 4
-    create_stock_dividends([(AssetPayment.StockVesting, 1643907900, 1, 4, 2.0, 2, 54.0, 0.0, 'Vested +2 A')])
+    create_stock_dividends([(AssetIncome.StockVesting, 1643907900, 1, 4, 2.0, 2, 54.0, 0.0, 'Vested +2 A')])
     JalDB._exec("DELETE FROM quotes")
     JalDB._exec("UPDATE asset_payments SET timestamp=:moved WHERE oid=1", [(":moved", 1643907900 - 7200)])
 
     ledger = Ledger()
     ledger.rebuild(from_timestamp=0)
 
-    assert nth_operation(LedgerTransaction.AssetPayment, 1).price() == Decimal('54')
+    assert nth_operation(LedgerTransaction.AssetIncome, 1).price() == Decimal('54')
     assert LedgerAmounts("value")[BookAccount.Assets, 1, 4] == Decimal('108')
 
 
@@ -594,9 +594,9 @@ def test_a_vesting_keeps_its_price_when_its_timestamp_is_edited(prepare_db_fifo)
 # only the valuation is missing, so stating it and rebuilding completes the operation.
 def test_a_vesting_without_a_price_stops_the_rebuild_recoverably(prepare_db_fifo):
     create_stocks([('A', 'A SHARE')], currency_id=2)   # id = 4
-    create_stock_dividends([(AssetPayment.StockVesting, 1643907900, 1, 4, 2.0, 2, 54.0, 0.0, 'Vested +2 A')])
-    JalDB._exec("UPDATE asset_payments SET price='' WHERE oid=:oid",   # ... while the series still holds the price
-                [(":oid", operation_id(LedgerTransaction.AssetPayment))])
+    create_stock_dividends([(AssetIncome.StockVesting, 1643907900, 1, 4, 2.0, 2, 54.0, 0.0, 'Vested +2 A')])
+    JalDB._exec("UPDATE asset_incomes SET price='' WHERE oid=:oid",   # ... while the series still holds the price
+                [(":oid", operation_id(LedgerTransaction.AssetIncome))])
 
     ledger = Ledger()
     with pytest.raises(LedgerError):      # re-raised under pytest, reported to the user in the running application
@@ -828,11 +828,11 @@ def test_the_sequence_holds_the_golden_order(two_accounts_and_an_asset):
 def test_every_operation_class_declares_its_rank():
     ranks = {x.__name__: x.LedgerRank for x in LedgerTransaction.operation_classes()}
 
-    assert ranks == {'IncomeSpending': 1, 'AssetPayment': 2, 'ChainAction': 2, 'CorporateAction': 3, 'Trade': 4,
-                     'Transfer': 5, 'Conversion': 6, 'Swap': 7, 'Bridge': 8}
+    assert ranks == {'IncomeSpending': 1, 'AssetPayment': 2, 'AssetIncome': 2, 'ChainAction': 2,
+                     'CorporateAction': 3, 'Trade': 4, 'Transfer': 5, 'Conversion': 6, 'Swap': 7, 'Bridge': 8}
     # Rank 2 is the one that is SHARED, and on purpose: the halves of the split payment are one place in the
     # processing order, and a rank of its own for any of them would move FIFO lot consumption wherever two of them
     # meet in the same second. Every other rank belongs to one class alone.
     payment_family = {name for name, rank in ranks.items() if rank == AssetPayment.LedgerRank}
-    assert payment_family == {'AssetPayment', 'ChainAction'}
+    assert payment_family == {'AssetPayment', 'AssetIncome', 'ChainAction'}
     assert len(set(ranks.values())) == len(ranks) - len(payment_family) + 1

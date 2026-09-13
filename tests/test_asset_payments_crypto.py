@@ -13,7 +13,7 @@ from jal.db.db import JalDB
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
 from jal.db.ledger import Ledger
-from jal.db.operations import LedgerTransaction, AssetPayment, ChainAction, FeeKind, LedgerError
+from jal.db.operations import LedgerTransaction, AssetIncome, ChainAction, FeeKind, LedgerError
 
 WALLET = 1
 TRX = 4
@@ -32,7 +32,7 @@ def wallet(prepare_db):
 def _payment(subtype, timestamp, amount):
     data = {'timestamp': timestamp, 'type': subtype, 'account_id': WALLET, 'symbol_id': symbol_id_for(TRX),
             'amount': str(amount), 'tax': '0', 'number': 'txhash', 'note': 'test'}
-    return LedgerTransaction.create_new(LedgerTransaction.AssetPayment, data)
+    return LedgerTransaction.create_new(LedgerTransaction.AssetIncome, data)
 
 
 # The cost of an on-chain event, which is what a gas payment became: the event is the operation and the coin it
@@ -63,16 +63,16 @@ def _closed_deals(asset_id=TRX) -> list:
 # ----------------------------------------------------------------------------------------------------------------------
 def test_staking_reward_opens_lot_at_market(wallet):
     create_quotes(TRX, 2, [(d2t(210201), '0.30')])
-    _payment(AssetPayment.StakingReward, d2t(210202), '100')
+    _payment(AssetIncome.StakingReward, d2t(210202), '100')
     Ledger().rebuild(from_timestamp=0)
 
     assert _amount() == Decimal('100')            # the reward increases the position
     assert _open_lots() == Decimal('100')         # ... as an open lot, so it has a cost basis to sell against
     # Valued at the last known quote, not at an exact-timestamp one - crypto quotes are daily
-    assert nth_operation(LedgerTransaction.AssetPayment, 1).price() == Decimal('0.30')
+    assert nth_operation(LedgerTransaction.AssetIncome, 1).price() == Decimal('0.30')
 
 
-@pytest.mark.parametrize('subtype', [AssetPayment.StakingReward, AssetPayment.TokenRentReturn])
+@pytest.mark.parametrize('subtype', [AssetIncome.StakingReward, AssetIncome.TokenRentReturn])
 def test_income_payment_needs_a_quote(wallet, subtype):
     # Opening the lot at zero would silently turn the whole proceeds into gain on a later sale, so it is refused
     _payment(subtype, d2t(210202), '100')
@@ -96,12 +96,12 @@ def test_dust_attack_opens_lot_at_zero_without_a_quote(wallet):
     # 2, which is a general ledger-rounding property of any account (every posting is rounded to it, not just
     # dust) and not something particular to this operation.
     JalAccount(WALLET).set_data(AccountData.Precision, 6)
-    _payment(AssetPayment.DustAttack, d2t(210202), '0.000001')
+    _payment(AssetIncome.DustAttack, d2t(210202), '0.000001')
     Ledger().rebuild(from_timestamp=0)
 
     assert _amount() == Decimal('0.000001')       # the dust still increases the position...
     assert _open_lots() == Decimal('0.000001')     # ... as an open lot, opened at a zero basis
-    assert nth_operation(LedgerTransaction.AssetPayment, 1).price() == Decimal('0')
+    assert nth_operation(LedgerTransaction.AssetIncome, 1).price() == Decimal('0')
 
 
 def test_unquoted_dust_is_valued_at_zero_and_reported_as_no_miss(wallet, caplog):
@@ -110,35 +110,35 @@ def test_unquoted_dust_is_valued_at_zero_and_reported_as_no_miss(wallet, caplog)
     # and not a failure to find one - the same thing price() states for the very same operation. Logged as an error
     # it is a line per report run about something the user can do nothing about.
     JalAccount(WALLET).set_data(AccountData.Precision, 6)
-    _payment(AssetPayment.DustAttack, d2t(210202), '0.000001')
+    _payment(AssetIncome.DustAttack, d2t(210202), '0.000001')
 
     with caplog.at_level(logging.ERROR):
-        assert nth_operation(LedgerTransaction.AssetPayment, 1).amount(currency_id=2) == Decimal('0')
+        assert nth_operation(LedgerTransaction.AssetIncome, 1).amount(currency_id=2) == Decimal('0')
     assert caplog.records == []
 
 
 def test_an_unquoted_staking_reward_is_still_reported(wallet, caplog):
     # ... while the same miss on any other asset-denominated payment IS worth saying: those coins are the chain's
     # own, they are quoted everywhere, and a value of zero there means the books understate what was received
-    _payment(AssetPayment.StakingReward, d2t(210202), '10')
+    _payment(AssetIncome.StakingReward, d2t(210202), '10')
 
     with caplog.at_level(logging.ERROR):
-        assert nth_operation(LedgerTransaction.AssetPayment, 1).amount(currency_id=2) == Decimal('0')
+        assert nth_operation(LedgerTransaction.AssetIncome, 1).amount(currency_id=2) == Decimal('0')
     assert len(caplog.records) == 1
 
 
 def test_dust_attack_uses_quote_when_one_exists(wallet):
     create_quotes(TRX, 2, [(d2t(210201), '0.30')])
-    _payment(AssetPayment.DustAttack, d2t(210202), '100')
+    _payment(AssetIncome.DustAttack, d2t(210202), '100')
     Ledger().rebuild(from_timestamp=0)
 
     assert _amount() == Decimal('100')
-    assert nth_operation(LedgerTransaction.AssetPayment, 1).price() == Decimal('0.30')     # priced normally when a quote is actually available
+    assert nth_operation(LedgerTransaction.AssetIncome, 1).price() == Decimal('0.30')     # priced normally when a quote is actually available
 
 
 def test_staking_reward_basis_is_used_on_sale(wallet):
     create_quotes(TRX, 2, [(d2t(210201), '0.30')])
-    _payment(AssetPayment.StakingReward, d2t(210202), '100')
+    _payment(AssetIncome.StakingReward, d2t(210202), '100')
     create_trades(WALLET, [(d2t(210203), d2t(210203), TRX, -100.0, 0.50, 0.0)])
     Ledger().rebuild(from_timestamp=0)
 
@@ -193,7 +193,7 @@ def test_unpriced_reward_recovers_after_quotes_arrive(wallet):
     # The order a first-ever blockchain import runs in: the asset is created by the import itself, so it cannot
     # have quotes yet and the ledger rebuild fails. Nothing is lost - the reward is stored with the right amount,
     # only its valuation is missing - so downloading quotes and rebuilding finishes the job without re-importing.
-    _payment(AssetPayment.StakingReward, d2t(210202), '100')
+    _payment(AssetIncome.StakingReward, d2t(210202), '100')
     with pytest.raises(LedgerError):
         Ledger().rebuild(from_timestamp=0)
 
@@ -202,7 +202,7 @@ def test_unpriced_reward_recovers_after_quotes_arrive(wallet):
 
     assert _amount() == Decimal('100')
     assert _open_lots() == Decimal('100')
-    assert nth_operation(LedgerTransaction.AssetPayment, 1).price() == Decimal('0.30')
+    assert nth_operation(LedgerTransaction.AssetIncome, 1).price() == Decimal('0.30')
 
 
 def test_decimal_values_are_deduplicated(wallet):
@@ -266,7 +266,7 @@ def test_token_rent_leaves_the_wallet_at_its_own_basis(wallet):
 # receiving account nothing.
 def test_token_rent_return_opens_a_lot_at_market(wallet):
     create_quotes(TRX, 2, [(d2t(210202), 0.50)])
-    _payment(AssetPayment.TokenRentReturn, d2t(210202), '10')
+    _payment(AssetIncome.TokenRentReturn, d2t(210202), '10')
     Ledger().rebuild(from_timestamp=0)
 
     assert _amount() == Decimal('10')

@@ -14,7 +14,7 @@ from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.db import JalDB
 from jal.db.symbol import JalSymbol
-from jal.db.operations import AssetPayment, LedgerTransaction, Transfer
+from jal.db.operations import AssetPayment, LedgerTransaction, Transfer, AssetIncome
 from jal.db.ledger import Ledger
 from jal.db.pending_transfers_model import PendingTransfersModel
 from jal.db.transfer_settlement import TransferSettlement
@@ -651,7 +651,7 @@ def test_the_bulk_write_off_clears_every_poisoning_leg(wallets, monkeypatch):
     window.writeOffPoisoning()
 
     assert _rows(window.ui.ReportTreeView.model()) == 1        # only the leg that is real work is left
-    dust = JalDB()._read("SELECT count(*) FROM asset_payments WHERE type=:type", [(":type", AssetPayment.DustAttack)])
+    dust = JalDB()._read("SELECT count(*) FROM asset_incomes WHERE type=:type", [(":type", AssetIncome.DustAttack)])
     assert int(dust) == 2
 
 
@@ -1556,9 +1556,9 @@ def test_writing_off_dust_keeps_the_coins_and_drops_the_leg(wallets):
     assert TransferSettlement().mark_as_dust(oid) == ''
 
     assert Transfer.pending_legs() == []          # it stops waiting for a sender it never had ...
-    payment = JalDB()._read("SELECT type, account_id, symbol_id, amount FROM asset_payments ORDER BY oid DESC LIMIT 1",
+    payment = JalDB()._read("SELECT type, account_id, symbol_id, amount FROM asset_incomes ORDER BY oid DESC LIMIT 1",
                             named=True)
-    assert int(payment['type']) == AssetPayment.DustAttack
+    assert int(payment['type']) == AssetIncome.DustAttack
     assert int(payment['account_id']) == WALLET_B          # ... and the coins stay where they really arrived
     assert Decimal(payment['amount']) == Decimal('0.001')
 
@@ -1585,7 +1585,7 @@ def test_the_ledger_processes_a_written_off_leg(wallets):
     Ledger().rebuild(from_timestamp=0)
 
     assert JalDB()._read("SELECT COUNT(*) FROM ledger WHERE otype=:t",
-                         [(":t", LedgerTransaction.AssetPayment)]) != '0'
+                         [(":t", LedgerTransaction.AssetIncome)]) != '0'
 
 
 def test_the_dust_button_follows_the_selection(wallets):

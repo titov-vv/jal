@@ -1,7 +1,7 @@
 import logging
 from decimal import Decimal
 from jal.constants import PredefinedAsset, PredefinedCategory, SymbolId
-from jal.db.operations import LedgerTransaction, AssetPayment, CorporateAction
+from jal.db.operations import LedgerTransaction, AssetPayment, AssetIncome, CorporateAction
 from jal.db.asset import JalAsset
 from jal.data_export.taxes import TaxReport
 
@@ -42,10 +42,11 @@ class TaxesRussia(TaxReport):
         for dividend in dividends:
             country = dividend.asset().country()
             note = ''
-            if dividend.subtype() == AssetPayment.StockDividend:
-                note = "Дивиденд выплачен в натуральной форме (ценными бумагами)"
-            if dividend.subtype() == AssetPayment.StockVesting:
-                note = "Доход получен в натуральной форме (ценными бумагами)"
+            if dividend.type() == LedgerTransaction.AssetIncome:
+                if dividend.subtype() == AssetIncome.StockDividend:
+                    note = "Дивиденд выплачен в натуральной форме (ценными бумагами)"
+                if dividend.subtype() == AssetIncome.StockVesting:
+                    note = "Доход получен в натуральной форме (ценными бумагами)"
             tax_rub = dividend.tax(self._currency_id)
             tax2pay = Decimal('0.13') * dividend.amount(self._currency_id)
             if self.has_tax_treaty_with(country.code()):

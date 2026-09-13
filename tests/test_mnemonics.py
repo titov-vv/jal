@@ -30,9 +30,11 @@ def _in_main_window(relative):
 # A label whose text holds no letter to spare. The four '#' columns have no letter at all; the other two ran out
 # of them - every letter they could have used was already taken inside their own form.
 NO_LETTER_LEFT = {("AssetPaymentOperation", "#"), ("AssetPaymentOperation", "Ex-Date"),
+                  ("AssetIncomeOperation", "#"), ("AssetIncomeOperation", "Ex-Date"),
                   ("BridgeOperation", "To"), ("CorporateActionOperation", "#"),
                   ("TradeOperation", "#"), ("TransferOperation", "#")}
 NO_RUSSIAN_LETTER_LEFT = {("AssetPaymentOperation", "№"), ("AssetPaymentOperation", "Дивиденд"),
+                          ("AssetIncomeOperation", "№"), ("AssetIncomeOperation", "Дивиденд"),
                           ("CorporateActionOperation", "№"), ("TradeOperation", "№"),
                           ("TransferOperation", "№"), ("TransferOperation", "С")}
 

@@ -17,7 +17,8 @@ from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.symbol import JalSymbol
 from jal.db.token_blacklist import normalize_address, JalTokenBlacklist
-from jal.db.operations import LedgerTransaction, AssetPayment, ChainAction, CorporateAction, Trade, Transfer, FeeKind
+from jal.db.operations import LedgerTransaction, AssetPayment, AssetIncome, ChainAction, CorporateAction, \
+    Trade, Transfer, FeeKind
 from jal.db.bridge_matcher import BridgeMatcher
 from jal.db.transfer_settlement import TransferSettlement
 from jal.widgets.token_select import SelectTokenActionDialog
@@ -1009,32 +1010,32 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 operation['type'] = AssetPayment.BondAmortization
                 LedgerTransaction.create_new(LedgerTransaction.AssetPayment, operation)
             elif operation['type'] == JSF.PAYMENT_STOCK_DIVIDEND:
-                if db_payment_id:  # Dividend exists, only tax to be updated
-                    dividend = LedgerTransaction.get_operation(LedgerTransaction.AssetPayment, db_payment_id)
+                if db_payment_id:  # The grant exists, only tax to be updated
+                    dividend = LedgerTransaction.get_operation(LedgerTransaction.AssetIncome, db_payment_id)
                     dividend.update_tax(operation['tax'])
                 else:
-                    operation['type'] = AssetPayment.StockDividend
-                    LedgerTransaction.create_new(LedgerTransaction.AssetPayment, operation)
+                    operation['type'] = AssetIncome.StockDividend
+                    LedgerTransaction.create_new(LedgerTransaction.AssetIncome, operation)
             elif operation['type'] == JSF.PAYMENT_STOCK_VESTING:
-                operation['type'] = AssetPayment.StockVesting
-                LedgerTransaction.create_new(LedgerTransaction.AssetPayment, operation)
+                operation['type'] = AssetIncome.StockVesting
+                LedgerTransaction.create_new(LedgerTransaction.AssetIncome, operation)
             elif operation['type'] == JSF.PAYMENT_FEE:
                 operation['type'] = AssetPayment.AssetFee
                 LedgerTransaction.create_new(LedgerTransaction.AssetPayment, operation)
             elif operation['type'] in (JSF.PAYMENT_GAS_FEE, JSF.PAYMENT_TOKEN_RENT):
                 LedgerTransaction.create_new(LedgerTransaction.ChainAction, self._as_chain_action(operation))
             elif operation['type'] == JSF.PAYMENT_STAKING_REWARD:
-                operation['type'] = AssetPayment.StakingReward
-                LedgerTransaction.create_new(LedgerTransaction.AssetPayment, operation)
+                operation['type'] = AssetIncome.StakingReward
+                LedgerTransaction.create_new(LedgerTransaction.AssetIncome, operation)
             elif operation['type'] == JSF.PAYMENT_REWARD:
-                operation['type'] = AssetPayment.Reward
-                LedgerTransaction.create_new(LedgerTransaction.AssetPayment, operation)
+                operation['type'] = AssetIncome.Reward
+                LedgerTransaction.create_new(LedgerTransaction.AssetIncome, operation)
             elif operation['type'] == JSF.PAYMENT_DUST_ATTACK:
-                operation['type'] = AssetPayment.DustAttack
-                LedgerTransaction.create_new(LedgerTransaction.AssetPayment, operation)
+                operation['type'] = AssetIncome.DustAttack
+                LedgerTransaction.create_new(LedgerTransaction.AssetIncome, operation)
             elif operation['type'] == JSF.PAYMENT_TOKEN_RENT_RETURN:
-                operation['type'] = AssetPayment.TokenRentReturn
-                LedgerTransaction.create_new(LedgerTransaction.AssetPayment, operation)
+                operation['type'] = AssetIncome.TokenRentReturn
+                LedgerTransaction.create_new(LedgerTransaction.AssetIncome, operation)
             else:
                 raise Statement_ImportError(self.tr("Unsupported payment type: ") + f"{payment}")
 

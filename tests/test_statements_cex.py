@@ -13,7 +13,7 @@ from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.db import JalDB
 from jal.db.ledger import Ledger
-from jal.db.operations import AssetPayment, LedgerTransaction, Trade
+from jal.db.operations import AssetPayment, LedgerTransaction, Trade, AssetIncome
 from jal.db.symbol import JalSymbol
 from jal.net.downloader import llama_coin_key
 
@@ -346,16 +346,16 @@ def test_kucoin_statement_imports_into_the_database(prepare_db, data_path):
     assert _table_count('trades') == 2
     assert _table_count('swaps') == 1
     assert _table_count('transfers') == 3
-    payments = AssetPayment.get_list(account.id())
-    assert sorted(x.subtype() for x in payments) == [AssetPayment.StakingReward, AssetPayment.Reward,
-                                                     AssetPayment.Reward]
+    payments = AssetIncome.get_list(account.id())
+    assert sorted(x.subtype() for x in payments) == [AssetIncome.StakingReward, AssetIncome.Reward,
+                                                     AssetIncome.Reward]
     # the Earn payout is the only staking income; the referral bonus and the platform grant both took the promo type
-    assert _one_payment(payments, AssetPayment.StakingReward).amount() == Decimal('0.5')
-    assert sorted(x.amount() for x in payments if x.subtype() == AssetPayment.Reward) == [Decimal('2'), Decimal('10')]
+    assert _one_payment(payments, AssetIncome.StakingReward).amount() == Decimal('0.5')
+    assert sorted(x.amount() for x in payments if x.subtype() == AssetIncome.Reward) == [Decimal('2'), Decimal('10')]
 
 
 def test_reward_payment_is_valued_like_a_staking_reward(prepare_db):
-    # AssetPayment.Reward exists only to keep a promo payout apart from staking income; it must be ACCOUNTED exactly
+    # AssetIncome.Reward exists only to keep a promo payout apart from staking income; it must be ACCOUNTED exactly
     # like a staking reward. That above all means valuing it at the last known quote - a crypto quote is daily and
     # would never fall on the second the payout arrived, so the stock-vesting path would refuse every reward.
     JalAccountCreator(currency_id=2, number='', name='KuCoin.1', investing=1, organization=1,
@@ -363,8 +363,8 @@ def test_reward_payment_is_valued_like_a_staking_reward(prepare_db):
     create_assets([('USDT', 'Tether', '', 2, PredefinedAsset.Crypto, 0)])     # ID = 4
     create_actions([(d2t(210101), 1, 1, [(PredefinedCategory.StartingBalance, 10000.0)])])
     create_quotes(4, 2, [(d2t(210201), '0.98')])
-    LedgerTransaction.create_new(LedgerTransaction.AssetPayment,
-                                 {'timestamp': d2t(210202), 'type': AssetPayment.Reward, 'account_id': 1,
+    LedgerTransaction.create_new(LedgerTransaction.AssetIncome,
+                                 {'timestamp': d2t(210202), 'type': AssetIncome.Reward, 'account_id': 1,
                                   'symbol_id': symbol_id_for(4), 'amount': '10', 'tax': '0', 'number': '',
                                   'note': 'PLATFORM_REWARD_WITHDRAW'})
     Ledger().rebuild(from_timestamp=0)
@@ -373,4 +373,4 @@ def test_reward_payment_is_valued_like_a_staking_reward(prepare_db):
     lots = JalAccount(1).open_trades_list(JalAsset(4))
     assert sum((lot.open_qty() for lot in lots), Decimal('0')) == Decimal('10')
     # valued at the last known quote rather than at one stamped at its own second
-    assert nth_operation(LedgerTransaction.AssetPayment, 1).price() == Decimal('0.98')
+    assert nth_operation(LedgerTransaction.AssetIncome, 1).price() == Decimal('0.98')

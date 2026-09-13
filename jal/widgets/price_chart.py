@@ -125,7 +125,7 @@ class ChartWindow(MdiWidget):
             else:
                 meaning = Meaning.NEGATIVE
                 text = self.tr("Sell")
-            if operation.type() == LedgerTransaction.AssetPayment:
+            if operation.type() in (LedgerTransaction.AssetPayment, LedgerTransaction.AssetIncome):
                 text = operation.name() + "\n" + operation.description().split('\n')[0]
             trades.append({
                 'timestamp': operation.timestamp(),

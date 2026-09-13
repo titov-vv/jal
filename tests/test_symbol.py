@@ -10,7 +10,7 @@ from jal.db.account import JalAccountCreator
 from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.symbol import JalSymbol
 from jal.db.ledger import Ledger
-from jal.db.operations import LedgerTransaction, AssetPayment, LedgerError
+from jal.db.operations import LedgerTransaction, AssetPayment, LedgerError, AssetIncome
 from jal.db.asset_models import SymbolsListModel
 from tests.helpers import d2t
 
@@ -111,9 +111,9 @@ def test_get_active_symbols_beyond_incomplete_ledger(prepare_db):
     JalAccountCreator(currency_id=2, number='W1', name='Wallet', investing=1, organization=1).commit()
     create_assets([('TRX', 'Tron', '', 2, PredefinedAsset.Crypto, 0)])  # asset id 4, no quotes at all
     create_actions([(d2t(220101), 1, 1, [(4, 1000.0)])])
-    reward = {'timestamp': d2t(220301), 'type': AssetPayment.StakingReward, 'account_id': 1,
+    reward = {'timestamp': d2t(220301), 'type': AssetIncome.StakingReward, 'account_id': 1,
               'symbol_id': symbol_id_for(4), 'amount': '100', 'tax': '0', 'number': 'txhash', 'note': ''}
-    LedgerTransaction.create_new(LedgerTransaction.AssetPayment, reward)
+    LedgerTransaction.create_new(LedgerTransaction.AssetIncome, reward)
     with pytest.raises(LedgerError):  # The unpriced reward stops the ledger before it books the asset
         Ledger().rebuild(from_timestamp=0)
     assert JalDB._read("SELECT COUNT(*) FROM ledger WHERE asset_id=4") == 0  # nothing about the asset in the ledger

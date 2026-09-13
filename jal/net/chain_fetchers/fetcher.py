@@ -187,7 +187,7 @@ class ChainFetcher(Statement):
     # comparison depends on a locally cached price history that a freshly added wallet never has, which used to make
     # the check inert exactly when it mattered most (see the discussion that replaced it - CRYPTO_PATH). A dust
     # verdict no longer drops the transfer either: real native coin can never be a scam contract the way a token can,
-    # so it is always imported as an AssetPayment(DustAttack) instead of an ordinary Transfer - see the fetchers that
+    # so it is always imported as an AssetIncome(DustAttack) instead of an ordinary Transfer - see the fetchers that
     # call this.
     def _is_native_dust(self, amount: Decimal, known_counterparty: bool = False) -> bool:
         if known_counterparty:

@@ -9,7 +9,7 @@ from jal.db.db import JalDB
 from jal.db.ledger import Ledger
 from jal.db.helpers import remove_exponent
 from jal.db.address_match import impersonated_target
-from jal.db.operations import AssetPayment, LedgerTransaction
+from jal.db.operations import AssetIncome, LedgerTransaction
 from jal.db.symbol import JalSymbol
 from jal.widgets.helpers import ts2dt
 
@@ -802,7 +802,7 @@ class TransferSettlement(JalDB):
     def _only_operation_in_its_asset(self, oid: int, asset_id: int) -> bool:
         if not asset_id:
             return False
-        for table in ("trades", "asset_payments"):
+        for table in ("trades", "asset_payments", "asset_incomes"):
             if self._read(f"SELECT 1 FROM {table} AS o JOIN asset_symbol AS s ON s.id=o.symbol_id "
                           "WHERE s.asset_id=:asset LIMIT 1", [(":asset", asset_id)]):
                 return False
@@ -813,7 +813,7 @@ class TransferSettlement(JalDB):
     # Records the leg as the dust attack it is: the coins really did arrive, so they stay in the account - what
     # changes is that they stop being half of a transfer that was never going to be completed.
     #
-    # AssetPayment.DustAttack is the operation the chain fetchers already write for unsolicited native coin, and it
+    # AssetIncome.DustAttack is the operation the chain fetchers already write for unsolicited native coin, and it
     # states this correctly on its own: the quantity is real, the cost basis is zero, and a zero is RIGHT here rather
     # than a gap to be filled - the coins were unsolicited and cost nothing, so their whole proceeds are a gain if
     # they are ever sold. Nothing is blacklisted by this: a blacklist is keyed by the token's contract, and poisoning
@@ -826,10 +826,10 @@ class TransferSettlement(JalDB):
         leg = self._read("SELECT oid, deposit_timestamp, deposit_account, withdrawal, symbol_id, number, note "
                          "FROM transfers WHERE oid=:oid", [(":oid", oid)], named=True)
         payment = {'timestamp': int(leg['deposit_timestamp']), 'number': leg['number'],
-                   'type': AssetPayment.DustAttack, 'account_id': int(leg['deposit_account']),
+                   'type': AssetIncome.DustAttack, 'account_id': int(leg['deposit_account']),
                    'symbol_id': int(leg['symbol_id']), 'amount': Decimal(leg['withdrawal']),
                    'note': leg['note'] if leg['note'] else self.tr("Unsolicited transfer")}
-        LedgerTransaction.create_new(LedgerTransaction.AssetPayment, payment)
+        LedgerTransaction.create_new(LedgerTransaction.AssetIncome, payment)
         self._exec("DELETE FROM transfers WHERE oid=:oid", [(":oid", int(leg['oid']))], commit=True)
         logging.info(self.tr("Unsolicited transfer recorded as a dust attack: ")
                      + f"{remove_exponent(Decimal(leg['withdrawal']))} {JalSymbol(leg['symbol_id']).symbol()} "

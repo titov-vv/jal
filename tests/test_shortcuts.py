@@ -85,7 +85,7 @@ def test_operation_buttons_answer_their_key(operations, key, scope_name, context
 def test_every_operation_form_commits_and_reverts_by_key(operations, key):
     forms = [widget for operation, widget in operations.ui.OperationsTabs.widgets.items()
              if operation != LedgerTransaction.NA]
-    assert len(forms) == 9, "an operation form was added or lost - it needs the same two keys"
+    assert len(forms) == 10, "an operation form was added or lost - it needs the same two keys"
     for form in forms:
         shortcut = _shortcuts(form).get(key)
         assert shortcut is not None, f"{type(form).__name__} does not bind {key}"

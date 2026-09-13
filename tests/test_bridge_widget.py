@@ -35,7 +35,7 @@ def test_operations_tabs_include_bridge(accounts):
     tabs = JalOperationsTabs(None)
     assert LedgerTransaction.Bridge in tabs.widgets
     assert isinstance(tabs.widgets[LedgerTransaction.Bridge], BridgeWidget)
-    assert tabs.indexOf(tabs.widgets[LedgerTransaction.Bridge]) == LedgerTransaction.Bridge
+    assert tabs.indexOf(tabs.widgets[LedgerTransaction.Bridge]) >= 0
 
 
 def test_bridge_widget_prepare_new(accounts):

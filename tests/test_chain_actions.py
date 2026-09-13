@@ -11,7 +11,7 @@ from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo
 from tests.helpers import d2t, create_stocks, create_transfers, symbol_id_for
 from constants import Setup
 from jal.db.db import JalDB
-from jal.db.operations import LedgerTransaction, AssetPayment, ChainAction, FeeKind
+from jal.db.operations import LedgerTransaction, ChainAction, FeeKind
 
 _GAS_FEE = 7        # AssetPayment.GasFee and AssetPayment.TokenRent as they were before this delta: the subtypes
 _TOKEN_RENT = 12    # are gone from the class, and the rows carrying them are exactly what the migration converts
@@ -33,11 +33,11 @@ def _gas_payment(timestamp, number, amount, subtype=_GAS_FEE, note='Gas: contrac
     return oid
 
 
+_STAKING_REWARD = 8    # AssetPayment.StakingReward as schema 75 numbered it, which is what delta 76 meets
+
+
 def _reward(timestamp, number, asset_id, amount='100'):
-    return LedgerTransaction.create_new(LedgerTransaction.AssetPayment, {
-        'timestamp': timestamp, 'type': AssetPayment.StakingReward, 'account_id': 1,
-        'symbol_id': symbol_id_for(asset_id, 2), 'amount': amount, 'tax': '0', 'number': number,
-        'note': 'Reward claim'}).id()
+    return _gas_payment(timestamp, number, amount, subtype=_STAKING_REWARD, note='Reward claim', asset_id=asset_id)
 
 
 _MIGRATION_DELTA = 76
@@ -273,7 +273,7 @@ _MERKL = "0x3ef3d8ba38ebe18db133cec108f4d14ce00dd9ae"     # registered as Protoc
 
 
 def _counts() -> dict:
-    tables = ['chain_actions', 'asset_payments', 'transfers', 'fees', 'operations']
+    tables = ['chain_actions', 'asset_payments', 'asset_incomes', 'transfers', 'fees', 'operations']
     return {table: JalDB._read(f"SELECT COUNT(*) FROM {table}") for table in tables}
 
 
@@ -356,7 +356,7 @@ def test_re_importing_a_claim_appends_its_gas_only_once(eth_wallet, monkeypatch)
              "txlistinternal": []}
     _fetch_and_import(eth_wallet, monkeypatch, pages)
     imported = _counts()
-    assert imported['asset_payments'] == 1 and imported['fees'] == 1 and imported['chain_actions'] == 0
+    assert imported['asset_incomes'] == 1 and imported['fees'] == 1 and imported['chain_actions'] == 0
 
     _fetch_and_import(eth_wallet, monkeypatch, pages)
 

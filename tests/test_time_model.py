@@ -18,7 +18,7 @@ from PySide6.QtWidgets import QStyleOptionViewItem, QWidget
 
 from constants import PredefinedAsset, PredefinedCategory
 from jal.data_import.statement import JSF
-from jal.db.operations import AssetPayment, CorporateAction, LedgerTransaction
+from jal.db.operations import AssetPayment, AssetIncome, CorporateAction, LedgerTransaction
 from jal.data_export.tax_reports.portugal import TaxesPortugal
 from jal.data_export.tax_reports.russia import TaxesRussia
 from jal.data_export.taxes_flow import TaxesFlowRus
@@ -916,13 +916,13 @@ def test_the_reconciliation_of_an_account_is_re_read_with_its_operations(reclock
 # clock, is not re-clocked at all and stays exactly where it is.
 def test_a_priced_payment_keeps_its_price_and_leaves_the_series_alone(reclock_db):
     moment, a_day_of_the_series = _stamp(2021, 7, 1, 15), d2t(210701)
-    create_stock_dividends([(AssetPayment.StockVesting, moment, 1, 4, Decimal('10'), 2, Decimal('100'),
+    create_stock_dividends([(AssetIncome.StockVesting, moment, 1, 4, Decimal('10'), 2, Decimal('100'),
                              Decimal('0'), "Vested, and priced by the statement")])
     create_quotes(4, 2, [(a_day_of_the_series, 99)])
 
     reclock('Europe/Moscow', 'Europe/Lisbon', apply=True)
-    assert _stored(PAYMENTS, 'timestamp', 1) == moment - 2 * 3600
-    vesting = nth_operation(LedgerTransaction.AssetPayment, 1)
+    assert _stored("asset_incomes", 'timestamp', 1) == moment - 2 * 3600
+    vesting = nth_operation(LedgerTransaction.AssetIncome, 1)
     assert vesting.price() == Decimal('100')
     # Neither quote is touched - not the day of the series, and not the one stamped on the hour the payment used
     # to sit on, which is now just another row of the same series and nobody's own price to keep in step.

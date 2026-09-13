@@ -227,6 +227,27 @@ CREATE TABLE asset_payments (
     note       TEXT                                   -- Free text comment
 );
 
+-- Table: asset_incomes
+-- The asset itself arriving at no cost to the account that receives it - shares granted as a dividend or a vesting,
+-- coins earned by staking, dust nobody asked for. 'amount' is a QUANTITY of 'symbol_id' and never a sum of money,
+-- which is what separates this from 'asset_payments'; 'tax' is money all the same, where a broker withheld one.
+DROP TABLE IF EXISTS asset_incomes;
+CREATE TABLE asset_incomes (
+    oid        INTEGER PRIMARY KEY UNIQUE NOT NULL,   -- Unique operation id
+    otype      INTEGER NOT NULL DEFAULT (9),          -- Operation type (9 = asset income)
+    timestamp  INTEGER NOT NULL,                      -- Timestamp when the asset arrived
+    timestamp_day_only INTEGER NOT NULL DEFAULT (0),  -- 1 when the source stated the DAY and no time within it
+    ex_date    INTEGER NOT NULL DEFAULT (0),          -- Timestamp (date) of ex-date for a stock dividend
+    number     TEXT    NOT NULL DEFAULT (''),         -- Number of the operation in broker/exchange systems
+    type       INTEGER NOT NULL,                      -- Sub-type of operation (see AssetIncome class)
+    account_id INTEGER REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,      -- where it arrived
+    symbol_id  INTEGER REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,  -- what arrived
+    amount     TEXT    NOT NULL DEFAULT ('0'),        -- How much of the asset was received
+    tax        TEXT    NOT NULL DEFAULT ('0'),        -- Amount of tax that was witheld, in the account's currency
+    price      TEXT    NOT NULL DEFAULT (''),         -- Per-unit value the grant was made at, as the source stated it. Empty means not stated - never a zero, which would be a real and wrong price
+    note       TEXT                                   -- Free text comment
+);
+
 -- Table: chain_actions
 -- An on-chain event that moved no value: an approval, a reverted transaction, a command to a position, a call that
 -- asked for nothing, and the rent locked by a token account. What it cost is a row of 'fees'; this table holds only
@@ -762,6 +783,30 @@ BEGIN
     UPDATE operations SET timestamp = COALESCE(NEW.timestamp, 0) WHERE id = NEW.oid;
 END;
 -- Ledger and trades cleanup after modification
+DROP TRIGGER IF EXISTS asset_incomes_after_delete;
+CREATE TRIGGER asset_incomes_after_delete AFTER DELETE ON asset_incomes FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= OLD.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp;
+    DELETE FROM operations WHERE id = OLD.oid;
+END;
+-- Ledger and trades cleanup after modification
+DROP TRIGGER IF EXISTS asset_incomes_after_insert;
+CREATE TRIGGER asset_incomes_after_insert AFTER INSERT ON asset_incomes FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= NEW.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= NEW.timestamp;
+    UPDATE operations SET timestamp = COALESCE(NEW.timestamp, 0) WHERE id = NEW.oid;
+END;
+-- Ledger and trades cleanup after modification
+DROP TRIGGER IF EXISTS asset_incomes_after_update;
+CREATE TRIGGER asset_incomes_after_update AFTER UPDATE OF timestamp, type, account_id, symbol_id, amount, tax, price ON asset_incomes FOR EACH ROW
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+    DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
+    UPDATE operations SET timestamp = COALESCE(NEW.timestamp, 0) WHERE id = NEW.oid;
+END;
+-- Ledger and trades cleanup after modification
 DROP TRIGGER IF EXISTS chain_actions_after_delete;
 CREATE TRIGGER chain_actions_after_delete AFTER DELETE ON chain_actions FOR EACH ROW
 BEGIN
@@ -1014,7 +1059,7 @@ BEGIN
 END;
 ------------------------------------------------------------------------------------------------------------------------
 -- Initialize default values for settings
-INSERT INTO settings(name, value) VALUES('SchemaVersion', 76);
+INSERT INTO settings(name, value) VALUES('SchemaVersion', 77);
 INSERT INTO settings(name, value) VALUES('Language', 1);
 INSERT INTO settings(name, value) VALUES('RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
 INSERT INTO settings(name, value) VALUES('RuTaxSessionId', '');

@@ -6,13 +6,11 @@ from decimal import Decimal
 import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db
-from tests.helpers import d2t, create_assets, create_stock_dividends, \
-    nth_operation
+from tests.helpers import d2t, create_assets, create_dividends, nth_operation
 from constants import PredefinedAsset, PredefinedAccountType
 from PySide6.QtWidgets import QMessageBox, QWidget
 from jal.db.db import JalDB
 from jal.db.account import JalAccountCreator
-from jal.db.operations import AssetPayment
 from jal.db.operations import LedgerTransaction
 from jal.widgets.asset_payment_widget import AssetPaymentWidget
 
@@ -28,42 +26,10 @@ def account(prepare_db):
     yield
 
 
-# The price of a stock dividend/vesting is stored in the operation itself, so it must be typed in by hand -
-# there is no quote to take it from.
-def test_stock_dividend_price_is_editable(account):
-    create_stock_dividends([(AssetPayment.StockDividend, d2t(210101), ACCOUNT, AAPL, Decimal('10'), 2,
-                             Decimal('100'), Decimal('0'), '')])
-    widget = AssetPaymentWidget()
-    widget.set_id(1)
-    assert not widget.ui.price_edit.isReadOnly()
-
-    widget.ui.price_edit.setText('123.4567')
-    widget.mapper.submit()
-    assert Decimal(widget.model.record(0).value("price")) == Decimal('123.4567')
-    assert widget._validated()
-    widget._save()
-    assert nth_operation(LedgerTransaction.AssetPayment, 1).price() == Decimal('123.4567')
-
-
-# A non-numeric price becomes a zero, which validation refuses - shares granted for nothing is not a valid input.
-def test_stock_dividend_price_is_validated(account, monkeypatch):
-    monkeypatch.setattr(QMessageBox, "warning", lambda *args, **kwargs: QMessageBox.Ok)
-    create_stock_dividends([(AssetPayment.StockDividend, d2t(210101), ACCOUNT, AAPL, Decimal('10'), 2,
-                             Decimal('100'), Decimal('0'), '')])
-    widget = AssetPaymentWidget()
-    widget.set_id(1)
-
-    widget.ui.price_edit.setText('not a price')
-    widget.mapper.submit()
-    assert Decimal(widget.model.record(0).value("price")) == Decimal('0')
-    assert not widget._validated()
-
-
 # The payment editor drives the fee through the same FeeWidget the other five use, so a fee typed here is a child
 # row of the payment and not a stand-alone gas operation of its own.
 def test_the_editor_stores_the_fee_of_a_payment(account):
-    create_stock_dividends([(AssetPayment.StockDividend, d2t(210101), ACCOUNT, AAPL, Decimal('10'), 2,
-                             Decimal('100'), Decimal('0'), '')])
+    create_dividends([(d2t(210101), ACCOUNT, AAPL, Decimal('10'), Decimal('0'), '')])
     oid = nth_operation(LedgerTransaction.AssetPayment, 1).id()
     parent = QWidget()          # a parentless dialog is collected in a way that aborts the process
     widget = AssetPaymentWidget(parent=parent)

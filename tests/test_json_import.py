@@ -243,9 +243,6 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
     test_payments = [
         [1, 2, 1529612400, 0, 0, '', 1, 1, 5, '16.76', '0', '', 'EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)'],
         [2, 2, 1533673200, 0, 0, '', 1, 1, 5, '20.35', '0.54', '', 'EDV(US9219107094) CASH DIVIDEND 0.10175000 USD PER SHARE (Ordinary Dividend)'],
-        [29, 2, 1633033200, 0, 0, '16054321038', 3, 1, 4, '5.887', '15', '25.73', 'VUG (US9229087369) Stock Dividend US9229087369 196232339 for 10000000000'],
-        [30, 2, 1595017200, 0, 0, '13259965038', 3, 1, 19, '3', '0', '4.73', 'TEF (US8793822086) STOCK DIVIDEND US8793822086 416666667 FOR 10000000000'],
-        [31, 2, 1591215600, 0, 0, '12882908488', 3, 1, 35, '3', '0', '8.59', 'MAC (US5543821012) CASH DIVIDEND USD 0.10, STOCK DIVIDEND US5543821012 548275673 FOR 10000000000'],
         [32, 2, 1578082800, 0, 1577664000, '', 1, 1, 6, '60.2', '6.02', '', 'ZROZ(US72201R8824) CASH DIVIDEND USD 0.86 PER SHARE (Ordinary Dividend)'],
         [33, 2, 1633033200, 0, 0, '', 1, 1, 4, '158.6', '15.86', '', 'VUG (US9229087369) CASH DIVIDEND USD 0.52 (Ordinary Dividend)'],
         [34, 2, 1590595065, 0, 0, '2882737839', 2, 1, 12, '-25.69', '0', '', 'PURCHASE ACCRUED INT X 6 1/4 03/15/26'],
@@ -257,10 +254,21 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
     for i, payment in enumerate(test_payments):
         assert payments[i] == payment
 
-    # The price a stock dividend or a vesting came in with is stored ON THE PAYMENT (see AssetPayment.price) and
+    # The shares granted are the asset itself arriving, so they are stored as an income and not as a payment
+    test_incomes = [
+        [29, 9, 1633033200, 0, 0, '16054321038', 1, 1, 4, '5.887', '15', '25.73', 'VUG (US9229087369) Stock Dividend US9229087369 196232339 for 10000000000'],
+        [30, 9, 1595017200, 0, 0, '13259965038', 1, 1, 19, '3', '0', '4.73', 'TEF (US8793822086) STOCK DIVIDEND US8793822086 416666667 FOR 10000000000'],
+        [31, 9, 1591215600, 0, 0, '12882908488', 1, 1, 35, '3', '0', '8.59', 'MAC (US5543821012) CASH DIVIDEND USD 0.10, STOCK DIVIDEND US5543821012 548275673 FOR 10000000000']
+    ]
+    incomes = JalAccount(1).dump_asset_incomes()
+    assert len(incomes) == len(test_incomes)
+    for i, income in enumerate(test_incomes):
+        assert incomes[i] == income
+
+    # The price a stock dividend or a vesting came in with is stored ON THE OPERATION (see AssetIncome.price) and
     # asked of it, not of the price series - the rows above carry it, and it is what values them.
     for oid, price in ((29, '25.73'), (30, '4.73'), (31, '8.59')):
-        assert LedgerTransaction.get_operation(LedgerTransaction.AssetPayment, oid).price() == Decimal(price)
+        assert LedgerTransaction.get_operation(LedgerTransaction.AssetIncome, oid).price() == Decimal(price)
     # ... and nothing was written into the series on their behalf: an asset the statement only ever granted has
     # no quote of its own at all.
     assert JalAsset(18).quote(d2t(230101), 2) == (0, Decimal('0'))

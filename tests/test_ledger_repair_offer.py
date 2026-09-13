@@ -74,7 +74,7 @@ def test_a_halt_on_a_residue_is_offered_and_repaired(window, halted_ledger, monk
     # The question names what the halt was about, so it can be answered without reading the log
     question = [arg for arg in asked[0] if isinstance(arg, str) and 'missing' in arg][0]
     assert 'aEthUSDG' in question and '0.000003' in question
-    assert JalDB._read("SELECT COUNT(*) FROM asset_payments") == 1
+    assert JalDB._read("SELECT COUNT(*) FROM asset_incomes") == 1
     assert JalAccount(1).get_asset_amount(halted_ledger, 5) == Decimal('0')          # the ledger ran to the end
     assert JalAccount(1).get_asset_amount(halted_ledger, 4) == Decimal('50251.319007')
 
@@ -84,7 +84,7 @@ def test_a_declined_offer_books_nothing(window, halted_ledger, monkeypatch):
     _halt(window)
 
     assert len(asked) == 1
-    assert JalDB._read("SELECT COUNT(*) FROM asset_payments") == 0
+    assert JalDB._read("SELECT COUNT(*) FROM asset_incomes") == 0
     assert JalAccount(1).get_asset_amount(halted_ledger, 5) != Decimal('0')          # still stopped short of the exit
 
 
@@ -93,4 +93,4 @@ def test_a_halt_on_something_else_is_not_offered(window, halted_on_missing_trans
     _halt(window)
 
     assert asked == []
-    assert JalDB._read("SELECT COUNT(*) FROM asset_payments") == 0
+    assert JalDB._read("SELECT COUNT(*) FROM asset_incomes") == 0

@@ -35,17 +35,21 @@ PAYMENTS = "asset_payments"
 # A leg whose account column is NULL means "the same account as the other leg" and is resolved as such.
 #
 # NEVER re-clocked, and deliberately absent from this map:
-#   trades.settlement, asset_payments.ex_date, residence.since_timestamp - dates by definition, they state a day
+#   trades.settlement, asset_payments.ex_date, asset_incomes.ex_date, residence.since_timestamp - dates by
+#     definition, they state a day
 #     and carry no time of day to convert;
 #   ledger, ledger_totals, trades_opened, trades_closed - rebuilt from the operations, see the rebuild flag below;
 #   chain_balances, token_list_updates - re-downloaded from their source, which has its own clock;
 #   quotes - a series of DAYS read on the user's clock, and re-downloadable besides. A price that belongs to one
-#     operation is stored on the operation itself and travels with it (see AssetPayment.price), so nothing in
+#     operation is stored on the operation itself and travels with it (see AssetIncome.price), so nothing in
 #     this table is anybody's own price to keep in step.
 RECLOCKED_COLUMNS = (
     ("actions", "timestamp", "o.account_id", "o.note"),
     ("asset_actions", "timestamp", "o.account_id", "o.note"),
     (PAYMENTS, "timestamp", "o.account_id", "o.note"),
+    ("asset_incomes", "timestamp", "o.account_id", "o.note"),
+    ("asset_incomes", "timestamp", "o.account_id", "o.note"),
+    ("asset_incomes", "timestamp", "o.account_id", "o.note"),
     ("chain_actions", "timestamp", "o.account_id", "o.note"),
     ("conversions", "timestamp", "o.account_id", "o.note"),
     ("swaps", "timestamp", "o.account_id", "o.note"),
@@ -63,8 +67,8 @@ RECLOCKED_COLUMNS = (
 )
 
 # The timestamps that say for themselves whether they state a day, in a column named after them.
-FLAGGED_COLUMNS = (("asset_payments", "timestamp"), ("asset_actions", "timestamp"),
-                   ("chain_actions", "timestamp"))
+FLAGGED_COLUMNS = (("asset_payments", "timestamp"), ("asset_incomes", "timestamp"),
+                   ("asset_actions", "timestamp"), ("chain_actions", "timestamp"))
 
 
 # The operations that hold two moments, as (table, earlier leg, later leg). Moving one leg and not the other can put

@@ -3,6 +3,7 @@ from PySide6.QtWidgets import QWidget, QStackedWidget, QMessageBox
 
 from jal.widgets.corporate_action_widget import CorporateActionWidget
 from jal.widgets.asset_payment_widget import AssetPaymentWidget
+from jal.widgets.asset_income_widget import AssetIncomeWidget
 from jal.widgets.income_spending_widget import IncomeSpendingWidget
 from jal.widgets.trade_widget import TradeWidget
 from jal.widgets.transfer_widget import TransferWidget
@@ -21,6 +22,7 @@ class JalOperationsTabs(QStackedWidget):
         self.widgets = {LedgerTransaction.NA: QWidget(self)}
         operation_widget_classes = ((LedgerTransaction.IncomeSpending, IncomeSpendingWidget),
                                     (LedgerTransaction.AssetPayment, AssetPaymentWidget),
+                                    (LedgerTransaction.AssetIncome, AssetIncomeWidget),
                                     (LedgerTransaction.Trade, TradeWidget),
                                     (LedgerTransaction.Transfer, TransferWidget),
                                     (LedgerTransaction.CorporateAction, CorporateActionWidget),

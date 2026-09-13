@@ -5,7 +5,7 @@ from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QHeaderView
 from jal.constants import Setup
 from jal.reports.reports import Reports
-from jal.db.operations import AssetPayment
+from jal.db.operations import AssetPayment, AssetIncome
 from jal.db.helpers import localize_decimal
 from jal.ui.reports.ui_assets_payments_report import Ui_AssetsPaymentsReportWidget
 from jal.widgets.delegates import FloatDelegate
@@ -20,11 +20,6 @@ class AssetsPaymentsModel(QAbstractTableModel):
         super().__init__(parent_view)
         self._columns = [self.tr("Date"), self.tr("Symbol"), self.tr("Asset"), self.tr("Type"),
                          self.tr("Amount"), self.tr("Tax"), self.tr("Note")]
-        # Indexed by AssetPayment subtype, so every subtype needs an entry here or the report raises IndexError
-        # on the first payment of that kind - which is what happened to 'Asset fee/tax' (6) before it was listed.
-        self._types = [self.tr("N/A"), self.tr("Dividend"), self.tr("Bond Interest"), self.tr("Stock Dividend"),
-                       self.tr("Stock Vesting"), self.tr("Bond Amortization"), self.tr("Asset fee/tax"),
-                       self.tr("Gas fee"), self.tr("Staking reward"), self.tr("Dust attack")]
         self._view = parent_view
         self._data = []
         self._account_id = 0
@@ -60,7 +55,10 @@ class AssetsPaymentsModel(QAbstractTableModel):
         if column == 2:
             return dividend.asset().name()
         if column == 3:
-            return self._types[dividend.subtype()]
+            # Asked of the operation rather than read out of a list indexed by subtype: a subtype number means
+            # something only together with the class that declares it, and this report holds both halves of the
+            # split payment. A list also ends one entry short of the class the first time a subtype is added.
+            return dividend.name()
         if column == 4:
             return dividend.amount()
         if column == 5:
@@ -103,7 +101,8 @@ class AssetsPaymentsModel(QAbstractTableModel):
 
     def prepareData(self):
         self.beginResetModel()
-        dividends = AssetPayment.get_list(self._account_id)
+        dividends = AssetPayment.get_list(self._account_id) + AssetIncome.get_list(self._account_id)
+        dividends.sort(key=lambda x: x.timestamp())
         self._data = [x for x in dividends if self._begin <= x.timestamp() <= self._end]
         self._total = sum([x.amount() for x in self._data])
         self._total_tax = sum([x.tax() for x in self._data])

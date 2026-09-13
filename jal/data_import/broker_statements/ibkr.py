@@ -11,7 +11,7 @@ from jal.constants import PredefinedCategory
 from jal.widgets.helpers import ts2dt, ts2d
 from jal.db.helpers import format_decimal, remove_exponent
 from jal.db.account import JalAccount
-from jal.db.operations import AssetPayment
+from jal.db.operations import AssetPayment, AssetIncome
 from jal.data_import.statement import JSF, Statement_ImportError, Statement_Capabilities
 from jal.data_import.statement_xml import StatementXML
 
@@ -349,7 +349,7 @@ class StatementIBKR(StatementXML):
         # Dump asset_payments info from database for the given symbol's asset
         db_account = self._map_db_account(account)
         db_asset = self._map_db_asset_by_symbol(symbol)
-        payments = JalAccount(db_account).dump_asset_payments()
+        payments = JalAccount(db_account).dump_asset_payments() + JalAccount(db_account).dump_asset_incomes()
         payments = [x for x in payments if x[DIVIDENDS_TABLE_ASSET_FIELD] == db_asset]
         debug_info += "Database data:\n----------------------------------------------------------------\n"
         debug_info += str(payments)
@@ -1061,7 +1061,7 @@ class StatementIBKR(StatementXML):
                 db_asset = 0
             if db_account and db_asset:
                 db_dividends = AssetPayment.get_list(db_account, db_asset, AssetPayment.Dividend)
-                db_dividends += AssetPayment.get_list(db_account, db_asset, AssetPayment.StockDividend)
+                db_dividends += AssetIncome.get_list(db_account, db_asset, AssetIncome.StockDividend)
                 for db_dividend in db_dividends:
                     if db_dividend.timestamp() == tax['timestamp']:
                         dividends.append({
@@ -1267,7 +1267,7 @@ class StatementIBKR(StatementXML):
         if not db_account or not db_asset:
             return []
         stored = AssetPayment.get_list(db_account, db_asset, AssetPayment.Dividend)
-        stored += AssetPayment.get_list(db_account, db_asset, AssetPayment.StockDividend)
+        stored += AssetIncome.get_list(db_account, db_asset, AssetIncome.StockDividend)
         return [{
             "id": self.statement_payment_id(payment.oid()),
             "account": tax['account'],

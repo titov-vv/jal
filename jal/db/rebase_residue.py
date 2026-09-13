@@ -6,7 +6,7 @@ from jal.db.account import JalAccount
 from jal.db.chain_balance import JalChainBalance
 from jal.db.db import JalDB
 from jal.db.helpers import remove_exponent, now_ts
-from jal.db.operations import AssetPayment, LedgerAssetShortage, LedgerTransaction
+from jal.db.operations import AssetIncome, LedgerAssetShortage, LedgerTransaction
 from jal.db.symbol import JalSymbol
 
 
@@ -21,7 +21,7 @@ from jal.db.symbol import JalSymbol
 #      value, because the position's basis was paid in full and none of it belongs to the crumb. This is the older
 #      of the two and everything down to refusal_to_absorb() describes it.
 #   2. the ACCRUED INTEREST, which is a real quantity of real value that the position earned while it was held.
-#      Recognized as income - an AssetPayment.StakingReward - and only at withdrawal, which is when it stops being
+#      Recognized as income - an AssetIncome.StakingReward - and only at withdrawal, which is when it stops being
 #      unrealized. See _realize_accrual() and the note above it.
 #
 # The second one is what a size-and-value heuristic can never reach: 2.24% of a position and $173 of value is not a
@@ -36,7 +36,7 @@ from jal.db.symbol import JalSymbol
 # the gap while the position is open: it surfaces the moment the position is closed in full, because a "withdraw max"
 # burns the true balance. The ledger then stops on the withdrawal's conversion, one crumb short of processing it.
 #
-# The crumb is booked where the ledger found it, as an AssetPayment.RebaseAdjustment at ZERO value: the position's
+# The crumb is booked where the ledger found it, as an AssetIncome.RebaseAdjustment at ZERO value: the position's
 # cost basis was paid in full when it was opened and none of it belongs to the crumb, so the quantity comes in free
 # and the per-unit basis of everything already held is left untouched.
 #
@@ -79,10 +79,10 @@ class RebaseResidue(JalDB):
         # One second before the operation that revealed it: the quantity has to be on the books by the time the
         # conversion is processed, and its own second is already taken by the conversion.
         payment = {'timestamp': shortage.operation.timestamp() - 1, 'number': shortage.operation.number(),
-                   'type': AssetPayment.RebaseAdjustment, 'account_id': shortage.account_id,
+                   'type': AssetIncome.RebaseAdjustment, 'account_id': shortage.account_id,
                    'symbol_id': shortage.symbol_id, 'amount': gap,
                    'note': self.tr("Rebasing balance not reported by a transfer")}
-        LedgerTransaction.create_new(LedgerTransaction.AssetPayment, payment)
+        LedgerTransaction.create_new(LedgerTransaction.AssetIncome, payment)
         logging.info(self.tr("Rebase residue booked: ") + f"{remove_exponent(gap)} {symbol.symbol()} "
                      + JalAccount(shortage.account_id).name())
         return True
@@ -117,7 +117,7 @@ class RebaseResidue(JalDB):
     # left alone until a withdrawal turns it into something the wallet actually received. That is one operation per
     # position lifetime, at a timestamp with real meaning, and it is how a bank posts interest.
     #
-    # It is an AssetPayment.StakingReward and not the RebaseAdjustment above, because the two are opposite in the one
+    # It is an AssetIncome.StakingReward and not the RebaseAdjustment above, because the two are opposite in the one
     # way that matters: a crumb is a rounding artifact that costs nothing and must not move any basis, while this is
     # income, and it opens a lot at the market value of the day exactly as any other reward does.
     #
@@ -135,10 +135,10 @@ class RebaseResidue(JalDB):
         # One second before the operation that revealed it, exactly as the crumb is booked: the quantity has to be on
         # the books by the time the withdrawal is processed, and the withdrawal's own second is taken.
         payment = {'timestamp': shortage.operation.timestamp() - 1, 'number': shortage.operation.number(),
-                   'type': AssetPayment.StakingReward, 'account_id': shortage.account_id,
+                   'type': AssetIncome.StakingReward, 'account_id': shortage.account_id,
                    'symbol_id': shortage.symbol_id, 'amount': accrued,
                    'note': self.tr("Interest accrued on a rebasing balance, realized on withdrawal")}
-        LedgerTransaction.create_new(LedgerTransaction.AssetPayment, payment)
+        LedgerTransaction.create_new(LedgerTransaction.AssetIncome, payment)
         # The measurement has now been spent, and keeping it would be dangerous rather than merely stale: the books
         # have just risen by the whole delta, so the same snapshot compared against them again would report the
         # withdrawn quantity as a fresh accrual and recognize it a second time. The chain is asked again at the next

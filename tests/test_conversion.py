@@ -9,7 +9,7 @@ from constants import AccountData, BookAccount, PredefinedCategory
 from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
-from jal.db.operations import LedgerTransaction, LedgerError, LedgerAssetShortage, Conversion
+from jal.db.operations import LedgerTransaction, LedgerError, LedgerAssetShortage, Conversion, AssetIncome
 from jal.db.db import JalDB
 from jal.db.rebase_residue import RebaseResidue
 
@@ -332,7 +332,7 @@ def test_a_shortage_that_is_no_residue_leaves_the_ledger_stopped(prepare_db_fifo
 
     assert ledger.absorb_residues() == 0
     assert isinstance(ledger.stopped_by, LedgerAssetShortage)
-    assert JalDB._read("SELECT COUNT(*) FROM asset_payments") == 0
+    assert JalDB._read("SELECT COUNT(*) FROM asset_incomes") == 0
 
 
 # A stop is taken between the passes, each of which is a full rebuild, and leaves the books as they were
@@ -345,7 +345,7 @@ def test_a_stop_ends_the_absorption_before_anything_is_booked(prepare_db_fifo):
     create_conversions(1, [(t_exit, 5, '50246.880299', 4, '50251.319007')])
 
     assert Ledger().absorb_residues(interrupted=lambda: True) == 0
-    assert JalDB._read("SELECT COUNT(*) FROM asset_payments") == 0
+    assert JalDB._read("SELECT COUNT(*) FROM asset_incomes") == 0
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -427,16 +427,17 @@ def test_the_realized_accrual_is_income_at_market_value(prepare_db_fifo):
     Ledger().rebuild(from_timestamp=0)
 
     payments = JalDB()._read_to_list(
-        "SELECT type, amount FROM asset_payments WHERE account_id=1 AND symbol_id=:s",
+        "SELECT type, amount FROM asset_incomes WHERE account_id=1 AND symbol_id=:s",
         [(":s", symbol_id_for(5, 2))], named=True)
     assert len(payments) == 1
-    assert int(payments[0]['type']) == 8                                # AssetPayment.StakingReward
+    assert int(payments[0]['type']) == AssetIncome.StakingReward
     assert Decimal(payments[0]['amount']) == _ACCRUED
     # ...and it carried VALUE into the position. The ledger posting of a rebase crumb is worth exactly zero; this one
     # is worth the accrued quantity at the market of the day, which is what makes it income rather than a correction.
     booked = JalDB()._read_to_list(
-        "SELECT amount, value FROM ledger WHERE otype=2 AND account_id=1 AND asset_id=5 AND book_account=:assets",
-        [(":assets", BookAccount.Assets)], named=True)
+        "SELECT amount, value FROM ledger WHERE otype=:otype AND account_id=1 AND asset_id=5 "
+        "AND book_account=:assets",
+        [(":otype", LedgerTransaction.AssetIncome), (":assets", BookAccount.Assets)], named=True)
     assert len(booked) == 1
     assert Decimal(booked[0]['amount']) == _ACCRUED
     assert Decimal(booked[0]['value']) == _ACCRUED * Decimal('1')

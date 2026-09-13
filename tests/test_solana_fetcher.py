@@ -273,11 +273,11 @@ def test_is_native_dust_judged_by_raw_amount(fetcher):
 # own yet - the zero-basis fallback in AssetPayment.price() is what makes that safe (see the discussion that
 # replaced the old value-based dust rule: requiring a quote is exactly what used to make dust detection inert).
 def test_dust_attack_reaches_the_database_without_a_price(fetcher, sol_wallet):
-    from jal.db.operations import AssetPayment
+    from jal.db.operations import AssetIncome
     fetcher.fetch(sol_wallet)
     fetcher.import_fetched()
     assert JalAsset.find({'symbol': 'SOL', 'type': PredefinedAsset.Crypto}).id() != 0   # created by the import itself
-    dust = AssetPayment.get_list(sol_wallet.id(), subtype=AssetPayment.DustAttack)
+    dust = AssetIncome.get_list(sol_wallet.id(), subtype=AssetIncome.DustAttack)
     assert dust
     assert all(p.amount() == Decimal('1E-9') for p in dust)   # the raw SOL quantity is still recorded correctly
     assert all(p.price() == Decimal('0') for p in dust)       # ...but opened at a zero basis, having no quote to price it

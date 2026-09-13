@@ -1,6 +1,6 @@
 from decimal import Decimal
 from jal.constants import PredefinedAsset, PredefinedCategory, SymbolId
-from jal.db.operations import AssetPayment, CorporateAction
+from jal.db.operations import LedgerTransaction, AssetIncome, CorporateAction
 from jal.data_export.taxes import TaxReport
 
 
@@ -25,10 +25,11 @@ class TaxesPortugal(TaxReport):
         for dividend in dividends:
             country = dividend.asset().country()
             note = ''
-            if dividend.subtype() == AssetPayment.StockDividend:
-                note = "Stock dividend"
-            if dividend.subtype() == AssetPayment.StockVesting:
-                note = "Stock vesting"
+            if dividend.type() == LedgerTransaction.AssetIncome:
+                if dividend.subtype() == AssetIncome.StockDividend:
+                    note = "Stock dividend"
+                if dividend.subtype() == AssetIncome.StockVesting:
+                    note = "Stock vesting"
             line = {
                 'report_template': "dividend",
                 'payment_date': self._moment(dividend.timestamp(), dividend.timestamp_is_day()),
