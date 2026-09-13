@@ -64,10 +64,30 @@ def _add_fee(operation_id_value: int, amount='1', account_id=1, symbol_id=None, 
     return query.lastInsertId()
 
 
-# The five operations with their fees in their OWN columns - the shape a database had before this table, and the
-# shape the editors still write. The write path no longer puts a fee there, so it is moved after the fact.
+# The fee columns of schema 74, as the migration below finds them. They were dropped once every fee lived in the
+# table, so the state that migration converts has to be put back before it can be replayed - the same way
+# test_deposit_migration re-declares the tables delta 61 consumed.
+_RETIRED_COLUMNS = {
+    'trades': ["fee TEXT NOT NULL DEFAULT ('0')"],
+    'transfers': ["fee TEXT", "fee_account INTEGER REFERENCES accounts (id)",
+                  "fee_symbol_id INTEGER REFERENCES asset_symbol (id)"],
+    'conversions': ["fee_qty TEXT", "fee_symbol_id INTEGER REFERENCES asset_symbol (id)"],
+    'swaps': ["fee_qty TEXT", "fee_symbol_id INTEGER REFERENCES asset_symbol (id)"],
+    'bridges': ["fee_qty TEXT", "fee_symbol_id INTEGER REFERENCES asset_symbol (id)"],
+}
+
+
+def _restore_the_fee_columns():
+    for table, columns in _RETIRED_COLUMNS.items():
+        for column in columns:
+            assert JalDB._exec(f"ALTER TABLE {table} ADD COLUMN {column}") is not None, f"{table}.{column}"
+    JalDB().commit()
+
+
+# The five operations with their fees in their own columns - the shape a database had when the migration ran
 def _operations_with_column_fees():
     _operations_with_fees()
+    _restore_the_fee_columns()
     for table, amount, symbol, account in (('trades', 'fee', None, None),
                                            ('transfers', 'fee', 'fee_symbol_id', 'fee_account'),
                                            ('conversions', 'fee_qty', 'fee_symbol_id', None),
@@ -386,6 +406,17 @@ def _created_objects(text: str) -> dict:
     return objects
 
 
+# An object a LATER delta restates is compared as that delta leaves it, not as delta 73 wrote it - an upgraded
+# database ends where a new one starts, and only the last word about an object says where that is.
+def _as_the_upgrade_leaves_it(project_root, name: str, since: int) -> str:
+    for version in range(Setup.DB_REQUIRED_VERSION, since - 1, -1):
+        with open(project_root + f"/jal/updates/{Setup.UPDATE_PREFIX}{version}.sql") as delta:
+            declared = _created_objects(delta.read())
+        if name in declared:
+            return declared[name]
+    raise AssertionError(f"{name} is declared by no delta from {since} on")
+
+
 def test_the_delta_and_the_init_script_declare_the_same_objects(project_root):
     with open(project_root + "/jal/" + Setup.INIT_SCRIPT_PATH) as init:
         from_init = _created_objects(init.read())
@@ -395,9 +426,9 @@ def test_the_delta_and_the_init_script_declare_the_same_objects(project_root):
         from_delta = _created_objects(delta.read())
 
     assert len(from_delta) == 21     # the table, its index, and nineteen triggers
-    for name, declaration in from_delta.items():
+    for name in from_delta:
         assert name in from_init, f"{name} is created by the delta and by nothing else"
-        assert declaration == from_init[name], name
+        assert _as_the_upgrade_leaves_it(project_root, name, 73) == from_init[name], name
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -477,7 +508,6 @@ def test_an_operation_reads_a_fee_the_parent_column_never_held(prepare_db_fifo):
     trade = LedgerTransaction.get_operation(LedgerTransaction.Trade, oid)
     assert trade.fee() == Decimal('3.5')
     assert trade.fee_account_id() == 1
-    assert JalDB._read("SELECT fee FROM trades WHERE oid=:oid", [(":oid", oid)]) == '0'
 
 
 # Two fees of one operation are all stated, in the order 'idx' fixes - which is what makes the column more than a
@@ -584,6 +614,7 @@ def test_every_writer_stores_a_fee_in_the_canonical_spelling(prepare_db_fifo):
 # verbatim, so they arrived spelled however those columns held them.
 def test_the_companion_normalises_every_stored_fee(prepare_db_fifo):
     _accounts_and_assets()
+    _restore_the_fee_columns()
     oid = _trade()
     for spelling in ('1.50', '2.0', '3.000'):
         _add_fee(oid, amount=spelling, idx=len(_rows_of(oid)))

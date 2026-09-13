@@ -66,7 +66,6 @@ class TradeWidget(AbstractOperationDetails):
         new_record.setValue("symbol_id", 0)
         new_record.setValue("qty", '0')
         new_record.setValue("price", '0')
-        new_record.setValue("fee", '0')   # NOT NULL until the column is dropped, and no longer what holds the fee
         new_record.setValue("note", None)
         return new_record
 

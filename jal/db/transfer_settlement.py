@@ -118,10 +118,12 @@ class TransferSettlement(JalDB):
     def _legs_naming_their_counterparty(self) -> list:
         legs = []
         query = self._exec(
-            "SELECT oid, withdrawal_timestamp, withdrawal_account, withdrawal, deposit_timestamp, deposit_account, "
-            "deposit, fee_account, fee, fee_symbol_id, number, counterparty_address, symbol_id, note FROM transfers "
-            "WHERE (withdrawal_account IS NULL OR deposit_account IS NULL) "
-            "AND NOT counterparty_address IS NULL AND counterparty_address!='' ORDER BY oid")
+            "SELECT t.oid, t.withdrawal_timestamp, t.withdrawal_account, t.withdrawal, t.deposit_timestamp, "
+            "t.deposit_account, t.deposit, f.account_id AS fee_account, f.amount AS fee, "
+            "f.symbol_id AS fee_symbol_id, t.number, t.counterparty_address, t.symbol_id, t.note "
+            "FROM transfers AS t " + FIRST_FEE +
+            "WHERE (t.withdrawal_account IS NULL OR t.deposit_account IS NULL) "
+            "AND NOT t.counterparty_address IS NULL AND t.counterparty_address!='' ORDER BY t.oid")
         while query.next():
             legs.append(self._read_record(query, named=True))
         return legs

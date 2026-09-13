@@ -513,7 +513,6 @@ CREATE TABLE trades (
     symbol_id  INTEGER  REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,  -- which asset was bought/sold
     qty        TEXT     NOT NULL DEFAULT ('0'),       -- Quantity of asset (>0 - Buy, <0 - Sell)
     price      TEXT     NOT NULL DEFAULT ('0'),       -- Price of the trade
-    fee        TEXT     NOT NULL DEFAULT ('0'),       -- Total fee (broker, exchange, other) of the trade
     note       TEXT     NOT NULL DEFAULT ('')         -- Free text comment
 );
 
@@ -540,8 +539,6 @@ CREATE TABLE swaps (
     in_symbol_id  INTEGER     NOT NULL REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,  -- Acquired asset
     in_qty        TEXT        NOT NULL,
     in_tx_hash    TEXT        NOT NULL DEFAULT (''),           -- Hash of the receiving transaction (destination chain)
-    fee_symbol_id INTEGER     REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,           -- Fee (gas) asset, if any
-    fee_qty       TEXT,
     note          TEXT                                         -- Free text comment
 );
 
@@ -568,8 +565,6 @@ CREATE TABLE bridges (
     in_symbol_id   INTEGER    REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,  -- Same asset as out_symbol_id (enforced by application)
     in_qty         TEXT,                                       -- May be less than out_qty (in-kind bridge fee)
     in_tx_hash     TEXT       NOT NULL DEFAULT (''),           -- Hash of the receiving transaction (destination chain)
-    fee_symbol_id  INTEGER    REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,  -- Fee (gas) asset, paid from the source account
-    fee_qty        TEXT,
     note           TEXT                                        -- Free text comment
 );
 
@@ -623,12 +618,9 @@ CREATE TABLE transfers (
     deposit_timestamp    INTEGER     NOT NULL,                        -- When received
     deposit_account      INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,           -- To where transfer is (NULL until the destination is known)
     deposit              TEXT        NOT NULL,                        -- Amount received
-    fee_account          INTEGER     REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE,           -- If and where fee was withdrawn
-    fee                  TEXT,                                        -- Fee amount
     number               TEXT        NOT NULL DEFAULT (''),           -- Number of operation in bank/broker systems
     counterparty_address TEXT,                                        -- Address of the end that has no account (NULL if both are known)
     symbol_id            INTEGER     REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,       -- If it is an asset transfer
-    fee_symbol_id        INTEGER     REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,       -- Asset the fee is paid in (crypto only); NULL = fee account currency
     note                 TEXT,                                        -- Free text comment
     CHECK (NOT withdrawal_account IS NULL OR NOT deposit_account IS NULL)   -- one end may be unknown, never both
 );
@@ -651,8 +643,6 @@ CREATE TABLE conversions (
     out_qty       TEXT        NOT NULL,
     in_symbol_id  INTEGER     NOT NULL REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,  -- Asset received instead
     in_qty        TEXT        NOT NULL,
-    fee_symbol_id INTEGER     REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,           -- Fee (gas) asset, if any
-    fee_qty       TEXT,
     note          TEXT                                         -- Free text comment
 );
 
@@ -769,7 +759,7 @@ BEGIN
 END;
 -- Ledger and trades cleanup after modification
 DROP TRIGGER IF EXISTS trades_after_update;
-CREATE TRIGGER trades_after_update AFTER UPDATE OF timestamp, account_id, symbol_id, qty, price, fee ON trades FOR EACH ROW
+CREATE TRIGGER trades_after_update AFTER UPDATE OF timestamp, account_id, symbol_id, qty, price ON trades FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
@@ -793,7 +783,7 @@ END;
 -- A cross-chain swap receives later than it sends, so wiping the ledger from 'timestamp' (the sending leg) forward
 -- always covers the receiving leg as well - there is no need to look at 'in_timestamp' here.
 DROP TRIGGER IF EXISTS swaps_after_update;
-CREATE TRIGGER swaps_after_update AFTER UPDATE OF timestamp, account_id, out_symbol_id, out_qty, in_timestamp, in_account_id, in_symbol_id, in_qty, fee_symbol_id, fee_qty ON swaps FOR EACH ROW
+CREATE TRIGGER swaps_after_update AFTER UPDATE OF timestamp, account_id, out_symbol_id, out_qty, in_timestamp, in_account_id, in_symbol_id, in_qty ON swaps FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
@@ -819,7 +809,7 @@ BEGIN
         WHERE id = NEW.oid;
 END;
 DROP TRIGGER IF EXISTS bridges_after_update;
-CREATE TRIGGER bridges_after_update AFTER UPDATE OF out_timestamp, in_timestamp, out_account_id, in_account_id, out_symbol_id, in_symbol_id, out_qty, in_qty, fee_symbol_id, fee_qty ON bridges FOR EACH ROW
+CREATE TRIGGER bridges_after_update AFTER UPDATE OF out_timestamp, in_timestamp, out_account_id, in_account_id, out_symbol_id, in_symbol_id, out_qty, in_qty ON bridges FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.out_timestamp OR timestamp >= OLD.in_timestamp OR timestamp >= NEW.out_timestamp OR timestamp >= NEW.in_timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.out_timestamp OR timestamp >= OLD.in_timestamp OR timestamp >= NEW.out_timestamp OR timestamp >= NEW.in_timestamp;
@@ -888,7 +878,7 @@ BEGIN
 END;
 -- Ledger cleanup after modification
 DROP TRIGGER IF EXISTS transfers_after_update;
-CREATE TRIGGER transfers_after_update AFTER UPDATE OF withdrawal_timestamp, deposit_timestamp, withdrawal_account, deposit_account, fee_account, withdrawal, deposit, fee, fee_symbol_id, symbol_id ON transfers FOR EACH ROW
+CREATE TRIGGER transfers_after_update AFTER UPDATE OF withdrawal_timestamp, deposit_timestamp, withdrawal_account, deposit_account, withdrawal, deposit, symbol_id ON transfers FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.withdrawal_timestamp OR timestamp >= OLD.deposit_timestamp OR
                 timestamp >= NEW.withdrawal_timestamp OR timestamp >= NEW.deposit_timestamp;
@@ -914,7 +904,7 @@ BEGIN
 END;
 -- Ledger and trades cleanup after modification
 DROP TRIGGER IF EXISTS conversions_after_update;
-CREATE TRIGGER conversions_after_update AFTER UPDATE OF timestamp, account_id, out_symbol_id, out_qty, in_symbol_id, in_qty, fee_symbol_id, fee_qty ON conversions FOR EACH ROW
+CREATE TRIGGER conversions_after_update AFTER UPDATE OF timestamp, account_id, out_symbol_id, out_qty, in_symbol_id, in_qty ON conversions FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
@@ -980,7 +970,7 @@ BEGIN
 END;
 ------------------------------------------------------------------------------------------------------------------------
 -- Initialize default values for settings
-INSERT INTO settings(name, value) VALUES('SchemaVersion', 74);
+INSERT INTO settings(name, value) VALUES('SchemaVersion', 75);
 INSERT INTO settings(name, value) VALUES('Language', 1);
 INSERT INTO settings(name, value) VALUES('RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
 INSERT INTO settings(name, value) VALUES('RuTaxSessionId', '');

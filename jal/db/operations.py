@@ -106,6 +106,11 @@ class LedgerTransaction(JalDB):
                 data[key] = self._oname
         return str(data)
 
+    # An operation that cannot be charged a fee has none to take out of the data it arrives in
+    @classmethod
+    def _normalise_fee(cls, data: dict) -> None:
+        pass
+
     # Every operation class, for the code that has to treat them as a set rather than dispatch on one of them
     @staticmethod
     def operation_classes() -> list:
@@ -184,34 +189,12 @@ class LedgerTransaction(JalDB):
 
     # Returns operation id if operation found by operation data, else 0
     def find_operation(self, operation_type: int, operation_data: dict) -> int:
-        if operation_type == LedgerTransaction.IncomeSpending:
-            table = IncomeSpending._db_table
-            fields = IncomeSpending._db_fields
-        elif operation_type == LedgerTransaction.AssetPayment:
-            table = AssetPayment._db_table
-            fields = AssetPayment._db_fields
-        elif operation_type == LedgerTransaction.Trade:
-            table = Trade._db_table
-            fields = Trade._db_fields
-        elif operation_type == LedgerTransaction.Transfer:
-            table = Transfer._db_table
-            fields = Transfer._db_fields
-        elif operation_type == LedgerTransaction.CorporateAction:
-            table = CorporateAction._db_table
-            fields = CorporateAction._db_fields
-        elif operation_type == LedgerTransaction.Conversion:
-            table = Conversion._db_table
-            fields = Conversion._db_fields
-        elif operation_type == LedgerTransaction.Swap:
-            table = Swap._db_table
-            fields = Swap._db_fields
-        elif operation_type == LedgerTransaction.Bridge:
-            table = Bridge._db_table
-            fields = Bridge._db_fields
-        else:
-            raise ValueError(f"An attempt to create unknown operation type: {operation_type}")
-        self.validate_operation_data(table, fields, operation_data)
-        return self.locate_operation(table, fields, operation_data)
+        operation_class = next((x for x in self.operation_classes() if x._otype == operation_type), None)
+        if operation_class is None:
+            raise ValueError(f"An attempt to find unknown operation type: {operation_type}")
+        operation_class._normalise_fee(operation_data)
+        self.validate_operation_data(operation_class._db_table, operation_class._db_fields, operation_data)
+        return self.locate_operation(operation_class._db_table, operation_class._db_fields, operation_data)
 
     # Returns how many rows is required to display operation in QTableView
     def view_rows(self) -> int:
@@ -513,9 +496,13 @@ class FeeCarrier:
     # the migration of delta 73 froze into the rows it created.
     FeeAccountFields = ()
 
-    # A fee still ARRIVES flat - one statement format, twenty importers and every fetcher describe it as fields of
-    # the operation - and is stored as a child row. This is where the one becomes the other, so that nothing
-    # upstream has to learn that a fee is a table of its own. Which flat field is which is stated in _db_fields.
+    # The flat fields a fee still ARRIVES in, as {field: the column of 'fees' it fills}. One statement format,
+    # twenty importers and every fetcher describe a fee as fields of the operation, so it keeps arriving that way
+    # long after the columns that held it are gone.
+    FeeFields = {}
+
+    # Where the flat fee becomes the child row it is stored as, so that nothing upstream has to learn that a fee is
+    # a table of its own.
     def __init__(self, operation_data=None, duplicate_before=None):
         if type(operation_data) == dict:
             self._normalise_fee(operation_data)
@@ -524,9 +511,9 @@ class FeeCarrier:
     @classmethod
     def _normalise_fee(cls, data: dict) -> None:
         fee = {}
-        for field in [x for x in cls._db_fields if 'fee' in cls._db_fields[x]]:
+        for field, column in cls.FeeFields.items():
             if field in data:
-                fee[cls._db_fields[field]['fee']] = data.pop(field)
+                fee[column] = data.pop(field)
         if not fee.get('amount') or Decimal(fee['amount']) == Decimal('0'):
             return
         if not fee.get('account_id'):
@@ -1173,10 +1160,10 @@ class Trade(FeeCarrier, LedgerTransaction):
         "symbol_id": {"mandatory": True, "validation": True},
         "qty": {"mandatory": True, "validation": True},
         "price": {"mandatory": True, "validation": True},
-        "fee": {"mandatory": False, "validation": False, "fee": "amount"},
         "note": {"mandatory": False, "validation": False},
         **FeeCarrier.FEE_CHILD
     }
+    FeeFields = {'fee': 'amount'}
     FeeAccountFields = ('account_id',)
     PART_PROFIT = 1
     PART_FEE = 2
@@ -1375,13 +1362,12 @@ class Swap(FeeCarrier, LedgerTransaction):
         "in_symbol_id": {"mandatory": True, "validation": True},
         "in_qty": {"mandatory": True, "validation": True},
         "in_tx_hash": {"mandatory": False, "validation": True, "default": ''},
-        "fee_symbol_id": {"mandatory": False, "validation": False, "fee": "symbol_id"},
-        "fee_qty": {"mandatory": False, "validation": False, "fee": "amount"},
         "note": {"mandatory": False, "validation": False},
         **FeeCarrier.FEE_CHILD
     }
     PART_PROFIT = 1
     PART_FEE = Fee          # The fee posts into the part it is drawn as - see FeeCarrier.Fee
+    FeeFields = {'fee_qty': 'amount', 'fee_symbol_id': 'symbol_id'}
     FeeAccountFields = ('account_id',)
     AssetFeeOnly = True     # A swap is charged in gas, so a fee that names no asset is a data error
 
@@ -1607,6 +1593,7 @@ class Transfer(FeeCarrier, LedgerTransaction):
     Outgoing = -1
     Incoming = 1
     PART_FEE = Fee          # The fee posts into the part it is drawn as - see FeeCarrier.PART_FEE
+    FeeFields = {'fee': 'amount', 'fee_symbol_id': 'symbol_id', 'fee_account': 'account_id'}
     FeeAccountFields = ('withdrawal_account', 'deposit_account')
     _db_table = "transfers"
     _otype = LedgerTransaction.Transfer
@@ -1618,9 +1605,6 @@ class Transfer(FeeCarrier, LedgerTransaction):
         "deposit_timestamp": {"mandatory": True, "validation": True},
         "deposit_account": {"mandatory": False, "validation": True, "default": None},
         "deposit": {"mandatory": True, "validation": True},
-        "fee_account": {"mandatory": False, "validation": False, "fee": "account_id"},
-        "fee": {"mandatory": False, "validation": False, "fee": "amount"},
-        "fee_symbol_id": {"mandatory": False, "validation": False, "fee": "symbol_id"},
         "number": {"mandatory": False, "validation": True, "default": ''},
         # The address of the end that has no account. It is descriptive, not part of the identity of the movement:
         # the two sightings of one transfer name each other's addresses, so making it a validation field would make
@@ -2431,12 +2415,11 @@ class Conversion(FeeCarrier, LedgerTransaction):
         "out_qty": {"mandatory": True, "validation": True},
         "in_symbol_id": {"mandatory": True, "validation": True},
         "in_qty": {"mandatory": True, "validation": True},
-        "fee_symbol_id": {"mandatory": False, "validation": False, "fee": "symbol_id"},
-        "fee_qty": {"mandatory": False, "validation": False, "fee": "amount"},
         "note": {"mandatory": False, "validation": False},
         **FeeCarrier.FEE_CHILD
     }
     PART_FEE = Fee          # The fee posts into the part it is drawn as - see FeeCarrier.PART_FEE
+    FeeFields = {'fee_qty': 'amount', 'fee_symbol_id': 'symbol_id'}
     FeeAccountFields = ('account_id',)
     AssetFeeOnly = True     # A conversion is charged in gas, so a fee that names no asset is a data error
 
@@ -2604,12 +2587,11 @@ class Bridge(FeeCarrier, LedgerTransaction):
         "in_symbol_id": {"mandatory": False, "validation": True, "default": None},
         "in_qty": {"mandatory": False, "validation": True, "default": None},
         "in_tx_hash": {"mandatory": False, "validation": True, "default": ''},
-        "fee_symbol_id": {"mandatory": False, "validation": False, "fee": "symbol_id"},
-        "fee_qty": {"mandatory": False, "validation": False, "fee": "amount"},
         "note": {"mandatory": False, "validation": False},
         **FeeCarrier.FEE_CHILD
     }
     PART_FEE = Fee          # The fee posts into the part it is drawn as - see FeeCarrier.PART_FEE
+    FeeFields = {'fee_qty': 'amount', 'fee_symbol_id': 'symbol_id'}
     FeeAccountFields = ('out_account_id',)
     AssetFeeOnly = True     # A bridge is charged in gas, so a fee that names no asset is a data error
 

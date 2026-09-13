@@ -1275,9 +1275,11 @@ def _crossing(quantity_in=395):
 
 
 def _stored_bridge():
-    return JalDB()._read("SELECT out_timestamp, out_account_id, out_symbol_id, out_qty, out_tx_hash, in_timestamp, "
-                         "in_account_id, in_symbol_id, in_qty, in_tx_hash, fee_symbol_id, fee_qty "
-                         "FROM bridges ORDER BY oid DESC LIMIT 1", named=True)
+    return JalDB()._read("SELECT b.out_timestamp, b.out_account_id, b.out_symbol_id, b.out_qty, b.out_tx_hash, "
+                         "b.in_timestamp, b.in_account_id, b.in_symbol_id, b.in_qty, b.in_tx_hash, "
+                         "f.symbol_id AS fee_symbol_id, f.amount AS fee_qty FROM bridges AS b "
+                         "LEFT JOIN fees AS f ON f.operation_id=b.oid AND f.idx=0 "
+                         "ORDER BY b.oid DESC LIMIT 1", named=True)
 
 
 def test_a_crossing_that_kept_a_cut_becomes_a_bridge(wallets):
