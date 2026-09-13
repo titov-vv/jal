@@ -557,10 +557,11 @@ class TransferSettlement(JalDB):
         # same reason Transfer.update_fee() exists. An existing fee is never overwritten: a movement has one, whoever
         # recorded it.
         if not sent['fee'] and arrived['fee']:
-            self._exec("UPDATE transfers SET fee=:fee, fee_account=:fee_account, fee_symbol_id=:fee_symbol_id "
-                       "WHERE oid=:oid",
-                       [(":fee", Decimal(arrived['fee'])), (":fee_account", self._or_null(arrived['fee_account'])),
-                        (":fee_symbol_id", self._or_null(arrived['fee_symbol_id'])), (":oid", int(sent['oid']))])
+            # Moved as the row it is, so that who bore it and what sort of charge it was come along unchanged
+            self._exec("INSERT INTO fees (operation_id, idx, account_id, symbol_id, amount, kind) "
+                       "SELECT :oid, 0, account_id, symbol_id, amount, kind FROM fees "
+                       "WHERE operation_id=:arrived AND idx=0",
+                       [(":oid", int(sent['oid'])), (":arrived", int(arrived['oid']))])
         self._exec("DELETE FROM transfers WHERE oid=:oid", [(":oid", int(arrived['oid']))], commit=True)
         logging.info(self.tr("Transfer settled by transaction hash: ") + f"{sent['number']}, "
                      + f"{remove_exponent(Decimal(sent['withdrawal']))} "

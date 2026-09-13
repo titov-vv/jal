@@ -227,6 +227,14 @@ class JalAccount(JalDB):
             trades.append(self._read_record(query))
         return trades
 
+    # Returns every fee borne by this account - used in test cases only
+    def dump_fees(self):
+        fees = []
+        query = self._exec("SELECT * FROM fees WHERE account_id=:id ORDER BY operation_id, idx", [(":id", self._id)])
+        while query.next():
+            fees.append(self._read_record(query))
+        return fees
+
     # Returns everything from 'transfers' table associated with current account - used in test cases only
     def dump_transfers(self):
         transfers = []

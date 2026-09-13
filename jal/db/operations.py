@@ -509,6 +509,31 @@ class FeeCarrier:
         }
     }
 
+    # Where the account that bore a fee comes from when the operation doesn't name one for it - the same fallback
+    # the migration of delta 73 froze into the rows it created.
+    FeeAccountFields = ()
+
+    # A fee still ARRIVES flat - one statement format, twenty importers and every fetcher describe it as fields of
+    # the operation - and is stored as a child row. This is where the one becomes the other, so that nothing
+    # upstream has to learn that a fee is a table of its own. Which flat field is which is stated in _db_fields.
+    def __init__(self, operation_data=None, duplicate_before=None):
+        if type(operation_data) == dict:
+            self._normalise_fee(operation_data)
+        super().__init__(operation_data, duplicate_before=duplicate_before)
+
+    @classmethod
+    def _normalise_fee(cls, data: dict) -> None:
+        fee = {}
+        for field in [x for x in cls._db_fields if 'fee' in cls._db_fields[x]]:
+            if field in data:
+                fee[cls._db_fields[field]['fee']] = data.pop(field)
+        if not fee.get('amount') or Decimal(fee['amount']) == Decimal('0'):
+            return
+        if not fee.get('account_id'):
+            fee['account_id'] = next((data[x] for x in cls.FeeAccountFields if data.get(x)), None)
+        fee['kind'] = FeeKind.Gas if fee.get('symbol_id') else FeeKind.Commission
+        data.setdefault('fees', []).append(fee)
+
     # Every fee this operation bears, in a stable order. A class fills it in its constructor with _read_fees(),
     # because a part may name the fee's asset or account before anything asks for the list.
     def fees(self) -> list:
@@ -1148,10 +1173,11 @@ class Trade(FeeCarrier, LedgerTransaction):
         "symbol_id": {"mandatory": True, "validation": True},
         "qty": {"mandatory": True, "validation": True},
         "price": {"mandatory": True, "validation": True},
-        "fee": {"mandatory": True, "validation": False},
+        "fee": {"mandatory": False, "validation": False, "fee": "amount"},
         "note": {"mandatory": False, "validation": False},
         **FeeCarrier.FEE_CHILD
     }
+    FeeAccountFields = ('account_id',)
     PART_PROFIT = 1
     PART_FEE = 2
 
@@ -1349,13 +1375,14 @@ class Swap(FeeCarrier, LedgerTransaction):
         "in_symbol_id": {"mandatory": True, "validation": True},
         "in_qty": {"mandatory": True, "validation": True},
         "in_tx_hash": {"mandatory": False, "validation": True, "default": ''},
-        "fee_symbol_id": {"mandatory": False, "validation": True, "default": None},
-        "fee_qty": {"mandatory": False, "validation": True, "default": None},
+        "fee_symbol_id": {"mandatory": False, "validation": False, "fee": "symbol_id"},
+        "fee_qty": {"mandatory": False, "validation": False, "fee": "amount"},
         "note": {"mandatory": False, "validation": False},
         **FeeCarrier.FEE_CHILD
     }
     PART_PROFIT = 1
     PART_FEE = Fee          # The fee posts into the part it is drawn as - see FeeCarrier.Fee
+    FeeAccountFields = ('account_id',)
     AssetFeeOnly = True     # A swap is charged in gas, so a fee that names no asset is a data error
 
     def __init__(self, operation_data=None, opart=None):
@@ -1580,6 +1607,7 @@ class Transfer(FeeCarrier, LedgerTransaction):
     Outgoing = -1
     Incoming = 1
     PART_FEE = Fee          # The fee posts into the part it is drawn as - see FeeCarrier.PART_FEE
+    FeeAccountFields = ('withdrawal_account', 'deposit_account')
     _db_table = "transfers"
     _otype = LedgerTransaction.Transfer
     LedgerRank = 5
@@ -1590,9 +1618,9 @@ class Transfer(FeeCarrier, LedgerTransaction):
         "deposit_timestamp": {"mandatory": True, "validation": True},
         "deposit_account": {"mandatory": False, "validation": True, "default": None},
         "deposit": {"mandatory": True, "validation": True},
-        "fee_account": {"mandatory": False, "validation": True, "default": None},
-        "fee": {"mandatory": False, "validation": True, "default": None},
-        "fee_symbol_id": {"mandatory": False, "validation": True, "default": None},
+        "fee_account": {"mandatory": False, "validation": False, "fee": "account_id"},
+        "fee": {"mandatory": False, "validation": False, "fee": "amount"},
+        "fee_symbol_id": {"mandatory": False, "validation": False, "fee": "symbol_id"},
         "number": {"mandatory": False, "validation": True, "default": ''},
         # The address of the end that has no account. It is descriptive, not part of the identity of the movement:
         # the two sightings of one transfer name each other's addresses, so making it a validation field would make
@@ -1987,10 +2015,14 @@ class Transfer(FeeCarrier, LedgerTransaction):
     def update_fee(self, fee: Decimal, fee_account_id: int, fee_symbol_id) -> bool:
         if self._part_fee().amount() or not fee:
             return False
-        _ = self._exec("UPDATE transfers SET fee=:fee, fee_account=:fee_account, fee_symbol_id=:fee_symbol_id "
-                       "WHERE oid=:oid",
-                       [(":oid", self._oid), (":fee", fee), (":fee_account", fee_account_id),
-                        (":fee_symbol_id", fee_symbol_id)], commit=True)
+        payer = fee_account_id if fee_account_id else self._account.id()   # the fallback of FeeAccountFields
+        _ = self._exec("INSERT INTO fees (operation_id, idx, account_id, symbol_id, amount, kind) "
+                       "VALUES (:oid, :idx, :account, :symbol, :amount, :kind)",
+                       [(":oid", self._oid),
+                        (":idx", self._next_child_index("fees", "operation_id", self._oid, "idx")),
+                        (":account", payer), (":symbol", fee_symbol_id if fee_symbol_id else None),
+                        (":amount", fee), (":kind", FeeKind.Gas if fee_symbol_id else FeeKind.Commission)],
+                       commit=True)
         self._fees = self._read_fees()
         self._fee_account = self._part_fee().account()
         self._fee_currency = JalAsset(self._fee_account.currency()).symbol()
@@ -2399,12 +2431,13 @@ class Conversion(FeeCarrier, LedgerTransaction):
         "out_qty": {"mandatory": True, "validation": True},
         "in_symbol_id": {"mandatory": True, "validation": True},
         "in_qty": {"mandatory": True, "validation": True},
-        "fee_symbol_id": {"mandatory": False, "validation": True, "default": None},
-        "fee_qty": {"mandatory": False, "validation": True, "default": None},
+        "fee_symbol_id": {"mandatory": False, "validation": False, "fee": "symbol_id"},
+        "fee_qty": {"mandatory": False, "validation": False, "fee": "amount"},
         "note": {"mandatory": False, "validation": False},
         **FeeCarrier.FEE_CHILD
     }
     PART_FEE = Fee          # The fee posts into the part it is drawn as - see FeeCarrier.PART_FEE
+    FeeAccountFields = ('account_id',)
     AssetFeeOnly = True     # A conversion is charged in gas, so a fee that names no asset is a data error
 
     def __init__(self, operation_data=None, opart=Whole):
@@ -2571,12 +2604,13 @@ class Bridge(FeeCarrier, LedgerTransaction):
         "in_symbol_id": {"mandatory": False, "validation": True, "default": None},
         "in_qty": {"mandatory": False, "validation": True, "default": None},
         "in_tx_hash": {"mandatory": False, "validation": True, "default": ''},
-        "fee_symbol_id": {"mandatory": False, "validation": True, "default": None},
-        "fee_qty": {"mandatory": False, "validation": True, "default": None},
+        "fee_symbol_id": {"mandatory": False, "validation": False, "fee": "symbol_id"},
+        "fee_qty": {"mandatory": False, "validation": False, "fee": "amount"},
         "note": {"mandatory": False, "validation": False},
         **FeeCarrier.FEE_CHILD
     }
     PART_FEE = Fee          # The fee posts into the part it is drawn as - see FeeCarrier.PART_FEE
+    FeeAccountFields = ('out_account_id',)
     AssetFeeOnly = True     # A bridge is charged in gas, so a fee that names no asset is a data error
 
     def __init__(self, operation_data=None, opart=Outgoing):

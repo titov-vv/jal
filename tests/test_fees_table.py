@@ -55,12 +55,30 @@ def _operations_with_fees():
                      'fee_asset': 5, 'fee_qty': 0.0625}])
 
 
-def _add_fee(operation_id_value: int, amount='1', account_id=1, symbol_id=None, idx=0, kind=0) -> int:
+def _add_fee(operation_id_value: int, amount='1', account_id=1, symbol_id=None, idx=None, kind=0) -> int:
+    idx = _fees_of(operation_id_value) if idx is None else idx
     query = JalDB._exec("INSERT INTO fees (operation_id, idx, account_id, symbol_id, amount, kind) "
                         "VALUES (:oid, :idx, :account, :symbol, :amount, :kind)",
                         [(":oid", operation_id_value), (":idx", idx), (":account", account_id),
                          (":symbol", symbol_id), (":amount", amount), (":kind", kind)], commit=True)
     return query.lastInsertId()
+
+
+# The five operations with their fees in their OWN columns - the shape a database had before this table, and the
+# shape the editors still write. The write path no longer puts a fee there, so it is moved after the fact.
+def _operations_with_column_fees():
+    _operations_with_fees()
+    for table, amount, symbol, account in (('trades', 'fee', None, None),
+                                           ('transfers', 'fee', 'fee_symbol_id', 'fee_account'),
+                                           ('conversions', 'fee_qty', 'fee_symbol_id', None),
+                                           ('swaps', 'fee_qty', 'fee_symbol_id', None),
+                                           ('bridges', 'fee_qty', 'fee_symbol_id', None)):
+        first_fee = f"(SELECT %s FROM fees WHERE operation_id={table}.oid AND idx=0)"
+        columns = [f"{amount}={first_fee % 'amount'}"]
+        columns += [f"{symbol}={first_fee % 'symbol_id'}"] if symbol else []
+        columns += [f"{account}={first_fee % 'account_id'}"] if account else []
+        JalDB._exec(f"UPDATE {table} SET {', '.join(columns)} WHERE oid IN (SELECT operation_id FROM fees)",
+                    commit=True)
 
 
 def _fees_of(operation_id_value: int) -> int:
@@ -119,7 +137,7 @@ def test_a_new_fee_invalidates_the_ledger_from_its_operation(prepare_db_fifo):
     before, after = _ledger_after(d2t(220101)), _ledger_after(d2t(220301))
     assert before > after > 0
 
-    _add_fee(operation_id(LedgerTransaction.Swap))       # the swap of 22-03-01
+    _add_fee(operation_id(LedgerTransaction.Swap), symbol_id=symbol_id_for(5, 2), kind=FeeKind.Gas)       # the swap of 22-03-01
 
     assert _ledger_after(d2t(220301)) == 0               # everything from the swap on is gone ...
     assert _ledger_after(d2t(220101)) == before - after  # ... and nothing before it
@@ -127,7 +145,7 @@ def test_a_new_fee_invalidates_the_ledger_from_its_operation(prepare_db_fifo):
 
 def test_an_edited_fee_invalidates_the_ledger_from_its_operation(prepare_db_fifo):
     _operations_with_fees()
-    fee_id = _add_fee(operation_id(LedgerTransaction.Swap))
+    fee_id = _add_fee(operation_id(LedgerTransaction.Swap), symbol_id=symbol_id_for(5, 2), kind=FeeKind.Gas)
     Ledger().rebuild(from_timestamp=0)
     kept = _ledger_after(d2t(220101)) - _ledger_after(d2t(220301))
 
@@ -139,7 +157,7 @@ def test_an_edited_fee_invalidates_the_ledger_from_its_operation(prepare_db_fifo
 
 def test_a_removed_fee_invalidates_the_ledger_from_its_operation(prepare_db_fifo):
     _operations_with_fees()
-    fee_id = _add_fee(operation_id(LedgerTransaction.Swap))
+    fee_id = _add_fee(operation_id(LedgerTransaction.Swap), symbol_id=symbol_id_for(5, 2), kind=FeeKind.Gas)
     Ledger().rebuild(from_timestamp=0)
     kept = _ledger_after(d2t(220101)) - _ledger_after(d2t(220301))
 
@@ -270,7 +288,7 @@ def _stored_fees() -> list:
 
 
 def test_the_migration_moves_every_stored_fee(prepare_db_fifo, project_root):
-    _operations_with_fees()
+    _operations_with_column_fees()
     _replay_the_populate(project_root)
 
     assert JalDB._read("SELECT COUNT(*) FROM fees") == 5    # a trade, a swap, a conversion, a transfer, a bridge
@@ -281,7 +299,7 @@ def test_the_migration_moves_every_stored_fee(prepare_db_fifo, project_root):
 # A fee paid in money is a commission and one denominated in an asset is gas. For a transfer that is a reading of the
 # data and not a fact in it, which is the one place a finer 'kind' set would first be wrong.
 def test_the_migration_tells_a_commission_from_gas(prepare_db_fifo, project_root):
-    _operations_with_fees()
+    _operations_with_column_fees()
     _replay_the_populate(project_root)
 
     kinds = dict(JalDB._read_to_list("SELECT kind, COUNT(*) FROM fees GROUP BY kind"))
@@ -293,7 +311,7 @@ def test_the_migration_tells_a_commission_from_gas(prepare_db_fifo, project_root
 # The zero test is numeric. 'trades.fee' is NOT NULL DEFAULT ('0') and its zeros are spelled several ways, so a
 # textual filter migrates fees that are not fees - 337 of them on the live ledger.
 def test_a_fee_that_is_zero_however_it_is_spelled_migrates_nothing(prepare_db_fifo, project_root):
-    _operations_with_fees()
+    _operations_with_column_fees()
     for spelling in ('0', '0.0', '0.00', ''):
         create_trades(1, [(d2t(220102), d2t(220102), 4, 1.0, 100.0, 0.0)])
         JalDB._exec("UPDATE trades SET fee=:fee WHERE oid=:oid",
@@ -307,7 +325,7 @@ def test_a_fee_that_is_zero_however_it_is_spelled_migrates_nothing(prepare_db_fi
 # The amount is carried over exactly as it is stored. Canonicalising it here would make the parity above unable to
 # tell a migration bug from a change of spelling.
 def test_the_migration_copies_the_amount_verbatim(prepare_db_fifo, project_root):
-    _operations_with_fees()
+    _operations_with_column_fees()
     oid = operation_id(LedgerTransaction.Trade, 2)
     JalDB._exec("UPDATE trades SET fee='3.1400' WHERE oid=:oid", [(":oid", oid)], commit=True)
 
@@ -330,7 +348,7 @@ def test_the_delta_populates_before_it_creates_the_fee_triggers(project_root):
 # from, and re-states sixteen triggers. That is why it ships without asking for a rebuild - and if it ever stopped
 # being true, a user would be told the ledger is current when it is not.
 def test_the_delta_leaves_the_ledger_alone(prepare_db_fifo, project_root):
-    _operations_with_fees()
+    _operations_with_column_fees()
     Ledger().rebuild(from_timestamp=0)
     ledger = JalDB._read_to_list("SELECT * FROM ledger ORDER BY id")
     closed = JalDB._read_to_list("SELECT * FROM trades_closed ORDER BY rowid")
@@ -388,7 +406,7 @@ def test_the_delta_and_the_init_script_declare_the_same_objects(project_root):
 # whichever of the eight write paths a fee arrives by, because from the stage that makes the ledger sequence read
 # 'fees' a fee missing from the table is a fee missing from the ledger.
 def test_every_kind_of_operation_mirrors_its_fee(prepare_db_fifo):
-    _operations_with_fees()
+    _operations_with_column_fees()
 
     assert JalDB._read("SELECT COUNT(*) FROM fees") == 5    # a trade, a swap, a conversion, a transfer, a bridge
     assert _stored_fees() == _sources()
@@ -397,7 +415,7 @@ def test_every_kind_of_operation_mirrors_its_fee(prepare_db_fifo):
 # The migration and the mirror have to say the same thing, or the parity between them would mean nothing. This is the
 # one test that compares the two directly - the same operations, stored once by each.
 def test_the_mirror_writes_what_the_migration_would_have(prepare_db_fifo, project_root):
-    _operations_with_fees()
+    _operations_with_column_fees()
     mirrored = JalDB._read_to_list("SELECT operation_id, idx, account_id, symbol_id, amount, kind FROM fees "
                                    "ORDER BY operation_id")
 
@@ -408,7 +426,7 @@ def test_the_mirror_writes_what_the_migration_would_have(prepare_db_fifo, projec
 
 
 def test_an_edited_fee_is_mirrored(prepare_db_fifo):
-    _operations_with_fees()
+    _operations_with_column_fees()
     oid = operation_id(LedgerTransaction.Trade, 2)
 
     JalDB._exec("UPDATE trades SET fee='7.5' WHERE oid=:oid", [(":oid", oid)], commit=True)
@@ -419,7 +437,7 @@ def test_an_edited_fee_is_mirrored(prepare_db_fifo):
 
 
 def test_a_cleared_fee_takes_its_row_with_it(prepare_db_fifo):
-    _operations_with_fees()
+    _operations_with_column_fees()
     oid = operation_id(LedgerTransaction.Trade, 2)
     assert JalDB._read("SELECT COUNT(*) FROM fees WHERE operation_id=:oid", [(":oid", oid)]) == 1
 
@@ -431,7 +449,7 @@ def test_a_cleared_fee_takes_its_row_with_it(prepare_db_fifo):
 
 # A fee arriving on an operation that was stored without one - which is what an import adopting a late fee does
 def test_a_fee_added_later_is_mirrored(prepare_db_fifo):
-    _operations_with_fees()
+    _operations_with_column_fees()
     oid = operation_id(LedgerTransaction.Trade, 1)                 # the gas-coin trade, bought without a fee
     assert JalDB._read("SELECT COUNT(*) FROM fees WHERE operation_id=:oid", [(":oid", oid)]) == 0
 
@@ -441,18 +459,19 @@ def test_a_fee_added_later_is_mirrored(prepare_db_fifo):
     assert _stored_fees() == _sources()
 
 
-# 'Transfer.update_fee()' reaches the column by raw SQL, one of the three paths that never sees the operation
-# dictionary - and the one a statement import uses when it brings a fee for a transfer JAL already stores
-def test_a_fee_adopted_by_update_fee_is_mirrored(prepare_db_fifo):
-    _operations_with_fees()
+# 'Transfer.update_fee()' is what a statement import calls when it brings a fee for a transfer JAL already stores -
+# the gas of a movement whose other side reached the database first, and which would otherwise be lost with the
+# record that brought it
+def test_a_fee_adopted_after_the_transfer_is_stored(prepare_db_fifo):
+    _accounts_and_assets()
     oid = create_transfers([(d2t(220801), 1, 5.0, 2, 5.0, None)])[0]
     assert JalDB._read("SELECT COUNT(*) FROM fees WHERE operation_id=:oid", [(":oid", oid)]) == 0
 
     assert Transfer(oid).update_fee(Decimal('0.4'), 2, None)
 
-    assert JalDB._read_to_list("SELECT account_id, symbol_id, amount, kind FROM fees WHERE operation_id=:oid",
-                               [(":oid", oid)]) == [[2, '', '0.4', FeeKind.Commission]]
-    assert _stored_fees() == _sources()
+    assert JalDB._read_to_list("SELECT idx, account_id, symbol_id, amount, kind FROM fees WHERE operation_id=:oid",
+                               [(":oid", oid)]) == [[0, 2, '', '0.4', FeeKind.Commission]]
+    assert not Transfer(oid).update_fee(Decimal('0.9'), 2, None)   # a transfer has one fee, whoever paid it
 
 
 # The editors are the other path that never sees the operation dictionary: they insert and update through a Qt model,

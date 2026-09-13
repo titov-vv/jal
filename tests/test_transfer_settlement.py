@@ -63,9 +63,11 @@ def _transfer(from_account, to_account, amount, timestamp, asset_id=USDT, deposi
 
 
 def _stored() -> list:
-    query = LedgerTransaction._exec("SELECT oid, withdrawal_timestamp, withdrawal_account, withdrawal, "
-                                    "deposit_timestamp, deposit_account, deposit, fee, fee_account, number, "
-                                    "counterparty_address, note FROM transfers ORDER BY oid")
+    query = LedgerTransaction._exec("SELECT t.oid, t.withdrawal_timestamp, t.withdrawal_account, t.withdrawal, "
+                                    "t.deposit_timestamp, t.deposit_account, t.deposit, f.amount AS fee, "
+                                    "f.account_id AS fee_account, t.number, t.counterparty_address, t.note "
+                                    "FROM transfers AS t "
+                                    "LEFT JOIN fees AS f ON f.operation_id=t.oid AND f.idx=0 ORDER BY t.oid")
     rows = []
     while query.next():
         rows.append(LedgerTransaction._read_record(query, named=True))

@@ -1047,8 +1047,10 @@ def test_an_ambiguous_transaction_is_not_pointed_out(wallets):
 
 # The row the conversion wrote, read back as it is stored - a swap has no accessor for every field it holds
 def _stored_swap():
-    return JalDB()._read("SELECT timestamp, tx_hash, account_id, out_symbol_id, out_qty, in_timestamp, in_account_id, "
-                         "in_symbol_id, in_qty, fee_symbol_id, fee_qty FROM swaps ORDER BY oid DESC LIMIT 1",
+    return JalDB()._read("SELECT s.timestamp, s.tx_hash, s.account_id, s.out_symbol_id, s.out_qty, s.in_timestamp, "
+                         "s.in_account_id, s.in_symbol_id, s.in_qty, f.symbol_id AS fee_symbol_id, "
+                         "f.amount AS fee_qty FROM swaps AS s "
+                         "LEFT JOIN fees AS f ON f.operation_id=s.oid AND f.idx=0 ORDER BY s.oid DESC LIMIT 1",
                          named=True)
 
 

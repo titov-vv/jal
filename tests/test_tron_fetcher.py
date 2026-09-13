@@ -446,7 +446,7 @@ def test_ambiguous_counterparty_is_left_for_the_user(fetcher, tron_wallet):
 # the fetch of the wallet that received it. Both describe the same movement, so it must reach the database once.
 _TX_HASH = 'a' * 64
 _TX_TIME = 1758900000000        # ms, as TronGrid reports it
-_FEE_ACCOUNT, _FEE = 8, 9       # column positions of the 'transfers' table rows that dump_transfers() returns
+_FEE_ACCOUNT, _FEE = 3, 5       # column positions of the 'fees' rows that dump_fees() returns
 _SENDER_HEX = '41ebd8dd5317713d254707c13840396f9aa8e3070e'      # hex form, as raw transaction data reports it
 _WALLET_HEX = '4182dd6b9966724ae2fdc79b416c7588da67ff1b35'      # the address of the 'tron_wallet' fixture
 
@@ -495,15 +495,14 @@ def test_gas_of_the_sender_reaches_a_transfer_imported_from_the_receiver_first(t
     other = _second_wallet(COUNTERPARTY_OUT)
     history = ([_trc20(WALLET, COUNTERPARTY_OUT)], [_trigger()])
     _import_history(other, monkeypatch, *history)          # the receiver first, so the transfer is stored without gas
-    stored = JalAccount(other.id()).dump_transfers()
-    assert len(stored) == 1
-    assert not stored[0][_FEE]                              # nothing was charged yet
+    assert len(JalAccount(other.id()).dump_transfers()) == 1
+    assert not JalAccount(tron_wallet.id()).dump_fees()      # nothing was charged yet
 
     _import_history(tron_wallet, monkeypatch, *history)     # ... and now the side that paid the gas
-    stored = JalAccount(other.id()).dump_transfers()
-    assert len(stored) == 1                                 # still one movement
-    assert Decimal(stored[0][_FEE]) == Decimal('1.1')       # with the gas the sender burned
-    assert stored[0][_FEE_ACCOUNT] == tron_wallet.id()      # charged to the wallet that sent it
+    assert len(JalAccount(other.id()).dump_transfers()) == 1   # still one movement
+    fees = JalAccount(tron_wallet.id()).dump_fees()         # the gas is charged to the wallet that sent it
+    assert len(fees) == 1 and Decimal(fees[0][_FEE]) == Decimal('1.1')
+    assert fees[0][_FEE_ACCOUNT] == tron_wallet.id()
 
 
 def test_refetching_a_history_creates_no_duplicates(tron_wallet, monkeypatch):
@@ -529,9 +528,8 @@ def test_several_legs_of_one_transaction_are_all_imported(tron_wallet, monkeypat
                 _trc20(WALLET, COUNTERPARTY_OUT, value='2000000')], [_trigger(fee=1100000)])
     _import_history(tron_wallet, monkeypatch, *history)
 
-    stored = JalAccount(tron_wallet.id()).dump_transfers()
-    assert len(stored) == 2
-    assert sum(Decimal(t[_FEE]) for t in stored if t[_FEE]) == Decimal('1.1')
+    assert len(JalAccount(tron_wallet.id()).dump_transfers()) == 2
+    assert sum(Decimal(f[_FEE]) for f in JalAccount(tron_wallet.id()).dump_fees()) == Decimal('1.1')
 
 
 # The same fee, counted the other way: a multisend or a router call is not a bare transfer(), so the native record
@@ -545,8 +543,9 @@ def test_gas_carried_by_a_transfer_is_not_paid_again_as_a_fee(tron_wallet, monke
     instance = _import_history(tron_wallet, monkeypatch, *history)
 
     assert [p for p in instance._data[JSF.ASSET_PAYMENTS] if p['type'] == JSF.PAYMENT_GAS_FEE] == []
-    stored = JalAccount(tron_wallet.id()).dump_transfers()
-    assert len(stored) == 1 and Decimal(stored[0][_FEE]) == Decimal('1.1')
+    assert len(JalAccount(tron_wallet.id()).dump_transfers()) == 1
+    fees = JalAccount(tron_wallet.id()).dump_fees()
+    assert len(fees) == 1 and Decimal(fees[0][_FEE]) == Decimal('1.1')
 
 
 # ... and a call that really did move nothing still pays it: that is the whole purpose of the GasFee operation

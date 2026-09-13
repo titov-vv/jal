@@ -30,10 +30,12 @@ def accounts_and_assets(prepare_db_fifo):
     yield
 
 
-def _transfer(fee_account, fee, fee_symbol_id):
+# 'number' tells the transfers apart: since the fee left the identity of a transfer, two that differ in nothing
+# else are ONE movement met twice, and the second is stored as another fee of the first (D2).
+def _transfer(fee_account, fee, fee_symbol_id, number='tx'):
     return LedgerTransaction.create_new(LedgerTransaction.Transfer, {
         'withdrawal_timestamp': d2t(220203), 'withdrawal_account': 1, 'withdrawal': Decimal('5'),
-        'deposit_timestamp': d2t(220203), 'deposit_account': 2, 'deposit': Decimal('5'),
+        'deposit_timestamp': d2t(220203), 'deposit_account': 2, 'deposit': Decimal('5'), 'number': number,
         'symbol_id': symbol_id_for(4, 2), 'fee_account': fee_account, 'fee': fee, 'fee_symbol_id': fee_symbol_id})
 
 
@@ -76,8 +78,8 @@ def test_every_carrier_states_its_fee(accounts_and_assets):
 # The scalar rule: a deal absorbs one fee total in its own currency, and a fee paid in anything else is not part of
 # the deal at all. fee() is that scalar, so it counts the money fees and leaves an asset-denominated one out.
 def test_fee_scalar_counts_money_only(accounts_and_assets):
-    money_fee = _transfer(fee_account=1, fee=Decimal('7'), fee_symbol_id=None)
-    gas_fee = _transfer(fee_account=1, fee=Decimal('0.5'), fee_symbol_id=symbol_id_for(5, 2))
+    money_fee = _transfer(fee_account=1, fee=Decimal('7'), fee_symbol_id=None, number='money')
+    gas_fee = _transfer(fee_account=1, fee=Decimal('0.5'), fee_symbol_id=symbol_id_for(5, 2), number='gas')
     create_trades(1, [(d2t(220101), d2t(220101), 4, 10.0, 100.0, 3.0)])
     assert Transfer(money_fee.oid()).fee() == Decimal('7')
     assert Transfer(gas_fee.oid()).fee() == Decimal('0')       # an expense at basis, never a component of the deal
@@ -88,7 +90,8 @@ def test_fee_scalar_counts_money_only(accounts_and_assets):
 # A fee carries its own account: a transfer may be charged on the sending leg, on the receiving one, or on neither
 def test_a_fee_names_the_account_that_bore_it(accounts_and_assets):
     for account_id in (1, 2, 3):
-        transfer = Transfer(_transfer(fee_account=account_id, fee=Decimal('1'), fee_symbol_id=None).oid())
+        transfer = Transfer(_transfer(fee_account=account_id, fee=Decimal('1'), fee_symbol_id=None,
+                                      number=f"tx{account_id}").oid())
         assert transfer.fees()[0].account_id() == account_id
         assert transfer.fee_account_id() == account_id
 

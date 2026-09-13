@@ -108,7 +108,7 @@ def test_cross_chain_swap_keeps_the_gas_of_its_sending_half(accounts):
     swap_oid = BridgeMatcher().match_with_transfer(send_oid, transfer_oid)
     Ledger().rebuild(from_timestamp=0)
 
-    fee = JalDB._read("SELECT fee_qty FROM swaps WHERE oid=:o", [(":o", swap_oid)])
+    fee = JalDB._read("SELECT amount FROM fees WHERE operation_id=:o", [(":o", swap_oid)])
     assert Decimal(fee) == Decimal('0.01')
     assert _open_qty(ACC1) == Decimal('0.99')                    # 3 - 2 sent - 0.01 burned as gas
 

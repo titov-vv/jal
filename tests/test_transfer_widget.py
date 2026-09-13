@@ -206,14 +206,18 @@ def test_switching_between_fee_kinds_shows_own_values(prepare_db):
     symbol_id = JalDB()._read("SELECT id FROM asset_symbol WHERE symbol='AAPL'")
     common = {"withdrawal_account": wallet.id(), "deposit_account": other.id(),
               "withdrawal": Decimal('100'), "deposit": Decimal('100'), "fee_account": wallet.id()}
-    LedgerTransaction.create_new(LedgerTransaction.Transfer,
-                                 {**common, "withdrawal_timestamp": 1640995200, "deposit_timestamp": 1640995200,
-                                  "fee": Decimal('7.5')})                                   # money fee
-    LedgerTransaction.create_new(LedgerTransaction.Transfer,
-                                 {**common, "withdrawal_timestamp": 1641081600, "deposit_timestamp": 1641081600,
-                                  "fee": Decimal('0.271828'), "fee_symbol_id": symbol_id})  # gas
-    money_oid = JalDB()._read("SELECT oid FROM transfers WHERE fee_symbol_id IS NULL")
-    gas_oid = JalDB()._read("SELECT oid FROM transfers WHERE fee_symbol_id IS NOT NULL")
+    money_oid = LedgerTransaction.create_new(
+        LedgerTransaction.Transfer,
+        {**common, "withdrawal_timestamp": 1640995200, "deposit_timestamp": 1640995200}).oid()
+    gas_oid = LedgerTransaction.create_new(
+        LedgerTransaction.Transfer,
+        {**common, "withdrawal_timestamp": 1641081600, "deposit_timestamp": 1641081600}).oid()
+    # The fee goes into the transfer's own columns because that is what this editor still maps; it moves to
+    # FeeWidget with the rest of the fee block.
+    JalDB()._exec("UPDATE transfers SET fee='7.5', fee_account=:acc WHERE oid=:oid",
+                  [(":acc", wallet.id()), (":oid", money_oid)])
+    JalDB()._exec("UPDATE transfers SET fee='0.271828', fee_account=:acc, fee_symbol_id=:symbol WHERE oid=:oid",
+                  [(":acc", wallet.id()), (":symbol", symbol_id), (":oid", gas_oid)], commit=True)
 
     widget = TransferWidget()
 
