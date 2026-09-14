@@ -516,10 +516,10 @@ def test_a_heading_totals_the_money_stuck_behind_it(wallets):
     assert model.footerData(_column(model, 'value')) == '630.00'   # ... and the whole is still the whole
 
 
-# The point of grouping by protocol: the two ends of one crossing are recorded by two different imports, which write
-# two different sentences around the protocol's name ("Sent through X" on the send, "[bridge] X: ..." on the
-# arrival). Reading the NAME rather than the sentence is what puts them under one heading - and keeps doing so in a
-# database imported in another language.
+# The point of grouping by protocol: the two ends of one crossing are recorded by two different imports, and only one
+# of them writes the name bare - an arriving leg still has to be acted on, so it carries a localized mark around it
+# ("[bridge] X: ..."). Reading the NAME rather than the text is what puts them under one heading - and keeps doing so
+# in a database imported in another language.
 def test_the_two_ends_of_one_crossing_are_filed_together(wallets):
     _funded_wallet_a()
     _pending_half(qty=300, timestamp=d2t(210103))              # note: 'Sent through a bridge'
@@ -533,7 +533,7 @@ def test_the_two_ends_of_one_crossing_are_filed_together(wallets):
 
 
 def test_the_protocol_is_a_column_of_its_own(wallets):
-    _transfer(WALLET_A, None, 400, d2t(210103), note='Sent through LI.FI Diamond (Jumper)')
+    _transfer(WALLET_A, None, 400, d2t(210103), note='LI.FI Diamond (Jumper)')
     _transfer(WALLET_A, None, 150, d2t(210104))               # through nothing the registry knows
 
     model = _model()
@@ -544,7 +544,7 @@ def test_the_protocol_is_a_column_of_its_own(wallets):
 
 
 def test_a_protocol_name_is_read_out_of_either_end_of_a_crossing(wallets):
-    _transfer(WALLET_A, None, 400, d2t(210103), note='Sent through LI.FI Diamond (Jumper)')
+    _transfer(WALLET_A, None, 400, d2t(210103), note='LI.FI Diamond (Jumper)')
     _transfer(None, WALLET_B, 395, d2t(210104), note='[bridge] LI.FI Diamond (Jumper): arriving leg')
 
     model = _model(grouping='protocol')

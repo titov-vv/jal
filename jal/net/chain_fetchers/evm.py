@@ -40,6 +40,24 @@ _MAX_BLOCK = 999999999999
 
 _METHOD_APPROVE = '0x095ea7b3'    # approve(address,uint256) selector, the one gas-only call worth naming apart
 
+# What a transaction that moved NOTHING was, read from the method it called. Curated by hand like the protocol
+# registry and for the same reason: a wrong entry mis-files a record, and an unknown name is answered honestly by the
+# generic EVENT_CONTRACT_CALL rather than guessed at. Keyed on the name and not on the selector, so that a variant of
+# one signature (claim() and claim(address) are different selectors) is recognized as the same act.
+#
+# What makes a 'claim' a no-op is the branch this is read in: nothing moved, so the claim claimed zero.
+_CALL_EVENTS = {
+    'approve': JSF.EVENT_AUTHORIZATION,            # ... and the selector above catches it with no ABI at all
+    'setApprovalForAll': JSF.EVENT_AUTHORIZATION,
+    'approveDelegation': JSF.EVENT_AUTHORIZATION,
+    'permit': JSF.EVENT_AUTHORIZATION,
+    'toggleOperator': JSF.EVENT_AUTHORIZATION,
+    'cooldown': JSF.EVENT_POSITION_COMMAND,
+    'claim': JSF.EVENT_NO_OP,
+    'claimRewards': JSF.EVENT_NO_OP,
+    'claimRewardsAndStake': JSF.EVENT_NO_OP
+}
+
 
 # Raised by the classifier for a transaction whose shape it does not (yet) support - an unregistered exchange, a
 # lending/bridge operation, an unfamiliar multi-asset shape. It stops the import at that transaction rather than
@@ -274,10 +292,10 @@ class EVMFetcher(ChainFetcher):
         # filtered out. If it was the wallet's own transaction the event itself is recorded, with its gas as the cost.
         if not outs and not ins:
             if own and gas > Decimal('0'):
+                subject = self._gas_subject(own_record)
                 self._add_payment(JSF.PAYMENT_GAS_FEE, timestamp, self._native_asset_id(), gas, tx['hash'],
-                                  note=self._gas_note(own_record, is_error),
-                                  event=self._gas_event(own_record, is_error),
-                                  subject_asset_id=self._gas_subject(own_record))
+                                  note=self._call_note(own_record, subject),
+                                  event=self._gas_event(own_record, is_error), subject_asset_id=subject)
             return
         contract, category, protocol = self._forwarded_protocol(own, outs, ins, contract, category, protocol)
 
@@ -285,18 +303,18 @@ class EVMFetcher(ChainFetcher):
             # One asset in, one out - supplying to (or withdrawing from) a lending protocol, wrapping a coin, or
             # staking it: the position is kept, only its shape changes, so it is a basis-preserving Conversion.
             if len(outs) == 1 and len(ins) == 1:
-                return self._emit_conversion(timestamp, outs, ins, tx['hash'], gas)
+                return self._emit_conversion(timestamp, outs, ins, tx['hash'], gas, protocol)
             # A protocol may also just pay out - a reward accrued on the supplied position, delivered with nothing
             # going the other way. That is a real inflow with no counterpart, which is what a StakingReward is.
             if ins and not outs:
-                return self._emit_rewards(timestamp, ins, tx['hash'], gas)
+                return self._emit_rewards(timestamp, ins, tx['hash'], gas, protocol)
             raise _HaltImport(self.tr("unrecognized lending/wrap shape"))
         if category == ProtocolCategory.BRIDGE:
             return self._emit_cross_chain_leg(timestamp, deltas, outs, ins, tx['hash'], gas, own_record, is_error,
                                               protocol, contract)
         if category == ProtocolCategory.REWARD:
             if ins and not outs:
-                return self._emit_rewards(timestamp, ins, tx['hash'], gas)
+                return self._emit_rewards(timestamp, ins, tx['hash'], gas, protocol)
             raise _HaltImport(self.tr("unrecognized reward-claim shape"))
         if category == ProtocolCategory.CUSTODY:
             # The contract keeps the asset on the wallet's behalf and hands back no receipt token, so nothing about
@@ -313,11 +331,11 @@ class EVMFetcher(ChainFetcher):
         swap_shape = len(outs) == 1 and len(ins) == 1
         if category == ProtocolCategory.SWAP:
             if swap_shape:
-                return self._emit_swap(timestamp, outs, ins, tx['hash'], gas)
+                return self._emit_swap(timestamp, outs, ins, tx['hash'], gas, protocol)
             raise _HaltImport(self.tr("unrecognized swap shape"))
         if category == ProtocolCategory.AGGREGATOR:
             if swap_shape:                                 # both legs on this chain -> a same-chain swap
-                return self._emit_swap(timestamp, outs, ins, tx['hash'], gas)
+                return self._emit_swap(timestamp, outs, ins, tx['hash'], gas, protocol)
             # a single leg -> one side of a cross-chain move, whose counterpart lives on another chain
             return self._emit_cross_chain_leg(timestamp, deltas, outs, ins, tx['hash'], gas, own_record, is_error,
                                               protocol, contract)
@@ -331,8 +349,9 @@ class EVMFetcher(ChainFetcher):
         # moved with that same one: that is what makes the pair one exchange rather than two movements that happen to
         # share a hash. The fee is not lost by taking gas as zero - the wallet paid none, and the protocol's own fee
         # is already inside the amounts the chain reports.
-        if not own and swap_shape and self._settling_swap_protocol(outs, ins):
-            return self._emit_swap(timestamp, outs, ins, tx['hash'], Decimal('0'))
+        settled_by = self._settling_swap_protocol(outs, ins) if not own and swap_shape else ''
+        if settled_by:
+            return self._emit_swap(timestamp, outs, ins, tx['hash'], Decimal('0'), settled_by)
 
         # ... and a reward CLAIMED FOR this wallet rather than BY it. Merkl and the other distributors let anyone
         # submit the claim on a recipient's behalf, so the beneficiary may sign nothing and pay no gas: the wallet
@@ -348,8 +367,9 @@ class EVMFetcher(ChainFetcher):
         # and this one is neither.
         #
         # Gas is taken as zero because the wallet paid none; whoever signed the claim books it on their own account.
-        if not own and ins and not outs and self._claimed_reward_protocol(ins):
-            return self._emit_rewards(timestamp, ins, tx['hash'], Decimal('0'))
+        claimed_from = self._claimed_reward_protocol(ins) if not own and ins and not outs else ''
+        if claimed_from:
+            return self._emit_rewards(timestamp, ins, tx['hash'], Decimal('0'), claimed_from)
 
         # From here the contract (if any) is unregistered. A transaction the wallet signed that both spends and
         # receives an asset is a swap/lending/bridge through an unknown contract - it must never be guessed at
@@ -386,10 +406,10 @@ class EVMFetcher(ChainFetcher):
                                fee=fee, fee_asset_id=self._native_asset_id() if fee > Decimal('0') else None,
                                counterparty=data['counterparty'] or '')
         if own_record is not None and carrier is None and gas > Decimal('0'):
+            subject = self._gas_subject(own_record)
             self._add_payment(JSF.PAYMENT_GAS_FEE, timestamp, self._native_asset_id(), gas, tx_hash,
-                              note=self._gas_note(own_record, is_error),
-                              event=self._gas_event(own_record, is_error),
-                              subject_asset_id=self._gas_subject(own_record))
+                              note=self._call_note(own_record, subject),
+                              event=self._gas_event(own_record, is_error), subject_asset_id=subject)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Resolves a protocol the wallet reached THROUGH a token instead of calling it, as the (contract, category,
@@ -599,12 +619,14 @@ class EVMFetcher(ChainFetcher):
             return ''
         return protocol_name(self.location_id, payer)
 
-    # Emits a swap: one asset out, one asset in, gas paid in the native coin as the fee.
-    def _emit_swap(self, timestamp: int, outs: dict, ins: dict, tx_hash: str, gas: Decimal) -> None:
+    # Emits a swap: one asset out, one asset in, gas paid in the native coin as the fee. The venue it went through
+    # is its description, as the bare registry name - see _emit_conversion.
+    def _emit_swap(self, timestamp: int, outs: dict, ins: dict, tx_hash: str, gas: Decimal,
+                   protocol: str = '') -> None:
         out_asset, out_data = next(iter(outs.items()))
         in_asset, in_data = next(iter(ins.items()))
         self._add_swap(timestamp, out_asset, abs(out_data['amount']), in_asset, in_data['amount'], tx_hash,
-                       fee=gas, fee_asset_id=self._native_asset_id() if gas > Decimal('0') else None)
+                       note=protocol, fee=gas, fee_asset_id=self._native_asset_id() if gas > Decimal('0') else None)
 
     # Emits one leg of a cross-chain move - the fetched wallet is on a single chain, so it sees only one of them and
     # the two legs are paired later (BridgeMatcher). What the move IS can't be decided here: sending an asset into a
@@ -621,9 +643,10 @@ class EVMFetcher(ChainFetcher):
         if len(outs) == 1 and not ins:
             asset_id, data = next(iter(outs.items()))
             # The half is already an operation of its own kind, so it needs no mark - but naming the protocol it went
-            # through helps the user recognize its counterpart when the matcher offers the candidates.
+            # through helps the user recognize its counterpart when the matcher offers the candidates. The bare name,
+            # as everywhere else - BridgeMatcher copies this note onto the operation the pairing builds.
             self._add_bridge_half(timestamp, asset_id, abs(data['amount']), tx_hash,
-                                  note=(self.tr("Sent through ") + protocol) if protocol else '',
+                                  note=protocol,
                                   fee=gas, fee_asset_id=self._native_asset_id() if gas > Decimal('0') else None)
             return
         if len(ins) == 1 and not outs:
@@ -670,10 +693,14 @@ class EVMFetcher(ChainFetcher):
     # Emits a conversion: the position is kept but changes shape (supply/withdraw a lending position, wrap/unwrap,
     # liquid staking). No profit or loss is realized and the quantity is free to differ - a rebasing receipt token
     # folds the yield accrued since the last interaction into the amount it mints or burns. Gas is the fee.
-    def _emit_conversion(self, timestamp: int, outs: dict, ins: dict, tx_hash: str, gas: Decimal) -> None:
+    # The venue is the description, as the bare registry name: it is read back by name (protocol_names()), so any
+    # sentence around it would only be a localized difference between the operations of one movement.
+    def _emit_conversion(self, timestamp: int, outs: dict, ins: dict, tx_hash: str, gas: Decimal,
+                         protocol: str = '') -> None:
         out_asset, out_data = next(iter(outs.items()))
         in_asset, in_data = next(iter(ins.items()))
         self._add_conversion(timestamp, out_asset, abs(out_data['amount']), in_asset, in_data['amount'], tx_hash,
+                             note=protocol,
                              fee=gas, fee_asset_id=self._native_asset_id() if gas > Decimal('0') else None)
 
     # Emits claimed rewards as StakingReward payments (each opens a lot at market value, so a reward has a cost
@@ -681,11 +708,11 @@ class EVMFetcher(ChainFetcher):
     # together - so each received asset gets a payment of its own, and the gas of the claim rides the FIRST of them
     # by asset id. Arbitrary and deliberate: the cost was never divided, the rule has to be one a re-import can
     # reproduce exactly, and attaching it to one of the two is strictly more than the gas used to say for itself.
-    def _emit_rewards(self, timestamp: int, ins: dict, tx_hash: str, gas: Decimal) -> None:
+    def _emit_rewards(self, timestamp: int, ins: dict, tx_hash: str, gas: Decimal, protocol: str = '') -> None:
         for position, (asset_id, data) in enumerate(sorted(ins.items())):
             carried = gas if position == 0 else Decimal('0')
             self._add_payment(JSF.PAYMENT_STAKING_REWARD, timestamp, asset_id, data['amount'], tx_hash,
-                              note=self.tr("Reward claim"), fee=carried,
+                              note=protocol, fee=carried,
                               fee_asset_id=self._native_asset_id() if carried > Decimal('0') else None)
 
     # The wallet's own top-level record of the transaction (from == wallet), or None when the wallet only received or
@@ -716,24 +743,55 @@ class EVMFetcher(ChainFetcher):
         except (TypeError, ValueError):
             return 0
 
-    # Describes what the gas was spent on: Etherscan reports a reverted transaction through 'isError', and the
-    # method selector tells an approval from any other call (CRYPTO_PATH decision #32).
-    def _gas_note(self, record: dict, is_error: bool) -> str:
-        if is_error:
-            return self.tr("Gas: failed transaction")
+    # The call the gas paid for, written the way the chain states it: "approve(Aave v3 Pool)", "cooldown() @ Aave
+    # Safety Module (stkGHO)". Untranslated on purpose - a method and a protocol are proper names, and WHAT KIND of
+    # event it was is the operation's subtype, which is queryable where free text is not.
+    #
+    # 'subject' is what the approval was about, as _gas_subject() resolved it. The contract called is named after the
+    # '@' only when nothing else records it: for an approval that contract IS the token, so it is left out once the
+    # subject holds it and spelled as an address when it doesn't - which is what keeps the whole record of an
+    # approval of a token JAL doesn't hold.
+    def _call_note(self, record: dict, subject=None) -> str:
+        contract = self._norm(record.get('to', ''))
         if record.get('methodId', '') == _METHOD_APPROVE:
-            return self.tr("Gas: token approval")
-        return self.tr("Gas: contract call")
+            spender = self._spender_of(record)
+            call = f"approve({protocol_name(self.location_id, spender) or spender})" if spender else "approve()"
+            return call if subject is not None else self._at(call, contract)
+        method, selector = self._method_name(record), record.get('methodId', '')
+        # No ABI name leaves the bare selector, and a transaction carrying no call data at all ('0x') leaves nothing
+        return self._at(f"{method}()" if method else (selector if len(selector) == 10 else ''), contract)
 
-    # The same two facts as a STORED value rather than as a sentence. Position commands and no-ops are events this
-    # fetcher cannot yet tell from any other call, and they are deliberately not guessed at: the generic value says
-    # "not known to be anything finer", which is true, where a wrong one would be indistinguishable from a right one.
+    # Who an approval granted the right TO: the first argument of approve(address,uint256), which is one word of the
+    # call data. '' when the transaction carries none - a record the provider truncated, or a test that built none.
+    def _spender_of(self, record: dict) -> str:
+        address = record.get('input', '')[34:74]
+        return self._norm('0x' + address) if len(address) == 40 else ''
+
+    # "<call> @ <where>", naming the contract by the protocol registry and falling back to its address. Either half
+    # may be missing: a transaction to an address with no data at all has nothing but the address to say.
+    def _at(self, call: str, contract: str) -> str:
+        if not contract:
+            return call
+        where = protocol_name(self.location_id, contract) or contract
+        return f"{call} @ {where}" if call else where
+
+    # The method name out of the signature the provider decoded from the contract's ABI ("supply(address asset, ...)"
+    # -> "supply"), or '' when the contract isn't verified. Accepted only as the identifier it has to be: the field
+    # is free text from outside, and it goes into a note and decides an event.
+    def _method_name(self, record: dict) -> str:
+        name = (record.get('functionName') or '').split('(')[0].strip()
+        return name if name.isascii() and name.isidentifier() else ''
+
+    # What happened, as a STORED value rather than as a sentence. A revert is what the transaction IS, whatever it
+    # was trying to do, so it is asked first; the approve selector next, because it holds with no ABI at all; and the
+    # method name last, through the curated table. A name the table doesn't hold keeps EVENT_CONTRACT_CALL, which
+    # says "not known to be anything finer" - true, where a wrong answer would be indistinguishable from a right one.
     def _gas_event(self, record: dict, is_error: bool) -> str:
         if is_error:
             return JSF.EVENT_FAILED
         if record.get('methodId', '') == _METHOD_APPROVE:
             return JSF.EVENT_AUTHORIZATION
-        return JSF.EVENT_CONTRACT_CALL
+        return _CALL_EVENTS.get(self._method_name(record), JSF.EVENT_CONTRACT_CALL)
 
     # What an approval was FOR. The wallet sent the transaction to the token's own contract, so the address is in
     # hand - but it is stored only when JAL already holds that asset. A wallet phished into approving a scam token

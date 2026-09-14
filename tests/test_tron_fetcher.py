@@ -12,9 +12,9 @@ from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.symbol import JalSymbol
 from jal.db.db import JalDB
 from jal.db.settings import JalSettings
-from jal.net.chain_fetchers.tron import TronFetcher, _METHOD_TRANSFER
+from jal.net.chain_fetchers.tron import TronFetcher, _METHOD_TRANSFER, _METHOD_APPROVE
 from jal.net.token_lists import TokenListProvider
-from jal.db.token_blacklist import JalTokenBlacklist
+from jal.db.token_blacklist import JalTokenBlacklist, tron_address_from_hex
 
 # The address the fixtures were recorded for - a public wallet, never the address of a real user, as an on-chain
 # address can't be anonymized afterwards
@@ -111,7 +111,11 @@ def test_gas_only_calls_become_gas_fees(fetcher, tron_wallet):
     # The failed approve() moved nothing but still cost 9.478350 TRX of energy
     assert len(gas) == 1
     assert gas[0]['amount'] == Decimal('9.478350')
-    assert "failed" in gas[0]['description'].lower()
+    # That it failed is the stored event, not a sentence; the note is the call, with the chain's own reason for
+    # refusing it - the one fact the event does not carry. The token is named because tron resolves no subject.
+    assert gas[0]['event'] == JSF.EVENT_FAILED
+    assert gas[0]['description'].startswith('approve(T')
+    assert gas[0]['description'].endswith('(OUT_OF_ENERGY)')
 
 
 # The rule is judged on the RAW COIN AMOUNT against the chain's own threshold, never on a fiat value - unlike the
@@ -276,7 +280,6 @@ def test_token_note_shows_both_parties_sender_first():
 
 
 def test_native_note_shows_both_parties_sender_first():
-    from jal.db.token_blacklist import tron_address_from_hex
     value = {'owner_address': '41ebd8dd5317713d254707c13840396f9aa8e3070e',
              'to_address': '4182dd6b9966724ae2fdc79b416c7588da67ff1b35'}
     sender = tron_address_from_hex(value['owner_address'])
@@ -458,11 +461,13 @@ def _trc20(sender, receiver, value='1000000', tx_hash=_TX_HASH):
 
 # The contract call that carried the token transfer. It moves nothing by itself (the amounts come from the token
 # endpoint) but it is where the gas the sender burned is reported.
-def _trigger(fee=1100000, tx_hash=_TX_HASH, selector=_METHOD_TRANSFER, owner_hex=_WALLET_HEX):
+def _trigger(fee=1100000, tx_hash=_TX_HASH, selector=_METHOD_TRANSFER, owner_hex=_WALLET_HEX, data=None,
+             contract_hex=''):
+    value = {'owner_address': owner_hex, 'data': data if data is not None else selector + '0' * 128}
+    if contract_hex:
+        value['contract_address'] = contract_hex
     return {'txID': tx_hash, 'block_timestamp': _TX_TIME, 'ret': [{'fee': fee, 'contractRet': 'SUCCESS'}],
-            'raw_data': {'contract': [{'type': 'TriggerSmartContract',
-                                       'parameter': {'value': {'owner_address': owner_hex,
-                                                               'data': selector + '0' * 128}}}]}}
+            'raw_data': {'contract': [{'type': 'TriggerSmartContract', 'parameter': {'value': value}}]}}
 
 
 # Runs a fresh TronFetcher for 'wallet' against a hand-built history and imports what it fetched.
@@ -556,6 +561,35 @@ def test_a_call_that_moved_nothing_still_pays_its_gas(tron_wallet, monkeypatch):
     assert len(gas) == 1 and gas[0]['amount'] == Decimal('1.1')
 
 
+# An approval is named by WHO was granted the right and over WHICH token - neither of which any other field of the
+# record keeps, since this fetcher resolves no subject the way the EVM one does. Untranslated: the note is the call,
+# and what KIND of event it was is the stored event.
+def test_an_approval_names_the_spender_and_the_token(tron_wallet, monkeypatch):
+    spender_hex = _SENDER_HEX
+    token_hex = '41' + 'ab' * 20
+    call = _METHOD_APPROVE + '0' * 24 + spender_hex[2:] + 'f' * 64
+    instance = _import_history(tron_wallet, monkeypatch, [],
+                               [_trigger(fee=1100000, data=call, contract_hex=token_hex)])
+
+    gas = [p for p in instance._data[JSF.ASSET_PAYMENTS] if p['type'] == JSF.PAYMENT_GAS_FEE]
+    assert len(gas) == 1
+    assert gas[0]['event'] == JSF.EVENT_AUTHORIZATION
+    assert gas[0]['description'] == (f"approve({tron_address_from_hex(spender_hex)}) "
+                                     f"@ {tron_address_from_hex(token_hex)}")
+
+
+# Any other call has nothing but its selector: TronGrid decodes no method name and there is no protocol registry
+# for this chain, so the contract is named by its address
+def test_a_contract_call_names_its_selector_and_the_contract(tron_wallet, monkeypatch):
+    token_hex = '41' + 'ab' * 20
+    instance = _import_history(tron_wallet, monkeypatch, [],
+                               [_trigger(fee=1100000, selector='deadbeef', contract_hex=token_hex)])
+
+    gas = [p for p in instance._data[JSF.ASSET_PAYMENTS] if p['type'] == JSF.PAYMENT_GAS_FEE]
+    assert gas[0]['event'] == JSF.EVENT_CONTRACT_CALL
+    assert gas[0]['description'] == f"deadbeef @ {tron_address_from_hex(token_hex)}"
+
+
 # Only the transaction's OWNER pays for it, and the native endpoint returns every transaction the wallet took part
 # in - each incoming transfer is one of those. A call somebody else paid for must not become a cost of ours.
 def test_gas_of_a_call_the_wallet_did_not_pay_is_not_charged(tron_wallet, monkeypatch):
@@ -582,7 +616,6 @@ def _native(owner_hex, to_hex, amount, fee=1100000, tx_hash=_TX_HASH):
 
 
 def test_native_transfer_between_own_wallets_is_imported_once(tron_wallet, monkeypatch):
-    from jal.db.token_blacklist import tron_address_from_hex
     # TRX is already known as a wrapped token on Ethereum - one asset, one ticker, a listing on another chain.
     # The fetch below adds its Tron listing, and from then on the ticker names two rows of that same asset.
     wrapped = JalAssetCreator(type_id=PredefinedAsset.Crypto, name='Tron')

@@ -281,6 +281,11 @@ from jal.constants import AssetLocation, SymbolId                               
 
 _APPROVE = '0x095ea7b3'
 _MERKL = "0x3ef3d8ba38ebe18db133cec108f4d14ce00dd9ae"     # registered as ProtocolCategory.REWARD
+_CCIP = "0x80226fc0ee2b096224eeac085bb9a8cba1146f7d"      # a registered protocol, used here as the SPENDER
+
+
+def _approve(spender: str) -> str:
+    return _APPROVE + '0' * 24 + spender[2:] + 'f' * 64    # approve(spender, 2^256-1) as call data
 
 
 def _counts() -> dict:
@@ -299,10 +304,14 @@ def _fetch_and_import(eth_wallet, monkeypatch, pages):
 def test_an_approval_is_stored_as_the_event_it_was(eth_wallet, monkeypatch):
     a1 = "0xa1" + "0" * 62
     _fetch_and_import(eth_wallet, monkeypatch,
-                      {"txlist": [_tx(a1, 100, WALLET, USDC_CONTRACT, value=0, method=_APPROVE)],
+                      {"txlist": [_tx(a1, 100, WALLET, USDC_CONTRACT, value=0, method=_APPROVE,
+                                      data=_approve(_CCIP))],
                        "tokentx": [], "txlistinternal": []})
 
-    assert _actions() == [[1, ChainAction.Authorization, a1, '', 'Gas: token approval']]
+    # The note is the call, and the token it was granted over is not in it - no subject was stored here (USDC is not
+    # yet an asset JAL holds), so the token's own address is what the note keeps instead
+    assert _actions() == [[1, ChainAction.Authorization, a1, '',
+                           f'approve(Chainlink CCIP Router) @ {USDC_CONTRACT}']]
     assert JalDB._read("SELECT COUNT(*) FROM fees WHERE operation_id=1 AND kind=:gas",
                        [(":gas", FeeKind.Gas)]) == 1
 
@@ -313,26 +322,29 @@ def test_an_approval_of_an_unknown_token_stores_no_subject(eth_wallet, monkeypat
     scam = "0x7777777777777777777777777777777777777777"
     a2 = "0xa2" + "0" * 62
     _fetch_and_import(eth_wallet, monkeypatch,
-                      {"txlist": [_tx(a2, 100, WALLET, scam, value=0, method=_APPROVE)],
+                      {"txlist": [_tx(a2, 100, WALLET, scam, value=0, method=_APPROVE, data=_approve(_CCIP))],
                        "tokentx": [], "txlistinternal": []})
 
     assert [row[3] for row in _actions()] == ['']
+    assert scam in _actions()[0][4]                                             # ... but the note still names it
     assert JalSymbol.find_by_identifier(SymbolId.ETH_ADDRESS, scam).id() == 0   # ... and no asset was created for it
 
 
-# ... and when it does, the approval says what it was for
+# ... and when it does, the approval says what it was for - in the subject, so the note stops repeating it
 def test_an_approval_of_a_known_token_stores_its_subject(eth_wallet, monkeypatch):
     a3 = "0xa3" + "0" * 62
     _fetch_and_import(eth_wallet, monkeypatch,        # a receive first, so that USDC becomes an asset JAL knows
                       {"txlist": [], "tokentx": [_token_tx("0xb0" + "0" * 62, 99, WALLET, WALLET, 1)],
                        "txlistinternal": []})
     _fetch_and_import(eth_wallet, monkeypatch,
-                      {"txlist": [_tx(a3, 100, WALLET, USDC_CONTRACT, value=0, method=_APPROVE)],
+                      {"txlist": [_tx(a3, 100, WALLET, USDC_CONTRACT, value=0, method=_APPROVE,
+                                      data=_approve(_CCIP))],
                        "tokentx": [], "txlistinternal": []})
 
     subject = [row[3] for row in _actions()]
     assert len(subject) == 1 and subject[0]
     assert JalSymbol(int(subject[0])).symbol() == 'USDC'
+    assert _actions()[0][4] == 'approve(Chainlink CCIP Router)'
 
 
 def test_a_reverted_transaction_is_stored_as_a_failure(eth_wallet, monkeypatch):

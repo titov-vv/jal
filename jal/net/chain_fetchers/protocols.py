@@ -125,9 +125,9 @@ def protocol_name(location_id: int, address: str) -> str:
 # Longest first because the names overlap by design - 'USDT0 OFT' is the whole of 'USDT0 OFT Adapter', which is a
 # different contract on a different chain - and the first match found must be the more specific one.
 #
-# Reading the names rather than the text around them is what makes this survive translation: the sentence an import
-# writes around the name is localized and differs between the two ends of one crossing ("Sent through X" on the
-# send, "[bridge] X: ..." on the arrival), while the name itself is data and is written the same way in both.
+# Reading the names rather than the text around them is what makes this survive translation: an operation carries
+# the bare name, while a transfer that still has to be acted on carries a localized mark around it ("[bridge] X:
+# ..." on an arriving leg) - and the name itself is data, written the same way in both.
 def protocol_names() -> list:
     names = {name for protocols in _REGISTRY.values() for _, name in protocols.values()}
     return sorted(names, key=len, reverse=True)

@@ -471,9 +471,9 @@ class PendingTransfersModel(ReportTreeModel):
     # An import writes the protocol's name into the description and keeps nothing else about the contract - the
     # address a transfer records is the one the asset moved with (a bridge's token pool), never the contract the
     # wallet called - so the name in the text is all there is to read it back from. It is looked for by NAME rather
-    # than by the sentence around it: that sentence is localized, and it differs between the two ends of one
-    # crossing ("Sent through X" on the send, "[bridge] X: ..." on the arrival), which would file the two halves of
-    # one movement under two different headings - the exact opposite of what grouping them is for.
+    # than by the text around it: a sending half carries the bare name and an arriving leg carries a localized mark
+    # around it ("[bridge] X: ..."), which read as a whole would file the two halves of one movement under two
+    # different headings - the exact opposite of what grouping them is for.
     def _protocol_of(self, note: str) -> str:
         if self._protocol_names is None:
             self._protocol_names = protocol_names()   # longest first, so 'USDT0 OFT Adapter' wins over 'USDT0 OFT'

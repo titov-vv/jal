@@ -191,6 +191,10 @@ def test_deactivation_moves_nothing_and_only_costs_gas(fetcher, sol_wallet):
     gas = [p for p in _payments(data, JSF.PAYMENT_GAS_FEE) if p['number'] == unstake['signature']]
     assert len(gas) == 1
     assert gas[0]['amount'] == Decimal('0.000012755')
+    # It is a command on the position, not a movement of it - stored as the event, with the instruction it called
+    # named untranslated in the note the way every other chain names a call
+    assert gas[0]['event'] == JSF.EVENT_POSITION_COMMAND
+    assert gas[0]['description'] == 'deactivate()'
 
 
 # The withdrawal returns more than was staked. The excess is the yield earned inside the container, so it is split
@@ -410,6 +414,9 @@ def test_the_gas_of_a_rent_payment_is_still_charged(fetcher, sol_wallet, monkeyp
     assert len(paid) == 1 and paid[0]['amount'] == Decimal('0.00203928')   # the rent itself is the gross amount
     gas = _payments(data, JSF.PAYMENT_GAS_FEE)
     assert len(gas) == 1 and gas[0]['amount'] == Decimal('0.000005')
+    # This fetcher decodes no program or instruction name, so a plain call has nothing to say that its own subtype
+    # does not already say - and it says nothing rather than repeating it in translated text
+    assert gas[0]['description'] == ''
     assert _transfers(data) == []
 
 

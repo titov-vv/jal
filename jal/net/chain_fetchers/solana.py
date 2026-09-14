@@ -35,6 +35,8 @@ _STAKE_PROGRAM = 'Stake11111111111111111111111111111111111111'
 # transaction's own balance changes decide that; see the note on _classify_transaction.
 _STAKE_DEPOSIT = 'STAKE_SOL'         # lamports move from the wallet into a stake account
 _STAKE_DEACTIVATE = 'UNSTAKE_SOL'    # the stake stops earning; nothing moves
+# The stake program instruction that is, named untranslated the way every other chain's calls are noted
+_STAKE_DEACTIVATE_CALL = 'deactivate()'
 _STAKE_WITHDRAW = 'WITHDRAW'         # lamports move from a stake account back to the wallet
 
 
@@ -180,8 +182,9 @@ class SolanaFetcher(ChainFetcher):
         # record - the gas it burned.
         if not outs and not ins:
             if own and gas > Decimal('0'):
-                self._add_payment(JSF.PAYMENT_GAS_FEE, timestamp, self._native_asset_id(), gas, signature,
-                                  note=self.tr("Gas: contract call"))
+                # No note: this fetcher decodes no program or instruction name, and the operation's own subtype
+                # already says "a contract call, nothing finer known" - see EVMFetcher._call_note for what a note is
+                self._add_payment(JSF.PAYMENT_GAS_FEE, timestamp, self._native_asset_id(), gas, signature)
             else:
                 self._skip(self.tr("transaction that didn't move any of the wallet's assets"), signature)
             return
@@ -213,8 +216,7 @@ class SolanaFetcher(ChainFetcher):
                                fee=fee, fee_asset_id=self._native_asset_id() if fee > Decimal('0') else None,
                                counterparty=data['counterparty'] or '')
         if own and carrier is None and gas > Decimal('0'):
-            self._add_payment(JSF.PAYMENT_GAS_FEE, timestamp, self._native_asset_id(), gas, signature,
-                              note=self.tr("Gas: contract call"))
+            self._add_payment(JSF.PAYMENT_GAS_FEE, timestamp, self._native_asset_id(), gas, signature)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Native staking. A stake account is an address of its own that holds the wallet's lamports while they earn: the
@@ -237,7 +239,7 @@ class SolanaFetcher(ChainFetcher):
             # hands, so there is nothing to record beyond the gas it cost.
             if gas > Decimal('0'):
                 self._add_payment(JSF.PAYMENT_GAS_FEE, timestamp, self._native_asset_id(), gas, signature,
-                                  note=self.tr("Gas: unstaking"), event=JSF.EVENT_POSITION_COMMAND)
+                                  note=_STAKE_DEACTIVATE_CALL, event=JSF.EVENT_POSITION_COMMAND)
             return
         native = self._native_delta(tx)
         if kind == _STAKE_DEPOSIT and native < Decimal('0'):

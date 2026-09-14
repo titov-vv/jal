@@ -8,6 +8,7 @@ from constants import PredefinedAccountType, AssetLocation, AccountData, Predefi
     TokenList, TokenListKind
 from jal.data_import.statement import JSF
 from jal.db.account import JalAccountCreator, JalAccount
+from jal.db.asset import JalAssetCreator
 from jal.db.symbol import JalSymbol
 from jal.db.settings import JalSettings
 from jal.db.token_blacklist import JalTokenBlacklist, is_evm_address
@@ -106,10 +107,13 @@ def _usdc_symbol_ids(data) -> list:
 
 
 # Minimal Etherscan-shaped records, so a test can drive the classifier with a hand-built transaction history.
-def _tx(tx_hash, block, frm, to, value=0, gas_used='21000', gas_price='1000000000', is_error='0', method='0x'):
+# 'data' is the transaction's call data and 'function' the signature the provider decoded from the contract's ABI
+# (empty for a contract it has no ABI for) - both are returned by 'txlist' on Etherscan and on Routescan alike.
+def _tx(tx_hash, block, frm, to, value=0, gas_used='21000', gas_price='1000000000', is_error='0', method='0x',
+        data='', function=''):
     return {'hash': tx_hash, 'blockNumber': str(block), 'transactionIndex': '0', 'timeStamp': '1758800000',
             'from': frm, 'to': to, 'value': str(value), 'gasUsed': gas_used, 'gasPrice': gas_price,
-            'isError': is_error, 'methodId': method}
+            'isError': is_error, 'methodId': method, 'input': data or method, 'functionName': function}
 
 
 def _token_tx(tx_hash, block, frm, to, value, contract=USDC_CONTRACT, symbol='USDC', name='USD Coin', decimals='6'):
@@ -177,15 +181,15 @@ def test_gas_only_calls_become_gas_fees(fetcher, eth_wallet):
     gas = [p for p in data[JSF.ASSET_PAYMENTS] if p['type'] == JSF.PAYMENT_GAS_FEE]
     # The approve() and the reverted transaction both moved nothing but still burned gas
     assert len(gas) == 2
-    by_note = {p['description']: p for p in gas}
-    assert any('approval' in note.lower() for note in by_note)
-    assert any('failed' in note.lower() for note in by_note)
+    # What KIND of event each was is asserted on the stored value, never on the note: the note is free text and the
+    # event is the queryable channel (it becomes the chain action's subtype) - a note must not be a second one
+    assert {p['event'] for p in gas} == {JSF.EVENT_AUTHORIZATION, JSF.EVENT_FAILED}
     for payment in gas:
         assert payment['amount'] > Decimal('0')
     # The reverted transaction carried a value, but it never actually moved, so no transfer is created for it
     assert not any(t['number'].startswith('0xddd') for t in _transfers(data))
     failed_gas = [p for p in gas if p['number'].startswith('0xddd')]
-    assert len(failed_gas) == 1 and 'failed' in failed_gas[0]['description'].lower()
+    assert len(failed_gas) == 1 and failed_gas[0]['event'] == JSF.EVENT_FAILED
 
 
 def test_incoming_internal_native_is_imported(fetcher, eth_wallet):
@@ -335,6 +339,7 @@ def test_swaps_are_emitted_for_registered_routers(fetcher, eth_wallet):
     assert eth_to_usdc['in_symbol'] in usdc_symbols and eth_to_usdc['in_qty'] == Decimal('900')
     assert eth_to_usdc['fee_symbol'] in eth_symbols
     assert eth_to_usdc['fee_qty'] == Decimal('120000') * Decimal('1000000000') / Decimal('10') ** 18
+    assert eth_to_usdc['description'] == 'CoW Protocol GPv2Settlement'      # the venue it went through, named
 
     # 0x222: USDC -> ETH through LI.FI (an aggregator). Both legs are on this chain, so it is a swap, not a bridge,
     # and its single gas charge lands once as the fee - never double-counted across the two legs.
@@ -342,6 +347,7 @@ def test_swaps_are_emitted_for_registered_routers(fetcher, eth_wallet):
     assert usdc_to_eth['out_symbol'] in usdc_symbols and usdc_to_eth['out_qty'] == Decimal('800')
     assert usdc_to_eth['in_symbol'] in eth_symbols and usdc_to_eth['in_qty'] == Decimal('0.2')
     assert usdc_to_eth['fee_qty'] == Decimal('130000') * Decimal('1000000000') / Decimal('10') ** 18
+    assert usdc_to_eth['description'] == 'LI.FI Diamond (Jumper)'
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -373,6 +379,8 @@ def test_gasless_settlement_is_a_swap_although_the_wallet_never_signed_it(eth_wa
     assert swaps[0]['in_symbol'] in fluid_symbols and swaps[0]['in_qty'] == Decimal('21')
     # The wallet paid no gas for it - a fee invented here would be money it never spent
     assert not swaps[0].get('fee_qty') and not swaps[0].get('fee_symbol')
+    # The settlement names its venue like any other swap, read off the address that moved both sides
+    assert swaps[0]['description'] == 'CoW Protocol GPv2Settlement'
     # Both legs of a solver-submitted settlement look 'incoming from an unknown address' to the spam filter, because
     # the wallet signed nothing. The received token is thinly priced and on no allow-list - and it is still the user's
     # own swap, so quarantining it would delete one side of an exchange the user made.
@@ -548,6 +556,7 @@ def test_lending_supply_is_emitted_as_a_conversion(eth_wallet, monkeypatch):
     assert conversion['out_symbol'] in _eth_symbol_ids(data) and conversion['out_qty'] == Decimal('1')
     assert conversion['in_symbol'] in _usdc_symbol_ids(data) and conversion['in_qty'] == Decimal('1000')
     assert conversion['fee_qty'] == Decimal('120000') * Decimal('1000000000') / Decimal('10') ** 18   # gas is the fee
+    assert conversion['description'] == 'Aave v3 Pool'
     assert fetcher.skipped() == {}
 
 
@@ -583,6 +592,7 @@ def test_lending_payout_without_a_counter_leg_is_a_reward(eth_wallet, monkeypatc
 
     rewards = [p for p in data[JSF.ASSET_PAYMENTS] if p['type'] == JSF.PAYMENT_STAKING_REWARD]
     assert len(rewards) == 1 and rewards[0]['amount'] == Decimal('7')
+    assert rewards[0]['description'] == 'Aave v3 Pool'
     assert _conversions(data) == []
 
 
@@ -738,7 +748,7 @@ def test_bridge_send_is_emitted_as_a_pending_send_half(eth_wallet, monkeypatch):
     assert half['fee_qty'] == Decimal('120000') * Decimal('1000000000') / Decimal('10') ** 18   # gas rides the send
     # A pending half is an operation of its own kind and needs no mark, but it names the protocol it went through -
     # that is what lets the user recognize its counterpart among the candidates the matcher offers
-    assert 'LI.FI Diamond (Jumper)' in half['description']
+    assert half['description'] == 'LI.FI Diamond (Jumper)'
 
 
 # The ARRIVING leg of a cross-chain move is never recognized as such: nothing in it says what was sent from the other
@@ -767,7 +777,7 @@ def test_a_bridge_messaging_fee_is_charged_and_does_not_break_the_shape(eth_wall
     gas = Decimal('120000') * Decimal('1000000000') / Decimal('10') ** 18
     assert bridges[0]['fee_qty'] == gas + Decimal('31344835695747') / Decimal('10') ** 18
     assert bridges[0]['fee_symbol'] in _eth_symbol_ids(data)
-    assert 'USDT0 OFT Adapter' in bridges[0]['description']
+    assert bridges[0]['description'] == 'USDT0 OFT Adapter'
 
 
 # Only what went to the bridge contract itself is its fee; native coin to anyone else is a movement of its own, and a
@@ -868,6 +878,7 @@ def test_reward_claim_is_booked_as_a_staking_reward(eth_wallet, monkeypatch):
     assert len(rewards) == 1 and rewards[0]['amount'] == Decimal('50')
     assert len(data[JSF.ASSET_PAYMENTS]) == 1                  # the claim's gas is a fee of it, not a second record
     assert rewards[0]['fee'] > Decimal('0') and rewards[0]['fee_account'] == 1
+    assert rewards[0]['description'] == 'Merkl Distributor'
     assert _transfers(data) == [] and _swaps(data) == []
 
 
@@ -910,6 +921,7 @@ def test_reward_claimed_for_the_wallet_by_somebody_else_is_still_a_reward(eth_wa
 
     rewards = [p for p in data[JSF.ASSET_PAYMENTS] if p['type'] == JSF.PAYMENT_STAKING_REWARD]
     assert len(rewards) == 1 and rewards[0]['amount'] == Decimal('13')
+    assert rewards[0]['description'] == 'Merkl Distributor'   # read off the payer, the only thing that names it
     assert _transfers(data) == [] and _swaps(data) == []
     # No gas: the wallet signed nothing, so whoever did pays it on their own account
     assert not [p for p in data[JSF.ASSET_PAYMENTS] if p['type'] == JSF.PAYMENT_GAS_FEE]
@@ -1152,7 +1164,7 @@ def test_a_burn_send_on_the_l2_is_a_crossing_not_two_transfers(arb_wallet, monke
     halves = _bridges(data)
     assert len(halves) == 1
     assert halves[0]['qty'] == Decimal('11365.836072')      # the burnt amount is what crossed
-    assert 'USDT0 OFT' in halves[0]['description']
+    assert halves[0]['description'] == 'USDT0 OFT'
     assert _transfers(data) == []                            # neither leg is a transfer of its own
     # The fee went to the OFT contract, so it is charged with the gas rather than counted as a second asset leaving
     gas = Decimal('120000') * Decimal('1000000000') / Decimal('10') ** 18
@@ -1187,7 +1199,7 @@ def test_a_ccip_send_pays_its_fee_in_the_bridged_token_and_still_crosses(eth_wal
     assert halves[0]['qty'] == Decimal('48100.476931') + Decimal('0.523068')
     assert halves[0]['fee_qty'] == Decimal('120000') * Decimal('1000000000') / Decimal('10') ** 18   # gas alone
     assert halves[0]['fee_symbol'] in _eth_symbol_ids(data)
-    assert 'Chainlink CCIP Router' in halves[0]['description']
+    assert halves[0]['description'] == 'Chainlink CCIP Router'
     assert _transfers(data) == [] and _swaps(data) == []    # neither leg is a movement of its own
 
 
@@ -1225,7 +1237,7 @@ def test_the_ccip_routers_are_one_entry_per_chain(arb_wallet, monkeypatch):
     halves = _bridges(data)
     assert len(halves) == 1
     assert halves[0]['qty'] == Decimal('48300.778335') + Decimal('1.685806')
-    assert 'Chainlink CCIP Router' in halves[0]['description']
+    assert halves[0]['description'] == 'Chainlink CCIP Router'
     assert _transfers(data) == []
 
 
@@ -1307,3 +1319,190 @@ def test_no_transactions_is_an_empty_history_and_not_an_error(eth_wallet, monkey
     fetcher._account = eth_wallet
 
     assert fetcher._get_pages("txlist", 25000000) == []
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# WHAT AN OPERATION SAYS ABOUT WHERE IT HAPPENED.
+#
+# Every operation a registered contract produces is described by the protocol's BARE name and nothing around it. The
+# name is data - it is a proper name, untranslated, and it is what a reader looks the venue up by (protocol_names(),
+# JalAccount stake boxes, the pending-transfer report). A sentence around it would be localized, so the two ends of
+# one movement would be filed under two different headings. The marks a transfer carries are the one exception: they
+# state what the user still has to DO, and they carry the bare name inside themselves (see TransferMark).
+def test_the_protocol_note_is_the_bare_name_in_every_shape(eth_wallet, monkeypatch):
+    aave = "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2"       # LENDING
+    lifi = "0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae"       # AGGREGATOR
+    n1, n2, n3 = ("0xe1" + "0" * 62), ("0xe2" + "0" * 62), ("0xe3" + "0" * 62)
+    pages = {
+        "txlist": [_tx(n1, 100, WALLET, aave, value=10 ** 18),        # supply 1 ETH -> a conversion
+                   _tx(n2, 101, WALLET, lifi, value=2 * 10 ** 18),    # send 2 ETH into a bridge -> a pending half
+                   _tx(n3, 102, WALLET, aave, value=0, method='0xb61d27f6')],   # a payout -> a reward
+        "tokentx": [_token_tx(n1, 100, aave, WALLET, 1000 * 10 ** 6),
+                    _token_tx(n3, 102, aave, WALLET, 7 * 10 ** 6)],
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    rewards = [p for p in data[JSF.ASSET_PAYMENTS] if p['type'] == JSF.PAYMENT_STAKING_REWARD]
+    assert _conversions(data)[0]['description'] == 'Aave v3 Pool'
+    assert _bridges(data)[0]['description'] == 'LI.FI Diamond (Jumper)'
+    assert rewards[0]['description'] == 'Aave v3 Pool'
+    assert fetcher.skipped() == {}
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# WHAT A TRANSACTION THAT MOVED NOTHING SAYS ABOUT ITSELF.
+#
+# Its gas is the whole of what it cost, and the note is the CALL it paid for, written the way the chain states it.
+# Untranslated: a method and a protocol are proper names, and what kind of event it was lives in the event field, not
+# in the text. The contract is named after the '@' only where nothing else records it.
+_APPROVE_SELECTOR = '0x095ea7b3'
+_AAVE_POOL = "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2"
+_SAFETY_MODULE = "0x1a88df1cfe15af22b3c4c783d4e6f7f9e0c1885d"
+_CCIP_ROUTER = "0x80226fc0ee2b096224eeac085bb9a8cba1146f7d"
+_UNKNOWN_TOKEN = "0x7777777777777777777777777777777777777777"
+
+
+def _approve_data(spender: str) -> str:
+    return _APPROVE_SELECTOR + '0' * 24 + spender[2:] + 'f' * 64     # approve(spender, 2^256-1)
+
+
+# Makes the token an asset JAL holds, which is the condition _gas_subject() stores an approval's subject under
+def _hold_token(address: str, symbol: str = 'USDC', name: str = 'USD Coin') -> None:
+    creator = JalAssetCreator(PredefinedAsset.Crypto, name)
+    symbol_id = creator.add_symbol(symbol, 2, AssetLocation.ETH_BLOCKCHAIN)
+    creator.add_identifier(symbol_id, SymbolId.ETH_ADDRESS, address)
+    creator.commit()
+
+
+# Drives one gas-only transaction and returns the payment it produced.
+def _gas_only(eth_wallet, monkeypatch, tx) -> dict:
+    _fetcher, data = _drive(eth_wallet, monkeypatch, {"txlist": [tx], "tokentx": [], "txlistinternal": []})
+    gas = [p for p in data[JSF.ASSET_PAYMENTS] if p['type'] == JSF.PAYMENT_GAS_FEE]
+    assert len(gas) == 1
+    return gas[0]
+
+
+# An approval names WHO was granted the right - the first argument of approve(), which no other field records. The
+# token it was granted over is the subject, and is left out of the note exactly when the subject holds it.
+def test_an_approval_names_the_spender(eth_wallet, monkeypatch):
+    n = "0xf1" + "0" * 62
+    _hold_token(USDC_CONTRACT)
+    payment = _gas_only(eth_wallet, monkeypatch,
+                        _tx(n, 100, WALLET, USDC_CONTRACT, method=_APPROVE_SELECTOR,
+                            data=_approve_data(_CCIP_ROUTER)))
+    assert payment['description'] == 'approve(Chainlink CCIP Router)'
+    assert payment['event'] == JSF.EVENT_AUTHORIZATION
+
+
+# A spender the registry doesn't hold is named by its address - it is still the fact of the matter
+def test_an_approval_to_an_unregistered_spender_names_its_address(eth_wallet, monkeypatch):
+    n = "0xf2" + "0" * 62
+    stranger = "0x8888888888888888888888888888888888888888"
+    _hold_token(USDC_CONTRACT)
+    payment = _gas_only(eth_wallet, monkeypatch,
+                        _tx(n, 100, WALLET, USDC_CONTRACT, method=_APPROVE_SELECTOR, data=_approve_data(stranger)))
+    assert payment['description'] == f'approve({stranger})'
+
+
+# ... and when the TOKEN is one JAL doesn't hold, no subject can be stored for it - so the note carries its address
+# instead, and the record of what was approved stays complete without the token entering the asset list.
+def test_an_approval_of_an_unknown_token_keeps_the_token_address_in_the_note(eth_wallet, monkeypatch):
+    n = "0xf3" + "0" * 62
+    payment = _gas_only(eth_wallet, monkeypatch,
+                        _tx(n, 100, WALLET, _UNKNOWN_TOKEN, method=_APPROVE_SELECTOR,
+                            data=_approve_data(_CCIP_ROUTER)))
+    assert payment['description'] == f'approve(Chainlink CCIP Router) @ {_UNKNOWN_TOKEN}'
+    assert 'subject' not in payment
+
+
+# Any other call is named by its method and the contract it was made against
+def test_a_contract_call_names_the_method_and_the_protocol(eth_wallet, monkeypatch):
+    n = "0xf4" + "0" * 62
+    payment = _gas_only(eth_wallet, monkeypatch,
+                        _tx(n, 100, WALLET, _SAFETY_MODULE, method='0x69328dec', function='cooldown()'))
+    assert payment['description'] == 'cooldown() @ Aave Safety Module (stkGHO)'
+
+
+# A contract the provider has no ABI for decodes to no method name, and the bare selector is what is left to say
+def test_a_call_with_no_decoded_name_keeps_the_selector(eth_wallet, monkeypatch):
+    n = "0xf5" + "0" * 62
+    payment = _gas_only(eth_wallet, monkeypatch, _tx(n, 100, WALLET, _AAVE_POOL, method='0x0193b9fc'))
+    assert payment['description'] == '0x0193b9fc @ Aave v3 Pool'
+
+
+# 'functionName' is free text from outside that lands in a note and decides an event, so only what a method name can
+# actually be is taken from it
+def test_a_method_name_that_is_not_one_is_refused(eth_wallet, monkeypatch):
+    n = "0xf6" + "0" * 62
+    payment = _gas_only(eth_wallet, monkeypatch,
+                        _tx(n, 100, WALLET, _AAVE_POOL, method='0x0193b9fc', function='drop table x; --(uint256)'))
+    assert payment['description'] == '0x0193b9fc @ Aave v3 Pool'
+
+
+# A transaction carrying no call data at all has nothing but the address it went to
+def test_a_call_with_no_data_names_only_where_it_went(eth_wallet, monkeypatch):
+    n = "0xf7" + "0" * 62
+    stranger = "0x8888888888888888888888888888888888888888"
+    payment = _gas_only(eth_wallet, monkeypatch, _tx(n, 100, WALLET, stranger, gas_used='30000'))
+    assert payment['description'] == stranger
+    assert payment['event'] == JSF.EVENT_CONTRACT_CALL
+
+
+# A reverted transaction is described by what it TRIED to do - that it failed is the event, not the sentence
+def test_a_failed_transaction_still_says_what_it_tried(eth_wallet, monkeypatch):
+    n = "0xf8" + "0" * 62
+    payment = _gas_only(eth_wallet, monkeypatch,
+                        _tx(n, 100, WALLET, _AAVE_POOL, method='0x617ba037', function='supply(address asset)',
+                            is_error='1'))
+    assert payment['description'] == 'supply() @ Aave v3 Pool'
+    assert payment['event'] == JSF.EVENT_FAILED
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# ... AND WHAT KIND OF EVENT IT WAS.
+#
+# The event is the queryable half of the record - it becomes the chain action's subtype - so it is read from the
+# method name through a curated table, never from the note. A name the table doesn't hold stays the generic value.
+def test_an_operator_toggle_is_an_authorization(eth_wallet, monkeypatch):
+    n = "0xf9" + "0" * 62     # a right granted by a call the approve() selector knows nothing about
+    payment = _gas_only(eth_wallet, monkeypatch,
+                        _tx(n, 100, WALLET, _AAVE_POOL, method='0x1a1e3a5d', function='toggleOperator(address,bool)'))
+    assert payment['event'] == JSF.EVENT_AUTHORIZATION
+    assert payment['description'] == 'toggleOperator() @ Aave v3 Pool'
+
+
+# A lifecycle command on a position: it moves nothing by itself, it only starts a clock
+def test_a_cooldown_is_a_position_command(eth_wallet, monkeypatch):
+    n = "0xfa" + "0" * 62
+    payment = _gas_only(eth_wallet, monkeypatch,
+                        _tx(n, 100, WALLET, _SAFETY_MODULE, method='0x69328dec', function='cooldown()'))
+    assert payment['event'] == JSF.EVENT_POSITION_COMMAND
+
+
+# A claim that reached this branch moved nothing, which is what makes it a no-op: it claimed zero. (A claim that DID
+# pay out never gets here - it is a reward, and its gas is a fee of that reward.)
+def test_a_claim_that_moved_nothing_is_a_no_op(eth_wallet, monkeypatch):
+    n = "0xfb" + "0" * 62
+    merkl = "0x3ef3d8ba38ebe18db133cec108f4d14ce00dd9ae"
+    payment = _gas_only(eth_wallet, monkeypatch,
+                        _tx(n, 100, WALLET, merkl, method='0x2f52ebb7', function='claim(address[],address[])'))
+    assert payment['event'] == JSF.EVENT_NO_OP
+    assert payment['description'] == 'claim() @ Merkl Distributor'
+
+
+# A method the table doesn't hold is not guessed at
+def test_an_unknown_method_stays_a_contract_call(eth_wallet, monkeypatch):
+    n = "0xfc" + "0" * 62
+    payment = _gas_only(eth_wallet, monkeypatch,
+                        _tx(n, 100, WALLET, _AAVE_POOL, method='0xa415bcad', function='borrow(address,uint256)'))
+    assert payment['event'] == JSF.EVENT_CONTRACT_CALL
+
+
+# A revert is what the transaction IS, whatever the method it called says it was trying to do
+def test_a_reverted_position_command_is_a_failed_transaction(eth_wallet, monkeypatch):
+    n = "0xfd" + "0" * 62
+    payment = _gas_only(eth_wallet, monkeypatch,
+                        _tx(n, 100, WALLET, _SAFETY_MODULE, method='0x69328dec', function='cooldown()',
+                            is_error='1'))
+    assert payment['event'] == JSF.EVENT_FAILED

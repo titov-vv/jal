@@ -260,27 +260,45 @@ class TronFetcher(ChainFetcher):
             self._skip(self.tr("contract call with no gas left to charge"), tx_hash)
             return
         self._add_payment(JSF.PAYMENT_GAS_FEE, self._timestamp_of(record), self._native_asset_id(), fee,
-                          tx_hash, note=self._gas_note(record, data), event=self._gas_event(record, data))
+                          tx_hash, note=self._gas_note(record, contract, data), event=self._gas_event(record, data))
 
-    # Describes what the gas was spent on. Tron reports a failed transaction through 'contractRet', and the
-    # method selector tells an approval from any other call - the distinction decision #32 asks to keep.
-    def _gas_note(self, record: dict, data: str) -> str:
-        result = record.get('ret', [{}])[0].get('contractRet', '')
-        if result and result != 'SUCCESS':
-            return self.tr("Gas: failed transaction") + f" ({result})"
+    # The call the gas paid for, as the chain states it and untranslated - the rule EVMFetcher._call_note follows.
+    # The revert reason is appended because it is the one thing the operation's subtype does not already carry.
+    def _gas_note(self, record: dict, contract: dict, data: str) -> str:
+        call = self._call_note(contract, data)
+        result = self._failure_of(record)
+        if not result:
+            return call
+        return f"{call} ({result})" if call else result
+
+    # "approve(<spender>) @ <token>" for an approval, "<selector> @ <contract>" for anything else. The contract is
+    # always named: this fetcher resolves no subject (it has no address lookup of its own yet), so the note is the
+    # only place the token an approval was granted over is recorded. TronGrid decodes no method name, so a call that
+    # is not an approval has nothing but its selector to give.
+    def _call_note(self, contract: dict, data: str) -> str:
+        value = contract.get('parameter', {}).get('value', {})
+        called = tron_address_from_hex(value.get('contract_address', ''))
         if data[:8] == _METHOD_APPROVE:
-            return self.tr("Gas: token approval")
-        return self.tr("Gas: contract call")
+            spender = tron_address_from_hex(data[8:72][-40:]) if len(data) >= 72 else ''
+            call = f"approve({spender})" if spender else "approve()"
+        else:
+            call = data[:8]
+        if not called:
+            return call
+        return f"{call} @ {called}" if call else called
 
-    # ... and the same two facts as a stored value. The approved token is not resolved here the way evm.py resolves
-    # it: this fetcher has no address lookup of its own yet, so the subject stays in the note until it does.
+    # ... and the same facts as a stored value.
     def _gas_event(self, record: dict, data: str) -> str:
-        result = record.get('ret', [{}])[0].get('contractRet', '')
-        if result and result != 'SUCCESS':
+        if self._failure_of(record):
             return JSF.EVENT_FAILED
         if data[:8] == _METHOD_APPROVE:
             return JSF.EVENT_AUTHORIZATION
         return JSF.EVENT_CONTRACT_CALL
+
+    # Why the transaction failed, as the chain names it ('OUT_OF_ENERGY', 'REVERT'), or '' when it did not fail
+    def _failure_of(self, record: dict) -> str:
+        result = record.get('ret', [{}])[0].get('contractRet', '')
+        return result if result and result != 'SUCCESS' else ''
 
     # Staking rewards accumulate on-chain and are credited to the wallet when they are claimed. The claimed amount
     # isn't in the contract parameters - it is the 'withdraw_amount' the node reports for the transaction.

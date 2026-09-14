@@ -82,7 +82,6 @@ class JalIcon(UserDict):
     ADD = auto()
     ADD_CHILD = auto()
     APP_MAIN = auto()
-    BOND_AMORTIZATION = auto()
     BOND_INTEREST = auto()
     BRIDGE_IN = auto()
     BRIDGE_OUT = auto()
@@ -137,7 +136,6 @@ class JalIcon(UserDict):
         ADD: "add.ico",
         ADD_CHILD: "add_child.ico",
         APP_MAIN: "jal.png",
-        BOND_AMORTIZATION: "amortization.ico",
         BOND_INTEREST: "coupon.ico",
         BRIDGE_IN: "bridge_in.ico",
         BRIDGE_OUT: "bridge_out.ico",
@@ -206,7 +204,6 @@ class JalIcon(UserDict):
         STOCK_DIVIDEND: Meaning.POSITIVE,
         STOCK_VESTING: Meaning.POSITIVE,
         BOND_INTEREST: Meaning.POSITIVE,
-        BOND_AMORTIZATION: Meaning.POSITIVE,
         INTEREST: Meaning.POSITIVE,
         STAKING_REWARD: Meaning.POSITIVE,
         REWARD: Meaning.POSITIVE,
