@@ -42,6 +42,7 @@ class JalAsset(JalDB):
         self._principal = self._data.get('data', {}).get(AssetData.PrincipalValue, '')
         self._principal = Decimal(self._principal) if self._principal else Decimal('0')
         self._coin_id = self._data.get('data', {}).get(AssetData.CoinGeckoId, '')
+        self._protocol = self._data.get('data', {}).get(AssetData.Protocol, '')
         # Anything unreadable is taken as "not rebasing": the flag adds quantity to a position, so the safe reading
         # of a value nobody can make sense of is the one that changes nothing.
         try:
@@ -447,6 +448,11 @@ class JalAsset(JalDB):
     # quote source is keyed by in that case - llama_coin_keys() in the downloader.
     def coin_id(self) -> str:
         return self._coin_id
+
+    # The protocol whose receipt token this is ('Aave v3', 'Fluid', ...) or '' if the asset isn't marked as one
+    # (see AssetData.Protocol). A wrapping names its own row from the marked side of the pair.
+    def protocol(self) -> str:
+        return self._protocol
 
     # True for a rebasing receipt token - one whose on-chain balance grows with no transfer and no event behind it,
     # so that the ledger is structurally short of the real quantity (see AssetData.Rebasing). It is what decides

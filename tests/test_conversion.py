@@ -4,8 +4,8 @@ import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo
 from tests.helpers import d2t, create_stocks, create_trades, create_quotes, create_conversions, symbol_id_for, \
-    operation_id
-from constants import AccountData, BookAccount, PredefinedCategory
+    operation_id, nth_operation
+from constants import AccountData, AssetData, BookAccount, PredefinedCategory
 from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
@@ -14,6 +14,30 @@ from jal.db.db import JalDB
 from jal.db.rebase_residue import RebaseResidue
 
 _WITH_SWAP = (LedgerTransaction.Trade, LedgerTransaction.Swap)   # what the Deals report asks for
+
+
+def _mark_protocol(asset_id, protocol):
+    JalDB()._exec("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) VALUES(:a, :dt, :v)",
+                  [(":a", asset_id), (":dt", AssetData.Protocol), (":v", protocol)], commit=True)
+    JalAsset(asset_id).invalidate_cache()
+
+
+# A wrapping names the venue it supplied to or withdrew from, and the direction is read from the marked side alone -
+# no column on the operation, no backfill and nothing inferred from a ticker. An unmarked pair keeps the family name.
+def test_a_wrapping_names_the_protocol_of_the_marked_side(prepare_db_fifo):
+    create_stocks([('USDT', 'Stablecoin'), ('aUSDT', 'Aave receipt'), ('stkUSDT', 'Umbrella receipt'),
+                   ('ETH', 'Coin'), ('WETH', 'Wrapped coin')], currency_id=2)    # -> assets 4..8
+    _mark_protocol(5, 'Aave v3')
+    _mark_protocol(6, 'Aave Safety Module')
+    t = d2t(220201)
+    create_conversions(1, [(t, 4, 100, 5, 100),     # plain -> marked
+                           (t, 5, 100, 4, 100),     # marked -> plain
+                           (t, 5, 100, 6, 100),     # marked -> marked
+                           (t, 7, 1, 8, 1)])        # neither side marked
+
+    otype = LedgerTransaction.Conversion
+    assert [nth_operation(otype, i).name() for i in range(1, 5)] == [
+        "Supply to Aave v3", "Withdraw from Aave v3", "Move: Aave v3 -> Aave Safety Module", "Wrapping"]
 
 
 # A conversion is not a disposal: the position keeps its cost basis and no profit or loss is realized, even though
@@ -126,6 +150,7 @@ def test_conversion_fee_is_a_row_of_its_own(prepare_db_fifo):
     assert fee.value_currency() == 'GAS'
     assert fee.value_total() == [Decimal('0.5')]                    # the gas balance, not the converted asset's
     assert fee.asset().symbol() == 'GAS'
+    assert fee.name() == "Wrapping fee"    # the gas row names the family, never the venue the wrapping went to
     assert fee.timestamp() == conversion.timestamp() and fee.account_id() == conversion.account_id()
 
 

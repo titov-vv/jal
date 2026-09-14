@@ -397,6 +397,13 @@ class AssetData(PredefinedList, QObject):
     #
     # It is filled in on demand, by the first balance read that needs it, and never by hand.
     Decimals = 6
+    # The protocol or venue whose receipt token this is, named as a human calls it ('Aave v3', 'Fluid',
+    # 'Aave Safety Module') - the same vocabulary AccountData.StakeProtocol uses for a staking container.
+    # A wrapping reads its own row from it: whichever side carries the key is the protocol supplied to or
+    # withdrawn from, so nothing has to be stored per operation and nothing has to be backfilled.
+    # It is set BY HAND, like Rebasing and for the same reason: an 'aEth.../f.../stk...' prefix is a naming
+    # convention, not a property, and the contract the operation went through is not kept.
+    Protocol = 7
 
     def __init__(self):
         super().__init__()
@@ -406,7 +413,8 @@ class AssetData(PredefinedList, QObject):
             self.PrincipalValue: self.tr("principal"),
             self.CoinGeckoId: self.tr("CoinGecko id"),
             self.Rebasing: self.tr("rebasing"),
-            self.Decimals: self.tr("decimals")
+            self.Decimals: self.tr("decimals"),
+            self.Protocol: self.tr("protocol")
         }
         self._types = {
             self.Tag: "tag",
@@ -414,7 +422,8 @@ class AssetData(PredefinedList, QObject):
             self.PrincipalValue: "float",
             self.CoinGeckoId: "str",
             self.Rebasing: "int",
-            self.Decimals: "int"
+            self.Decimals: "int",
+            self.Protocol: "str"
         }
 
     def get_type(self, type_id, default='') -> str:

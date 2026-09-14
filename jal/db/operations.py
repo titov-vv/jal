@@ -2541,10 +2541,25 @@ class Conversion(FeeCarrier, LedgerTransaction):
         self._note = self._data['note']
         is_fee = self._opart == Conversion.Fee
         self._icon = JalIcon[JalIcon.FEE if is_fee else JalIcon.CONVERSION]
-        self._oname = self.tr("Wrapping fee") if is_fee else self.tr("Wrapping")
+        self._oname = self.tr("Wrapping fee") if is_fee else self._wrapping_name()
         self._peer_id = self._account.organization()
         self._reconciled = self._account.reconciled_at() >= self._timestamp
         self._view_rows = 1 if is_fee else 2   # The gas draws its own row, never a third line of the conversion
+
+    # The venue this wrapping supplied to or withdrew from, taken from whichever side of the pair is marked as its
+    # receipt token (AssetData.Protocol). The direction is the marked side and nothing else: the contract the
+    # operation went through isn't stored, and a ticker prefix is a naming convention rather than a property.
+    # An unmarked pair keeps the bare family name - a graceful fallback that claims nothing.
+    def _wrapping_name(self) -> str:
+        out_protocol = self._out_asset.protocol()
+        in_protocol = self._in_asset.protocol()
+        if out_protocol and in_protocol:
+            return self.tr("Move: ") + f"{out_protocol} -> {in_protocol}"
+        if in_protocol:
+            return self.tr("Supply to ") + in_protocol
+        if out_protocol:
+            return self.tr("Withdraw from ") + out_protocol
+        return self.tr("Wrapping")
 
     # A conversion happens immediately
     def settlement(self) -> int:
