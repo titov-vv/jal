@@ -30,6 +30,14 @@ from jal.widgets.helpers import set_grids_metrics, restore_columns
 JAL_REPORT_CLASS = "StakingReport"
 
 
+# What a row of the list stands for. The three kinds fill the same columns from different places (see _box_row()),
+# so the kind is what tells them apart afterwards - a 'box' of None says only that a row has no container, which is
+# true of two of the three.
+ROW_BOX = 'box'
+ROW_CLAIM = 'claim'
+ROW_WRAPPED = 'wrapped'
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 # What was staked and is still held somewhere else at the report date, one row per asset in a box - and, beside it,
 # what a distributor owes a wallet and hasn't paid yet.
@@ -40,6 +48,8 @@ JAL_REPORT_CLASS = "StakingReport"
 #
 # A CLAIMABLE REWARD is listed here too, one row per (wallet, asset, distributor), because it is the same kind of
 # thing the 'Accrued' column already exists for: value that has been earned and not yet received.
+#
+# A WRAPPED POSITION is listed as well, one row per (wallet, receipt asset) - see _wrapped_rows().
 class StakingListModel(QAbstractTableModel):
     def __init__(self, parent_view):
         super().__init__(parent_view)
@@ -189,6 +199,7 @@ class StakingListModel(QAbstractTableModel):
                                                     self._timestamp)['delta']
                 self._data.append(self._box_row(box, holding['asset'], holding['amount'], accrued,
                                                 (holding['amount'] + accrued) * rate))
+        self._data += self._wrapped_rows()
         self._data += self._claim_rows()
         self._value_total = sum([x['value'] for x in self._data], Decimal('0'))
         self.endResetModel()
@@ -197,10 +208,48 @@ class StakingListModel(QAbstractTableModel):
     # drawn, so that a claimable-reward row - which has no box - can fill the same fields from somewhere else.
     @staticmethod
     def _box_row(box: JalStakingBox, asset, amount: Decimal, accrued: Decimal, value: Decimal) -> dict:
-        return {'box': box, 'name': box.name(), 'protocol': box.protocol(), 'chain': box.chain(),
+        return {'kind': ROW_BOX, 'box': box, 'name': box.name(), 'protocol': box.protocol(), 'chain': box.chain(),
                 'currency_id': box.currency().id(), 'address': box.address(), 'since': box.opened_at(),
                 'active': box.is_active(), 'asset': asset, 'amount': amount, 'accrued': accrued, 'value': value,
                 'source': '', 'account_id': box.id()}
+
+    # A wrapped position: a receipt token of some protocol (AssetData.Protocol) held on the wallet itself rather
+    # than in a container. It belongs beside a staked one because it answers the same question - where the value is
+    # working and what it has earned - and it STAYS in the Asset Portfolio, the only report that shows its cost
+    # basis and unrealized profit.
+    #
+    # Membership is holding a MARKED ASSET and not having a wrapping operation, so the row is right whether the
+    # position was entered by a wrapping, by a swap or by an airdrop of receipt tokens, and nothing scans operations.
+    # Boxes are left out by the default account filter (they are a hidden type) - what they hold is already a row.
+    #
+    # 'Show closed' doesn't filter these, exactly as it doesn't filter a claim: a position that has been unwrapped
+    # holds nothing and simply stops being listed.
+    def _wrapped_rows(self) -> list:
+        rows = []
+        for account in JalAccount.get_all_accounts(investing_only=True):
+            for holding in account.assets_list(self._timestamp):
+                asset = holding['asset']
+                if not asset.protocol():
+                    continue
+                rate = asset.quote(self._timestamp, self._currency_id)[1]
+                # Only a REBASING token's growth is quantity the books are short of. A share token (Fluid, stkAAVE)
+                # keeps its quantity and accrues in price, so its growth is in 'Value' already and an 'Accrued'
+                # figure here would state a second, different quantity in the same column.
+                accrued = JalChainBalance().accrual(account.id(), asset.id(), holding['amount'],
+                                                    self._timestamp)['delta'] if asset.rebasing() else Decimal('0')
+                rows.append({'kind': ROW_WRAPPED, 'box': None, 'name': account.name(), 'protocol': asset.protocol(),
+                             'chain': account.chain(), 'currency_id': account.currency(),
+                             'address': account.address(), 'since': self._opened_at(account, asset),
+                             'active': True, 'asset': asset, 'amount': holding['amount'], 'accrued': accrued,
+                             'value': (holding['amount'] + accrued) * rate, 'source': '', 'account_id': account.id()})
+        return rows
+
+    # When the oldest lot still held was acquired - the FIFO open date of the position. A wrapped position has no
+    # container that was opened at a moment, so this is what 'Staked since' says for it (the Asset Portfolio shows
+    # the same date in its own 'Since' column). Nothing open leaves the cell blank.
+    def _opened_at(self, account: JalAccount, asset: JalAsset) -> int:
+        trades = account.open_trades_list(asset, self._timestamp)
+        return min([x.open_operation().timestamp() for x in trades]) if trades else 0
 
     # What the distributors owe, one row per (wallet, asset, distributor).
     #
@@ -221,7 +270,8 @@ class StakingListModel(QAbstractTableModel):
                 # The protocol is named where it is known and the bare contract shown where it isn't - a row must
                 # always say who owes the money, and an unregistered distributor is still an address one can look up.
                 name = protocol_name(account.chain(), claim['source']) or claim['source']
-                rows.append({'box': None, 'name': account.name(), 'protocol': name, 'chain': account.chain(),
+                rows.append({'kind': ROW_CLAIM, 'box': None, 'name': account.name(), 'protocol': name,
+                             'chain': account.chain(),
                              'currency_id': account.currency(), 'address': claim['source'], 'since': 0,
                              'active': True, 'asset': asset, 'amount': Decimal('0'), 'accrued': claim['amount'],
                              'value': claim['amount'] * rate, 'source': claim['source'], 'account_id': account_id})
@@ -419,10 +469,12 @@ class StakingReportWindow(MdiWidget):
         record = self.boxes_model.record(index)
         if record is None:
             return
+        if record['kind'] == ROW_WRAPPED:
+            return   # nothing to chart and nothing to rename: the position is the wallet's own holding
         menu = QMenu(self.ui.ReportTableView)
         # A chart is of one asset, so it is offered where the row names one - an emptied box, which is listed with
         # 'Show closed' and holds nothing, still has a name to correct.
-        if record['box'] is None:
+        if record['kind'] == ROW_CLAIM:
             if record['asset'] is None:
                 return
             action = QAction(icon=JalIcon[JalIcon.CHART], text=self.tr("Show claim history"),

@@ -4,8 +4,10 @@ import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import d2t, create_assets, create_trades, symbol_id_for
-from constants import PredefinedAsset, PredefinedAccountType, AccountStatus, AssetLocation
+from constants import PredefinedAsset, PredefinedAccountType, AccountStatus, AssetLocation, AssetData
 from jal.db.account import JalAccount, JalAccountCreator
+from jal.db.asset import JalAsset
+from jal.db.db import JalDB
 from jal.db.common_models import AccountListModel
 from jal.db.ledger import Ledger
 from jal.db.operations import LedgerTransaction, Transfer
@@ -13,6 +15,7 @@ from jal.db.staking import JalStakingBox
 from jal.db.transfer_settlement import TransferSettlement
 
 LINK = 4                       # the asset created by the fixture below
+AUSDT = 5                      # a receipt token, created by the wrapped-position tests themselves
 WALLET = 1
 USD = 2
 POOL = '0xddc796a66e8b83d0bccd97df33a6ccfba8fd60ea'      # stake.link's PriorityPool, a registered custody contract
@@ -242,4 +245,114 @@ def test_the_report_offers_to_rename_a_position(wallet):
     menu = view.findChild(QMenu)
     assert [x.text() for x in menu.actions()] == ['Show accrual chart', 'Rename position...']
     menu.close()
+    window.deleteLater()
+
+
+def _mark_protocol(asset_id, protocol):
+    JalDB()._exec("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) VALUES(:a, :dt, :v)",
+                  [(":a", asset_id), (":dt", AssetData.Protocol), (":v", protocol)], commit=True)
+    JalAsset(asset_id).invalidate_cache()
+
+
+def _flag_rebasing(asset_id):
+    JalDB()._exec("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) VALUES(:a, :dt, '1')",
+                  [(":a", asset_id), (":dt", AssetData.Rebasing)], commit=True)
+    JalAsset(asset_id).invalidate_cache()
+
+
+# A receipt token held on the wallet itself. It is BOUGHT rather than wrapped, deliberately: membership in the report
+# is holding a marked asset, so the row must be right whatever operation put the token there.
+def _hold_receipt_token(protocol, qty, timestamp):
+    create_assets([('aUSDT', 'Aave Ethereum USDT', '', USD, PredefinedAsset.Crypto, 0)])
+    create_trades(WALLET, [(timestamp, timestamp, AUSDT, qty, Decimal('1'), Decimal('0'))])
+    _mark_protocol(AUSDT, protocol)
+    Ledger().rebuild(from_timestamp=0)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# A wrapped position - a receipt token held on the wallet itself - is listed beside the staked ones, because it
+# answers the same question: where the value is working and what it has earned.
+def test_a_wrapped_position_is_listed_beside_the_staked_ones(wallet):
+    import os
+    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+    from jal.reports.reports import Reports
+    from jal.reports.staking import StakingReportWindow, ROW_WRAPPED
+
+    _hold_receipt_token('Aave v3', Decimal('50'), d2t(210301))
+
+    window = StakingReportWindow(Reports(None, None))
+    window.updateReport()
+    rows = [x for x in window.boxes_model._data if x['kind'] == ROW_WRAPPED]
+    assert len(rows) == 1
+    row = rows[0]
+    assert row['protocol'] == 'Aave v3'
+    assert row['amount'] == Decimal('50')
+    assert row['since'] == d2t(210301)             # the FIFO open date, there being no container that was opened
+    assert row['address'] == '0x' + '2' * 40       # the wallet holds the token, so the address is the wallet's own
+    assert row['box'] is None and row['source'] == ''
+    window.deleteLater()
+
+
+# The growth of a SHARE token is in its price, so 'Accrued' - a quantity the books are short of - stays empty for it
+# even when the chain balance has been read. Only a token flagged as rebasing fills it.
+def test_accrued_is_filled_only_for_a_rebasing_wrapped_token(wallet):
+    import os
+    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+    from jal.db.chain_balance import JalChainBalance
+    from jal.reports.reports import Reports
+    from jal.reports.staking import StakingReportWindow, ROW_WRAPPED
+
+    _hold_receipt_token('Aave v3', Decimal('50'), d2t(210301))
+    JalChainBalance().store(d2t(210401), WALLET, AUSDT, Decimal('52'))   # the chain holds 2 more than the books
+
+    window = StakingReportWindow(Reports(None, None))
+    window.updateReport()
+    assert [x['accrued'] for x in window.boxes_model._data if x['kind'] == ROW_WRAPPED] == [Decimal('0')]
+
+    _flag_rebasing(AUSDT)
+    window.updateReport()
+    assert [x['accrued'] for x in window.boxes_model._data if x['kind'] == ROW_WRAPPED] == [Decimal('2')]
+    window.deleteLater()
+
+
+# What a box holds is already a row of its own, so a marked asset sitting in one must not be counted a second time.
+def test_a_marked_asset_inside_a_box_is_not_listed_twice(wallet):
+    import os
+    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+    from jal.reports.reports import Reports
+    from jal.reports.staking import StakingReportWindow, ROW_BOX, ROW_WRAPPED
+
+    _mark_protocol(LINK, 'stake.link')        # the very asset the box below comes to hold
+    JalStakingBox.create(JalAccount(WALLET), "stake.link", protocol='stake.link PriorityPool',
+                         chain=AssetLocation.ETH_BLOCKCHAIN, address=POOL)
+    _pending_leg(WALLET, None, 100, d2t(210201), HASH_OUT, address=POOL)
+    TransferSettlement().settle_all()
+    Ledger().rebuild(from_timestamp=0)
+
+    window = StakingReportWindow(Reports(None, None))
+    window.updateReport()
+    kinds = [x['kind'] for x in window.boxes_model._data]
+    assert kinds == [ROW_BOX]      # the whole position is in the box, and the box is the only row that says so
+    assert ROW_WRAPPED not in kinds
+    window.deleteLater()
+
+
+# A wrapped row has no container to chart or to rename, and it is not a claim either - so the menu that offers a
+# claim's history must not open on it. Branching on 'box is None' alone is what would have done that.
+def test_a_wrapped_row_offers_no_container_actions(wallet):
+    import os
+    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+    from PySide6.QtWidgets import QMenu
+    from jal.reports.reports import Reports
+    from jal.reports.staking import StakingReportWindow
+
+    _hold_receipt_token('Aave v3', Decimal('50'), d2t(210301))
+
+    window = StakingReportWindow(Reports(None, None))
+    window.show()
+    window.updateReport()
+    view = window.ui.ReportTableView
+    window.onPositionContextMenu(view.visualRect(window.boxes_model.index(0, 0)).center())
+
+    assert view.findChild(QMenu) is None
     window.deleteLater()
