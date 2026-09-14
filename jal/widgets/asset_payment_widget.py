@@ -2,7 +2,6 @@ from PySide6.QtCore import Slot, QStringListModel, QByteArray
 from PySide6.QtWidgets import QMessageBox
 from jal.ui.widgets.ui_asset_payment_operation import Ui_AssetPaymentOperation
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
-from jal.widgets.helpers import set_visible_retaining_size
 from jal.widgets.delegates import WidgetMapperDelegateBase
 from jal.db.helpers import db_row2dict, now_ts
 from jal.db.operations import LedgerTransaction, AssetPayment, FeeKind
@@ -20,7 +19,6 @@ class AssetPaymentWidgetDelegate(WidgetMapperDelegateBase):
                           'ex_date': self.timestamp_delegate,
                           'symbol_id': self.symbol_delegate,
                           'amount': self.decimal_delegate,
-                          'price': self.decimal_long_delegate,   # a per-share price, as a trade's is
                           'tax': self.decimal_delegate}
 
 
@@ -38,9 +36,6 @@ class AssetPaymentWidget(AbstractOperationDetails):
         names = AssetPayment.subtype_names()
         self.combo_model = QStringListModel([names[x] for x in sorted(names)])   # index == AssetPayment subtype
         self.ui.type.setModel(self.combo_model)
-        set_visible_retaining_size(self.ui.price_label, False)
-        set_visible_retaining_size(self.ui.price_edit, False)
-
         self.mapper.setItemDelegate(AssetPaymentWidgetDelegate(self.mapper))
 
         self.ui.account_widget.changed.connect(self.mapper.submit)
@@ -56,7 +51,6 @@ class AssetPaymentWidget(AbstractOperationDetails):
         self.mapper.addMapping(self.ui.type, self.model.fieldIndex("type"), QByteArray().setRawData("currentIndex", 12))
         self.mapper.addMapping(self.ui.number, self.model.fieldIndex("number"))
         self.mapper.addMapping(self.ui.dividend_edit, self.model.fieldIndex("amount"))
-        self.mapper.addMapping(self.ui.price_edit, self.model.fieldIndex("price"))
         self.mapper.addMapping(self.ui.tax_edit, self.model.fieldIndex("tax"))
         self.mapper.addMapping(self.ui.note, self.model.fieldIndex("note"))
 
@@ -72,9 +66,7 @@ class AssetPaymentWidget(AbstractOperationDetails):
 
     @Slot()
     def typeChanged(self, dividend_type_id):
-        if dividend_type_id == AssetPayment.BondAmortization:
-            self.ui.amount_label.setText(self.tr("Repayment"))
-        elif dividend_type_id == AssetPayment.AssetFee:
+        if dividend_type_id == AssetPayment.AssetFee:
             self.ui.amount_label.setText(self.tr("Fee / Tax"))
         else:
             self.ui.amount_label.setText(self.tr("Dividend"))
@@ -96,7 +88,6 @@ class AssetPaymentWidget(AbstractOperationDetails):
         new_record.setValue("symbol_id", 0)
         new_record.setValue("amount", '0')
         new_record.setValue("tax", '0')
-        new_record.setValue("price", '')
         new_record.setValue("note", None)
         return new_record
 

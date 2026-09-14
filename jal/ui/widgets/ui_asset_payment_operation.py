@@ -53,12 +53,6 @@ class Ui_AssetPaymentOperation(object):
 
         self.layout.addWidget(self.commit_button, 0, 14, 1, 1)
 
-        self.price_edit = QLineEdit(AssetPaymentOperation)
-        self.price_edit.setObjectName(u"price_edit")
-        self.price_edit.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
-
-        self.layout.addWidget(self.price_edit, 2, 11, 1, 1)
-
         self.type_label = QLabel(AssetPaymentOperation)
         self.type_label.setObjectName(u"type_label")
         self.type_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
@@ -176,11 +170,6 @@ class Ui_AssetPaymentOperation(object):
 
         self.layout.addWidget(self.timestamp_editor, 1, 1, 1, 1)
 
-        self.price_label = QLabel(AssetPaymentOperation)
-        self.price_label.setObjectName(u"price_label")
-
-        self.layout.addWidget(self.price_label, 2, 10, 1, 1)
-
         self.dateGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
 
         self.layout.addItem(self.dateGroupSpacer, 1, 2, 1, 1)
@@ -222,7 +211,6 @@ class Ui_AssetPaymentOperation(object):
         self.account_label.setBuddy(self.account_widget)
         self.ex_date_label.setBuddy(self.ex_date_editor)
         self.amount_label.setBuddy(self.dividend_edit)
-        self.price_label.setBuddy(self.price_edit)
 #endif // QT_CONFIG(shortcut)
         QWidget.setTabOrder(self.timestamp_editor, self.ex_date_editor)
         QWidget.setTabOrder(self.ex_date_editor, self.type)
@@ -230,8 +218,7 @@ class Ui_AssetPaymentOperation(object):
         QWidget.setTabOrder(self.number, self.account_widget)
         QWidget.setTabOrder(self.account_widget, self.symbol_widget)
         QWidget.setTabOrder(self.symbol_widget, self.dividend_edit)
-        QWidget.setTabOrder(self.dividend_edit, self.price_edit)
-        QWidget.setTabOrder(self.price_edit, self.tax_edit)
+        QWidget.setTabOrder(self.dividend_edit, self.tax_edit)
         QWidget.setTabOrder(self.tax_edit, self.fee_widget)
         QWidget.setTabOrder(self.fee_widget, self.note)
         QWidget.setTabOrder(self.note, self.commit_button)
@@ -266,7 +253,6 @@ class Ui_AssetPaymentOperation(object):
         self.revert_button.setText("")
         self.amount_label.setText(QCoreApplication.translate("AssetPaymentOperation", u"Di&vidend", None))
         self.timestamp_editor.setDisplayFormat(QCoreApplication.translate("AssetPaymentOperation", u"dd/MM/yyyy hh:mm:ss", None))
-        self.price_label.setText(QCoreApplication.translate("AssetPaymentOperation", u"&Price", None))
         self.currency.setText(QCoreApplication.translate("AssetPaymentOperation", u"CUR", None))
     # retranslateUi
 

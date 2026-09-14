@@ -56,13 +56,6 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="11">
-    <widget class="QLineEdit" name="price_edit">
-     <property name="alignment">
-      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-     </property>
-    </widget>
-   </item>
    <item row="1" column="7">
     <widget class="QLabel" name="type_label">
      <property name="text">
@@ -283,16 +276,6 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="10">
-    <widget class="QLabel" name="price_label">
-     <property name="text">
-      <string>&amp;Price</string>
-     </property>
-     <property name="buddy">
-      <cstring>price_edit</cstring>
-     </property>
-    </widget>
-   </item>
    <item row="1" column="2">
     <spacer name="dateGroupSpacer">
      <property name="orientation">
@@ -403,7 +386,6 @@
   <tabstop>account_widget</tabstop>
   <tabstop>symbol_widget</tabstop>
   <tabstop>dividend_edit</tabstop>
-  <tabstop>price_edit</tabstop>
   <tabstop>tax_edit</tabstop>
   <tabstop>fee_widget</tabstop>
   <tabstop>note</tabstop>

@@ -958,8 +958,7 @@ class AssetPaymentBase(FeeCarrier, LedgerTransaction):
 class AssetPayment(AssetPaymentBase):
     Dividend = 1
     BondInterest = 2
-    BondAmortization = 5
-    AssetFee = 6   # A charge or a tax that belongs to the asset itself - an ADR fee, a transaction tax
+    AssetFee = 3   # A charge or a tax that belongs to the asset itself - an ADR fee, a transaction tax
     _db_table = "asset_payments"
     _otype = LedgerTransaction.AssetPayment
     _db_fields = {
@@ -983,7 +982,6 @@ class AssetPayment(AssetPaymentBase):
             AssetPayment.NA: cls.tr("UNDEFINED"),
             AssetPayment.Dividend: cls.tr("Dividend"),
             AssetPayment.BondInterest: cls.tr("Bond Interest"),
-            AssetPayment.BondAmortization: cls.tr("Bond Amortization"),
             AssetPayment.AssetFee: cls.tr("Asset fee/tax")
         }
 
@@ -992,7 +990,6 @@ class AssetPayment(AssetPaymentBase):
         return {
             AssetPayment.Dividend: JalIcon.DIVIDEND,
             AssetPayment.BondInterest: JalIcon.BOND_INTEREST,
-            AssetPayment.BondAmortization: JalIcon.BOND_AMORTIZATION,
             AssetPayment.AssetFee: JalIcon.FEE
         }
 
@@ -1013,9 +1010,6 @@ class AssetPayment(AssetPaymentBase):
             return
         if not self._peer_id:
             raise LedgerError(self.tr("Can't process dividend as bank isn't set for investment account: ") + self._account_name)
-        if self._subtype == AssetPayment.BondAmortization:
-            self.processBondAmortization(ledger)
-            return
         if self._subtype == AssetPayment.Dividend:
             category = PredefinedCategory.Dividends
         elif self._subtype == AssetPayment.BondInterest:
@@ -1039,17 +1033,6 @@ class AssetPayment(AssetPaymentBase):
             ledger.appendTransaction(self, BookAccount.Costs, -self._amount, part=self.PART_VALUE, category=category, peer=self._peer_id, tag=self._asset.tag().id())
         if self._tax:
             ledger.appendTransaction(self, BookAccount.Costs, self._tax, part=self.PART_TAX, category=PredefinedCategory.Taxes, peer=self._peer_id, tag=self._asset.tag().id())
-
-    def processBondAmortization(self, ledger):
-        operation_value = (self._amount - self._tax)
-        assert operation_value > Decimal('0'), "Bond amortization is expected to increase account balance"
-        credit_returned = ledger.returnCredit(self, self._account.id(), operation_value)
-        if credit_returned < operation_value:
-            ledger.appendTransaction(self, BookAccount.Money, operation_value - credit_returned)
-        if self._tax:
-            ledger.appendTransaction(self, BookAccount.Costs, self._tax,
-                                     part=self.PART_TAX, category=PredefinedCategory.Taxes, peer=self._peer_id, tag=self._asset.tag().id())
-        ledger.appendTransaction(self, BookAccount.Assets, Decimal('0'), asset_id=self._asset.id(), value=-self._amount)
 
 
 # ----------------------------------------------------------------------------------------------------------------------

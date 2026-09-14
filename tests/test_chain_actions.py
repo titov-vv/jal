@@ -26,7 +26,7 @@ def _accounts_and_assets():
 def _gas_payment(timestamp, number, amount, subtype=_GAS_FEE, note='Gas: contract call', account_id=1, asset_id=6):
     oid = JalDB().allocate_operation_id(LedgerTransaction.AssetPayment)
     JalDB._exec("INSERT INTO asset_payments (oid, otype, timestamp, number, type, account_id, symbol_id, amount, "
-                "tax, price, note) VALUES (:oid, 2, :ts, :number, :type, :account, :symbol, :amount, '0', '', :note)",
+                "tax, note) VALUES (:oid, 2, :ts, :number, :type, :account, :symbol, :amount, '0', :note)",
                 [(":oid", oid), (":ts", timestamp), (":number", number), (":type", subtype),
                  (":account", account_id), (":symbol", symbol_id_for(asset_id, 2)), (":amount", amount),
                  (":note", note)], commit=True)
@@ -232,6 +232,17 @@ def _created_objects(text: str) -> dict:
     return objects
 
 
+# An object a LATER delta restates is compared as that delta leaves it, not as this one wrote it: an upgraded
+# database ends where a new one starts, and only the last word about an object says where that is.
+def _as_the_upgrade_leaves_it(project_root, name: str, since: int) -> str:
+    for version in range(Setup.DB_REQUIRED_VERSION, since - 1, -1):
+        with open(project_root + f"/jal/updates/{Setup.UPDATE_PREFIX}{version}.sql") as delta:
+            declared = _created_objects(delta.read())
+        if name in declared:
+            return declared[name]
+    raise AssertionError(f"{name} is declared by no delta from {since} on")
+
+
 def test_the_delta_and_the_init_script_declare_the_same_objects(project_root):
     with open(project_root + "/jal/" + Setup.INIT_SCRIPT_PATH) as init:
         from_init = _created_objects(init.read())
@@ -241,7 +252,7 @@ def test_the_delta_and_the_init_script_declare_the_same_objects(project_root):
     assert len(from_delta) == 7     # the table and six triggers - its own three, and the three it re-states
     for name in from_delta:
         assert name in from_init, f"{name} is created by the delta and by nothing else"
-        assert from_delta[name] == from_init[name], name
+        assert _as_the_upgrade_leaves_it(project_root, name, _MIGRATION_DELTA) == from_init[name], name
 
 
 # The 'asset_payments' triggers are re-stated because the migration has to drop them first, and a delta that dropped

@@ -25,6 +25,15 @@ _NEW = {'stock_dividend': AssetIncome.StockDividend, 'stock_vesting': AssetIncom
 
 def _accounts_and_assets():
     create_stocks([('A', 'Asset A'), ('GAS', 'Native coin')], currency_id=2)   # asset ids 4 and 5
+    _restore_the_price_column()
+
+
+# 'asset_payments.price' was dropped by delta 78 once the operations that stated one had left for 'asset_incomes'.
+# A migration that ran before that meets a table which still has it, so it is put back before the replay - the way
+# test_fees_table.py re-declares the fee columns of schema 74.
+def _restore_the_price_column():
+    assert JalDB._exec("ALTER TABLE asset_payments ADD COLUMN price TEXT NOT NULL DEFAULT ('')") is not None
+    JalDB().commit()
 
 
 # A payment as schema 76 stored one, whichever of the two it turned out to be
@@ -136,6 +145,17 @@ def _created_objects(text: str) -> dict:
     return objects
 
 
+# An object a LATER delta restates is compared as that delta leaves it, not as this one wrote it: an upgraded
+# database ends where a new one starts, and only the last word about an object says where that is.
+def _as_the_upgrade_leaves_it(project_root, name: str, since: int) -> str:
+    for version in range(Setup.DB_REQUIRED_VERSION, since - 1, -1):
+        with open(project_root + f"/jal/updates/{Setup.UPDATE_PREFIX}{version}.sql") as delta:
+            declared = _created_objects(delta.read())
+        if name in declared:
+            return declared[name]
+    raise AssertionError(f"{name} is declared by no delta from {since} on")
+
+
 def test_the_delta_and_the_init_script_declare_the_same_objects(project_root):
     with open(project_root + "/jal/" + Setup.INIT_SCRIPT_PATH) as init:
         from_init = _created_objects(init.read())
@@ -145,7 +165,7 @@ def test_the_delta_and_the_init_script_declare_the_same_objects(project_root):
     assert len(from_delta) == 7     # the table and six triggers - its own three, and the three it re-states
     for name in from_delta:
         assert name in from_init, f"{name} is created by the delta and by nothing else"
-        assert from_delta[name] == from_init[name], name
+        assert _as_the_upgrade_leaves_it(project_root, name, _MIGRATION_DELTA) == from_init[name], name
 
 
 def test_the_delta_puts_the_payment_triggers_back(project_root):
@@ -161,3 +181,56 @@ def test_the_delta_puts_the_payment_triggers_back(project_root):
 # a rank of its own for either of them would move lot consumption wherever the two meet in the same second.
 def test_the_two_halves_share_one_rank():
     assert AssetIncome.LedgerRank == AssetPayment.LedgerRank
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# DELTA 78 - what is left of a payment once the asset half has gone.
+_NARROWING_DELTA = 78
+
+
+# A bond amortization books money in AND reduces the position's basis, which no other operation does. No importer can
+# emit one and hand entry was the only way to make one at all, so there are none - but a database that holds one must
+# not be guessed at, and the upgrade stops on it instead. This is the guard, replayed against a stored row.
+def test_the_upgrade_refuses_a_database_that_holds_a_bond_amortization(prepare_db_fifo, project_root):
+    _accounts_and_assets()
+    _payment(5)                                    # AssetPayment.BondAmortization as schema 77 numbered it
+    with open(project_root + f"/jal/updates/{Setup.UPDATE_PREFIX}{_NARROWING_DELTA}.sql") as delta:
+        guard = [x for x in sqlparse.split(delta.read()) if 'asset_payments WHERE type = 5' in x]
+    assert len(guard) == 1
+
+    assert JalDB._exec(sqlparse.format(guard[0], strip_comments=True).strip()) is None   # the delta stops here
+
+    assert JalDB._read("SELECT COUNT(*) FROM asset_payments WHERE type = 5") == 1   # ... and nothing was re-labelled
+
+
+# ... and it is a no-op on every database that holds none, which is every database the live ledger knows of
+def test_the_guard_passes_a_database_without_one(prepare_db_fifo, project_root):
+    _accounts_and_assets()
+    _payment(_OLD['dividend'])
+    with open(project_root + f"/jal/updates/{Setup.UPDATE_PREFIX}{_NARROWING_DELTA}.sql") as delta:
+        guard = [x for x in sqlparse.split(delta.read()) if 'asset_payments WHERE type = 5' in x]
+
+    assert JalDB._exec(sqlparse.format(guard[0], strip_comments=True).strip()) is not None
+
+
+# The 'Asset fee/tax' subtype takes the first free number now that the class has three of them
+def test_the_asset_fee_subtype_is_renumbered(prepare_db_fifo, project_root):
+    _accounts_and_assets()
+    oid = _payment(6)                              # AssetPayment.AssetFee as schema 77 numbered it
+    with open(project_root + f"/jal/updates/{Setup.UPDATE_PREFIX}{_NARROWING_DELTA}.sql") as delta:
+        statement = [x for x in sqlparse.split(delta.read()) if 'SET type = 3' in x][0]
+
+    assert JalDB._exec(sqlparse.format(statement, strip_comments=True).strip()) is not None
+    JalDB().commit()
+
+    assert JalDB._read("SELECT type FROM asset_payments WHERE oid=:oid", [(":oid", oid)]) == AssetPayment.AssetFee
+
+
+# SQLite drops a column an 'UPDATE OF' list names without a word and leaves the list naming it, so the trigger has to
+# be re-stated BEFORE the column goes - and a fee edit would otherwise stop invalidating the ledger.
+def test_the_delta_restates_the_trigger_before_it_drops_the_column(project_root):
+    with open(project_root + f"/jal/updates/{Setup.UPDATE_PREFIX}{_NARROWING_DELTA}.sql") as delta:
+        text = delta.read()
+
+    assert text.index("CREATE TRIGGER asset_payments_after_update") < text.index("DROP COLUMN price")
+    assert "price" not in text[text.index("CREATE TRIGGER asset_payments_after_update"):text.index("DROP COLUMN price")]

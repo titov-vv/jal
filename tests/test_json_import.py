@@ -6,7 +6,7 @@ from tests.helpers import d2t
 from jal.constants import PredefinedAsset, SymbolId, AssetLocation
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset, AssetData
-from jal.db.operations import LedgerTransaction
+from jal.db.operations import LedgerTransaction, AssetPayment
 
 
 def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
@@ -241,13 +241,13 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
 
     # validate asset payments
     test_payments = [
-        [1, 2, 1529612400, 0, 0, '', 1, 1, 5, '16.76', '0', '', 'EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)'],
-        [2, 2, 1533673200, 0, 0, '', 1, 1, 5, '20.35', '0.54', '', 'EDV(US9219107094) CASH DIVIDEND 0.10175000 USD PER SHARE (Ordinary Dividend)'],
-        [32, 2, 1578082800, 0, 1577664000, '', 1, 1, 6, '60.2', '6.02', '', 'ZROZ(US72201R8824) CASH DIVIDEND USD 0.86 PER SHARE (Ordinary Dividend)'],
-        [33, 2, 1633033200, 0, 0, '', 1, 1, 4, '158.6', '15.86', '', 'VUG (US9229087369) CASH DIVIDEND USD 0.52 (Ordinary Dividend)'],
-        [34, 2, 1590595065, 0, 0, '2882737839', 2, 1, 12, '-25.69', '0', '', 'PURCHASE ACCRUED INT X 6 1/4 03/15/26'],
-        [35, 2, 1600128000, 0, 0, '', 2, 1, 12, '62.5', '0', '', 'BOND COUPON PAYMENT (X 6 1/4 03/15/26)'],
-        [36, 2, 1549843200, 0, 0, '', 6, 1, 9, '-0.249018', '0', '', 'French Transaction Tax']
+        [1, 2, 1529612400, 0, 0, '', 1, 1, 5, '16.76', '0', 'EDV (US9219107094) CASH DIVIDEND USD 0.8381 (Ordinary Dividend)'],
+        [2, 2, 1533673200, 0, 0, '', 1, 1, 5, '20.35', '0.54', 'EDV(US9219107094) CASH DIVIDEND 0.10175000 USD PER SHARE (Ordinary Dividend)'],
+        [32, 2, 1578082800, 0, 1577664000, '', 1, 1, 6, '60.2', '6.02', 'ZROZ(US72201R8824) CASH DIVIDEND USD 0.86 PER SHARE (Ordinary Dividend)'],
+        [33, 2, 1633033200, 0, 0, '', 1, 1, 4, '158.6', '15.86', 'VUG (US9229087369) CASH DIVIDEND USD 0.52 (Ordinary Dividend)'],
+        [34, 2, 1590595065, 0, 0, '2882737839', 2, 1, 12, '-25.69', '0', 'PURCHASE ACCRUED INT X 6 1/4 03/15/26'],
+        [35, 2, 1600128000, 0, 0, '', 2, 1, 12, '62.5', '0', 'BOND COUPON PAYMENT (X 6 1/4 03/15/26)'],
+        [36, 2, 1549843200, 0, 0, '', AssetPayment.AssetFee, 1, 9, '-0.249018', '0', 'French Transaction Tax']
     ]
     payments = JalAccount(1).dump_asset_payments()
     assert len(payments) == len(test_payments)

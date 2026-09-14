@@ -71,7 +71,6 @@ class JSF:
     PAYMENT_INTEREST = "interest"
     PAYMENT_STOCK_DIVIDEND = "stock_dividend"
     PAYMENT_STOCK_VESTING = 'stock_vesting'
-    PAYMENT_AMORTIZATION = 'bond_amortization'
     PAYMENT_FEE = 'fee'
     PAYMENT_GAS_FEE = 'gas_fee'                 # gas burned by a transaction that moved nothing
     PAYMENT_STAKING_REWARD = 'staking_reward'   # coins received for staking (or as lending interest)
@@ -1005,9 +1004,6 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                     LedgerTransaction.create_new(LedgerTransaction.AssetPayment, operation)
             elif operation['type'] == JSF.PAYMENT_INTEREST:
                 operation['type'] = AssetPayment.BondInterest
-                LedgerTransaction.create_new(LedgerTransaction.AssetPayment, operation)
-            elif operation['type'] == JSF.PAYMENT_AMORTIZATION:
-                operation['type'] = AssetPayment.BondAmortization
                 LedgerTransaction.create_new(LedgerTransaction.AssetPayment, operation)
             elif operation['type'] == JSF.PAYMENT_STOCK_DIVIDEND:
                 if db_payment_id:  # The grant exists, only tax to be updated
