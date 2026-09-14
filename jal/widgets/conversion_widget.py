@@ -27,7 +27,7 @@ class ConversionWidgetDelegate(WidgetMapperDelegateBase):
 class ConversionWidget(AbstractOperationDetails):
     def __init__(self, parent=None):
         super().__init__(parent=parent, ui_class=Ui_ConversionOperation)
-        self.name = self.tr("Conversion")
+        self.name = self.tr("Wrapping")
         self.operation_type = LedgerTransaction.Conversion
         self.ui.account_widget.setup_selector(AccountListModel, AccountListDialog, self)
         self.ui.out_symbol_widget.setup_selector(SymbolsListModel, SymbolListDialog, self)
@@ -66,19 +66,19 @@ class ConversionWidget(AbstractOperationDetails):
     def _validated(self):
         fields = db_row2dict(self.model, 0)
         if fields['account_id'] == 0 or fields['account_id'] == '0':
-            QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("An account isn't chosen for the conversion"), QMessageBox.Ok)
+            QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("An account isn't chosen for the wrapping"), QMessageBox.Ok)
             return False
         if fields['out_symbol_id'] in (0, '0') or fields['in_symbol_id'] in (0, '0'):
             QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("Both converted and received symbols should be set"), QMessageBox.Ok)
             return False
         if JalSymbol(int(fields['out_symbol_id'])).asset().id() == JalSymbol(int(fields['in_symbol_id'])).asset().id():
-            QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("Can't convert an asset into itself"), QMessageBox.Ok)
+            QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("Can't wrap an asset into itself"), QMessageBox.Ok)
             return False
         try:
             if Decimal(fields['out_qty']) <= Decimal('0') or Decimal(fields['in_qty']) <= Decimal('0'):
                 raise InvalidOperation
         except (InvalidOperation, TypeError):
-            QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("Conversion quantities should be positive"), QMessageBox.Ok)
+            QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("Wrapping quantities should be positive"), QMessageBox.Ok)
             return False
         return True
 

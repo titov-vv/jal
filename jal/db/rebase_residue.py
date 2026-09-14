@@ -90,7 +90,7 @@ class RebaseResidue(JalDB):
     # Why this shortage can't be booked as a rebase residue, or '' when it can
     def refusal_to_absorb(self, shortage: LedgerAssetShortage) -> str:
         if shortage.operation.type() != LedgerTransaction.Conversion:
-            return self.tr("only a conversion can surrender a rebasing receipt token")
+            return self.tr("only a wrapping can surrender a rebasing receipt token")
         gap = shortage.shortage()
         if gap <= Decimal('0'):
             return self.tr("nothing is missing")
@@ -166,7 +166,7 @@ class RebaseResidue(JalDB):
     # Why this shortage can't be recognized as accrued interest, or '' when it can
     def refusal_to_realize(self, shortage: LedgerAssetShortage) -> str:
         if shortage.operation.type() != LedgerTransaction.Conversion:
-            return self.tr("only a conversion can surrender a rebasing receipt token")
+            return self.tr("only a wrapping can surrender a rebasing receipt token")
         if shortage.shortage() <= Decimal('0'):
             return self.tr("nothing is missing")
         # The flag is the whole licence to do this. Only a token whose quantity can grow on its own may have a

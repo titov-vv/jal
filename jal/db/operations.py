@@ -2541,7 +2541,7 @@ class Conversion(FeeCarrier, LedgerTransaction):
         self._note = self._data['note']
         is_fee = self._opart == Conversion.Fee
         self._icon = JalIcon[JalIcon.FEE if is_fee else JalIcon.CONVERSION]
-        self._oname = self.tr("Conversion fee") if is_fee else self.tr("Conversion")
+        self._oname = self.tr("Wrapping fee") if is_fee else self.tr("Wrapping")
         self._peer_id = self._account.organization()
         self._reconciled = self._account.reconciled_at() >= self._timestamp
         self._view_rows = 1 if is_fee else 2   # The gas draws its own row, never a third line of the conversion
@@ -2563,7 +2563,7 @@ class Conversion(FeeCarrier, LedgerTransaction):
     def description(self, part_only=False) -> str:
         if self._opart == Conversion.Fee:
             note = f" ({self._note})" if self._note else ''
-            return self.tr("Conversion fee") + note
+            return self.tr("Wrapping fee") + note
         text = f"{self._out_qty} {self._out_symbol.symbol()} -> {self._in_qty} {self._in_symbol.symbol()}"
         return text + "\n" + self._note
 
@@ -2590,11 +2590,11 @@ class Conversion(FeeCarrier, LedgerTransaction):
 
     def processLedger(self, ledger):
         if self._out_asset.id() == 0 or self._in_asset.id() == 0:
-            raise LedgerError(self.tr("Conversion assets aren't set. Operation: ") + self.dump())
+            raise LedgerError(self.tr("Wrapping assets aren't set. Operation: ") + self.dump())
         if self._out_asset.id() == self._in_asset.id():
-            raise LedgerError(self.tr("Can't process conversion of an asset into itself. Operation: ") + self.dump())
+            raise LedgerError(self.tr("Can't wrap an asset into itself. Operation: ") + self.dump())
         if self._out_qty <= Decimal('0') or self._in_qty <= Decimal('0'):
-            raise LedgerError(self.tr("Conversion quantities must be positive. Operation: ") + self.dump())
+            raise LedgerError(self.tr("Wrapping quantities must be positive. Operation: ") + self.dump())
         if self._opart == Conversion.Fee:
             self.processFee(ledger)
             return
@@ -2604,7 +2604,7 @@ class Conversion(FeeCarrier, LedgerTransaction):
             # rebasing receipt token reveals the quantity it gained without announcing it (see
             # AssetIncome.RebaseAdjustment), and RebaseResidue.absorb() needs the numbers to decide whether this is
             # that crumb or a real gap in the data. It stops the ledger here exactly as any other LedgerError does.
-            raise LedgerAssetShortage(self.tr("Asset amount is not enough for conversion processing. Date: ")
+            raise LedgerAssetShortage(self.tr("Asset amount is not enough for wrapping processing. Date: ")
                                       + f"{ts2dt(self._timestamp)}, Asset amount: {available}, "
                                       + f"Required: {self._out_qty}, Operation: {self.dump()}",
                                       self, self._account.id(), self._out_symbol.id(), available, self._out_qty)
@@ -2615,7 +2615,7 @@ class Conversion(FeeCarrier, LedgerTransaction):
         # leaves every lot's value untouched. This is exactly how a corporate action and a bridge carry a basis over.
         processed_qty, processed_value = self._close_deals_fifo(Decimal('-1.0'), self._out_qty, asset=self._out_asset)
         if processed_qty < self._out_qty:
-            raise LedgerError(self.tr("Processed asset amount is less than conversion amount. Date: ")
+            raise LedgerError(self.tr("Processed asset amount is less than wrapped amount. Date: ")
                               + f"{ts2dt(self._timestamp)}, Processed amount: {processed_qty}, "
                               + f"Required: {self._out_qty}, Operation: {self.dump()}")
         ledger.appendTransaction(self, BookAccount.Assets, -processed_qty,

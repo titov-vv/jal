@@ -37,7 +37,7 @@ def test_operations_tabs_include_conversion(accounts):
     assert LedgerTransaction.Conversion in tabs.widgets
     assert isinstance(tabs.widgets[LedgerTransaction.Conversion], ConversionWidget)
     assert tabs.indexOf(tabs.widgets[LedgerTransaction.Conversion]) >= 0
-    assert tabs.get_operations_list()[LedgerTransaction.Conversion] == "Conversion"
+    assert tabs.get_operations_list()[LedgerTransaction.Conversion] == "Wrapping"
 
     widget = ConversionWidget()
     widget.prepareNew(1)

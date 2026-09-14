@@ -200,7 +200,7 @@ class Ui_ConversionOperation(object):
 
     def retranslateUi(self, ConversionOperation):
         ConversionOperation.setWindowTitle(QCoreApplication.translate("ConversionOperation", u"Form", None))
-        self.main_label.setText(QCoreApplication.translate("ConversionOperation", u"Conversion", None))
+        self.main_label.setText(QCoreApplication.translate("ConversionOperation", u"Wrapping", None))
 #if QT_CONFIG(tooltip)
         self.commit_button.setToolTip(QCoreApplication.translate("ConversionOperation", u"Commit changes", None))
 #endif // QT_CONFIG(tooltip)
