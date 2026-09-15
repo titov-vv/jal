@@ -1,7 +1,7 @@
 from decimal import Decimal, InvalidOperation
 
 from PySide6.QtCore import Qt, Slot, Signal, QByteArray
-from PySide6.QtWidgets import QApplication, QWidget, QHBoxLayout, QLineEdit, QComboBox, QToolButton, QDataWidgetMapper
+from PySide6.QtWidgets import QApplication, QWidget, QHBoxLayout, QLineEdit, QComboBox, QToolButton, QDataWidgetMapper, QLabel
 from PySide6.QtSql import QSqlTableModel
 
 from jal.constants import PredefinedAsset
@@ -53,25 +53,28 @@ class FeeWidget(QWidget):
         self.layout = QHBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(max(1, layout_step(self) // 2))
+        self.add_button = QToolButton()
+        self.add_button.setIcon(JalIcon[JalIcon.ADD])
+        self.add_button.setAutoRaise(True)
+        self.add_button.setVisible(False)
+        self.layout.addWidget(self.add_button, alignment=Qt.AlignLeft)  # alone in the cell, it keeps to its start
+        self.del_button = QToolButton()
+        self.del_button.setIcon(JalIcon[JalIcon.REMOVE])
+        self.del_button.setAutoRaise(True)
+        self.layout.addWidget(self.del_button, alignment=Qt.AlignLeft)
         self.kind = QComboBox()
         self.layout.addWidget(self.kind)
+        self.from_label = QLabel()
+        self.from_label.setText(self.tr(" from "))
+        self.layout.addWidget(self.from_label)
+        self.account = ReferenceSelectorWidget(self, validate=False)
+        self.layout.addWidget(self.account)
         self.amount = QLineEdit()
         self.layout.addWidget(self.amount)
         self.currency = AccountCurrencyLabel(self)
         self.layout.addWidget(self.currency)
         self.symbol = ReferenceSelectorWidget(self, validate=False)
         self.layout.addWidget(self.symbol)
-        self.account = ReferenceSelectorWidget(self, validate=False)
-        self.layout.addWidget(self.account)
-        self.add_button = QToolButton()
-        self.add_button.setIcon(JalIcon[JalIcon.ADD])
-        self.add_button.setAutoRaise(True)
-        self.add_button.setVisible(False)
-        self.layout.addWidget(self.add_button, alignment=Qt.AlignLeft)   # alone in the cell, it keeps to its start
-        self.del_button = QToolButton()
-        self.del_button.setIcon(JalIcon[JalIcon.REMOVE])
-        self.del_button.setAutoRaise(True)
-        self.layout.addWidget(self.del_button)
         self.setLayout(self.layout)
         self.setFocusProxy(self.amount)
 
@@ -92,6 +95,7 @@ class FeeWidget(QWidget):
         for kind in self._kinds:
             self.kind.addItem(self._kind_name(kind), kind)
         self.kind.setVisible(len(self._kinds) > 1)
+        self.from_label.setVisible(self._account_may_differ)
         self.account.setVisible(self._account_may_differ)
 
         self._model = FeeModel(self)
@@ -271,6 +275,7 @@ class FeeWidget(QWidget):
         self.kind.setVisible(attached and len(self._kinds) > 1)
         self.symbol.setVisible(attached and asset_kind)
         self.currency.setVisible(attached and not asset_kind)
+        self.from_label.setVisible(attached and self._account_may_differ)
         self.account.setVisible(attached and self._account_may_differ)
 
     def tr(self, text):
