@@ -1,6 +1,6 @@
 from decimal import Decimal, InvalidOperation
 
-from PySide6.QtCore import Slot, Signal, QByteArray
+from PySide6.QtCore import Qt, Slot, Signal, QByteArray
 from PySide6.QtWidgets import QApplication, QWidget, QHBoxLayout, QLineEdit, QComboBox, QToolButton, QDataWidgetMapper
 from PySide6.QtSql import QSqlTableModel
 
@@ -67,7 +67,7 @@ class FeeWidget(QWidget):
         self.add_button.setIcon(JalIcon[JalIcon.ADD])
         self.add_button.setAutoRaise(True)
         self.add_button.setVisible(False)
-        self.layout.addWidget(self.add_button)
+        self.layout.addWidget(self.add_button, alignment=Qt.AlignLeft)   # alone in the cell, it keeps to its start
         self.del_button = QToolButton()
         self.del_button.setIcon(JalIcon[JalIcon.REMOVE])
         self.del_button.setAutoRaise(True)
