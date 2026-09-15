@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>968</width>
-    <height>247</height>
+    <width>1013</width>
+    <height>248</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -233,9 +233,6 @@
      </property>
     </widget>
    </item>
-   <item row="4" column="1" colspan="3">
-    <widget class="FeeWidget" name="fee_widget" native="true"/>
-   </item>
    <item row="5" column="0">
     <widget class="QLabel" name="note_label">
      <property name="text">
@@ -271,7 +268,7 @@
       <enum>Qt::Orientation::Horizontal</enum>
      </property>
      <property name="sizeType">
-      <enum>QSizePolicy::Fixed</enum>
+      <enum>QSizePolicy::Policy::Fixed</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -281,20 +278,22 @@
      </property>
     </spacer>
    </item>
+   <item row="4" column="1" colspan="6">
+    <widget class="FeeWidget" name="fee_widget"/>
+   </item>
   </layout>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>FeeWidget</class>
-   <extends>QWidget</extends>
-   <header>jal/widgets/fee_widget.h</header>
-   <container>0</container>
-  </customwidget>
   <customwidget>
    <class>ReferenceSelectorWidget</class>
    <extends>QWidget</extends>
    <header>jal/widgets/reference_selector.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>FeeWidget</class>
+   <extends>QWidget</extends>
+   <header>jal/widgets/fee_widget.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>

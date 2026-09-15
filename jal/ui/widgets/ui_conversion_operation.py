@@ -26,7 +26,7 @@ class Ui_ConversionOperation(object):
     def setupUi(self, ConversionOperation):
         if not ConversionOperation.objectName():
             ConversionOperation.setObjectName(u"ConversionOperation")
-        ConversionOperation.resize(968, 247)
+        ConversionOperation.resize(1013, 248)
         self.layout = QGridLayout(ConversionOperation)
         self.layout.setObjectName(u"layout")
         self.main_label = QLabel(ConversionOperation)
@@ -149,11 +149,6 @@ class Ui_ConversionOperation(object):
 
         self.layout.addWidget(self.fee_label, 4, 0, 1, 1)
 
-        self.fee_widget = FeeWidget(ConversionOperation)
-        self.fee_widget.setObjectName(u"fee_widget")
-
-        self.layout.addWidget(self.fee_widget, 4, 1, 1, 3)
-
         self.note_label = QLabel(ConversionOperation)
         self.note_label.setObjectName(u"note_label")
         self.note_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
@@ -172,6 +167,11 @@ class Ui_ConversionOperation(object):
         self.txHashGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
 
         self.layout.addItem(self.txHashGroupSpacer, 1, 4, 1, 1)
+
+        self.fee_widget = FeeWidget(ConversionOperation)
+        self.fee_widget.setObjectName(u"fee_widget")
+
+        self.layout.addWidget(self.fee_widget, 4, 1, 1, 6)
 
 #if QT_CONFIG(shortcut)
         self.date_label.setBuddy(self.timestamp)

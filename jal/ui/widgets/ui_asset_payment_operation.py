@@ -27,7 +27,7 @@ class Ui_AssetPaymentOperation(object):
     def setupUi(self, AssetPaymentOperation):
         if not AssetPaymentOperation.objectName():
             AssetPaymentOperation.setObjectName(u"AssetPaymentOperation")
-        AssetPaymentOperation.resize(968, 195)
+        AssetPaymentOperation.resize(968, 219)
         self.layout = QGridLayout(AssetPaymentOperation)
         self.layout.setObjectName(u"layout")
         self.note = QLineEdit(AssetPaymentOperation)
@@ -117,11 +117,6 @@ class Ui_AssetPaymentOperation(object):
 
         self.layout.addWidget(self.fee_label, 4, 0, 1, 1)
 
-        self.fee_widget = FeeWidget(AssetPaymentOperation)
-        self.fee_widget.setObjectName(u"fee_widget")
-
-        self.layout.addWidget(self.fee_widget, 4, 1, 1, 5)
-
         self.note_label = QLabel(AssetPaymentOperation)
         self.note_label.setObjectName(u"note_label")
         self.note_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
@@ -199,6 +194,11 @@ class Ui_AssetPaymentOperation(object):
 
 
         self.layout.addLayout(self.taxCurrencyBox, 3, 8, 1, 1)
+
+        self.fee_widget = FeeWidget(AssetPaymentOperation)
+        self.fee_widget.setObjectName(u"fee_widget")
+
+        self.layout.addWidget(self.fee_widget, 4, 1, 1, 8)
 
 #if QT_CONFIG(shortcut)
         self.date_label.setBuddy(self.timestamp_editor)

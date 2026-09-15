@@ -78,11 +78,6 @@ class Ui_TransferOperation(object):
 
         self.layout.addWidget(self.date_label, 2, 2, 1, 1)
 
-        self.fee_widget = FeeWidget(TransferOperation)
-        self.fee_widget.setObjectName(u"fee_widget")
-
-        self.layout.addWidget(self.fee_widget, 5, 5, 1, 5)
-
         self.number_label = QLabel(TransferOperation)
         self.number_label.setObjectName(u"number_label")
         self.number_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
@@ -199,12 +194,6 @@ class Ui_TransferOperation(object):
 
         self.layout.addWidget(self.withdrawal_timestamp, 3, 2, 1, 2)
 
-        self.fee_label = QLabel(TransferOperation)
-        self.fee_label.setObjectName(u"fee_label")
-        self.fee_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
-
-        self.layout.addWidget(self.fee_label, 5, 2, 1, 2)
-
         self.revert_button = QPushButton(TransferOperation)
         self.revert_button.setObjectName(u"revert_button")
         self.revert_button.setEnabled(False)
@@ -249,6 +238,17 @@ class Ui_TransferOperation(object):
 
         self.layout.addWidget(self.note, 6, 2, 1, 8)
 
+        self.fee_label = QLabel(TransferOperation)
+        self.fee_label.setObjectName(u"fee_label")
+        self.fee_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
+
+        self.layout.addWidget(self.fee_label, 5, 0, 1, 1)
+
+        self.fee_widget = FeeWidget(TransferOperation)
+        self.fee_widget.setObjectName(u"fee_widget")
+
+        self.layout.addWidget(self.fee_widget, 5, 2, 1, 8)
+
 #if QT_CONFIG(shortcut)
         self.to_account_label.setBuddy(self.deposit_timestamp)
         self.TransferTypeLabel.setBuddy(self.TransferTypeCombo)
@@ -256,8 +256,8 @@ class Ui_TransferOperation(object):
         self.note_label.setBuddy(self.note)
         self.value_label.setBuddy(self.asset_cost_basis)
         self.AssetLabel.setBuddy(self.asset_amount)
-        self.fee_label.setBuddy(self.fee_widget)
         self.from_account_label.setBuddy(self.withdrawal_timestamp)
+        self.fee_label.setBuddy(self.fee_widget)
 #endif // QT_CONFIG(shortcut)
         QWidget.setTabOrder(self.TransferTypeCombo, self.number)
         QWidget.setTabOrder(self.number, self.withdrawal_timestamp)
@@ -311,7 +311,6 @@ class Ui_TransferOperation(object):
         self.CostBasisCurrencyLabel.setText(QCoreApplication.translate("TransferOperation", u"CUR", None))
         self.AmountLabel.setText(QCoreApplication.translate("TransferOperation", u"Amount", None))
         self.withdrawal_timestamp.setDisplayFormat(QCoreApplication.translate("TransferOperation", u"dd/MM/yyyy hh:mm:ss", None))
-        self.fee_label.setText(QCoreApplication.translate("TransferOperation", u"F&ee", None))
 #if QT_CONFIG(tooltip)
         self.revert_button.setToolTip(QCoreApplication.translate("TransferOperation", u"Cancel changes", None))
 #endif // QT_CONFIG(tooltip)
@@ -323,5 +322,6 @@ class Ui_TransferOperation(object):
         self.copy_date_btn.setText(QCoreApplication.translate("TransferOperation", u"\u2193", None))
         self.main_label.setText(QCoreApplication.translate("TransferOperation", u"Transfer", None))
         self.from_account_label.setText(QCoreApplication.translate("TransferOperation", u"&From", None))
+        self.fee_label.setText(QCoreApplication.translate("TransferOperation", u"F&ee", None))
     # retranslateUi
 

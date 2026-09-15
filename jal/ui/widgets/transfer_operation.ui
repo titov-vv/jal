@@ -41,7 +41,7 @@
     </widget>
    </item>
    <item row="4" column="5">
-    <widget class="ReferenceSelectorWidget" name="to_account_widget" native="true"/>
+    <widget class="ReferenceSelectorWidget" name="to_account_widget"/>
    </item>
    <item row="1" column="2" colspan="2">
     <widget class="QComboBox" name="TransferTypeCombo">
@@ -109,9 +109,6 @@
       <string>Date/Time</string>
      </property>
     </widget>
-   </item>
-   <item row="5" column="5" colspan="5">
-    <widget class="FeeWidget" name="fee_widget" native="true"/>
    </item>
    <item row="1" column="5">
     <widget class="QLabel" name="number_label">
@@ -268,7 +265,7 @@
         </widget>
        </item>
        <item row="1" column="2">
-        <widget class="ReferenceSelectorWidget" name="symbol_widget" native="true"/>
+        <widget class="ReferenceSelectorWidget" name="symbol_widget"/>
        </item>
        <item row="0" column="1">
         <widget class="QLabel" name="AmountLabel">
@@ -294,19 +291,6 @@
      </property>
      <property name="timeSpec">
       <enum>Qt::TimeSpec::UTC</enum>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="2" colspan="2">
-    <widget class="QLabel" name="fee_label">
-     <property name="text">
-      <string>F&amp;ee</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-     </property>
-     <property name="buddy">
-      <cstring>fee_widget</cstring>
      </property>
     </widget>
    </item>
@@ -365,7 +349,7 @@
     </widget>
    </item>
    <item row="3" column="5">
-    <widget class="ReferenceSelectorWidget" name="from_account_widget" native="true"/>
+    <widget class="ReferenceSelectorWidget" name="from_account_widget"/>
    </item>
    <item row="3" column="0">
     <widget class="QLabel" name="from_account_label">
@@ -383,15 +367,25 @@
    <item row="6" column="2" colspan="8">
     <widget class="QLineEdit" name="note"/>
    </item>
+   <item row="5" column="0">
+    <widget class="QLabel" name="fee_label">
+     <property name="text">
+      <string>F&amp;ee</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+     </property>
+     <property name="buddy">
+      <cstring>fee_widget</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="2" colspan="8">
+    <widget class="FeeWidget" name="fee_widget"/>
+   </item>
   </layout>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>FeeWidget</class>
-   <extends>QWidget</extends>
-   <header>jal/widgets/fee_widget.h</header>
-   <container>0</container>
-  </customwidget>
   <customwidget>
    <class>ReferenceSelectorWidget</class>
    <extends>QWidget</extends>
@@ -402,6 +396,11 @@
    <class>AccountCurrencyLabel</class>
    <extends>QLabel</extends>
    <header>jal/widgets/account_select.h</header>
+  </customwidget>
+  <customwidget>
+   <class>FeeWidget</class>
+   <extends>QWidget</extends>
+   <header>jal/widgets/fee_widget.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>

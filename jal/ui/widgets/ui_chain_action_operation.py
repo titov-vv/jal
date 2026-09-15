@@ -128,14 +128,14 @@ class Ui_ChainActionOperation(object):
 
         self.layout.addWidget(self.note_label, 5, 0, 1, 1)
 
-        self.note = QLineEdit(ChainActionOperation)
-        self.note.setObjectName(u"note")
-
-        self.layout.addWidget(self.note, 5, 1, 1, 9)
-
         self.vertical_spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.layout.addItem(self.vertical_spacer, 6, 0, 1, 1)
+
+        self.note = QLineEdit(ChainActionOperation)
+        self.note.setObjectName(u"note")
+
+        self.layout.addWidget(self.note, 5, 1, 1, 7)
 
 #if QT_CONFIG(shortcut)
         self.date_label.setBuddy(self.timestamp)
@@ -176,10 +176,10 @@ class Ui_ChainActionOperation(object):
         self.type_label.setText(QCoreApplication.translate("ChainActionOperation", u"E&vent", None))
         self.tx_hash_label.setText(QCoreApplication.translate("ChainActionOperation", u"T&x hash", None))
         self.account_label.setText(QCoreApplication.translate("ChainActionOperation", u"A&ccount", None))
-        self.symbol_label.setText(QCoreApplication.translate("ChainActionOperation", u"Su&bject", None))
 #if QT_CONFIG(tooltip)
         self.symbol_label.setToolTip(QCoreApplication.translate("ChainActionOperation", u"What the event was about - the token approved, for example. Left empty when it is not an asset JAL knows.", None))
 #endif // QT_CONFIG(tooltip)
+        self.symbol_label.setText(QCoreApplication.translate("ChainActionOperation", u"Su&bject", None))
         self.fee_label.setText(QCoreApplication.translate("ChainActionOperation", u"C&ost", None))
         self.note_label.setText(QCoreApplication.translate("ChainActionOperation", u"&Note", None))
     # retranslateUi

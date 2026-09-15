@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>968</width>
+    <width>1078</width>
     <height>283</height>
    </rect>
   </property>
@@ -106,19 +106,6 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="5">
-    <widget class="QLabel" name="fee_label">
-     <property name="text">
-      <string>&amp;Fee</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-     </property>
-     <property name="buddy">
-      <cstring>fee_widget</cstring>
-     </property>
-    </widget>
-   </item>
    <item row="4" column="11">
     <widget class="QLineEdit" name="in_tx_hash"/>
    </item>
@@ -134,19 +121,6 @@
       <cstring>in_timestamp</cstring>
      </property>
     </widget>
-   </item>
-   <item row="2" column="12">
-    <spacer name="horizontal_spacer">
-     <property name="orientation">
-      <enum>Qt::Orientation::Horizontal</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>40</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
    </item>
    <item row="1" column="8">
     <spacer name="assetGroupSpacer">
@@ -198,9 +172,6 @@
       </size>
      </property>
     </spacer>
-   </item>
-   <item row="6" column="7">
-    <widget class="FeeWidget" name="fee_widget" native="true"/>
    </item>
    <item row="1" column="6">
     <spacer name="amountGroupSpacer">
@@ -321,20 +292,48 @@
      </property>
     </widget>
    </item>
+   <item row="6" column="0">
+    <widget class="QLabel" name="fee_label">
+     <property name="text">
+      <string>&amp;Fee</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+     </property>
+     <property name="buddy">
+      <cstring>fee_widget</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="12">
+    <spacer name="horizontal_spacer">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="6" column="2" colspan="10">
+    <widget class="FeeWidget" name="fee_widget"/>
+   </item>
   </layout>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>FeeWidget</class>
-   <extends>QWidget</extends>
-   <header>jal/widgets/fee_widget.h</header>
-   <container>0</container>
-  </customwidget>
   <customwidget>
    <class>ReferenceSelectorWidget</class>
    <extends>QWidget</extends>
    <header>jal/widgets/reference_selector.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>FeeWidget</class>
+   <extends>QWidget</extends>
+   <header>jal/widgets/fee_widget.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>

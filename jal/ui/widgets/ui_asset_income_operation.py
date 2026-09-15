@@ -27,7 +27,7 @@ class Ui_AssetIncomeOperation(object):
     def setupUi(self, AssetIncomeOperation):
         if not AssetIncomeOperation.objectName():
             AssetIncomeOperation.setObjectName(u"AssetIncomeOperation")
-        AssetIncomeOperation.resize(968, 195)
+        AssetIncomeOperation.resize(968, 219)
         self.layout = QGridLayout(AssetIncomeOperation)
         self.layout.setObjectName(u"layout")
         self.note = QLineEdit(AssetIncomeOperation)
@@ -53,12 +53,6 @@ class Ui_AssetIncomeOperation(object):
 
         self.layout.addWidget(self.commit_button, 0, 14, 1, 1)
 
-        self.price_edit = QLineEdit(AssetIncomeOperation)
-        self.price_edit.setObjectName(u"price_edit")
-        self.price_edit.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
-
-        self.layout.addWidget(self.price_edit, 2, 11, 1, 1)
-
         self.type_label = QLabel(AssetIncomeOperation)
         self.type_label.setObjectName(u"type_label")
         self.type_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
@@ -70,11 +64,6 @@ class Ui_AssetIncomeOperation(object):
         self.tax_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.tax_label, 3, 7, 1, 1)
-
-        self.number = QLineEdit(AssetIncomeOperation)
-        self.number.setObjectName(u"number")
-
-        self.layout.addWidget(self.number, 1, 11, 1, 1)
 
         self.symbol_label = QLabel(AssetIncomeOperation)
         self.symbol_label.setObjectName(u"symbol_label")
@@ -122,11 +111,6 @@ class Ui_AssetIncomeOperation(object):
         self.fee_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.fee_label, 4, 0, 1, 1)
-
-        self.fee_widget = FeeWidget(AssetIncomeOperation)
-        self.fee_widget.setObjectName(u"fee_widget")
-
-        self.layout.addWidget(self.fee_widget, 4, 1, 1, 5)
 
         self.note_label = QLabel(AssetIncomeOperation)
         self.note_label.setObjectName(u"note_label")
@@ -210,6 +194,22 @@ class Ui_AssetIncomeOperation(object):
 
 
         self.layout.addLayout(self.taxCurrencyBox, 3, 8, 1, 1)
+
+        self.fee_widget = FeeWidget(AssetIncomeOperation)
+        self.fee_widget.setObjectName(u"fee_widget")
+
+        self.layout.addWidget(self.fee_widget, 4, 1, 1, 12)
+
+        self.price_edit = QLineEdit(AssetIncomeOperation)
+        self.price_edit.setObjectName(u"price_edit")
+        self.price_edit.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
+
+        self.layout.addWidget(self.price_edit, 2, 11, 1, 2)
+
+        self.number = QLineEdit(AssetIncomeOperation)
+        self.number.setObjectName(u"number")
+
+        self.layout.addWidget(self.number, 1, 11, 1, 2)
 
 #if QT_CONFIG(shortcut)
         self.date_label.setBuddy(self.timestamp_editor)

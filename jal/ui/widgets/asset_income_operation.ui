@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>968</width>
-    <height>195</height>
+    <height>219</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -56,13 +56,6 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="11">
-    <widget class="QLineEdit" name="price_edit">
-     <property name="alignment">
-      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-     </property>
-    </widget>
-   </item>
    <item row="1" column="7">
     <widget class="QLabel" name="type_label">
      <property name="text">
@@ -88,9 +81,6 @@
       <cstring>tax_edit</cstring>
      </property>
     </widget>
-   </item>
-   <item row="1" column="11">
-    <widget class="QLineEdit" name="number"/>
    </item>
    <item row="3" column="0">
     <widget class="QLabel" name="symbol_label">
@@ -191,9 +181,6 @@
       <cstring>fee_widget</cstring>
      </property>
     </widget>
-   </item>
-   <item row="4" column="1" colspan="5">
-    <widget class="FeeWidget" name="fee_widget" native="true"/>
    </item>
    <item row="5" column="0">
     <widget class="QLabel" name="note_label">
@@ -299,7 +286,7 @@
       <enum>Qt::Orientation::Horizontal</enum>
      </property>
      <property name="sizeType">
-      <enum>QSizePolicy::Fixed</enum>
+      <enum>QSizePolicy::Policy::Fixed</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -315,7 +302,7 @@
       <enum>Qt::Orientation::Horizontal</enum>
      </property>
      <property name="sizeType">
-      <enum>QSizePolicy::Fixed</enum>
+      <enum>QSizePolicy::Policy::Fixed</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -331,7 +318,7 @@
       <enum>Qt::Orientation::Horizontal</enum>
      </property>
      <property name="sizeType">
-      <enum>QSizePolicy::Fixed</enum>
+      <enum>QSizePolicy::Policy::Fixed</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -374,15 +361,22 @@
      </item>
     </layout>
    </item>
+   <item row="4" column="1" colspan="12">
+    <widget class="FeeWidget" name="fee_widget"/>
+   </item>
+   <item row="2" column="11" colspan="2">
+    <widget class="QLineEdit" name="price_edit">
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="11" colspan="2">
+    <widget class="QLineEdit" name="number"/>
+   </item>
   </layout>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>FeeWidget</class>
-   <extends>QWidget</extends>
-   <header>jal/widgets/fee_widget.h</header>
-   <container>0</container>
-  </customwidget>
   <customwidget>
    <class>ReferenceSelectorWidget</class>
    <extends>QWidget</extends>
@@ -393,6 +387,11 @@
    <class>AccountCurrencyLabel</class>
    <extends>QLabel</extends>
    <header>jal/widgets/account_select.h</header>
+  </customwidget>
+  <customwidget>
+   <class>FeeWidget</class>
+   <extends>QWidget</extends>
+   <header>jal/widgets/fee_widget.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>

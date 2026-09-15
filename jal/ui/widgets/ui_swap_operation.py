@@ -26,7 +26,7 @@ class Ui_SwapOperation(object):
     def setupUi(self, SwapOperation):
         if not SwapOperation.objectName():
             SwapOperation.setObjectName(u"SwapOperation")
-        SwapOperation.resize(968, 283)
+        SwapOperation.resize(1078, 283)
         self.layout = QGridLayout(SwapOperation)
         self.layout.setObjectName(u"layout")
         self.note_label = QLabel(SwapOperation)
@@ -83,12 +83,6 @@ class Ui_SwapOperation(object):
 
         self.layout.addWidget(self.account_label, 1, 5, 1, 1)
 
-        self.fee_label = QLabel(SwapOperation)
-        self.fee_label.setObjectName(u"fee_label")
-        self.fee_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
-
-        self.layout.addWidget(self.fee_label, 6, 5, 1, 1)
-
         self.in_tx_hash = QLineEdit(SwapOperation)
         self.in_tx_hash.setObjectName(u"in_tx_hash")
 
@@ -99,10 +93,6 @@ class Ui_SwapOperation(object):
         self.to_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
 
         self.layout.addWidget(self.to_label, 4, 0, 1, 1)
-
-        self.horizontal_spacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.layout.addItem(self.horizontal_spacer, 2, 12, 1, 1)
 
         self.assetGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
 
@@ -128,11 +118,6 @@ class Ui_SwapOperation(object):
         self.txHashGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
 
         self.layout.addItem(self.txHashGroupSpacer, 1, 10, 1, 1)
-
-        self.fee_widget = FeeWidget(SwapOperation)
-        self.fee_widget.setObjectName(u"fee_widget")
-
-        self.layout.addWidget(self.fee_widget, 6, 7, 1, 1)
 
         self.amountGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
 
@@ -198,12 +183,27 @@ class Ui_SwapOperation(object):
 
         self.layout.addWidget(self.commit_button, 0, 13, 1, 1)
 
+        self.fee_label = QLabel(SwapOperation)
+        self.fee_label.setObjectName(u"fee_label")
+        self.fee_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
+
+        self.layout.addWidget(self.fee_label, 6, 0, 1, 1)
+
+        self.horizontal_spacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.layout.addItem(self.horizontal_spacer, 0, 12, 1, 1)
+
+        self.fee_widget = FeeWidget(SwapOperation)
+        self.fee_widget.setObjectName(u"fee_widget")
+
+        self.layout.addWidget(self.fee_widget, 6, 2, 1, 10)
+
 #if QT_CONFIG(shortcut)
         self.note_label.setBuddy(self.note)
-        self.fee_label.setBuddy(self.fee_widget)
         self.to_label.setBuddy(self.in_timestamp)
         self.main_label.setBuddy(self.cross_chain_check)
         self.from_label.setBuddy(self.timestamp)
+        self.fee_label.setBuddy(self.fee_widget)
 #endif // QT_CONFIG(shortcut)
         QWidget.setTabOrder(self.cross_chain_check, self.timestamp)
         QWidget.setTabOrder(self.timestamp, self.account_widget)
@@ -240,7 +240,6 @@ class Ui_SwapOperation(object):
         self.revert_button.setText("")
         self.date_label.setText(QCoreApplication.translate("SwapOperation", u"Date/Time", None))
         self.account_label.setText(QCoreApplication.translate("SwapOperation", u"Account", None))
-        self.fee_label.setText(QCoreApplication.translate("SwapOperation", u"&Fee", None))
         self.to_label.setText(QCoreApplication.translate("SwapOperation", u"T&o", None))
         self.timestamp.setDisplayFormat(QCoreApplication.translate("SwapOperation", u"dd/MM/yyyy hh:mm:ss", None))
         self.tx_hash_label.setText(QCoreApplication.translate("SwapOperation", u"Tx hash", None))
@@ -251,5 +250,6 @@ class Ui_SwapOperation(object):
         self.commit_button.setToolTip(QCoreApplication.translate("SwapOperation", u"Commit changes", None))
 #endif // QT_CONFIG(tooltip)
         self.commit_button.setText("")
+        self.fee_label.setText(QCoreApplication.translate("SwapOperation", u"&Fee", None))
     # retranslateUi
 
