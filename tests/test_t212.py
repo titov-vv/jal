@@ -227,6 +227,17 @@ def test_statement_t212_refusals(tmp_path, prepare_db_t212):
                                 'Card debit,2026-03-02 10:00:00+00:00,,,,,ID1,,,,,-10.00,"EUR",,,"SHOP","RETAIL_STORES",'])
     StatementTrading212().load(empty_extra)
 
+    # Withholding tax columns come only with a dividend - a month without one lacks them, and a dividend can't
+    no_dividend_header = header.replace(',Withholding tax,Currency (Withholding tax)', '')
+    no_dividend = statement_of([no_dividend_header,
+                                'Card debit,2026-03-02 10:00:00+00:00,,,,,ID1,,,,,-10.00,"EUR","SHOP","RETAIL_STORES"'])
+    StatementTrading212().load(no_dividend)
+    dividend = statement_of([no_dividend_header,
+                             'Dividend (Dividend),2026-03-02 10:00:00+00:00,IE00TEST0002,ZETA,"Zeta",,,50,0.41,"EUR",,'
+                             '20.62,"EUR",,'])
+    with pytest.raises(Statement_ImportError, match="Withholding tax"):
+        StatementTrading212().load(dividend)
+
     # A second currency means an account per currency, and the file says nothing about which is which
     two_currencies = statement_of([header,
                                    'Card debit,2026-03-02 10:00:00+00:00,,,,,ID1,,,,,-10.00,"EUR",,,"SHOP","RETAIL_STORES"',

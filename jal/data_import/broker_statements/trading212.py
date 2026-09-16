@@ -51,8 +51,9 @@ class StatementTrading212(Statement):
     # Columns of an export that carries the events this module knows. Every one of them must be present; a column
     # beyond them is refused as soon as any row fills it in - see _check_columns().
     Columns = ("Action", "Time (UTC)", "ISIN", "Ticker", "Name", "Notes", "ID", "No. of shares", "Price / share",
-               "Currency (Price / share)", "Exchange rate", "Total", "Currency (Total)", "Withholding tax",
-               "Currency (Withholding tax)", "Merchant name", "Merchant category")
+               "Currency (Price / share)", "Exchange rate", "Total", "Currency (Total)", "Merchant name",
+               "Merchant category")
+    DividendColumns = ("Withholding tax", "Currency (Withholding tax)")   # present only in a statement with  dividend(s)
     # Trading212 names the export by the period it covers and adds a nonce; the period is what MULTIPLE_LOAD sorts on.
     FilenamePattern = re.compile(r'from_(?P<start>\d{4}-\d{2}-\d{2})_to_(?P<end>\d{4}-\d{2}-\d{2})', re.IGNORECASE)
     DateTimeFormat = "%Y-%m-%d %H:%M:%S%z"
@@ -144,10 +145,13 @@ class StatementTrading212(Statement):
     # result of a sale. Such a column is money that belongs to an operation, so a file carrying one is refused
     # instead of being read as if the money weren't there. An empty extra column is harmless and is let through.
     def _check_columns(self, rows: list, columns: list) -> None:
-        missing = [x for x in self.Columns if x not in columns]
+        mandatory = self.Columns
+        if any(row.get("Action", '').startswith(self.DividendAction) for row in rows):
+            mandatory += self.DividendColumns
+        missing = [x for x in mandatory if x not in columns]
         if missing:
             raise Statement_ImportError(self.tr("Statement misses mandatory column(s): ") + f"{missing}")
-        for column in [x for x in columns if x not in self.Columns]:
+        for column in [x for x in columns if x not in self.Columns + self.DividendColumns]:
             if any(row.get(column) for row in rows):
                 raise Statement_ImportError(self.tr("Statement has a column this module doesn't know: ") + column)
 
