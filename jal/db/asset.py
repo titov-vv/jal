@@ -149,7 +149,7 @@ class JalAsset(JalDB):
     def symbol(self, currency: int = None, location: int = None) -> str:
         tickers = self.tickers(currency, location)
         if currency is not None and self._type != PredefinedAsset.Money and len(tickers) > 1:
-            logging.warning(self.tr("Asset is listed under several tickers in one currency, "
+            logging.warning(JalDB.tr("Asset is listed under several tickers in one currency, "
                                     "the listing has to be named to get one of them: ") + f"{tickers}")
         return ','.join(tickers)   # return symbol or empty string
 
@@ -234,13 +234,13 @@ class JalAsset(JalDB):
     # An existing identifier is never overwritten - a mismatching new value is only reported as an error.
     def update_identifier(self, symbol_id: int, id_type: int, id_value: str) -> None:
         if not symbol_id:
-            logging.error(self.tr("No exact symbol to link identifier with: ")
+            logging.error(JalDB.tr("No exact symbol to link identifier with: ")
                           + f"{self.symbol()}: {id_type} = {id_value}")
             return
         existing = self._data['ID'].get((symbol_id, id_type), '')
         if existing:
             if existing != id_value:
-                logging.error(self.tr("Unexpected attempt to update identifier for ")
+                logging.error(JalDB.tr("Unexpected attempt to update identifier for ")
                               + f"{self.symbol()}: {existing} -> {id_value}")
             return
         self.add_identifier(symbol_id, id_type, id_value)
@@ -313,7 +313,7 @@ class JalAsset(JalDB):
         if reported in self._missing_quotes:
             return
         self._missing_quotes.add(reported)
-        logging.warning(self.tr("There are no quote/rate for ") + reported)
+        logging.warning(JalDB.tr("There are no quote/rate for ") + reported)
 
     # Return a list of tuples (timestamp:int, quote:Decimal) of all quotes available for asset
     # for time interval begin-end
@@ -427,7 +427,7 @@ class JalAsset(JalDB):
             end = max(data, key=lambda x: x['timestamp'])['timestamp']
             self.commit()
             JalAsset._missing_quotes.clear()   # A quote that was reported as missing may be present now
-            logging.info(self.tr("Quotations were updated: ") +
+            logging.info(JalDB.tr("Quotations were updated: ") +
                          f"{self.symbol(currency_id)} ({JalAsset(currency_id).symbol()}) {ts2d(begin)} - {ts2d(end)}")
 
     # returns expiration timestamp
@@ -555,7 +555,7 @@ class JalAsset(JalDB):
         for table in ("trades_closed", "trades_opened", "ledger_totals"):
             self._exec(f"DELETE FROM {table}")
         self._exec("DELETE FROM ledger", commit=True)
-        logging.info(self.tr("Assets merged: ") + f"{self._name} -> {JalAsset(new_id).name()}")
+        logging.info(JalDB.tr("Assets merged: ") + f"{self._name} -> {JalAsset(new_id).name()}")
         JalDB().invalidate_cache()   # listings moved, so both assets' and both symbols' cached rows are stale
         self._id = 0
         return ''
@@ -564,19 +564,19 @@ class JalAsset(JalDB):
     # before anything is written, so a chooser can say what a merge would do instead of letting the user try it.
     def refusal_to_replace(self, new_id: int) -> str:
         if not self._id or not new_id:
-            return self.tr("one of the assets doesn't exist")
+            return JalDB.tr("one of the assets doesn't exist")
         if self._id == new_id:
-            return self.tr("an asset can't be merged into itself")
+            return JalDB.tr("an asset can't be merged into itself")
         target = JalAsset(new_id)
         if not target.name() and not target.tickers():
-            return self.tr("the asset to merge into doesn't exist")
+            return JalDB.tr("the asset to merge into doesn't exist")
         # A currency is what accounts, quotes and the base currency are KEPT IN, not something operations hold, so
         # folding one into another rewrites what every balance is denominated in - a different operation from this
         # one, and not one to reach by way of a token that shares its ticker.
         if self._type == PredefinedAsset.Money or target.type() == PredefinedAsset.Money:
-            return self.tr("a currency can't be merged")
+            return JalDB.tr("a currency can't be merged")
         if self._type != target.type():
-            return self.tr("the two are assets of different types")
+            return JalDB.tr("the two are assets of different types")
         return ''
 
     def _update_name(self, new_name: str) -> None:
@@ -592,7 +592,7 @@ class JalAsset(JalDB):
                 _ = self._exec("UPDATE assets SET country_id=:new_country_id WHERE id=:asset_id",
                                [(":new_country_id", new_country.id()), (":asset_id", self._id)])
                 self._country_id = new_country.id()
-                logging.info(self.tr("Country updated for ")
+                logging.info(JalDB.tr("Country updated for ")
                              + f"{self.symbol()}: {self._country.name()} -> {new_country.name()}")
 
     def _update_expiration(self, new_expiration: int) -> None:

@@ -44,7 +44,8 @@ class TaxReport:
         self.one_currency_rate = False
         self._parameters = {}
 
-    def tr(self, text):
+    @staticmethod
+    def tr(text):
         return QApplication.translate("TaxReport", text)
 
     # A moment of an operation as the jurisdiction of this report saw it - the single place where a stored timestamp

@@ -38,7 +38,8 @@ class SelectTokenActionDialog(QDialog):
         info = f"<b>{ticker}</b>"
         if name:
             info += f" — {name}"
-        info += f"<br>{self.tr('Chain')}: {chain}<br>{self.tr('Address')}: {address}"
+        chain_label, address_label = self.tr("Chain"), self.tr("Address")
+        info += f"<br>{chain_label}: {chain}<br>{address_label}: {address}"
         info_label = QLabel(info)
         info_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
         layout.addWidget(info_label)

@@ -182,7 +182,7 @@ class TaxesRussia(TaxReport):
                 o_price = c_price = Decimal('0')
                 if trade.asset().id() not in no_principal:
                     no_principal.add(trade.asset().id())
-                    logging.warning(self.tr("Bond has no face value, trade prices are left empty in the report: ")
+                    logging.warning(TaxReport.tr("Bond has no face value, trade prices are left empty in the report: ")
                                     + f"{trade.asset().symbol(self.account_currency.id())}")
             if ns:
                 os_rate = self.account_currency.quote(trade.open_operation().timestamp(), self._currency_id)[1]

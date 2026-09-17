@@ -60,8 +60,9 @@ class JalSqlError:
             self._message = msg
             self._custom = False
 
-    def tr(self, text):
-        return QApplication.translate("JalSQLerror", text)
+    @staticmethod
+    def tr(text):
+        return QApplication.translate("JalSqlError", text)
 
     def show(self):
         if "pytest" in sys.modules:  # Throw exception if we are in test mode or handle it if we are live
@@ -123,7 +124,8 @@ class JalDB:
             self._instances_with_cache.append(self)
         super().__init__()
 
-    def tr(self, text):
+    @staticmethod
+    def tr(text):
         return QApplication.translate("JalDB", text)
 
     @staticmethod

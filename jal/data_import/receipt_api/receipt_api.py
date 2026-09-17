@@ -11,7 +11,8 @@ class ReceiptAPI(QObject):
     def __init__(self):
         super().__init__()
 
-    def tr(self, text):
+    @staticmethod
+    def tr(text):
         return QApplication.translate("ReceiptAPI", text)
 
     # Provides a list of parameters required for slip query if manual input is in use in form of dictionary

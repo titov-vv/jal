@@ -603,9 +603,9 @@ class FeeCarrier:
     def processFee(self, ledger) -> None:
         for fee in self.fees():
             if self.AssetFeeOnly and (not fee.asset().id() or fee.amount() <= Decimal('0')):
-                raise LedgerError(self.tr("Fee asset isn't set. Operation: ") + self.dump())
+                raise LedgerError(LedgerTransaction.tr("Fee asset isn't set. Operation: ") + self.dump())
             if not fee.account().organization():
-                raise LedgerError(self.tr("Can't collect fee from the account '{}' ({}) as organization isn't set for it. Date: {}").format(
+                raise LedgerError(LedgerTransaction.tr("Can't collect fee from the account '{}' ({}) as organization isn't set for it. Date: {}").format(
                     fee.account().name(), fee.account().number(), ts2dt(self.timestamp())))
             if fee.is_asset_fee():
                 self.processAssetFee(ledger, fee)
@@ -680,10 +680,10 @@ class IncomeSpending(LedgerTransaction):
         self._amount = sum(Decimal(line['amount']) for line in self._details) if self._details else Decimal('0')
         if self._amount < 0:
             self._icon = JalIcon[JalIcon.MINUS]
-            self._oname = self.tr("Spending")
+            self._oname = LedgerTransaction.tr("Spending")
         else:
             self._icon = JalIcon[JalIcon.PLUS]
-            self._oname = self.tr("Income")
+            self._oname = LedgerTransaction.tr("Income")
         if self._currency:
             self._view_rows = 2
             self._currency_name = JalAsset(self._currency).symbol()
@@ -700,7 +700,7 @@ class IncomeSpending(LedgerTransaction):
                 rate = self._amount_alt / self._amount
             except ZeroDivisionError:
                 return description
-            description += "\n" + self.tr("Rate: ")
+            description += "\n" + LedgerTransaction.tr("Rate: ")
             if rate >= 1:
                 description += f"{rate:.4f} {self._currency_name}/{self._account_currency}"
             else:
@@ -748,7 +748,7 @@ class IncomeSpending(LedgerTransaction):
 
     def processLedger(self, ledger):
         if len(self._details) == 0:
-            logging.warning(self.tr("Income/Spending transaction has no details: ") + f" {self.dump()}")
+            logging.warning(LedgerTransaction.tr("Income/Spending transaction has no details: ") + f" {self.dump()}")
             return
         if self._amount < Decimal('0'):
             credit_taken = ledger.takeCredit(self, self._account.id(), -self._amount)
@@ -841,7 +841,7 @@ class AssetPaymentBase(FeeCarrier, LedgerTransaction):
             self._account_name = self._account.name()
             self._account_currency = JalAsset(self._account.currency()).symbol()
             self._icon = JalIcon[self.fee_icon()]
-            self._oname = self.tr("Payment fee")
+            self._oname = LedgerTransaction.tr("Payment fee")
             self._view_rows = 1
 
     # Returns a list of operations of this kind for given asset, account and subtype
@@ -906,9 +906,9 @@ class AssetPaymentBase(FeeCarrier, LedgerTransaction):
     def description(self, part_only=False) -> str:
         if self.is_fee_row():
             note = f" ({self._note})" if self._note else ''
-            return self.tr("Payment fee") + note
+            return LedgerTransaction.tr("Payment fee") + note
         text = self._note if self._note else self._subject_text()
-        tax_text = self.tr("Tax: ") + self._asset.country_name()
+        tax_text = LedgerTransaction.tr("Tax: ") + self._asset.country_name()
         if part_only and self._opart is not None:
             if self._opart == self.PART_VALUE:
                 return text
@@ -1002,7 +1002,7 @@ class AssetPayment(AssetPaymentBase):
         }
 
     def _subject_text(self) -> str:
-        return self.tr("Dividend payment for:") + f" {self._symbol.symbol()} ({self._asset.name()})"
+        return LedgerTransaction.tr("Dividend payment for:") + f" {self._symbol.symbol()} ({self._asset.name()})"
 
     # Returns the amount paid:
     # if currency_id = 0 - return the sum as it is stored
@@ -1017,7 +1017,7 @@ class AssetPayment(AssetPaymentBase):
             self.processFee(ledger)
             return
         if not self._peer_id:
-            raise LedgerError(self.tr("Can't process dividend as bank isn't set for investment account: ") + self._account_name)
+            raise LedgerError(LedgerTransaction.tr("Can't process dividend as bank isn't set for investment account: ") + self._account_name)
         if self._subtype == AssetPayment.Dividend:
             category = PredefinedCategory.Dividends
         elif self._subtype == AssetPayment.BondInterest:
@@ -1025,7 +1025,7 @@ class AssetPayment(AssetPaymentBase):
         elif self._subtype == AssetPayment.AssetFee:
             category = PredefinedCategory.Fees
         else:
-            raise LedgerError(self.tr("Unsupported dividend type.") + f" Operation: {self.dump()}")
+            raise LedgerError(LedgerTransaction.tr("Unsupported dividend type.") + f" Operation: {self.dump()}")
         operation_value = (self._amount - self._tax)
         if operation_value > Decimal('0'):
             credit_returned = ledger.returnCredit(self, self._account.id(), operation_value)
@@ -1124,7 +1124,7 @@ class AssetIncome(AssetPaymentBase):
         self._price = Decimal(self._data['price']) if self._data['price'] else None
 
     def _subject_text(self) -> str:
-        return self.tr("Received:") + f" {self._symbol.symbol()} ({self._asset.name()})"
+        return LedgerTransaction.tr("Received:") + f" {self._symbol.symbol()} ({self._asset.name()})"
 
     # The per-unit value the lot is opened at. Where it comes from is the one thing the subtypes disagree about.
     def price(self) -> Decimal:
@@ -1136,7 +1136,7 @@ class AssetIncome(AssetPaymentBase):
         if self._subtype in (AssetIncome.StockDividend, AssetIncome.StockVesting):
             if self._price is None:
                 logging.debug(f"Unpriced stock dividend/vesting. Operation: {self.dump()}")
-                raise LedgerError(self.tr("No price for a stock dividend or vesting: {} on {}. "
+                raise LedgerError(LedgerTransaction.tr("No price for a stock dividend or vesting: {} on {}. "
                                           "Open the operation, state the price it was granted at "
                                           "and rebuild the ledger.").format(
                                           self._asset.symbol(self._account.currency()), ts2d(self._timestamp)))
@@ -1161,7 +1161,7 @@ class AssetIncome(AssetPaymentBase):
             # but nothing is wrong with the data, so the user is told what to download instead of being shown a
             # traceback. The operation dump goes to the log for diagnosis and is kept out of the message.
             logging.debug(f"Unpriced reward. Operation: {self.dump()}")
-            raise LedgerError(self.tr("No quote to value a staking reward: {} on {}. "
+            raise LedgerError(LedgerTransaction.tr("No quote to value a staking reward: {} on {}. "
                                       "Download quotes from an earlier date and rebuild the ledger.").format(
                                       self._asset.symbol(self._account.currency()), ts2d(self._timestamp)))
         return price
@@ -1172,7 +1172,7 @@ class AssetIncome(AssetPaymentBase):
             return self._amount
         if self._subtype in (AssetIncome.StockDividend, AssetIncome.StockVesting):
             if self._price is None:
-                logging.error(self.tr("No price data for stock dividend/vesting: ") + f"{self.dump()}")
+                logging.error(LedgerTransaction.tr("No price data for stock dividend/vesting: ") + f"{self.dump()}")
             amount = self._amount * (self._price if self._price is not None else Decimal('0'))
         elif self._subtype == AssetIncome.RebaseAdjustment:
             # Worth nothing by definition, the same zero price() gives the ledger: this books quantity a position
@@ -1187,7 +1187,7 @@ class AssetIncome(AssetPaymentBase):
                 # Dust is the one of these with nothing to report: the coins arrived unsolicited and a token
                 # nobody trades has no quote to be found anywhere, so zero is the right value and not a miss -
                 # exactly what price() states for the same operation.
-                logging.error(self.tr("No price data to value an asset-denominated payment: ") + f"{self.dump()}")
+                logging.error(LedgerTransaction.tr("No price data to value an asset-denominated payment: ") + f"{self.dump()}")
             amount = self._amount * price
         if currency_id != self._account.currency():
             amount *= JalAsset(self._account.currency()).quote(self._timestamp, currency_id)[1]
@@ -1227,11 +1227,11 @@ class AssetIncome(AssetPaymentBase):
             self.processFee(ledger)
             return
         if not self._peer_id:
-            raise LedgerError(self.tr("Can't process asset income as bank isn't set for investment account: ")
+            raise LedgerError(LedgerTransaction.tr("Can't process asset income as bank isn't set for investment account: ")
                               + self._account_name)
         asset_amount = ledger.getAmount(BookAccount.Assets, self._account.id(), self._asset.id())
         if asset_amount < Decimal('0'):
-            raise NotImplemented(self.tr("Not supported action: asset income closes short trade.") +
+            raise NotImplemented(LedgerTransaction.tr("Not supported action: asset income closes short trade.") +
                                  f" Operation: {self.dump()}")
         self._account.open_trade(JalOpenTrade(self, self.price(), self._amount), self._asset)
         ledger.appendTransaction(self, BookAccount.Assets, self._amount,
@@ -1290,10 +1290,10 @@ class Trade(FeeCarrier, LedgerTransaction):
         self._peer_id = self._broker = self._account.organization()
         if self._qty < Decimal('0'):
             self._icon = JalIcon[JalIcon.SELL]
-            self._oname = self.tr("Sell")
+            self._oname = LedgerTransaction.tr("Sell")
         else:
             self._icon = JalIcon[JalIcon.BUY]
-            self._oname = self.tr("Buy")
+            self._oname = LedgerTransaction.tr("Buy")
         if self._opart is not None and self._opart == self.PART_PROFIT:
             profit = self._read("SELECT amount FROM ledger WHERE otype=:otype AND oid=:oid AND opart=:opart AND book_account=:book",
                                 [(":otype", self._otype), (":oid", self._oid), (":opart", self._opart), (":book", BookAccount.Incomes)])
@@ -1377,7 +1377,7 @@ class Trade(FeeCarrier, LedgerTransaction):
 
     def processLedger(self, ledger):
         if not self._broker:
-            raise LedgerError(self.tr("Can't process trade as bank isn't set for investment account: ") + self._account_name)
+            raise LedgerError(LedgerTransaction.tr("Can't process trade as bank isn't set for investment account: ") + self._account_name)
         deal_sign = Decimal('1.0').copy_sign(self._qty)  # 1 is buy and -1 is sell operation
         qty = abs(self._qty)
         trade_value = self._price * qty + deal_sign * self.fee()
@@ -1505,8 +1505,8 @@ class Swap(FeeCarrier, LedgerTransaction):
         self._asset = self._symbol.asset()
         icons = {Swap.Whole: JalIcon.SWAP, Swap.Outgoing: JalIcon.TRANSFER_ASSET_OUT,
                  Swap.Incoming: JalIcon.TRANSFER_ASSET_IN, Swap.Fee: self.fee_icon()}
-        names = {Swap.Whole: self.tr("Swap"), Swap.Outgoing: self.tr("Outgoing swap"),
-                 Swap.Incoming: self.tr("Incoming swap"), Swap.Fee: self.tr("Swap fee")}
+        names = {Swap.Whole: LedgerTransaction.tr("Swap"), Swap.Outgoing: LedgerTransaction.tr("Outgoing swap"),
+                 Swap.Incoming: LedgerTransaction.tr("Incoming swap"), Swap.Fee: LedgerTransaction.tr("Swap fee")}
         self._icon = JalIcon[icons[self._opart]]
         self._oname = names[self._opart]
         # Each leg of a cross-chain swap is a transaction of its own chain, so the part decides time, account and hash
@@ -1554,7 +1554,7 @@ class Swap(FeeCarrier, LedgerTransaction):
             else:
                 _, price = self._in_asset.quote(self._in_timestamp, self._account.currency())
                 if price == Decimal('0'):
-                    raise LedgerError(self.tr("There are no quotes to value the swap. Date: ")
+                    raise LedgerError(LedgerTransaction.tr("There are no quotes to value the swap. Date: ")
                                       + f"{ts2dt(self._timestamp)}, Operation: {self.dump()}")
                 self._value = price * self._in_qty
         return self._value
@@ -1569,7 +1569,7 @@ class Swap(FeeCarrier, LedgerTransaction):
     def description(self, part_only=False) -> str:
         if self._opart == Swap.Fee:
             note = f" ({self._note})" if self._note else ''
-            return self.tr("Swap fee") + note
+            return LedgerTransaction.tr("Swap fee") + note
         text = f"{remove_exponent(self._out_qty)} {self._out_symbol.symbol()} -> " \
                f"{remove_exponent(self._in_qty)} {self._in_symbol.symbol()}"
         return text + "\n" + self._note
@@ -1609,15 +1609,15 @@ class Swap(FeeCarrier, LedgerTransaction):
     def processLedger(self, ledger):
         # Only the disposing leg books a profit/loss and fees, so only it needs a peer to book them against
         if self._opart != Swap.Incoming and not self._peer_id:
-            raise LedgerError(self.tr("Can't process swap as organization isn't set for account: ") + self.account_name())
+            raise LedgerError(LedgerTransaction.tr("Can't process swap as organization isn't set for account: ") + self.account_name())
         if self._out_asset.id() == 0 or self._in_asset.id() == 0:
-            raise LedgerError(self.tr("Swap assets aren't set. Operation: ") + self.dump())
+            raise LedgerError(LedgerTransaction.tr("Swap assets aren't set. Operation: ") + self.dump())
         if self._out_asset.id() == self._in_asset.id():
-            raise LedgerError(self.tr("Can't process swap of an asset into itself. Operation: ") + self.dump())
+            raise LedgerError(LedgerTransaction.tr("Can't process swap of an asset into itself. Operation: ") + self.dump())
         if self._out_qty <= Decimal('0') or self._in_qty <= Decimal('0'):
-            raise LedgerError(self.tr("Swap quantities must be positive. Operation: ") + self.dump())
+            raise LedgerError(LedgerTransaction.tr("Swap quantities must be positive. Operation: ") + self.dump())
         if self._in_timestamp < int(self._data['timestamp']):
-            raise LedgerError(self.tr("Swap can't receive an asset before it was exchanged. Operation: ") + self.dump())
+            raise LedgerError(LedgerTransaction.tr("Swap can't receive an asset before it was exchanged. Operation: ") + self.dump())
         if self._opart == Swap.Fee:
             self.processFee(ledger)
             return
@@ -1631,13 +1631,13 @@ class Swap(FeeCarrier, LedgerTransaction):
     def processOutgoing(self, ledger):
         available = ledger.getAmount(BookAccount.Assets, self._account.id(), self._out_asset.id())
         if available < self._out_qty:
-            raise LedgerError(self.tr("Asset amount is not enough for swap processing. Date: ")
+            raise LedgerError(LedgerTransaction.tr("Asset amount is not enough for swap processing. Date: ")
                               + f"{ts2dt(self._timestamp)}, Asset amount: {available}, "
                               + f"Required: {self._out_qty}, Operation: {self.dump()}")
         value = self.value()
         processed_qty, basis = self._close_deals_fifo(Decimal('-1.0'), self._out_qty, asset=self._out_asset)
         if processed_qty < self._out_qty:
-            raise LedgerError(self.tr("Processed asset amount is less than swap amount. Date: ")
+            raise LedgerError(LedgerTransaction.tr("Processed asset amount is less than swap amount. Date: ")
                               + f"{ts2dt(self._timestamp)}, Processed amount: {processed_qty}, "
                               + f"Required: {self._out_qty}, Operation: {self.dump()}")
         # Withdraw the disposed asset at its cost basis and realize the profit/loss of the disposal
@@ -1660,14 +1660,14 @@ class Swap(FeeCarrier, LedgerTransaction):
                            [(":book_transfers", BookAccount.Transfers), (":otype", self._otype), (":id", self._oid)],
                            check_unique=True)
         if not value:
-            raise LedgerError(self.tr("Asset disposal not found for swap.") + f" Operation:  {self.dump()}")
+            raise LedgerError(LedgerTransaction.tr("Asset disposal not found for swap.") + f" Operation:  {self.dump()}")
         value = Decimal(value)
         if self._account.currency() == self._in_account.currency():
             rate = Decimal('1')
         else:   # Proceeds are converted into the destination account currency with the FX rate at the arrival time
             rate = JalAsset(self._account.currency()).quote(self._in_timestamp, self._in_account.currency())[1]
             if rate == Decimal('0'):
-                raise LedgerError(self.tr("There is no FX rate to convert swap proceeds. Date: ")
+                raise LedgerError(LedgerTransaction.tr("There is no FX rate to convert swap proceeds. Date: ")
                                   + f"{ts2dt(self._in_timestamp)}, Operation: {self.dump()}")
         in_value = rate * value
         ledger.appendTransaction(self, BookAccount.Transfers, -in_value)
@@ -1721,12 +1721,12 @@ class Transfer(FeeCarrier, LedgerTransaction):
             (Transfer.Incoming, False): JalIcon.TRANSFER_ASSET_IN,
         }
         self.names = {
-            (Transfer.Outgoing, True): self.tr("Outgoing transfer"),
-            (Transfer.Incoming, True): self.tr("Incoming transfer"),
-            (Transfer.Fee, True): self.tr("Transfer fee"),
-            (Transfer.Outgoing, False): self.tr("Outgoing asset transfer"),
-            (Transfer.Incoming, False): self.tr("Incoming asset transfer"),
-            (Transfer.Fee, False): self.tr("Asset transfer fee"),
+            (Transfer.Outgoing, True): LedgerTransaction.tr("Outgoing transfer"),
+            (Transfer.Incoming, True): LedgerTransaction.tr("Incoming transfer"),
+            (Transfer.Fee, True): LedgerTransaction.tr("Transfer fee"),
+            (Transfer.Outgoing, False): LedgerTransaction.tr("Outgoing asset transfer"),
+            (Transfer.Incoming, False): LedgerTransaction.tr("Incoming asset transfer"),
+            (Transfer.Fee, False): LedgerTransaction.tr("Asset transfer fee"),
         }
         super().__init__(oid, duplicate_before)
         self._opart = opart
@@ -1741,12 +1741,12 @@ class Transfer(FeeCarrier, LedgerTransaction):
         self._has_out = present(self._data['withdrawal_account'])
         self._has_in = present(self._data['deposit_account'])
         self._withdrawal_account = jal.db.account.JalAccount(self._data['withdrawal_account']) if self._has_out else None
-        self._withdrawal_account_name = self._withdrawal_account.name() if self._has_out else self.tr("(pending)")
+        self._withdrawal_account_name = self._withdrawal_account.name() if self._has_out else LedgerTransaction.tr("(pending)")
         self._withdrawal_timestamp = int(self._data['withdrawal_timestamp'])
         self._withdrawal = Decimal(self._data['withdrawal'])
         self._withdrawal_currency = JalAsset(self._withdrawal_account.currency()).symbol() if self._has_out else ''
         self._deposit_account = jal.db.account.JalAccount(self._data['deposit_account']) if self._has_in else None
-        self._deposit_account_name = self._deposit_account.name() if self._has_in else self.tr("(pending)")
+        self._deposit_account_name = self._deposit_account.name() if self._has_in else LedgerTransaction.tr("(pending)")
         self._deposit = Decimal(self._data['deposit'])
         self._deposit_currency = JalAsset(self._deposit_account.currency()).symbol() if self._has_in else ''
         self._deposit_timestamp = int(self._data['deposit_timestamp'])
@@ -1852,12 +1852,12 @@ class Transfer(FeeCarrier, LedgerTransaction):
     def description(self, part_only=False) -> str:
         if self._opart == Transfer.Fee:
             note = f" ({self._note})" if self._note else ''
-            return self.tr("Transfer fee") + note
+            return LedgerTransaction.tr("Transfer fee") + note
         if self.is_pending():   # There is no second currency to restate a cost basis in, and no rate to show
             return self._note
         if self._asset.id():
             if self._opart == Transfer.Incoming and self._withdrawal_currency != self._deposit_currency:
-                return self._note + " [" + self.tr("Cost basis:") + f" @{self._deposit:.2f} {self._deposit_currency}]"
+                return self._note + " [" + LedgerTransaction.tr("Cost basis:") + f" @{self._deposit:.2f} {self._deposit_currency}]"
         else:
             try:
                 rate = self._withdrawal / self._deposit
@@ -1871,7 +1871,7 @@ class Transfer(FeeCarrier, LedgerTransaction):
                         rate = Decimal('1.0') / rate
                         return self._note + f" [{rate:.4f} {self._deposit_currency} = 1 {self._withdrawal_currency}]"
                 else:
-                    return self._note + " " + self.tr("Error. Zero rate")
+                    return self._note + " " + LedgerTransaction.tr("Error. Zero rate")
         return self._note
 
     # oid of the transfer that already records the same movement of assets, or 0 if there is none.
@@ -1963,7 +1963,7 @@ class Transfer(FeeCarrier, LedgerTransaction):
             if account == self._withdrawal_account.id():
                 return False   # an account doesn't transfer to itself
             if self._withdrawal_timestamp > timestamp:
-                logging.warning(self.tr("Arrival precedes departure, transfer is left unsettled: ") + self.dump())
+                logging.warning(LedgerTransaction.tr("Arrival precedes departure, transfer is left unsettled: ") + self.dump())
                 return False
             # The address named the end that had no account; that end is now an account, so it has nothing left to
             # name and is dropped rather than kept as a second statement of the same thing.
@@ -1976,7 +1976,7 @@ class Transfer(FeeCarrier, LedgerTransaction):
             if account == self._deposit_account.id():
                 return False
             if timestamp > self._deposit_timestamp:
-                logging.warning(self.tr("Arrival precedes departure, transfer is left unsettled: ") + self.dump())
+                logging.warning(LedgerTransaction.tr("Arrival precedes departure, transfer is left unsettled: ") + self.dump())
                 return False
             self._exec("UPDATE transfers SET withdrawal_account=:account, withdrawal_timestamp=:timestamp, "
                        "deposit=:deposit, counterparty_address=NULL WHERE oid=:oid",
@@ -1984,7 +1984,7 @@ class Transfer(FeeCarrier, LedgerTransaction):
                         (":oid", self._oid)], commit=True)
         if 'fee' in data:
             self.update_fee(data['fee'], data.get('fee_account', 0), data.get('fee_symbol_id'))
-        logging.info(self.tr("Transfer settled by transaction hash: ") + f"{self._number}")
+        logging.info(LedgerTransaction.tr("Transfer settled by transaction hash: ") + f"{self._number}")
         return True
 
     # The ticker to show for a leg of pending_legs(): the text of the very listing the leg names.
@@ -2198,12 +2198,12 @@ class Transfer(FeeCarrier, LedgerTransaction):
         if self._opart == Transfer.Outgoing:   # Withdraw asset from source account
             asset_amount = ledger.getAmount(BookAccount.Assets, self._withdrawal_account.id(), self._asset.id())
             if asset_amount < transfer_amount:
-                raise LedgerError(self.tr("Asset amount is not enough for asset transfer processing. Date: ")
+                raise LedgerError(LedgerTransaction.tr("Asset amount is not enough for asset transfer processing. Date: ")
                                   + f"{ts2dt(self._withdrawal_timestamp)}, Asset amount: {asset_amount}, "
                                   + f"Required: {transfer_amount}, Operation: {self.dump()}")
             processed_qty, processed_value = self._close_deals_fifo(Decimal('-1.0'), transfer_amount)
             if processed_qty < transfer_amount:
-                raise LedgerError(self.tr("Processed asset amount is less than transfer amount. Date: ")
+                raise LedgerError(LedgerTransaction.tr("Processed asset amount is less than transfer amount. Date: ")
                                   + f"{ts2dt(self._withdrawal_timestamp)}, Processed amount: {processed_qty}, "
                                   + f"Required: {transfer_amount}, Operation: {self.dump()}")
             ledger.appendTransaction(self, BookAccount.Assets, -processed_qty, asset_id=self._asset.id(), value=-processed_value)
@@ -2219,7 +2219,7 @@ class Transfer(FeeCarrier, LedgerTransaction):
                                [(":book_transfers", BookAccount.Transfers), (":otype", self._otype),
                                 (":id", self._oid)], check_unique=True)
             if not value:
-                raise LedgerError(self.tr("Asset withdrawal not found for transfer.") + f" Operation:  {self.dump()}")
+                raise LedgerError(LedgerTransaction.tr("Asset withdrawal not found for transfer.") + f" Operation:  {self.dump()}")
             # A zero withdrawn value is treated like the same-currency case: there is no rate that rescales zero to
             # the destination value, and a zero-cost lot stays zero-cost whatever it is multiplied by. This happens
             # when the asset was received with its cost basis left to be filled in later (e.g. a fetched transfer),
@@ -2300,12 +2300,12 @@ class CorporateAction(LedgerTransaction):
             CorporateAction.Delisting: JalIcon.DELISTING
         }
         self.names = {
-            CorporateAction.NA: self.tr("UNDEFINED"),
-            CorporateAction.SymbolChange: self.tr("Symbol change"),
-            CorporateAction.Split: self.tr("Split"),
-            CorporateAction.SpinOff: self.tr("Spin-off"),
-            CorporateAction.Merger: self.tr("Merger"),
-            CorporateAction.Delisting: self.tr("Delisting")
+            CorporateAction.NA: LedgerTransaction.tr("UNDEFINED"),
+            CorporateAction.SymbolChange: LedgerTransaction.tr("Symbol change"),
+            CorporateAction.Split: LedgerTransaction.tr("Split"),
+            CorporateAction.SpinOff: LedgerTransaction.tr("Spin-off"),
+            CorporateAction.Merger: LedgerTransaction.tr("Merger"),
+            CorporateAction.Delisting: LedgerTransaction.tr("Delisting")
         }
         super().__init__(oid)
         self._data = self._read("SELECT a.type, a.timestamp, a.timestamp_day_only, a.number, a.account_id, "
@@ -2415,7 +2415,7 @@ class CorporateAction(LedgerTransaction):
                        [(":share", format_decimal(share)), (":action_id", self._oid), (":symbol_id", out[0]['symbol_id'])])
             out[0]['value_share'] = format_decimal(share)
         else:
-            raise LedgerError(self.tr("Asset isn't a part of corporate action results: ") + f"{asset.name()}")
+            raise LedgerError(LedgerTransaction.tr("Asset isn't a part of corporate action results: ") + f"{asset.name()}")
 
     # Returns a list {"timestamp", "amount", "note"} that represents payments out of corporate actions to given account
     # in given account currency
@@ -2434,22 +2434,22 @@ class CorporateAction(LedgerTransaction):
 
     def processLedger(self, ledger):
         if self._subtype == CorporateAction.NA:
-            raise LedgerError(self.tr("Corporate action type isn't defined. Date: ") \
+            raise LedgerError(LedgerTransaction.tr("Corporate action type isn't defined. Date: ") \
                   + f"{ts2dt(self._timestamp)}, " + f"{self._account.name()} - {self._symbol.symbol()}")
         # Get asset amount accumulated before current operation
         asset_amount = ledger.getAmount(BookAccount.Assets, self._account.id(), self._asset.id())
         if asset_amount < self._qty:
-            raise LedgerError(self.tr("Asset amount is not enough for corporate action processing. Date: ")
+            raise LedgerError(LedgerTransaction.tr("Asset amount is not enough for corporate action processing. Date: ")
                               + f"{ts2dt(self._timestamp)}, "
                               + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
         if asset_amount > self._qty:
-            raise LedgerError(self.tr("Unhandled case: Corporate action covers not full open position. Date: ")
+            raise LedgerError(LedgerTransaction.tr("Unhandled case: Corporate action covers not full open position. Date: ")
                               + f"{ts2dt(self._timestamp)}, "
                               + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
         # Calculate total asset allocation after corporate action and verify it equals 100%
         allocation = Decimal('0') + sum([x['value_share'] for x in self._results])
         if self._subtype != CorporateAction.Delisting and allocation != Decimal('1.0'):
-            raise LedgerError(self.tr("Results value of corporate action doesn't match 100% of initial asset value. ")
+            raise LedgerError(LedgerTransaction.tr("Results value of corporate action doesn't match 100% of initial asset value. ")
                               + f"Date: {ts2dt(self._timestamp)}, Asset amount: {asset_amount}, "
                               + f"Distributed: {100.0 * float(allocation)}%, Operation: {self.dump()}")
         processed_qty, processed_value = self._close_deals_fifo(Decimal('-1.0'), self._qty)
@@ -2548,7 +2548,7 @@ class Conversion(FeeCarrier, LedgerTransaction):
         self._note = self._data['note']
         is_fee = self._opart == Conversion.Fee
         self._icon = JalIcon[self.fee_icon() if is_fee else JalIcon.CONVERSION]
-        self._oname = self.tr("Wrapping fee") if is_fee else self._wrapping_name()
+        self._oname = LedgerTransaction.tr("Wrapping fee") if is_fee else self._wrapping_name()
         self._peer_id = self._account.organization()
         self._reconciled = self._account.reconciled_at() >= self._timestamp
         self._view_rows = 1 if is_fee else 2   # The gas draws its own row, never a third line of the conversion
@@ -2561,12 +2561,12 @@ class Conversion(FeeCarrier, LedgerTransaction):
         out_protocol = self._out_asset.protocol()
         in_protocol = self._in_asset.protocol()
         if out_protocol and in_protocol:
-            return self.tr("Move: ") + f"{out_protocol} -> {in_protocol}"
+            return LedgerTransaction.tr("Move: ") + f"{out_protocol} -> {in_protocol}"
         if in_protocol:
-            return self.tr("Supply to ") + in_protocol
+            return LedgerTransaction.tr("Supply to ") + in_protocol
         if out_protocol:
-            return self.tr("Withdraw from ") + out_protocol
-        return self.tr("Wrapping")
+            return LedgerTransaction.tr("Withdraw from ") + out_protocol
+        return LedgerTransaction.tr("Wrapping")
 
     # A conversion happens immediately
     def settlement(self) -> int:
@@ -2585,7 +2585,7 @@ class Conversion(FeeCarrier, LedgerTransaction):
     def description(self, part_only=False) -> str:
         if self._opart == Conversion.Fee:
             note = f" ({self._note})" if self._note else ''
-            return self.tr("Wrapping fee") + note
+            return LedgerTransaction.tr("Wrapping fee") + note
         text = f"{remove_exponent(self._out_qty)} {self._out_symbol.symbol()} -> " \
                f"{remove_exponent(self._in_qty)} {self._in_symbol.symbol()}"
         return text + "\n" + self._note
@@ -2613,11 +2613,11 @@ class Conversion(FeeCarrier, LedgerTransaction):
 
     def processLedger(self, ledger):
         if self._out_asset.id() == 0 or self._in_asset.id() == 0:
-            raise LedgerError(self.tr("Wrapping assets aren't set. Operation: ") + self.dump())
+            raise LedgerError(LedgerTransaction.tr("Wrapping assets aren't set. Operation: ") + self.dump())
         if self._out_asset.id() == self._in_asset.id():
-            raise LedgerError(self.tr("Can't wrap an asset into itself. Operation: ") + self.dump())
+            raise LedgerError(LedgerTransaction.tr("Can't wrap an asset into itself. Operation: ") + self.dump())
         if self._out_qty <= Decimal('0') or self._in_qty <= Decimal('0'):
-            raise LedgerError(self.tr("Wrapping quantities must be positive. Operation: ") + self.dump())
+            raise LedgerError(LedgerTransaction.tr("Wrapping quantities must be positive. Operation: ") + self.dump())
         if self._opart == Conversion.Fee:
             self.processFee(ledger)
             return
@@ -2627,7 +2627,7 @@ class Conversion(FeeCarrier, LedgerTransaction):
             # rebasing receipt token reveals the quantity it gained without announcing it (see
             # AssetIncome.RebaseAdjustment), and RebaseResidue.absorb() needs the numbers to decide whether this is
             # that crumb or a real gap in the data. It stops the ledger here exactly as any other LedgerError does.
-            raise LedgerAssetShortage(self.tr("Asset amount is not enough for wrapping processing. Date: ")
+            raise LedgerAssetShortage(LedgerTransaction.tr("Asset amount is not enough for wrapping processing. Date: ")
                                       + f"{ts2dt(self._timestamp)}, Asset amount: {available}, "
                                       + f"Required: {self._out_qty}, Operation: {self.dump()}",
                                       self, self._account.id(), self._out_symbol.id(), available, self._out_qty)
@@ -2638,7 +2638,7 @@ class Conversion(FeeCarrier, LedgerTransaction):
         # leaves every lot's value untouched. This is exactly how a corporate action and a bridge carry a basis over.
         processed_qty, processed_value = self._close_deals_fifo(Decimal('-1.0'), self._out_qty, asset=self._out_asset)
         if processed_qty < self._out_qty:
-            raise LedgerError(self.tr("Processed asset amount is less than wrapped amount. Date: ")
+            raise LedgerError(LedgerTransaction.tr("Processed asset amount is less than wrapped amount. Date: ")
                               + f"{ts2dt(self._timestamp)}, Processed amount: {processed_qty}, "
                               + f"Required: {self._out_qty}, Operation: {self.dump()}")
         ledger.appendTransaction(self, BookAccount.Assets, -processed_qty,
@@ -2712,10 +2712,10 @@ class Bridge(FeeCarrier, LedgerTransaction):
         # transfer. The leg is named by a corner dot, the same marker JalIcon.TRANSFER_ASSET_* use.
         icons = {Bridge.Outgoing: JalIcon.BRIDGE_OUT,
                  Bridge.Incoming: JalIcon.BRIDGE_IN}
-        self.names = {Bridge.Outgoing: self.tr("Outgoing bridge"),
-                      Bridge.Incoming: self.tr("Incoming bridge"),
-                      Bridge.Fee: self.tr("Bridge fee"),
-                      Bridge.InKindFee: self.tr("Bridge in-kind fee")}
+        self.names = {Bridge.Outgoing: LedgerTransaction.tr("Outgoing bridge"),
+                      Bridge.Incoming: LedgerTransaction.tr("Incoming bridge"),
+                      Bridge.Fee: LedgerTransaction.tr("Bridge fee"),
+                      Bridge.InKindFee: LedgerTransaction.tr("Bridge in-kind fee")}
         super().__init__(operation_data)
         self._opart = opart
         self._data = self._read("SELECT out_timestamp, out_account_id, out_symbol_id, out_qty, out_tx_hash, "
@@ -2808,7 +2808,7 @@ class Bridge(FeeCarrier, LedgerTransaction):
 
     def account_name(self):
         out = self._out_account.name()
-        inp = self._in_account.name() if self._has_in else self.tr("(pending)")
+        inp = self._in_account.name() if self._has_in else LedgerTransaction.tr("(pending)")
         if self._on_arrival():
             return f"{inp} <- {out}"
         else:   # Outgoing part and fee are booked on the source account
@@ -2837,11 +2837,11 @@ class Bridge(FeeCarrier, LedgerTransaction):
         out_s = self._out_symbol.symbol()
         in_s = self._in_symbol.symbol() if self._has_in else "?"
         if self.is_pending():
-            text = self.tr("Bridge (awaiting matching):") + f" {out_s} -> {in_s}"
+            text = LedgerTransaction.tr("Bridge (awaiting matching):") + f" {out_s} -> {in_s}"
         else:
             text = f"{out_s} -> {in_s}"
             if self._in_qty != self._out_qty:
-                text += " [" + self.tr("In-kind fee:") + f" {remove_exponent(self._out_qty - self._in_qty)} {in_s}]"
+                text += " [" + LedgerTransaction.tr("In-kind fee:") + f" {remove_exponent(self._out_qty - self._in_qty)} {in_s}]"
         return text + "\n" + self._note
 
     def value_change(self, part_only=False) -> list:
@@ -2884,14 +2884,14 @@ class Bridge(FeeCarrier, LedgerTransaction):
     def processLedger(self, ledger):
         if self._has_in:   # Coherence checks that only apply to a complete, matched bridge
             if self._asset.id() == 0 or self._asset.id() != self._in_symbol.asset().id():
-                raise LedgerError(self.tr("Bridge must move the same asset between accounts. Operation: ") + self.dump())
+                raise LedgerError(LedgerTransaction.tr("Bridge must move the same asset between accounts. Operation: ") + self.dump())
             if self._out_account.id() == self._in_account.id():
                 # Moving lots back into the same account would shadow the remainder of a partially bridged position
-                raise LedgerError(self.tr("Bridge between the same account isn't supported. Operation: ") + self.dump())
+                raise LedgerError(LedgerTransaction.tr("Bridge between the same account isn't supported. Operation: ") + self.dump())
             if self._in_qty > self._out_qty:
-                raise LedgerError(self.tr("Bridge can't receive more asset than was sent. Operation: ") + self.dump())
+                raise LedgerError(LedgerTransaction.tr("Bridge can't receive more asset than was sent. Operation: ") + self.dump())
             if self._out_timestamp > self._in_timestamp:
-                raise LedgerError(self.tr("Bridge receive can't precede its send. Operation: ") + self.dump())
+                raise LedgerError(LedgerTransaction.tr("Bridge receive can't precede its send. Operation: ") + self.dump())
         if self._opart == Bridge.Outgoing:
             self.processOutgoing(ledger)
         elif self._opart == Bridge.Fee:
@@ -2906,12 +2906,12 @@ class Bridge(FeeCarrier, LedgerTransaction):
     def processOutgoing(self, ledger):
         available = ledger.getAmount(BookAccount.Assets, self._out_account.id(), self._asset.id())
         if available < self._out_qty:
-            raise LedgerError(self.tr("Asset amount is not enough for bridge processing. Date: ")
+            raise LedgerError(LedgerTransaction.tr("Asset amount is not enough for bridge processing. Date: ")
                               + f"{ts2dt(self._out_timestamp)}, Asset amount: {available}, "
                               + f"Required: {self._out_qty}, Operation: {self.dump()}")
         processed_qty, processed_value = self._close_deals_fifo(Decimal('-1.0'), self._out_qty)
         if processed_qty < self._out_qty:
-            raise LedgerError(self.tr("Processed asset amount is less than bridge amount. Date: ")
+            raise LedgerError(LedgerTransaction.tr("Processed asset amount is less than bridge amount. Date: ")
                               + f"{ts2dt(self._out_timestamp)}, Processed amount: {processed_qty}, "
                               + f"Required: {self._out_qty}, Operation: {self.dump()}")
         ledger.appendTransaction(self, BookAccount.Assets, -processed_qty, asset_id=self._asset.id(), value=-processed_value)
@@ -2932,14 +2932,14 @@ class Bridge(FeeCarrier, LedgerTransaction):
                            [(":book_transfers", BookAccount.Transfers), (":otype", self._otype), (":id", self._oid)],
                            check_unique=True)
         if not value:
-            raise LedgerError(self.tr("Asset withdrawal not found for bridge.") + f" Operation:  {self.dump()}")
+            raise LedgerError(LedgerTransaction.tr("Asset withdrawal not found for bridge.") + f" Operation:  {self.dump()}")
         value = Decimal(value)
         if self._out_account.currency() == self._in_account.currency():
             rate = Decimal('1')
         else:   # Cost basis is converted into the destination account currency with the FX rate at the deposit time
             rate = JalAsset(self._out_account.currency()).quote(self._in_timestamp, self._in_account.currency())[1]
             if rate == Decimal('0'):
-                raise LedgerError(self.tr("There is no FX rate to convert bridge cost basis. Date: ")
+                raise LedgerError(LedgerTransaction.tr("There is no FX rate to convert bridge cost basis. Date: ")
                                   + f"{ts2dt(self._in_timestamp)}, Operation: {self.dump()}")
         transfer_value = rate * value
         for trade in transfer_trades:   # Move open trades from source to destination (adjust cost basis by FX rate)
@@ -3083,7 +3083,7 @@ class ChainAction(FeeCarrier, LedgerTransaction):
     # What the event cost, named by what sort of charge it is. It does not repeat the event - the row above says
     # that - and a rent is deliberately not called a fee: it is locked rather than consumed.
     def _charge_name(self) -> str:
-        return {FeeKind.Rent: self.tr("Rent")}.get(self._part_fee().kind(), self.tr("Gas"))
+        return {FeeKind.Rent: LedgerTransaction.tr("Rent")}.get(self._part_fee().kind(), LedgerTransaction.tr("Gas"))
 
     def description(self, part_only=False) -> str:
         if self.is_fee_row():

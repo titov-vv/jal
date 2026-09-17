@@ -271,7 +271,8 @@ class ArrivalReconciler(QObject):
     def _describe(self, route) -> str:
         arrival = route.receiving
         chain = AssetLocation().get_name(arrival.location_id) if arrival.location_id else f"chain {arrival.chain}"
-        via = f" ({self.tr('via')} {route.tool})" if route.tool else ''
+        through = self.tr("via")
+        via = f" ({through} {route.tool})" if route.tool else ''
         amount = f"{remove_exponent(arrival.qty)} " if arrival.qty is not None else ''
         return f"{amount}{arrival.symbol} " + self.tr("on") + f" {chain}{via}, {arrival.tx_hash[:12]}..."
 

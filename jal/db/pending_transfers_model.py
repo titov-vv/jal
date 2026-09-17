@@ -239,7 +239,8 @@ class PendingTransfersModel(ReportTreeModel):
         if role == Qt.DisplayRole:
             if field == 'from':
                 group, value = item.getGroup()
-                return f"{self._group_names[group]}: {value if value else self.tr('(none)')}"
+                empty = self.tr("(none)")
+                return f"{self._group_names[group]}: {value if value else empty}"
             if field == 'value':
                 return item.details()['value']
             if field == 'timestamp':

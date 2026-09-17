@@ -31,7 +31,7 @@ class ReceiptEuLidlPlus(ReceiptAPI):
         if params is None:
             parts = re.match(self.receipt_pattern, qr_text)
             if parts is None:
-                raise ValueError(self.tr("Lidl QR available but pattern isn't recognized: " + qr_text))
+                raise ValueError(ReceiptAPI.tr("Lidl QR available but pattern isn't recognized: " + qr_text))
             parts = parts.groupdict()
             self.date_time = QDateTime.fromString(parts['date'], 'yyyyMMdd')
             self.shop_id = int(parts['shop_id'])
@@ -39,10 +39,10 @@ class ReceiptEuLidlPlus(ReceiptAPI):
             if len(aux_data) == 28:  # Get receipt sequence number from aux data or from the user
                 self.seq_id = aux_data[7:13]
             else:
-                self.seq_id, result = QInputDialog.getText(None, self.tr("Input Lidl receipt additional data"),
-                                                           self.tr("Sequence #:"))
+                self.seq_id, result = QInputDialog.getText(None, ReceiptAPI.tr("Input Lidl receipt additional data"),
+                                                           ReceiptAPI.tr("Sequence #:"))
                 if not result:
-                    raise ValueError(self.tr("Can't get Lidl receipt without sequence number"))
+                    raise ValueError(ReceiptAPI.tr("Can't get Lidl receipt without sequence number"))
             self.seq_id = int(self.seq_id.lstrip('0'))   # Get rid of any leading zeros and convert to int
         else:
             self.date_time = params['Date']
@@ -67,21 +67,21 @@ class ReceiptEuLidlPlus(ReceiptAPI):
         if not self.access_token:
             self.__do_login()
         if not self.access_token:
-            logging.warning(self.tr("No Lidl Plus access token available"))
+            logging.warning(ReceiptAPI.tr("No Lidl Plus access token available"))
             return False
         self.web_session.headers["Authorization"] = f"Bearer {self.access_token}"
         response = self.web_session.get("https://tickets.lidlplus.com/api/v2/PT/tickets?pageNumber=1&onlyFavorite=false&itemId=")  # Just to check authorization status
         if response.status_code == 200:
             return True
         if response.status_code == 401:
-            logging.info(self.tr("Unauthorized with reason: ") + f"{response.text}")
+            logging.info(ReceiptAPI.tr("Unauthorized with reason: ") + f"{response.text}")
             return self.__refresh_token()
         else:
-            logging.error(self.tr("Lidl Plus API failed with: ") + f"{response.status_code}/{response.text}")
+            logging.error(ReceiptAPI.tr("Lidl Plus API failed with: ") + f"{response.status_code}/{response.text}")
             return False
 
     def __refresh_token(self) -> bool:
-        logging.info(self.tr("Refreshing Lidl Plus token..."))
+        logging.info(ReceiptAPI.tr("Refreshing Lidl Plus token..."))
         client_secret = JalSettings().getValue('EuLidlClientSecret')
         refresh_token = JalSettings().getValue('EuLidlRefreshToken')
         self.web_session.headers["Authorization"] = f"Basic {client_secret}"
@@ -89,7 +89,7 @@ class ReceiptEuLidlPlus(ReceiptAPI):
         payload = {"grant_type": "refresh_token", "refresh_token": refresh_token}
         response = self.web_session.post("https://accounts.lidl.com/connect/token", data=payload)
         if response.status_code == 200:
-            logging.info(self.tr("Lidl Plus token was refreshed: ") + f"{response.text}")
+            logging.info(ReceiptAPI.tr("Lidl Plus token was refreshed: ") + f"{response.text}")
             json_content = json.loads(response.text)
             assert json_content['token_type'] == "Bearer"
             self.access_token = json_content['access_token']
@@ -100,7 +100,7 @@ class ReceiptEuLidlPlus(ReceiptAPI):
             self.web_session.headers["Authorization"] = f"Bearer {self.access_token}"
             return True
         else:
-            logging.error(self.tr("Can't refresh Lidl Plus token, response: ") + f"{response.status_code}/{response.text}")
+            logging.error(ReceiptAPI.tr("Can't refresh Lidl Plus token, response: ") + f"{response.status_code}/{response.text}")
             JalSettings().setValue('EuLidlAccessToken', '')
             self.access_token = ''
             return False
@@ -115,11 +115,11 @@ class ReceiptEuLidlPlus(ReceiptAPI):
         self.web_session.headers["Accept-Language"] = "PT"
         response = self.web_session.get(f"https://tickets.lidlplus.com/api/v2/PT/tickets/{ticket_id}")
         if response.status_code == 200:
-            logging.info(self.tr("Receipt was loaded: " + response.text))
+            logging.info(ReceiptAPI.tr("Receipt was loaded: " + response.text))
             self.slip_json = json.loads(response.text)
             self.slip_load_ok.emit()
         else:
-            logging.error(self.tr("Receipt load failed: ") + f"{response.status_code}/{response.text} for {ticket_id}")
+            logging.error(ReceiptAPI.tr("Receipt load failed: ") + f"{response.status_code}/{response.text} for {ticket_id}")
             self.slip_json = {}
             self.slip_load_failed.emit()
 

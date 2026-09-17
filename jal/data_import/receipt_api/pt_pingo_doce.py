@@ -29,7 +29,7 @@ class ReceiptPtPingoDoce(ReceiptAPI):
         if params is None:
             parts = re.match(self.receipt_pattern, qr_text)
             if parts is None:
-                raise ValueError(self.tr("Pingo Doce QR available but pattern isn't recognized: " + qr_text))
+                raise ValueError(ReceiptAPI.tr("Pingo Doce QR available but pattern isn't recognized: " + qr_text))
             parts = parts.groupdict()
             self.date_time = QDateTime.fromString(parts['date'], 'yyyyMMdd')
             self.shop_id = int(parts['shop_id'].lstrip('0'))
@@ -57,7 +57,7 @@ class ReceiptPtPingoDoce(ReceiptAPI):
         if not self.access_token:
             self.__do_login()
         if not self.access_token or not self.user_profile:
-            logging.warning(self.tr("No Pingo Doce access token available"))
+            logging.warning(ReceiptAPI.tr("No Pingo Doce access token available"))
             return False
         self.web_session.headers["Authorization"] = f"Bearer {self.access_token}"
         self.web_session.headers["pdapp-storeId"] = "-1"
@@ -67,7 +67,7 @@ class ReceiptPtPingoDoce(ReceiptAPI):
         payload = '{"pmCard":"' + self.user_profile['ompdCard'] + '"}'
         response = self.web_session.post("https://app-proxy.pingodoce.pt/api/v2/user/cardassociations/savings", data=payload)
         if response.status_code == 401:
-            logging.info(self.tr("Unauthorized with reason: ") + f"{response.text}")
+            logging.info(ReceiptAPI.tr("Unauthorized with reason: ") + f"{response.text}")
             if self.__refresh_token():
                 self.web_session.headers["Authorization"] = f"Bearer {self.access_token}"
                 self.web_session.headers["pdapp-storeId"] = "-1"
@@ -77,18 +77,18 @@ class ReceiptPtPingoDoce(ReceiptAPI):
             else:
                 return False
         elif response.status_code != 200:
-            logging.error(self.tr("Pingo Doce API failed with: ") + f"{response.status_code}/{response.text}")
+            logging.error(ReceiptAPI.tr("Pingo Doce API failed with: ") + f"{response.status_code}/{response.text}")
             return False
         response = self.web_session.get("https://app-proxy.pingodoce.pt/api/v2/user/transactionsHistory/chart?filter=FILTER_BY_30_DAYS")
         if response.status_code != 200:
-            logging.error(self.tr("Pingo Doce API filter failed with: ") + f"{response.status_code}/{response.text}")
+            logging.error(ReceiptAPI.tr("Pingo Doce API filter failed with: ") + f"{response.status_code}/{response.text}")
             return False
         page = 1
         while page>0:
             logging.info(f"Loading {page} page of Pingo Doce receipts")
             response = self.web_session.get(f"https://app-proxy.pingodoce.pt/api/v2/user/transactionsHistory?pageNumber={page}&pageSize=20")
             if response.status_code != 200:
-                logging.error(self.tr("Pingo Doce API history failed: ") + f"{response.status_code}/{response.text}")
+                logging.error(ReceiptAPI.tr("Pingo Doce API history failed: ") + f"{response.status_code}/{response.text}")
                 return False
             receipts = json.loads(response.text)
             page = -1 if len(receipts) < 20 else page + 1  # Go to next page or stop loading
@@ -99,7 +99,7 @@ class ReceiptPtPingoDoce(ReceiptAPI):
         return True
 
     def __refresh_token(self) -> bool:
-        logging.info(self.tr("Refreshing Pingo Doce token..."))
+        logging.info(ReceiptAPI.tr("Refreshing Pingo Doce token..."))
         self.access_token = JalSettings().getValue('PtPingoDoceAccessToken', default='')
         refresh_token = JalSettings().getValue('PtPingoDoceRefreshToken', default='')
         self.web_session = requests.Session()   # Need to start a clean session here
@@ -108,7 +108,7 @@ class ReceiptPtPingoDoce(ReceiptAPI):
         payload = {"client_id": "pdappclient", "grant_type": "refresh_token", "refresh_token": refresh_token}
         response = self.web_session.post("https://app-proxy.pingodoce.pt/connect/token", data=payload)
         if response.status_code == 200:
-            logging.info(self.tr("Pingo Doce token was refreshed: ") + f"{response.text}")
+            logging.info(ReceiptAPI.tr("Pingo Doce token was refreshed: ") + f"{response.text}")
             json_content = json.loads(response.text)
             assert json_content['token_type'] == "Bearer"
             self.access_token = json_content['access_token']
@@ -117,15 +117,15 @@ class ReceiptPtPingoDoce(ReceiptAPI):
             settings.setValue('PtPingoDoceAccessToken', self.access_token)
             settings.setValue('PtPingoDoceRefreshToken', new_refresh_token)
         else:
-            logging.error(self.tr("Can't refresh Pingo Doce token, response: ") + f"{response.status_code}/{response.text}")
+            logging.error(ReceiptAPI.tr("Can't refresh Pingo Doce token, response: ") + f"{response.status_code}/{response.text}")
             JalSettings().setValue('PtPingoDoceAccessToken', '')
             self.access_token = ''
             return False
         response = self.web_session.get("https://app-proxy.pingodoce.pt/api/v2/user/userprofiles")
         if response.status_code != 200:
-            logging.error(self.tr("Can't get Pingo Doce profile, response: ") + f"{response.status_code}/{response.text}")
+            logging.error(ReceiptAPI.tr("Can't get Pingo Doce profile, response: ") + f"{response.status_code}/{response.text}")
             return False
-        logging.info(self.tr("Pingo Doce profile was loaded: ") + f"{response.text}")
+        logging.info(ReceiptAPI.tr("Pingo Doce profile was loaded: ") + f"{response.text}")
         self.user_profile = json.loads(response.text)
         settings.setValue('PtPingoDoceUserProfile', json.dumps(self.user_profile))
         return True
@@ -141,18 +141,18 @@ class ReceiptPtPingoDoce(ReceiptAPI):
         if len(tickets) == 1:
             response = self.web_session.get(f"https://app-proxy.pingodoce.pt/api/v2/user/transactionsHistory/details?id={tickets[0]['id']}")
             if response.status_code == 200:
-                logging.info(self.tr("Receipt was loaded: " + response.text))
+                logging.info(ReceiptAPI.tr("Receipt was loaded: " + response.text))
                 self.slip_json = json.loads(response.text)
                 self.slip_load_ok.emit()
             else:
-                logging.error(self.tr("Receipt load failed: ") + f"{response.status_code}/{response.text} for {tickets[0]['id']}")
+                logging.error(ReceiptAPI.tr("Receipt load failed: ") + f"{response.status_code}/{response.text} for {tickets[0]['id']}")
                 self.slip_json = {}
                 self.slip_load_failed.emit()
         else:
             if len(tickets) == 0:
-                logging.warning(self.tr("Receipt was not found in available list"))
+                logging.warning(ReceiptAPI.tr("Receipt was not found in available list"))
             else:
-                logging.warning(self.tr("Several similar receipts was found: ") + {tickets})
+                logging.warning(ReceiptAPI.tr("Several similar receipts was found: ") + {tickets})
             self.slip_json = {}
             self.slip_load_failed.emit()
 

@@ -164,7 +164,7 @@ class JalSymbol(JalDB):
     # Attaches an identifier of given type (see SymbolId) to this symbol.
     def add_identifier(self, id_type: int, id_value: str) -> None:
         if not self._id:
-            logging.error(self.tr("Can't add an identifier to an empty symbol: ") + f"{id_type} = {id_value}")
+            logging.error(JalDB.tr("Can't add an identifier to an empty symbol: ") + f"{id_type} = {id_value}")
             return
         _ = self._exec("INSERT INTO symbol_ids (symbol_id, id_type, id_value) VALUES (:symbol_id, :id_type, :id_value)",
                        [(":symbol_id", self._id), (":id_type", id_type), (":id_value", id_value)])
@@ -176,7 +176,7 @@ class JalSymbol(JalDB):
         existing = self.identifier(id_type)
         if existing:
             if existing != id_value:
-                logging.error(self.tr("Unexpected attempt to update identifier for ")
+                logging.error(JalDB.tr("Unexpected attempt to update identifier for ")
                               + f"{self._symbol}: {existing} -> {id_value}")
             return
         self.add_identifier(id_type, id_value)
