@@ -26,6 +26,7 @@ class ChainActionWidget(AbstractOperationDetails):
         self.operation_type = LedgerTransaction.ChainAction
         self.ui.account_widget.setup_selector(AccountListModel, AccountListDialog, self)
         self.ui.symbol_widget.setup_selector(SymbolsListModel, SymbolListDialog, self)
+        self.ui.symbol_widget.setValidation(False)
         super()._init_db("chain_actions")
         # The whole ledger footprint of an action: gas that was consumed, or a rent that is only locked
         super()._init_fees([FeeKind.Gas, FeeKind.Rent], precision=2)
