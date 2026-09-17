@@ -987,10 +987,10 @@ class AssetPayment(AssetPaymentBase):
     @classmethod
     def subtype_names(cls) -> dict:
         return {
-            AssetPayment.NA: cls.tr("UNDEFINED"),
-            AssetPayment.Dividend: cls.tr("Dividend"),
-            AssetPayment.BondInterest: cls.tr("Bond Interest"),
-            AssetPayment.AssetFee: cls.tr("Asset fee/tax")
+            AssetPayment.NA: LedgerTransaction.tr("UNDEFINED"),
+            AssetPayment.Dividend: LedgerTransaction.tr("Dividend"),
+            AssetPayment.BondInterest: LedgerTransaction.tr("Bond Interest"),
+            AssetPayment.AssetFee: LedgerTransaction.tr("Asset fee/tax")
         }
 
     @classmethod
@@ -1095,14 +1095,14 @@ class AssetIncome(AssetPaymentBase):
     @classmethod
     def subtype_names(cls) -> dict:
         return {
-            AssetIncome.NA: cls.tr("UNDEFINED"),
-            AssetIncome.StockDividend: cls.tr("Stock Dividend"),
-            AssetIncome.StockVesting: cls.tr("Stock Vesting"),
-            AssetIncome.StakingReward: cls.tr("Staking reward"),
-            AssetIncome.Reward: cls.tr("Reward"),
-            AssetIncome.DustAttack: cls.tr("Dust attack"),
-            AssetIncome.RebaseAdjustment: cls.tr("Rebase adjustment"),
-            AssetIncome.TokenRentReturn: cls.tr("Token account rent returned")
+            AssetIncome.NA: LedgerTransaction.tr("UNDEFINED"),
+            AssetIncome.StockDividend: LedgerTransaction.tr("Stock Dividend"),
+            AssetIncome.StockVesting: LedgerTransaction.tr("Stock Vesting"),
+            AssetIncome.StakingReward: LedgerTransaction.tr("Staking reward"),
+            AssetIncome.Reward: LedgerTransaction.tr("Reward"),
+            AssetIncome.DustAttack: LedgerTransaction.tr("Dust attack"),
+            AssetIncome.RebaseAdjustment: LedgerTransaction.tr("Rebase adjustment"),
+            AssetIncome.TokenRentReturn: LedgerTransaction.tr("Token account rent returned")
         }
 
     @classmethod
@@ -3013,13 +3013,13 @@ class ChainAction(FeeCarrier, LedgerTransaction):
     @classmethod
     def subtype_names(cls) -> dict:
         return {
-            ChainAction.NA: cls.tr("UNDEFINED"),
-            ChainAction.Authorization: cls.tr("Authorization"),
-            ChainAction.FailedTransaction: cls.tr("Failed transaction"),
-            ChainAction.PositionCommand: cls.tr("Position command"),
-            ChainAction.NoOp: cls.tr("No-op"),
-            ChainAction.ContractCall: cls.tr("Contract call"),
-            ChainAction.TokenAccountRent: cls.tr("Token account rent")
+            ChainAction.NA: LedgerTransaction.tr("UNDEFINED"),
+            ChainAction.Authorization: LedgerTransaction.tr("Authorization"),
+            ChainAction.FailedTransaction: LedgerTransaction.tr("Failed transaction"),
+            ChainAction.PositionCommand: LedgerTransaction.tr("Position command"),
+            ChainAction.NoOp: LedgerTransaction.tr("No-op"),
+            ChainAction.ContractCall: LedgerTransaction.tr("Contract call"),
+            ChainAction.TokenAccountRent: LedgerTransaction.tr("Token account rent")
         }
 
     def __init__(self, oid=None, opart=Whole):
