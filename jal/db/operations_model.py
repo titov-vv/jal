@@ -7,7 +7,8 @@ from jal.db.helpers import localize_decimal
 from jal.db.operations import LedgerTransaction
 from jal.db.clock import today_finish
 from jal.widgets.helpers import ts2dt, restore_columns, grid_row_height
-from jal.widgets.delegates import ColoredAmountsDelegate, TickerIconsDelegate, long_fraction, ROW_LINES_ROLE
+from jal.widgets.delegates import ColoredAmountsDelegate, TickerIconsDelegate, TransactionTieDelegate, \
+    long_fraction, ROW_LINES_ROLE, TRANSACTION_ROLE
 from jal.widgets.theme import Theme, Meaning
 from jal.universal_cache import UniversalCache
 
@@ -22,6 +23,7 @@ class OperationsModel(QAbstractTableModel):
         self._amount_delegate = None
         self._total_delegate = None
         self._currency_delegate = None
+        self._tie_delegate = None
         self._data = []
         self._cache = UniversalCache()
         self._begin = 0
@@ -56,6 +58,9 @@ class OperationsModel(QAbstractTableModel):
             return self._cache.get_data(self._fetch_column_text, (row, index.column())) # operation is too heavy to be an argument for caching -> use row id
         if role == Qt.DecorationRole and index.column() == 0:
             return operation.icon()
+        if role == TRANSACTION_ROLE:
+            number = operation.transaction() if operation is not None else ''
+            return [number, odata['timestamp']] if number else None
         if role == ROW_LINES_ROLE:
             # How tall this row was made, in lines - so that a column holding fewer values than that puts them on
             # the first lines instead of in the middle of the height the other columns asked for.
@@ -129,6 +134,9 @@ class OperationsModel(QAbstractTableModel):
         self._amount_delegate = ColoredAmountsDelegate(self._view)
         self._total_delegate = ColoredAmountsDelegate(self._view, colors=False, signs=False)
         self._currency_delegate = TickerIconsDelegate(self._view)
+        self._tie_delegate = TransactionTieDelegate(self._view)
+        for column in (0, 1, 2):                                          # Timestamp, Account, Notes
+            self._view.setItemDelegateForColumn(column, self._tie_delegate)
         self._view.setItemDelegateForColumn(3, self._amount_delegate)     # Amount
         self._view.setItemDelegateForColumn(4, self._total_delegate)      # Balance
         self._view.setItemDelegateForColumn(5, self._currency_delegate)   # Currency

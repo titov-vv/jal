@@ -8,15 +8,17 @@ from decimal import Decimal
 
 import pytest
 
+from PySide6.QtCore import QSortFilterProxyModel
 from PySide6.QtWidgets import QTableView
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo
 from tests.helpers import d2t, create_stocks, create_trades, create_quotes, create_bridges, \
-    create_cross_chain_swaps
+    create_cross_chain_swaps, create_coupons
 from jal.db.ledger import Ledger
 from jal.db.account import JalAccountCreator
-from jal.db.operations import LedgerTransaction, AssetPayment, ChainAction
+from jal.db.operations import LedgerTransaction, AssetPayment, ChainAction, Swap, Conversion, Transfer, Bridge
 from jal.db.operations_model import OperationsModel
+from jal.widgets.delegates import transaction_link
 
 
 # One of every operation that has a fee part, each carrying a transaction hash, plus a stand-alone gas payment.
@@ -48,14 +50,18 @@ def _ledger_with_every_fee(gas_symbol, asset):
                                'fee_asset': gas_symbol, 'fee_qty': 0.5, 'note': 'a note'}])
 
 
-# The list as the operations table draws it: every row, as (operation, [Timestamp, Account, Notes]).
 @pytest.fixture
-def drawn_rows(prepare_db_fifo):
+def every_fee(prepare_db_fifo):
     JalAccountCreator(currency_id=2, number='U2', name='Other', investing=1, organization=1).commit()
     create_stocks([('A', 'Asset A'), ('B', 'Asset B'), ('GAS', 'Native coin')], currency_id=2)  # 4, 5 and 6
     create_quotes(4, 2, [(d2t(220201), 150.0), (d2t(220207), 150.0)])   # the two swaps are valued at their date
     _ledger_with_every_fee(gas_symbol=6, asset=4)
     Ledger().rebuild(from_timestamp=0)
+
+
+# The list as the operations table draws it: every row, as (operation, [Timestamp, Account, Notes]).
+@pytest.fixture
+def drawn_rows(every_fee):
     model = OperationsModel(QTableView())
     model.setDateRange(0, d2t(220301))
     rows = []
@@ -121,3 +127,133 @@ def test_a_chain_action_keeps_its_hash(drawn_rows):
     assert timestamp.endswith("\n# 0xstandalone")
     cost, (cost_timestamp, _account, _description) = [x for x in rows if x[0].is_fee_row()][0]
     assert "0xstandalone" not in cost_timestamp
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# A filter that hides the source rows a test names, the way the search string of the operations table hides rows.
+class _HidingProxy(QSortFilterProxyModel):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.hidden = lambda row: False
+
+    def filterAcceptsRow(self, source_row, source_parent):
+        return not self.hidden(source_row)
+
+
+# The operations table as the main window builds it: the model behind a filtering proxy, with its delegates set.
+def _table(end: int):
+    view = QTableView()
+    model = OperationsModel(view)
+    proxy = _HidingProxy(view)
+    proxy.setSourceModel(model)
+    view.setModel(proxy)
+    model.configureView()
+    model.setDateRange(0, end)
+    return view, model, proxy
+
+
+# Every visible row as ((otype, opart), (tied above, tied below, same account above)).
+def _links(view, model) -> list:
+    proxy = view.model()
+    rows = []
+    for row in range(proxy.rowCount()):
+        index = proxy.index(row, 0)
+        odata = model._data[proxy.mapToSource(index).row()]
+        rows.append(((odata['otype'], odata['opart']), transaction_link(index)))
+    return rows
+
+
+_ALONE = (False, False, False)
+_LEADS = (False, True, False)
+
+
+# Rows of one transaction and one second are drawn as a group: a fee under its operation, a transfer's legs under
+# each other. A leg that arrives in another second or names no transaction stands alone, as a row of its own.
+def test_rows_of_one_transaction_are_tied(every_fee):
+    view, model, _ = _table(d2t(220301))
+    T = LedgerTransaction
+    assert _links(view, model) == [
+        ((T.IncomeSpending, 0), _ALONE), ((T.Trade, 0), _ALONE), ((T.Trade, 0), _ALONE),
+        ((T.Swap, Swap.Whole), _LEADS), ((T.Swap, Swap.Fee), (True, False, True)),
+        ((T.Conversion, Conversion.Whole), _LEADS), ((T.Conversion, Conversion.Fee), (True, False, True)),
+        ((T.Transfer, Transfer.Outgoing), _LEADS),
+        ((T.Transfer, Transfer.Fee), (True, True, False)),         # the payer alone is not what the leg above says
+        ((T.Transfer, Transfer.Incoming), (True, False, False)),   # neither is the arriving end
+        ((T.Bridge, Bridge.Outgoing), _LEADS), ((T.Bridge, Bridge.Fee), (True, False, True)),
+        ((T.Bridge, Bridge.Incoming), _ALONE),                      # another second, and no hash of its own
+        ((T.ChainAction, ChainAction.Whole), _LEADS), ((T.ChainAction, ChainAction.Fee), (True, False, True)),
+        ((T.Swap, Swap.Outgoing), _LEADS), ((T.Swap, Swap.Fee), (True, False, True)),
+        ((T.Swap, Swap.Incoming), _ALONE)]
+
+
+# number() is blank on a fee row, so the group needs the transaction from an accessor that is not
+def test_a_fee_row_still_knows_its_transaction(drawn_rows):
+    fees = [op for op, _ in drawn_rows if op.is_fee_row()]
+    assert [op.transaction() for op in fees] == ['0xswap', '0xconversion', '0xtransfer', '0xbridge',
+                                                 '0xstandalone', '0xleg']
+    assert all([op.number() == '' for op in fees])
+
+
+# The tie is a property of the rows the view SHOWS: a filter that hides the head of a group leaves the rest of it
+# joined to nothing that is gone.
+def test_a_hidden_row_breaks_the_tie(every_fee):
+    view, model, proxy = _table(d2t(220301))
+    swap = lambda row: model._data[row]['otype'] == LedgerTransaction.Swap and model._data[row]['opart'] == Swap.Whole
+    proxy.hidden = swap
+    proxy.invalidate()
+    links = _links(view, model)
+    assert ((LedgerTransaction.Swap, Swap.Whole), _LEADS) not in links
+    assert links[3] == ((LedgerTransaction.Swap, Swap.Fee), _ALONE)
+    transfer = lambda row: model._data[row]['otype'] == LedgerTransaction.Transfer \
+                           and model._data[row]['opart'] == Transfer.Fee
+    proxy.hidden = transfer
+    proxy.invalidate()
+    links = _links(view, model)
+    assert ((LedgerTransaction.Transfer, Transfer.Outgoing), _LEADS) in links    # the remaining two still meet
+    assert ((LedgerTransaction.Transfer, Transfer.Incoming), (True, False, False)) in links
+
+
+# Operations of one kind in one second list their parts one kind of part after another (A, B, A's fee, B's fee), so
+# a fee may stand beside another operation's row. The numbers differ and nothing is tied - the rows read as they did
+# before there were groups, instead of the fee being drawn under an operation it doesn't belong to.
+def test_interleaved_parts_stay_apart(prepare_db_fifo):
+    JalAccountCreator(currency_id=2, number='U2', name='Other', investing=1, organization=1).commit()
+    create_stocks([('A', 'Asset A'), ('B', 'Asset B'), ('GAS', 'Native coin')], currency_id=2)
+    second = d2t(220207)
+    create_cross_chain_swaps([{'ts': second, 'acc': 1, 'out_asset': 4, 'out_qty': 1.0, 'hash': f'0x{x}',
+                               'in_ts': d2t(220208), 'in_acc': 2, 'in_asset': 5, 'in_qty': 2.0,
+                               'fee_asset': 6, 'fee_qty': 0.5} for x in ('a', 'b')])
+    Ledger.refresh_sequence()
+    view, model, _ = _table(d2t(220207))
+    assert [x[0][1] for x in _links(view, model)[1:]] == [Swap.Outgoing, Swap.Outgoing, Swap.Fee, Swap.Fee]
+    assert [x[1] for x in _links(view, model)] == [_ALONE] * 5
+
+
+# The number of a broker statement groups as a hash does - the accrued interest paid with a bond sits above the
+# trade that bought it. A blank number and the same number in another second never do.
+def test_a_statement_number_groups_within_one_second(prepare_db_fifo):
+    create_stocks([('BOND', 'A bond')], currency_id=2)
+    create_coupons([(d2t(220301), 1, 4, -5.0, 0.0, '', '777')])
+    create_trades(1, [(d2t(220301), d2t(220303), 4, 1.0, 100.0, 0.0, '777'),
+                      (d2t(220302), d2t(220303), 4, 1.0, 100.0, 0.0, '777'),
+                      (d2t(220304), d2t(220304), 4, 1.0, 100.0, 0.0, ''),
+                      (d2t(220304), d2t(220304), 4, 2.0, 100.0, 0.0, ''),
+                      (d2t(220305), d2t(220305), 4, 1.0, 100.0, 0.0, ' '),
+                      (d2t(220305), d2t(220305), 4, 2.0, 100.0, 0.0, ' ')])
+    Ledger.refresh_sequence()
+    view, model, _ = _table(d2t(220401))
+    T = LedgerTransaction
+    assert _links(view, model) == [((T.IncomeSpending, 0), _ALONE),
+                                   ((T.AssetPayment, 0), _LEADS), ((T.Trade, 0), (True, False, True))] \
+        + [((T.Trade, 0), _ALONE)] * 5
+
+
+# The group is drawn by hand in the first column; drawing it must hold for a selected and a plain row alike.
+def test_a_group_is_painted(every_fee):
+    view, model, _ = _table(d2t(220301))
+    view.resize(900, 700)
+    assert not view.grab().isNull()
+    view.selectRow(4)   # the swap's fee - a tied row
+    assert not view.grab().isNull()
+    view.setEnabled(False)
+    assert not view.grab().isNull()

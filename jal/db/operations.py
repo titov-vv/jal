@@ -391,6 +391,10 @@ class LedgerTransaction(JalDB):
     def number(self):
         return '' if self.is_fee_row() else self._number
 
+    # The transaction this row belongs to, on a fee row as well - what the operations table groups rows by
+    def transaction(self) -> str:
+        return self._number.strip() if self._number else ''
+
     def amount(self):
         return 0
 

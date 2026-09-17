@@ -3,7 +3,7 @@ from decimal import Decimal, InvalidOperation
 from PySide6.QtWidgets import (QApplication, QWidget, QStyle, QStyledItemDelegate, QStyleOptionViewItem,
                                QLineEdit, QDateTimeEdit, QTreeView, QComboBox)
 from PySide6.QtCore import Qt, QModelIndex, QEvent, QLocale, QDateTime, QDate, QRect, QTime, QTimeZone
-from PySide6.QtGui import QDoubleValidator, QBrush, QIcon, QKeyEvent
+from PySide6.QtGui import QDoubleValidator, QBrush, QIcon, QKeyEvent, QPalette
 from PySide6.QtSql import QSqlQueryModel
 from jal.constants import IconOwner, Setup
 from jal.widgets.reference_selector import ReferenceSelectorWidget
@@ -500,6 +500,84 @@ class TaggedIconDelegate(GridLinesDelegate):
         if not self._mark(index).isNull():
             size.setWidth(size.width() + self._indent(option))
         return size
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The transaction a row belongs to as [number, timestamp], or None for a row that names none.
+TRANSACTION_ROLE = Qt.UserRole + 102
+
+
+# How a row joins its neighbours as the view shows them: (tied to the row above, tied to the row below, the row above
+# names the same account). Rows are tied by one number within one second. The neighbours are asked of the model the
+# index belongs to - the proxy of a filtered view - so a tie never points at a row the filter hid.
+def transaction_link(index) -> tuple:
+    this = index.data(TRANSACTION_ROLE)
+    if not this:
+        return False, False, False
+    tied = lambda other: bool(other) and list(other) == list(this)
+    above = index.siblingAtRow(index.row() - 1)
+    tied_above = tied(above.data(TRANSACTION_ROLE))
+    tied_below = tied(index.siblingAtRow(index.row() + 1).data(TRANSACTION_ROLE))
+    account = lambda x: str(x.siblingAtColumn(1).data() or '').split('\n')[0]
+    return tied_above, tied_below, tied_above and account(above) == account(index)
+
+
+# Draws the rows of one transaction as a group in the first three columns of the operations list. The first row stays
+# as it is; every next one loses what it repeats - the time, the number and an account equal to the one above - and
+# is tied to the first one by a line, with its own icon moved aside. Its notes are drawn as secondary text.
+class TransactionTieDelegate(GridLinesDelegate):
+    def initStyleOption(self, option, index):
+        super().initStyleOption(option, index)
+        above, _, same_account = transaction_link(index)
+        if not above:
+            return
+        if index.column() == 0:
+            option.text = ''
+            option.icon = QIcon()
+            option.features &= ~QStyleOptionViewItem.HasDecoration
+        elif index.column() == 1 and same_account:
+            # The style gets the lines joined by U+2028, and the lines below the account stay where they are
+            option.text = '\u2028'.join([''] + option.text.split('\u2028')[1:])
+        elif index.column() == 2 and (option.state & QStyle.State_Enabled) \
+                and not (option.state & QStyle.State_Selected):
+            for group in (QPalette.Active, QPalette.Inactive):
+                option.palette.setColor(group, QPalette.Text, Theme.text(Meaning.MUTED))
+
+    def paint(self, painter, option, index):
+        super().paint(painter, option, index)
+        if index.column() != 0:
+            return
+        above, below, _ = transaction_link(index)
+        if not above and not below:
+            return
+        own = QStyleOptionViewItem(option)
+        QStyledItemDelegate.initStyleOption(self, own, index)   # the layout the row has when it isn't tied
+        widget = option.widget
+        style = widget.style() if widget is not None else QApplication.style()
+        icon_rect = style.subElementRect(QStyle.SE_ItemViewItemDecoration, own, widget)
+        if not icon_rect.isValid():
+            return
+        x = icon_rect.center().x()
+        painter.save()
+        pen = painter.pen()
+        if not (option.state & QStyle.State_Enabled):
+            pen.setColor(option.palette.color(QPalette.Disabled, QPalette.Text))
+        elif option.state & QStyle.State_Selected:
+            pen.setColor(option.palette.highlightedText().color())
+        else:
+            pen.setColor(Theme.text(Meaning.MUTED))
+        painter.setPen(pen)
+        if not above:   # the first row of a group only starts the line below its icon
+            painter.drawLine(x, icon_rect.bottom() + 1, x, option.rect.bottom())
+        else:
+            y = icon_rect.center().y()
+            painter.drawLine(x, option.rect.top(), x, option.rect.bottom() if below else y)
+            shift = icon_rect.width() + option.fontMetrics.horizontalAdvance(" ")
+            painter.drawLine(x, y, icon_rect.left() + shift - 1, y)
+            icon = index.data(Qt.DecorationRole)
+            if isinstance(icon, QIcon) and not icon.isNull():
+                icon.paint(painter, icon_rect.translated(shift, 0), Qt.AlignCenter, item_icon_mode(option))
+        painter.restore()
 
 
 # ----------------------------------------------------------------------------------------------------------------------
