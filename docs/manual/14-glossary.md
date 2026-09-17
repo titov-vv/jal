@@ -5,8 +5,17 @@
 **Account** — a place your money or assets sit: a bank account, a card, cash, a brokerage account, a
 crypto wallet, a term deposit. Each holds exactly one currency.
 
+**Action** — an operation recording a blockchain transaction that moved no value but still cost gas:
+an approval, a failed call, a command to a position.
+
 **Asset** — anything you can own a quantity of: a share, a fund, a bond, a coin. Currencies are
 assets too.
+
+**Asset income** — an operation recording an asset itself arriving: a stock dividend, vested shares,
+a staking reward. Compare *asset payment*, where money arrives on account of an asset.
+
+**Asset payment** — an operation recording money paid, or charged, on account of an asset: a
+dividend, a bond coupon, an asset fee or tax.
 
 **Base currency** — see *reporting currency*.
 
@@ -18,9 +27,6 @@ spending reports total by them.
 
 **Closed deal** — a purchase matched with a sale, and the profit that resulted. Listed in the *Deals
 by account* report.
-
-**Conversion** — an operation recording one asset becoming another **without** realising a profit:
-wrapping a coin, depositing into a lending protocol. The cost basis carries across. Compare *swap*.
 
 **Corporate action** — a company changing your holding without a trade: a split, a merger, a
 spin-off, a symbol change, a delisting.
@@ -34,7 +40,8 @@ does not import arrivals below the dust threshold.
 **FIFO** — *first in, first out*: when you sell, the oldest lots you hold are the ones sold. This is
 how JAL computes the profit of a deal.
 
-**Gas fee** — what a blockchain charges to process a transaction.
+**Gas fee** — what a blockchain charges to process a transaction. Recorded as a fee row under the
+operation it paid for, or as the cost of an *action* when the transaction moved nothing.
 
 **Investing account** — an account marked as able to hold assets and not only money.
 
@@ -50,8 +57,8 @@ on an exchange. One asset may have several.
 **Lot** — one purchase of an asset, with its own date and its own cost, kept separately so that FIFO
 can match sales against it.
 
-**Operation** — one recorded event: a payment, a transfer, a trade, a dividend, a corporate action, a
-conversion, a swap, a bridge.
+**Operation** — one recorded event: a payment, a transfer, a trade, a dividend, an asset income, a
+corporate action, a wrapping, a swap, a bridge, an action.
 
 **Peer** — the other party to an operation: a shop, an employer, a bank, a person.
 
@@ -60,10 +67,16 @@ transfers* report until you say what the other end was.
 
 **Precision** — how many decimal places an account counts in. Two for money, more for crypto.
 
+**Protocol** — an attribute of an asset naming the venue its receipt token belongs to (*Aave v3*,
+*Fluid*). It is what lets a wrapping name itself and a wrapped position appear among staked positions.
+
 **Quote** — a price of an asset in a currency on a date. Exchange rates are quotes too.
 
 **Realised / unrealised** — profit is *realised* when the position is closed, and *unrealised* while
 you still hold it and the price has merely moved.
+
+**Receipt token** — a token a protocol gives back for what you deposited into it: an aToken, a vault
+share, a liquid-staking coin. Holding it *is* holding the position.
 
 **Reconciled** — you have compared an account with a statement up to a certain date and they agreed.
 A reminder to yourself; JAL colours balances that have not been confirmed lately.
@@ -80,7 +93,7 @@ tax calculations use it rather than the trade date.
 account of its own; see the *Staked positions* report.
 
 **Swap** — an operation exchanging one asset for another at a market rate, on one account. It
-**realises** a profit or a loss. Compare *conversion*.
+**realises** a profit or a loss. Compare *wrapping*.
 
 **Symbol** — see *listing*.
 
@@ -96,6 +109,10 @@ account of its own.
 spending.
 
 **Wallet** — an account that stands for one address on one blockchain.
+
+**Wrapping** — an operation recording one asset becoming another **without** realising a profit:
+depositing into a lending protocol and getting a receipt token, liquid staking, wrapping a coin. The
+cost basis carries across. Compare *swap*.
 
 ---
 

@@ -96,9 +96,17 @@ Every operation, oldest first — with a running **Balance** column so you can f
 line to line. The icon at the left says what kind of operation it is.
 
 Most operations take one line, but not all of them. An operation that moves two different assets at
-once — a swap, a bridge, a conversion — writes both of them into the same row, one above the other;
+once — a swap, a bridge, a wrapping — writes both of them into the same row, one above the other;
 and a fee, in money or in gas, is a row of its own underneath the operation that paid it. Selecting
 any of those rows opens the same operation in the editor below.
+
+Rows that belong to **one transaction** — the same number or transaction hash, at the same second — are
+drawn as a group. Only the first row shows the time and the number; the rows under it are tied to it
+by a line, show their own icon a little to the right, leave out the account where it merely repeats
+the row above, and write their notes in a lighter colour. A swap and its gas, a transfer's two ends and
+its fee, a reward claim that paid out several coins — each reads as one bracket. Grouping changes only
+how the rows look: every row is still there, in the same order, and still opens its own operation.
+Rows hidden by the search box break the group, so a line never points at something you cannot see.
 
 Three controls above the list decide what is shown:
 

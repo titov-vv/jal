@@ -48,7 +48,7 @@ Select one and press the **…** button to open it:
 | **Asset name** | The full name of the company or fund. |
 | **Type** | *Shares*, *Bonds*, *ETFs*, *Funds*, *Commodities*, *Derivatives*, *Forex*, *Crypto-currency*, *Money*. |
 | **Country** | Where the issuer is registered. Tax reports care about this. |
-| **Asset attributes** | Extra facts: a bond's *principal*, an *expiry* date, a *tag*, a CoinGecko id for a coin. |
+| **Asset attributes** | Extra facts: a bond's *principal*, an *expiry* date, a *tag*, a CoinGecko id for a coin, the *protocol* a receipt token belongs to (see [chapter 8](08-crypto.md#wrapped-positions)). |
 | **Symbols** | The listings: ticker, currency, exchange. **The exchange decides where prices are downloaded from.** |
 | **Identifiers** | ISIN, CUSIP, FIGI, contract addresses — how the asset is named in statements and on chains. |
 
@@ -76,7 +76,7 @@ Press **+ → Buy / Sell**:
 | **Asset** | The listing being traded. Its full name is shown beside the box. |
 | **Qty** | **Positive to buy, negative to sell.** |
 | **Price** | Per unit, in the account's currency. |
-| **Fee** | Commission, in the account's currency. |
+| **Fee** | Commission, in the account's currency. Press **+** to attach one, **−** to remove it. |
 
 JAL takes the money out of the account (or puts it in), moves the quantity, and remembers what each
 lot cost.
@@ -92,24 +92,41 @@ as profit, however much they have risen; they show as unrealised value in the
 
 ## Dividends, coupons and other payments
 
+An asset can pay you in two ways, and JAL keeps them apart: **money** paid on account of the asset
+(an *Asset Payment*), or **the asset itself** arriving (an *Asset Income*).
+
+### Asset Payment — money
+
 Press **+ → Asset Payment**:
 
 ![The dividend editor](img/op_dividend.png)
-
-Choose a **Type** and the rest of the form adapts:
 
 | Type | Use it for |
 |---|---|
 | **Dividend** | A cash dividend on shares. |
 | **Bond Interest** | A coupon. |
-| **Bond Amortization** | Part of a bond's principal being repaid. |
-| **Stock Dividend** | Shares paid instead of cash. You must state the price they were valued at — that becomes their cost. |
-| **Stock Vesting** | Shares granted to you, likewise valued at a stated price. |
-| **Fee / Tax** | A charge that belongs to an asset rather than to the account as a whole. |
-| *Staking reward, Gas fee, Reward, Dust attack, Token account rent…* | Crypto; see [chapter 8](08-crypto.md). |
+| **Asset fee/tax** | A charge that belongs to an asset rather than to the account as a whole — an ADR fee, a transaction tax. |
 
 **Dividend** is the gross amount and **Tax** is what the broker withheld; the account receives the
 difference. **Ex-Date** is optional and used by some tax reports. **#** is the broker's reference.
+**Fee** attaches a charge the payment cost, the same way as for a transfer.
+
+### Asset Income — the asset itself
+
+Press **+ → Asset Income**:
+
+![The asset income editor](img/op_asset_income.png)
+
+| Type | Use it for |
+|---|---|
+| **Stock Dividend** | Shares paid instead of cash. |
+| **Stock Vesting** | Shares granted to you. |
+| *Staking reward, Reward, Dust attack, Rebase adjustment, Token account rent returned* | Crypto; see [chapter 8](08-crypto.md#income-types-you-will-meet). |
+
+The quantity that arrived is labelled after the type — *Shares received*, *Coins received*, *Dust
+received*. For a stock dividend or vesting you also state the
+**Price** it was valued at — that becomes its cost; the other types are valued from the downloaded
+prices (a rebase adjustment at zero, as it only restates what you already held).
 
 ## Corporate actions
 

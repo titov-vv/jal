@@ -120,7 +120,10 @@ or to give it a picture.
 
 What you have staked, where, what it is worth, and what it has accrued but not yet paid out —
 including the [rewards that wait at a distributor](08-crypto.md#rewards-waiting-to-be-claimed) until
-you claim them. Right-click a position to rename it or to chart what it has accrued. See
+you claim them, and the [receipt tokens you hold in a wallet](08-crypto.md#wrapped-positions) (their
+*Accrued* is filled only for a rebasing token).
+
+![The staked positions report](img/report_staking.png) Right-click a position to rename it or to chart what it has accrued. See
 [chapter 8](08-crypto.md#staking).
 
 ## Unsettled transfers

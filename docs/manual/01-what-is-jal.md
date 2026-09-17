@@ -42,21 +42,23 @@ which is used to group them on screen and to decide what JAL offers you to do wi
 
 ### 2. Operations
 
-An **operation** is one thing that happened. JAL has eight kinds:
+An **operation** is one thing that happened. JAL has ten kinds:
 
 | Operation | What it records |
 |---|---|
 | **Income / Spending** | Money arriving from, or going to, the outside world |
 | **Transfer** | Money moving between two of *your own* accounts |
 | **Buy / Sell** | A trade: money turns into an asset, or an asset back into money |
-| **Asset Payment** | A dividend, a bond coupon, a staking reward — an asset paying you |
+| **Asset Payment** | Money paid on account of an asset: a dividend, a bond coupon, a fee or tax it carries |
+| **Asset Income** | The asset itself arriving: a stock dividend, vested shares, a staking reward |
 | **Corporate Action** | A company changing your shares: a split, a merger, a spin-off |
-| **Conversion** | One asset becoming another with the price you paid carried across |
+| **Wrapping** | One asset becoming another with the price you paid carried across — a deposit into a protocol and back |
 | **Swap** | One asset exchanged for another, on one account, at a market price |
 | **Bridge** | The same asset moving from one blockchain to another |
+| **Action** | A blockchain transaction that moved nothing but still cost gas: an approval, a failed call |
 
-The last three matter almost only to crypto users; see [chapter 8](08-crypto.md). Most people
-use the first four and nothing else.
+The last four matter almost only to crypto users; see [chapter 8](08-crypto.md). Most people
+use the first five and nothing else.
 
 ### 3. The ledger
 

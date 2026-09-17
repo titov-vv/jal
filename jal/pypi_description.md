@@ -11,11 +11,13 @@ It was designed to keep records of personal incomes/spendings and investments wi
     1. Generic income/spending operations that may be split into several categories
     2. Asset and money transfers between accounts (with currency conversion if required)
     3. Buy/Sell operation for securities (jal supports stocks, ETFs, options, partial support of bonds and futures)
-    4. Asset payments: dividends for stocks, interest and amortization for bonds, staking and lending rewards for crypto
+    4. Asset payments (dividends for stocks, interest for bonds) and asset income (stock dividends and vesting,
+       staking and lending rewards for crypto)
     5. Corporate actions for stocks (Split, Symbol change, Merger, Spin-Off, Stock dividend)
     6. Term deposits
-    7. Crypto lending deposits/withdrawals and staking
-    8. Swaps and cross-chain bridge transfers
+    7. Wrapping: crypto lending deposits/withdrawals and liquid staking, with the protocol named
+    8. Swaps, cross-chain bridge transfers and on-chain actions (approvals, failed transactions); gas is a fee of
+       the operation it paid for
 - crypto wallets on Ethereum, Arbitrum, Avalanche, Bitcoin, Solana, Tron and Hyperliquid: operations are fetched from
 the chain, staked positions are tracked separately and rewards that are earned but not paid out yet are reported
 - reports:

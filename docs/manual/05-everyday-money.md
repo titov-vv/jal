@@ -58,8 +58,9 @@ never earned and never spent.
 * **To** — date, account, amount arriving. The two dates can differ: a bank transfer that leaves on
   Friday and arrives on Monday is recorded exactly like that. The small **↓** buttons copy the date
   and the amount from the upper line to the lower one.
-* **Fee** — the box below the dates chooses *No fee*, a fee in money, or gas (for blockchains).
-  A fee is charged to the account you name, and lands in the built-in *Fees* category.
+* **Fee** — press **+** to attach a fee and **−** to remove it. Choose *Fee* for a charge in money or
+  *Gas* for a blockchain charge (then pick the coin it was paid in), the account it was taken **from**,
+  and the amount. A fee lands in the built-in *Fees* category.
 * **#** and **Note** — a reference number and a remark.
 
 ### Changing currency

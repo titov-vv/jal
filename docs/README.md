@@ -19,9 +19,11 @@ JAL is tailored for those who want a clear insight into their personal incomes, 
 - Generic income/spending with multi-category split.
 - Asset and money transfers, including currency conversion.
 - Trading operations: Buy/Sell securities (stocks, ETFs, options, and more).
-- Dividends for stocks and bond interest payments (including bond amortization).
+- Dividends for stocks and bond interest payments.
+- Asset income: stock dividends and vesting, staking and other crypto rewards.
 - Corporate actions for stocks.
-- Basis-preserving asset conversions (crypto wrapping, lending deposits/withdrawals, liquid staking).
+- Wrapping: basis-preserving moves into and out of a protocol (lending deposits/withdrawals, liquid staking).
+- Swaps, cross-chain bridges and on-chain actions (approvals, failed transactions) with their gas.
 ### Reports
 - Term deposits: what is open, what each of them earned, and the actions that manage them.
 - Daily history of account balance.

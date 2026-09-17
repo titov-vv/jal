@@ -23,7 +23,7 @@ from jal.db.category import JalCategory
 from jal.db.peer import JalPeer
 from jal.db.tag import JalTag
 from jal.db.deposit import JalDepositBox
-from jal.db.operations import LedgerTransaction, AssetPayment, ChainAction
+from jal.db.operations import LedgerTransaction, AssetPayment, AssetIncome, ChainAction
 from jal.db.ledger import Ledger
 from jal.db.residence import JalResidence
 from jal.db.settings import JalSettings
@@ -146,7 +146,9 @@ def create_assets() -> dict:
         ('eth', PredefinedAsset.Crypto, "Ethereum", '', "ETH", USD, AssetLocation.ETH_BLOCKCHAIN,
          SymbolId.ETH_ADDRESS, ''),
         ('usdc', PredefinedAsset.Crypto, "USD Coin", '', "USDC", USD, AssetLocation.ETH_BLOCKCHAIN,
-         SymbolId.ETH_ADDRESS, "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48")
+         SymbolId.ETH_ADDRESS, "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"),
+        ('ausdc', PredefinedAsset.Crypto, "Aave Ethereum USDC", '', "aEthUSDC", USD, AssetLocation.ETH_BLOCKCHAIN,
+         SymbolId.ETH_ADDRESS, "0x98c23e9d8f34fefb1b7bd6a91b7ff122f4e16f5c")
     ]
     for key, type_id, name, country, symbol, currency, location, id_type, id_value in definitions:
         creator = JalAssetCreator(type_id, name, country=country)
@@ -155,6 +157,9 @@ def create_assets() -> dict:
             creator.add_identifier(symbol_id, id_type, id_value)
         assets[key] = creator.commit().id()
     JalAsset(assets['mrail']).update_data({AssetData.PrincipalValue: '1000'})
+    # A receipt token names its venue; the attribute has no setter of its own, it is entered by hand in the asset dialog
+    JalDB._exec("INSERT INTO asset_data(asset_id, datatype, value) VALUES(:a, :t, 'Aave v3')",
+                [(":a", assets['ausdc']), (":t", AssetData.Protocol)], commit=True)
     return assets
 
 
@@ -187,6 +192,7 @@ def create_quotes(assets: dict) -> None:
                [2380, 2455, 2310, 2520, 2610, 2545, 2680, 2790, 2705, 2860, 2975, 2890,
                 3040, 3125, 3060, 3210, 3305, 3240, 3380, 3455])
     set_quotes(assets['usdc'], USD, "2025-01-01", [1] * 20)
+    set_quotes(assets['ausdc'], USD, "2025-01-01", [1] * 20)
     set_quotes(assets['btc'], USD, "2025-01-01",
                [42800, 44150, 41900, 45600, 47300, 46050, 48900, 51200, 49700, 52800, 55100, 53400,
                 56900, 58300, 57100, 60400, 62800, 61200, 64500, 66900])
@@ -348,6 +354,20 @@ def create_crypto(accounts: dict, assets: dict) -> None:
                                   'account_id': wallet, 'number': "0x6b1f0e9a3d47c82b5fe1409d7ac36b28d5e0f194",
                                   'symbol_id': sid(assets['usdc'], USD), 'note': "approve(Uniswap v3 Router)",
                                   'fee': Decimal('0.0008'), 'fee_symbol_id': sid(assets['eth'], USD),
+                                  'fee_account': wallet})
+    # A deposit into a lending protocol - a wrapping that names its venue - and a claimed reward, each with its gas
+    LedgerTransaction.create_new(LedgerTransaction.Conversion,
+                                 {'timestamp': ts("2026-03-10 09:25"), 'account_id': wallet,
+                                  'tx_hash': "0x2c7e58d1a94f30b6e1d07c5a8f3b92e46d15a0c7",
+                                  'out_symbol_id': sid(assets['usdc'], USD), 'out_qty': Decimal('312.5'),
+                                  'in_symbol_id': sid(assets['ausdc'], USD), 'in_qty': Decimal('312.5'),
+                                  'fee_symbol_id': sid(assets['eth'], USD), 'fee_qty': Decimal('0.0012'),
+                                  'note': "Aave v3 Pool"})
+    LedgerTransaction.create_new(LedgerTransaction.AssetIncome,
+                                 {'timestamp': ts("2026-07-01 18:10"), 'type': AssetIncome.Reward,
+                                  'account_id': wallet, 'number': "0x5a93e0c4b71d28f6a3e9b05d4c17f82a6e30d9b1",
+                                  'symbol_id': sid(assets['usdc'], USD), 'amount': Decimal('12.40'),
+                                  'note': "Merkl", 'fee': Decimal('0.0005'), 'fee_symbol_id': sid(assets['eth'], USD),
                                   'fee_account': wallet})
     # A withdrawal whose far end is not known yet - what the Unsettled transfers report is worked through
     asset_transfer(ts("2026-08-18 21:05"), wallet, None, assets['eth'], '0.05',

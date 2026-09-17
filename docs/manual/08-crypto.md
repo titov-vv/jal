@@ -45,7 +45,7 @@ day will then recognize what you have already entered instead of importing it a 
 
 If you have more than one wallet on that chain, JAL asks which of them to read. It then downloads
 everything that has happened at those addresses since the last time you asked, and turns it into
-operations: transfers in and out, swaps, gas fees, staking rewards. Each wallet remembers how far it
+operations: transfers in and out, swaps, wrappings, staking rewards, and the gas each of them cost. Each wallet remembers how far it
 was read, so the next fetch continues from there instead of starting over.
 
 ### API keys
@@ -79,17 +79,26 @@ Tokens that were refused are listed in **Data → Token blacklist**, with the ch
 whether JAL blacklisted it by itself. Delete a row there and the next fetch will import that token
 after all.
 
-## The three crypto operations
+## The four crypto operations
 
-Beside the ordinary Buy/Sell and Transfer, crypto needs three more. Which of them fits depends on
-one question: **did the value change hands, and did it stay on one account?**
+Beside the ordinary Buy/Sell and Transfer, crypto needs four more. For the three that move value,
+two questions decide which one fits: **was the asset disposed of at a market price, or does its cost
+simply carry over?** and **did it stay on one account, or cross to another?**
+
+|  | cost carried over | disposed of at market |
+|---|---|---|
+| **one account, one moment** | **Wrapping** | **Swap** |
+| **two accounts, two moments** | **Bridge** (same asset only) | **Swap** with *Cross chain* |
+
+The fourth, **Action**, records a transaction that moved no value at all.
 
 ![A wallet in the operations list](img/crypto_operations.png)
 
 A wallet's operations read a little differently from a bank account's, as the picture shows. An
 operation that touches two assets keeps both in one row — the ETH that left above the USDC that
-arrived — and the gas it cost is a row of its own below it, with the operation's own note in
-brackets. Amounts too small for two decimals are written compactly (`0.0₂21` is 0.0021), and an
+arrived — and the gas it cost is a row of its own below it, with the fuel-pump icon and the
+operation's own note in brackets. Rows of one transaction are drawn as a group, tied under the first
+one (see [chapter 4](04-main-window.md#the-operations-list)). Amounts too small for two decimals are written compactly (`0.0₂21` is 0.0021), and an
 underlined figure is a rounded one you can hover over to see in full; both are explained in
 [chapter 4](04-main-window.md#how-the-amounts-are-shown).
 
@@ -101,20 +110,28 @@ You gave up X of one asset and received Y of another, at whatever rate the marke
 USDC on a decentralised exchange. It is a sale and a purchase in one, and it **realises a profit or a
 loss** on what you gave up, exactly as selling for cash would.
 
-Tick **Include fee** to record the gas or the venue's cut. Tick **Cross chain** when what you
+Press **+** next to **Fee** to record the gas, and choose the coin it was paid in. Tick **Cross chain** when what you
 received arrived on a *different* account (a different chain) and possibly minutes later — the lower
 line then gets its own date and account.
 
-### Conversion — one asset becoming another, at no gain
+### Wrapping — one asset becoming another, at no gain
 
-![The conversion editor](img/op_conversion.png)
+![The wrapping editor](img/op_conversion.png)
 
-Sometimes an asset merely changes form: wrapping ETH into WETH, depositing into a lending protocol
-and getting a receipt token, staking a coin for its liquid-staking equivalent. Nothing has been
-realised — you own the same value in a different wrapper — so JAL carries the **cost basis** across
-and books no profit. The editor says so on its own face.
+Sometimes an asset merely changes form: depositing into a lending protocol and getting a receipt
+token back (supply / withdraw), staking a coin for its liquid-staking equivalent (stake / unstake),
+wrapping ETH into WETH. Nothing has been realised — you own the same position in a different wrapper
+— so JAL carries the **cost basis** across and books no profit. The editor says so on its own face.
+The quantity may still change (a vault share is not worth exactly one coin); that is not a gain or a
+loss, and not an error.
 
-Choosing *Conversion* where a *Swap* belongs (or the other way round) is the one modelling mistake
+A wrapping **names the venue** it went through when one side of it is a receipt token whose asset
+carries the **protocol** attribute (see [chapter 6](06-investments.md#assets-and-their-listings)): the row reads
+*Supply to Aave v3*, *Withdraw from Fluid*, or *Move: A -> B* when a position moves between two
+protocols. When neither side is marked it is simply called *Wrapping*. Imports also write the name of
+the protocol into the note.
+
+Choosing *Wrapping* where a *Swap* belongs (or the other way round) is the one modelling mistake
 here that matters, because it decides whether a taxable profit exists.
 
 ### Bridge — the same asset, another chain
@@ -128,6 +145,28 @@ The two ends are often fetched at different times, from different chains. JAL th
 **half bridge** — the departure alone — and shows the other end as pending. When the arrival turns
 up, right-click the operation and choose **Match cross-chain legs…**; JAL looks for the matching leg
 itself (asking the bridging service that routed it, where it can) and offers what it found.
+
+### Action — a transaction that moved nothing
+
+![The action editor](img/op_chain_action.png)
+
+Some transactions cost gas without moving any value: approving a contract to spend a token, a call
+that failed, a command to a position such as starting an unstaking cooldown. Such a transaction is
+an **Action**. It has an **Event** (its type, below), the **Tx hash**, the **Account** that signed it,
+optionally the **Subject** asset it concerned, and its **Cost** — the gas, or on Solana the rent.
+
+| Event | What it is |
+|---|---|
+| **Authorization** | A right granted to a contract — an ERC-20 approval, an operator switched on |
+| **Failed transaction** | It reverted. Its description is struck through; the gas was still spent |
+| **Position command** | A command to a position that moves nothing by itself — a cooldown, an unstake request |
+| **No-op** | It did what was asked and nothing moved — a claim that claimed zero |
+| **Contract call** | Anything the import cannot yet tell apart |
+| **Token account rent** | Solana coins locked as the deposit for holding a token. Shown as *Rent*, not gas, because it comes back when the token account is closed |
+
+Gas that **did** buy something is not an Action: it is the fee of the swap, wrapping, bridge,
+transfer or reward claim it paid for, and appears under it. The note of an imported Action names the
+call it made — `approve(Chainlink CCIP Router)`, `cooldown() @ Aave Safety Module`.
 
 ## Transfers with one end missing
 
@@ -159,8 +198,17 @@ protocol, the venue). Unstaking is settled the same way, in the opposite directi
 
 **Reports → Staked positions** then lists what is staked where, what it is worth, and — for the
 venues whose balances JAL can read on chain — how much the position has **accrued** but not yet paid
-out. Rewards that *were* paid out arrive in your wallet and are recorded there as an *Asset Payment*
+out. Rewards that *were* paid out arrive in your wallet and are recorded there as an *Asset Income*
 of type **Staking reward**.
+
+### Wrapped positions
+
+A receipt token held in the wallet itself — an aToken, a vault share, a liquid-staking coin — is a
+position too, and the same report lists it: one row per wallet and receipt token whose asset carries
+the **protocol** attribute. *Staked since* is the date of the oldest lot still held, and *Accrued* is
+filled only for a rebasing token (one whose quantity grows); a share token grows in price instead, and
+that is already in its *Value*. These positions **stay in the Asset Portfolio** as well, which is
+where their cost and unrealised profit are shown.
 
 A position is named when it is created, from whatever the import recognised, and that guess is
 usually worth correcting: right-click the row and choose **Rename position…** to give it a name of
@@ -176,7 +224,7 @@ distributor, with the amount in the **Accrued** column and no position behind it
 They are read from the chain together with the balances, by **Import → Download quotes…** with the
 chains ticked. Right-click such a row for **Show claim history** — how the owed amount has grown
 since JAL started watching it. Nothing is booked: when you finally claim, the coins arrive in the
-wallet and are recorded as the payment they are.
+wallet and are recorded as the income they are, with the claim's gas as its fee.
 
 ## Crypto prices
 
@@ -186,20 +234,20 @@ Crypto prices come from DeFiLlama and need no key. They are downloaded with ever
 A coin that lives on no chain JAL supports (or that you hold on an exchange) is priced through its
 **CoinGecko id**, which you put in the asset's attributes — see [chapter 6](06-investments.md).
 
-## Payment types you will meet
+## Income types you will meet
 
-Blockchain imports create *Asset Payment* operations of kinds an ordinary investor never sees:
+Blockchain imports create *Asset Income* operations of kinds an ordinary investor never sees:
 
 | Type | What it is |
 |---|---|
-| **Gas fee** | Coins burned by a transaction that moved nothing — an approval, a failed call |
 | **Staking reward** | Coins earned by staking or lending |
 | **Reward** | Coins received for something else — a referral, a rebate, a bonus |
 | **Dust attack** | An unsolicited crumb, recorded so the balance still matches the chain |
 | **Rebase adjustment** | Quantity a rebasing token gained with no transaction behind it |
-| **Token account rent / rent returned** | Solana's deposit for holding a token, and its return |
+| **Token account rent returned** | Solana's token-account deposit coming back (the deposit itself is an *Action*) |
 
-You will rarely create these by hand; the fetchers do it.
+You will rarely create these by hand; the fetchers do it. Gas is no longer a type of its own: it is
+the fee of whatever it paid for, or the cost of an [Action](#action--a-transaction-that-moved-nothing).
 
 ---
 

@@ -142,6 +142,12 @@ def capture_operation_editors(window, operations):
          lambda otype, oid: otype == LedgerTransaction.AssetPayment, "op_dividend"),
         (6, "2025-01-01", "2026-12-31",
          lambda otype, oid: otype == LedgerTransaction.Swap, "op_swap"),
+        (6, "2025-01-01", "2026-12-31",
+         lambda otype, oid: otype == LedgerTransaction.Conversion, "op_conversion"),
+        (6, "2025-01-01", "2026-12-31",
+         lambda otype, oid: otype == LedgerTransaction.AssetIncome, "op_asset_income"),
+        (6, "2025-01-01", "2026-12-31",
+         lambda otype, oid: otype == LedgerTransaction.ChainAction, "op_chain_action"),
     ]
     for account_id, first, last, predicate, name in editors:
         operations.ui.ChooseAccountBtn.account_id = account_id
@@ -179,7 +185,6 @@ def capture_context_menu(call, name: str) -> None:
 def capture_blank_editors(window, operations):
     from jal.db.operations import LedgerTransaction
     blanks = [(LedgerTransaction.CorporateAction, "op_corporate_action"),
-              (LedgerTransaction.Conversion, "op_conversion"),
               (LedgerTransaction.Bridge, "op_bridge")]
     operations.ui.ChooseAccountBtn.account_id = 4
     for operation_type, name in blanks:
@@ -230,7 +235,8 @@ def capture_reports(window):
                ("AssetsPaymentsReportWindow", "report_payments", 4, (1120, 260)),
                ("CategoryReportWindow", "report_by_category", None, (1120, 420)),
                ("TagReportWindow", "report_by_tag", None, (1120, 420)),
-               ("UnsettledTransfersReportWindow", "report_unsettled", None, (960, 220))]
+               ("UnsettledTransfersReportWindow", "report_unsettled", None, (960, 220)),
+               ("StakingReportWindow", "report_staking", None, (1120, 260))]
     for window_class, name, account_id, size in reports:
         found = [x for x in window.reports.items if x['window_class'] == window_class]
         if not found:
