@@ -338,9 +338,12 @@
  <tabstops>
   <tabstop>timestamp_editor</tabstop>
   <tabstop>settlement_editor</tabstop>
+  <tabstop>number</tabstop>
   <tabstop>account_widget</tabstop>
   <tabstop>symbol_widget</tabstop>
+  <tabstop>qty_edit</tabstop>
   <tabstop>price_edit</tabstop>
+  <tabstop>fee_widget</tabstop>
   <tabstop>note</tabstop>
   <tabstop>commit_button</tabstop>
   <tabstop>revert_button</tabstop>
