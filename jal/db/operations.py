@@ -570,6 +570,10 @@ class FeeCarrier:
             return False
         return self._opart == self.Fee or self._opart > self.ExtraFee
 
+    # The glyph a fee row wears - gas gets its own, every other kind shares the plain fee icon.
+    def fee_icon(self):
+        return JalIcon.GAS_FEE if self._part_fee().kind() == FeeKind.Gas else JalIcon.FEE
+
     # The parts the fees of this operation contribute, read from 'fees'. 'moment' is the column of the operation's
     # own table the fee is charged at - a transfer's fee rides its withdrawal, a bridge's gas the leg that starts
     # the crossing - and not 'operations.timestamp', which is the EARLIER of two legs and so not always the same.
@@ -832,7 +836,7 @@ class AssetPaymentBase(FeeCarrier, LedgerTransaction):
             self._account = self._part_fee().account()
             self._account_name = self._account.name()
             self._account_currency = JalAsset(self._account.currency()).symbol()
-            self._icon = JalIcon[JalIcon.FEE]
+            self._icon = JalIcon[self.fee_icon()]
             self._oname = self.tr("Payment fee")
             self._view_rows = 1
 
@@ -1496,7 +1500,7 @@ class Swap(FeeCarrier, LedgerTransaction):
         # and the fee part disposes of the gas coin instead - see Transfer.__init__ where a fee part does the same)
         self._asset = self._symbol.asset()
         icons = {Swap.Whole: JalIcon.SWAP, Swap.Outgoing: JalIcon.TRANSFER_ASSET_OUT,
-                 Swap.Incoming: JalIcon.TRANSFER_ASSET_IN, Swap.Fee: JalIcon.FEE}
+                 Swap.Incoming: JalIcon.TRANSFER_ASSET_IN, Swap.Fee: self.fee_icon()}
         names = {Swap.Whole: self.tr("Swap"), Swap.Outgoing: self.tr("Outgoing swap"),
                  Swap.Incoming: self.tr("Incoming swap"), Swap.Fee: self.tr("Swap fee")}
         self._icon = JalIcon[icons[self._opart]]
@@ -1708,10 +1712,8 @@ class Transfer(FeeCarrier, LedgerTransaction):
         icons = {
             (Transfer.Outgoing, True): JalIcon.TRANSFER_OUT,
             (Transfer.Incoming, True): JalIcon.TRANSFER_IN,
-            (Transfer.Fee, True): JalIcon.FEE,
             (Transfer.Outgoing, False): JalIcon.TRANSFER_ASSET_OUT,
             (Transfer.Incoming, False): JalIcon.TRANSFER_ASSET_IN,
-            (Transfer.Fee, False): JalIcon.FEE,
         }
         self.names = {
             (Transfer.Outgoing, True): self.tr("Outgoing transfer"),
@@ -1759,7 +1761,7 @@ class Transfer(FeeCarrier, LedgerTransaction):
         self._note = self._data['note']
         # Icon and name describe the transfer itself, so they are resolved from the transferred asset before the
         # fee part re-points self._asset/_account below
-        self._icon = JalIcon[self._deposit_box_icon() or icons[(opart, self._asset.id() == 0)]]
+        self._icon = JalIcon[self._deposit_box_icon() or icons.get((opart, self._asset.id() == 0), self.fee_icon())]
         self._oname = self.names[(opart, self._asset.id() == 0)]
         if self._opart == Transfer.Fee and self._part_fee().is_asset_fee():
             # A fee paid in an asset is withdrawn from the fee account, not from the account the transfer starts at.
@@ -2540,7 +2542,7 @@ class Conversion(FeeCarrier, LedgerTransaction):
         self._number = self._data['tx_hash']
         self._note = self._data['note']
         is_fee = self._opart == Conversion.Fee
-        self._icon = JalIcon[JalIcon.FEE if is_fee else JalIcon.CONVERSION]
+        self._icon = JalIcon[self.fee_icon() if is_fee else JalIcon.CONVERSION]
         self._oname = self.tr("Wrapping fee") if is_fee else self._wrapping_name()
         self._peer_id = self._account.organization()
         self._reconciled = self._account.reconciled_at() >= self._timestamp
@@ -2703,9 +2705,7 @@ class Bridge(FeeCarrier, LedgerTransaction):
         # Both legs wear the bridge itself - the asset-transfer arrows made a crossing look like any other
         # transfer. The leg is named by a corner dot, the same marker JalIcon.TRANSFER_ASSET_* use.
         icons = {Bridge.Outgoing: JalIcon.BRIDGE_OUT,
-                 Bridge.Incoming: JalIcon.BRIDGE_IN,
-                 Bridge.Fee: JalIcon.FEE,
-                 Bridge.InKindFee: JalIcon.FEE}
+                 Bridge.Incoming: JalIcon.BRIDGE_IN}
         self.names = {Bridge.Outgoing: self.tr("Outgoing bridge"),
                       Bridge.Incoming: self.tr("Incoming bridge"),
                       Bridge.Fee: self.tr("Bridge fee"),
@@ -2739,7 +2739,7 @@ class Bridge(FeeCarrier, LedgerTransaction):
         self._number = self._in_tx_hash if self._on_arrival() else self._out_tx_hash
         self._note = self._data['note']
         self._timestamp = self._in_timestamp if self._on_arrival() else self._out_timestamp
-        self._icon = JalIcon[icons[opart]]
+        self._icon = JalIcon[icons.get(opart, self.fee_icon())]
         self._oname = self.names[opart]
         if self._on_arrival():
             self._reconciled = self._has_in and self._in_account.reconciled_at() >= self._in_timestamp
@@ -3051,7 +3051,7 @@ class ChainAction(FeeCarrier, LedgerTransaction):
         self._asset = self._symbol.asset()
         self._account_name = self._account.name()
         self._account_currency = JalAsset(self._account.currency()).symbol()
-        self._icon = JalIcon[JalIcon.FEE if is_fee else icons[self._subtype]]
+        self._icon = JalIcon[self.fee_icon() if is_fee else icons[self._subtype]]
         self._oname = self._charge_name() if is_fee else self.names[self._subtype]
         self._peer_id = self._account.organization()
         self._reconciled = self._account.reconciled_at() >= self._timestamp
