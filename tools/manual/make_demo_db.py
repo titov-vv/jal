@@ -359,8 +359,8 @@ def create_crypto(accounts: dict, assets: dict) -> None:
     LedgerTransaction.create_new(LedgerTransaction.Conversion,
                                  {'timestamp': ts("2026-03-10 09:25"), 'account_id': wallet,
                                   'tx_hash': "0x2c7e58d1a94f30b6e1d07c5a8f3b92e46d15a0c7",
-                                  'out_symbol_id': sid(assets['usdc'], USD), 'out_qty': Decimal('312.5'),
-                                  'in_symbol_id': sid(assets['ausdc'], USD), 'in_qty': Decimal('312.5'),
+                                  'out_symbol_id': sid(assets['usdc'], USD), 'out_qty': Decimal('300'),
+                                  'in_symbol_id': sid(assets['ausdc'], USD), 'in_qty': Decimal('300'),
                                   'fee_symbol_id': sid(assets['eth'], USD), 'fee_qty': Decimal('0.0012'),
                                   'note': "Aave v3 Pool"})
     LedgerTransaction.create_new(LedgerTransaction.AssetIncome,

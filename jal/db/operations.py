@@ -3,7 +3,7 @@ from decimal import Decimal
 from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QIcon
 from jal.constants import Setup, BookAccount, PredefinedCategory, PredefinedAsset, PredefinedAccountType
-from jal.db.helpers import format_decimal
+from jal.db.helpers import format_decimal, remove_exponent
 from jal.db.db import JalDB
 import jal.db.account
 from jal.db.asset import JalAsset
@@ -1570,7 +1570,8 @@ class Swap(FeeCarrier, LedgerTransaction):
         if self._opart == Swap.Fee:
             note = f" ({self._note})" if self._note else ''
             return self.tr("Swap fee") + note
-        text = f"{self._out_qty} {self._out_symbol.symbol()} -> {self._in_qty} {self._in_symbol.symbol()}"
+        text = f"{remove_exponent(self._out_qty)} {self._out_symbol.symbol()} -> " \
+               f"{remove_exponent(self._in_qty)} {self._in_symbol.symbol()}"
         return text + "\n" + self._note
 
     def value_change(self, part_only=False) -> list:
@@ -2585,7 +2586,8 @@ class Conversion(FeeCarrier, LedgerTransaction):
         if self._opart == Conversion.Fee:
             note = f" ({self._note})" if self._note else ''
             return self.tr("Wrapping fee") + note
-        text = f"{self._out_qty} {self._out_symbol.symbol()} -> {self._in_qty} {self._in_symbol.symbol()}"
+        text = f"{remove_exponent(self._out_qty)} {self._out_symbol.symbol()} -> " \
+               f"{remove_exponent(self._in_qty)} {self._in_symbol.symbol()}"
         return text + "\n" + self._note
 
     def value_change(self, part_only=False) -> list:
@@ -2839,7 +2841,7 @@ class Bridge(FeeCarrier, LedgerTransaction):
         else:
             text = f"{out_s} -> {in_s}"
             if self._in_qty != self._out_qty:
-                text += " [" + self.tr("In-kind fee:") + f" {self._out_qty - self._in_qty} {in_s}]"
+                text += " [" + self.tr("In-kind fee:") + f" {remove_exponent(self._out_qty - self._in_qty)} {in_s}]"
         return text + "\n" + self._note
 
     def value_change(self, part_only=False) -> list:

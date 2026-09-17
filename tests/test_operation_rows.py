@@ -257,3 +257,35 @@ def test_a_group_is_painted(every_fee):
     assert not view.grab().isNull()
     view.setEnabled(False)
     assert not view.grab().isNull()
+
+
+# A quantity is stored in its canonical form, where a round number is spelled '3E+2' - so a row that prints one has
+# to write it out. It reads as a quantity of a coin and never as a power of ten, whatever the number is.
+def test_a_quantity_is_never_printed_in_exponent_form(drawn_rows):
+    exponents = [f"{op.name()}: {cells[2]!r}" for op, cells in drawn_rows if "E+" in cells[2] or "E-" in cells[2]]
+    assert exponents == []
+    swap = [cells[2] for op, cells in drawn_rows
+            if op.type() == LedgerTransaction.Swap and not op.is_fee_row()][0]
+    assert swap.startswith("10 A -> 20 B")
+    wrapping = [cells[2] for op, cells in drawn_rows
+                if op.type() == LedgerTransaction.Conversion and not op.is_fee_row()][0]
+    assert wrapping.startswith("10 A -> 10 B")
+
+
+# Writing it out is not rounding it: a fraction keeps every digit it has, and a bridge that kept part of what it
+# carried states the difference the same way.
+def test_a_fractional_quantity_keeps_its_digits(prepare_db_fifo):
+    JalAccountCreator(currency_id=2, number='U2', name='Other', investing=1, organization=1).commit()
+    create_stocks([('A', 'Asset A'), ('B', 'Asset B')], currency_id=2)   # 4 and 5
+    LedgerTransaction.create_new(LedgerTransaction.Conversion, {
+        'timestamp': d2t(220202), 'account_id': 1, 'tx_hash': '0x1', 'out_symbol_id': 4,
+        'out_qty': Decimal('0.5000'), 'in_symbol_id': 5, 'in_qty': Decimal('1234000'), 'note': ''})
+    create_bridges([{'out_ts': d2t(220204), 'out_acc': 1, 'out_qty': 100.0, 'out_hash': '0x2',
+                     'in_ts': d2t(220204), 'in_acc': 2, 'in_qty': 90.0, 'asset': 4}])
+    Ledger.refresh_sequence()
+    model = OperationsModel(QTableView())
+    model.setDateRange(0, d2t(220301))
+    texts = [model.data_text(LedgerTransaction.get_operation(x['otype'], x['oid'], x['opart']), 2)
+             for x in model._data]
+    assert any([x.startswith("0.5 A -> 1234000 B") for x in texts])
+    assert any(["[" + LedgerTransaction.tr("In-kind fee:") + " 10 A]" in x for x in texts])
