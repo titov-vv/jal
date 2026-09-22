@@ -10,7 +10,7 @@ from PySide6.QtWidgets import QWidget
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_ledger
 from tests.test_at_qr import LIDL
-from tests.test_receipt_inbox import make_jalr
+from tests.test_receipt_inbox import make_jalr, FNS
 from constants import PredefinedCategory
 from jal.db.db import JalDB
 from jal.db.clock import local_zone
@@ -18,6 +18,7 @@ from jal.db.settings import JalSettings
 from jal.db.operations import IncomeSpending
 from jal.data_import.receipt_api.pt_at_qr import AtQr
 from jal.data_import.receipt_api.offline_receipt import ReceiptOffline
+from jal.data_import.receipt_api.ru_fns import ReceiptRuFNS
 from jal.data_import.shop_receipt import ImportReceiptDialog, RECEIPT_INBOX_SETTING
 
 LISBON_SUMMER = timezone(timedelta(hours=1))
@@ -154,4 +155,48 @@ def test_unsupported_file_loads_nothing(owner, inbox):
     dialog.loadInboxReceipt()
     assert dialog.slip_lines is None
     dialog.recognizeCategories()              # must not fail with nothing loaded
+    assert os.path.isfile(path)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+FNS_NUMBER = "7380440700000000:12345:1234567890"
+# What FNS returns for a receipt, trimmed to the keys the dialog reads; amounts are in kopecks
+FNS_SLIP = {'dateTime': 1705343400, 'operationType': 1, 'user': 'ООО "Магазин"',
+            'items': [{'name': 'Хлеб', 'quantity': 1, 'price': 5990, 'sum': 5990},
+                      {'name': 'Молоко', 'quantity': 2, 'price': 8990, 'sum': 17980}]}
+
+
+def test_fns_number_comes_from_the_qr(owner):
+    assert ReceiptRuFNS(qr_text=FNS).number() == FNS_NUMBER
+
+
+def test_fns_file_goes_to_the_fns_download(owner, inbox, monkeypatch):
+    path = make_jalr(inbox, "20240115-183000-00000003.jalr", codes=["4607035400014", FNS])
+    dialog = _dialog(owner)
+    assert dialog.ui.InboxList.item(0, 2).text() == "Russian QR"
+    monkeypatch.setattr(dialog, "downloadSlipJSON", lambda: None)   # FNS itself is not asked
+    dialog.ui.InboxList.setCurrentCell(0, 0)
+    dialog.loadInboxReceipt()
+    assert isinstance(dialog.receipt_api, ReceiptRuFNS)
+    dialog.receipt_api.slip_json = FNS_SLIP
+    dialog.slip_loaded()
+    assert dialog.ui.SlipShopName.text() == 'ООО "Магазин"'
+    assert dialog.slip_lines['amount'].tolist() == [Decimal('-59.9'), Decimal('-179.8')]
+
+    dialog.ui.AccountEdit.selected_id = 1
+    dialog.ui.PeerEdit.selected_id = 1
+    dialog.slip_lines['category'] = PredefinedCategory.Fees
+    dialog.addOperation()
+    oid = IncomeSpending.find_by_number(FNS_NUMBER)
+    assert oid
+    assert IncomeSpending(oid).amount() == Decimal('-239.7')
+    assert not os.path.exists(path)
+
+
+def test_malformed_fns_code_loads_nothing(owner, inbox):
+    path = make_jalr(inbox, "20240115-183000-00000004.jalr", codes=["t=yesterday&s=1&fn=1&i=1&fp=1&n=1"])
+    dialog = _dialog(owner)
+    dialog.ui.InboxList.setCurrentCell(0, 0)
+    dialog.loadInboxReceipt()
+    assert dialog.receipt_api is None and dialog.slip_lines is None
     assert os.path.isfile(path)

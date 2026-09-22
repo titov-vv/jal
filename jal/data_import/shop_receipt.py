@@ -24,6 +24,7 @@ from jal.ui.ui_receipt_import_dlg import Ui_ImportShopReceiptDlg
 from jal.data_import.category_recognizer import recognize_categories
 from jal.data_import.receipt_api.receipts import ReceiptAPIFactory
 from jal.data_import.receipt_api.offline_receipt import ReceiptOffline
+from jal.data_import.receipt_api.ru_fns import ReceiptRuFNS
 from jal.data_import.receipt_inbox import JalrFile, Route, scan_inbox, move_done, route
 
 
@@ -398,6 +399,12 @@ class ImportReceiptDialog(QDialog):
         receipt, receipt_route = self._inbox[row]
         if receipt_route.kind == Route.PT_QR:
             receipt_api = ReceiptOffline.from_at_qr(receipt_route.at_qr, receipt.captured_at)
+        elif receipt_route.kind == Route.FNS:
+            try:
+                receipt_api = ReceiptRuFNS(qr_text=receipt_route.code)
+            except ValueError as e:
+                logging.warning(e)
+                return
         elif receipt_route.kind == Route.UNSUPPORTED:
             logging.warning(self.tr("Receipt can't be imported") + f" ({receipt.name}): " +
                             self._route_text(receipt_route))

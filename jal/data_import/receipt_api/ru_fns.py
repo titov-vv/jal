@@ -209,6 +209,10 @@ class ReceiptRuFNS(ReceiptAPI):
         receipt_datetime.setTimeZone(local_zone())   # what it says is a reading of the buyer's own clock
         return receipt_datetime
 
+    # Fiscal drive number, document number and fiscal sign together identify a receipt
+    def number(self) -> str:
+        return f"{self.fn}:{self.fd}:{self.fp}"
+
     def slip_lines(self) -> list:
         PURCHASE = 1
         RETURN = 2
