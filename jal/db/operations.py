@@ -638,6 +638,7 @@ class IncomeSpending(LedgerTransaction):
         "peer_id": {"mandatory": True, "validation": False},
         "alt_currency_id": {"mandatory": False, "validation": False},
         "note": {"mandatory": False, "validation": False},
+        "number": {"mandatory": False, "validation": False},
         "lines": {
             "mandatory": True, "validation": False, "children": True,
             "child_table": "action_details", "child_pid": "pid",
@@ -656,12 +657,13 @@ class IncomeSpending(LedgerTransaction):
         super().__init__(oid)
         self._opart = opart
         self._data = self._read("SELECT a.timestamp, a.account_id, a.peer_id, p.name AS peer, "
-                                "a.alt_currency_id AS currency FROM actions AS a "
+                                "a.alt_currency_id AS currency, a.number FROM actions AS a "
                                 "LEFT JOIN agents AS p ON a.peer_id = p.id WHERE a.oid=:oid",
                                 [(":oid", self._oid)], named=True)
         if self._data is None:
             raise IndexError(LedgerTransaction.NoOpException)
         self._timestamp = self._data['timestamp']
+        self._number = self._data['number']
         self._account = jal.db.account.JalAccount(self._data['account_id'])
         self._account_name = self._account.name()
         self._account_currency = JalAsset(self._account.currency()).symbol()
@@ -740,6 +742,14 @@ class IncomeSpending(LedgerTransaction):
 
     def amount(self) -> Decimal:
         return self._amount
+
+    # Returns the operation that carries this fiscal document id, 0 if there is none or the id is empty
+    @classmethod
+    def find_by_number(cls, number: str) -> int:
+        if not number:
+            return 0
+        oid = cls._read("SELECT oid FROM actions WHERE number=:number", [(":number", number)])
+        return int(oid) if oid else 0
 
     # it assigns tag to all operation details
     def assign_tag(self, tag_id: int):

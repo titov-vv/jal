@@ -111,7 +111,8 @@ CREATE TABLE actions (
     account_id      INTEGER REFERENCES accounts (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
     peer_id         INTEGER REFERENCES agents (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,   -- agent that is related with this transaction
     alt_currency_id INTEGER REFERENCES assets (id) ON DELETE SET NULL ON UPDATE CASCADE,           -- if transaction actually happened in another currency
-    note            TEXT
+    note            TEXT,
+    number          TEXT    NOT NULL DEFAULT ('')                                                  -- fiscal document id of an imported shop receipt
 );
 ------------------------------------------------------------------------------------------------------------------------
 -- Table: assets
@@ -1058,7 +1059,7 @@ BEGIN
 END;
 ------------------------------------------------------------------------------------------------------------------------
 -- Initialize default values for settings
-INSERT INTO settings(name, value) VALUES('SchemaVersion', 78);
+INSERT INTO settings(name, value) VALUES('SchemaVersion', 79);
 INSERT INTO settings(name, value) VALUES('Language', 1);
 INSERT INTO settings(name, value) VALUES('RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
 INSERT INTO settings(name, value) VALUES('RuTaxSessionId', '');

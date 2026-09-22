@@ -7,11 +7,11 @@ from jal.db.db import JalDB
 # Trading 212 and used by Revolut as well - both are accounts whose purchases are typed in by hand as they happen.
 #
 # The same purchase reaches the database from two sides - typed by hand as it happens and read from the monthly
-# statement afterwards - and nothing identifies it on both. The 'actions' table has no reference number column at
-# all, and the two clocks disagree: most hand-entered rows sit within a minute of what the statement says, but some
-# are off by exactly an hour (a local-time reading typed as if it were UTC) and one row of the sample month by a
-# quarter of an hour. What never disagrees is the amount - it is the very cent the card was charged, and a receipt
-# split into several category lines sums to it exactly.
+# statement afterwards - and nothing identifies it on both. A card statement carries no receipt's fiscal id, the one
+# thing 'actions.number' holds, and the two clocks disagree: most hand-entered rows sit within a minute of what the
+# statement says, but some are off by exactly an hour (a local-time reading typed as if it were UTC) and one row of
+# the sample month by a quarter of an hour. What never disagrees is the amount - it is the very cent the card was
+# charged, and a receipt split into several category lines sums to it exactly.
 #
 # So the amount is the key and the time only ranks the candidates. That is a resemblance rather than a proof, which
 # is why nothing here decides anything: what it produces is a proposal the user confirms in CardImportDialog.
