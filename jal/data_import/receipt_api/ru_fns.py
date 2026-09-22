@@ -138,6 +138,7 @@ class ReceiptRuFNS(ReceiptAPI):
             if response.status_code != 200:
                 logging.error(ReceiptAPI.tr("Receipt load failed: ") + f"{response}/{response.text}")
                 self.slip_load_failed.emit()
+                return
             logging.info(ReceiptAPI.tr("Receipt was loaded: " + response.text))
             self.slip_json = self.__slip_data(json.loads(response.text, parse_float=Decimal))
             self.slip_load_ok.emit()

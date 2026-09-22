@@ -13,7 +13,7 @@ FNS = "t=20240115T1830&s=1234.50&fn=7380440700000000&i=12345&fp=1234567890&n=1"
 
 # Writes a container the way the ReceiptScan app does (see receipt.schema.json 'jal.receipt/1')
 def make_jalr(folder, name, kind="paper_scan", codes=(), schema="jal.receipt/1",
-              captured_at="2026-08-14T18:42:00+01:00", extra=None) -> str:
+              captured_at="2026-08-14T18:42:00+01:00", extra=None, pdf=b"%PDF-1.4 fake") -> str:
     data = {
         "schema": schema,
         "id": "8f2a1c44-6b3e-4d19-9a7c-2e5f0b81d3a6",
@@ -31,7 +31,7 @@ def make_jalr(folder, name, kind="paper_scan", codes=(), schema="jal.receipt/1",
     with zipfile.ZipFile(path, 'w') as container:
         container.writestr("receipt.json", json.dumps(data))
         if kind == "pdf_import":
-            container.writestr("original.pdf", b"%PDF-1.4 fake")
+            container.writestr("original.pdf", pdf)
         else:
             container.writestr("scan-1.jpg", b"fake")
     return path

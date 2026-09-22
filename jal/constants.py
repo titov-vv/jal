@@ -24,6 +24,7 @@ class Setup:
     LANG_PATH = "languages"
     REPORT_PATH = "reports"
     STATEMENT_PATH = "broker_statements"
+    RECEIPT_PATH = "shop_receipts"
     STATEMENT_DUMP = "statement_error_log_"
     TEMPLATE_PATH = "templates"
     TAX_REPORT_PATH = "tax_reports"

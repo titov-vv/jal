@@ -1,4 +1,5 @@
 import logging
+import zipfile
 import pandas as pd
 from decimal import Decimal
 from PySide6.QtCore import Qt, Slot, QAbstractTableModel, QDateTime, QDate, QTime, QLocale, QT_TRANSLATE_NOOP
@@ -25,6 +26,7 @@ from jal.data_import.category_recognizer import recognize_categories
 from jal.data_import.receipt_api.receipts import ReceiptAPIFactory
 from jal.data_import.receipt_api.offline_receipt import ReceiptOffline
 from jal.data_import.receipt_api.ru_fns import ReceiptRuFNS
+from jal.data_import.receipt_pdf import pdf_receipt
 from jal.data_import.receipt_inbox import JalrFile, Route, scan_inbox, move_done, route
 
 
@@ -405,12 +407,18 @@ class ImportReceiptDialog(QDialog):
             except ValueError as e:
                 logging.warning(e)
                 return
-        elif receipt_route.kind == Route.UNSUPPORTED:
+        elif receipt_route.kind == Route.PDF:
+            try:
+                data = receipt.pdf_bytes()
+            except (OSError, KeyError, zipfile.BadZipFile) as e:
+                logging.warning(self.tr("Receipt file can't be read") + f" ({receipt.name}): {e}")
+                return
+            receipt_api = pdf_receipt(data, receipt_route.at_qr, receipt.captured_at)
+            if receipt_api is None:
+                return
+        else:
             logging.warning(self.tr("Receipt can't be imported") + f" ({receipt.name}): " +
                             self._route_text(receipt_route))
-            return
-        else:
-            logging.warning(self.tr("Receipt import of this kind isn't implemented yet") + f": {receipt.name}")
             return
         self.receipt_api = receipt_api
         self._inbox_file = receipt.path

@@ -11,6 +11,7 @@ from PySide6.QtWidgets import QWidget
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_ledger
 from tests.test_at_qr import LIDL
 from tests.test_receipt_inbox import make_jalr, FNS
+from tests.test_receipt_pdf import make_pdf, lidl_receipt, QR
 from constants import PredefinedCategory
 from jal.db.db import JalDB
 from jal.db.clock import local_zone
@@ -195,6 +196,48 @@ def test_fns_file_goes_to_the_fns_download(owner, inbox, monkeypatch):
 
 def test_malformed_fns_code_loads_nothing(owner, inbox):
     path = make_jalr(inbox, "20240115-183000-00000004.jalr", codes=["t=yesterday&s=1&fn=1&i=1&fp=1&n=1"])
+    dialog = _dialog(owner)
+    dialog.ui.InboxList.setCurrentCell(0, 0)
+    dialog.loadInboxReceipt()
+    assert dialog.receipt_api is None and dialog.slip_lines is None
+    assert os.path.isfile(path)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def test_pdf_file_brings_its_items(owner, inbox):
+    path = make_jalr(inbox, "20260814-190000-00000005.jalr", kind="pdf_import", codes=[QR],
+                     pdf=make_pdf(lidl_receipt(), form=True))
+    dialog = _dialog(owner)
+    assert dialog.ui.InboxList.item(0, 2).text() == "PDF document"
+    dialog.ui.InboxList.setCurrentCell(0, 0)
+    dialog.loadInboxReceipt()
+    assert dialog.slip_lines['name'].tolist() == ["TOMATE REDONDO (0.744 x 1.89)", "MORANGO 300G",
+                                                  "CROISSANT CHOCOLATE 80GR (2 x 0.85)", "Saco de Papel"]
+    assert sum(dialog.slip_lines['amount'].tolist()) == Decimal('-4.84')
+    assert dialog.ui.SlipDateTime.dateTime() == _local(2026, 8, 14, 18, 53)
+
+    dialog.ui.AccountEdit.selected_id = 1
+    dialog.ui.PeerEdit.selected_id = 1
+    dialog.slip_lines['category'] = PredefinedCategory.Fees
+    dialog.addOperation()
+    oid = IncomeSpending.find_by_number(NUMBER)
+    assert oid and IncomeSpending(oid).amount() == Decimal('-4.84') and len(IncomeSpending(oid).lines()) == 4
+    assert not os.path.exists(path)
+
+
+def test_paper_scan_of_a_receipt_imported_as_pdf_is_refused(owner, inbox):
+    make_jalr(inbox, "20260814-190000-00000005.jalr", kind="pdf_import", pdf=make_pdf(lidl_receipt()))  # no QR read
+    make_jalr(inbox, "20260814-190100-00000006.jalr", codes=[QR])
+    dialog = _dialog(owner)
+    before = _operations()
+    _load_and_add(dialog)
+    _load_and_add(dialog)
+    assert _operations() == before + 1
+    assert len(os.listdir(inbox / "done")) == 2
+
+
+def test_unreadable_pdf_loads_nothing(owner, inbox):
+    path = make_jalr(inbox, "20260814-190000-00000007.jalr", kind="pdf_import")
     dialog = _dialog(owner)
     dialog.ui.InboxList.setCurrentCell(0, 0)
     dialog.loadInboxReceipt()
