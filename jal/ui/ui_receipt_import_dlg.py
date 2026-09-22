@@ -15,11 +15,12 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractButton, QApplication, QComboBox, QDateTimeEdit,
-    QDialog, QDialogButtonBox, QFrame, QGridLayout,
-    QGroupBox, QHBoxLayout, QHeaderView, QLabel,
-    QLineEdit, QPushButton, QSizePolicy, QSpacerItem,
-    QTableView, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractButton, QAbstractItemView, QApplication, QComboBox,
+    QDateTimeEdit, QDialog, QDialogButtonBox, QFrame,
+    QGridLayout, QGroupBox, QHBoxLayout, QHeaderView,
+    QLabel, QLineEdit, QPushButton, QSizePolicy,
+    QSpacerItem, QTableView, QTableWidget, QTableWidgetItem,
+    QVBoxLayout, QWidget)
 
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 
@@ -27,7 +28,7 @@ class Ui_ImportShopReceiptDlg(object):
     def setupUi(self, ImportShopReceiptDlg):
         if not ImportShopReceiptDlg.objectName():
             ImportShopReceiptDlg.setObjectName(u"ImportShopReceiptDlg")
-        ImportShopReceiptDlg.resize(850, 587)
+        ImportShopReceiptDlg.resize(850, 760)
         self.verticalLayout = QVBoxLayout(ImportShopReceiptDlg)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.InputFrame = QFrame(ImportShopReceiptDlg)
@@ -65,6 +66,54 @@ class Ui_ImportShopReceiptDlg(object):
 
 
         self.verticalLayout.addWidget(self.InputFrame)
+
+        self.InboxGroup = QGroupBox(ImportShopReceiptDlg)
+        self.InboxGroup.setObjectName(u"InboxGroup")
+        sizePolicy1.setHeightForWidth(self.InboxGroup.sizePolicy().hasHeightForWidth())
+        self.InboxGroup.setSizePolicy(sizePolicy1)
+        self.gridLayout_3 = QGridLayout(self.InboxGroup)
+        self.gridLayout_3.setObjectName(u"gridLayout_3")
+        self.InboxList = QTableWidget(self.InboxGroup)
+        if (self.InboxList.columnCount() < 3):
+            self.InboxList.setColumnCount(3)
+        __qtablewidgetitem = QTableWidgetItem()
+        self.InboxList.setHorizontalHeaderItem(0, __qtablewidgetitem)
+        __qtablewidgetitem1 = QTableWidgetItem()
+        self.InboxList.setHorizontalHeaderItem(1, __qtablewidgetitem1)
+        __qtablewidgetitem2 = QTableWidgetItem()
+        self.InboxList.setHorizontalHeaderItem(2, __qtablewidgetitem2)
+        self.InboxList.setObjectName(u"InboxList")
+        self.InboxList.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.InboxList.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self.InboxList.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.InboxList.setColumnCount(3)
+        self.InboxList.horizontalHeader().setStretchLastSection(True)
+        self.InboxList.verticalHeader().setVisible(False)
+        self.InboxList.verticalHeader().setMinimumSectionSize(20)
+
+        self.gridLayout_3.addWidget(self.InboxList, 0, 0, 3, 1)
+
+        self.InboxLoadBtn = QPushButton(self.InboxGroup)
+        self.InboxLoadBtn.setObjectName(u"InboxLoadBtn")
+
+        self.gridLayout_3.addWidget(self.InboxLoadBtn, 0, 1, 1, 1)
+
+        self.InboxRefreshBtn = QPushButton(self.InboxGroup)
+        self.InboxRefreshBtn.setObjectName(u"InboxRefreshBtn")
+
+        self.gridLayout_3.addWidget(self.InboxRefreshBtn, 1, 1, 1, 1)
+
+        self.inboxButtonsSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.gridLayout_3.addItem(self.inboxButtonsSpacer, 2, 1, 1, 1)
+
+        self.InboxFolderLbl = QLabel(self.InboxGroup)
+        self.InboxFolderLbl.setObjectName(u"InboxFolderLbl")
+
+        self.gridLayout_3.addWidget(self.InboxFolderLbl, 3, 0, 1, 2)
+
+
+        self.verticalLayout.addWidget(self.InboxGroup)
 
         self.SlipDataGroup = QGroupBox(ImportShopReceiptDlg)
         self.SlipDataGroup.setObjectName(u"SlipDataGroup")
@@ -200,7 +249,10 @@ class Ui_ImportShopReceiptDlg(object):
         self.PeerLbl.setBuddy(self.SlipShopName)
         self.LinesLbl.setBuddy(self.LinesTableView)
 #endif // QT_CONFIG(shortcut)
-        QWidget.setTabOrder(self.ScanReceiptQR, self.ReceiptAPICombo)
+        QWidget.setTabOrder(self.ScanReceiptQR, self.InboxList)
+        QWidget.setTabOrder(self.InboxList, self.InboxLoadBtn)
+        QWidget.setTabOrder(self.InboxLoadBtn, self.InboxRefreshBtn)
+        QWidget.setTabOrder(self.InboxRefreshBtn, self.ReceiptAPICombo)
         QWidget.setTabOrder(self.ReceiptAPICombo, self.DownloadReceiptBtn)
         QWidget.setTabOrder(self.DownloadReceiptBtn, self.ReceiptParametersList)
         QWidget.setTabOrder(self.ReceiptParametersList, self.SlipDateTime)
@@ -221,6 +273,15 @@ class Ui_ImportShopReceiptDlg(object):
         ImportShopReceiptDlg.setWindowTitle(QCoreApplication.translate("ImportShopReceiptDlg", u"Import shop receipt", None))
         self.QRGroup.setTitle(QCoreApplication.translate("ImportShopReceiptDlg", u"Get receipt by scanning QR-code", None))
         self.ScanReceiptQR.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Scan receipt QR", None))
+        self.InboxGroup.setTitle(QCoreApplication.translate("ImportShopReceiptDlg", u"Get receipt from phone inbox", None))
+        ___qtablewidgetitem = self.InboxList.horizontalHeaderItem(0)
+        ___qtablewidgetitem.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Captured", None))
+        ___qtablewidgetitem1 = self.InboxList.horizontalHeaderItem(1)
+        ___qtablewidgetitem1.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Source", None))
+        ___qtablewidgetitem2 = self.InboxList.horizontalHeaderItem(2)
+        ___qtablewidgetitem2.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Import as", None))
+        self.InboxLoadBtn.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"L&oad", None))
+        self.InboxRefreshBtn.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Re&fresh", None))
         self.SlipDataGroup.setTitle(QCoreApplication.translate("ImportShopReceiptDlg", u"Get receipt by manual data entry", None))
         self.ReceiptAPILabel.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"&Receipt type:", None))
         self.DownloadReceiptBtn.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Download receipt", None))

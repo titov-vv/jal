@@ -41,3 +41,7 @@ class ReceiptAPI(QObject):
     # Returns data/time of the operation from the receipt
     def datetime(self) -> QDateTime:
         raise NotImplementedError(f"datetime() method is not implemented in {type(self).__name__}")
+
+    # Returns the fiscal document id that identifies the receipt, empty if the source gives none
+    def number(self) -> str:
+        return ''
