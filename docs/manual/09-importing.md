@@ -138,10 +138,6 @@ Doce. Either scan the receipt's QR code with your camera or type the numbers fro
 hand, then press **Download receipt**; the lines appear at the bottom, where you choose the account
 and the peer and press **Add**.
 
-If the optional *TensorFlow* package is installed, **Auto-assign categories** guesses a category for
-each item from the ones you have used before. It is a convenience and it is often wrong; check the
-lines before saving.
-
 This feature depends on services that change without notice, and it is not needed for anything else
 in JAL.
 

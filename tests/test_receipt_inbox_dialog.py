@@ -126,9 +126,7 @@ def inbox(tmp_path):
 
 
 def _dialog(owner) -> ImportReceiptDialog:
-    dialog = ImportReceiptDialog(owner)
-    dialog.tensor_flow_present = False
-    return dialog
+    return ImportReceiptDialog(owner)
 
 
 def _load_and_add(dialog, row=0):
@@ -214,7 +212,6 @@ def test_unsupported_file_loads_nothing(owner, inbox):
     dialog.ui.InboxList.setCurrentCell(0, 0)
     dialog.loadInboxReceipt()
     assert dialog.slip_lines is None
-    dialog.recognizeCategories()              # must not fail with nothing loaded
     assert os.path.isfile(path)
 
 

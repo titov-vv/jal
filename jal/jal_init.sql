@@ -322,15 +322,6 @@ CREATE INDEX ledger_totals_by_timestamp ON ledger_totals (timestamp);
 DROP INDEX IF EXISTS ledger_totals_by_operation_book;
 CREATE INDEX ledger_totals_by_operation_book ON ledger_totals (otype, oid, book_account);
 
--- Table: map_category
-DROP TABLE IF EXISTS map_category;
-CREATE TABLE map_category (
-    id        INTEGER        PRIMARY KEY UNIQUE NOT NULL,
-    value     VARCHAR (1024) NOT NULL,
-    mapped_to INTEGER        NOT NULL REFERENCES categories (id) ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-
 -- Table: map_peer
 DROP TABLE IF EXISTS map_peer;
 CREATE TABLE map_peer (

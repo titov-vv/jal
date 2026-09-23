@@ -43,7 +43,6 @@ JAL is tailored for those who want a clear insight into their personal incomes, 
 - Tax burden estimation for a given asset in the portfolio.
 ### Experimental Features
 - Electronic slips download for russian and some european shops. 
-- Category recognition for goods in electronic slips using TensorFlow.
 
 ## 📖 User manual
 The [**User manual**](https://titov-vv.github.io/jal/manual/) explains the whole program from the first start onwards - accounts and operations, investments, crypto, statement imports, every report, taxes, backups and troubleshooting. It is also reachable from menu *Help->User manual*.

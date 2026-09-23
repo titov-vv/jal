@@ -65,20 +65,6 @@ class JalCategory(JalDB):
             turnover += amount * rate
         return -turnover
 
-    def add_or_update_mapped_name(self, name: str) -> None:
-        _ = self._exec("INSERT OR REPLACE INTO map_category (value, mapped_to) "
-                       "VALUES (:item_name, :category_id)",
-                       [(":item_name", name), (":category_id", self._id)], commit=True)
-
-    # Returns a list of all names that were mapped to some category in for of {"value", "mapped_to"}
-    @classmethod
-    def get_mapped_names(cls) -> list:
-        mapped_list = []
-        query = cls._exec("SELECT value, mapped_to FROM map_category")
-        while query.next():
-            mapped_list.append(cls._read_record(query, named=True))
-        return mapped_list
-
     # Returns a list of operations that include this category
     def get_operations(self, begin: int, end: int) -> list:
         operations = []
@@ -91,8 +77,6 @@ class JalCategory(JalDB):
 
     def replace_with(self, new_id):
         self._exec("UPDATE action_details SET category_id=:new_id WHERE category_id=:old_id",
-                   [(":new_id", new_id), (":old_id", self._id)])
-        self._exec("UPDATE map_category SET mapped_to=:new_id WHERE mapped_to=:old_id",
                    [(":new_id", new_id), (":old_id", self._id)])
         self._exec("DELETE FROM categories WHERE id=:old_id", [(":old_id", self._id)], commit=True)
         self._id = 0

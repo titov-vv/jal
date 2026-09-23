@@ -8,8 +8,7 @@ from PySide6.QtWidgets import (QDialog, QDialogButtonBox, QHeaderView, QStyle, Q
 from jal.constants import Setup
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 from jal.widgets.delegates import DateTimeEditWithReset, draw_item_panel
-from jal.widgets.helpers import (dependency_present, set_grids_metrics, set_date_formats,
-                                 restore_columns, save_columns, DateFormat, ts2dt)
+from jal.widgets.helpers import (set_grids_metrics, set_date_formats, restore_columns, save_columns, DateFormat, ts2dt)
 from jal.widgets.theme import Theme, Meaning
 from jal.db.helpers import localize_decimal, delocalize_decimal
 from jal.db.peer import JalPeer
@@ -22,7 +21,6 @@ from jal.db.common_models import AccountListModel, PeerTreeModel, CategoryTreeMo
 from jal.widgets.reference_dialogs import AccountListDialog, PeerListDialog, CategoryListDialog, TagsListDialog
 from jal.widgets.qr_scanner import ScanDialog
 from jal.ui.ui_receipt_import_dlg import Ui_ImportShopReceiptDlg
-from jal.data_import.category_recognizer import recognize_categories
 from jal.data_import.receipt_api.receipts import ReceiptAPIFactory
 from jal.data_import.receipt_api.offline_receipt import ReceiptOffline, paper_lines
 from jal.data_import.receipt_api.ru_fns import ReceiptRuFNS
@@ -79,9 +77,9 @@ class PandasLinesModel(QAbstractTableModel):
                 return self.tr("Product name")
             if col == 1:
                 return self.tr("Category")
-            if col == 3:
+            if col == 2:
                 return self.tr("Tag")
-            if col == 4:
+            if col == 3:
                 return self.tr("Amount")
         return None
 
@@ -93,8 +91,6 @@ class SlipLinesDelegate(QStyledItemDelegate):
         self._tag_selector = None
 
     def paint(self, painter, option, index):
-        # The style paints the row first - selection, alternating colour, hover - and the confidence tint only
-        # goes on top of it while the row is NOT selected, exactly as an ordinary BackgroundRole would behave.
         draw_item_panel(painter, option)
         selected = bool(option.state & QStyle.State_Selected)
         painter.save()
@@ -108,16 +104,8 @@ class SlipLinesDelegate(QStyledItemDelegate):
             painter.drawText(option.rect, Qt.AlignLeft | Qt.AlignVCenter, text)
         if index.column() == 1:
             text = JalCategory(int(model.data(index, Qt.DisplayRole))).name()
-            confidence = model.data(index.siblingAtColumn(2), Qt.DisplayRole)
-            if not selected:
-                if confidence > 0.75:
-                    painter.fillRect(option.rect, Theme.fill(Meaning.POSITIVE))
-                elif confidence > 0.5:
-                    painter.fillRect(option.rect, Theme.fill(Meaning.WARNING))
-                else:
-                    painter.fillRect(option.rect, Theme.fill(Meaning.NEGATIVE))
             painter.drawText(option.rect, Qt.AlignLeft | Qt.AlignVCenter, text)
-        elif index.column() == 4:
+        elif index.column() == 3:
             amount = model.data(index, Qt.DisplayRole)
             if amount == 2 and not selected:
                 pen.setColor(Theme.text(Meaning.MUTED))
@@ -132,7 +120,7 @@ class SlipLinesDelegate(QStyledItemDelegate):
             self._category_selector = ReferenceSelectorWidget(aParent, validate=False)
             self._category_selector.setup_selector(CategoryTreeModel, CategoryListDialog, aParent)
             return self._category_selector
-        if index.column() == 3:
+        if index.column() == 2:
             self._tag_selector = ReferenceSelectorWidget(aParent, validate=False)
             self._tag_selector.setup_selector(TagTreeModel, TagsListDialog, aParent)
             return self._tag_selector
@@ -141,8 +129,7 @@ class SlipLinesDelegate(QStyledItemDelegate):
     def setModelData(self, editor, model, index):
         if index.column() == 1:
             model.setData(index, editor.selected_id)
-            model.setData(index.siblingAtColumn(2), 1) # set confidence level to 1
-        if index.column() == 3:
+        if index.column() == 2:
             model.setData(index, editor.selected_id)
 
 #-----------------------------------------------------------------------------------------------------------------------
@@ -278,7 +265,6 @@ class ImportReceiptDialog(QDialog):
         self.receipt_api = None
         self._inbox = []              # (JalrFile, Route) per row of InboxList
         self._inbox_file = ''         # path of the inbox file the loaded receipt came from
-        self.tensor_flow_present = dependency_present(['tensorflow'])
 
         # 'Clear' and 'Add' join the button box rather than sit next to it: neither ends the dialog - one throws the
         # loaded receipt away, the other writes an operation and leaves the window open for the next receipt - so
@@ -291,7 +277,6 @@ class ImportReceiptDialog(QDialog):
         self.add_operation_button.clicked.connect(self.addOperation)
         self.clear_button.clicked.connect(self.clearSlipData)
         self.ui.DialogButtonBox.rejected.connect(self.close)
-        self.ui.AssignCategoryBtn.clicked.connect(self.recognizeCategories)
         self.ui.ReceiptAPICombo.currentIndexChanged.connect(self.change_api)
         self.ui.InboxLoadBtn.clicked.connect(self.loadInboxReceipt)
         self.ui.InboxRefreshBtn.clicked.connect(self.refreshInbox)
@@ -304,7 +289,6 @@ class ImportReceiptDialog(QDialog):
         for idx, name in ReceiptAPIFactory().supported_names.items():
             self.ui.ReceiptAPICombo.addItem(name, idx)
 
-        self.ui.AssignCategoryBtn.setEnabled(self.tensor_flow_present)
         self.refreshInbox()
 
     # Column widths of the receipt lines are the user's to set, and they are kept for the next receipt
@@ -467,10 +451,9 @@ class ImportReceiptDialog(QDialog):
         self.ui.SlipDateTime.setDateTime(self.receipt_api.datetime())
         # Assign empty category
         self.slip_lines['category'] = 0
-        self.slip_lines['confidence'] = 1
         # Assign empty tags
         self.slip_lines['tag'] = None
-        self.slip_lines = self.slip_lines[['name', 'category', 'confidence', 'tag', 'amount']]
+        self.slip_lines = self.slip_lines[['name', 'category', 'tag', 'amount']]
 
         self.model = PandasLinesModel(self.slip_lines, self)
         self.ui.LinesTableView.setModel(self.model)
@@ -481,14 +464,11 @@ class ImportReceiptDialog(QDialog):
                 self.ui.LinesTableView.horizontalHeader().setSectionResizeMode(column, QHeaderView.Stretch)
             elif column == 1:
                 self.ui.LinesTableView.setColumnWidth(column, 200)
-            elif column == 2:
-                self.ui.LinesTableView.setColumnHidden(column, True)
             else:
                 self.ui.LinesTableView.setColumnWidth(column, 100)
             self.ui.LinesTableView.setItemDelegateForColumn(column, self.delegate)
         restore_columns(self.ui.LinesTableView, Setup.COLUMNS_STATE_PREFIX)   # a width the user has set outlives the next receipt
         self.ui.LinesTableView.show()
-        self.recognizeCategories()
 
     def addOperation(self):
         if self.slip_lines is None:
@@ -517,7 +497,6 @@ class ImportReceiptDialog(QDialog):
                 "amount": row['amount'],
                 "note": row['name']
             })
-            JalCategory(row['category']).add_or_update_mapped_name(row['name'])
         operation = {
             "timestamp": self.ui.SlipDateTime.dateTime().toSecsSinceEpoch(),
             "account_id": self.ui.AccountEdit.selected_id,
@@ -546,14 +525,3 @@ class ImportReceiptDialog(QDialog):
         self.slip_lines = None
         self._inbox_file = ''
         self.ui.LinesTableView.setModel(None)
-
-    @Slot()
-    def recognizeCategories(self):
-        if self.slip_lines is None:
-            return
-        if not self.tensor_flow_present:
-            logging.warning(self.tr("Categories are not recognized: Tensorflow is not found"))
-            return
-        self.slip_lines['category'], self.slip_lines['confidence'] = \
-            recognize_categories(self.slip_lines['name'].tolist())
-        self.model.dataChanged.emit(None, None)  # refresh full view

@@ -225,11 +225,6 @@ class Ui_ImportShopReceiptDlg(object):
 
         self.gridLayout.addWidget(self.LinesTableView, 4, 1, 1, 5)
 
-        self.AssignCategoryBtn = QPushButton(self.ReceiptGroup)
-        self.AssignCategoryBtn.setObjectName(u"AssignCategoryBtn")
-
-        self.gridLayout.addWidget(self.AssignCategoryBtn, 2, 5, 1, 1)
-
         self.AssignTagBtn = QPushButton(self.ReceiptGroup)
         self.AssignTagBtn.setObjectName(u"AssignTagBtn")
 
@@ -266,8 +261,7 @@ class Ui_ImportShopReceiptDlg(object):
         QWidget.setTabOrder(self.PeerEdit, self.SlipShopName)
         QWidget.setTabOrder(self.SlipShopName, self.AccountEdit)
         QWidget.setTabOrder(self.AccountEdit, self.LinesTableView)
-        QWidget.setTabOrder(self.LinesTableView, self.AssignCategoryBtn)
-        QWidget.setTabOrder(self.AssignCategoryBtn, self.AssignTagBtn)
+        QWidget.setTabOrder(self.LinesTableView, self.AssignTagBtn)
         QWidget.setTabOrder(self.AssignTagBtn, self.DialogButtonBox)
 
         self.retranslateUi(ImportShopReceiptDlg)
@@ -302,7 +296,6 @@ class Ui_ImportShopReceiptDlg(object):
         self.PeerLbl.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"&Peer:", None))
         self.LinesLbl.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"&Lines:", None))
         self.AccountLbl.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Account:", None))
-        self.AssignCategoryBtn.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Auto-assign categories", None))
         self.AssignTagBtn.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Set Tag for all lines", None))
     # retranslateUi
 

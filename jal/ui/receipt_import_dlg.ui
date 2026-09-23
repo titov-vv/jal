@@ -340,13 +340,6 @@
         </attribute>
        </widget>
       </item>
-      <item row="2" column="5">
-       <widget class="QPushButton" name="AssignCategoryBtn">
-        <property name="text">
-         <string>Auto-assign categories</string>
-        </property>
-       </widget>
-      </item>
       <item row="3" column="5">
        <widget class="QPushButton" name="AssignTagBtn">
         <property name="text">
@@ -399,7 +392,6 @@
   <tabstop>SlipShopName</tabstop>
   <tabstop>AccountEdit</tabstop>
   <tabstop>LinesTableView</tabstop>
-  <tabstop>AssignCategoryBtn</tabstop>
   <tabstop>AssignTagBtn</tabstop>
   <tabstop>DialogButtonBox</tabstop>
  </tabstops>
