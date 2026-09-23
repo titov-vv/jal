@@ -67,6 +67,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         self.mapper.addMapping(self.ui.peer_widget, self.model.fieldIndex("peer_id"))
         self.mapper.addMapping(self.ui.a_currency, self.model.fieldIndex("alt_currency_id"), QByteArray("currency_id_str"))
         self.mapper.addMapping(self.ui.note, self.model.fieldIndex("note"))
+        self.mapper.addMapping(self.ui.number, self.model.fieldIndex("number"))
 
         self.ui.details_table.setItemDelegateForColumn(2, self.category_delegate)
         self.ui.details_table.setItemDelegateForColumn(3, self.tag_delegate)
@@ -170,6 +171,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         new_record.setValue("account_id", account_id)
         new_record.setValue("peer_id", 0)
         new_record.setValue("alt_currency_id", None)
+        new_record.setValue("number", '')
         return new_record
 
     def copyNew(self):
@@ -190,6 +192,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
         new_record = self.model.record(row)
         new_record.setNull("oid")
         new_record.setValue("timestamp", now_ts())
+        new_record.setValue("number", '')   # a receipt's fiscal id belongs to the original only
         return new_record
 
     def before_record_insert(self, record):

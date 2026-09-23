@@ -35,6 +35,17 @@ class Ui_IncomeSpendingOperation(object):
 
         self.layout.addWidget(self.note, 2, 10, 1, 1)
 
+        self.number_label = QLabel(IncomeSpendingOperation)
+        self.number_label.setObjectName(u"number_label")
+
+        self.layout.addWidget(self.number_label, 0, 8, 1, 1)
+
+        self.number = QLineEdit(IncomeSpendingOperation)
+        self.number.setObjectName(u"number")
+        self.number.setReadOnly(True)
+
+        self.layout.addWidget(self.number, 0, 10, 1, 1)
+
         self.account_label = QLabel(IncomeSpendingOperation)
         self.account_label.setObjectName(u"account_label")
 
@@ -159,6 +170,7 @@ class Ui_IncomeSpendingOperation(object):
         self.layout.addItem(self.currencyGroupSpacer, 1, 9, 1, 1)
 
 #if QT_CONFIG(shortcut)
+        self.number_label.setBuddy(self.number)
         self.account_label.setBuddy(self.account_widget)
         self.date_label.setBuddy(self.timestamp_editor)
         self.note_label.setBuddy(self.note)
@@ -168,7 +180,8 @@ class Ui_IncomeSpendingOperation(object):
         QWidget.setTabOrder(self.account_widget, self.a_currency)
         QWidget.setTabOrder(self.a_currency, self.peer_widget)
         QWidget.setTabOrder(self.peer_widget, self.note)
-        QWidget.setTabOrder(self.note, self.add_button)
+        QWidget.setTabOrder(self.note, self.number)
+        QWidget.setTabOrder(self.number, self.add_button)
         QWidget.setTabOrder(self.add_button, self.copy_button)
         QWidget.setTabOrder(self.copy_button, self.del_button)
         QWidget.setTabOrder(self.del_button, self.details_table)
@@ -182,6 +195,7 @@ class Ui_IncomeSpendingOperation(object):
 
     def retranslateUi(self, IncomeSpendingOperation):
         IncomeSpendingOperation.setWindowTitle(QCoreApplication.translate("IncomeSpendingOperation", u"Form", None))
+        self.number_label.setText(QCoreApplication.translate("IncomeSpendingOperation", u"#", None))
         self.account_label.setText(QCoreApplication.translate("IncomeSpendingOperation", u"&Account", None))
         self.date_label.setText(QCoreApplication.translate("IncomeSpendingOperation", u"Dat&e/Time", None))
 #if QT_CONFIG(tooltip)
