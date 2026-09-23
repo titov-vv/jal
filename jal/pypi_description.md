@@ -35,8 +35,8 @@ crypto from DeFiLlama; currency rates from the European and the Russian central 
     3. Crypto exchanges: KuCoin (zip), Bitget (zip).
 - Investments report for tax declaration preparation for Russia and Portugal.  
 Russian tax estimation for open positions.
-- *experimental* Download russian electronic slips from russian tax authority (FNS). This function requires authorization and `pyzbar` package installation for QR recognition.  
-You may authorize via SMS, FNS personal account or ESIA/Gosuslugi. QR code may be scanned from camera, clipboard image or image file on disk.
+- *experimental* Download russian electronic slips from russian tax authority (FNS). This function requires authorization.  
+You may authorize via SMS, FNS personal account or ESIA/Gosuslugi.
 
 [**User manual**](https://titov-vv.github.io/jal/manual/) - the whole program explained from the first start onwards.
 

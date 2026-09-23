@@ -1,4 +1,3 @@
-import re
 import json
 import logging
 import requests
@@ -13,31 +12,15 @@ from jal.ui.ui_login_pingo_doce_dlg import Ui_LoginPingoDoceDialog
 
 #-----------------------------------------------------------------------------------------------------------------------
 class ReceiptPtPingoDoce(ReceiptAPI):
-    receipt_pattern = r"A:.*\*B:.*\*C:PT\*D:FS\*E:N\*F:(?P<date>\d{8})\*G:FS (?P<shop_id>\d{4})(?P<register_id>\d{3}).*\/.*\*H:.{1,70}\*I1:PT\*.*\*O:(?P<amount>\d{1,}\.\d\d)\*.*"
-    # aux data is in form SSSSSSYYYYMMDDhhmmNNNNCCCCMMMM
-    # SSSSSS - receipt sequence number
-    # YYYY, MM, DD, hh, mm - year, month, day and hour/minute of the receipt
-    # NNNN - unknown 4 digits
-    # CCCC cash register ID in the shop ID MMMM
-    def __init__(self, qr_text='', aux_data='', params=None):
+    def __init__(self, params):
         super().__init__()
-        self.aux_data = aux_data
         self.access_token = ''
         self.user_profile = {}
         self.receipts = []
         self.slip_json = {}
-        if params is None:
-            parts = re.match(self.receipt_pattern, qr_text)
-            if parts is None:
-                raise ValueError(ReceiptAPI.tr("Pingo Doce QR available but pattern isn't recognized: " + qr_text))
-            parts = parts.groupdict()
-            self.date_time = QDateTime.fromString(parts['date'], 'yyyyMMdd')
-            self.shop_id = int(parts['shop_id'].lstrip('0'))
-            self.total_amount = float(parts['amount'])
-        else:
-            self.date_time = params['Date/Time']
-            self.shop_id = params['Shop #']
-            self.total_amount = float(params['Total'])
+        self.date_time = params['Date/Time']
+        self.shop_id = params['Shop #']
+        self.total_amount = float(params['Total'])
         self.web_session = requests.Session()
         self.web_session.headers['User-Agent'] = "okhttp/4.10.0"
         self.web_session.headers['Content-Type'] = 'application/json; charset=UTF-8'

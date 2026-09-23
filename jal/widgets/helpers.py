@@ -1,19 +1,14 @@
 import base64
-import logging
 from datetime import time, datetime, timedelta, timezone
 from functools import cmp_to_key, partial
 from PySide6.QtCore import Qt, QCollator, QItemSelectionModel, QSize, QTimer
-from PySide6.QtGui import QImage, QKeySequence, QShortcut
+from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtWidgets import (QApplication, QAbstractItemView, QDialog, QTableView, QTreeView, QDateTimeEdit,
                                QStyle, QSplitter)
 from jal.constants import Setup
 from jal.db.clock import local_moment, local_reading, local_time, window_bound
 from jal.db.icon import JalIcons
 from jal.db.settings import JalSettings
-try:
-    from pyzbar import pyzbar
-except ImportError:
-    pass  # Helpers that use this imports shouldn't be called if imports are absent
 
 # -----------------------------------------------------------------------------------------------------------------------
 # Returns True if all modules from module_list are present in the system
@@ -557,25 +552,6 @@ def week_list(begin: int, end: int) -> list:
             result.append({'year': year, 'number': week,
                            'begin_ts': week_start_ts(year, week), 'end_ts': week_end_ts(year, week)})
     return result
-
-# ----------------------------------------------------------------------------------------------------------------------
-# Function takes an image and searches for QR in it. Content of first found QR is returned. Otherwise - empty string.
-def decodeQR(qr_image: QImage, code_type=None) -> str:
-    if qr_image.isNull():
-        return ''
-    if not dependency_present(['pyzbar']):
-        logging.warning("Package pyzbar not found for QR recognition.")
-        return ''
-    if code_type is None:
-        code_type = pyzbar.ZBarSymbol.QRCODE
-    qr_image.convertTo(QImage.Format_Grayscale8)
-    # bytesPerXXX is more accurate than width and height
-    data = (qr_image.bits().tobytes(), qr_image.bytesPerLine(), int(qr_image.sizeInBytes()/qr_image.bytesPerLine()))
-    barcodes = pyzbar.decode(data, symbols=[code_type])
-    if barcodes:
-        return barcodes[0].data.decode('utf-8')
-    return ''
-
 
 # -----------------------------------------------------------------------------------------------------------------------
 # Helpers to work with datetime

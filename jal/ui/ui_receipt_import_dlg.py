@@ -16,11 +16,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractButton, QAbstractItemView, QApplication, QComboBox,
-    QDateTimeEdit, QDialog, QDialogButtonBox, QFrame,
-    QGridLayout, QGroupBox, QHBoxLayout, QHeaderView,
-    QLabel, QLineEdit, QPushButton, QSizePolicy,
-    QSpacerItem, QTableView, QTableWidget, QTableWidgetItem,
-    QVBoxLayout, QWidget)
+    QDateTimeEdit, QDialog, QDialogButtonBox, QGridLayout,
+    QGroupBox, QHeaderView, QLabel, QLineEdit,
+    QPushButton, QSizePolicy, QSpacerItem, QTableView,
+    QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget)
 
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 
@@ -31,46 +30,13 @@ class Ui_ImportShopReceiptDlg(object):
         ImportShopReceiptDlg.resize(850, 760)
         self.verticalLayout = QVBoxLayout(ImportShopReceiptDlg)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.InputFrame = QFrame(ImportShopReceiptDlg)
-        self.InputFrame.setObjectName(u"InputFrame")
-        sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.InputFrame.sizePolicy().hasHeightForWidth())
-        self.InputFrame.setSizePolicy(sizePolicy)
-        self.InputFrame.setFrameShape(QFrame.Shape.NoFrame)
-        self.horizontalLayout_2 = QHBoxLayout(self.InputFrame)
-        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
-        self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
-        self.QRGroup = QGroupBox(self.InputFrame)
-        self.QRGroup.setObjectName(u"QRGroup")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.QRGroup.sizePolicy().hasHeightForWidth())
-        self.QRGroup.setSizePolicy(sizePolicy1)
-        self.QRGroup.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
-        self.horizontalLayout = QHBoxLayout(self.QRGroup)
-        self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.ScanReceiptQR = QPushButton(self.QRGroup)
-        self.ScanReceiptQR.setObjectName(u"ScanReceiptQR")
-
-        self.horizontalLayout.addWidget(self.ScanReceiptQR)
-
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout.addItem(self.horizontalSpacer)
-
-
-        self.horizontalLayout_2.addWidget(self.QRGroup)
-
-
-        self.verticalLayout.addWidget(self.InputFrame)
-
         self.InboxGroup = QGroupBox(ImportShopReceiptDlg)
         self.InboxGroup.setObjectName(u"InboxGroup")
-        sizePolicy1.setHeightForWidth(self.InboxGroup.sizePolicy().hasHeightForWidth())
-        self.InboxGroup.setSizePolicy(sizePolicy1)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.InboxGroup.sizePolicy().hasHeightForWidth())
+        self.InboxGroup.setSizePolicy(sizePolicy)
         self.gridLayout_3 = QGridLayout(self.InboxGroup)
         self.gridLayout_3.setObjectName(u"gridLayout_3")
         self.InboxList = QTableWidget(self.InboxGroup)
@@ -123,8 +89,8 @@ class Ui_ImportShopReceiptDlg(object):
         self.SlipDataGroup = QGroupBox(ImportShopReceiptDlg)
         self.SlipDataGroup.setObjectName(u"SlipDataGroup")
         self.SlipDataGroup.setEnabled(True)
-        sizePolicy1.setHeightForWidth(self.SlipDataGroup.sizePolicy().hasHeightForWidth())
-        self.SlipDataGroup.setSizePolicy(sizePolicy1)
+        sizePolicy.setHeightForWidth(self.SlipDataGroup.sizePolicy().hasHeightForWidth())
+        self.SlipDataGroup.setSizePolicy(sizePolicy)
         self.gridLayout_2 = QGridLayout(self.SlipDataGroup)
         self.gridLayout_2.setObjectName(u"gridLayout_2")
         self.ReceiptAPICombo = QComboBox(self.SlipDataGroup)
@@ -163,11 +129,11 @@ class Ui_ImportShopReceiptDlg(object):
 
         self.ReceiptGroup = QGroupBox(ImportShopReceiptDlg)
         self.ReceiptGroup.setObjectName(u"ReceiptGroup")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
-        sizePolicy2.setHorizontalStretch(0)
-        sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.ReceiptGroup.sizePolicy().hasHeightForWidth())
-        self.ReceiptGroup.setSizePolicy(sizePolicy2)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.ReceiptGroup.sizePolicy().hasHeightForWidth())
+        self.ReceiptGroup.setSizePolicy(sizePolicy1)
         self.gridLayout = QGridLayout(self.ReceiptGroup)
         self.gridLayout.setObjectName(u"gridLayout")
         self.SlipDateTime = QDateTimeEdit(self.ReceiptGroup)
@@ -249,7 +215,6 @@ class Ui_ImportShopReceiptDlg(object):
         self.PeerLbl.setBuddy(self.SlipShopName)
         self.LinesLbl.setBuddy(self.LinesTableView)
 #endif // QT_CONFIG(shortcut)
-        QWidget.setTabOrder(self.ScanReceiptQR, self.InboxList)
         QWidget.setTabOrder(self.InboxList, self.InboxLoadBtn)
         QWidget.setTabOrder(self.InboxLoadBtn, self.InboxRefreshBtn)
         QWidget.setTabOrder(self.InboxRefreshBtn, self.InboxSkipBtn)
@@ -271,8 +236,6 @@ class Ui_ImportShopReceiptDlg(object):
 
     def retranslateUi(self, ImportShopReceiptDlg):
         ImportShopReceiptDlg.setWindowTitle(QCoreApplication.translate("ImportShopReceiptDlg", u"Import shop receipt", None))
-        self.QRGroup.setTitle(QCoreApplication.translate("ImportShopReceiptDlg", u"Get receipt by scanning QR-code", None))
-        self.ScanReceiptQR.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Scan receipt QR", None))
         self.InboxGroup.setTitle(QCoreApplication.translate("ImportShopReceiptDlg", u"Get receipt from phone inbox", None))
         ___qtablewidgetitem = self.InboxList.horizontalHeaderItem(0)
         ___qtablewidgetitem.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Captured", None))

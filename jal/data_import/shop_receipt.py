@@ -19,7 +19,6 @@ from jal.db.settings import JalSettings
 from jal.db.settings_registry import SettingsRegistry, SettingDescriptor
 from jal.db.common_models import AccountListModel, PeerTreeModel, CategoryTreeModel, TagTreeModel
 from jal.widgets.reference_dialogs import AccountListDialog, PeerListDialog, CategoryListDialog, TagsListDialog
-from jal.widgets.qr_scanner import ScanDialog
 from jal.ui.ui_receipt_import_dlg import Ui_ImportShopReceiptDlg
 from jal.data_import.receipt_api.receipts import ReceiptAPIFactory
 from jal.data_import.receipt_api.offline_receipt import ReceiptOffline, paper_lines
@@ -272,7 +271,6 @@ class ImportReceiptDialog(QDialog):
         self.add_operation_button = self.ui.DialogButtonBox.addButton(self.tr("Add"), QDialogButtonBox.ActionRole)
         self.clear_button = self.ui.DialogButtonBox.addButton(self.tr("Clear"), QDialogButtonBox.ResetRole)
 
-        self.ui.ScanReceiptQR.clicked.connect(self.processReceiptQR)
         self.ui.DownloadReceiptBtn.clicked.connect(self.processReceiptParams)
         self.add_operation_button.clicked.connect(self.addOperation)
         self.clear_button.clicked.connect(self.clearSlipData)
@@ -308,22 +306,6 @@ class ImportReceiptDialog(QDialog):
         self.ui.ReceiptParametersList.setItemDelegateForColumn(0, self._parameter_delegate)
 
     #-----------------------------------------------------------------------------------------------
-    # Then it downloads the slip if match found. Otherwise, shows warning message but allows to proceed
-    @Slot()
-    def processReceiptQR(self):
-        qr_data = ScanDialog.execute_scan(parent=self, message=self.tr("Please scan main QR code from the receipt"))
-        if qr_data is None:
-            return
-        logging.info(self.tr("QR: " + qr_data))
-        try:
-            self.receipt_api = ReceiptAPIFactory().get_api_for_qr(qr_data)
-        except ValueError as e:
-            logging.warning(e)
-            return
-        self._inbox_file = ''
-        self.receipt_api.slip_load_ok.connect(self.slip_loaded)
-        self.downloadSlipJSON()
-
     @Slot()
     def processReceiptParams(self):
         api_type = self.ui.ReceiptAPICombo.currentData()

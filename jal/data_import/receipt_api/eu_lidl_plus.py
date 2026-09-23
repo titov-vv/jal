@@ -1,4 +1,3 @@
-import re
 import json
 import logging
 import requests
@@ -6,7 +5,7 @@ import requests_oauthlib
 from urllib import parse
 from oauthlib.oauth2 import MobileApplicationClient
 from PySide6.QtCore import Qt, Slot, Signal, QMetaObject, QDateTime, QUrl
-from PySide6.QtWidgets import QDialog, QInputDialog, QMessageBox
+from PySide6.QtWidgets import QDialog, QMessageBox
 from PySide6.QtWebEngineCore import QWebEngineProfile, QWebEnginePage, QWebEngineUrlScheme, \
     QWebEngineUrlSchemeHandler, QWebEngineUrlRequestJob
 from jal.data_import.receipt_api.receipt_api import ReceiptAPI
@@ -17,38 +16,14 @@ from jal.ui.ui_login_lidl_plus_dlg import Ui_LoginLidlPlusDialog
 
 #-----------------------------------------------------------------------------------------------------------------------
 class ReceiptEuLidlPlus(ReceiptAPI):
-    receipt_pattern = r"A:.*\*B:.*\*C:PT\*D:FS\*E:N\*F:(?P<date>\d{8})\*G:FS (?P<shop_id>\d{4})\d(?P<register_id>\d{2})..\/.*\*H:.{1,70}\*I1:PT\*.*"
-    # aux data is in form 888MMMMSSSSSSCCDDMMYYXFFFFFF
-    # SSSSSS - receipt sequence number
-    # YY, MM, DD - year, month, day of the receipt
-    # CC cash register ID in the shop ID MMMM
-    # X - unknown 1 digit
-    # FFFFFF - FS part of fiscal data
-    def __init__(self, qr_text='', aux_data='', params=None):
+    def __init__(self, params):
         super().__init__()
         self.access_token = ''
         self.slip_json = {}
-        if params is None:
-            parts = re.match(self.receipt_pattern, qr_text)
-            if parts is None:
-                raise ValueError(ReceiptAPI.tr("Lidl QR available but pattern isn't recognized: " + qr_text))
-            parts = parts.groupdict()
-            self.date_time = QDateTime.fromString(parts['date'], 'yyyyMMdd')
-            self.shop_id = int(parts['shop_id'])
-            self.register_id = int(parts['register_id'])
-            if len(aux_data) == 28:  # Get receipt sequence number from aux data or from the user
-                self.seq_id = aux_data[7:13]
-            else:
-                self.seq_id, result = QInputDialog.getText(None, ReceiptAPI.tr("Input Lidl receipt additional data"),
-                                                           ReceiptAPI.tr("Sequence #:"))
-                if not result:
-                    raise ValueError(ReceiptAPI.tr("Can't get Lidl receipt without sequence number"))
-            self.seq_id = int(self.seq_id.lstrip('0'))   # Get rid of any leading zeros and convert to int
-        else:
-            self.date_time = params['Date']
-            self.shop_id = params['Shop #']
-            self.register_id = params['Register #']
-            self.seq_id = params['Sequence #']
+        self.date_time = params['Date']
+        self.shop_id = params['Shop #']
+        self.register_id = params['Register #']
+        self.seq_id = params['Sequence #']
         self.web_session = requests.Session()
         self.web_session.headers['User-Agent'] = "okhttp/4.10.0"
 

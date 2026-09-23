@@ -13,7 +13,7 @@ from jal import __version__
 from jal.ui.ui_main_window import Ui_JAL_MainWindow
 from jal.widgets.operations_widget import OperationsWidget
 from jal.widgets.tax_widget import TaxWidget, MoneyFlowWidget, TaxMergeDialog
-from jal.widgets.helpers import (dependency_present, menu_label, menu_mnemonic, ts2dt,
+from jal.widgets.helpers import (menu_label, menu_mnemonic, ts2dt,
                                 restore_splitters, save_splitters, save_columns, refresh_date_formats,
                                 refresh_row_heights)
 from jal.widgets.icons import JalIcon, AUX_PREFIX, CHAIN_PREFIX
@@ -80,8 +80,6 @@ class MainWindow(QMainWindow):
         self.backup = JalBackup(self)
         self.estimator = None
         self.price_chart = None
-
-        self.ui.actionImportShopReceipt.setEnabled(dependency_present(['PySide6.QtMultimedia']))
 
         self.langGroup = QActionGroup(self.ui.menuLanguage)
         self.createLanguageMenu()

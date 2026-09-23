@@ -134,9 +134,8 @@ per item bought:
 ![The receipt import dialog](img/dlg_receipt.png)
 
 Receipts can be fetched from three services: the Russian tax service (FNS), Lidl Plus, and Pingo
-Doce. Either scan the receipt's QR code with your camera or type the numbers from the receipt in by
-hand, then press **Download receipt**; the lines appear at the bottom, where you choose the account
-and the peer and press **Add**.
+Doce. Type the numbers from the receipt in by hand, then press **Download receipt**; the lines appear
+at the bottom, where you choose the account and the peer and press **Add**.
 
 This feature depends on services that change without notice, and it is not needed for anything else
 in JAL.
