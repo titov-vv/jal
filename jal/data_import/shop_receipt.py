@@ -24,7 +24,7 @@ from jal.widgets.qr_scanner import ScanDialog
 from jal.ui.ui_receipt_import_dlg import Ui_ImportShopReceiptDlg
 from jal.data_import.category_recognizer import recognize_categories
 from jal.data_import.receipt_api.receipts import ReceiptAPIFactory
-from jal.data_import.receipt_api.offline_receipt import ReceiptOffline
+from jal.data_import.receipt_api.offline_receipt import ReceiptOffline, paper_lines
 from jal.data_import.receipt_api.ru_fns import ReceiptRuFNS
 from jal.data_import.receipt_pdf import pdf_receipt
 from jal.data_import.receipt_inbox import JalrFile, Route, scan_inbox, move_done, route
@@ -295,6 +295,7 @@ class ImportReceiptDialog(QDialog):
         self.ui.ReceiptAPICombo.currentIndexChanged.connect(self.change_api)
         self.ui.InboxLoadBtn.clicked.connect(self.loadInboxReceipt)
         self.ui.InboxRefreshBtn.clicked.connect(self.refreshInbox)
+        self.ui.InboxSkipBtn.clicked.connect(self.skipInboxReceipt)
         self.ui.InboxList.itemDoubleClicked.connect(self.loadInboxReceipt)
         self.ui.InboxList.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
         self.ui.InboxList.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeToContents)
@@ -368,6 +369,7 @@ class ImportReceiptDialog(QDialog):
             self.ui.InboxList.setItem(row, 1, QTableWidgetItem(self._source_name(receipt.kind)))
             self.ui.InboxList.setItem(row, 2, QTableWidgetItem(self._route_text(receipt_route)))
         self.ui.InboxLoadBtn.setEnabled(bool(self._inbox))
+        self.ui.InboxSkipBtn.setEnabled(bool(self._inbox))
 
     def _source_name(self, kind: str) -> str:
         names = {
@@ -381,6 +383,9 @@ class ImportReceiptDialog(QDialog):
         if receipt_route.kind == Route.PT_QR:
             qr = receipt_route.at_qr
             return self.tr("Portuguese QR") + f": NIF {qr.nif}, {localize_decimal(qr.total)}"
+        if receipt_route.kind == Route.PT_ITEMS:
+            qr = receipt_route.at_qr
+            return self.tr("Portuguese QR and items") + f": NIF {qr.nif}, {localize_decimal(qr.total)}"
         if receipt_route.kind == Route.FNS:
             return self.tr("Russian QR")
         if receipt_route.kind == Route.PDF:
@@ -401,6 +406,9 @@ class ImportReceiptDialog(QDialog):
         receipt, receipt_route = self._inbox[row]
         if receipt_route.kind == Route.PT_QR:
             receipt_api = ReceiptOffline.from_at_qr(receipt_route.at_qr, receipt.captured_at)
+        elif receipt_route.kind == Route.PT_ITEMS:
+            lines = paper_lines(receipt, receipt_route.at_qr)
+            receipt_api = ReceiptOffline.from_at_qr(receipt_route.at_qr, receipt.captured_at, lines)
         elif receipt_route.kind == Route.FNS:
             try:
                 receipt_api = ReceiptRuFNS(qr_text=receipt_route.code)
@@ -424,6 +432,21 @@ class ImportReceiptDialog(QDialog):
         self._inbox_file = receipt.path
         self.receipt_api.slip_load_ok.connect(self.slip_loaded)
         self.downloadSlipJSON()
+
+    # A file that isn't to be imported leaves the inbox without an operation
+    @Slot()
+    def skipInboxReceipt(self):
+        row = self.ui.InboxList.currentRow()
+        if row < 0 or row >= len(self._inbox):
+            return
+        receipt, _ = self._inbox[row]
+        if receipt.path == self._inbox_file:
+            self.clearSlipData()
+        try:
+            move_done(receipt.path)
+        except OSError as e:
+            logging.warning(self.tr("Receipt file can't be moved out of the inbox") + f": {e}")
+        self.refreshInbox()
 
     def downloadSlipJSON(self):
         if self.receipt_api is None:

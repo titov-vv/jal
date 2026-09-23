@@ -8,6 +8,7 @@ from decimal import Decimal
 from typing import Optional
 from jal.constants import Setup
 from jal.db.settings import JalSettings
+from jal.db.helpers import remove_exponent
 
 AMOUNT = r'[\d.]*\d,\d\d'     # Portuguese amount as printed: '1.234,56'
 
@@ -105,6 +106,13 @@ class ReceiptItem:
     price: Optional[Decimal] = None
     department: str = ''
     discounts: list = field(default_factory=list)   # (label, amount) pairs, amount > 0 as money off
+
+
+# Name of the item's line in the import dialog
+def line_name(item: ReceiptItem) -> str:
+    if item.qty is None or item.qty == 1 or item.price is None:
+        return item.name
+    return f"{item.name} ({remove_exponent(item.qty)} x {item.price:.2f})"
 
 
 # ----------------------------------------------------------------------------------------------------------------------

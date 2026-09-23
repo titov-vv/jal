@@ -18,6 +18,27 @@ class ReceiptCode:
     page: int = 0
 
 
+# One item or discount line of 'paper.items': as printed, the amount is always positive
+@dataclass
+class PaperItem:
+    ITEM = "item"
+    DISCOUNT = "discount"
+
+    role: str
+    text: str
+    amount: Decimal
+    sign_printed: str
+    quantity: Optional[Decimal] = None
+    unit_price: Optional[Decimal] = None
+    unit: str = ''
+    tax_code: str = ''
+    department: str = ''
+
+
+def _money(value) -> Optional[Decimal]:
+    return None if value is None else Decimal(value)
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 # A '.jalr' container written by the ReceiptScan app: a zip of 'receipt.json' plus page images or 'original.pdf'
 class JalrFile:
@@ -28,6 +49,10 @@ class JalrFile:
     IMAGE_IMPORT = "image_import"
     PDF_IMPORT = "pdf_import"
     PDF_NAME = "original.pdf"
+    GREEN = "green"
+    NETTED = "netted"                    # values of 'validation.discount_hypothesis'
+    INFORMATIONAL = "informational"
+    NOT_APPLICABLE = "not_applicable"
 
     def __init__(self, path: str, data: dict):
         self._path = path
@@ -35,6 +60,24 @@ class JalrFile:
         self._kind = data['source']['kind']
         self._captured_at = self._timestamp(data['captured_at'])
         self._codes = [ReceiptCode(x.get('format', ''), x['raw'], x.get('page', 0)) for x in data['codes']]
+        self._paper_items, self._tax_table = self._read_paper(path, data.get('paper') or {})
+
+    # A malformed 'paper' block is dropped rather than the file: the fiscal code alone still imports it
+    @staticmethod
+    def _read_paper(path: str, paper: dict) -> tuple:
+        try:
+            items = [PaperItem(role=x['role'], text=x['text'], amount=Decimal(x['amount']),
+                               sign_printed=x['sign_printed'], quantity=_money(x.get('quantity')),
+                               unit_price=_money(x.get('unit_price')), unit=x.get('unit') or '',
+                               tax_code=x.get('tax_code') or '', department=x.get('department') or '')
+                     for x in paper.get('items') or []]
+            tax_table = [{'code': x['code'], 'rate': _money(x.get('rate')), 'base': _money(x.get('base')),
+                          'tax': _money(x.get('tax')), 'total': _money(x.get('total'))}
+                         for x in paper.get('tax_table') or []]
+        except (ArithmeticError, AttributeError, KeyError, TypeError, ValueError) as e:
+            logging.warning(f"Receipt file has malformed 'paper' block, it is ignored, {path}: {e!r}")
+            return [], []
+        return items, tax_table
 
     # Returns None for a file that isn't a finished container (half-uploaded, not a zip) or has an unknown format
     @classmethod
@@ -96,6 +139,22 @@ class JalrFile:
     def image_names(self) -> list:
         return [x['file'] for x in self._data['source'].get('images', [])]
 
+    @property
+    def paper_items(self) -> list:
+        return self._paper_items
+
+    @property
+    def tax_table(self) -> list:
+        return self._tax_table
+
+    @property
+    def validation_status(self) -> str:
+        return (self._data.get('validation') or {}).get('status') or ''
+
+    @property
+    def discount_hypothesis(self) -> str:
+        return (self._data.get('validation') or {}).get('discount_hypothesis') or ''
+
     def pdf_bytes(self) -> bytes:
         with zipfile.ZipFile(self._path) as container:
             return container.read(self.PDF_NAME)
@@ -133,6 +192,7 @@ class Route:
     FNS = "fns"                  # Russian QR: the receipt is downloaded from FNS
     PDF = "pdf"                  # the document itself is parsed by a shop profile
     PT_QR = "pt_qr"              # only the Portuguese QR is readable: date, shop and total
+    PT_ITEMS = "pt_items"        # Portuguese QR plus the items the phone proved against its total
     UNSUPPORTED = "unsupported"
     NO_CODE = "no_code"                   # reasons for UNSUPPORTED
     UNKNOWN_CODE = "unknown_code"
@@ -159,4 +219,7 @@ def route(receipt: JalrFile) -> Route:
         return Route(Route.UNSUPPORTED, reason=Route.DOCUMENT_TYPE, at_qr=at_qr)
     if at_qr.status != AtQr.NORMAL:
         return Route(Route.UNSUPPORTED, reason=Route.DOCUMENT_STATUS, at_qr=at_qr)
+    if receipt.kind == JalrFile.PAPER_SCAN and receipt.validation_status == JalrFile.GREEN \
+            and any(x.role == PaperItem.ITEM for x in receipt.paper_items):
+        return Route(Route.PT_ITEMS, at_qr=at_qr)
     return Route(Route.PT_QR, at_qr=at_qr)

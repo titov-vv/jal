@@ -91,7 +91,7 @@ class Ui_ImportShopReceiptDlg(object):
         self.InboxList.verticalHeader().setVisible(False)
         self.InboxList.verticalHeader().setMinimumSectionSize(20)
 
-        self.gridLayout_3.addWidget(self.InboxList, 0, 0, 3, 1)
+        self.gridLayout_3.addWidget(self.InboxList, 0, 0, 4, 1)
 
         self.InboxLoadBtn = QPushButton(self.InboxGroup)
         self.InboxLoadBtn.setObjectName(u"InboxLoadBtn")
@@ -103,14 +103,19 @@ class Ui_ImportShopReceiptDlg(object):
 
         self.gridLayout_3.addWidget(self.InboxRefreshBtn, 1, 1, 1, 1)
 
+        self.InboxSkipBtn = QPushButton(self.InboxGroup)
+        self.InboxSkipBtn.setObjectName(u"InboxSkipBtn")
+
+        self.gridLayout_3.addWidget(self.InboxSkipBtn, 2, 1, 1, 1)
+
         self.inboxButtonsSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
-        self.gridLayout_3.addItem(self.inboxButtonsSpacer, 2, 1, 1, 1)
+        self.gridLayout_3.addItem(self.inboxButtonsSpacer, 3, 1, 1, 1)
 
         self.InboxFolderLbl = QLabel(self.InboxGroup)
         self.InboxFolderLbl.setObjectName(u"InboxFolderLbl")
 
-        self.gridLayout_3.addWidget(self.InboxFolderLbl, 3, 0, 1, 2)
+        self.gridLayout_3.addWidget(self.InboxFolderLbl, 4, 0, 1, 2)
 
 
         self.verticalLayout.addWidget(self.InboxGroup)
@@ -252,7 +257,8 @@ class Ui_ImportShopReceiptDlg(object):
         QWidget.setTabOrder(self.ScanReceiptQR, self.InboxList)
         QWidget.setTabOrder(self.InboxList, self.InboxLoadBtn)
         QWidget.setTabOrder(self.InboxLoadBtn, self.InboxRefreshBtn)
-        QWidget.setTabOrder(self.InboxRefreshBtn, self.ReceiptAPICombo)
+        QWidget.setTabOrder(self.InboxRefreshBtn, self.InboxSkipBtn)
+        QWidget.setTabOrder(self.InboxSkipBtn, self.ReceiptAPICombo)
         QWidget.setTabOrder(self.ReceiptAPICombo, self.DownloadReceiptBtn)
         QWidget.setTabOrder(self.DownloadReceiptBtn, self.ReceiptParametersList)
         QWidget.setTabOrder(self.ReceiptParametersList, self.SlipDateTime)
@@ -282,6 +288,10 @@ class Ui_ImportShopReceiptDlg(object):
         ___qtablewidgetitem2.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Import as", None))
         self.InboxLoadBtn.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"L&oad", None))
         self.InboxRefreshBtn.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Re&fresh", None))
+#if QT_CONFIG(tooltip)
+        self.InboxSkipBtn.setToolTip(QCoreApplication.translate("ImportShopReceiptDlg", u"Move the selected file into the 'done' folder without importing it", None))
+#endif // QT_CONFIG(tooltip)
+        self.InboxSkipBtn.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"S&kip", None))
         self.SlipDataGroup.setTitle(QCoreApplication.translate("ImportShopReceiptDlg", u"Get receipt by manual data entry", None))
         self.ReceiptAPILabel.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"&Receipt type:", None))
         self.DownloadReceiptBtn.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Download receipt", None))

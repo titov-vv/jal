@@ -5,9 +5,8 @@ from decimal import Decimal
 from typing import Optional
 from PySide6.QtCore import QDateTime, QDate, QTime
 from jal.db.clock import local_zone
-from jal.db.helpers import remove_exponent
 from jal.widgets.helpers import dependency_present
-from jal.data_import.receipt import ShopReceipt, ReceiptItem, parse_header, parse_total, shop_profile
+from jal.data_import.receipt import ShopReceipt, parse_header, parse_total, shop_profile, line_name
 from jal.data_import.receipt_api.receipt_api import ReceiptAPI
 from jal.data_import.receipt_api.offline_receipt import ReceiptOffline
 from jal.data_import.receipt_api.pt_at_qr import AtQr
@@ -58,12 +57,6 @@ def layout_text(data: bytes) -> list:
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-def _line_name(item: ReceiptItem) -> str:
-    if item.qty is None or item.qty == 1:
-        return item.name
-    return f"{item.name} ({remove_exponent(item.qty)} x {item.price:.2f})"
-
-
 # Reads a receipt PDF into the lines of the import dialog. With a shop profile whose items add up to the receipt's
 # VAT table and total, every item is a line; otherwise the receipt is one line of its total, to be split by hand.
 def pdf_receipt(data: bytes, at_qr: Optional[AtQr], captured_at: datetime) -> Optional[ReceiptOffline]:
@@ -92,7 +85,7 @@ def pdf_receipt(data: bytes, at_qr: Optional[AtQr], captured_at: datetime) -> Op
             logging.warning(ReceiptAPI.tr("Receipt items don't add up, the receipt is loaded as one line")
                             + f" ({profile.name}): " + "; ".join(problems))
         else:
-            lines = [{'name': _line_name(x), 'amount': sign * receipt.paid(x)} for x in receipt.items]
+            lines = [{'name': line_name(x), 'amount': sign * receipt.paid(x)} for x in receipt.items]
     if not lines:
         if total is None:
             logging.warning(ReceiptAPI.tr("Receipt PDF has no total that could be read"))

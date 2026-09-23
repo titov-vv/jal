@@ -10,7 +10,7 @@ from PySide6.QtWidgets import QWidget
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_ledger
 from tests.test_at_qr import LIDL
-from tests.test_receipt_inbox import make_jalr, FNS
+from tests.test_receipt_inbox import make_jalr, paper_scan, FNS
 from tests.test_receipt_pdf import make_pdf, lidl_receipt, QR
 from constants import PredefinedCategory
 from jal.db.db import JalDB
@@ -18,7 +18,8 @@ from jal.db.clock import local_zone
 from jal.db.settings import JalSettings
 from jal.db.operations import IncomeSpending
 from jal.data_import.receipt_api.pt_at_qr import AtQr
-from jal.data_import.receipt_api.offline_receipt import ReceiptOffline
+from jal.data_import.receipt_inbox import JalrFile
+from jal.data_import.receipt_api.offline_receipt import ReceiptOffline, paper_lines
 from jal.data_import.receipt_api.ru_fns import ReceiptRuFNS
 from jal.data_import.shop_receipt import ImportReceiptDialog, RECEIPT_INBOX_SETTING
 
@@ -48,6 +49,64 @@ def test_tier0_credit_note_is_money_back(prepare_db):
     credit_note = AtQr.parse(LIDL.replace("D:FS", "D:NC"))
     receipt = ReceiptOffline.from_at_qr(credit_note, datetime(2026, 8, 14, 18, 42, tzinfo=LISBON_SUMMER))
     assert receipt.slip_lines()[0]['amount'] == Decimal('11.94')
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+PHARMACY = LIDL.replace("A:503340855", "A:509103774")     # a shop without a profile
+
+
+def _paper_lines(tmp_path, qr, items, hypothesis=None, total=None) -> list:
+    qr = qr if total is None else qr.replace("O:11.94", f"O:{total}")
+    jalr = JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[qr], extra=paper_scan(items, hypothesis=hypothesis)))
+    return paper_lines(jalr, AtQr.parse(qr))
+
+
+def test_paper_items_are_lines(prepare_db, tmp_path):
+    items = [{"role": "item", "text": "BANANA", "amount": "1.41", "sign_printed": "positive", "quantity": "0.705",
+              "unit_price": "2.00", "tax_code": "A"},
+             ("item", "LEITE", "10.53")]
+    assert _paper_lines(tmp_path, PHARMACY, items) == [{'name': "BANANA (0.705 x 2.00)", 'amount': Decimal('-1.41')},
+                                                       {'name': "LEITE", 'amount': Decimal('-10.53')}]
+
+
+def test_paper_items_of_a_credit_note_are_money_back(prepare_db, tmp_path):
+    lines = _paper_lines(tmp_path, PHARMACY.replace("D:FS", "D:NC"), [("item", "LEITE", "11.94")])
+    assert lines == [{'name': "LEITE", 'amount': Decimal('11.94')}]
+
+
+def test_paper_items_that_miss_the_total_are_refused(prepare_db, tmp_path):
+    assert _paper_lines(tmp_path, PHARMACY, [("item", "LEITE", "11.93")]) == []
+
+
+def test_netted_discount_reduces_its_item(prepare_db, tmp_path):
+    items = [("item", "LEITE", "12.94"), ("discount", "Poupança", "1.00"), ("item", "PAO", "0.50")]
+    lines = _paper_lines(tmp_path, PHARMACY, items, "netted", total="12.44")
+    assert lines == [{'name': "LEITE", 'amount': Decimal('-11.94')}, {'name': "PAO", 'amount': Decimal('-0.50')}]
+
+
+def test_informational_discount_is_not_money_off(prepare_db, tmp_path):
+    items = [("item", "LEITE", "12.94"), ("discount", "POUPANCA", "1.00")]
+    assert _paper_lines(tmp_path, PHARMACY, items, "informational", total="12.94") == \
+        [{'name': "LEITE", 'amount': Decimal('-12.94')}]
+
+
+def test_discount_needs_a_reading_that_balances_it(prepare_db, tmp_path):
+    items = [("item", "LEITE", "12.94"), ("discount", "Poupança", "1.00")]
+    for hypothesis in ("not_applicable", None):
+        assert _paper_lines(tmp_path, PHARMACY, items, hypothesis, total="11.94") == []
+    assert _paper_lines(tmp_path, PHARMACY, [("item", "LEITE", "11.94")], "not_applicable") != []
+
+
+def test_discount_reading_must_agree_with_the_shop_profile(prepare_db, tmp_path):
+    items = [("item", "LEITE", "12.94"), ("discount", "Promoção Lidl Plus", "1.00")]
+    assert _paper_lines(tmp_path, LIDL, items, "netted", total="11.94") == \
+        [{'name': "LEITE", 'amount': Decimal('-11.94')}]
+    assert _paper_lines(tmp_path, LIDL, items, "informational", total="12.94") == []     # Lidl nets its discounts
+
+
+def test_discount_above_every_item_is_refused(prepare_db, tmp_path):
+    items = [("discount", "Poupança", "1.00"), ("item", "LEITE", "12.94")]
+    assert _paper_lines(tmp_path, PHARMACY, items, "netted") == []
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -243,3 +302,63 @@ def test_unreadable_pdf_loads_nothing(owner, inbox):
     dialog.loadInboxReceipt()
     assert dialog.receipt_api is None and dialog.slip_lines is None
     assert os.path.isfile(path)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def test_green_paper_scan_brings_its_items(owner, inbox):
+    items = [("item", "LEITE", "12.94"), ("discount", "Promoção Lidl Plus", "1.00")]
+    path = make_jalr(inbox, "20260814-184200-00000001.jalr", codes=[LIDL],
+                     extra=paper_scan(items, hypothesis="netted"))
+    dialog = _dialog(owner)
+    assert dialog.ui.InboxList.item(0, 2).text() == "Portuguese QR and items: NIF 503340855, 11.94"
+    dialog.ui.InboxList.setCurrentCell(0, 0)
+    dialog.loadInboxReceipt()
+    assert dialog.slip_lines['name'].tolist() == ["LEITE"]
+    assert dialog.slip_lines['amount'].tolist() == [Decimal('-11.94')]
+    assert dialog.ui.SlipDateTime.dateTime() == _local(2026, 8, 14, 18, 42)
+
+    dialog.ui.AccountEdit.selected_id = 1
+    dialog.ui.PeerEdit.selected_id = 1
+    dialog.slip_lines['category'] = PredefinedCategory.Fees
+    dialog.addOperation()
+    oid = IncomeSpending.find_by_number(NUMBER)
+    assert oid and IncomeSpending(oid).amount() == Decimal('-11.94')
+    assert not os.path.exists(path)
+
+
+def test_amber_paper_scan_is_one_line_of_the_total(owner, inbox):
+    make_jalr(inbox, "20260814-184200-00000001.jalr", codes=[LIDL],
+              extra=paper_scan([("item", "LEITE", "11.94")], status="amber"))
+    dialog = _dialog(owner)
+    assert dialog.ui.InboxList.item(0, 2).text() == "Portuguese QR: NIF 503340855, 11.94"
+    dialog.ui.InboxList.setCurrentCell(0, 0)
+    dialog.loadInboxReceipt()
+    assert dialog.slip_lines['name'].tolist() == ["NIF 503340855"]
+    assert dialog.slip_lines['amount'].tolist() == [Decimal('-11.94')]
+
+
+def test_green_items_that_dont_add_up_are_one_line_of_the_total(owner, inbox):
+    make_jalr(inbox, "20260814-184200-00000001.jalr", codes=[LIDL], extra=paper_scan([("item", "LEITE", "1.94")]))
+    dialog = _dialog(owner)
+    dialog.ui.InboxList.setCurrentCell(0, 0)
+    dialog.loadInboxReceipt()
+    assert dialog.slip_lines['amount'].tolist() == [Decimal('-11.94')]
+
+
+def test_skipped_file_leaves_the_inbox_without_an_operation(owner, inbox):
+    first = make_jalr(inbox, "20260814-184200-00000001.jalr", codes=[LIDL])
+    second = make_jalr(inbox, "20260814-184300-00000002.jalr", kind="image_import")
+    dialog = _dialog(owner)
+    before = _operations()
+    dialog.ui.InboxList.setCurrentCell(0, 0)
+    dialog.loadInboxReceipt()
+    dialog.ui.InboxList.setCurrentCell(0, 0)
+    dialog.skipInboxReceipt()
+    assert dialog.slip_lines is None                      # the skipped receipt was the loaded one
+    assert not os.path.exists(first) and os.path.isfile(inbox / "done" / "20260814-184200-00000001.jalr")
+    assert dialog.ui.InboxList.rowCount() == 1
+    dialog.ui.InboxList.setCurrentCell(0, 0)
+    dialog.skipInboxReceipt()                             # an unsupported file can be skipped too
+    assert not os.path.exists(second)
+    assert dialog.ui.InboxList.rowCount() == 0 and not dialog.ui.InboxSkipBtn.isEnabled()
+    assert _operations() == before

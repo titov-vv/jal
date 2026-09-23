@@ -5,7 +5,8 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from jal.data_import.receipt_inbox import JalrFile, scan_inbox, move_done, route, Route, is_fns_qr
+from decimal import Decimal
+from jal.data_import.receipt_inbox import JalrFile, PaperItem, scan_inbox, move_done, route, Route, is_fns_qr
 from tests.test_at_qr import LIDL
 
 FNS = "t=20240115T1830&s=1234.50&fn=7380440700000000&i=12345&fp=1234567890&n=1"
@@ -35,6 +36,19 @@ def make_jalr(folder, name, kind="paper_scan", codes=(), schema="jal.receipt/1",
         else:
             container.writestr("scan-1.jpg", b"fake")
     return path
+
+
+# 'paper' and 'validation' blocks of a scan; items are (role, text, amount) or dicts of all the fields
+def paper_scan(items, status="green", hypothesis=None, tax_table=()) -> dict:
+    rows = []
+    for x in items:
+        if isinstance(x, tuple):
+            role, text, amount = x
+            x = {"role": role, "text": text, "amount": amount,
+                 "sign_printed": "positive" if role == "item" else "negative", "tax_code": "A"}
+        rows.append(x)
+    return {"paper": {"shop_name": None, "printed_at": None, "tax_table": list(tax_table), "items": rows},
+            "validation": {"status": status, "checks": [], "discount_hypothesis": hypothesis}}
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -151,3 +165,48 @@ def test_route_unsupported(tmp_path):
     for i, (codes, reason) in enumerate(cases):
         result = route(JalrFile.open(make_jalr(tmp_path, f"{i}.jalr", kind="image_import", codes=codes)))
         assert (result.kind, result.reason) == (Route.UNSUPPORTED, reason)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def test_paper_block_is_read(tmp_path):
+    item = {"role": "item", "text": "BANANA", "amount": "1.41", "sign_printed": "positive", "quantity": "0.705",
+            "unit_price": "2.00", "unit": "kg", "tax_code": "A", "department": "FRUTAS", "source_lines": [3, 4],
+            "confidence": 0.9}
+    table = [{"code": "A", "rate": "6.00", "base": "1.33", "tax": "0.08", "total": "1.41", "source_line": 20}]
+    jalr = JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[LIDL],
+                                   extra=paper_scan([item, ("discount", "Promo", "0.10")], hypothesis="netted",
+                                                    tax_table=table)))
+    assert jalr.validation_status == "green" and jalr.discount_hypothesis == JalrFile.NETTED
+    assert jalr.paper_items[0] == PaperItem("item", "BANANA", Decimal('1.41'), "positive", Decimal('0.705'),
+                                            Decimal('2.00'), "kg", "A", "FRUTAS")
+    assert jalr.paper_items[1].role == PaperItem.DISCOUNT and jalr.paper_items[1].quantity is None
+    assert jalr.tax_table == [{'code': "A", 'rate': Decimal('6.00'), 'base': Decimal('1.33'),
+                               'tax': Decimal('0.08'), 'total': Decimal('1.41')}]
+
+
+def test_scan_without_paper_block(tmp_path):
+    jalr = JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[LIDL]))
+    assert jalr.paper_items == [] and jalr.tax_table == []
+    assert jalr.validation_status == "unchecked" and jalr.discount_hypothesis == ''
+
+
+def test_malformed_paper_block_leaves_the_file_readable(tmp_path):
+    jalr = JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[LIDL],
+                                   extra=paper_scan([("item", "BANANA", "1,41")])))
+    assert jalr is not None and jalr.paper_items == []
+    assert route(jalr).kind == Route.PT_QR
+
+
+def test_route_items_of_a_green_paper_scan_only(tmp_path):
+    items = [("item", "BANANA", "11.94")]
+    jalr = JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[LIDL], extra=paper_scan(items)))
+    assert route(jalr).kind == Route.PT_ITEMS and route(jalr).at_qr.total == Decimal('11.94')
+    for i, status in enumerate(("amber", "red", "unchecked")):
+        jalr = JalrFile.open(make_jalr(tmp_path, f"{status}.jalr", codes=[LIDL], extra=paper_scan(items, status)))
+        assert route(jalr).kind == Route.PT_QR
+    jalr = JalrFile.open(make_jalr(tmp_path, "b.jalr", kind="image_import", codes=[LIDL], extra=paper_scan(items)))
+    assert route(jalr).kind == Route.PT_QR
+    jalr = JalrFile.open(make_jalr(tmp_path, "c.jalr", codes=[LIDL], extra=paper_scan([])))
+    assert route(jalr).kind == Route.PT_QR
+    jalr = JalrFile.open(make_jalr(tmp_path, "d.jalr", codes=[LIDL.replace("E:N", "E:A")], extra=paper_scan(items)))
+    assert route(jalr).reason == Route.DOCUMENT_STATUS
