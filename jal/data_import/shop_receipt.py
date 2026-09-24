@@ -1,3 +1,4 @@
+import base64
 import logging
 import zipfile
 import pandas as pd
@@ -128,6 +129,8 @@ class SlipLinesDelegate(QStyledItemDelegate):
 
 #-----------------------------------------------------------------------------------------------------------------------
 class ImportReceiptDialog(QDialog):
+    GEOMETRY_KEY = "DlgGeometry_ImportReceipt"
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.ui = Ui_ImportShopReceiptDlg()
@@ -161,12 +164,20 @@ class ImportReceiptDialog(QDialog):
         self.ui.InboxList.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeToContents)
 
         self.refreshInbox()
+        stored = JalSettings().getStr(self.GEOMETRY_KEY)
+        if stored:
+            self.restoreGeometry(base64.decodebytes(stored.encode('utf-8')))
 
-    # Column widths of the receipt lines are the user's to set, and they are kept for the next receipt
-    @Slot()
-    def closeEvent(self, event):
-        save_columns(self, Setup.COLUMNS_STATE_PREFIX)
-        super().closeEvent(event)
+    # Every exit (Close, window X, Esc) ends here; closeEvent() alone misses Esc
+    def done(self, result):
+        JalSettings().setValue(self.GEOMETRY_KEY, base64.encodebytes(self.saveGeometry().data()).decode('utf-8'))
+        self._save_lines_columns()
+        super().done(result)
+
+    # Without a loaded receipt the header has no sections, and saving it would wipe the stored widths
+    def _save_lines_columns(self):
+        if self.ui.LinesTableView.model() is not None:
+            save_columns(self, Setup.COLUMNS_STATE_PREFIX)
 
     # -----------------------------------------------------------------------------------------------
     # Lists the receipt files that the phone app has delivered into the inbox folder
@@ -300,6 +311,7 @@ class ImportReceiptDialog(QDialog):
                 self.ui.LinesTableView.setColumnWidth(column, 100)
             self.ui.LinesTableView.setItemDelegateForColumn(column, self.delegate)
         restore_columns(self.ui.LinesTableView, Setup.COLUMNS_STATE_PREFIX)   # a width the user has set outlives the next receipt
+        self.ui.LinesTableView.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)   # a restored state may carry none
         self.ui.LinesTableView.show()
 
     def addOperation(self):
@@ -356,4 +368,5 @@ class ImportReceiptDialog(QDialog):
     def clearSlipData(self):
         self.slip_lines = None
         self._inbox_file = ''
+        self._save_lines_columns()
         self.ui.LinesTableView.setModel(None)

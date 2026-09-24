@@ -6,7 +6,7 @@ from decimal import Decimal
 
 import pytest
 from PySide6.QtCore import QDateTime, QDate, QTime
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QWidget, QHeaderView
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_ledger
 from tests.test_at_qr import LIDL
@@ -359,3 +359,25 @@ def test_skipped_file_leaves_the_inbox_without_an_operation(owner, inbox):
     assert not os.path.exists(second)
     assert dialog.ui.InboxList.rowCount() == 0 and not dialog.ui.InboxSkipBtn.isEnabled()
     assert _operations() == before
+
+
+def test_window_size_and_line_columns_are_kept(owner, inbox):
+    make_jalr(inbox, "20260814-184200-00000001.jalr", codes=[LIDL])
+    make_jalr(inbox, "20260814-184300-00000002.jalr", codes=[PHARMACY])
+    dialog = _dialog(owner)
+    dialog.show()
+    dialog.resize(700, 600)
+    dialog.ui.InboxList.setCurrentCell(0, 0)
+    dialog.loadInboxReceipt()
+    dialog.ui.LinesTableView.setColumnWidth(1, 250)
+    dialog.clearSlipData()
+    dialog.reject()                            # Esc: no close event, and the lines table is empty by now
+    dialog = _dialog(owner)
+    dialog.show()
+    assert (dialog.width(), dialog.height()) == (700, 600)
+    dialog.ui.InboxList.setCurrentCell(0, 0)
+    dialog.loadInboxReceipt()
+    header = dialog.ui.LinesTableView.horizontalHeader()
+    assert header.sectionSize(1) == 250
+    assert header.sectionResizeMode(0) == QHeaderView.Stretch
+    dialog.close()
