@@ -137,10 +137,8 @@ def test_receipt_import_button_roles(owner):
 # ----------------------------------------------------------------------------------------------------------------------
 # 'Login' is the affirmative action but not an unconditional accept - it has to reach the server first. So it carries
 # AcceptRole (which places it and makes it the default) while the box's accepted() runs the login rather than
-# accept(). Two of the three dialogs had no reject path at all before this change.
-LOGIN_DIALOGS = (("jal.data_import.receipt_api.pt_pingo_doce", "LoginPingoDoce", ("DialogButtonBox",)),
-                 ("jal.data_import.receipt_api.ru_fns", "LoginFNS", ("SMSButtonBox", "FNSButtonBox", "ESIAButtonBox")),
-                 ("jal.data_import.receipt_api.eu_lidl_plus", "LoginLidlPlus", ("DialogButtonBox",)))
+# accept().
+LOGIN_DIALOGS = (("jal.data_import.receipt_api.ru_fns", "LoginFNS", ("SMSButtonBox", "FNSButtonBox", "ESIAButtonBox")),)
 
 
 @pytest.mark.parametrize("module_name,class_name,boxes", LOGIN_DIALOGS)

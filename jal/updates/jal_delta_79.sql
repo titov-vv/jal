@@ -13,6 +13,11 @@ DROP TABLE IF EXISTS map_category;
 -- The receipt lines lost their hidden 'confidence' column; a stored layout of the old columns would hide 'Tag'
 DELETE FROM settings WHERE name='ColumnsState_ImportReceiptDialog_LinesTableView';
 --------------------------------------------------------------------------------
+-- LIDL PLUS AND PINGO DOCE RECEIPT APIS ARE REMOVED
+--------------------------------------------------------------------------------
+DELETE FROM settings WHERE name IN ('EuLidlClientSecret', 'EuLidlAccessToken', 'EuLidlRefreshToken',
+                                    'PtPingoDoceAccessToken', 'PtPingoDoceRefreshToken', 'PtPingoDoceUserProfile');
+--------------------------------------------------------------------------------
 -- Set new DB schema version
 UPDATE settings SET value=79 WHERE name='SchemaVersion';
 COMMIT;

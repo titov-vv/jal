@@ -35,11 +35,10 @@ OPERATION_FORMS = sorted((UI_ROOT / "widgets").glob("*_operation.ui"))
 # setCentralWidget() on a QMainWindow, and a plain QWidget has neither.
 HOST_CLASSES = {"QDialog": QDialog, "QMainWindow": QMainWindow}
 
-# Two forms embed a QWebEngineView, and a bare one takes the global default profile - which cannot be torn down
-# from a test process and takes the interpreter with it on the way out. Both application classes hand the view a
-# page on a profile they own themselves, so these two forms are built the way the application builds them.
-REAL_CLASSES = {"login_fns_dlg": ("jal.data_import.receipt_api.ru_fns", "LoginFNS"),
-                "login_lidl_plus_dlg": ("jal.data_import.receipt_api.eu_lidl_plus", "LoginLidlPlus")}
+# One form embeds a QWebEngineView, and a bare one takes the global default profile - which cannot be torn down
+# from a test process and takes the interpreter with it on the way out. The application class hands the view a
+# page on a profile it owns itself, so this form is built the way the application builds them.
+REAL_CLASSES = {"login_fns_dlg": ("jal.data_import.receipt_api.ru_fns", "LoginFNS")}
 
 
 # The host is given a parent for the reason spelled out in test_dialog_buttons.py: a parentless Qt window leaves
