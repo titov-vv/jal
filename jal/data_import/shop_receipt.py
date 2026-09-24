@@ -11,6 +11,8 @@ from jal.widgets.helpers import (set_grids_metrics, set_date_formats, restore_co
 from jal.widgets.theme import Theme, Meaning
 from jal.db.helpers import localize_decimal
 from jal.db.peer import JalPeer
+from jal.db.account import JalAccount
+from jal.db.asset import JalAsset
 from jal.db.clock import local_zone
 from jal.db.category import JalCategory
 from jal.db.operations import LedgerTransaction, IncomeSpending
@@ -21,7 +23,8 @@ from jal.widgets.reference_dialogs import AccountListDialog, PeerListDialog, Cat
 from jal.ui.ui_receipt_import_dlg import Ui_ImportShopReceiptDlg
 from jal.data_import.receipt_api.offline_receipt import ReceiptOffline, paper_lines
 from jal.data_import.receipt_api.ru_fns import ReceiptRuFNS
-from jal.data_import.receipt_pdf import pdf_receipt
+from jal.data_import.receipt import parse_card
+from jal.data_import.receipt_pdf import layout_text, pdf_receipt
 from jal.data_import.receipt_inbox import JalrFile, Route, scan_inbox, move_done, route
 
 
@@ -232,6 +235,7 @@ class ImportReceiptDialog(QDialog):
         if row < 0 or row >= len(self._inbox):
             return
         receipt, receipt_route = self._inbox[row]
+        text = receipt.ocr_texts
         if receipt_route.kind == Route.PT_QR:
             receipt_api = ReceiptOffline.from_at_qr(receipt_route.at_qr, receipt.captured_at)
         elif receipt_route.kind == Route.PT_ITEMS:
@@ -252,14 +256,26 @@ class ImportReceiptDialog(QDialog):
             receipt_api = pdf_receipt(data, receipt_route.at_qr, receipt.captured_at)
             if receipt_api is None:
                 return
+            text = layout_text(data)
         else:
             logging.warning(self.tr("Receipt can't be imported") + f" ({receipt.name}): " +
                             self._route_text(receipt_route))
             return
+        self._select_account_by_card(text, receipt_route.currency)
         self.receipt_api = receipt_api
         self._inbox_file = receipt.path
         self.receipt_api.slip_load_ok.connect(self.slip_loaded)
         self.downloadSlipJSON()
+
+    # The account whose card the receipt prints; none without a match, so the last receipt's account isn't reused.
+    # 'currency' is a code, any currency if empty
+    def _select_account_by_card(self, text: list, currency: str):
+        digits = parse_card(text)
+        currency_id = next((x.id() for x in JalAsset.get_currencies() if x.symbol() == currency), 0) if currency else 0
+        if not digits or (currency and not currency_id):     # a currency the ledger doesn't have holds no account
+            self.ui.AccountEdit.selected_id = 0
+            return
+        self.ui.AccountEdit.selected_id = JalAccount.find_by_card(digits, currency_id).id()
 
     # A file that isn't to be imported leaves the inbox without an operation
     @Slot()

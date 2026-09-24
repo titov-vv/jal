@@ -185,6 +185,13 @@ def test_route_ignores_no_value_status_over_a_non_zero_qr(tmp_path):
     assert route(jalr).kind == Route.PT_QR
 
 
+def test_route_currency_comes_from_the_fiscal_code(tmp_path):
+    assert route(JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[LIDL]))).currency == "EUR"
+    assert route(JalrFile.open(make_jalr(tmp_path, "b.jalr", kind="pdf_import", codes=[LIDL]))).currency == "EUR"
+    assert route(JalrFile.open(make_jalr(tmp_path, "c.jalr", codes=[FNS]))).currency == "RUB"
+    assert route(JalrFile.open(make_jalr(tmp_path, "d.jalr", kind="pdf_import"))).currency == ''
+    assert route(JalrFile.open(make_jalr(tmp_path, "e.jalr", codes=[ZERO_DC]))).currency == "EUR"
+
 # ----------------------------------------------------------------------------------------------------------------------
 def test_paper_block_is_read(tmp_path):
     item = {"role": "item", "text": "BANANA", "amount": "1.41", "sign_printed": "positive", "quantity": "0.705",

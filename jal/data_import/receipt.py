@@ -85,6 +85,16 @@ def parse_header(lines: list) -> dict:
     return header
 
 
+_CARD = re.compile(r'CART[AÃ][O0]\s*:?\s*[*#Xx]{2,}\s*([0-9lIOo]{4})(?![0-9A-Za-z])', re.I)
+_CARD_DIGITS = str.maketrans('lIOo', '1100')     # OCR reads '1' and '0' as letters
+
+
+# Last 4 digits of the payment card as 'CARTAO: ****1234' prints them; None if absent or several cards disagree
+def parse_card(lines: list) -> Optional[str]:
+    cards = {match.group(1).translate(_CARD_DIGITS) for line in lines for match in _CARD.finditer(line)}
+    return cards.pop() if len(cards) == 1 else None
+
+
 _BODY_END = re.compile(r'^\s*(Resumo|TOTAL|Total)\b')
 
 

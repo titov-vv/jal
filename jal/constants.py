@@ -454,6 +454,7 @@ class AccountData(PredefinedList, QObject):
     Tag = 12           # Tag assigned to the account, stored as tags.id.
     OpenDate = 13      # Date the account was opened (timestamp). Optional.
     CloseDate = 14     # Date the account was closed (timestamp). Optional.
+    CardDigits = 15    # Last 4 digits of the payment cards of the account, as receipts print them: '1234 5678'
 
     # Attributes that the application maintains itself and that must never be typed in by hand: they are kept
     # out of the attribute selector and their rows are not editable in the account details grid. A wrong sync
@@ -477,7 +478,8 @@ class AccountData(PredefinedList, QObject):
             self.StakeProtocol: self.tr("Staking protocol"),
             self.Tag: self.tr("Tag"),
             self.OpenDate: self.tr("Opened on"),
-            self.CloseDate: self.tr("Closed on")
+            self.CloseDate: self.tr("Closed on"),
+            self.CardDigits: self.tr("Card (last 4 digits)")
         }
         self._types = {
             self.Number: "str",
@@ -493,7 +495,8 @@ class AccountData(PredefinedList, QObject):
             self.StakeProtocol: "str",
             self.Tag: "tag",
             self.OpenDate: "date",
-            self.CloseDate: "date"
+            self.CloseDate: "date",
+            self.CardDigits: "str"
         }
 
     def get_type(self, type_id, default='') -> str:

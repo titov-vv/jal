@@ -8,7 +8,7 @@ from PySide6.QtSql import QSqlTableModel
 import sqlparse
 
 from tests.fixtures import project_root, data_path, prepare_db
-from constants import PredefinedAccountType, AccountData, Setup
+from constants import PredefinedAccountType, AccountData, AccountStatus, Setup
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.db import JalDB
 from jal.db.tag import JalTag
@@ -52,6 +52,34 @@ def test_find_by_number(prepare_db):
     assert found.account_type() == PredefinedAccountType.Broker
     missing = JalAccount.find({'number': 'NOPE', 'currency': 2})
     assert missing.id() == 0
+
+
+# find_by_card() picks the single account in use whose card digits match, the currency deciding between siblings
+def test_find_by_card(prepare_db):
+    def bank(name, currency_id, cards=None):
+        account = JalAccountCreator(currency_id=currency_id, number='', name=name,
+                                    account_type=PredefinedAccountType.Bank).commit()
+        if cards is not None:
+            account.set_data(AccountData.CardDigits, cards)
+        return account
+
+    main = bank('Main.EUR', 2, "1234 5678")
+    main_usd = bank('Main.USD', 3, "1234")
+    bank('No card', 2)
+    assert JalAccount.find_by_card("1234", 2).id() == main.id()
+    assert JalAccount.find_by_card("5678", 2).id() == main.id()
+    assert JalAccount.find_by_card("1234", 3).id() == main_usd.id()
+    assert JalAccount.find_by_card("1234").id() == 0            # any currency: the EUR and USD siblings both match
+    assert JalAccount.find_by_card("5678").id() == main.id()
+    assert JalAccount.find_by_card("0000", 2).id() == 0
+    assert JalAccount.find_by_card("123", 2).id() == 0
+    old = bank('Old.EUR', 2, "4321, 12345")        # separators are free; a 5-digit group isn't a card
+    assert JalAccount.find_by_card("4321", 2).id() == old.id()
+    assert JalAccount.find_by_card("2345", 2).id() == 0
+    old.set_status(AccountStatus.Closed)
+    assert JalAccount.find_by_card("4321", 2).id() == 0
+    bank('Other.EUR', 2, "5678")                   # the same digits on two accounts: no guess
+    assert JalAccount.find_by_card("5678", 2).id() == 0
 
 
 # Creating an account with the same number under a new currency clones it, carrying account_data across

@@ -12,7 +12,8 @@ from tests.fixtures import project_root, data_path, prepare_db, prepare_db_ledge
 from tests.test_at_qr import LIDL
 from tests.test_receipt_inbox import make_jalr, paper_scan, FNS
 from tests.test_receipt_pdf import make_pdf, lidl_receipt, QR
-from constants import PredefinedCategory
+from constants import PredefinedCategory, PredefinedAccountType, AccountData
+from jal.db.account import JalAccountCreator
 from jal.db.db import JalDB
 from jal.db.clock import local_zone
 from jal.db.settings import JalSettings
@@ -24,6 +25,7 @@ from jal.data_import.receipt_api.ru_fns import ReceiptRuFNS
 from jal.data_import.shop_receipt import ImportReceiptDialog, RECEIPT_INBOX_SETTING
 
 LISBON_SUMMER = timezone(timedelta(hours=1))
+RUB, USD, EUR = 1, 2, 3       # currency ids of the test database
 NUMBER = "503340855:FS 0421/000317"
 
 
@@ -359,6 +361,69 @@ def test_skipped_file_leaves_the_inbox_without_an_operation(owner, inbox):
     assert not os.path.exists(second)
     assert dialog.ui.InboxList.rowCount() == 0 and not dialog.ui.InboxSkipBtn.isEnabled()
     assert _operations() == before
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def _card_account(cards="1234", currency_id=EUR, name='Card bank') -> int:
+    account = JalAccountCreator(currency_id=currency_id, number='', name=name,
+                                account_type=PredefinedAccountType.Bank).commit()
+    account.set_data(AccountData.CardDigits, cards)
+    return account.id()
+
+
+def _ocr(*rows) -> dict:
+    return {"ocr": {"engine": "test", "lines": [{"page": 1, "text": x} for x in rows]}}
+
+
+def _load(dialog, row=0):
+    dialog.ui.InboxList.setCurrentCell(row, 0)
+    dialog.loadInboxReceipt()
+
+
+def test_account_is_chosen_by_the_card_a_pdf_prints(owner, inbox):
+    account_id = _card_account()
+    make_jalr(inbox, "20260814-190000-00000005.jalr", kind="pdf_import", codes=[QR],
+              pdf=make_pdf(lidl_receipt() + [(10, 500, "CARTAO: ****1234     TC:9E1F0B3C")], form=True))
+    dialog = _dialog(owner)
+    _load(dialog)
+    assert dialog.ui.AccountEdit.selected_id == account_id
+
+
+def test_account_is_chosen_by_the_card_a_paper_scan_reads(owner, inbox):
+    account_id = _card_account()
+    make_jalr(inbox, "20260814-184200-00000001.jalr", codes=[LIDL], extra=_ocr("MULTIBANCO 11,94", "CARTA0: ****1234"))
+    dialog = _dialog(owner)
+    _load(dialog)
+    assert dialog.ui.AccountEdit.selected_id == account_id
+
+
+def test_card_account_is_the_one_in_the_currency_of_the_qr(owner, inbox, monkeypatch):
+    _card_account(currency_id=USD, name='Card.USD')
+    eur_id = _card_account(currency_id=EUR, name='Card.EUR')
+    rub_id = _card_account(currency_id=RUB, name='Card.RUB')
+    make_jalr(inbox, "20260814-184200-00000001.jalr", codes=[LIDL], extra=_ocr("CARTAO: ****1234"))
+    make_jalr(inbox, "20260814-184300-00000002.jalr", codes=[FNS], extra=_ocr("CARTAO: ****1234"))
+    make_jalr(inbox, "20260814-184400-00000003.jalr", kind="pdf_import",
+              pdf=make_pdf(lidl_receipt() + [(10, 500, "CARTAO: ****1234")]))       # no QR read: any currency
+    dialog = _dialog(owner)
+    monkeypatch.setattr(dialog, "downloadSlipJSON", lambda: None)   # FNS itself is not asked
+    _load(dialog, 0)
+    assert dialog.ui.AccountEdit.selected_id == eur_id
+    _load(dialog, 1)
+    assert dialog.ui.AccountEdit.selected_id == rub_id
+    _load(dialog, 2)
+    assert dialog.ui.AccountEdit.selected_id == 0          # three accounts hold the card
+
+
+def test_account_of_the_previous_receipt_is_not_kept(owner, inbox):
+    _card_account()
+    make_jalr(inbox, "20260814-184200-00000001.jalr", codes=[LIDL], extra=_ocr("MULTIBANCO 11,94"))
+    make_jalr(inbox, "20260814-184300-00000002.jalr", codes=[PHARMACY], extra=_ocr("CARTAO: ****9999"))
+    dialog = _dialog(owner)
+    for row in (0, 1):                     # no card printed; a card no account holds
+        dialog.ui.AccountEdit.selected_id = 1
+        _load(dialog, row)
+        assert dialog.ui.AccountEdit.selected_id == 0
 
 
 def test_window_size_and_line_columns_are_kept(owner, inbox):

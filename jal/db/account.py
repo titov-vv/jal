@@ -1,3 +1,4 @@
+import re
 from datetime import datetime, timezone
 from decimal import Decimal
 from jal.db.db import JalDB
@@ -130,6 +131,24 @@ class JalAccount(JalDB):
                                 (":account_number", data['number']), (":currency", data['currency'])],
                                check_unique=True)
         return account_id if account_id else 0
+
+    # The one account in use whose card has these last 4 digits, in the given currency (any if 0); an empty JalAccount
+    # if none or several match. One card may stand for several accounts, one per currency, which the currency settles
+    @classmethod
+    def find_by_card(cls, digits: str, currency_id: int = 0) -> "JalAccount":
+        found = []
+        hidden = ','.join(str(int(x)) for x in PredefinedAccountType.hidden_types())
+        query = cls._exec("SELECT a.id, d.value FROM accounts a "
+                          "JOIN account_data d ON d.account_id=a.id AND d.datatype=:card_type "
+                          "WHERE (a.currency_id=:currency OR :currency=0) AND a.status>=:min_status "
+                          f"AND a.account_type NOT IN ({hidden})",
+                          [(":card_type", AccountData.CardDigits), (":currency", currency_id),
+                           (":min_status", AccountStatus.Background)])
+        while query.next():
+            account_id, value = cls._read_record(query, cast=[int, str])
+            if digits in re.findall(r'(?<!\d)\d{4}(?!\d)', value):
+                found.append(account_id)
+        return cls(found[0]) if len(found) == 1 else cls(0)
 
     # Method returns a list of JalAccount objects with given filters (combined with AND):
     # investing_only - return only investing accounts (false by default)

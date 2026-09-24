@@ -152,6 +152,11 @@ class JalrFile:
     def validation_status(self) -> str:
         return (self._data.get('validation') or {}).get('status') or ''
 
+    # Text of every printed row the phone's OCR read, in reading order; empty for a file made without OCR
+    @property
+    def ocr_texts(self) -> list:
+        return [x.get('text', '') for x in (self._data.get('ocr') or {}).get('lines') or []]
+
     @property
     def discount_hypothesis(self) -> str:
         return (self._data.get('validation') or {}).get('discount_hypothesis') or ''
@@ -205,6 +210,13 @@ class Route:
     reason: str = ''
     code: str = ''                       # raw FNS code
     at_qr: Optional[AtQr] = None
+
+    # Currency the fiscal code implies: Portugal's AT QR is in euros, Russia's FNS QR in roubles; '' without a code
+    @property
+    def currency(self) -> str:
+        if self.at_qr is not None:
+            return "EUR"
+        return "RUB" if self.kind == Route.FNS else ''
 
 
 # Decides how a receipt file may be imported

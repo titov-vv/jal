@@ -9,7 +9,7 @@ from PySide6.QtCore import QDateTime, QDate, QTime
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.test_at_qr import LIDL
 from jal.db.clock import local_zone
-from jal.data_import.receipt import parse_vat_table, parse_total, shop_profile
+from jal.data_import.receipt import parse_vat_table, parse_total, parse_card, shop_profile
 from jal.data_import.receipt_pdf import layout_text, pdf_receipt
 from jal.data_import.receipt_api.pt_at_qr import AtQr
 from jal.data_import.shop_receipts.lidl import ReceiptLidl
@@ -115,6 +115,21 @@ def test_vat_columns_follow_the_table_header():
 def test_total_to_pay_wins_over_a_plain_total():
     assert parse_total(["Total      9,99", "TOTAL A PAGAR   8,99"]) == Decimal('8.99')
     assert parse_total(["Total de artigos 14"]) is None
+
+
+def test_card_digits_as_printed_and_as_misread():
+    assert parse_card(["MULTIBANCO   21,49", "VISA INTERNACIONAL", "CARTAO: ****1234     TC:9E1F0B3C"]) == "1234"
+    assert parse_card(["CARTA0: ****5678"]) == "5678"             # OCR: letter O read as zero
+    assert parse_card(["CARTAO: #***34l6"]) == "3416"             # OCR: '*' as '#', '1' as 'l'
+    assert parse_card(["Cartão: **** 9O12"]) == "9012"
+
+
+def test_card_digits_not_found():
+    assert parse_card(["Multibanco 21,49"]) is None
+    assert parse_card(["Cartao Frota: 704236123456789012"]) is None    # no mask: a fleet card, not a payment card
+    assert parse_card(["CARTAO: ****12345"]) is None
+    assert parse_card(["CARTAO: ****1234", "CARTAO: ****5678"]) is None   # split payment: no single card
+    assert parse_card(["CARTAO: ****1234", "CARTA0: ****1234"]) == "1234"
 
 
 def test_pingo_doce_items_add_up():
