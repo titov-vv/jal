@@ -221,7 +221,8 @@ class ImportReceiptDialog(QDialog):
             Route.NO_CODE: self.tr("no QR code found"),
             Route.UNKNOWN_CODE: self.tr("QR code isn't recognized"),
             Route.DOCUMENT_TYPE: self.tr("document type isn't a sale or a return"),
-            Route.DOCUMENT_STATUS: self.tr("document is annulled or not final")
+            Route.DOCUMENT_STATUS: self.tr("document is annulled or not final"),
+            Route.NO_VALUE: self.tr("no money moved (signed total 0.00)")
         }
         return self.tr("Unsupported") + ": " + reasons[receipt_route.reason]
 

@@ -50,6 +50,7 @@ class JalrFile:
     PDF_IMPORT = "pdf_import"
     PDF_NAME = "original.pdf"
     GREEN = "green"
+    NO_VALUE = "no_value"
     NETTED = "netted"                    # values of 'validation.discount_hypothesis'
     INFORMATIONAL = "informational"
     NOT_APPLICABLE = "not_applicable"
@@ -198,6 +199,7 @@ class Route:
     UNKNOWN_CODE = "unknown_code"
     DOCUMENT_TYPE = "document_type"
     DOCUMENT_STATUS = "document_status"
+    NO_VALUE = "no_value"
 
     kind: str
     reason: str = ''
@@ -215,6 +217,10 @@ def route(receipt: JalrFile) -> Route:
         return Route(Route.PDF, at_qr=at_qr)
     if at_qr is None:
         return Route(Route.UNSUPPORTED, reason=Route.UNKNOWN_CODE if receipt.codes else Route.NO_CODE)
+    if at_qr.total == 0:     # decided by the QR itself, so files older than the phone's 'no_value' status agree
+        return Route(Route.UNSUPPORTED, reason=Route.NO_VALUE, at_qr=at_qr)
+    if receipt.validation_status == JalrFile.NO_VALUE:
+        logging.warning(f"Receipt file is marked 'no_value' but its QR total is {at_qr.total}: {receipt.path}")
     if at_qr.doc_type not in AtQr.PURCHASES + AtQr.RETURNS:
         return Route(Route.UNSUPPORTED, reason=Route.DOCUMENT_TYPE, at_qr=at_qr)
     if at_qr.status != AtQr.NORMAL:

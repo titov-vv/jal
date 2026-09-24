@@ -9,6 +9,8 @@ from decimal import Decimal
 from jal.data_import.receipt_inbox import JalrFile, PaperItem, scan_inbox, move_done, route, Route, is_fns_qr
 from tests.test_at_qr import LIDL
 
+# Fabricated zero-value working document ('DC'), shaped like a fleet-card fuel delivery note
+ZERO_DC = "A:500000000*B:999999990*C:PT*D:DC*E:F*F:20260924*G:DC 01/123*H:0*I1:0*N:0.00*O:0.00*Q:abcd*R:0000"
 FNS = "t=20240115T1830&s=1234.50&fn=7380440700000000&i=12345&fp=1234567890&n=1"
 
 
@@ -165,6 +167,22 @@ def test_route_unsupported(tmp_path):
     for i, (codes, reason) in enumerate(cases):
         result = route(JalrFile.open(make_jalr(tmp_path, f"{i}.jalr", kind="image_import", codes=codes)))
         assert (result.kind, result.reason) == (Route.UNSUPPORTED, reason)
+
+
+def test_route_no_value_by_qr_total_with_and_without_phone_status(tmp_path):
+    for i, status in enumerate(("no_value", "unchecked")):
+        for kind in (JalrFile.PAPER_SCAN, JalrFile.IMAGE_IMPORT):
+            jalr = JalrFile.open(make_jalr(tmp_path, f"{i}-{kind}.jalr", kind=kind, codes=[ZERO_DC],
+                                           extra={"validation": {"status": status, "checks": []}}))
+            result = route(jalr)
+            assert (result.kind, result.reason) == (Route.UNSUPPORTED, Route.NO_VALUE)
+            assert result.at_qr.total == Decimal('0.00')
+
+
+def test_route_ignores_no_value_status_over_a_non_zero_qr(tmp_path):
+    jalr = JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[LIDL],
+                                   extra={"validation": {"status": "no_value", "checks": []}}))
+    assert route(jalr).kind == Route.PT_QR
 
 
 # ----------------------------------------------------------------------------------------------------------------------
