@@ -9,7 +9,7 @@ from PySide6.QtCore import Qt, Signal, Slot, QUrl, QDateTime
 from PySide6.QtWidgets import QApplication, QDialog, QDialogButtonBox
 from PySide6.QtWebEngineCore import QWebEngineUrlRequestInterceptor, QWebEngineProfile, QWebEnginePage
 from jal.data_import.receipt_api.receipt_api import ReceiptAPI
-from jal.db.clock import local_zone, now_dt
+from jal.db.clock import local_zone
 from jal.db.helpers import remove_exponent
 from jal.db.settings import JalSettings
 from jal.net.web_request import WebRequest
@@ -21,35 +21,27 @@ class ReceiptRuFNS(ReceiptAPI):
     MAX_ATTEMPTS = 5
     timestamp_patterns = ['yyyyMMddTHHmm', 'yyyyMMddTHHmmss', 'yyyy-MM-ddTHH:mm', 'yyyy-MM-ddTHH:mm:ss']
 
-    def __init__(self, qr_text='', params=None):
+    def __init__(self, qr_text=''):
         super().__init__()
         self.session_id = ''
         self.slip_json = {}
-        if params is None:
-            try:
-                params = parse.parse_qs(qr_text)
-                self.date_time = ''
-                for timestamp_pattern in self.timestamp_patterns:
-                    datetime_value = QDateTime.fromString(params['t'][0], timestamp_pattern)
-                    if datetime_value.isValid():
-                        self.date_time = datetime_value.toString("yyyyMMddThhmmss")
-                        break
-                if not self.date_time:
-                    raise ValueError(ReceiptAPI.tr("FNS QR available but date/time pattern isn't recognized: " + qr_text))
-                self.amount = Decimal(params['s'][0])
-                self.fn = params['fn'][0]
-                self.fd = params['i'][0]
-                self.fp = params['fp'][0]
-                self.op_type = params['n'][0]
-            except Exception:
-                raise ValueError(ReceiptAPI.tr("FNS QR available but pattern isn't recognized: " + qr_text))
-        else:
-            self.date_time = params['Дата/время'].toString("yyyyMMddThhmmss")
-            self.fn = params['ФН']
-            self.fd = params['ФД']
-            self.fp = params['ФП']
-            self.amount = Decimal(params['Сумма'])
-            self.op_type = params['Тип']
+        try:
+            params = parse.parse_qs(qr_text)
+            self.date_time = ''
+            for timestamp_pattern in self.timestamp_patterns:
+                datetime_value = QDateTime.fromString(params['t'][0], timestamp_pattern)
+                if datetime_value.isValid():
+                    self.date_time = datetime_value.toString("yyyyMMddThhmmss")
+                    break
+            if not self.date_time:
+                raise ValueError(ReceiptAPI.tr("FNS QR available but date/time pattern isn't recognized: " + qr_text))
+            self.amount = Decimal(params['s'][0])
+            self.fn = params['fn'][0]
+            self.fd = params['i'][0]
+            self.fp = params['fp'][0]
+            self.op_type = params['n'][0]
+        except Exception:
+            raise ValueError(ReceiptAPI.tr("FNS QR available but pattern isn't recognized: " + qr_text))
         self.web_session = requests.Session()
         self.web_session.headers['ClientVersion'] = '2.9.0'
         self.web_session.headers['Device-Id'] = str(uuid.uuid1())
@@ -57,18 +49,6 @@ class ReceiptRuFNS(ReceiptAPI):
         self.web_session.headers['Content-Type'] = 'application/json; charset=UTF-8'
         self.web_session.headers['Accept-Encoding'] = 'gzip'
         self.web_session.headers['User-Agent'] = 'okhttp/4.2.2'
-
-    @staticmethod
-    def parameters_list() -> dict:
-        parameters = {
-            "Дата/время": now_dt(),
-            "ФН": '',
-            "ФД": '',
-            "ФП": '',
-            "Сумма": Decimal('0'),
-            "Тип": {1: "Покупка", 2: "Возврат"}
-        }
-        return parameters
 
     def activate_session(self) -> bool:
         self.session_id = JalSettings().getValue('RuTaxSessionId', default='')

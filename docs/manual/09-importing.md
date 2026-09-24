@@ -133,9 +133,9 @@ per item bought:
 
 ![The receipt import dialog](img/dlg_receipt.png)
 
-Receipts can be fetched from the Russian tax service (FNS). Type the numbers from the receipt in by
-hand, then press **Download receipt**; the lines appear at the bottom, where you choose the account
-and the peer and press **Add**.
+Receipts arrive from the phone app into the inbox folder set in *Preferences*. Select one in the
+list and press **Load**; a Russian receipt is fetched from the tax service (FNS) by its QR code. The
+lines appear at the bottom, where you choose the account and the peer and press **Add**.
 
 This feature depends on services that change without notice, and it is not needed for anything else
 in JAL.

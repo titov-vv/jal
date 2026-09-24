@@ -15,11 +15,11 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractButton, QAbstractItemView, QApplication, QComboBox,
-    QDateTimeEdit, QDialog, QDialogButtonBox, QGridLayout,
-    QGroupBox, QHeaderView, QLabel, QLineEdit,
-    QPushButton, QSizePolicy, QSpacerItem, QTableView,
-    QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractButton, QAbstractItemView, QApplication, QDateTimeEdit,
+    QDialog, QDialogButtonBox, QGridLayout, QGroupBox,
+    QHeaderView, QLabel, QLineEdit, QPushButton,
+    QSizePolicy, QSpacerItem, QTableView, QTableWidget,
+    QTableWidgetItem, QVBoxLayout, QWidget)
 
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 
@@ -85,47 +85,6 @@ class Ui_ImportShopReceiptDlg(object):
 
 
         self.verticalLayout.addWidget(self.InboxGroup)
-
-        self.SlipDataGroup = QGroupBox(ImportShopReceiptDlg)
-        self.SlipDataGroup.setObjectName(u"SlipDataGroup")
-        self.SlipDataGroup.setEnabled(True)
-        sizePolicy.setHeightForWidth(self.SlipDataGroup.sizePolicy().hasHeightForWidth())
-        self.SlipDataGroup.setSizePolicy(sizePolicy)
-        self.gridLayout_2 = QGridLayout(self.SlipDataGroup)
-        self.gridLayout_2.setObjectName(u"gridLayout_2")
-        self.ReceiptAPICombo = QComboBox(self.SlipDataGroup)
-        self.ReceiptAPICombo.setObjectName(u"ReceiptAPICombo")
-
-        self.gridLayout_2.addWidget(self.ReceiptAPICombo, 0, 1, 1, 1)
-
-        self.ReceiptAPILabel = QLabel(self.SlipDataGroup)
-        self.ReceiptAPILabel.setObjectName(u"ReceiptAPILabel")
-
-        self.gridLayout_2.addWidget(self.ReceiptAPILabel, 0, 0, 1, 1)
-
-        self.DownloadReceiptBtn = QPushButton(self.SlipDataGroup)
-        self.DownloadReceiptBtn.setObjectName(u"DownloadReceiptBtn")
-
-        self.gridLayout_2.addWidget(self.DownloadReceiptBtn, 2, 0, 1, 2)
-
-        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-
-        self.gridLayout_2.addItem(self.verticalSpacer, 1, 0, 1, 1)
-
-        self.horizontalSpacer_2 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.gridLayout_2.addItem(self.horizontalSpacer_2, 0, 3, 1, 1)
-
-        self.ReceiptParametersList = QTableView(self.SlipDataGroup)
-        self.ReceiptParametersList.setObjectName(u"ReceiptParametersList")
-        self.ReceiptParametersList.horizontalHeader().setVisible(False)
-        self.ReceiptParametersList.horizontalHeader().setStretchLastSection(True)
-        self.ReceiptParametersList.verticalHeader().setMinimumSectionSize(20)
-
-        self.gridLayout_2.addWidget(self.ReceiptParametersList, 0, 2, 3, 1)
-
-
-        self.verticalLayout.addWidget(self.SlipDataGroup)
 
         self.ReceiptGroup = QGroupBox(ImportShopReceiptDlg)
         self.ReceiptGroup.setObjectName(u"ReceiptGroup")
@@ -211,17 +170,13 @@ class Ui_ImportShopReceiptDlg(object):
         self.verticalLayout.addWidget(self.DialogButtonBox)
 
 #if QT_CONFIG(shortcut)
-        self.ReceiptAPILabel.setBuddy(self.ReceiptAPICombo)
         self.PeerLbl.setBuddy(self.SlipShopName)
         self.LinesLbl.setBuddy(self.LinesTableView)
 #endif // QT_CONFIG(shortcut)
         QWidget.setTabOrder(self.InboxList, self.InboxLoadBtn)
         QWidget.setTabOrder(self.InboxLoadBtn, self.InboxRefreshBtn)
         QWidget.setTabOrder(self.InboxRefreshBtn, self.InboxSkipBtn)
-        QWidget.setTabOrder(self.InboxSkipBtn, self.ReceiptAPICombo)
-        QWidget.setTabOrder(self.ReceiptAPICombo, self.DownloadReceiptBtn)
-        QWidget.setTabOrder(self.DownloadReceiptBtn, self.ReceiptParametersList)
-        QWidget.setTabOrder(self.ReceiptParametersList, self.SlipDateTime)
+        QWidget.setTabOrder(self.InboxSkipBtn, self.SlipDateTime)
         QWidget.setTabOrder(self.SlipDateTime, self.PeerEdit)
         QWidget.setTabOrder(self.PeerEdit, self.SlipShopName)
         QWidget.setTabOrder(self.SlipShopName, self.AccountEdit)
@@ -249,9 +204,6 @@ class Ui_ImportShopReceiptDlg(object):
         self.InboxSkipBtn.setToolTip(QCoreApplication.translate("ImportShopReceiptDlg", u"Move the selected file into the 'done' folder without importing it", None))
 #endif // QT_CONFIG(tooltip)
         self.InboxSkipBtn.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"S&kip", None))
-        self.SlipDataGroup.setTitle(QCoreApplication.translate("ImportShopReceiptDlg", u"Get receipt by manual data entry", None))
-        self.ReceiptAPILabel.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"&Receipt type:", None))
-        self.DownloadReceiptBtn.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Download receipt", None))
         self.ReceiptGroup.setTitle(QCoreApplication.translate("ImportShopReceiptDlg", u"Operation data", None))
         self.SlipDateTime.setDisplayFormat(QCoreApplication.translate("ImportShopReceiptDlg", u"dd/MM/yyyy hh:mm:ss", None))
         self.DateTimeLbl.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Date / Time:", None))

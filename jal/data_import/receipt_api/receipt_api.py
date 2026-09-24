@@ -15,12 +15,6 @@ class ReceiptAPI(QObject):
     def tr(text):
         return QApplication.translate("ReceiptAPI", text)
 
-    # Provides a list of parameters required for slip query if manual input is in use in form of dictionary
-    # { "parameter_name" : "parameter_type" }
-    @staticmethod
-    def parameters_list() -> dict:
-        raise NotImplementedError(f"parameters_list() shouldn't be called for ReceiptAPI class")
-
     # Method performs required actions to have active API session that may be used for queries
     # Returns True after successful activation and False otherwise
     def activate_session(self) -> bool:

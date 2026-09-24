@@ -1,16 +1,14 @@
 import logging
 import zipfile
 import pandas as pd
-from decimal import Decimal
-from PySide6.QtCore import Qt, Slot, QAbstractTableModel, QDateTime, QDate, QTime, QLocale, QT_TRANSLATE_NOOP
-from PySide6.QtWidgets import (QDialog, QDialogButtonBox, QHeaderView, QStyle, QStyledItemDelegate, QLineEdit,
-                               QComboBox, QTableWidgetItem)
+from PySide6.QtCore import Qt, Slot, QAbstractTableModel, QT_TRANSLATE_NOOP
+from PySide6.QtWidgets import QDialog, QDialogButtonBox, QHeaderView, QStyle, QStyledItemDelegate, QTableWidgetItem
 from jal.constants import Setup
 from jal.widgets.reference_selector import ReferenceSelectorWidget
-from jal.widgets.delegates import DateTimeEditWithReset, draw_item_panel
-from jal.widgets.helpers import (set_grids_metrics, set_date_formats, restore_columns, save_columns, DateFormat, ts2dt)
+from jal.widgets.delegates import draw_item_panel
+from jal.widgets.helpers import (set_grids_metrics, set_date_formats, restore_columns, save_columns, ts2dt)
 from jal.widgets.theme import Theme, Meaning
-from jal.db.helpers import localize_decimal, delocalize_decimal
+from jal.db.helpers import localize_decimal
 from jal.db.peer import JalPeer
 from jal.db.clock import local_zone
 from jal.db.category import JalCategory
@@ -20,14 +18,11 @@ from jal.db.settings_registry import SettingsRegistry, SettingDescriptor
 from jal.db.common_models import AccountListModel, PeerTreeModel, CategoryTreeModel, TagTreeModel
 from jal.widgets.reference_dialogs import AccountListDialog, PeerListDialog, CategoryListDialog, TagsListDialog
 from jal.ui.ui_receipt_import_dlg import Ui_ImportShopReceiptDlg
-from jal.data_import.receipt_api.receipts import ReceiptAPIFactory
 from jal.data_import.receipt_api.offline_receipt import ReceiptOffline, paper_lines
 from jal.data_import.receipt_api.ru_fns import ReceiptRuFNS
 from jal.data_import.receipt_pdf import pdf_receipt
 from jal.data_import.receipt_inbox import JalrFile, Route, scan_inbox, move_done, route
 
-
-DEFAULT_DATA_ROLE = Qt.UserRole + 1
 
 RECEIPT_INBOX_SETTING = "ReceiptInboxFolder"
 
@@ -132,120 +127,6 @@ class SlipLinesDelegate(QStyledItemDelegate):
             model.setData(index, editor.selected_id)
 
 #-----------------------------------------------------------------------------------------------------------------------
-# Delegate class that shows parameter editor according to its type
-class ParameterDelegate(QStyledItemDelegate):    # Code doubles with pieces from delegates.py
-    def __init__(self, parent=None):
-        super().__init__(parent=parent)
-
-    def createEditor(self, aParent, option, index):
-        default_data = index.model().data(index, DEFAULT_DATA_ROLE)
-        data_type = type(default_data)
-        if data_type == str or data_type == int or data_type == Decimal:
-            editor = QLineEdit(aParent)
-        elif data_type == QDateTime or data_type == QDate:
-            editor = DateTimeEditWithReset(aParent)
-            editor.setTimeZone(local_zone())
-            if data_type == QDate:
-                editor.setDisplayFormat(DateFormat.date(qt=True))
-            else:
-                editor.setDisplayFormat(DateFormat.date(qt=True) + " hh:mm")
-        elif data_type == dict:
-            editor = QComboBox(aParent)
-            for idx in default_data:
-                editor.addItem(default_data[idx], userData=idx)
-        else:
-            assert False, f"Delegate ParameterDelegate.createEditor() called for unsupported type {data_type}"
-        return editor
-
-    def setEditorData(self, editor, index):
-        default_data = index.model().data(index, DEFAULT_DATA_ROLE)
-        data_type = type(default_data)
-        if data_type == str or data_type == int:
-            editor.setText(str(index.model().data(index, Qt.EditRole)))
-        elif data_type == Decimal:
-            editor.setText(localize_decimal(index.model().data(index, Qt.EditRole)))
-        elif data_type == QDateTime:
-            editor.setDateTime(index.model().data(index, Qt.EditRole))
-        elif data_type == QDate:
-            editor.setDateTime(QDateTime(index.model().data(index, Qt.EditRole), QTime()))
-        elif data_type == dict:
-            editor.setCurrentIndex(editor.findData(index.model().data(index, Qt.EditRole)))
-        else:
-            assert False, f"Delegate ParameterDelegate.setEditorData() called for unsupported type {data_type}"
-        return editor
-
-    def setModelData(self, editor, model, index):
-        default_data = index.model().data(index, DEFAULT_DATA_ROLE)
-        data_type = type(default_data)
-        if data_type == str:
-            model.setData(index, editor.text())
-        elif data_type == int:
-            model.setData(index, QLocale().toInt(editor.text())[0])
-        elif data_type == QDate:
-            model.setData(index, editor.date())
-        elif data_type == QDateTime:
-            model.setData(index, editor.dateTime())
-        elif data_type == Decimal:
-            model.setData(index, delocalize_decimal(editor.text()))
-        elif data_type == dict:
-            model.setData(index, editor.currentData())
-        else:
-            assert False, f"Delegate ParameterDelegate.setModelData() called for unsupported type {data_type}"
-
-#-----------------------------------------------------------------------------------------------------------------------
-# Custom model to display and edit slip lines
-class ParamsModel(QAbstractTableModel):
-    def __init__(self, params_list: dict, parent=None):
-        super().__init__(parent)
-        self._params = params_list
-        self._values = [(lambda x : x if type(x) != dict else next(iter(x)))(y) for y in self._params.values()]
-
-    def flags(self, index):
-        if not index.isValid():
-            return Qt.ItemIsEnabled
-        return super().flags(index) | Qt.ItemIsEditable
-
-    def rowCount(self, parent=None):
-        return len(self._params)
-
-    def columnCount(self, parent=None):
-        return 1
-
-    def data(self, index, role=Qt.DisplayRole):
-        if index.isValid():
-            value = self._values[index.row()]
-            default_value = list(self._params.values())[index.row()]
-            if role == Qt.DisplayRole:
-                if type(default_value) == Decimal:
-                    return str(value)
-                elif type(default_value) == dict:
-                    return default_value[value]
-                else:
-                    return value
-            elif role == Qt.EditRole:
-                return value
-            elif role == DEFAULT_DATA_ROLE:
-                return default_value
-        return None
-
-    def setData(self, index, value, role=Qt.EditRole):
-        if index.isValid():
-            if role == Qt.EditRole:
-                self._values[index.row()] = value
-                self.dataChanged.emit(index, index)
-                return True
-        return False
-
-    def headerData(self, row, orientation, role=Qt.DisplayRole):
-        if orientation == Qt.Vertical and role == Qt.DisplayRole:
-            return list(self._params)[row]
-        return None
-
-    def params(self) -> dict:
-        return dict(zip(self._params, self._values))
-
-
-#-----------------------------------------------------------------------------------------------------------------------
 class ImportReceiptDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -258,8 +139,6 @@ class ImportReceiptDialog(QDialog):
         self.ui.PeerEdit.setup_selector(PeerTreeModel, PeerListDialog, self)
         self.model = None
         self.delegate = []
-        self.params_model = None
-        self._parameter_delegate = ParameterDelegate(self.ui.ReceiptParametersList)
         self.slip_lines = None
         self.receipt_api = None
         self._inbox = []              # (JalrFile, Route) per row of InboxList
@@ -271,21 +150,15 @@ class ImportReceiptDialog(QDialog):
         self.add_operation_button = self.ui.DialogButtonBox.addButton(self.tr("Add"), QDialogButtonBox.ActionRole)
         self.clear_button = self.ui.DialogButtonBox.addButton(self.tr("Clear"), QDialogButtonBox.ResetRole)
 
-        self.ui.DownloadReceiptBtn.clicked.connect(self.processReceiptParams)
         self.add_operation_button.clicked.connect(self.addOperation)
         self.clear_button.clicked.connect(self.clearSlipData)
         self.ui.DialogButtonBox.rejected.connect(self.close)
-        self.ui.ReceiptAPICombo.currentIndexChanged.connect(self.change_api)
         self.ui.InboxLoadBtn.clicked.connect(self.loadInboxReceipt)
         self.ui.InboxRefreshBtn.clicked.connect(self.refreshInbox)
         self.ui.InboxSkipBtn.clicked.connect(self.skipInboxReceipt)
         self.ui.InboxList.itemDoubleClicked.connect(self.loadInboxReceipt)
         self.ui.InboxList.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
         self.ui.InboxList.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeToContents)
-
-        self.ui.ReceiptAPICombo.clear()
-        for idx, name in ReceiptAPIFactory().supported_names.items():
-            self.ui.ReceiptAPICombo.addItem(name, idx)
 
         self.refreshInbox()
 
@@ -294,29 +167,6 @@ class ImportReceiptDialog(QDialog):
     def closeEvent(self, event):
         save_columns(self, Setup.COLUMNS_STATE_PREFIX)
         super().closeEvent(event)
-
-    # -----------------------------------------------------------------------------------------------
-    @Slot()
-    def change_api(self, index):
-        if index < 0:
-            return
-        api_type = self.ui.ReceiptAPICombo.currentData()
-        self.params_model = ParamsModel(ReceiptAPIFactory().get_api_parameters(api_type))
-        self.ui.ReceiptParametersList.setModel(self.params_model)
-        self.ui.ReceiptParametersList.setItemDelegateForColumn(0, self._parameter_delegate)
-
-    #-----------------------------------------------------------------------------------------------
-    @Slot()
-    def processReceiptParams(self):
-        api_type = self.ui.ReceiptAPICombo.currentData()
-        try:
-            self.receipt_api = ReceiptAPIFactory().get_api_with_params(api_type, self.params_model.params())
-        except ValueError as e:
-            logging.warning(e)
-            return
-        self._inbox_file = ''
-        self.receipt_api.slip_load_ok.connect(self.slip_loaded)
-        self.downloadSlipJSON()
 
     # -----------------------------------------------------------------------------------------------
     # Lists the receipt files that the phone app has delivered into the inbox folder
