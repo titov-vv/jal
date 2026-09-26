@@ -8,6 +8,7 @@ from PySide6.QtCore import QDateTime, QDate, QTime
 
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.test_at_qr import LIDL
+from jal.constants import PredefinedCategory
 from jal.db.clock import local_zone
 from jal.data_import.receipt import parse_vat_table, parse_total, parse_card, shop_profile
 from jal.data_import.receipt_pdf import layout_text, pdf_receipt
@@ -66,6 +67,14 @@ def lidl_receipt(nif="503340855", strawberries="1,99", total="4,84"):
             (70, 515, "ATCUD:"), (118, 515, "JFXK7T2P-317")]
 
 
+# The receipt above with a card discount below a 'Subtotal' row, shared by its VAT table as A 0,10 and B 0,40
+def lidl_receipt_with_card_discount(b_total="2,59"):
+    vat = {"1,85": "1,75", "2,99": b_total}
+    fragments = [(x, y, vat.get(t, t) if y in (560, 545) else t)
+                 for x, y, t in lidl_receipt(total="4,34") if t != "------------"]
+    return fragments + [(10, 626, "Subtotal"), (232, 626, "4,84"), (22, 616, "Promocao Cartao"), (232, 616, "-0,50")]
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 def test_layout_puts_text_in_its_columns():
     for form in (False, True):
@@ -99,6 +108,19 @@ def test_lidl_items_add_up():
 def test_a_misread_item_is_caught():
     receipt = ReceiptLidl(layout_text(make_pdf(lidl_receipt(strawberries="2,09"))))
     assert receipt.problems() == ["VAT B: items 3.09, table 2.99", "total: items 4.94, receipt 4.84"]
+
+
+def test_discount_below_subtotal_is_the_receipts():
+    receipt = ReceiptLidl(layout_text(make_pdf(lidl_receipt_with_card_discount())))
+    assert receipt.problems() == []
+    assert receipt.discounts == [("Promocao Cartao", Decimal('0.50'))]
+    assert receipt.items[0].discounts == [("Promocao Lidl Plus", Decimal('0.41'))]
+    assert receipt.items[-1].discounts == []
+
+
+def test_receipt_discount_must_be_shared_by_the_vat_table():
+    receipt = ReceiptLidl(layout_text(make_pdf(lidl_receipt_with_card_discount(b_total="2,69"))))
+    assert receipt.problems() == ["VAT: items less table A 0.10, B 0.30, receipt discount 0.50"]
 
 
 def test_vat_columns_follow_the_table_header():
@@ -167,6 +189,13 @@ def test_pdf_receipt_brings_every_item(prepare_db):
     assert receipt.shop_name() == "NIF 503340855"
     assert receipt.number() == "503340855:FS 0421/000317"
     assert receipt.datetime() == QDateTime(QDate(2026, 8, 14), QTime(18, 53), local_zone())
+
+
+def test_pdf_receipt_discount_is_a_line_of_its_own(prepare_db):
+    at_qr = AtQr.parse(LIDL.replace("O:11.94", "O:4.34"))
+    lines = pdf_receipt(make_pdf(lidl_receipt_with_card_discount()), at_qr, CAPTURED).slip_lines()
+    assert lines[-1] == {'name': "Promocao Cartao", 'amount': Decimal('0.50'), 'category': PredefinedCategory.Discounts}
+    assert sum(x['amount'] for x in lines) == Decimal('-4.34')
 
 
 def test_pdf_receipt_that_does_not_add_up_is_one_line_of_its_total(prepare_db):

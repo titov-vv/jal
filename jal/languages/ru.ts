@@ -111,74 +111,79 @@
 <context>
     <name>AccountData</name>
     <message>
-        <location filename="../constants.py" line="467"/>
+        <location filename="../constants.py" line="470"/>
         <source>Account #</source>
         <translation>№ счёта</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="468"/>
+        <location filename="../constants.py" line="471"/>
         <source>Credit limit</source>
         <translation>Кредитный лимит</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="469"/>
+        <location filename="../constants.py" line="472"/>
         <source>Country</source>
         <translation>Страна</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="470"/>
+        <location filename="../constants.py" line="473"/>
         <source>Precision</source>
         <translation>Точность</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="471"/>
+        <location filename="../constants.py" line="474"/>
         <source>Address</source>
         <translation>Адрес</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="472"/>
+        <location filename="../constants.py" line="475"/>
         <source>Blockchain</source>
         <translation>Блокчейн</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="473"/>
+        <location filename="../constants.py" line="476"/>
         <source>Sync cursor</source>
         <translation>Тек. курсор</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="474"/>
+        <location filename="../constants.py" line="477"/>
         <source>Deposit end date</source>
         <translation>Дата окончания депозита</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="475"/>
+        <location filename="../constants.py" line="478"/>
         <source>Interest rate, %</source>
         <translation>Ставка, %</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="476"/>
+        <location filename="../constants.py" line="479"/>
         <source>Staking state</source>
         <translation>Состояние стейкинга</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="477"/>
+        <location filename="../constants.py" line="480"/>
         <source>Staking protocol</source>
         <translation>Протокол стейкинга</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="478"/>
+        <location filename="../constants.py" line="481"/>
         <source>Tag</source>
         <translation>Метка</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="479"/>
+        <location filename="../constants.py" line="482"/>
         <source>Opened on</source>
         <translation>Дата открытия</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="480"/>
+        <location filename="../constants.py" line="483"/>
         <source>Closed on</source>
         <translation>Дата закрытия</translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="484"/>
+        <source>Card (last 4 digits)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -421,32 +426,32 @@ Do you want to delete the account anyway?</source>
 <context>
     <name>AccountStatus</name>
     <message>
-        <location filename="../constants.py" line="290"/>
+        <location filename="../constants.py" line="292"/>
         <source>Closed</source>
         <translation>Закрытый</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="291"/>
+        <location filename="../constants.py" line="293"/>
         <source>Background</source>
         <translation>Фоновый</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="292"/>
+        <location filename="../constants.py" line="294"/>
         <source>Active</source>
         <translation>Активный</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="296"/>
+        <location filename="../constants.py" line="298"/>
         <source>Active accounts only</source>
         <translation>Только активные счета</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="297"/>
+        <location filename="../constants.py" line="299"/>
         <source>With background accounts</source>
         <translation>Включая фоновые счета</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="298"/>
+        <location filename="../constants.py" line="300"/>
         <source>With closed accounts</source>
         <translation>Включая закрытые счета</translation>
     </message>
@@ -614,37 +619,37 @@ Do you want to delete the account anyway?</source>
 <context>
     <name>AssetData</name>
     <message>
-        <location filename="../constants.py" line="413"/>
+        <location filename="../constants.py" line="415"/>
         <source>expiry</source>
         <translation>экспирация</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="414"/>
+        <location filename="../constants.py" line="416"/>
         <source>principal</source>
         <translation>номинал</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="415"/>
+        <location filename="../constants.py" line="417"/>
         <source>CoinGecko id</source>
         <translation>CoinGecko id</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="416"/>
+        <location filename="../constants.py" line="418"/>
         <source>rebasing</source>
         <translation>переоцениваемый</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="417"/>
+        <location filename="../constants.py" line="419"/>
         <source>decimals</source>
         <translation>знаков после запятой</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="418"/>
+        <location filename="../constants.py" line="420"/>
         <source>protocol</source>
         <translation>протокол</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="412"/>
+        <location filename="../constants.py" line="414"/>
         <source>Tag</source>
         <translation>Метка</translation>
     </message>
@@ -807,127 +812,127 @@ Do you want to delete the account anyway?</source>
 <context>
     <name>AssetLocation</name>
     <message>
-        <location filename="../constants.py" line="617"/>
+        <location filename="../constants.py" line="622"/>
         <source>Unknown</source>
         <translation>Неизвестно</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="618"/>
+        <location filename="../constants.py" line="623"/>
         <source>Cash</source>
         <translation>Наличные</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="619"/>
+        <location filename="../constants.py" line="624"/>
         <source>Bank account</source>
         <translation>Банковский счёт</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="620"/>
+        <location filename="../constants.py" line="625"/>
         <source>NYSE</source>
         <translation>NYSE</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="621"/>
+        <location filename="../constants.py" line="626"/>
         <source>Nasdaq</source>
         <translation>Nasdaq</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="622"/>
+        <location filename="../constants.py" line="627"/>
         <source>LSE</source>
         <translation>LSE</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="623"/>
+        <location filename="../constants.py" line="628"/>
         <source>Euronext</source>
         <translation>Euronext</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="624"/>
+        <location filename="../constants.py" line="629"/>
         <source>Frankfurt Borse</source>
         <translation>Франкфуртская биржа</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="625"/>
+        <location filename="../constants.py" line="630"/>
         <source>Borsa Italiana</source>
         <translation>Итальянская биржа</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="626"/>
+        <location filename="../constants.py" line="631"/>
         <source>Warsaw Stock Exchange</source>
         <translation>Польская биржа</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="627"/>
+        <location filename="../constants.py" line="632"/>
         <source>TMX TSX</source>
         <translation>TMX TSX</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="628"/>
+        <location filename="../constants.py" line="633"/>
         <source>MOEX</source>
         <translation>МосБиржа</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="629"/>
+        <location filename="../constants.py" line="634"/>
         <source>Crypto exchange</source>
         <translation>Крипто-биржа</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="630"/>
+        <location filename="../constants.py" line="635"/>
         <source>Nasdaq Helsinki</source>
         <translation>Nasdaq Helsinki</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="631"/>
+        <location filename="../constants.py" line="636"/>
         <source>Ethereum</source>
         <translation>Ethereum</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="632"/>
+        <location filename="../constants.py" line="637"/>
         <source>Arbitrum</source>
         <translation>Arbitrum</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="633"/>
+        <location filename="../constants.py" line="638"/>
         <source>Bitcoin</source>
         <translation>Bitcoin</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="634"/>
+        <location filename="../constants.py" line="639"/>
         <source>Solana</source>
         <translation>Solana</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="635"/>
+        <location filename="../constants.py" line="640"/>
         <source>Tron</source>
         <translation>Tron</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="636"/>
+        <location filename="../constants.py" line="641"/>
         <source>Hyperliquid</source>
         <translation>Hyperliquid</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="637"/>
+        <location filename="../constants.py" line="642"/>
         <source>Avalanche</source>
         <translation>Avalance</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="638"/>
+        <location filename="../constants.py" line="643"/>
         <source>NEAR</source>
         <translation>NEAR</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="639"/>
+        <location filename="../constants.py" line="644"/>
         <source>Cardano</source>
         <translation>Cardano</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="640"/>
+        <location filename="../constants.py" line="645"/>
         <source>Polkadot</source>
         <translation>Polkadot</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="641"/>
+        <location filename="../constants.py" line="646"/>
         <source>Victoria Seguros</source>
         <translation>Victoria Seguros</translation>
     </message>
@@ -3031,27 +3036,27 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>DetailsModel</name>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="207"/>
+        <location filename="../widgets/income_spending_widget.py" line="210"/>
         <source>Category</source>
         <translation>Категория</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="207"/>
+        <location filename="../widgets/income_spending_widget.py" line="210"/>
         <source>Tag</source>
         <translation>Метка</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="208"/>
+        <location filename="../widgets/income_spending_widget.py" line="211"/>
         <source>Amount</source>
         <translation>Сумма</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="208"/>
+        <location filename="../widgets/income_spending_widget.py" line="211"/>
         <source>Note</source>
         <translation>Описание</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="220"/>
+        <location filename="../widgets/income_spending_widget.py" line="223"/>
         <source>Total</source>
         <translation>Итого</translation>
     </message>
@@ -3669,124 +3674,120 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>ImportReceiptDialog</name>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="286"/>
+        <location filename="../data_import/shop_receipt.py" line="156"/>
         <source>Add</source>
         <translation>Добавить</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="287"/>
+        <location filename="../data_import/shop_receipt.py" line="157"/>
         <source>Clear</source>
         <translation>Очистить</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="329"/>
-        <source>Please scan main QR code from the receipt</source>
-        <translation>Отсканируйте основной QR-код с чека</translation>
-    </message>
-    <message>
-        <location filename="../data_import/shop_receipt.py" line="332"/>
-        <source>QR: </source>
-        <translation>QR: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/shop_receipt.py" line="363"/>
+        <location filename="../data_import/shop_receipt.py" line="194"/>
         <source>Set the phone receipt inbox folder in Preferences</source>
         <translation>Укажите папку входящих чеков с телефона в Параметрах</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="374"/>
+        <location filename="../data_import/shop_receipt.py" line="206"/>
         <source>Paper scan</source>
         <translation>Скан бумажного чека</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="375"/>
+        <location filename="../data_import/shop_receipt.py" line="207"/>
         <source>Image</source>
         <translation>Изображение</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="376"/>
+        <location filename="../data_import/shop_receipt.py" line="208"/>
         <source>PDF</source>
         <translation>PDF</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="383"/>
+        <location filename="../data_import/shop_receipt.py" line="215"/>
         <source>Portuguese QR</source>
         <translation>Португальский QR-код</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="385"/>
+        <location filename="../data_import/shop_receipt.py" line="218"/>
+        <source>Portuguese QR and items</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/shop_receipt.py" line="220"/>
         <source>Russian QR</source>
         <translation>Российский QR-код</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="387"/>
+        <location filename="../data_import/shop_receipt.py" line="222"/>
         <source>PDF document</source>
         <translation>PDF-документ</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="389"/>
+        <location filename="../data_import/shop_receipt.py" line="224"/>
         <source>no QR code found</source>
         <translation>QR-код не найден</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="390"/>
+        <location filename="../data_import/shop_receipt.py" line="225"/>
         <source>QR code isn&apos;t recognized</source>
         <translation>QR-код не распознан</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="391"/>
+        <location filename="../data_import/shop_receipt.py" line="226"/>
         <source>document type isn&apos;t a sale or a return</source>
         <translation>тип документа - не продажа и не возврат</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="392"/>
+        <location filename="../data_import/shop_receipt.py" line="227"/>
         <source>document is annulled or not final</source>
         <translation>документ аннулирован или не окончательный</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="394"/>
+        <location filename="../data_import/shop_receipt.py" line="228"/>
+        <source>no money moved (signed total 0.00)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/shop_receipt.py" line="230"/>
         <source>Unsupported</source>
         <translation>Не поддерживается</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="414"/>
+        <location filename="../data_import/shop_receipt.py" line="254"/>
         <source>Receipt file can&apos;t be read</source>
         <translation>Невозможно прочитать файл чека</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="420"/>
+        <location filename="../data_import/shop_receipt.py" line="261"/>
         <source>Receipt can&apos;t be imported</source>
         <translation>Невозможно импортировать чек</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="474"/>
+        <location filename="../data_import/shop_receipt.py" line="341"/>
         <source>Not possible to import receipt: no account set for import</source>
         <translation>Невозможно импортировать чек: не выбран счёт для импорта</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="477"/>
+        <location filename="../data_import/shop_receipt.py" line="344"/>
         <source>Not possible to import receipt: can&apos;t import: no peer set for import</source>
         <translation>Невозможно импортировать чек: не выбран контрагент для импорта</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="480"/>
+        <location filename="../data_import/shop_receipt.py" line="347"/>
         <source>Not possible to import receipt: some categories are not set</source>
         <translation>Невозможно импортировать чек: некоторые категории не выбраны</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="485"/>
+        <location filename="../data_import/shop_receipt.py" line="352"/>
         <source>Not possible to import receipt: it is imported already</source>
         <translation>Невозможно импортировать чек: он уже импортирован</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="517"/>
+        <location filename="../data_import/shop_receipt.py" line="292"/>
+        <location filename="../data_import/shop_receipt.py" line="383"/>
         <source>Receipt file can&apos;t be moved out of the inbox</source>
         <translation>Невозможно переместить файл чека из папки входящих</translation>
-    </message>
-    <message>
-        <location filename="../data_import/shop_receipt.py" line="532"/>
-        <source>Categories are not recognized: Tensorflow is not found</source>
-        <translation>Категории не распознаны: Tensorflow не найден</translation>
     </message>
 </context>
 <context>
@@ -3797,102 +3798,82 @@ one for ParentCo and second for Subsidiary</source>
         <translation>Импорт чека из магазина</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="188"/>
-        <source>&amp;Receipt type:</source>
-        <translation>&amp;Тип чека:</translation>
-    </message>
-    <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="253"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="121"/>
         <source>Operation data</source>
         <translation>Данные операции</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="259"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="127"/>
         <source>dd/MM/yyyy hh:mm:ss</source>
         <translation>dd/MM/yyyy hh:mm:ss</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="286"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="154"/>
         <source>&amp;Peer:</source>
         <translation>&amp;Контрагент:</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="303"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="171"/>
         <source>&amp;Lines:</source>
         <translation>&amp;Позиции:</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="198"/>
-        <source>Download receipt</source>
-        <translation>Загрузить чек</translation>
-    </message>
-    <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="50"/>
-        <source>Get receipt by scanning QR-code</source>
-        <translation>Получить чек, отсканировав QR-код</translation>
-    </message>
-    <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="59"/>
-        <source>Scan receipt QR</source>
-        <translation>Сканировать QR-код</translation>
-    </message>
-    <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="91"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="26"/>
         <source>Get receipt from phone inbox</source>
         <translation>Получить чек из папки входящих с телефона</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="119"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="54"/>
         <source>Captured</source>
         <translation>Создан</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="124"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="59"/>
         <source>Source</source>
         <translation>Источник</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="129"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="64"/>
         <source>Import as</source>
         <translation>Импорт как</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="137"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="72"/>
         <source>L&amp;oad</source>
         <translation>&amp;Загрузить</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="144"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="79"/>
         <source>Re&amp;fresh</source>
         <translation>О&amp;бновить</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="179"/>
-        <source>Get receipt by manual data entry</source>
-        <translation>Получить чек, введя данные вручную</translation>
+        <location filename="../ui/receipt_import_dlg.ui" line="86"/>
+        <source>Move the selected file into the &apos;done&apos; folder without importing it</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="269"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="89"/>
+        <source>S&amp;kip</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/receipt_import_dlg.ui" line="137"/>
         <source>Date / Time:</source>
         <translation>Дата / Время:</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="276"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="144"/>
         <source> ➜ </source>
         <translation> ➜ </translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="316"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="184"/>
         <source>Account:</source>
         <translation>Счет:</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="336"/>
-        <source>Auto-assign categories</source>
-        <translation>Авто-определение категорий</translation>
-    </message>
-    <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="343"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="204"/>
         <source>Set Tag for all lines</source>
         <translation>Установить тэг для всех позиций</translation>
     </message>
@@ -3905,67 +3886,72 @@ one for ParentCo and second for Subsidiary</source>
         <translation>Форма</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/income_spending_operation.ui" line="56"/>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="73"/>
         <source>Add detail</source>
         <translation>Добавить детальную запись</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/income_spending_operation.ui" line="66"/>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="83"/>
         <source>Remove detail</source>
         <translation>Удалить детальную запись</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/income_spending_operation.ui" line="166"/>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="183"/>
         <source>Income / Spending</source>
         <translation>Доход / Расход</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/income_spending_operation.ui" line="186"/>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="203"/>
         <source>Cancel changes</source>
         <translation>Отменить изменения</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/income_spending_operation.ui" line="106"/>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="123"/>
         <source>CUR</source>
         <translation>ВАЛ</translation>
     </message>
     <message>
         <location filename="../ui/widgets/income_spending_operation.ui" line="23"/>
+        <source>#</source>
+        <translation type="unfinished">№</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="40"/>
         <source>&amp;Account</source>
         <translation>&amp;Счет</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/income_spending_operation.ui" line="33"/>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="50"/>
         <source>Dat&amp;e/Time</source>
         <translation>Дата/&amp;Время</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/income_spending_operation.ui" line="76"/>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="93"/>
         <source>Copy detail</source>
         <translation>Скопировать детальную запись</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/income_spending_operation.ui" line="115"/>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="132"/>
         <source>&amp;Note</source>
         <translation>&amp;Примечание</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/income_spending_operation.ui" line="138"/>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="155"/>
         <source>&amp;Peer</source>
         <translation>&amp;Контрагент</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/income_spending_operation.ui" line="148"/>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="165"/>
         <source>dd/MM/yyyy hh:mm:ss</source>
         <translation>dd/MM/yyyy hh:mm:ss</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/income_spending_operation.ui" line="173"/>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="190"/>
         <source>Details</source>
         <translation>Детали</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/income_spending_operation.ui" line="128"/>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="145"/>
         <source>Commit changes</source>
         <translation>Сохранить изменения</translation>
     </message>
@@ -4041,34 +4027,34 @@ one for ParentCo and second for Subsidiary</source>
         <translation>Оплата в валюте:</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="91"/>
-        <location filename="../widgets/income_spending_widget.py" line="108"/>
+        <location filename="../widgets/income_spending_widget.py" line="92"/>
+        <location filename="../widgets/income_spending_widget.py" line="109"/>
         <source>Failed to add new record: </source>
         <translation>Невозможно добавить новую запись: </translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="123"/>
-        <location filename="../widgets/income_spending_widget.py" line="128"/>
+        <location filename="../widgets/income_spending_widget.py" line="124"/>
+        <location filename="../widgets/income_spending_widget.py" line="129"/>
         <source>Incomplete data</source>
         <translation>Неполные данные</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="123"/>
+        <location filename="../widgets/income_spending_widget.py" line="124"/>
         <source>Operation contains no details</source>
         <translation>Операция не содержит детальных записей</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="129"/>
+        <location filename="../widgets/income_spending_widget.py" line="130"/>
         <source>Category isn&apos;t set for &apos;{}&apos; (Amount: {})</source>
         <translation>Не задана категория для &apos;{}&apos; (Сумма: {})</translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="137"/>
+        <location filename="../widgets/income_spending_widget.py" line="138"/>
         <source>Operation submit failed: </source>
         <translation>Ошибка при записи операции: </translation>
     </message>
     <message>
-        <location filename="../widgets/income_spending_widget.py" line="144"/>
+        <location filename="../widgets/income_spending_widget.py" line="145"/>
         <source>Operation details submit failed: </source>
         <translation>Ошибка при записи деталей операции: </translation>
     </message>
@@ -5175,41 +5161,41 @@ do you want to save them?</source>
 <context>
     <name>LoginFNS</name>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="262"/>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="263"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="242"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="243"/>
         <source>Login</source>
         <translation>Логин</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="281"/>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="294"/>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="313"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="261"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="274"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="293"/>
         <source>FNS login failed: </source>
         <translation>ФНС логин неуспешен: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="283"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="263"/>
         <source>SMS was requested successfully</source>
         <translation>SMS было успешно запрошено</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="296"/>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="315"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="276"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="295"/>
         <source>FNS login successful: </source>
         <translation>ФНС логин выполнен успешно: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="327"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="307"/>
         <source>Get ESIA URL failed: </source>
         <translation>Не удалось получить URL ЕСИА: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="340"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="320"/>
         <source>ESIA login failed: </source>
         <translation>ЕСИА логин не успешен: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="342"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="322"/>
         <source>ESIA login successful: </source>
         <translation>ЕСИА логин выполнен успешно: </translation>
     </message>
@@ -5268,98 +5254,6 @@ do you want to save them?</source>
     </message>
 </context>
 <context>
-    <name>LoginLidlPlus</name>
-    <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="198"/>
-        <source>Login error</source>
-        <translation>Ошибка логина</translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="198"/>
-        <source>No auth code in callback URI</source>
-        <translation>Код аутентификации отсутствует в callback URI</translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="213"/>
-        <source>Lidl Plus login failed: </source>
-        <translation>Lidl Plus логин не успешен: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="215"/>
-        <source>Lidl Plus login successful: </source>
-        <translation>Lidl Plus логин выполнен успешно: </translation>
-    </message>
-</context>
-<context>
-    <name>LoginLidlPlusDialog</name>
-    <message>
-        <location filename="../ui/login_lidl_plus_dlg.ui" line="14"/>
-        <source>Authorization Lidl Plus</source>
-        <translation>Авторизация Lidl Plus</translation>
-    </message>
-    <message>
-        <location filename="../ui/login_lidl_plus_dlg.ui" line="27"/>
-        <source>about:blank</source>
-        <translation>about:blank</translation>
-    </message>
-</context>
-<context>
-    <name>LoginPingoDoce</name>
-    <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="187"/>
-        <source>Login</source>
-        <translation>Логин</translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="199"/>
-        <source>Pingo Doce phone verification failed: </source>
-        <translation>Не удалось подтвердить телефон Pingo Doce: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="210"/>
-        <source>Pingo Doce unknown login status: </source>
-        <translation>Неизвестный статус входа Pingo Doce: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="217"/>
-        <source>Pingo Doce login failed: </source>
-        <translation>Не удалось войти в Pingo Doce: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="219"/>
-        <source>Pingo Doce login successful: </source>
-        <translation>Успешный вход в Pingo Doce: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="232"/>
-        <source>Pingo Doce login response failed with: </source>
-        <translation>Ошибка обработки ответа входа Pingo Doce: </translation>
-    </message>
-</context>
-<context>
-    <name>LoginPingoDoceDialog</name>
-    <message>
-        <location filename="../ui/login_pingo_doce_dlg.ui" line="14"/>
-        <source>Authorization Pingo Doce</source>
-        <translation>Авторизация Pingo Doce</translation>
-    </message>
-    <message>
-        <location filename="../ui/login_pingo_doce_dlg.ui" line="35"/>
-        <source>&amp;Phone number:</source>
-        <translation>&amp;Номер телефона:</translation>
-    </message>
-    <message>
-        <location filename="../ui/login_pingo_doce_dlg.ui" line="73"/>
-        <source>P&amp;assword:</source>
-        <translation>&amp;Пароль:</translation>
-    </message>
-    <message>
-        <location filename="../ui/login_pingo_doce_dlg.ui" line="48"/>
-        <source>+351---</source>
-        <translation></translation>
-    </message>
-</context>
-<context>
     <name>MOEX</name>
     <message>
         <location filename="../net/moex.py" line="99"/>
@@ -5385,28 +5279,28 @@ do you want to save them?</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../widgets/main_window.py" line="228"/>
-        <location filename="../widgets/main_window.py" line="243"/>
+        <location filename="../widgets/main_window.py" line="226"/>
+        <location filename="../widgets/main_window.py" line="241"/>
         <source>Restart required</source>
         <translation>Требуется рестарт</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="229"/>
+        <location filename="../widgets/main_window.py" line="227"/>
         <source>Language was changed to </source>
         <translation>Язык был изменён на </translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="173"/>
+        <location filename="../widgets/main_window.py" line="171"/>
         <source>Info</source>
         <translation>Информация</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="177"/>
+        <location filename="../widgets/main_window.py" line="175"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="332"/>
+        <location filename="../widgets/main_window.py" line="330"/>
         <source>About</source>
         <translation>О программе</translation>
     </message>
@@ -5416,98 +5310,98 @@ do you want to save them?</source>
         <translation>Стоп</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="177"/>
+        <location filename="../widgets/main_window.py" line="175"/>
         <source>Database data may be inconsistent after recent update. Rebuild it now?</source>
         <translation>База данных может содержать неверные итоги после недавнего апдейта. Пересчитать сейчас?</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="189"/>
+        <location filename="../widgets/main_window.py" line="187"/>
         <source>Operation in progress</source>
         <translation>Выполняется операция</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="190"/>
+        <location filename="../widgets/main_window.py" line="188"/>
         <source>An operation is still running.
 Stop it and close the application when it has finished?</source>
         <translation>Операция всё ещё выпоняется.
 Остановить её и закрыть приложение по её завершению?</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="224"/>
+        <location filename="../widgets/main_window.py" line="222"/>
         <source>Translation</source>
         <translation>Перевод</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="225"/>
+        <location filename="../widgets/main_window.py" line="223"/>
         <source>Translate predefined names in the database?
 (Default answer is &apos;yes&apos;, if haven&apos;t renamed manually before)</source>
         <translation>Перевести предопределённые названия в базе данных?
 (Ответ по умолчанию &apos;да&apos;, если вы не переименовывали их ранее вручную)</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="231"/>
+        <location filename="../widgets/main_window.py" line="229"/>
         <source>You should restart application to apply changes.
 Application will be terminated now.</source>
         <translation>Нужно перезапустить приложение для применения изменений.
 Сейчас приложение будет закрыто.</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="238"/>
+        <location filename="../widgets/main_window.py" line="236"/>
         <source>Full clean-up</source>
         <translation>Полная очистка</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="239"/>
+        <location filename="../widgets/main_window.py" line="237"/>
         <source>All data will be deleted. The actions can&apos;t be undone.
 Are you sure?</source>
         <translation>Все данные будут удалены без возможности восстановления.
 Вы уверены?</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="244"/>
+        <location filename="../widgets/main_window.py" line="242"/>
         <source>Database will be removed at next JAL start.
 Application will be terminated now.</source>
         <translation>База данных будет очищена при следующем запуске JAL.
 Сейчас приложение будет закрыто.</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="334"/>
+        <location filename="../widgets/main_window.py" line="332"/>
         <source>version</source>
         <translation>версия</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="338"/>
+        <location filename="../widgets/main_window.py" line="336"/>
         <source>github home page</source>
         <translation>домашней странице github</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="337"/>
+        <location filename="../widgets/main_window.py" line="335"/>
         <source>More information, manuals and problem reports are at </source>
         <translation>Дополнительная информация, инструкции, сообщения о проблемах на </translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="339"/>
+        <location filename="../widgets/main_window.py" line="337"/>
         <source>Questions, comments, help or donations:</source>
         <translation>Вопросы, комментарии, помощь или донаты:</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="359"/>
-        <location filename="../widgets/main_window.py" line="363"/>
+        <location filename="../widgets/main_window.py" line="357"/>
+        <location filename="../widgets/main_window.py" line="361"/>
         <source>Token lists</source>
         <translation>Списки токенов</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="360"/>
+        <location filename="../widgets/main_window.py" line="358"/>
         <source>Token lists were updated, entries loaded: </source>
         <translation>Списки токенов обновлены, загружено записей: </translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="364"/>
+        <location filename="../widgets/main_window.py" line="362"/>
         <source>Failed to download token lists, see log for details</source>
         <translation>Не удалось загрузить списки токенов, подробности в журнале</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="409"/>
+        <location filename="../widgets/main_window.py" line="407"/>
         <source>Ledger stopped at {} on account &apos;{}&apos;: {} {} is missing.
 
 This looks like the quantity a rebasing position gained without reporting it, which JAL can book to complete the ledger. Book it and continue?</source>
@@ -5516,12 +5410,12 @@ This looks like the quantity a rebasing position gained without reporting it, wh
 Вероятно это вызвано остатком переоценки, которая не была отражена и которую JAL может учесть самостоятельно. Учесть и продолжить?</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="414"/>
+        <location filename="../widgets/main_window.py" line="412"/>
         <source>Ledger is incomplete</source>
         <translation>Расчёт итогов не завершён</translation>
     </message>
     <message>
-        <location filename="../widgets/main_window.py" line="445"/>
+        <location filename="../widgets/main_window.py" line="443"/>
         <source>Statement ending balance doesn&apos;t match: </source>
         <translation>Конечный баланс по отчёту не совпадает: </translation>
     </message>
@@ -5925,22 +5819,22 @@ This looks like the quantity a rebasing position gained without reporting it, wh
 <context>
     <name>PandasLinesModel</name>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="79"/>
+        <location filename="../data_import/shop_receipt.py" line="75"/>
         <source>Product name</source>
         <translation>Название продукта</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="81"/>
+        <location filename="../data_import/shop_receipt.py" line="77"/>
         <source>Category</source>
         <translation>Категория</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="83"/>
+        <location filename="../data_import/shop_receipt.py" line="79"/>
         <source>Tag</source>
         <translation>Метка</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="85"/>
+        <location filename="../data_import/shop_receipt.py" line="81"/>
         <source>Amount</source>
         <translation>Сумма</translation>
     </message>
@@ -6485,42 +6379,42 @@ One transaction moved this exact quantity as </source>
 <context>
     <name>PredefinedAccountType</name>
     <message>
-        <location filename="../constants.py" line="248"/>
+        <location filename="../constants.py" line="250"/>
         <source>Cash</source>
         <translation>Наличные</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="249"/>
+        <location filename="../constants.py" line="251"/>
         <source>Bank account</source>
         <translation>Банковский счёт</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="250"/>
+        <location filename="../constants.py" line="252"/>
         <source>Card</source>
         <translation>Карта</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="251"/>
+        <location filename="../constants.py" line="253"/>
         <source>Broker account</source>
         <translation>Брокерский счёт</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="252"/>
+        <location filename="../constants.py" line="254"/>
         <source>Wallet</source>
         <translation>Кошелёк</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="253"/>
+        <location filename="../constants.py" line="255"/>
         <source>Term deposit</source>
         <translation>Срочный депозит</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="254"/>
+        <location filename="../constants.py" line="256"/>
         <source>Crypto exchange</source>
         <translation>Криптобиржа</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="255"/>
+        <location filename="../constants.py" line="257"/>
         <source>Staking</source>
         <translation>Стейкинг</translation>
     </message>
@@ -6536,47 +6430,47 @@ One transaction moved this exact quantity as </source>
 <context>
     <name>PredefinedAsset</name>
     <message>
-        <location filename="../constants.py" line="320"/>
+        <location filename="../constants.py" line="322"/>
         <source>Money</source>
         <translation>Валюты</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="321"/>
+        <location filename="../constants.py" line="323"/>
         <source>Shares</source>
         <translation>Акции</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="322"/>
+        <location filename="../constants.py" line="324"/>
         <source>Bonds</source>
         <translation>Облигации</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="323"/>
+        <location filename="../constants.py" line="325"/>
         <source>ETFs</source>
         <translation>БПИФ</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="324"/>
+        <location filename="../constants.py" line="326"/>
         <source>Commodities</source>
         <translation>Товары</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="325"/>
+        <location filename="../constants.py" line="327"/>
         <source>Derivatives</source>
         <translation>Деривативы</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="326"/>
+        <location filename="../constants.py" line="328"/>
         <source>Forex</source>
         <translation>Форекс</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="327"/>
+        <location filename="../constants.py" line="329"/>
         <source>Funds</source>
         <translation>Фонды</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="328"/>
+        <location filename="../constants.py" line="330"/>
         <source>Crypto-currency</source>
         <translation>Криптовалюты</translation>
     </message>
@@ -6584,75 +6478,80 @@ One transaction moved this exact quantity as </source>
 <context>
     <name>PredefinedCategory</name>
     <message>
-        <location filename="../constants.py" line="196"/>
+        <location filename="../constants.py" line="197"/>
         <source>Income</source>
         <translation>Приход</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="197"/>
+        <location filename="../constants.py" line="198"/>
         <source>Spending</source>
         <translation>Расход</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="198"/>
+        <location filename="../constants.py" line="199"/>
         <source>Profits</source>
         <translation>Прибыли</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="199"/>
+        <location filename="../constants.py" line="200"/>
         <source>Starting balance</source>
         <translation>Начальный баланс</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="200"/>
+        <location filename="../constants.py" line="201"/>
         <source>Fees</source>
         <translation>Комиссии</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="201"/>
+        <location filename="../constants.py" line="202"/>
         <source>Taxes</source>
         <translation>Налоги</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="202"/>
+        <location filename="../constants.py" line="203"/>
         <source>Dividends</source>
         <translation>Дивиденды</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="203"/>
+        <location filename="../constants.py" line="204"/>
         <source>Interest</source>
         <translation>Проценты</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="204"/>
+        <location filename="../constants.py" line="205"/>
         <source>Results of investments</source>
         <translation>Результат инвестирования</translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="206"/>
+        <source>Discounts</source>
+        <translation>Скидки</translation>
     </message>
 </context>
 <context>
     <name>PredefinedTags</name>
     <message>
-        <location filename="../constants.py" line="218"/>
+        <location filename="../constants.py" line="220"/>
         <source>Account type</source>
         <translation>Тип счёта</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="219"/>
+        <location filename="../constants.py" line="221"/>
         <source>Cash</source>
         <translation>Наличные</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="220"/>
+        <location filename="../constants.py" line="222"/>
         <source>Bank account</source>
         <translation>Банковский счёт</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="221"/>
+        <location filename="../constants.py" line="223"/>
         <source>Card</source>
         <translation>Карта</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="222"/>
+        <location filename="../constants.py" line="224"/>
         <source>Broker account</source>
         <translation>Брокерский счёт</translation>
     </message>
@@ -6854,7 +6753,7 @@ One transaction moved this exact quantity as </source>
         <location filename="../data_import/broker_statements/revolut.py" line="30"/>
         <location filename="../data_import/broker_statements/revolut.py" line="39"/>
         <location filename="../data_import/broker_statements/trading212.py" line="30"/>
-        <location filename="../data_import/shop_receipt.py" line="39"/>
+        <location filename="../data_import/shop_receipt.py" line="35"/>
         <source>Import</source>
         <translation>Импорт</translation>
     </message>
@@ -6889,12 +6788,12 @@ One transaction moved this exact quantity as </source>
         <translation>Счёт, на который импортируется отчёт Trading 212. Такой отчёт не содержит номера счёта, поэтому импорт не может определить, какому счёту принадлежит файл, и спрашивает об этом здесь.</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="40"/>
+        <location filename="../data_import/shop_receipt.py" line="36"/>
         <source>Phone receipt inbox folder</source>
         <translation>Папка входящих чеков с телефона</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="41"/>
+        <location filename="../data_import/shop_receipt.py" line="37"/>
         <source>The folder the phone app&apos;s receipt files arrive in. An imported file is moved into its &apos;done&apos; subfolder.</source>
         <translation>Папка, в которую поступают файлы чеков из приложения на телефоне. Импортированный файл перемещается в её подпапку &apos;done&apos;.</translation>
     </message>
@@ -7082,29 +6981,6 @@ One transaction moved this exact quantity as </source>
         <location filename="../reports/profit_loss.py" line="186"/>
         <source>Currency: </source>
         <translation>Валюта: </translation>
-    </message>
-</context>
-<context>
-    <name>QRScanner</name>
-    <message>
-        <location filename="../widgets/qr_scanner.py" line="62"/>
-        <source>There are no cameras available</source>
-        <translation>Нет доступных камер</translation>
-    </message>
-    <message>
-        <location filename="../widgets/qr_scanner.py" line="65"/>
-        <source>Package pyzbar not found for QR recognition.</source>
-        <translation>Не обнаружен пакет pyzbar, необходимый для распознавания QR кодов.</translation>
-    </message>
-    <message>
-        <location filename="../widgets/qr_scanner.py" line="114"/>
-        <source>Capture error: </source>
-        <translation>Ошибка захвата кадра: </translation>
-    </message>
-    <message>
-        <location filename="../widgets/qr_scanner.py" line="117"/>
-        <source>Camera error: </source>
-        <translation>Ошибка камеры: </translation>
     </message>
 </context>
 <context>
@@ -7400,263 +7276,120 @@ One transaction moved this exact quantity as </source>
 <context>
     <name>ReceiptAPI</name>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="34"/>
-        <source>Lidl QR available but pattern isn&apos;t recognized: </source>
-        <translation>Lidl QR отсканирован, но не распознан: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="42"/>
-        <source>Input Lidl receipt additional data</source>
-        <translation>Введите дополнительные данные для чека Lidl</translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="43"/>
-        <source>Sequence #:</source>
-        <translation>Порядковый номер:</translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="45"/>
-        <source>Can&apos;t get Lidl receipt without sequence number</source>
-        <translation>Невозможно получить чек Lidl без порядкового номера</translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="70"/>
-        <source>No Lidl Plus access token available</source>
-        <translation>Отсутствует токен доступа Lidl Plus</translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="77"/>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="70"/>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="85"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="65"/>
         <source>Unauthorized with reason: </source>
         <translation>Неавторизован, причина: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="80"/>
-        <source>Lidl Plus API failed with: </source>
-        <translation>Запрос к Lidl Plus API завершился неуспешно: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="84"/>
-        <source>Refreshing Lidl Plus token...</source>
-        <translation>Обновление токена Lidl Plus...</translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="92"/>
-        <source>Lidl Plus token was refreshed: </source>
-        <translation>Токен Lidl Plus был обновлён: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="103"/>
-        <source>Can&apos;t refresh Lidl Plus token, response: </source>
-        <translation>Невозможно обновить токен Lidl Plus, ответ: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="118"/>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="144"/>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="142"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="122"/>
         <source>Receipt was loaded: </source>
         <translation>Чек загружен: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/eu_lidl_plus.py" line="122"/>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="148"/>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="139"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="119"/>
         <source>Receipt load failed: </source>
         <translation>Ошибка загрузки чека: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="32"/>
-        <source>Pingo Doce QR available but pattern isn&apos;t recognized: </source>
-        <translation>QR-код Pingo Doce получен, но его формат не распознан: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="60"/>
-        <source>No Pingo Doce access token available</source>
-        <translation>Нет доступного токена Pingo Doce</translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="80"/>
-        <source>Pingo Doce API failed with: </source>
-        <translation>Ошибка API Pingo Doce: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="84"/>
-        <source>Pingo Doce API filter failed with: </source>
-        <translation>Ошибка фильтра API Pingo Doce: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="91"/>
-        <source>Pingo Doce API history failed: </source>
-        <translation>Ошибка запроса истории Pingo Doce: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="102"/>
-        <source>Refreshing Pingo Doce token...</source>
-        <translation>Обновление токена Pingo Doce...</translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="111"/>
-        <source>Pingo Doce token was refreshed: </source>
-        <translation>Токен Pingo Doce обновлён: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="120"/>
-        <source>Can&apos;t refresh Pingo Doce token, response: </source>
-        <translation>Не удалось обновить токен Pingo Doce, ответ: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="126"/>
-        <source>Can&apos;t get Pingo Doce profile, response: </source>
-        <translation>Не удалось получить профиль Pingo Doce, ответ: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="128"/>
-        <source>Pingo Doce profile was loaded: </source>
-        <translation>Профиль Pingo Doce загружен: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="153"/>
-        <source>Receipt was not found in available list</source>
-        <translation>Чек не найден в списке доступных</translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_api/pt_pingo_doce.py" line="155"/>
-        <source>Several similar receipts was found: </source>
-        <translation>Найдено несколько похожих чеков: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="38"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="37"/>
         <source>FNS QR available but date/time pattern isn&apos;t recognized: </source>
         <translation>ФНС QR отсканирован, но невозможно определить дату/время: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="45"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="44"/>
         <source>FNS QR available but pattern isn&apos;t recognized: </source>
         <translation>ФНС QR отсканирован, но не распознан: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="78"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="58"/>
         <source>No FNS SessionId available</source>
         <translation>Нет ФНС SessionId</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="88"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="68"/>
         <source>FNS API failed with: </source>
         <translation>Вызов ФНС API неуспешен: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="94"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="74"/>
         <source>Refreshing FNS session...</source>
         <translation>Обновление сессии ФНС...</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="101"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="81"/>
         <source>FNS session refreshed: </source>
         <translation>Сессия ФНС обновлена: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="111"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="91"/>
         <source>Can&apos;t refresh FNS session, response: </source>
         <translation>Невозможно обновить сессию ФНС, ответ: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="127"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="107"/>
         <source>Get ticket id failed: </source>
         <translation>Невозможно получить ID чека: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="129"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="109"/>
         <source>Receipt found: </source>
         <translation>Чек найден: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="133"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="113"/>
         <source>Operation might be pending on server side. Trying again.</source>
         <translation>Вероятно операция обрабатывается сервером. Попробуйте позже.</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="158"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="138"/>
         <source>Can&apos;t find &apos;receipt&apos; tag in json &apos;document&apos; from FNS</source>
         <translation>Не найден тэг &apos;receipt&apos; внутри тега &apos;document&apos; данных от ФНС</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="161"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="141"/>
         <source>Can&apos;t find &apos;document&apos; tag in json &apos;ticket&apos; from FNS</source>
         <translation>Не найден тэг &apos;document&apos; внутри тега &apos;ticket&apos; данных от ФНС</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="178"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="158"/>
         <source>Incorrect length of INN. Can&apos;t get company name.</source>
         <translation>Неверная длина ИНН. Невозможно загрузить наименование компании.</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="202"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="182"/>
         <source>Can&apos;t get company name from: </source>
         <translation>Невозможно получить имя компании: </translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="224"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="204"/>
         <source>Can&apos;t find &apos;operationType&apos; tag in json &apos;ticket&apos;</source>
         <translation>JSON тэг &apos;operationType&apos; отсутствует внутри тэга &apos;ticket&apos;</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_pdf.py" line="71"/>
+        <location filename="../data_import/receipt_pdf.py" line="64"/>
         <source>Package pypdf not found for PDF parsing.</source>
         <translation>Не обнаружен пакет pypdf, необходимый для чтения PDF файлов.</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_pdf.py" line="76"/>
+        <location filename="../data_import/receipt_pdf.py" line="69"/>
         <source>Receipt PDF can&apos;t be read</source>
         <translation>Невозможно прочитать PDF чека</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_pdf.py" line="92"/>
+        <location filename="../data_import/receipt_api/offline_receipt.py" line="97"/>
+        <location filename="../data_import/receipt_pdf.py" line="85"/>
         <source>Receipt items don&apos;t add up, the receipt is loaded as one line</source>
         <translation>Позиции чека не сходятся с итогом, чек загружен одной позицией</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_pdf.py" line="98"/>
+        <location filename="../data_import/receipt_pdf.py" line="93"/>
         <source>Receipt PDF has no total that could be read</source>
         <translation>В PDF чека не удалось прочитать итоговую сумму</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_pdf.py" line="104"/>
+        <location filename="../data_import/receipt_pdf.py" line="99"/>
         <source>Receipt PDF has no date that could be read, the capture time is used</source>
         <translation>В PDF чека не удалось прочитать дату, использовано время создания файла</translation>
-    </message>
-</context>
-<context>
-    <name>ReceiptAPIFactory</name>
-    <message>
-        <location filename="../data_import/receipt_api/receipts.py" line="26"/>
-        <source>Russian receipt</source>
-        <translation>Российский чек</translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_api/receipts.py" line="27"/>
-        <source>European Lidl receipt</source>
-        <translation>Европейский чек Lidl</translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_api/receipts.py" line="28"/>
-        <source>Portuguese Pingo Doce receipt</source>
-        <translation>Португальский чек Pingo Doce</translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_api/receipts.py" line="45"/>
-        <source>Please scan flat barcode from the receipt</source>
-        <translation>Отсканируйте плоский штрих-код со чека</translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_api/receipts.py" line="62"/>
-        <source>Portuguese QR recognized but shop isn&apos;t supported, NIF: </source>
-        <translation>Португальский QR-код распознан, но магазин не поддерживается, NIF: </translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_api/receipts.py" line="63"/>
-        <source>No API found for QR data: </source>
-        <translation>Не найдено API для QR-кода: </translation>
     </message>
 </context>
 <context>
@@ -7910,7 +7643,7 @@ One transaction moved this exact quantity as </source>
 <context>
     <name>RequestInterceptor</name>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="370"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="350"/>
         <source>ESIA login completed</source>
         <translation>ЕСИА логин успешен</translation>
     </message>
@@ -7990,59 +7723,6 @@ One transaction moved this exact quantity as </source>
         <location filename="../data_export/ru_ndfl3.py" line="115"/>
         <source>Country is not set for asset, dividend isn&apos;t exported into 3-NDFL </source>
         <translation>Страна не указана для ЦБ, дивиденд не экспортирован в 3-НДФЛ </translation>
-    </message>
-</context>
-<context>
-    <name>ScanDialog</name>
-    <message>
-        <location filename="../widgets/qr_scanner.py" line="149"/>
-        <source>Barcode scanner</source>
-        <translation>Сканнер штрихкодов</translation>
-    </message>
-    <message>
-        <location filename="../widgets/qr_scanner.py" line="167"/>
-        <source>Load image from file</source>
-        <translation>Загрузить изображение из файла</translation>
-    </message>
-    <message>
-        <location filename="../widgets/qr_scanner.py" line="168"/>
-        <source>Get image from clipboard</source>
-        <translation>Получить изображение из буфера</translation>
-    </message>
-    <message>
-        <location filename="../widgets/qr_scanner.py" line="169"/>
-        <source>Input data manually</source>
-        <translation>Ввести данные вручную</translation>
-    </message>
-    <message>
-        <location filename="../widgets/qr_scanner.py" line="170"/>
-        <source>Close</source>
-        <translation>Закрыть</translation>
-    </message>
-    <message>
-        <location filename="../widgets/qr_scanner.py" line="229"/>
-        <source>Select file with QR code</source>
-        <translation>Выберите файл с QR-кодом</translation>
-    </message>
-    <message>
-        <location filename="../widgets/qr_scanner.py" line="236"/>
-        <source>No QR codes were found in file</source>
-        <translation>QR-код в файле не обнаружен</translation>
-    </message>
-    <message>
-        <location filename="../widgets/qr_scanner.py" line="246"/>
-        <source>No QR codes found in clipboard</source>
-        <translation>QR код не обнаружен в буфере обмена</translation>
-    </message>
-    <message>
-        <location filename="../widgets/qr_scanner.py" line="250"/>
-        <source>Input code data manually</source>
-        <translation>Введите данные кода вручную</translation>
-    </message>
-    <message>
-        <location filename="../widgets/qr_scanner.py" line="250"/>
-        <source>Data:</source>
-        <translation>Данные:</translation>
     </message>
 </context>
 <context>
@@ -9125,183 +8805,183 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation>Невозможно обработать отменённое корпоративное действие</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="790"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="791"/>
         <source>Multiple merger records already exist at </source>
         <translation>Неоднозначное совпадение событий реорганизации </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="798"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="799"/>
         <source>Can&apos;t parse Spin-off description </source>
         <translation>Невозможно распознать описание Выделения компании </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="801"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="802"/>
         <source>Spin-off description miss some data </source>
         <translation>Недостаточно данных для Выделения компании </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="805"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="806"/>
         <source>Spin-off initial asset not found </source>
         <translation>Исходная ЦБ для выделения компании не найдена </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="811"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="812"/>
         <source>Spin-off rounding error is too big </source>
         <translation>Ошибка округления Spin-off слишком большая </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="827"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="828"/>
         <source>Can&apos;t parse Symbol Change description </source>
         <translation>Невозможно распознать описание Смены символа </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="830"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="831"/>
         <source>Symbol Change description miss some data </source>
         <translation>Нехватает данных в описании смены символа</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="849"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="850"/>
         <source>Can&apos;t parse Stock Dividend description </source>
         <translation>Невозможно распознать описание Дивиденда акциями </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="865"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="866"/>
         <source>Can&apos;t parse Split description </source>
         <translation>Невозможно распознать описание Сплита </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="868"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="869"/>
         <source>Split description miss some data </source>
         <translation>Недостаточно данных для Сплита </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="926"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="927"/>
         <source>Can&apos;t parse granted stock description </source>
         <translation>Невозможно разобрать описание начисления акций </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="936"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="937"/>
         <source>Multiple vesting matched withholding </source>
         <translation>Множественное совпадение начисления акций для удержания налога </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="945"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="946"/>
         <source>Stock grant operations loaded: </source>
         <translation>Начисления акций загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1010"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1011"/>
         <source>Cash transactions loaded: </source>
         <translation>Денежные транзакции загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1030"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1031"/>
         <source>Payment was reversed by approximate description: </source>
         <translation>Платёж был отменён по примерному совпадению описания: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1037"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1038"/>
         <source>Payment was reversed with different reported date: </source>
         <translation>Платёж был отменён, но с несовпадающей датой отчёта: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1040"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1041"/>
         <source>Can&apos;t find match for reversal: </source>
         <translation>Невозможно найти платёж для отмены: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1043"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1044"/>
         <source>Payment was reversed: </source>
         <translation>Платёж был отменён: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1130"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1131"/>
         <source>Too many records for MLP tax: </source>
         <translation>Слишком много записей для налога по MLP: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1141"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1142"/>
         <source>Can&apos;t find trade for tax: </source>
         <translation>Не удалось найти сделку для налога: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1146"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1147"/>
         <source>Unexpected tax source: </source>
         <translation>Неизвестный источник налога: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1152"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1153"/>
         <source>Transaction taxes loaded: </source>
         <translation>Загружено налоговых транзакций: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1166"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1167"/>
         <source>Sales taxes loaded: </source>
         <translation>Загружено транзакций налога с продажи: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1174"/>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1179"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1175"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1180"/>
         <source>Unknown CFD charge description: </source>
         <translation>Описание комиссии CFD не распознано: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1187"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1188"/>
         <source>CFD charges loaded: </source>
         <translation>Комиссии CFD загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1205"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1206"/>
         <source>*** MANUAL ENTRY REQUIRED ***</source>
         <translation>*** НЕОБХОДИМА РУЧНАЯ ПРОВЕРКА ***</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1206"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1207"/>
         <source>Unhandled tax country pattern found: </source>
         <translation>Неподдерживаемый формат страны налога: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1252"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1253"/>
         <source>several payments carry this corporate action id</source>
         <translation>несколько платежей имеют этот идентификатор</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1257"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1258"/>
         <source>no single payment of that day to fall back on</source>
         <translation>ни один из платежей в этот день не подходит</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1258"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1259"/>
         <source>the statement gives no corporate action id to match on</source>
         <translation>отчёт не содержит actionID, чтобы найти сопадение</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1294"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1295"/>
         <source>Withholding tax matches no payment: </source>
         <translation>Не найден платёж для удержанного налога: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1296"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1297"/>
         <source>    Payments considered: </source>
         <translation>    Платежи кандидаты: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1303"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1304"/>
         <source>Failed to collect debug information: </source>
         <translation>Не удалось сохранить отладочную информацию: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1304"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1305"/>
         <source>Import cancelled, withholding tax matches no payment: </source>
         <translation>Импорт прерван, не найден платёж для удержанного налога: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1214"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1215"/>
         <source>Tax adjustment for dividend: </source>
         <translation>Корректировка налога для дивиденда: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1334"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1335"/>
         <source>Can&apos;t find a FlexStatement in first {} bytes of {}</source>
         <translation>Тэг FlexStatement не найден в первых {} байтах {}</translation>
     </message>
@@ -9329,55 +9009,55 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation>ЦБ загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/just2trade.py" line="127"/>
-        <location filename="../data_import/broker_statements/just2trade.py" line="184"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="128"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="185"/>
         <source>Unknown trade type: </source>
         <translation>Неизвестный тип сделки: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/just2trade.py" line="147"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="148"/>
         <source>Stock trades loaded: </source>
         <translation>Сделки с акциями загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/just2trade.py" line="202"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="203"/>
         <source>Crypto trades loaded: </source>
         <translation>Сделки с крипто-валютами загружены: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/just2trade.py" line="246"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="248"/>
         <source>Unsuppported cash transaction </source>
         <translation>Неподдерживаемая денежная транзакция </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/just2trade.py" line="253"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="255"/>
         <source>Unknown cash transaction type </source>
         <translation>Неизвестная денежная транзакция </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/just2trade.py" line="273"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="275"/>
         <source>Cash operations loaded: </source>
         <translation>Денежных операций загружено: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/just2trade.py" line="320"/>
-        <location filename="../data_import/broker_statements/just2trade.py" line="335"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="322"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="337"/>
         <source>Can&apos;t parse Dividend description </source>
         <translation>Невозможно распознать описание дивиденда </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/just2trade.py" line="323"/>
-        <location filename="../data_import/broker_statements/just2trade.py" line="338"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="325"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="340"/>
         <source>Dividend description miss some data </source>
         <translation>В описании дивиденда отсутствуют данные </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/just2trade.py" line="343"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="345"/>
         <source>Dividend for tax was not found </source>
         <translation>Дивиденд не найден для списания налога </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/just2trade.py" line="372"/>
+        <location filename="../data_import/broker_statements/just2trade.py" line="374"/>
         <source>Import skipped of transaction: </source>
         <translation>Транзакция пропущена при импорте: </translation>
     </message>
@@ -10636,72 +10316,72 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
 <context>
     <name>SymbolId</name>
     <message>
-        <location filename="../constants.py" line="355"/>
+        <location filename="../constants.py" line="357"/>
         <source>UUID</source>
         <translation>UUID</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="356"/>
+        <location filename="../constants.py" line="358"/>
         <source>FIGI</source>
         <translation>FIGI</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="357"/>
+        <location filename="../constants.py" line="359"/>
         <source>ISIN</source>
         <translation>ISIN</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="358"/>
+        <location filename="../constants.py" line="360"/>
         <source>ITIN</source>
         <translation>ITIN</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="359"/>
+        <location filename="../constants.py" line="361"/>
         <source>CUSIP</source>
         <translation>CUSIP</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="360"/>
+        <location filename="../constants.py" line="362"/>
         <source>Reg.code</source>
         <translation>Рег.код</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="361"/>
+        <location filename="../constants.py" line="363"/>
         <source>ISO4217 currency code</source>
         <translation>Код валюты ISO4217</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="362"/>
+        <location filename="../constants.py" line="364"/>
         <source>ETH address</source>
         <translation>ETH-адрес</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="363"/>
+        <location filename="../constants.py" line="365"/>
         <source>ARB address</source>
         <translation>ARB-адрес</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="364"/>
+        <location filename="../constants.py" line="366"/>
         <source>SOL address</source>
         <translation>Адрес SOL</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="365"/>
+        <location filename="../constants.py" line="367"/>
         <source>TRX address</source>
         <translation>Адрес TRX</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="366"/>
+        <location filename="../constants.py" line="368"/>
         <source>HL token id</source>
         <translation>Идентификатор токена HL</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="367"/>
+        <location filename="../constants.py" line="369"/>
         <source>HyperEVM address</source>
         <translation>Адрес HyperEVM</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="368"/>
+        <location filename="../constants.py" line="370"/>
         <source>AVAX address</source>
         <translation>Адрес AVAX</translation>
     </message>
@@ -11280,37 +10960,37 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
 <context>
     <name>TokenList</name>
     <message>
-        <location filename="../constants.py" line="672"/>
+        <location filename="../constants.py" line="677"/>
         <source>Jupiter verified tokens</source>
         <translation>Проверенные токены Jupiter</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="673"/>
+        <location filename="../constants.py" line="678"/>
         <source>Uniswap default list</source>
         <translation>Список по умолчанию Uniswap</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="674"/>
+        <location filename="../constants.py" line="679"/>
         <source>CoinGecko token list</source>
         <translation>Список токенов CoinGecko</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="675"/>
+        <location filename="../constants.py" line="680"/>
         <source>DappRadar tokens blacklist</source>
         <translation>Чёрный список токенов DappRadar</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="676"/>
+        <location filename="../constants.py" line="681"/>
         <source>MyEtherWallet token list</source>
         <translation>Список токенов MyEtherWallet</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="677"/>
+        <location filename="../constants.py" line="682"/>
         <source>CoinGecko Tron token list</source>
         <translation>Список токенов Tron от CoinGecko</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="678"/>
+        <location filename="../constants.py" line="683"/>
         <source>CoinGecko Avalanche token list</source>
         <translation>Список токенов Avalanche от CoinGecko</translation>
     </message>
@@ -11318,12 +10998,12 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
 <context>
     <name>TokenListKind</name>
     <message>
-        <location filename="../constants.py" line="654"/>
+        <location filename="../constants.py" line="659"/>
         <source>Allow-list</source>
         <translation>Белый список</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="655"/>
+        <location filename="../constants.py" line="660"/>
         <source>Block-list</source>
         <translation>Чёрный список</translation>
     </message>

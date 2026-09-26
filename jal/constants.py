@@ -189,6 +189,7 @@ class PredefinedCategory(PredefinedList, QObject):  # These constants are linked
     Dividends = 7
     Interest = 8
     Profit = 9
+    Discounts = 10
 
     def __init__(self):
         super().__init__()
@@ -201,7 +202,8 @@ class PredefinedCategory(PredefinedList, QObject):  # These constants are linked
             self.Taxes: self.tr("Taxes"),
             self.Dividends: self.tr("Dividends"),
             self.Interest: self.tr("Interest"),
-            self.Profit: self.tr("Results of investments")
+            self.Profit: self.tr("Results of investments"),
+            self.Discounts: self.tr("Discounts")
         }
 
 class PredefinedTags(PredefinedList, QObject):   # Legacy 'Account type' tag seed rows (2-5); superseded by PredefinedAccountType. Kept only to document the still-seeded tag rows; no longer referenced in code.

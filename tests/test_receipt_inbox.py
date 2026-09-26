@@ -203,7 +203,7 @@ def test_paper_block_is_read(tmp_path):
                                                     tax_table=table)))
     assert jalr.validation_status == "green" and jalr.discount_hypothesis == JalrFile.NETTED
     assert jalr.paper_items[0] == PaperItem("item", "BANANA", Decimal('1.41'), "positive", Decimal('0.705'),
-                                            Decimal('2.00'), "kg", "A", "FRUTAS")
+                                            Decimal('2.00'), "kg", "A", "FRUTAS", (3, 4))
     assert jalr.paper_items[1].role == PaperItem.DISCOUNT and jalr.paper_items[1].quantity is None
     assert jalr.tax_table == [{'code': "A", 'rate': Decimal('6.00'), 'base': Decimal('1.33'),
                                'tax': Decimal('0.08'), 'total': Decimal('1.41')}]

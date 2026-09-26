@@ -1100,6 +1100,7 @@ INSERT INTO categories (id, pid, name) VALUES (6, 2, 'Taxes');
 INSERT INTO categories (id, pid, name) VALUES (7, 3, 'Dividends');
 INSERT INTO categories (id, pid, name) VALUES (8, 3, 'Interest');
 INSERT INTO categories (id, pid, name) VALUES (9, 3, 'Results of investments');
+INSERT INTO categories (id, pid, name) VALUES (10, 2, 'Discounts');
 
 -- Initialize predefined tags
 INSERT INTO tags (id, pid, tag) VALUES (0, 0, '');

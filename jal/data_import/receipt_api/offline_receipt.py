@@ -6,7 +6,7 @@ from PySide6.QtCore import QDateTime, QDate, QTime
 from jal.data_import.receipt_api.receipt_api import ReceiptAPI
 from jal.data_import.receipt_api.pt_at_qr import AtQr
 from jal.data_import.receipt_inbox import JalrFile, PaperItem
-from jal.data_import.receipt import ReceiptItem, shop_profile, line_name
+from jal.data_import.receipt import ReceiptItem, shop_profile, line_name, is_subtotal, vat_problems, discount_line
 from jal.db.clock import local_zone
 
 
@@ -52,20 +52,26 @@ class ReceiptOffline(ReceiptAPI):
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Lines of the items the phone read off a paper receipt, or [] when they can't be trusted (the receipt is then one
-# line of its total). A discount belongs to the item above it; the shop profile, if any, says whether it is money off
-# and must agree with the reading the phone found to balance.
+# line of its total). A discount belongs to the item above it, or to the whole receipt below a SUBTOTAL row; the shop
+# profile, if any, says whether it is money off and must agree with the reading the phone found to balance.
 def paper_lines(receipt: JalrFile, at_qr: AtQr) -> list:
-    problems, items = [], []
+    problems, items, discounts, item_rows = [], [], [], ()
+    texts = receipt.ocr_texts
     for x in receipt.paper_items:
         if x.role == PaperItem.ITEM:
             items.append(ReceiptItem(name=x.text, amount=x.amount, vat=x.tax_code, qty=x.quantity,
                                      price=x.unit_price, department=x.department))
+            item_rows = x.source_lines
         elif x.role == PaperItem.DISCOUNT and items:
-            items[-1].discounts.append((x.text, x.amount))
+            between = texts[max(item_rows) + 1:min(x.source_lines)] if item_rows and x.source_lines else []
+            if any(is_subtotal(line) for line in between):
+                discounts.append((x.text, x.amount))
+            else:
+                items[-1].discounts.append((x.text, x.amount))
         else:
             problems.append(f"'{x.text}' isn't an item or a discount of one")
     netted = True
-    if any(x.discounts for x in items):
+    if discounts or any(x.discounts for x in items):
         hypothesis = receipt.discount_hypothesis
         if hypothesis not in (JalrFile.NETTED, JalrFile.INFORMATIONAL):
             problems.append(f"discounts without a reading that balances them ('{hypothesis}')")
@@ -75,7 +81,16 @@ def paper_lines(receipt: JalrFile, at_qr: AtQr) -> list:
             problems.append(f"discounts are {'' if profile.discounts_netted else 'not '}money off for "
                             f"{profile.name}, the phone balanced them as '{hypothesis}'")
     paid = [(x, x.amount - sum(a for _, a in x.discounts) if netted else x.amount) for x in items]
-    total = sum((amount for _, amount in paid), Decimal('0'))
+    discount = sum((a for _, a in discounts), Decimal('0')) if netted else Decimal('0')
+    if discount and receipt.tax_table:
+        if any(x['total'] is None for x in receipt.tax_table):
+            problems.append("VAT table without totals")
+        else:
+            by_code = {}
+            for x, amount in paid:
+                by_code[x.vat] = by_code.get(x.vat, Decimal('0')) + amount
+            problems += vat_problems(by_code, {x['code']: x['total'] for x in receipt.tax_table}, discount)
+    total = sum((amount for _, amount in paid), Decimal('0')) - discount
     if total != at_qr.total:
         problems.append(f"total: items {total}, QR code {at_qr.total}")
     if problems:
@@ -83,4 +98,7 @@ def paper_lines(receipt: JalrFile, at_qr: AtQr) -> list:
                         + f" ({receipt.name}): " + "; ".join(problems))
         return []
     sign = Decimal('1') if at_qr.is_return else Decimal('-1')
-    return [{'name': line_name(x), 'amount': sign * amount} for x, amount in paid]
+    lines = [{'name': line_name(x), 'amount': sign * amount} for x, amount in paid]
+    if discount:
+        lines += [discount_line(label, amount, sign) for label, amount in discounts]
+    return lines

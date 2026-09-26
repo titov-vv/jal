@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from decimal import Decimal
 from typing import Optional
-from jal.constants import Setup
+from jal.constants import Setup, PredefinedCategory
 from jal.db.settings import JalSettings
 from jal.db.helpers import remove_exponent
 
@@ -106,6 +106,38 @@ def body_of(lines: list) -> list:
     return lines
 
 
+_SUBTOTAL = re.compile(r'^\s*SUB-?\s*TOTAL\b', re.I)
+
+
+# A discount printed below a SUBTOTAL row is on the whole receipt, not on the item above it
+def is_subtotal(line: str) -> bool:
+    return bool(_SUBTOTAL.match(line))
+
+
+# Returns what doesn't add up between the paid items of each VAT code {code: sum} and the VAT table {code: total}.
+# A receipt-wide discount is shared by the codes: each code's items less its table total must be money off,
+# and these shares must add up to the discount.
+def vat_problems(paid: dict, table: dict, discount: Decimal) -> list:
+    problems = []
+    shares = {code: paid.get(code, Decimal('0')) - total for code, total in sorted(table.items())}
+    if discount:
+        if any(x < 0 for x in shares.values()) or sum(shares.values(), Decimal('0')) != discount:
+            problems.append(f"VAT: items less table {', '.join(f'{c} {x}' for c, x in shares.items())}, "
+                            f"receipt discount {discount}")
+    else:
+        problems += [f"VAT {code}: items {paid.get(code, Decimal('0'))}, table {table[code]}"
+                     for code, share in shares.items() if share]
+    codes = set(paid) - set(table)
+    if codes:
+        problems.append(f"items with VAT codes not in the table: {', '.join(sorted(codes))}")
+    return problems
+
+
+# Line of a receipt-wide discount, in the import dialog's sign ('sign' is the items' one)
+def discount_line(label: str, amount: Decimal, sign: Decimal) -> dict:
+    return {'name': label, 'amount': -sign * amount, 'category': PredefinedCategory.Discounts}
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 @dataclass
 class ReceiptItem:
@@ -141,6 +173,7 @@ class ShopReceipt:
     DatetimePattern = ''          # (?P<year>) (?P<month>) (?P<day>) (?P<hour>) (?P<minute>) [(?P<second>)]
 
     def __init__(self, lines: list):
+        self.discounts = []       # (label, amount) pairs of the whole receipt, amount > 0 as money off
         self.header = parse_header(lines)
         self.vat_table = parse_vat_table(lines)
         self.total = parse_total(lines)
@@ -153,21 +186,26 @@ class ShopReceipt:
             return item.amount
         return item.amount - sum(amount for _, amount in item.discounts)
 
-    # Returns what doesn't add up: every VAT bucket and the grand total must equal the sum of the paid items
+    # Money off the whole receipt
+    def receipt_discount(self) -> Decimal:
+        if not self.discounts_netted:
+            return Decimal('0')
+        return sum((amount for _, amount in self.discounts), Decimal('0'))
+
+    # Returns what doesn't add up: every VAT bucket and the grand total must equal the sum of the paid items,
+    # less the receipt-wide discount
     def problems(self) -> list:
         problems = []
         if not self.items:
             problems.append("no items found")
         if not self.vat_table:
             problems.append("no VAT table found")
-        for code, row in sorted(self.vat_table.items()):
-            parsed = sum((self.paid(x) for x in self.items if x.vat == code), Decimal('0'))
-            if parsed != row['total']:
-                problems.append(f"VAT {code}: items {parsed}, table {row['total']}")
-        codes = set(x.vat for x in self.items) - set(self.vat_table)
-        if codes:
-            problems.append(f"items with VAT codes not in the table: {', '.join(sorted(codes))}")
-        parsed = sum((self.paid(x) for x in self.items), Decimal('0'))
+        paid = {}
+        for x in self.items:
+            paid[x.vat] = paid.get(x.vat, Decimal('0')) + self.paid(x)
+        table = {code: row['total'] for code, row in self.vat_table.items()}
+        problems += vat_problems(paid, table, self.receipt_discount())
+        parsed = sum(paid.values(), Decimal('0')) - self.receipt_discount()
         if self.total is None or parsed != self.total:
             problems.append(f"total: items {parsed}, receipt {self.total}")
         return problems
@@ -193,9 +231,12 @@ class ShopReceipt:
             ('department', self.DepartmentPattern), ('discount', self.DiscountPattern),
             ('quantity_amount', self.QuantityAmountPattern), ('quantity', self.QuantityPattern),
             ('item', self.ItemPattern)) if pattern]
-        items, department, pending = [], '', None
+        items, department, pending, subtotal = [], '', None, False
         for line in lines:
             if not line.strip():
+                continue
+            if is_subtotal(line):
+                pending, subtotal = None, True
                 continue
             for name, pattern in rules:
                 match = pattern.match(line)
@@ -205,7 +246,9 @@ class ShopReceipt:
                 if name == 'department':
                     department, pending = values['dept'].strip(), None
                 elif name == 'discount':
-                    if pending is not None:
+                    if subtotal:
+                        self.discounts.append((values['label'].strip(), pt_decimal(values['amount'])))
+                    elif pending is not None:
                         pending.discounts.append((values['label'].strip(), pt_decimal(values['amount'])))
                 elif name == 'quantity_amount':
                     if pending is not None and pending.amount is None:

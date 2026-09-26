@@ -309,8 +309,11 @@ class ImportReceiptDialog(QDialog):
         if peer_id is not None:
             self.ui.PeerEdit.selected_id = peer_id
         self.ui.SlipDateTime.setDateTime(self.receipt_api.datetime())
-        # Assign empty category
-        self.slip_lines['category'] = 0
+        # A line may come with its category, the others get an empty one
+        if 'category' in self.slip_lines:
+            self.slip_lines['category'] = self.slip_lines['category'].fillna(0).astype(int)
+        else:
+            self.slip_lines['category'] = 0
         # Assign empty tags
         self.slip_lines['tag'] = None
         self.slip_lines = self.slip_lines[['name', 'category', 'tag', 'amount']]

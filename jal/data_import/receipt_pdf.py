@@ -6,7 +6,7 @@ from typing import Optional
 from PySide6.QtCore import QDateTime, QDate, QTime
 from jal.db.clock import local_zone
 from jal.widgets.helpers import dependency_present
-from jal.data_import.receipt import ShopReceipt, parse_header, parse_total, shop_profile, line_name
+from jal.data_import.receipt import ShopReceipt, parse_header, parse_total, shop_profile, line_name, discount_line
 from jal.data_import.receipt_api.receipt_api import ReceiptAPI
 from jal.data_import.receipt_api.offline_receipt import ReceiptOffline
 from jal.data_import.receipt_api.pt_at_qr import AtQr
@@ -86,6 +86,8 @@ def pdf_receipt(data: bytes, at_qr: Optional[AtQr], captured_at: datetime) -> Op
                             + f" ({profile.name}): " + "; ".join(problems))
         else:
             lines = [{'name': line_name(x), 'amount': sign * receipt.paid(x)} for x in receipt.items]
+            if receipt.receipt_discount():
+                lines += [discount_line(label, amount, sign) for label, amount in receipt.discounts]
     if not lines:
         if total is None:
             logging.warning(ReceiptAPI.tr("Receipt PDF has no total that could be read"))

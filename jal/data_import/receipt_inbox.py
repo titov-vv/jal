@@ -33,6 +33,7 @@ class PaperItem:
     unit: str = ''
     tax_code: str = ''
     department: str = ''
+    source_lines: tuple = ()     # indexes of its rows in 'ocr.lines'
 
 
 def _money(value) -> Optional[Decimal]:
@@ -70,7 +71,8 @@ class JalrFile:
             items = [PaperItem(role=x['role'], text=x['text'], amount=Decimal(x['amount']),
                                sign_printed=x['sign_printed'], quantity=_money(x.get('quantity')),
                                unit_price=_money(x.get('unit_price')), unit=x.get('unit') or '',
-                               tax_code=x.get('tax_code') or '', department=x.get('department') or '')
+                               tax_code=x.get('tax_code') or '', department=x.get('department') or '',
+                               source_lines=tuple(x.get('source_lines') or ()))
                      for x in paper.get('items') or []]
             tax_table = [{'code': x['code'], 'rate': _money(x.get('rate')), 'base': _money(x.get('base')),
                           'tax': _money(x.get('tax')), 'total': _money(x.get('total'))}

@@ -111,6 +111,41 @@ def test_discount_above_every_item_is_refused(prepare_db, tmp_path):
     assert _paper_lines(tmp_path, PHARMACY, items, "netted") == []
 
 
+# A fabricated shop that prints 'SUBTOTAL', then a discount off the whole receipt: A = 5.00 - 0.60, C = 7.00 - 0.40
+def _subtotal_receipt(qr=PHARMACY, subtotal="SUBTOTAL 12,00", vat=("4.40", "6.60")) -> tuple:
+    items = [dict(role="item", text="LEITE", amount="5.00", sign_printed="positive", tax_code="A", source_lines=[1]),
+             dict(role="item", text="SALMAO", amount="7.00", sign_printed="positive", tax_code="C", source_lines=[2]),
+             dict(role="discount", text="Desconto Cartao", amount="1.00", sign_printed="positive", source_lines=[4])]
+    tax_table = [{"code": "A", "total": vat[0]}, {"code": "C", "total": vat[1]}]
+    extra = paper_scan(items, hypothesis="netted", tax_table=tax_table)
+    extra.update(_ocr("SHOP", "(A) LEITE 5,00", "(C) SALMAO 7,00", subtotal, "Desconto Cartao 1,00",
+                      "TOTAL A PAGAR 11,00"))
+    return qr.replace("O:11.94", "O:11.00"), extra
+
+
+def _subtotal_scan(tmp_path, **kwargs) -> list:
+    qr, extra = _subtotal_receipt(**kwargs)
+    return paper_lines(JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[qr], extra=extra)), AtQr.parse(qr))
+
+
+def test_discount_below_subtotal_is_a_line_of_its_own(prepare_db, tmp_path):
+    assert _subtotal_scan(tmp_path) == [
+        {'name': "LEITE", 'amount': Decimal('-5.00')}, {'name': "SALMAO", 'amount': Decimal('-7.00')},
+        {'name': "Desconto Cartao", 'amount': Decimal('1.00'), 'category': PredefinedCategory.Discounts}]
+    lines = _subtotal_scan(tmp_path, qr=PHARMACY.replace("D:FS", "D:NC"))
+    assert [x['amount'] for x in lines] == [Decimal('5.00'), Decimal('7.00'), Decimal('-1.00')]
+
+
+def test_discount_without_subtotal_stays_on_its_item(prepare_db, tmp_path):
+    lines = _subtotal_scan(tmp_path, subtotal="Poupanca imediata")     # no VAT code either, still the item's own
+    assert lines == [{'name': "LEITE", 'amount': Decimal('-5.00')}, {'name': "SALMAO", 'amount': Decimal('-6.00')}]
+
+
+def test_receipt_discount_must_be_shared_by_the_vat_table(prepare_db, tmp_path):
+    assert _subtotal_scan(tmp_path, vat=("3.90", "7.10")) == []      # C would be dearer than its items
+    assert _subtotal_scan(tmp_path, vat=("4.50", "6.60")) == []      # the shares make 0.90, not 1.00
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 @pytest.fixture
 def owner(prepare_db_ledger):
@@ -323,6 +358,14 @@ def test_green_paper_scan_brings_its_items(owner, inbox):
     oid = IncomeSpending.find_by_number(NUMBER)
     assert oid and IncomeSpending(oid).amount() == Decimal('-11.94')
     assert not os.path.exists(path)
+
+
+def test_receipt_discount_line_comes_with_its_category(owner, inbox):
+    qr, extra = _subtotal_receipt()
+    make_jalr(inbox, "20260814-184200-00000001.jalr", codes=[qr], extra=extra)
+    dialog = _dialog(owner)
+    _load(dialog)
+    assert dialog.slip_lines['category'].tolist() == [0, 0, PredefinedCategory.Discounts]
 
 
 def test_amber_paper_scan_is_one_line_of_the_total(owner, inbox):
