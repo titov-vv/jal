@@ -4,7 +4,7 @@ import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import d2t, create_actions, operation_id
-from constants import BookAccount, PredefinedCategory, PredefinedAccountType
+from jal.constants import BookAccount, PredefinedCategory, PredefinedAccountType
 from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.common_models import AccountListModel

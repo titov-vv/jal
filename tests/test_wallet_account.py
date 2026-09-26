@@ -6,7 +6,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QMessageBox
 
 from tests.fixtures import project_root, data_path, prepare_db
-from constants import PredefinedAccountType, AccountStatus, AccountData, AssetLocation
+from jal.constants import PredefinedAccountType, AccountStatus, AccountData, AssetLocation
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.net.chain_fetchers.fetchers import ChainFetchers
 from jal.widgets.account_dialog import AccountDialog

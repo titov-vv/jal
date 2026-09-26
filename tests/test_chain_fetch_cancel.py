@@ -3,7 +3,7 @@ from types import SimpleNamespace
 import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db
-from constants import PredefinedAccountType, AssetLocation, AccountData
+from jal.constants import PredefinedAccountType, AssetLocation, AccountData
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.net.chain_fetchers.fetcher import ChainFetcher
 from jal.net.chain_fetchers.fetchers import ChainFetchers

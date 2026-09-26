@@ -3,11 +3,11 @@ import logging
 from decimal import Decimal
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
-from data_import.broker_statements.ibkr import StatementIBKR
+from jal.data_import.broker_statements.ibkr import StatementIBKR
 from tests.helpers import d2t, create_assets, create_quotes, create_dividends, create_coupons, create_trades, \
     create_actions, create_corporate_actions, create_stock_dividends, json_decimal2float, save_test_xls_report, \
     nth_operation
-from constants import PredefinedAsset, PredefinedCategory
+from jal.constants import PredefinedAsset, PredefinedCategory
 from jal.db.ledger import Ledger
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset

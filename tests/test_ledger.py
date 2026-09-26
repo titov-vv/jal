@@ -9,7 +9,7 @@ from tests.helpers import d2t, create_stocks, create_actions, create_trades, cre
     create_conversions, create_swaps, create_bridges, \
     nth_operation, \
     operation_id
-from constants import BookAccount, PredefinedCategory, AssetLocation, Setup
+from jal.constants import BookAccount, PredefinedCategory, AssetLocation, Setup
 from jal.db.db import JalDB
 from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount, JalAccountCreator

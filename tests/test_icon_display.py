@@ -13,7 +13,7 @@ from PySide6.QtWidgets import QWidget
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import d2t, symbol_id_for, create_stocks, create_assets, create_actions, create_trades, \
     create_swaps, create_conversions, create_corporate_actions, create_transfers, create_bridges
-from constants import AssetLocation, IconOwner, IconSource, PredefinedAsset, PredefinedCategory, AccountStatus
+from jal.constants import AssetLocation, IconOwner, IconSource, PredefinedAsset, PredefinedCategory, AccountStatus
 from jal.db.db import JalDB
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset

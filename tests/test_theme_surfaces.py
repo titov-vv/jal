@@ -11,7 +11,7 @@ from PySide6.QtWidgets import QApplication, QWidget
 
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import create_stocks, create_trades
-from constants import PredefinedAccountType, AccountStatus, AssetLocation
+from jal.constants import PredefinedAccountType, AccountStatus, AssetLocation
 from jal.db.db import JalDB
 from jal.db.residence import JalResidence
 from jal.db.account import JalAccount, JalAccountCreator

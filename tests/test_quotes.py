@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import create_quotes
-from constants import PredefinedAsset, AssetLocation
+from jal.constants import PredefinedAsset, AssetLocation
 from jal.db.asset import JalAsset, JalAssetCreator
 
 # Seeded currencies of an empty database

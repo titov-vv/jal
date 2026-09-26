@@ -8,7 +8,7 @@ from PySide6.QtSql import QSqlTableModel
 import sqlparse
 
 from tests.fixtures import project_root, data_path, prepare_db
-from constants import PredefinedAccountType, AccountData, AccountStatus, Setup
+from jal.constants import PredefinedAccountType, AccountData, AccountStatus, Setup
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.db import JalDB
 from jal.db.tag import JalTag

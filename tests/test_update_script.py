@@ -8,7 +8,7 @@ import pytest
 from PySide6.QtWidgets import QMessageBox
 
 from tests.fixtures import project_root, data_path, prepare_db
-from jal.constants import Setup   # not 'constants' - it is a separate module object, and this one is monkeypatched
+from jal.constants import Setup
 from jal.db.db import JalDB, JalDBError
 from jal.db.helpers import format_decimal
 

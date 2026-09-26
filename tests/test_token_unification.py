@@ -3,7 +3,7 @@ from decimal import Decimal
 import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db
-from constants import PredefinedAsset, PredefinedAccountType, AssetLocation, SymbolId
+from jal.constants import PredefinedAsset, PredefinedAccountType, AssetLocation, SymbolId
 from jal.data_import.statement import Statement, JSF
 from jal.db.account import JalAccountCreator, JalAccount
 from jal.db.asset import JalAsset, JalAssetCreator

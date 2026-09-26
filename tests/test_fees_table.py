@@ -14,7 +14,7 @@ from PySide6.QtWidgets import QWidget
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo
 from tests.helpers import d2t, create_stocks, create_trades, create_transfers, create_bridges, \
     create_quotes, symbol_id_for, operation_id
-from constants import Setup, BookAccount
+from jal.constants import Setup, BookAccount
 from jal.db.db import JalDB
 from jal.db.helpers import format_decimal
 from jal.db.account import JalAccountCreator

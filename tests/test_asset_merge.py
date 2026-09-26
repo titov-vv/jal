@@ -8,7 +8,7 @@ from PySide6.QtWidgets import QDialog, QMessageBox
 
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import d2t, create_quotes
-from constants import PredefinedAsset, PredefinedAccountType, AssetData, AssetLocation, SymbolId
+from jal.constants import PredefinedAsset, PredefinedAccountType, AssetData, AssetLocation, SymbolId
 from jal.db.account import JalAccountCreator
 from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.db import JalDB

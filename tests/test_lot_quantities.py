@@ -6,7 +6,7 @@ import pytest
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo
 from tests.helpers import d2t, create_assets, create_stocks, create_actions, create_trades, create_conversions, \
     create_corporate_actions, create_transfers
-from constants import AccountData, BookAccount, PredefinedAsset, PredefinedCategory, PredefinedAccountType
+from jal.constants import AccountData, BookAccount, PredefinedAsset, PredefinedCategory, PredefinedAccountType
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
 from jal.db.ledger import Ledger, LedgerAmounts

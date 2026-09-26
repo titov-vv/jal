@@ -16,7 +16,7 @@ from PySide6.QtCore import Qt, QAbstractTableModel, QDate, QDateTime, QTimeZone
 from PySide6.QtSql import QSqlTableModel
 from PySide6.QtWidgets import QStyleOptionViewItem, QWidget
 
-from constants import PredefinedAsset, PredefinedCategory
+from jal.constants import PredefinedAsset, PredefinedCategory
 from jal.data_import.statement import JSF
 from jal.db.operations import AssetPayment, AssetIncome, CorporateAction, LedgerTransaction
 from jal.data_export.tax_reports.portugal import TaxesPortugal

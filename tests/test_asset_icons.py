@@ -9,7 +9,7 @@ from PySide6.QtGui import QIcon, QImage
 
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import create_assets, symbol_id_for
-from constants import AssetLocation, IconOwner, IconSource, PredefinedAsset, SymbolId, Setup
+from jal.constants import AssetLocation, IconOwner, IconSource, PredefinedAsset, SymbolId, Setup
 from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.asset_models import SymbolsListModel
 from jal.db.icon import JalIcons

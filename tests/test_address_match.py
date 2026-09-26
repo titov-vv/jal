@@ -1,7 +1,7 @@
 import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db
-from constants import AssetLocation, PredefinedAccountType
+from jal.constants import AssetLocation, PredefinedAccountType
 from jal.db.account import JalAccountCreator
 from jal.db.address_match import address_resemblance, is_lookalike, impersonated_target, _thresholds, \
     ACCOUNT, PROTOCOL

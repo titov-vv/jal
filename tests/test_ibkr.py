@@ -6,7 +6,7 @@ import pytest
 from PySide6.QtWidgets import QMessageBox
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
-from data_import.broker_statements.ibkr import StatementIBKR
+from jal.data_import.broker_statements.ibkr import StatementIBKR
 from jal.data_import.statement import JSF, Statement, Statement_ImportError
 from tests.helpers import d2t
 from jal.db.ledger import Ledger, LedgerAmounts
@@ -396,7 +396,7 @@ def test_ibkr_find_db_stock_dividend_for_tax_correction(prepare_db, monkeypatch)
         def tax(self): return Decimal('0.48')
         def note(self): return 'BCV (US0596951063) STOCK DIVIDEND US0596951063 18507808 FOR 1000000000'
 
-    monkeypatch.setattr('data_import.broker_statements.ibkr.AssetIncome.get_list',
+    monkeypatch.setattr('jal.data_import.broker_statements.ibkr.AssetIncome.get_list',
                         lambda account, asset, subtype: [StoredPayment()] if subtype == AssetIncome.StockDividend else [])
 
     ibkr = StatementIBKR()

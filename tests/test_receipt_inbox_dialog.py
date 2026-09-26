@@ -12,7 +12,7 @@ from tests.fixtures import project_root, data_path, prepare_db, prepare_db_ledge
 from tests.test_at_qr import LIDL
 from tests.test_receipt_inbox import make_jalr, paper_scan, FNS
 from tests.test_receipt_pdf import make_pdf, lidl_receipt, QR
-from constants import PredefinedCategory, PredefinedAccountType, AccountData
+from jal.constants import PredefinedCategory, PredefinedAccountType, AccountData
 from jal.db.account import JalAccountCreator
 from jal.db.db import JalDB
 from jal.db.clock import local_zone

@@ -12,7 +12,7 @@ import pytest
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo
 from tests.helpers import d2t, create_stocks, create_trades, create_bridges, create_quotes, symbol_id_for, \
     nth_operation, operation_id
-from constants import PredefinedCategory, BookAccount
+from jal.constants import PredefinedCategory, BookAccount
 from jal.db.db import JalDB
 from jal.db.asset import JalAsset
 from jal.db.ledger import Ledger

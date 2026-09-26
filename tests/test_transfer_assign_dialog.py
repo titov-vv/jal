@@ -9,7 +9,7 @@ from PySide6.QtWidgets import QDialogButtonBox
 
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import d2t, create_assets, create_actions, create_quotes, create_trades, symbol_id_for
-from constants import PredefinedAsset, PredefinedCategory, PredefinedAccountType, AssetLocation
+from jal.constants import PredefinedAsset, PredefinedCategory, PredefinedAccountType, AssetLocation
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.ledger import Ledger
 from jal.db.operations import LedgerTransaction

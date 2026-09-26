@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QMessageBox, QWidget
 
 from tests.fixtures import project_root, data_path, prepare_db
-from constants import PredefinedCategory
+from jal.constants import PredefinedCategory
 from jal.db.db import JalDB
 from jal.db.settings import JalSettings
 from jal.db.common_models import CategoryTreeModel, TagTreeModel

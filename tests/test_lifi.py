@@ -11,7 +11,7 @@ from tests.helpers import d2t, dt2t, create_assets, create_actions, create_trade
     create_swaps, create_transfers, symbol_id_for, \
     operation_id
 from jal.db.operations import LedgerTransaction
-from constants import PredefinedAsset, PredefinedAccountType, PredefinedCategory, AssetLocation, SymbolId
+from jal.constants import PredefinedAsset, PredefinedAccountType, PredefinedCategory, AssetLocation, SymbolId
 from jal.data_import.statement import Statement, JSF
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset, JalAssetCreator

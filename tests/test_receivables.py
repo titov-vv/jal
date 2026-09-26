@@ -5,7 +5,7 @@ import sqlparse
 
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import d2t, create_quotes, create_trades
-from constants import PredefinedAsset, PredefinedAccountType, AssetLocation, SymbolId
+from jal.constants import PredefinedAsset, PredefinedAccountType, AssetLocation, SymbolId
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.db import JalDB
@@ -718,7 +718,7 @@ def test_the_migration_creates_the_table_on_an_older_database(prepare_db, projec
 # The version the delta leaves behind has to match what the application demands of a database, or every start would
 # either re-run the delta or refuse to open the file.
 def test_the_delta_and_the_required_version_agree(project_root):
-    from constants import Setup
+    from jal.constants import Setup
     latest_delta = f"/jal/updates/{Setup.UPDATE_PREFIX}{Setup.DB_REQUIRED_VERSION}.sql"
     with open(project_root + latest_delta) as delta:
         assert f"UPDATE settings SET value={Setup.DB_REQUIRED_VERSION} WHERE name=\'SchemaVersion\'" in delta.read()

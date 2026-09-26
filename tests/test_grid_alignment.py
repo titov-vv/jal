@@ -3,7 +3,7 @@ from PySide6.QtWidgets import QWidget, QAbstractItemView, QStyledItemDelegate, Q
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo
 from tests.helpers import create_actions, d2t
-from constants import PredefinedCategory
+from jal.constants import PredefinedCategory
 from jal.db.ledger import Ledger
 from jal.widgets.operations_widget import OperationsWidget
 from jal.widgets.reference_dialogs import AccountListDialog, TagsListDialog, CategoryListDialog, PeerListDialog

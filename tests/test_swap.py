@@ -6,7 +6,7 @@ from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo
 from tests.helpers import d2t, create_stocks, create_trades, create_quotes, create_swaps, create_assets, \
     create_actions, create_cross_chain_swaps, \
     nth_operation
-from constants import BookAccount, PredefinedAsset, PredefinedCategory, PredefinedAccountType
+from jal.constants import BookAccount, PredefinedAsset, PredefinedCategory, PredefinedAccountType
 from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset

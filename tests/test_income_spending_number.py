@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_ledger
 from tests.helpers import d2t
-from constants import Setup, PredefinedCategory
+from jal.constants import Setup, PredefinedCategory
 from jal.db.db import JalDB, JalDBError
 from jal.db.operations import LedgerTransaction, IncomeSpending
 

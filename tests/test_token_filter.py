@@ -6,7 +6,7 @@ from decimal import Decimal
 import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db
-from constants import AssetLocation, TokenVerdict
+from jal.constants import AssetLocation, TokenVerdict
 from jal.db.token_blacklist import JalTokenBlacklist, normalize_address, tron_address_from_hex, is_tron_address
 from jal.net.token_lists import TokenListProvider
 from jal.data_import.token_filter import TokenFilter, TokenCandidate

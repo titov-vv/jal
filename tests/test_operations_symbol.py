@@ -8,7 +8,7 @@ import pytest
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import d2t, create_stocks, create_actions, create_trades, create_dividends, \
     create_corporate_actions, create_transfers
-from constants import AssetLocation
+from jal.constants import AssetLocation
 from jal.db.db import JalDB
 from jal.db.account import JalAccountCreator
 from jal.db.asset import JalAsset

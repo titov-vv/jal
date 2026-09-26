@@ -5,15 +5,15 @@ from decimal import Decimal
 from PySide6.QtWidgets import QMessageBox
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_ibkr, prepare_db_moex
-from data_import.broker_statements.ibkr import StatementIBKR
-from data_import.broker_statements.tvoy import StatementTvoyBroker
-from data_import.broker_statements.kit import StatementKIT
-from data_import.broker_statements.just2trade import StatementJ2T
-from data_import.broker_statements.vtb import StatementVTB
+from jal.data_import.broker_statements.ibkr import StatementIBKR
+from jal.data_import.broker_statements.tvoy import StatementTvoyBroker
+from jal.data_import.broker_statements.kit import StatementKIT
+from jal.data_import.broker_statements.just2trade import StatementJ2T
+from jal.data_import.broker_statements.vtb import StatementVTB
 from jal.data_import.statement import JSF, Statement
 from jal.db.db import JalDB
 
-from constants import PredefinedAsset
+from jal.constants import PredefinedAsset
 from tests.helpers import create_assets
 
 

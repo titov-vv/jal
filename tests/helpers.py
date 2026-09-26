@@ -8,7 +8,7 @@ from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.symbol import JalSymbol
 from jal.db.account import JalAccount
 from jal.db.operations import LedgerTransaction, AssetPayment, AssetIncome
-from constants import PredefinedAsset, AssetLocation, SymbolId
+from jal.constants import PredefinedAsset, AssetLocation, SymbolId
 from jal.data_export.xlsx import XLSX
 
 

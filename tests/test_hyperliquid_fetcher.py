@@ -4,7 +4,7 @@ from decimal import Decimal
 import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db
-from constants import PredefinedAccountType, AssetLocation, AccountData, SymbolId
+from jal.constants import PredefinedAccountType, AssetLocation, AccountData, SymbolId
 from jal.data_import.statement import JSF
 from jal.db.account import JalAccountCreator, JalAccount
 from jal.db.symbol import JalSymbol

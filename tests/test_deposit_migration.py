@@ -5,7 +5,7 @@ import sqlparse
 
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import d2t, create_actions
-from constants import PredefinedCategory, PredefinedAccountType, AccountStatus, Setup
+from jal.constants import PredefinedCategory, PredefinedAccountType, AccountStatus, Setup
 from jal.db.db import JalDB
 from jal.db.ledger import Ledger
 from jal.db.account import JalAccount, JalAccountCreator

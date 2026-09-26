@@ -9,7 +9,7 @@ import sqlparse
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo
 from tests.helpers import d2t, create_stocks, symbol_id_for
-from constants import Setup
+from jal.constants import Setup
 from jal.db.db import JalDB
 from jal.db.operations import LedgerTransaction, AssetPayment, AssetIncome, FeeKind
 

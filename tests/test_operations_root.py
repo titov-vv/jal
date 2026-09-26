@@ -10,7 +10,7 @@ from PySide6.QtWidgets import QWidget
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo
 from tests.helpers import d2t, create_assets, create_actions, create_dividends, create_trades, create_transfers, \
     create_corporate_actions, create_conversions, create_swaps, create_bridges, symbol_id_for, operation_id
-from constants import PredefinedAsset, PredefinedCategory, Setup
+from jal.constants import PredefinedAsset, PredefinedCategory, Setup
 from jal.db.db import JalDB
 from jal.db.account import JalAccountCreator
 from jal.db.operations import CorporateAction, LedgerTransaction

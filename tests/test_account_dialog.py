@@ -4,7 +4,7 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 from PySide6.QtCore import Qt
 
 from tests.fixtures import project_root, data_path, prepare_db
-from constants import PredefinedAccountType, AccountData
+from jal.constants import PredefinedAccountType, AccountData
 from jal.db.db import JalDB
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.widgets.account_dialog import AccountDialog

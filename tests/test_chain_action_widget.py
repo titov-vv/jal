@@ -7,7 +7,7 @@ import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import d2t, create_assets
-from constants import PredefinedAsset, PredefinedAccountType, AssetLocation
+from jal.constants import PredefinedAsset, PredefinedAccountType, AssetLocation
 from PySide6.QtWidgets import QWidget
 from jal.db.account import JalAccountCreator
 from jal.db.operations import LedgerTransaction, ChainAction

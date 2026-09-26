@@ -4,7 +4,7 @@ import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import d2t, create_assets, create_actions, create_trades, symbol_id_for
-from constants import BookAccount, PredefinedAsset, PredefinedCategory, PredefinedAccountType, AssetLocation
+from jal.constants import BookAccount, PredefinedAsset, PredefinedCategory, PredefinedAccountType, AssetLocation
 from jal.data_import.statement import Statement, Statement_ImportError, JSF
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset

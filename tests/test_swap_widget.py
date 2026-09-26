@@ -7,7 +7,7 @@ from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo
 from tests.helpers import d2t, create_stocks, create_trades, create_quotes, create_swaps, \
     create_cross_chain_swaps, \
     operation_id
-from constants import PredefinedAccountType
+from jal.constants import PredefinedAccountType
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.operations import LedgerTransaction
 from jal.widgets.swap_widget import SwapWidget

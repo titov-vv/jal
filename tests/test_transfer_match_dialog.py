@@ -7,7 +7,7 @@ import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import d2t, create_assets, create_quotes, symbol_id_for
-from constants import PredefinedAsset, PredefinedAccountType, AssetLocation
+from jal.constants import PredefinedAsset, PredefinedAccountType, AssetLocation
 from jal.db.asset import JalAsset
 from jal.db.account import JalAccountCreator
 from jal.db.operations import LedgerTransaction, Transfer

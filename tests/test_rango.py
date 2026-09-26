@@ -4,7 +4,7 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 import pytest
 
 from tests.fixtures import project_root, data_path
-from constants import AssetLocation
+from jal.constants import AssetLocation
 from jal.net.rango import RangoResolver
 from jal.net.route import Confidence
 

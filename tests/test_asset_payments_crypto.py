@@ -7,7 +7,7 @@ from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import d2t, create_assets, create_actions, create_trades, create_quotes, symbol_id_for, \
     nth_operation, \
     operation_id
-from constants import PredefinedAsset, PredefinedCategory, PredefinedAccountType, AssetLocation, AccountData, \
+from jal.constants import PredefinedAsset, PredefinedCategory, PredefinedAccountType, AssetLocation, AccountData, \
     BookAccount
 from jal.db.db import JalDB
 from jal.db.account import JalAccount, JalAccountCreator

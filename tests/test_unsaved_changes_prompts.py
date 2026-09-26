@@ -8,7 +8,7 @@ from PySide6.QtWidgets import QMessageBox
 
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import create_stocks, create_trades
-from constants import PredefinedAccountType
+from jal.constants import PredefinedAccountType
 from jal.db.account import JalAccountCreator
 from jal.db.db import JalDB
 from jal.db.residence import JalResidence

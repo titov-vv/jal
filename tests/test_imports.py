@@ -2,12 +2,11 @@ import os
 import ast
 import sys
 import subprocess
+import pytest
 from os.path import dirname, abspath, join
 
-# Top-level directories inside the 'jal' package. Historically some modules were
-# imported as e.g. "from db.xxx import ..." which works only when the 'jal'
-# directory itself is on sys.path (as tests/conftest.py arranges). It breaks the
-# real application launch via run.py, where imports must be "from jal.db.xxx ...".
+# Top-level directories inside the 'jal' package. A bare "from db.xxx import ..." resolves only when
+# the 'jal' directory itself is on sys.path; run.py and the tests import "from jal.db.xxx ..." instead.
 JAL_SUBMODULES = {
     'compile_ui', 'constants', 'create_pro', 'data_export', 'data_import', 'db',
     'img', 'languages', 'net', 'reports', 'run_designer', 'ui',
@@ -16,13 +15,15 @@ JAL_SUBMODULES = {
 
 ROOT_DIR = dirname(dirname(abspath(__file__)))
 JAL_DIR = join(ROOT_DIR, 'jal')
+TESTS_DIR = join(ROOT_DIR, 'tests')
 
 
-def test_no_bare_submodule_imports():
-    """Every jal/*.py must import sibling modules via the 'jal.' prefix, so that
+@pytest.mark.parametrize("top_dir", [JAL_DIR, TESTS_DIR])
+def test_no_bare_submodule_imports(top_dir):
+    """Every jal/*.py and tests/*.py must import jal modules via the 'jal.' prefix, so that
     the application starts correctly through run.py (jal/ is not on sys.path)."""
     offenders = []
-    for cur, _dirs, files in os.walk(JAL_DIR):
+    for cur, _dirs, files in os.walk(top_dir):
         for name in files:
             if not name.endswith('.py'):
                 continue

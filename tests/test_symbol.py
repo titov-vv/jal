@@ -4,7 +4,7 @@ import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import create_assets, symbol_id_for, create_trades, create_actions
-from constants import PredefinedAsset, SymbolId, AssetLocation
+from jal.constants import PredefinedAsset, SymbolId, AssetLocation
 from jal.db.db import JalDB
 from jal.db.account import JalAccountCreator
 from jal.db.asset import JalAsset, JalAssetCreator

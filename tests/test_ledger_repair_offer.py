@@ -8,7 +8,7 @@ from PySide6.QtWidgets import QApplication, QMessageBox
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo
 from tests.helpers import d2t, create_stocks, create_trades, create_conversions
-from constants import AccountData
+from jal.constants import AccountData
 from jal.db.account import JalAccount
 from jal.db.db import JalDB
 from jal.db.operations import LedgerAssetShortage

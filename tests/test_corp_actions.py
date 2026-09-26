@@ -1,6 +1,6 @@
 from decimal import Decimal
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo
-from constants import BookAccount
+from jal.constants import BookAccount
 from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount
 from jal.db.operations import CorporateAction

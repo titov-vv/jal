@@ -7,7 +7,7 @@ import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import d2t, create_assets, create_bridges
-from constants import PredefinedAsset, PredefinedAccountType
+from jal.constants import PredefinedAsset, PredefinedAccountType
 from PySide6.QtWidgets import QMessageBox
 from jal.db.account import JalAccountCreator
 from jal.db.db import JalDB

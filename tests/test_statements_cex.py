@@ -5,7 +5,7 @@ import pytest
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import d2t, create_assets, create_actions, create_quotes, pinned_tz, symbol_id_for, \
     nth_operation
-from constants import AssetLocation, PredefinedAccountType, PredefinedAsset, PredefinedCategory
+from jal.constants import AssetLocation, PredefinedAccountType, PredefinedAsset, PredefinedCategory
 from jal.data_import.statement import JSF, Statement, Statement_ImportError
 from jal.data_import.broker_statements.kucoin import StatementKuCoin
 from jal.data_import.broker_statements.bitget import StatementBitget

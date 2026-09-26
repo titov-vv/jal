@@ -4,7 +4,7 @@ from shutil import copyfile
 from PySide6.QtWidgets import QApplication
 from PySide6.QtSql import QSqlDatabase
 
-from constants import Setup, PredefinedCategory, PredefinedAsset
+from jal.constants import Setup, PredefinedCategory, PredefinedAsset
 from jal.db.db import JalDB, JalDBError
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
