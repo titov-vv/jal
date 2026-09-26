@@ -750,7 +750,8 @@ class StatementIBKR(StatementXML):
             action['price'] = self._derived_price(action['proceeds'], action['quantity'])
             action['note'] = action.pop('description')
             action['fee'] = Decimal('0')
-            self.drop_extra_fields(action, ["type", "value", "proceeds", "code", "asset_type", "jal_processed"])
+            self.drop_extra_fields(action, ["type", "value", "proceeds", "code", "asset_type", "jal_processed",
+                                            "timestamp_day_only"])
             self._data[JSF.TRADES].append(action)
             return 1
 

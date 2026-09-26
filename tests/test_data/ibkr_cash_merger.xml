@@ -1,0 +1,13 @@
+<FlexQueryResponse queryName="Full" type="AF">
+<FlexStatements count="1">
+<FlexStatement accountId="U7654321" fromDate="20210101" toDate="20211231" period="LastBusinessDay" whenGenerated="20220115;000000">
+<AccountInformation accountId="U7654321" acctAlias="" model="" currency="USD" name="Ivan Ivanov" accountType="Individual" customerType="Individual" accountCapabilities="Cash" tradingPermissions="Stocks,Bonds" accountRepName="" accountRepPhone="" dateOpened="20210101" dateFunded="20210101" dateClosed="" ibEntity="IBLLC-US" primaryEmail="" />
+<CashReport>
+<CashReportCurrency accountId="U7654321" acctAlias="" model="" currency="USD" levelOfDetail="Currency" fromDate="20210101" toDate="20211231" startingCash="0" endingCash="2054.25" endingSettledCash="2054.25" />
+</CashReport>
+<CorporateActions>
+<CorporateAction accountId="U7654321" acctAlias="" model="" currency="USD" fxRateToBase="1" assetCategory="STK" symbol="ACQD" description="ACQD(US3333333333) MERGED(Voluntary Offer Allocation) FOR USD 20.75 PER SHARE (ACQD, ACQUIRED THERAPEUTICS INC, US3333333333)" conid="30158323" securityID="US3333333333" securityIDType="ISIN" cusip="333333333" isin="US3333333333" listingExchange="NASDAQ" underlyingConid="" underlyingSymbol="" underlyingSecurityID="" underlyingListingExchange="" issuer="" multiplier="1" strike="" expiry="" putCall="" principalAdjustFactor="" reportDate="20211221" dateTime="20211220;202500" actionDescription="ACQD(US3333333333) MERGED(Voluntary Offer Allocation) FOR USD 20.75 PER SHARE (ACQD, ACQUIRED THERAPEUTICS INC, US3333333333)" amount="0" proceeds="2054.25" value="0" quantity="-99" fifoPnlRealized="0" mtmPnl="0" code="" type="TC" transactionID="18882610202" levelOfDetail="DETAIL" />
+</CorporateActions>
+</FlexStatement>
+</FlexStatements>
+</FlexQueryResponse>

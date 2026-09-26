@@ -486,6 +486,19 @@ def test_ibkr_mlp_extra_tax_is_imported_as_fee(tmp_path, project_root, data_path
     assert fees[0].note().endswith(' - Extra 10% tax due to IRS section 1446')
 
 
+# A holding bought out for cash is stored as a sale at the offer price
+def test_ibkr_cash_merger_is_imported_as_sell_trade(tmp_path, project_root, data_path, prepare_db_taxes):
+    statement = StatementIBKR()
+    statement.load(data_path + 'ibkr_cash_merger.xml')
+    statement.match_db_ids()
+    statement.import_into_db()
+
+    assert JalAccount(1).dump_trades() == [
+        [1, 3, 1640031900, 1640031900, '18882610202', 1, 4, '-99', '20.75',
+         'ACQD(US3333333333) MERGED(Voluntary Offer Allocation) FOR USD 20.75 PER SHARE (ACQD, ACQUIRED THERAPEUTICS INC, US3333333333)']
+    ]
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 def test_ibkr_spinoff_allows_fractional_entitlement_rounding():
     ibkr = StatementIBKR()
