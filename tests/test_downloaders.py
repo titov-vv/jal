@@ -1,3 +1,4 @@
+import json
 import pandas as pd
 import pytest
 from decimal import Decimal
@@ -12,6 +13,7 @@ from jal.db.ledger import Ledger
 from jal.db.symbol import JalSymbol
 from jal.constants import AssetLocation, PredefinedAsset, SymbolId
 from jal.net.downloader import QuoteDownloader, llama_coin_key, llama_coin_keys, parse_llama_chart
+import jal.net.moex
 from jal.net.moex import MOEX
 from jal.data_import.receipt_api.ru_fns import ReceiptRuFNS
 
@@ -22,7 +24,28 @@ def test_INN_resolution():
     name = fns_api.shop_name()
     assert name == 'ПАО СБЕРБАНК'
 
-def test_MOEX_lookup():
+# Serves MOEX answers recorded on 2026-09-26, keyed by url + sorted query, so lookups don't flap with live MOEX data
+@pytest.fixture
+def moex_recorded(data_path, monkeypatch):
+    with open(data_path + "moex.json", 'r', encoding='utf-8') as f:
+        answers = json.load(f)
+
+    class RecordedRequest:
+        GET = 1
+
+        def __init__(self, _operation, url, params=None):
+            query = '&'.join(f"{k}={v}" for k, v in sorted(params.items())) if params else ''
+            self._data = json.dumps(answers[url + ('?' + query if query else '')])
+
+        def wait(self, _deadline=None):
+            return True
+
+        def data(self):
+            return self._data
+
+    monkeypatch.setattr(jal.net.moex, "WebRequest", RecordedRequest)
+
+def test_MOEX_lookup(moex_recorded):
     assert MOEX().find_asset(reg_number='') == ''
     assert MOEX().find_asset(isin='TEST') == ''
     assert MOEX().find_asset(reg_number='0252-74113866') == 'RU000A0ERGA7'
@@ -34,7 +57,7 @@ def test_MOEX_lookup():
     assert MOEX().find_asset(name='АБЗ-1 1Р01') == 'RU000A102LW1'
     assert MOEX().find_asset(name='CNY-9.24') == 'CRU4'
 
-def test_MOEX_details():
+def test_MOEX_details(moex_recorded):
     assert MOEX().asset_info() == {}
     assert MOEX().asset_info(special=True) == {}
     assert MOEX().asset_info(symbol='AFLT', special=True) == {'symbol': 'AFLT',

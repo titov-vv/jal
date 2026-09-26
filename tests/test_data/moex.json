@@ -1,0 +1,6848 @@
+{
+ "https://iss.moex.com/iss/securities.json?iss.meta=off&limit=10&q=TEST": {
+  "securities": {
+   "columns": [
+    "secid",
+    "shortname",
+    "regnumber",
+    "name",
+    "isin",
+    "is_traded",
+    "emitent_id",
+    "emitent_title",
+    "emitent_inn",
+    "emitent_okpo",
+    "type",
+    "group",
+    "primary_boardid",
+    "marketprice_boardid"
+   ],
+   "data": []
+  }
+ },
+ "https://iss.moex.com/iss/securities.json?iss.meta=off&limit=10&q=0252-74113866": {
+  "securities": {
+   "columns": [
+    "secid",
+    "shortname",
+    "regnumber",
+    "name",
+    "isin",
+    "is_traded",
+    "emitent_id",
+    "emitent_title",
+    "emitent_inn",
+    "emitent_okpo",
+    "type",
+    "group",
+    "primary_boardid",
+    "marketprice_boardid"
+   ],
+   "data": [
+    [
+     "RU000A0ERGA7",
+     "ПИФСбер-КН",
+     "0252-74113866",
+     "ПИФСбербанк Комм.недвижимость",
+     "RU000A0ERGA7",
+     0,
+     11567,
+     "Общество с ограниченной ответственностью \"Современные Фонды Недвижимости\"",
+     "7730257675",
+     "44573955",
+     "private_ppif",
+     "stock_ppif",
+     "TQIF",
+     "TQIF"
+    ]
+   ]
+  }
+ },
+ "https://iss.moex.com/iss/securities.json?iss.meta=off&limit=10&q=1-01-00010-A": {
+  "securities": {
+   "columns": [
+    "secid",
+    "shortname",
+    "regnumber",
+    "name",
+    "isin",
+    "is_traded",
+    "emitent_id",
+    "emitent_title",
+    "emitent_inn",
+    "emitent_okpo",
+    "type",
+    "group",
+    "primary_boardid",
+    "marketprice_boardid"
+   ],
+   "data": [
+    [
+     "AFLT",
+     "Аэрофлот",
+     "1-01-00010-A",
+     "Аэрофлот-росс.авиалин(ПАО)ао",
+     "RU0009062285",
+     1,
+     1242,
+     "Публичное акционерное общество \"Аэрофлот – российские авиалинии\"",
+     "7712040126",
+     "29063984",
+     "common_share",
+     "stock_shares",
+     "TQBR",
+     "TQBR"
+    ]
+   ]
+  }
+ },
+ "https://iss.moex.com/iss/securities.json?iss.meta=off&limit=10&q=IE00B8XB7377": {
+  "securities": {
+   "columns": [
+    "secid",
+    "shortname",
+    "regnumber",
+    "name",
+    "isin",
+    "is_traded",
+    "emitent_id",
+    "emitent_title",
+    "emitent_inn",
+    "emitent_okpo",
+    "type",
+    "group",
+    "primary_boardid",
+    "marketprice_boardid"
+   ],
+   "data": [
+    [
+     "FXGD",
+     "FXGD ETF",
+     null,
+     "FinEx Gold ETF USD",
+     "IE00B8XB7377",
+     0,
+     6213,
+     "FinEx Physically Backed Funds ICAV",
+     "0010033698",
+     null,
+     "etf_ppif",
+     "stock_etf",
+     "TQTF",
+     null
+    ]
+   ]
+  }
+ },
+ "https://iss.moex.com/iss/securities.json?iss.meta=off&limit=10&q=JE00B6T5S470": {
+  "securities": {
+   "columns": [
+    "secid",
+    "shortname",
+    "regnumber",
+    "name",
+    "isin",
+    "is_traded",
+    "emitent_id",
+    "emitent_title",
+    "emitent_inn",
+    "emitent_okpo",
+    "type",
+    "group",
+    "primary_boardid",
+    "marketprice_boardid"
+   ],
+   "data": [
+    [
+     "POLY",
+     "Polymetal",
+     null,
+     "Polymetal International plc",
+     "JE00B6T5S470",
+     0,
+     6101,
+     "Solidcore Resources plc",
+     "0010033331",
+     null,
+     "common_share",
+     "stock_shares",
+     "TQBR",
+     null
+    ]
+   ]
+  }
+ },
+ "https://iss.moex.com/iss/securities.json?iss.meta=off&limit=10&q=RU000A1038V6": {
+  "securities": {
+   "columns": [
+    "secid",
+    "shortname",
+    "regnumber",
+    "name",
+    "isin",
+    "is_traded",
+    "emitent_id",
+    "emitent_title",
+    "emitent_inn",
+    "emitent_okpo",
+    "type",
+    "group",
+    "primary_boardid",
+    "marketprice_boardid"
+   ],
+   "data": [
+    [
+     "SU26238RMFS4",
+     "ОФЗ 26238",
+     "26238RMFS",
+     "ОФЗ-ПД 26238 15/05/2041",
+     "RU000A1038V6",
+     1,
+     1228,
+     "Министерство финансов Российской Федерации",
+     "7710168360",
+     null,
+     "ofz_bond",
+     "stock_bonds",
+     "TQOB",
+     "TQOB"
+    ]
+   ]
+  }
+ },
+ "https://iss.moex.com/iss/securities.json?iss.meta=off&limit=10&q=CEOGCS": {
+  "securities": {
+   "columns": [
+    "secid",
+    "shortname",
+    "regnumber",
+    "name",
+    "isin",
+    "is_traded",
+    "emitent_id",
+    "emitent_title",
+    "emitent_inn",
+    "emitent_okpo",
+    "type",
+    "group",
+    "primary_boardid",
+    "marketprice_boardid"
+   ],
+   "data": []
+  }
+ },
+ "https://iss.moex.com/iss/securities.json?iss.meta=off&limit=10&q=АБЗ-1 1Р01": {
+  "securities": {
+   "columns": [
+    "secid",
+    "shortname",
+    "regnumber",
+    "name",
+    "isin",
+    "is_traded",
+    "emitent_id",
+    "emitent_title",
+    "emitent_inn",
+    "emitent_okpo",
+    "type",
+    "group",
+    "primary_boardid",
+    "marketprice_boardid"
+   ],
+   "data": [
+    [
+     "RU000A10EW51",
+     "АБЗ-1 2Р06",
+     "4B02-06-01671-D-002P",
+     "АБЗ-1 002P-06",
+     "RU000A10EW51",
+     1,
+     11232,
+     "Акционерное общество \"Асфальтобетонный завод №1\"",
+     "7804016807",
+     "03218295",
+     "exchange_bond",
+     "stock_bonds",
+     "TQCB",
+     "TQCB"
+    ],
+    [
+     "RU000A10FZU2",
+     "АБЗ-1 2Р07",
+     "4B02-07-01671-D-002P",
+     "АБЗ-1 002P-07",
+     "RU000A10FZU2",
+     1,
+     11232,
+     "Акционерное общество \"Асфальтобетонный завод №1\"",
+     "7804016807",
+     "03218295",
+     "exchange_bond",
+     "stock_bonds",
+     "TQCB",
+     "TQCB"
+    ],
+    [
+     "RU000A10DCK7",
+     "АБЗ-1 2Р04",
+     "4B02-04-01671-D-002P",
+     "АБЗ-1 002P-04",
+     "RU000A10DCK7",
+     1,
+     11232,
+     "Акционерное общество \"Асфальтобетонный завод №1\"",
+     "7804016807",
+     "03218295",
+     "exchange_bond",
+     "stock_bonds",
+     "TQCB",
+     "TQCB"
+    ],
+    [
+     "RU000A10BNM4",
+     "АБЗ-1 2Р03",
+     "4B02-03-01671-D-002P",
+     "АБЗ-1 002P-03",
+     "RU000A10BNM4",
+     1,
+     11232,
+     "Акционерное общество \"Асфальтобетонный завод №1\"",
+     "7804016807",
+     "03218295",
+     "exchange_bond",
+     "stock_bonds",
+     "TQCB",
+     "TQCB"
+    ],
+    [
+     "RU000A1070X5",
+     "АБЗ-1 1Р05",
+     "4B02-05-01671-D-001P",
+     "АБЗ-1 001P-05",
+     "RU000A1070X5",
+     1,
+     11232,
+     "Акционерное общество \"Асфальтобетонный завод №1\"",
+     "7804016807",
+     "03218295",
+     "exchange_bond",
+     "stock_bonds",
+     "TQCB",
+     "TQCB"
+    ],
+    [
+     "RU000A10DQK7",
+     "АБЗ-1 2Р05",
+     "4B02-05-01671-D-002P",
+     "АБЗ-1 002P-05",
+     "RU000A10DQK7",
+     1,
+     11232,
+     "Акционерное общество \"Асфальтобетонный завод №1\"",
+     "7804016807",
+     "03218295",
+     "exchange_bond",
+     "stock_bonds",
+     "TQCB",
+     "TQCB"
+    ],
+    [
+     "RU000A10B263",
+     "АБЗ-1 2Р02",
+     "4B02-02-01671-D-002P",
+     "АБЗ-1 002P-02",
+     "RU000A10B263",
+     1,
+     11232,
+     "Акционерное общество \"Асфальтобетонный завод №1\"",
+     "7804016807",
+     "03218295",
+     "exchange_bond",
+     "stock_bonds",
+     "TQCB",
+     "TQCB"
+    ],
+    [
+     "RU000A109PP1",
+     "АБЗ-1 2Р01",
+     "4B02-01-01671-D-002P",
+     "АБЗ-1 002Р-01",
+     "RU000A109PP1",
+     1,
+     11232,
+     "Акционерное общество \"Асфальтобетонный завод №1\"",
+     "7804016807",
+     "03218295",
+     "exchange_bond",
+     "stock_bonds",
+     "TQCB",
+     "TQCB"
+    ],
+    [
+     "RU000A1065B1",
+     "АБЗ-1 1Р04",
+     "4B02-04-01671-D-001P",
+     "АБЗ-1 001P-04",
+     "RU000A1065B1",
+     0,
+     11232,
+     "Акционерное общество \"Асфальтобетонный завод №1\"",
+     "7804016807",
+     "03218295",
+     "exchange_bond",
+     "stock_bonds",
+     "TQCB",
+     "TQCB"
+    ],
+    [
+     "RU000A102LW1",
+     "АБЗ-1 1Р01",
+     "4B02-01-01671-D-001P",
+     "АБЗ-1 001Р-01",
+     "RU000A102LW1",
+     0,
+     11232,
+     "Акционерное общество \"Асфальтобетонный завод №1\"",
+     "7804016807",
+     "03218295",
+     "exchange_bond",
+     "stock_bonds",
+     "TQCB",
+     "TQCB"
+    ]
+   ]
+  }
+ },
+ "https://iss.moex.com/iss/securities.json?iss.meta=off&limit=10&q=CNY-9.24": {
+  "securities": {
+   "columns": [
+    "secid",
+    "shortname",
+    "regnumber",
+    "name",
+    "isin",
+    "is_traded",
+    "emitent_id",
+    "emitent_title",
+    "emitent_inn",
+    "emitent_okpo",
+    "type",
+    "group",
+    "primary_boardid",
+    "marketprice_boardid"
+   ],
+   "data": [
+    [
+     "CRU6",
+     "CNY-9.26",
+     null,
+     "Фьючерсный контракт CNY-9.26",
+     null,
+     0,
+     null,
+     null,
+     null,
+     null,
+     "futures",
+     "futures_forts",
+     "RFUD",
+     null
+    ],
+    [
+     "CRU7",
+     "CNY-9.27",
+     null,
+     "Фьючерсный контракт CNY-9.27",
+     null,
+     1,
+     null,
+     null,
+     null,
+     null,
+     "futures",
+     "futures_forts",
+     "RFUD",
+     null
+    ],
+    [
+     "CR12.5BI6",
+     "CNY-9.26M170926CA12.5",
+     null,
+     "Марж. амер. Call 12.5 с исп. 17 сент. на фьюч. контр. CNY-9.26",
+     null,
+     0,
+     null,
+     null,
+     null,
+     null,
+     "option",
+     "futures_options",
+     "ROPD",
+     null
+    ],
+    [
+     "CR12.75BI6",
+     "CNY-9.26M170926CA12.75",
+     null,
+     "Марж. амер. Call 12.75 с исп. 17 сент. на фьюч. контр. CNY-9.26",
+     null,
+     0,
+     null,
+     null,
+     null,
+     null,
+     "option",
+     "futures_options",
+     "ROPD",
+     null
+    ],
+    [
+     "CR13BI6",
+     "CNY-9.26M170926CA13",
+     null,
+     "Марж. амер. Call 13 с исп. 17 сент. на фьюч. контр. CNY-9.26",
+     null,
+     0,
+     null,
+     null,
+     null,
+     null,
+     "option",
+     "futures_options",
+     "ROPD",
+     null
+    ],
+    [
+     "CR12.5BU6",
+     "CNY-9.26M170926PA12.5",
+     null,
+     "Марж. амер. Put 12.5 с исп. 17 сент. на фьюч. контр. CNY-9.26",
+     null,
+     0,
+     null,
+     null,
+     null,
+     null,
+     "option",
+     "futures_options",
+     "ROPD",
+     null
+    ],
+    [
+     "CR12.75BU6",
+     "CNY-9.26M170926PA12.75",
+     null,
+     "Марж. амер. Put 12.75 с исп. 17 сент. на фьюч. контр. CNY-9.26",
+     null,
+     0,
+     null,
+     null,
+     null,
+     null,
+     "option",
+     "futures_options",
+     "ROPD",
+     null
+    ],
+    [
+     "CR12.25BU6",
+     "CNY-9.26M170926PA12.25",
+     null,
+     "Марж. амер. Put 12.25 с исп. 17 сент. на фьюч. контр. CNY-9.26",
+     null,
+     0,
+     null,
+     null,
+     null,
+     null,
+     "option",
+     "futures_options",
+     "ROPD",
+     null
+    ],
+    [
+     "CR13.25BI6",
+     "CNY-9.26M170926CA13.25",
+     null,
+     "Марж. амер. Call 13.25 с исп. 17 сент. на фьюч. контр. CNY-9.26",
+     null,
+     0,
+     null,
+     null,
+     null,
+     null,
+     "option",
+     "futures_options",
+     "ROPD",
+     null
+    ],
+    [
+     "CR13BU6",
+     "CNY-9.26M170926PA13",
+     null,
+     "Марж. амер. Put 13 с исп. 17 сент. на фьюч. контр. CNY-9.26",
+     null,
+     0,
+     null,
+     null,
+     null,
+     null,
+     "option",
+     "futures_options",
+     "ROPD",
+     null
+    ]
+   ]
+  }
+ },
+ "https://iss.moex.com/iss/statistics/engines/futures/markets/forts/series.json?asset_code=CNY&show_expired=1": {
+  "series": {
+   "metadata": {
+    "secid": {
+     "type": "string",
+     "bytes": 51,
+     "max_size": 0
+    },
+    "name": {
+     "type": "string",
+     "bytes": 189,
+     "max_size": 0
+    },
+    "start_date": {
+     "type": "date",
+     "bytes": 10,
+     "max_size": 0
+    },
+    "expiration_date": {
+     "type": "date",
+     "bytes": 10,
+     "max_size": 0
+    },
+    "asset_code": {
+     "type": "string",
+     "bytes": 51,
+     "max_size": 0
+    },
+    "underlying_asset": {
+     "type": "string",
+     "bytes": 36,
+     "max_size": 0
+    },
+    "is_traded": {
+     "type": "int32"
+    }
+   },
+   "columns": [
+    "secid",
+    "name",
+    "start_date",
+    "expiration_date",
+    "asset_code",
+    "underlying_asset",
+    "is_traded"
+   ],
+   "data": [
+    [
+     "CRH8",
+     "CNY-3.28",
+     "2026-09-04",
+     "2028-03-16",
+     "CNY",
+     "CNYRUB_TOM",
+     1
+    ],
+    [
+     "CRZ7",
+     "CNY-12.27",
+     "2026-06-04",
+     "2027-12-16",
+     "CNY",
+     "CNYRUB_TOM",
+     1
+    ],
+    [
+     "CRU7",
+     "CNY-9.27",
+     "2026-03-06",
+     "2027-09-16",
+     "CNY",
+     "CNYRUB_TOM",
+     1
+    ],
+    [
+     "CRM7",
+     "CNY-6.27",
+     "2025-12-05",
+     "2027-06-17",
+     "CNY",
+     "CNYRUB_TOM",
+     1
+    ],
+    [
+     "CRM7CRU7",
+     "CNY-6.27-9.27",
+     "2026-09-11",
+     "2027-06-17",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRH7",
+     "CNY-3.27",
+     "2025-09-10",
+     "2027-03-18",
+     "CNY",
+     "CNYRUB_TOM",
+     1
+    ],
+    [
+     "CRH7CRM7",
+     "CNY-3.27-6.27",
+     "2026-06-11",
+     "2027-03-18",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRZ6",
+     "CNY-12.26",
+     "2025-06-05",
+     "2026-12-17",
+     "CNY",
+     "CNYRUB_TOM",
+     1
+    ],
+    [
+     "CRZ6CRH7",
+     "CRZ6CRH7",
+     "2026-03-13",
+     "2026-12-17",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRU6",
+     "CNY-9.26",
+     "2025-03-07",
+     "2026-09-17",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRU6CRZ6",
+     "CRU6CRZ6",
+     "2025-12-12",
+     "2026-09-17",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRM6",
+     "CNY-6.26",
+     "2024-12-06",
+     "2026-06-18",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRM6CRU6",
+     "CRM6CRU6",
+     "2025-09-12",
+     "2026-06-18",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRH6",
+     "CNY-3.26",
+     "2024-09-06",
+     "2026-03-19",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRH6CRM6",
+     "CRH6CRM6",
+     "2025-08-29",
+     "2026-03-19",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRZ5",
+     "CNY-12.25",
+     "2024-06-06",
+     "2025-12-18",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRZ5CRH6",
+     "CRZ5CRH6",
+     "2025-08-29",
+     "2025-12-18",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRU5",
+     "CNY-9.25",
+     "2024-03-07",
+     "2025-09-18",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRU5CRZ5",
+     "CRU5CRZ5",
+     "2025-06-13",
+     "2025-09-18",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRM5",
+     "CNY-6.25",
+     "2023-12-08",
+     "2025-06-19",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRM5CRU5",
+     "CRM5CRU5",
+     "2025-03-14",
+     "2025-06-19",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRH5",
+     "CNY-3.25",
+     "2023-09-08",
+     "2025-03-20",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRH5CRM5",
+     "CRH5CRM5",
+     "2024-12-13",
+     "2025-03-20",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRZ4",
+     "CNY-12.24",
+     "2023-06-01",
+     "2024-12-19",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRZ4CRH5",
+     "CRZ4CRH5",
+     "2024-09-13",
+     "2024-12-19",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRU4",
+     "CNY-9.24",
+     "2023-03-02",
+     "2024-09-19",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRU4CRZ4",
+     "CRU4CRZ4",
+     "2024-06-14",
+     "2024-09-19",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRM4",
+     "CNY-6.24",
+     "2022-12-02",
+     "2024-06-20",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRM4CRU4",
+     "CRM4CRU4",
+     "2024-03-15",
+     "2024-06-20",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRH4",
+     "CNY-3.24",
+     "2022-11-02",
+     "2024-03-21",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRH4CRM4",
+     "CRH4CRM4",
+     "2023-12-15",
+     "2024-03-21",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRZ3",
+     "CNY-12.23",
+     "2022-11-02",
+     "2023-12-21",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRZ3CRH4",
+     "CRZ3CRH4",
+     "2023-09-15",
+     "2023-12-21",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRU3",
+     "CNY-9.23",
+     "2022-11-02",
+     "2023-09-21",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRU3CRZ3",
+     "CRU3CRZ3",
+     "2023-06-08",
+     "2023-09-21",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRM3",
+     "CNY-6.23",
+     "2022-09-02",
+     "2023-06-15",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRM3CRU3",
+     "CRM3CRU3",
+     "2023-03-10",
+     "2023-06-15",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRH3",
+     "CNY-3.23",
+     "2022-08-15",
+     "2023-03-16",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRH3CRM3",
+     "CRH3CRM3",
+     "2022-12-09",
+     "2023-03-16",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRZ2",
+     "CNY-12.22",
+     "2022-06-02",
+     "2022-12-15",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRZ2CRH3",
+     "CRZ2CRH3",
+     "2022-09-09",
+     "2022-12-15",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRU2",
+     "CNY-9.22",
+     "2022-04-21",
+     "2022-09-15",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRM2",
+     "CNY-6.22",
+     "2022-04-21",
+     "2022-06-16",
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRM2CRU2",
+     "CRM2CRU2",
+     "2022-05-27",
+     null,
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ],
+    [
+     "CRU2CRZ2",
+     "CRU2CRZ2",
+     "2022-06-27",
+     null,
+     "CNY",
+     "CNYRUB_TOM",
+     0
+    ]
+   ]
+  }
+ },
+ "http://iss.moex.com/iss/securities/AFLT.json": {
+  "description": {
+   "metadata": {
+    "name": {
+     "type": "string",
+     "bytes": 189,
+     "max_size": 0
+    },
+    "title": {
+     "type": "string",
+     "bytes": 765,
+     "max_size": 0
+    },
+    "value": {
+     "type": "string",
+     "bytes": 6144,
+     "max_size": 0
+    },
+    "type": {
+     "type": "string",
+     "bytes": 21,
+     "max_size": 0
+    },
+    "sort_order": {
+     "type": "int64"
+    },
+    "is_hidden": {
+     "type": "int64"
+    },
+    "precision": {
+     "type": "int64"
+    }
+   },
+   "columns": [
+    "name",
+    "title",
+    "value",
+    "type",
+    "sort_order",
+    "is_hidden",
+    "precision"
+   ],
+   "data": [
+    [
+     "SECID",
+     "Код ценной бумаги",
+     "AFLT",
+     "string",
+     1,
+     0,
+     null
+    ],
+    [
+     "ISSUENAME",
+     "Наименование ценной бумаги",
+     "Акции обыкновенные",
+     "string",
+     2,
+     0,
+     null
+    ],
+    [
+     "NAME",
+     "Полное наименование",
+     "Аэрофлот-росс.авиалин(ПАО)ао",
+     "string",
+     3,
+     0,
+     null
+    ],
+    [
+     "SHORTNAME",
+     "Краткое наименование",
+     "Аэрофлот",
+     "string",
+     4,
+     0,
+     null
+    ],
+    [
+     "ISIN",
+     "ISIN код",
+     "RU0009062285",
+     "string",
+     5,
+     0,
+     null
+    ],
+    [
+     "REGNUMBER",
+     "Номер государственной регистрации",
+     "1-01-00010-A",
+     "string",
+     6,
+     0,
+     null
+    ],
+    [
+     "ISSUESIZE",
+     "Объем выпуска",
+     "3975771215",
+     "number",
+     7,
+     0,
+     0
+    ],
+    [
+     "FACEVALUE",
+     "Номинальная стоимость",
+     "1",
+     "number",
+     8,
+     0,
+     2
+    ],
+    [
+     "FACEUNIT",
+     "Валюта номинала",
+     "SUR",
+     "string",
+     9,
+     0,
+     null
+    ],
+    [
+     "ISSUEDATE",
+     "Дата начала торгов",
+     "2004-02-13",
+     "date",
+     10,
+     0,
+     null
+    ],
+    [
+     "LATNAME",
+     "Английское наименование",
+     "Aeroflot",
+     "string",
+     11,
+     1,
+     null
+    ],
+    [
+     "HASPROSPECTUS",
+     "Наличие проспекта",
+     "1",
+     "boolean",
+     12,
+     1,
+     0
+    ],
+    [
+     "DECISIONDATE",
+     "Дата принятия решения организатором торговли о включении ценной бумаги в Список",
+     "2007-08-09",
+     "date",
+     13,
+     1,
+     null
+    ],
+    [
+     "HASDEFAULT",
+     "Допущен дефолт",
+     "0",
+     "boolean",
+     14,
+     1,
+     0
+    ],
+    [
+     "HASTECHNICALDEFAULT",
+     "Допущен технический дефолт",
+     "0",
+     "boolean",
+     15,
+     1,
+     0
+    ],
+    [
+     "EMITENTMISMATCHCUR",
+     "Эмитент не соответствует требованию на текущий Список",
+     "0",
+     "number",
+     17,
+     1,
+     0
+    ],
+    [
+     "LISTLEVEL",
+     "Уровень листинга",
+     "1",
+     "number",
+     18,
+     0,
+     0
+    ],
+    [
+     "ISQUALIFIEDINVESTORS",
+     "Бумаги для квалифицированных инвесторов",
+     "0",
+     "boolean",
+     20,
+     0,
+     0
+    ],
+    [
+     "MORNINGSESSION",
+     "Допуск к утренней дополнительной торговой сессии",
+     "1",
+     "boolean",
+     23,
+     0,
+     0
+    ],
+    [
+     "EVENINGSESSION",
+     "Допуск к вечерней дополнительной торговой сессии",
+     "1",
+     "boolean",
+     24,
+     0,
+     0
+    ],
+    [
+     "WEEKENDSESSION",
+     "Допуск к дополнительной торговой сессии выходного дня",
+     "1",
+     "boolean",
+     25,
+     0,
+     0
+    ],
+    [
+     "REGISTRY_DATE",
+     "Дата государственной регистрации ценной бумаги",
+     "2004-01-23",
+     "date",
+     28,
+     0,
+     null
+    ],
+    [
+     "TYPENAME",
+     "Вид/категория ценной бумаги",
+     "Акция обыкновенная",
+     "string",
+     9000,
+     0,
+     null
+    ],
+    [
+     "GROUP",
+     "Код типа инструмента",
+     "stock_shares",
+     "string",
+     9001,
+     1,
+     null
+    ],
+    [
+     "TYPE",
+     "Тип бумаги",
+     "common_share",
+     "string",
+     10000,
+     1,
+     null
+    ],
+    [
+     "GROUPNAME",
+     "Типа инструмента",
+     "Акции",
+     "string",
+     10011,
+     1,
+     null
+    ],
+    [
+     "EMITTER_ID",
+     "Код эмитента",
+     "1242",
+     "number",
+     11000,
+     1,
+     null
+    ]
+   ]
+  },
+  "boards": {
+   "metadata": {
+    "secid": {
+     "type": "string",
+     "bytes": 51,
+     "max_size": 0
+    },
+    "boardid": {
+     "type": "string",
+     "bytes": 12,
+     "max_size": 0
+    },
+    "title": {
+     "type": "string",
+     "bytes": 381,
+     "max_size": 0
+    },
+    "board_group_id": {
+     "type": "int32"
+    },
+    "market_id": {
+     "type": "int32"
+    },
+    "market": {
+     "type": "string",
+     "bytes": 45,
+     "max_size": 0
+    },
+    "engine_id": {
+     "type": "int32"
+    },
+    "engine": {
+     "type": "string",
+     "bytes": 45,
+     "max_size": 0
+    },
+    "is_traded": {
+     "type": "int32"
+    },
+    "decimals": {
+     "type": "int32"
+    },
+    "history_from": {
+     "type": "date",
+     "bytes": 10,
+     "max_size": 0
+    },
+    "history_till": {
+     "type": "date",
+     "bytes": 10,
+     "max_size": 0
+    },
+    "listed_from": {
+     "type": "date",
+     "bytes": 10,
+     "max_size": 0
+    },
+    "listed_till": {
+     "type": "date",
+     "bytes": 10,
+     "max_size": 0
+    },
+    "is_primary": {
+     "type": "int32"
+    },
+    "currencyid": {
+     "type": "string",
+     "bytes": 9,
+     "max_size": 0
+    },
+    "unit": {
+     "type": "string",
+     "bytes": 3,
+     "max_size": 0
+    }
+   },
+   "columns": [
+    "secid",
+    "boardid",
+    "title",
+    "board_group_id",
+    "market_id",
+    "market",
+    "engine_id",
+    "engine",
+    "is_traded",
+    "decimals",
+    "history_from",
+    "history_till",
+    "listed_from",
+    "listed_till",
+    "is_primary",
+    "currencyid",
+    "unit"
+   ],
+   "data": [
+    [
+     "AFLT",
+     "TQBR",
+     "Т+: Акции и ДР - безадрес.",
+     57,
+     1,
+     "shares",
+     1,
+     "stock",
+     1,
+     2,
+     "2013-10-31",
+     "2026-09-25",
+     "2013-10-31",
+     "2026-09-26",
+     1,
+     "RUB",
+     "M"
+    ],
+    [
+     "AFLT",
+     "TQBS",
+     "Т+: А2-Акции и паи - безадрес.",
+     57,
+     1,
+     "shares",
+     1,
+     "stock",
+     0,
+     2,
+     "2013-07-08",
+     "2013-10-30",
+     "2013-07-08",
+     "2013-10-30",
+     0,
+     "RUB",
+     "M"
+    ],
+    [
+     "AFLT",
+     "EQBR",
+     "Основной режим: А1-Акции и паи - безадрес.",
+     6,
+     1,
+     "shares",
+     1,
+     "stock",
+     0,
+     2,
+     "2007-08-21",
+     "2013-05-07",
+     "2007-08-21",
+     "2013-05-07",
+     0,
+     "RUB",
+     "M"
+    ],
+    [
+     "AFLT",
+     "EQBS",
+     "Основной режим: А2-Акции и паи - безадрес.",
+     6,
+     1,
+     "shares",
+     1,
+     "stock",
+     0,
+     2,
+     "2004-02-13",
+     "2013-08-30",
+     "2004-02-13",
+     "2013-08-30",
+     0,
+     "RUB",
+     "M"
+    ],
+    [
+     "AFLT",
+     "SMAL",
+     "Т+: Неполные лоты (акции) - безадрес.",
+     21,
+     1,
+     "shares",
+     1,
+     "stock",
+     1,
+     2,
+     "2011-03-01",
+     "2026-09-25",
+     "2011-03-01",
+     "2026-09-26",
+     0,
+     "RUB",
+     "M"
+    ],
+    [
+     "AFLT",
+     "TQDP",
+     "Крупные пакеты - Акции - безадрес.",
+     42,
+     1,
+     "shares",
+     1,
+     "stock",
+     0,
+     2,
+     null,
+     null,
+     "2019-03-04",
+     "2023-02-15",
+     0,
+     "RUB",
+     "M"
+    ],
+    [
+     "AFLT",
+     "EQDP",
+     "Крупные пакеты - Акции - безадрес.",
+     42,
+     1,
+     "shares",
+     1,
+     "stock",
+     0,
+     2,
+     "2012-05-14",
+     "2019-03-01",
+     "2012-05-14",
+     "2019-03-01",
+     0,
+     "RUB",
+     "M"
+    ],
+    [
+     "AFLT",
+     "LIQB",
+     "Продажа обеспечения бирж.рынок - безадрес.",
+     120,
+     36,
+     "mamc",
+     1,
+     "stock",
+     1,
+     2,
+     "2019-10-02",
+     "2019-10-02",
+     "2018-05-21",
+     "2026-09-26",
+     0,
+     null,
+     "M"
+    ],
+    [
+     "AFLT",
+     "EQCC",
+     "ЦК - режим основных торгов - безадрес.",
+     30,
+     1,
+     "shares",
+     1,
+     "stock",
+     0,
+     2,
+     "2010-02-15",
+     "2011-05-27",
+     "2010-02-15",
+     "2011-05-27",
+     0,
+     "RUB",
+     "M"
+    ],
+    [
+     "AFLT",
+     "RPEQ",
+     "РЕПО: Акции и паи - адрес.",
+     1,
+     3,
+     "repo",
+     1,
+     "stock",
+     0,
+     4,
+     "2004-02-18",
+     "2008-10-07",
+     "2004-02-18",
+     "2008-10-07",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "AFLT",
+     "RPEY",
+     "РЕПО в ин.валюте (CNY) - адрес.",
+     2,
+     3,
+     "repo",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2022-09-26",
+     "2026-09-26",
+     0,
+     "CNY",
+     "%"
+    ],
+    [
+     "AFLT",
+     "RPMA",
+     "РЕПО c акциями - адрес.",
+     95,
+     3,
+     "repo",
+     1,
+     "stock",
+     0,
+     4,
+     "2006-10-03",
+     "2019-04-19",
+     "2006-10-03",
+     "2020-03-04",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "AFLT",
+     "RPEU",
+     "РЕПО в ин. валюте (USD) - адрес.",
+     94,
+     3,
+     "repo",
+     1,
+     "stock",
+     1,
+     4,
+     "2021-03-12",
+     "2022-04-12",
+     "2019-04-22",
+     "2026-09-26",
+     0,
+     "USD",
+     "%"
+    ],
+    [
+     "AFLT",
+     "RPUA",
+     "РЕПО c акциями (USD) - адрес.",
+     94,
+     3,
+     "repo",
+     1,
+     "stock",
+     0,
+     4,
+     null,
+     null,
+     "2013-09-02",
+     "2019-05-31",
+     0,
+     "USD",
+     "%"
+    ],
+    [
+     "AFLT",
+     "RPEO",
+     "РЕПО в ин. валюте (EUR) - адрес.",
+     90,
+     3,
+     "repo",
+     1,
+     "stock",
+     1,
+     4,
+     "2020-12-03",
+     "2022-02-18",
+     "2019-04-22",
+     "2026-09-26",
+     0,
+     "EUR",
+     "%"
+    ],
+    [
+     "AFLT",
+     "SPEQ",
+     "Поставка по СК (акции)",
+     125,
+     1,
+     "shares",
+     1,
+     "stock",
+     1,
+     6,
+     "2018-06-29",
+     "2026-09-18",
+     "2018-06-29",
+     "2026-09-26",
+     0,
+     "RUB",
+     "M"
+    ],
+    [
+     "AFLT",
+     "SOTC",
+     "Репортинг внебиржевых сделок (6264-У)",
+     71,
+     29,
+     "otc",
+     1,
+     "stock",
+     0,
+     5,
+     "2014-02-24",
+     "2022-12-02",
+     "2009-09-01",
+     "2022-12-03",
+     0,
+     null,
+     "M"
+    ],
+    [
+     "AFLT",
+     "MXBD",
+     "MOEX Board",
+     72,
+     33,
+     "moexboard",
+     1,
+     "stock",
+     0,
+     4,
+     "2015-08-03",
+     "2025-11-28",
+     "2015-08-03",
+     "2025-11-28",
+     0,
+     null,
+     "M"
+    ],
+    [
+     "AFLT",
+     "EQRP",
+     "РЕПО с ЦК 1 день - безадрес.",
+     50,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     "2014-06-10",
+     "2026-09-25",
+     "2014-06-09",
+     "2026-09-26",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "AFLT",
+     "EQRD",
+     "РЕПО с ЦК 1 день (USD) - безадрес.",
+     92,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     "2020-06-18",
+     "2021-12-23",
+     "2015-06-01",
+     "2026-09-26",
+     0,
+     "USD",
+     "%"
+    ],
+    [
+     "AFLT",
+     "EQRE",
+     "РЕПО с ЦК 1 день (EUR) - безадрес.",
+     93,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2015-06-01",
+     "2026-09-26",
+     0,
+     "EUR",
+     "%"
+    ],
+    [
+     "AFLT",
+     "EQRY",
+     "РЕПО с ЦК 1 день (CNY) - безадрес.",
+     152,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2019-03-07",
+     "2026-09-26",
+     0,
+     "CNY",
+     "%"
+    ],
+    [
+     "AFLT",
+     "EQWP",
+     "РЕПО с ЦК 7 дн. - безадрес.",
+     76,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     "2015-07-14",
+     "2026-07-06",
+     "2015-06-01",
+     "2026-09-26",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "AFLT",
+     "EQWD",
+     "РЕПО с ЦК 7 дней (USD) - безадрес.",
+     78,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2016-01-26",
+     "2026-09-26",
+     0,
+     "USD",
+     "%"
+    ],
+    [
+     "AFLT",
+     "EQWE",
+     "РЕПО с ЦК 7 дней (EUR) - безадрес.",
+     79,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2016-01-26",
+     "2026-09-26",
+     0,
+     "EUR",
+     "%"
+    ],
+    [
+     "AFLT",
+     "EQWY",
+     "РЕПО с ЦК 7 дней (CNY) - безадрес.",
+     1116,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2022-09-26",
+     "2026-09-26",
+     0,
+     "CNY",
+     "%"
+    ],
+    [
+     "AFLT",
+     "LIQR",
+     "РЕПО с ЦК: Урегулирование - безадрес.",
+     148,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     "2019-11-08",
+     "2026-04-24",
+     "2019-03-04",
+     "2026-09-26",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "AFLT",
+     "PSRP",
+     "РЕПО с ЦК - адрес.",
+     65,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     "2013-09-02",
+     "2026-09-25",
+     "2013-07-08",
+     "2026-09-26",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "AFLT",
+     "PSRD",
+     "РЕПО с ЦК (USD) - адрес.",
+     91,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     "2019-11-27",
+     "2023-08-30",
+     "2015-06-01",
+     "2026-09-26",
+     0,
+     "USD",
+     "%"
+    ],
+    [
+     "AFLT",
+     "PSRE",
+     "РЕПО с ЦК (EUR) - адрес.",
+     96,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     "2021-12-20",
+     "2022-02-25",
+     "2015-06-01",
+     "2026-09-26",
+     0,
+     "EUR",
+     "%"
+    ],
+    [
+     "AFLT",
+     "PSRY",
+     "РЕПО с ЦК (CNY) - адрес.",
+     153,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     "2022-12-23",
+     "2026-09-24",
+     "2019-03-07",
+     "2026-09-26",
+     0,
+     "CNY",
+     "%"
+    ],
+    [
+     "AFLT",
+     "PSRK",
+     "РЕПО с ЦК (KZT) - адрес.",
+     1422,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2025-06-23",
+     "2026-09-26",
+     0,
+     "KZT",
+     "%"
+    ],
+    [
+     "AFLT",
+     "PSRB",
+     "РЕПО с ЦК (BYN) - адрес.",
+     1424,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2025-06-23",
+     "2026-09-26",
+     0,
+     "BYN",
+     "%"
+    ],
+    [
+     "AFLT",
+     "PTEQ",
+     "РПС с ЦК: Акции и ДР - адрес.",
+     59,
+     4,
+     "ndm",
+     1,
+     "stock",
+     1,
+     2,
+     "2013-11-01",
+     "2026-09-18",
+     "2013-10-31",
+     "2026-09-26",
+     0,
+     "RUB",
+     "M"
+    ],
+    [
+     "AFLT",
+     "PTES",
+     "РПС С ЦК: А2-Акции и паи - адрес.",
+     59,
+     4,
+     "ndm",
+     1,
+     "stock",
+     0,
+     2,
+     "2013-09-03",
+     "2013-10-30",
+     "2013-07-08",
+     "2013-10-30",
+     0,
+     "RUB",
+     "M"
+    ],
+    [
+     "AFLT",
+     "PSEQ",
+     "РПС: Акции - адрес.",
+     8,
+     4,
+     "ndm",
+     1,
+     "stock",
+     1,
+     2,
+     "2007-08-23",
+     "2026-08-31",
+     "2007-08-23",
+     "2026-09-26",
+     0,
+     "RUB",
+     "M"
+    ],
+    [
+     "AFLT",
+     "PSES",
+     "РПС: А2-Акции и паи - адрес.",
+     8,
+     4,
+     "ndm",
+     1,
+     "stock",
+     0,
+     2,
+     "2004-02-13",
+     "2013-10-30",
+     "2004-02-13",
+     "2013-10-30",
+     0,
+     "RUB",
+     "M"
+    ],
+    [
+     "AFLT",
+     "MPTR",
+     "ОТС: Акции РПС с ЦК - адресные",
+     1260,
+     1262,
+     "sharesndm",
+     1012,
+     "otc",
+     1,
+     2,
+     "2025-01-14",
+     "2025-05-05",
+     "2023-04-10",
+     "2026-09-25",
+     0,
+     "RUB",
+     "M"
+    ],
+    [
+     "AFLT",
+     "RPMO",
+     "РЕПО-М - адрес.",
+     201,
+     3,
+     "repo",
+     1,
+     "stock",
+     1,
+     4,
+     "2019-04-22",
+     "2026-09-25",
+     "2019-04-22",
+     "2026-09-26",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "AFLT",
+     "RPEK",
+     "РЕПО-М в ин. валюте: (KZT) - адрес.",
+     1426,
+     3,
+     "repo",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2025-06-23",
+     "2026-09-26",
+     0,
+     "KZT",
+     "%"
+    ],
+    [
+     "AFLT",
+     "RPEB",
+     "РЕПО-М в ин. валюте: (BYN) - адрес.",
+     1428,
+     3,
+     "repo",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2025-06-23",
+     "2026-09-26",
+     0,
+     "BYN",
+     "%"
+    ],
+    [
+     "AFLT",
+     "RPCC",
+     "РЕПО с ЦК - адрес.",
+     31,
+     3,
+     "repo",
+     1,
+     "stock",
+     0,
+     2,
+     "2010-02-15",
+     "2011-05-27",
+     "2010-02-15",
+     "2011-05-27",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "AFLT",
+     "PSCC",
+     "РПС с ЦК - адрес.",
+     32,
+     4,
+     "ndm",
+     1,
+     "stock",
+     0,
+     2,
+     "2010-02-15",
+     "2011-05-27",
+     "2010-02-15",
+     "2011-05-27",
+     0,
+     "RUB",
+     "M"
+    ],
+    [
+     "AFLT",
+     "CIQR",
+     "Урегулирование РЕПО с ЦК Нерезиденты - безадрес.",
+     1080,
+     1019,
+     "nonresccp",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2022-06-27",
+     "2026-09-26",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "AFLT",
+     "CIQB",
+     "Урегулирование с ЦК Нерезиденты - безадрес.",
+     1082,
+     36,
+     "mamc",
+     1,
+     "stock",
+     1,
+     2,
+     null,
+     null,
+     "2022-06-27",
+     "2026-09-26",
+     0,
+     null,
+     "M"
+    ],
+    [
+     "AFLT",
+     "CTEQ",
+     "РПС с ЦК Нерезиденты: Акции и ДР - адрес.",
+     1056,
+     1015,
+     "nonresndm",
+     1,
+     "stock",
+     1,
+     2,
+     null,
+     null,
+     "2022-06-27",
+     "2026-09-26",
+     0,
+     "RUB",
+     "M"
+    ],
+    [
+     "AFLT",
+     "CPMO",
+     "РЕПО-M Нерезиденты - адрес.",
+     1071,
+     1017,
+     "nonresrepo",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2022-06-27",
+     "2026-09-26",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "AFLT",
+     "CPEU",
+     "РЕПО-M Нерезиденты (USD) - адрес.",
+     1073,
+     1017,
+     "nonresrepo",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2022-06-27",
+     "2026-09-26",
+     0,
+     "USD",
+     "%"
+    ],
+    [
+     "AFLT",
+     "CPEO",
+     "РЕПО-M Нерезиденты (EUR) - адрес.",
+     1075,
+     1017,
+     "nonresrepo",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2022-06-27",
+     "2026-09-26",
+     0,
+     "EUR",
+     "%"
+    ],
+    [
+     "AFLT",
+     "CPEY",
+     "РЕПО-M Нерезиденты (CNY) - адрес.",
+     1077,
+     1017,
+     "nonresrepo",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2022-09-26",
+     "2026-09-26",
+     0,
+     "CNY",
+     "%"
+    ],
+    [
+     "AFLT",
+     "CLMR",
+     "Classica - безадрес.",
+     43,
+     25,
+     "classica",
+     1,
+     "stock",
+     0,
+     2,
+     "2012-02-13",
+     "2015-07-31",
+     "2011-12-19",
+     "2015-07-31",
+     0,
+     "RUB",
+     "M"
+    ],
+    [
+     "AFLT",
+     "CLAD",
+     "Classica - адрес.",
+     44,
+     25,
+     "classica",
+     1,
+     "stock",
+     0,
+     2,
+     "2011-12-19",
+     "2014-07-08",
+     "2011-12-19",
+     "2014-07-08",
+     0,
+     "RUB",
+     "M"
+    ],
+    [
+     "AFLT",
+     "STMR",
+     "Standard: дневная сессия - безадрес.",
+     36,
+     23,
+     "standard",
+     1,
+     "stock",
+     0,
+     2,
+     "2012-01-26",
+     "2015-07-31",
+     "2011-12-19",
+     "2015-07-31",
+     0,
+     "RUB",
+     "M"
+    ],
+    [
+     "AFLT",
+     "SDMR",
+     "Standard: вечерняя сессия - безадрес.",
+     36,
+     23,
+     "standard",
+     1,
+     "stock",
+     0,
+     2,
+     "2013-03-25",
+     "2015-07-31",
+     "2011-12-19",
+     "2015-07-31",
+     0,
+     "RUB",
+     "M"
+    ],
+    [
+     "AFLT",
+     "STRP",
+     "Standard: сделки репо, дневная сессия - адрес.",
+     40,
+     23,
+     "standard",
+     1,
+     "stock",
+     0,
+     2,
+     "2012-01-30",
+     "2015-07-31",
+     "2011-12-19",
+     "2015-07-31",
+     0,
+     "RUB",
+     "M"
+    ],
+    [
+     "AFLT",
+     "STAD",
+     "Standard: дневная сессия - адрес.",
+     41,
+     23,
+     "standard",
+     1,
+     "stock",
+     0,
+     2,
+     "2012-02-13",
+     "2015-07-31",
+     "2011-12-19",
+     "2015-07-31",
+     0,
+     "RUB",
+     "M"
+    ],
+    [
+     "AFLT",
+     "SDAD",
+     "Standard: вечерняя сессия - адрес.",
+     41,
+     23,
+     "standard",
+     1,
+     "stock",
+     0,
+     2,
+     "2012-02-01",
+     "2013-04-03",
+     "2011-12-19",
+     "2013-04-03",
+     0,
+     "RUB",
+     "M"
+    ]
+   ]
+  }
+ },
+ "http://iss.moex.com/iss/securities/RU000A0JWUE9.json": {
+  "description": {
+   "metadata": {
+    "name": {
+     "type": "string",
+     "bytes": 189,
+     "max_size": 0
+    },
+    "title": {
+     "type": "string",
+     "bytes": 765,
+     "max_size": 0
+    },
+    "value": {
+     "type": "string",
+     "bytes": 6144,
+     "max_size": 0
+    },
+    "type": {
+     "type": "string",
+     "bytes": 21,
+     "max_size": 0
+    },
+    "sort_order": {
+     "type": "int64"
+    },
+    "is_hidden": {
+     "type": "int64"
+    },
+    "precision": {
+     "type": "int64"
+    }
+   },
+   "columns": [
+    "name",
+    "title",
+    "value",
+    "type",
+    "sort_order",
+    "is_hidden",
+    "precision"
+   ],
+   "data": [
+    [
+     "SECID",
+     "Код ценной бумаги",
+     "RU000A0JWUE9",
+     "string",
+     1,
+     0,
+     null
+    ],
+    [
+     "ISSUENAME",
+     "Наименование ценной бумаги",
+     "Биржевые облигации документарные процентные неконвертируемые на предъявителя с обязательным централизованным хранением серии БО-37",
+     "string",
+     2,
+     0,
+     null
+    ],
+    [
+     "NAME",
+     "Полное наименование",
+     "Сбербанк ПАО БО-37",
+     "string",
+     3,
+     0,
+     null
+    ],
+    [
+     "SHORTNAME",
+     "Краткое наименование",
+     "СберБ БО37",
+     "string",
+     4,
+     0,
+     null
+    ],
+    [
+     "REGNUMBER",
+     "Номер государственной регистрации",
+     "4B023701481B",
+     "string",
+     5,
+     0,
+     null
+    ],
+    [
+     "ISIN",
+     "ISIN код",
+     "RU000A0JWUE9",
+     "string",
+     6,
+     0,
+     null
+    ],
+    [
+     "ISSUEDATE",
+     "Дата начала торгов",
+     "2016-09-30",
+     "date",
+     7,
+     0,
+     null
+    ],
+    [
+     "MATDATE",
+     "Дата погашения",
+     "2021-09-30",
+     "date",
+     8,
+     0,
+     null
+    ],
+    [
+     "INITIALFACEVALUE",
+     "Первоначальная номинальная стоимость",
+     "1000",
+     "number",
+     10,
+     0,
+     2
+    ],
+    [
+     "FACEUNIT",
+     "Валюта номинала",
+     "SUR",
+     "string",
+     11,
+     0,
+     null
+    ],
+    [
+     "LATNAME",
+     "Английское наименование",
+     "Sberbank BO-37",
+     "string",
+     12,
+     1,
+     null
+    ],
+    [
+     "STARTDATEMOEX",
+     "Дата начала торгов на Московской Бирже",
+     "2016-09-30",
+     "date",
+     13,
+     0,
+     null
+    ],
+    [
+     "HASPROSPECTUS",
+     "Наличие проспекта",
+     "0",
+     "boolean",
+     14,
+     1,
+     0
+    ],
+    [
+     "ISCONCESSIONAGREEMENT",
+     "Облигации размещены с целью финансирования соглашений о партнерстве",
+     "0",
+     "boolean",
+     16,
+     1,
+     0
+    ],
+    [
+     "HASDEFAULT",
+     "Допущен дефолт",
+     "0",
+     "boolean",
+     17,
+     1,
+     0
+    ],
+    [
+     "HASTECHNICALDEFAULT",
+     "Допущен технический дефолт",
+     "0",
+     "boolean",
+     18,
+     1,
+     0
+    ],
+    [
+     "EMITENTMISMATCHCUR",
+     "Эмитент не соответствует требованию на текущий Список",
+     "0",
+     "number",
+     21,
+     1,
+     0
+    ],
+    [
+     "EARLYREPAYMENT",
+     "Возможен досрочный выкуп",
+     "0",
+     "boolean",
+     22,
+     1,
+     0
+    ],
+    [
+     "LISTLEVEL",
+     "Уровень листинга",
+     "1",
+     "number",
+     23,
+     0,
+     0
+    ],
+    [
+     "ISSUESIZE",
+     "Объем выпуска",
+     "10000000",
+     "number",
+     26,
+     0,
+     0
+    ],
+    [
+     "FACEVALUE",
+     "Номинальная стоимость",
+     "1000",
+     "number",
+     27,
+     0,
+     2
+    ],
+    [
+     "ISQUALIFIEDINVESTORS",
+     "Бумаги для квалифицированных инвесторов",
+     "0",
+     "boolean",
+     28,
+     0,
+     0
+    ],
+    [
+     "COUPONFREQUENCY",
+     "Периодичность выплаты купона в год",
+     "2",
+     "number",
+     30,
+     0,
+     0
+    ],
+    [
+     "TYPENAME",
+     "Вид/категория ценной бумаги",
+     "Биржевая облигация",
+     "string",
+     9000,
+     0,
+     null
+    ],
+    [
+     "GROUP",
+     "Код типа инструмента",
+     "stock_bonds",
+     "string",
+     9001,
+     1,
+     null
+    ],
+    [
+     "TYPE",
+     "Тип бумаги",
+     "exchange_bond",
+     "string",
+     10000,
+     1,
+     null
+    ],
+    [
+     "GROUPNAME",
+     "Типа инструмента",
+     "Облигации",
+     "string",
+     10011,
+     1,
+     null
+    ],
+    [
+     "EMITTER_ID",
+     "Код эмитента",
+     "484",
+     "number",
+     11000,
+     1,
+     null
+    ],
+    [
+     "EMITTER_VALUE_BUILDING",
+     "Участник программы создания акционерной стоимости",
+     "1",
+     "boolean",
+     11001,
+     1,
+     0
+    ]
+   ]
+  },
+  "boards": {
+   "metadata": {
+    "secid": {
+     "type": "string",
+     "bytes": 51,
+     "max_size": 0
+    },
+    "boardid": {
+     "type": "string",
+     "bytes": 12,
+     "max_size": 0
+    },
+    "title": {
+     "type": "string",
+     "bytes": 381,
+     "max_size": 0
+    },
+    "board_group_id": {
+     "type": "int32"
+    },
+    "market_id": {
+     "type": "int32"
+    },
+    "market": {
+     "type": "string",
+     "bytes": 45,
+     "max_size": 0
+    },
+    "engine_id": {
+     "type": "int32"
+    },
+    "engine": {
+     "type": "string",
+     "bytes": 45,
+     "max_size": 0
+    },
+    "is_traded": {
+     "type": "int32"
+    },
+    "decimals": {
+     "type": "int32"
+    },
+    "history_from": {
+     "type": "date",
+     "bytes": 10,
+     "max_size": 0
+    },
+    "history_till": {
+     "type": "date",
+     "bytes": 10,
+     "max_size": 0
+    },
+    "listed_from": {
+     "type": "date",
+     "bytes": 10,
+     "max_size": 0
+    },
+    "listed_till": {
+     "type": "date",
+     "bytes": 10,
+     "max_size": 0
+    },
+    "is_primary": {
+     "type": "int32"
+    },
+    "currencyid": {
+     "type": "string",
+     "bytes": 9,
+     "max_size": 0
+    },
+    "unit": {
+     "type": "string",
+     "bytes": 3,
+     "max_size": 0
+    }
+   },
+   "columns": [
+    "secid",
+    "boardid",
+    "title",
+    "board_group_id",
+    "market_id",
+    "market",
+    "engine_id",
+    "engine",
+    "is_traded",
+    "decimals",
+    "history_from",
+    "history_till",
+    "listed_from",
+    "listed_till",
+    "is_primary",
+    "currencyid",
+    "unit"
+   ],
+   "data": [
+    [
+     "RU000A0JWUE9",
+     "TQCB",
+     "Т+: Облигации - безадрес.",
+     58,
+     2,
+     "bonds",
+     1,
+     "stock",
+     0,
+     2,
+     "2019-10-14",
+     "2021-09-30",
+     "2019-10-14",
+     "2021-09-30",
+     1,
+     "RUB",
+     "%"
+    ],
+    [
+     "RU000A0JWUE9",
+     "EQOB",
+     "Т0 Облигации - безадрес.",
+     7,
+     2,
+     "bonds",
+     1,
+     "stock",
+     0,
+     2,
+     "2016-09-30",
+     "2019-10-11",
+     "2016-09-30",
+     "2019-10-11",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "RU000A0JWUE9",
+     "LIQB",
+     "Продажа обеспечения бирж.рынок - безадрес.",
+     120,
+     36,
+     "mamc",
+     1,
+     "stock",
+     0,
+     2,
+     null,
+     null,
+     "2018-05-21",
+     "2021-09-30",
+     0,
+     null,
+     "%"
+    ],
+    [
+     "RU000A0JWUE9",
+     "RPEU",
+     "РЕПО в ин. валюте (USD) - адрес.",
+     94,
+     3,
+     "repo",
+     1,
+     "stock",
+     0,
+     6,
+     null,
+     null,
+     "2019-04-22",
+     "2021-09-30",
+     0,
+     "USD",
+     "%"
+    ],
+    [
+     "RU000A0JWUE9",
+     "RPUO",
+     "РЕПО c облигациями (USD) - адрес.",
+     94,
+     3,
+     "repo",
+     1,
+     "stock",
+     0,
+     6,
+     null,
+     null,
+     "2016-09-30",
+     "2019-05-31",
+     0,
+     "USD",
+     "%"
+    ],
+    [
+     "RU000A0JWUE9",
+     "RPEO",
+     "РЕПО в ин. валюте (EUR) - адрес.",
+     90,
+     3,
+     "repo",
+     1,
+     "stock",
+     0,
+     6,
+     null,
+     null,
+     "2019-04-22",
+     "2021-09-30",
+     0,
+     "EUR",
+     "%"
+    ],
+    [
+     "RU000A0JWUE9",
+     "SOTC",
+     "Репортинг внебиржевых сделок (6264-У)",
+     71,
+     29,
+     "otc",
+     1,
+     "stock",
+     0,
+     5,
+     "2016-11-21",
+     "2021-03-18",
+     "2016-10-24",
+     "2021-03-18",
+     0,
+     null,
+     "%"
+    ],
+    [
+     "RU000A0JWUE9",
+     "EQRP",
+     "РЕПО с ЦК 1 день - безадрес.",
+     50,
+     27,
+     "ccp",
+     1,
+     "stock",
+     0,
+     4,
+     "2017-03-31",
+     "2019-08-09",
+     "2017-03-14",
+     "2021-09-30",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "RU000A0JWUE9",
+     "EQRD",
+     "РЕПО с ЦК 1 день (USD) - безадрес.",
+     92,
+     27,
+     "ccp",
+     1,
+     "stock",
+     0,
+     4,
+     "2018-06-01",
+     "2018-09-17",
+     "2017-03-14",
+     "2021-09-30",
+     0,
+     "USD",
+     "%"
+    ],
+    [
+     "RU000A0JWUE9",
+     "EQRE",
+     "РЕПО с ЦК 1 день (EUR) - безадрес.",
+     93,
+     27,
+     "ccp",
+     1,
+     "stock",
+     0,
+     4,
+     null,
+     null,
+     "2017-03-14",
+     "2021-09-30",
+     0,
+     "EUR",
+     "%"
+    ],
+    [
+     "RU000A0JWUE9",
+     "EQRY",
+     "РЕПО с ЦК 1 день (CNY) - безадрес.",
+     152,
+     27,
+     "ccp",
+     1,
+     "stock",
+     0,
+     4,
+     null,
+     null,
+     "2019-03-07",
+     "2021-09-30",
+     0,
+     "CNY",
+     "%"
+    ],
+    [
+     "RU000A0JWUE9",
+     "EQWP",
+     "РЕПО с ЦК 7 дн. - безадрес.",
+     76,
+     27,
+     "ccp",
+     1,
+     "stock",
+     0,
+     4,
+     "2017-08-24",
+     "2019-09-18",
+     "2017-03-14",
+     "2021-09-30",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "RU000A0JWUE9",
+     "EQWD",
+     "РЕПО с ЦК 7 дней (USD) - безадрес.",
+     78,
+     27,
+     "ccp",
+     1,
+     "stock",
+     0,
+     4,
+     null,
+     null,
+     "2017-03-14",
+     "2021-09-30",
+     0,
+     "USD",
+     "%"
+    ],
+    [
+     "RU000A0JWUE9",
+     "EQWE",
+     "РЕПО с ЦК 7 дней (EUR) - безадрес.",
+     79,
+     27,
+     "ccp",
+     1,
+     "stock",
+     0,
+     4,
+     null,
+     null,
+     "2017-03-14",
+     "2021-09-30",
+     0,
+     "EUR",
+     "%"
+    ],
+    [
+     "RU000A0JWUE9",
+     "LIQR",
+     "РЕПО с ЦК: Урегулирование - безадрес.",
+     148,
+     27,
+     "ccp",
+     1,
+     "stock",
+     0,
+     4,
+     null,
+     null,
+     "2019-03-04",
+     "2021-09-30",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "RU000A0JWUE9",
+     "PSRP",
+     "РЕПО с ЦК - адрес.",
+     65,
+     27,
+     "ccp",
+     1,
+     "stock",
+     0,
+     4,
+     "2017-03-14",
+     "2019-12-30",
+     "2017-03-14",
+     "2021-09-30",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "RU000A0JWUE9",
+     "PSRD",
+     "РЕПО с ЦК (USD) - адрес.",
+     91,
+     27,
+     "ccp",
+     1,
+     "stock",
+     0,
+     4,
+     "2018-04-05",
+     "2021-09-28",
+     "2017-03-14",
+     "2021-09-30",
+     0,
+     "USD",
+     "%"
+    ],
+    [
+     "RU000A0JWUE9",
+     "PSRE",
+     "РЕПО с ЦК (EUR) - адрес.",
+     96,
+     27,
+     "ccp",
+     1,
+     "stock",
+     0,
+     4,
+     "2018-06-21",
+     "2018-10-01",
+     "2017-03-14",
+     "2021-09-30",
+     0,
+     "EUR",
+     "%"
+    ],
+    [
+     "RU000A0JWUE9",
+     "PSRY",
+     "РЕПО с ЦК (CNY) - адрес.",
+     153,
+     27,
+     "ccp",
+     1,
+     "stock",
+     0,
+     4,
+     null,
+     null,
+     "2019-03-07",
+     "2021-09-30",
+     0,
+     "CNY",
+     "%"
+    ],
+    [
+     "RU000A0JWUE9",
+     "PSOB",
+     "РПС: Облигации - адрес.",
+     284,
+     4,
+     "ndm",
+     1,
+     "stock",
+     0,
+     2,
+     "2016-09-30",
+     "2021-08-19",
+     "2016-09-30",
+     "2021-09-30",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "RU000A0JWUE9",
+     "PSAU",
+     "Размещение - адрес.",
+     107,
+     4,
+     "ndm",
+     1,
+     "stock",
+     0,
+     2,
+     "2016-09-30",
+     "2016-10-05",
+     "2016-09-30",
+     "2016-10-05",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "RU000A0JWUE9",
+     "OTCB",
+     "Анонимный РПС - адрес.",
+     126,
+     4,
+     "ndm",
+     1,
+     "stock",
+     0,
+     2,
+     null,
+     null,
+     "2018-10-29",
+     "2021-09-30",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "RU000A0JWUE9",
+     "PTOB",
+     "РПС с ЦК: Облигации - адрес.",
+     282,
+     4,
+     "ndm",
+     1,
+     "stock",
+     0,
+     2,
+     "2017-04-05",
+     "2017-04-25",
+     "2017-03-14",
+     "2021-09-30",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "RU000A0JWUE9",
+     "RPMO",
+     "РЕПО-М - адрес.",
+     201,
+     3,
+     "repo",
+     1,
+     "stock",
+     0,
+     4,
+     "2016-10-04",
+     "2020-06-22",
+     "2016-09-30",
+     "2021-09-30",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "RU000A0JWUE9",
+     "OBBO",
+     "ОТС-система: облигации",
+     141,
+     39,
+     "bonds",
+     7,
+     "offboard",
+     0,
+     2,
+     "2018-11-08",
+     "2019-11-18",
+     "2018-11-08",
+     "2021-09-29",
+     0,
+     null,
+     "%"
+    ]
+   ]
+  }
+ },
+ "http://iss.moex.com/iss/securities/SiZ1.json": {
+  "description": {
+   "metadata": {
+    "name": {
+     "type": "string",
+     "bytes": 189,
+     "max_size": 0
+    },
+    "title": {
+     "type": "string",
+     "bytes": 765,
+     "max_size": 0
+    },
+    "value": {
+     "type": "string",
+     "bytes": 6144,
+     "max_size": 0
+    },
+    "type": {
+     "type": "string",
+     "bytes": 21,
+     "max_size": 0
+    },
+    "sort_order": {
+     "type": "int64"
+    },
+    "is_hidden": {
+     "type": "int64"
+    },
+    "precision": {
+     "type": "int64"
+    }
+   },
+   "columns": [
+    "name",
+    "title",
+    "value",
+    "type",
+    "sort_order",
+    "is_hidden",
+    "precision"
+   ],
+   "data": [
+    [
+     "SECID",
+     "Краткий код",
+     "SiZ1",
+     "string",
+     1,
+     0,
+     null
+    ],
+    [
+     "NAME",
+     "Наименование серии инструмента",
+     "Фьючерсный контракт Si-12.21",
+     "string",
+     2,
+     0,
+     null
+    ],
+    [
+     "SHORTNAME",
+     "Краткое наименование контракта",
+     "Si-12.21",
+     "string",
+     3,
+     0,
+     null
+    ],
+    [
+     "LATNAME",
+     "Английское наименование",
+     "Si-12.21",
+     "string",
+     4,
+     1,
+     null
+    ],
+    [
+     "DELIVERYTYPE",
+     "Исполнение",
+     "В качестве цены исполнения принимается значение <a href='http://moex.com/ru/markets/currency/get-fixing.aspx'>фиксинга на рубль</a>, определенное в день исполнения Контракта на основании усредненных цен сделок и заявок, рассчитанных посекундно за период 12:25:01 – 12:30:00 МСК включительно, рассчитываемого в соответствии с <a href='http://fs.moex.com/files/3971'>Методикой</a>, умноженное на количество долларов США в Лоте и округленное с точностью до целых по правилам математического округления.",
+     "string",
+     5,
+     0,
+     null
+    ],
+    [
+     "FRSTTRADE",
+     "Начало обращения",
+     "2019-12-13",
+     "date",
+     9,
+     0,
+     null
+    ],
+    [
+     "LSTTRADE",
+     "Последний день обращения",
+     "2021-12-16",
+     "date",
+     10,
+     0,
+     null
+    ],
+    [
+     "LSTDELDATE",
+     "Дата экспирации",
+     "2021-12-16",
+     "date",
+     11,
+     0,
+     null
+    ],
+    [
+     "ASSETCODE",
+     "Код базового актива",
+     "Si",
+     "string",
+     20,
+     0,
+     null
+    ],
+    [
+     "EXECTYPE",
+     "Тип контракта",
+     "Расчетный",
+     "string",
+     21,
+     0,
+     null
+    ],
+    [
+     "LOTSIZE",
+     "Лот",
+     "1000",
+     "number",
+     22,
+     0,
+     null
+    ],
+    [
+     "CONTRACTNAME",
+     "Наименование контракта",
+     "Фьючерсный контракт на курс доллар США - российский рубль",
+     "string",
+     23,
+     0,
+     null
+    ],
+    [
+     "UNIT",
+     "Котировка",
+     "в рублях за лот",
+     "string",
+     25,
+     0,
+     null
+    ],
+    [
+     "TYPENAME",
+     "Вид контракта",
+     "Фьючерс",
+     "string",
+     9000,
+     0,
+     null
+    ],
+    [
+     "GROUP",
+     "Код типа инструмента",
+     "futures_forts",
+     "string",
+     9001,
+     1,
+     null
+    ],
+    [
+     "TYPE",
+     "Тип бумаги",
+     "futures",
+     "string",
+     10000,
+     1,
+     null
+    ],
+    [
+     "GROUPNAME",
+     "Типа инструмента",
+     "Фьючерсы",
+     "string",
+     10011,
+     1,
+     null
+    ]
+   ]
+  },
+  "boards": {
+   "metadata": {
+    "secid": {
+     "type": "string",
+     "bytes": 51,
+     "max_size": 0
+    },
+    "boardid": {
+     "type": "string",
+     "bytes": 12,
+     "max_size": 0
+    },
+    "title": {
+     "type": "string",
+     "bytes": 381,
+     "max_size": 0
+    },
+    "board_group_id": {
+     "type": "int32"
+    },
+    "market_id": {
+     "type": "int32"
+    },
+    "market": {
+     "type": "string",
+     "bytes": 45,
+     "max_size": 0
+    },
+    "engine_id": {
+     "type": "int32"
+    },
+    "engine": {
+     "type": "string",
+     "bytes": 45,
+     "max_size": 0
+    },
+    "is_traded": {
+     "type": "int32"
+    },
+    "decimals": {
+     "type": "int32"
+    },
+    "history_from": {
+     "type": "date",
+     "bytes": 10,
+     "max_size": 0
+    },
+    "history_till": {
+     "type": "date",
+     "bytes": 10,
+     "max_size": 0
+    },
+    "listed_from": {
+     "type": "date",
+     "bytes": 10,
+     "max_size": 0
+    },
+    "listed_till": {
+     "type": "date",
+     "bytes": 10,
+     "max_size": 0
+    },
+    "is_primary": {
+     "type": "int32"
+    },
+    "currencyid": {
+     "type": "string",
+     "bytes": 9,
+     "max_size": 0
+    },
+    "unit": {
+     "type": "string",
+     "bytes": 3,
+     "max_size": 0
+    }
+   },
+   "columns": [
+    "secid",
+    "boardid",
+    "title",
+    "board_group_id",
+    "market_id",
+    "market",
+    "engine_id",
+    "engine",
+    "is_traded",
+    "decimals",
+    "history_from",
+    "history_till",
+    "listed_from",
+    "listed_till",
+    "is_primary",
+    "currencyid",
+    "unit"
+   ],
+   "data": [
+    [
+     "SiZ1",
+     "RFUD",
+     "Фьючерсы",
+     45,
+     22,
+     "forts",
+     4,
+     "futures",
+     0,
+     0,
+     "2019-12-13",
+     "2021-12-16",
+     "2019-12-13",
+     "2021-12-16",
+     1,
+     null,
+     "P"
+    ],
+    [
+     "SiZ1",
+     "FIQS",
+     "Фьючерсы IQS",
+     138,
+     37,
+     "fortsiqs",
+     4,
+     "futures",
+     0,
+     0,
+     null,
+     null,
+     "2021-09-24",
+     "2021-09-24",
+     0,
+     null,
+     "P"
+    ]
+   ]
+  }
+ },
+ "http://iss.moex.com/iss/securities/RU000A0ERGA7.json": {
+  "description": {
+   "metadata": {
+    "name": {
+     "type": "string",
+     "bytes": 189,
+     "max_size": 0
+    },
+    "title": {
+     "type": "string",
+     "bytes": 765,
+     "max_size": 0
+    },
+    "value": {
+     "type": "string",
+     "bytes": 6144,
+     "max_size": 0
+    },
+    "type": {
+     "type": "string",
+     "bytes": 21,
+     "max_size": 0
+    },
+    "sort_order": {
+     "type": "int64"
+    },
+    "is_hidden": {
+     "type": "int64"
+    },
+    "precision": {
+     "type": "int64"
+    }
+   },
+   "columns": [
+    "name",
+    "title",
+    "value",
+    "type",
+    "sort_order",
+    "is_hidden",
+    "precision"
+   ],
+   "data": [
+    [
+     "SECID",
+     "Код ценной бумаги",
+     "RU000A0ERGA7",
+     "string",
+     1,
+     0,
+     null
+    ],
+    [
+     "ISSUENAME",
+     "Наименование ценной бумаги",
+     "инвестиционные паи закрытого паевого инвестиционного фонда недвижимости \"Коммерческая недвижимость\"",
+     "string",
+     2,
+     0,
+     null
+    ],
+    [
+     "NAME",
+     "Полное наименование",
+     "ПИФСбербанк Комм.недвижимость",
+     "string",
+     3,
+     0,
+     null
+    ],
+    [
+     "SHORTNAME",
+     "Краткое наименование",
+     "ПИФСбер-КН",
+     "string",
+     4,
+     0,
+     null
+    ],
+    [
+     "REGNUMBER",
+     "Номер государственной регистрации",
+     "0252-74113866",
+     "string",
+     5,
+     0,
+     null
+    ],
+    [
+     "ISIN",
+     "ISIN код",
+     "RU000A0ERGA7",
+     "string",
+     6,
+     0,
+     null
+    ],
+    [
+     "LATNAME",
+     "Английское наименование",
+     "PIF Kommercheskaya Nedvizhimos",
+     "string",
+     7,
+     1,
+     null
+    ],
+    [
+     "ISSUEDATE",
+     "Дата начала торгов",
+     "2005-06-17",
+     "date",
+     8,
+     0,
+     null
+    ],
+    [
+     "HASPROSPECTUS",
+     "Наличие проспекта",
+     "0",
+     "boolean",
+     9,
+     1,
+     0
+    ],
+    [
+     "HASDEFAULT",
+     "Допущен дефолт",
+     "0",
+     "boolean",
+     11,
+     1,
+     0
+    ],
+    [
+     "HASTECHNICALDEFAULT",
+     "Допущен технический дефолт",
+     "0",
+     "boolean",
+     12,
+     1,
+     0
+    ],
+    [
+     "EMITENTMISMATCHCUR",
+     "Эмитент не соответствует требованию на текущий Список",
+     "0",
+     "number",
+     14,
+     1,
+     0
+    ],
+    [
+     "LISTLEVEL",
+     "Уровень листинга",
+     "3",
+     "number",
+     15,
+     0,
+     0
+    ],
+    [
+     "ISQUALIFIEDINVESTORS",
+     "Бумаги для квалифицированных инвесторов",
+     "0",
+     "boolean",
+     16,
+     0,
+     0
+    ],
+    [
+     "TYPENAME",
+     "Вид/категория ценной бумаги",
+     "Пай закрытого ПИФа",
+     "string",
+     9000,
+     0,
+     null
+    ],
+    [
+     "GROUP",
+     "Код типа инструмента",
+     "stock_ppif",
+     "string",
+     9001,
+     1,
+     null
+    ],
+    [
+     "TYPE",
+     "Тип бумаги",
+     "private_ppif",
+     "string",
+     10000,
+     1,
+     null
+    ],
+    [
+     "GROUPNAME",
+     "Типа инструмента",
+     "Паи ПИФов",
+     "string",
+     10011,
+     1,
+     null
+    ],
+    [
+     "EMITTER_ID",
+     "Код эмитента",
+     "11567",
+     "number",
+     11000,
+     1,
+     null
+    ]
+   ]
+  },
+  "boards": {
+   "metadata": {
+    "secid": {
+     "type": "string",
+     "bytes": 51,
+     "max_size": 0
+    },
+    "boardid": {
+     "type": "string",
+     "bytes": 12,
+     "max_size": 0
+    },
+    "title": {
+     "type": "string",
+     "bytes": 381,
+     "max_size": 0
+    },
+    "board_group_id": {
+     "type": "int32"
+    },
+    "market_id": {
+     "type": "int32"
+    },
+    "market": {
+     "type": "string",
+     "bytes": 45,
+     "max_size": 0
+    },
+    "engine_id": {
+     "type": "int32"
+    },
+    "engine": {
+     "type": "string",
+     "bytes": 45,
+     "max_size": 0
+    },
+    "is_traded": {
+     "type": "int32"
+    },
+    "decimals": {
+     "type": "int32"
+    },
+    "history_from": {
+     "type": "date",
+     "bytes": 10,
+     "max_size": 0
+    },
+    "history_till": {
+     "type": "date",
+     "bytes": 10,
+     "max_size": 0
+    },
+    "listed_from": {
+     "type": "date",
+     "bytes": 10,
+     "max_size": 0
+    },
+    "listed_till": {
+     "type": "date",
+     "bytes": 10,
+     "max_size": 0
+    },
+    "is_primary": {
+     "type": "int32"
+    },
+    "currencyid": {
+     "type": "string",
+     "bytes": 9,
+     "max_size": 0
+    },
+    "unit": {
+     "type": "string",
+     "bytes": 3,
+     "max_size": 0
+    }
+   },
+   "columns": [
+    "secid",
+    "boardid",
+    "title",
+    "board_group_id",
+    "market_id",
+    "market",
+    "engine_id",
+    "engine",
+    "is_traded",
+    "decimals",
+    "history_from",
+    "history_till",
+    "listed_from",
+    "listed_till",
+    "is_primary",
+    "currencyid",
+    "unit"
+   ],
+   "data": [
+    [
+     "RU000A0ERGA7",
+     "TQIF",
+     "Т+: Паи - безадрес.",
+     57,
+     1,
+     "shares",
+     1,
+     "stock",
+     0,
+     0,
+     "2014-06-09",
+     "2026-02-11",
+     "2014-06-09",
+     "2026-02-11",
+     1,
+     "RUB",
+     "M"
+    ],
+    [
+     "RU000A0ERGA7",
+     "TQNL",
+     "Т+: Б-Акции и паи - безадрес.",
+     57,
+     1,
+     "shares",
+     1,
+     "stock",
+     0,
+     2,
+     "2013-09-02",
+     "2014-06-06",
+     "2013-09-02",
+     "2014-06-06",
+     0,
+     "RUB",
+     "M"
+    ],
+    [
+     "RU000A0ERGA7",
+     "EQNL",
+     "Основной режим: Б-Акции и паи - безадрес.",
+     6,
+     1,
+     "shares",
+     1,
+     "stock",
+     0,
+     2,
+     "2005-07-05",
+     "2013-08-30",
+     "2005-07-05",
+     "2013-08-30",
+     0,
+     "RUB",
+     "M"
+    ],
+    [
+     "RU000A0ERGA7",
+     "EQNE",
+     "Основной режим: Акции и паи внесписочные - безадрес.",
+     6,
+     1,
+     "shares",
+     1,
+     "stock",
+     0,
+     2,
+     "2005-06-17",
+     "2005-07-04",
+     "2005-06-17",
+     "2005-07-04",
+     0,
+     "RUB",
+     "M"
+    ],
+    [
+     "RU000A0ERGA7",
+     "SMAL",
+     "Т+: Неполные лоты (акции) - безадрес.",
+     21,
+     1,
+     "shares",
+     1,
+     "stock",
+     0,
+     0,
+     "2011-03-14",
+     "2025-11-11",
+     "2011-03-14",
+     "2026-02-11",
+     0,
+     "RUB",
+     "M"
+    ],
+    [
+     "RU000A0ERGA7",
+     "LIQB",
+     "Продажа обеспечения бирж.рынок - безадрес.",
+     120,
+     36,
+     "mamc",
+     1,
+     "stock",
+     0,
+     0,
+     null,
+     null,
+     "2018-05-21",
+     "2026-02-11",
+     0,
+     null,
+     "M"
+    ],
+    [
+     "RU000A0ERGA7",
+     "SOTC",
+     "Репортинг внебиржевых сделок (6264-У)",
+     71,
+     29,
+     "otc",
+     1,
+     "stock",
+     0,
+     5,
+     "2014-12-02",
+     "2015-11-02",
+     "2014-12-02",
+     "2016-08-23",
+     0,
+     null,
+     "M"
+    ],
+    [
+     "RU000A0ERGA7",
+     "LIQR",
+     "РЕПО с ЦК: Урегулирование - безадрес.",
+     148,
+     27,
+     "ccp",
+     1,
+     "stock",
+     0,
+     3,
+     null,
+     null,
+     "2019-03-04",
+     "2026-02-11",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "RU000A0ERGA7",
+     "PTIF",
+     "РПС с ЦК: Паи - адрес.",
+     59,
+     4,
+     "ndm",
+     1,
+     "stock",
+     0,
+     0,
+     "2025-07-16",
+     "2025-07-17",
+     "2014-06-09",
+     "2026-02-11",
+     0,
+     "RUB",
+     "M"
+    ],
+    [
+     "RU000A0ERGA7",
+     "PTNL",
+     "РПС С ЦК: Б-Акции и паи - адрес.",
+     59,
+     4,
+     "ndm",
+     1,
+     "stock",
+     0,
+     2,
+     null,
+     null,
+     "2013-09-02",
+     "2014-06-06",
+     0,
+     "RUB",
+     "M"
+    ],
+    [
+     "RU000A0ERGA7",
+     "PSIF",
+     "РПС: Паи - адрес.",
+     8,
+     4,
+     "ndm",
+     1,
+     "stock",
+     0,
+     0,
+     null,
+     null,
+     "2014-06-09",
+     "2026-02-11",
+     0,
+     "RUB",
+     "M"
+    ],
+    [
+     "RU000A0ERGA7",
+     "PSNL",
+     "РПС: Б-Акции и паи - адрес.",
+     8,
+     4,
+     "ndm",
+     1,
+     "stock",
+     0,
+     2,
+     "2006-08-17",
+     "2013-08-08",
+     "2006-08-17",
+     "2014-06-06",
+     0,
+     "RUB",
+     "M"
+    ],
+    [
+     "RU000A0ERGA7",
+     "CIQR",
+     "Урегулирование РЕПО с ЦК Нерезиденты - безадрес.",
+     1080,
+     1019,
+     "nonresccp",
+     1,
+     "stock",
+     0,
+     3,
+     null,
+     null,
+     "2022-06-27",
+     "2026-02-11",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "RU000A0ERGA7",
+     "CIQB",
+     "Урегулирование с ЦК Нерезиденты - безадрес.",
+     1082,
+     36,
+     "mamc",
+     1,
+     "stock",
+     0,
+     0,
+     null,
+     null,
+     "2022-06-27",
+     "2026-02-11",
+     0,
+     null,
+     "M"
+    ],
+    [
+     "RU000A0ERGA7",
+     "CTEQ",
+     "РПС с ЦК Нерезиденты: Акции и ДР - адрес.",
+     1056,
+     1015,
+     "nonresndm",
+     1,
+     "stock",
+     0,
+     0,
+     null,
+     null,
+     "2022-06-27",
+     "2026-02-11",
+     0,
+     "RUB",
+     "M"
+    ]
+   ]
+  }
+ },
+ "http://iss.moex.com/iss/securities/RU000A1038V6.json": {
+  "description": {
+   "metadata": {
+    "name": {
+     "type": "string",
+     "bytes": 189,
+     "max_size": 0
+    },
+    "title": {
+     "type": "string",
+     "bytes": 765,
+     "max_size": 0
+    },
+    "value": {
+     "type": "string",
+     "bytes": 6144,
+     "max_size": 0
+    },
+    "type": {
+     "type": "string",
+     "bytes": 21,
+     "max_size": 0
+    },
+    "sort_order": {
+     "type": "int64"
+    },
+    "is_hidden": {
+     "type": "int64"
+    },
+    "precision": {
+     "type": "int64"
+    }
+   },
+   "columns": [
+    "name",
+    "title",
+    "value",
+    "type",
+    "sort_order",
+    "is_hidden",
+    "precision"
+   ],
+   "data": []
+  },
+  "boards": {
+   "metadata": {
+    "secid": {
+     "type": "string",
+     "bytes": 51,
+     "max_size": 0
+    },
+    "boardid": {
+     "type": "string",
+     "bytes": 12,
+     "max_size": 0
+    },
+    "title": {
+     "type": "string",
+     "bytes": 381,
+     "max_size": 0
+    },
+    "board_group_id": {
+     "type": "int32"
+    },
+    "market_id": {
+     "type": "int32"
+    },
+    "market": {
+     "type": "string",
+     "bytes": 45,
+     "max_size": 0
+    },
+    "engine_id": {
+     "type": "int32"
+    },
+    "engine": {
+     "type": "string",
+     "bytes": 45,
+     "max_size": 0
+    },
+    "is_traded": {
+     "type": "int32"
+    },
+    "decimals": {
+     "type": "int32"
+    },
+    "history_from": {
+     "type": "date",
+     "bytes": 10,
+     "max_size": 0
+    },
+    "history_till": {
+     "type": "date",
+     "bytes": 10,
+     "max_size": 0
+    },
+    "listed_from": {
+     "type": "date",
+     "bytes": 10,
+     "max_size": 0
+    },
+    "listed_till": {
+     "type": "date",
+     "bytes": 10,
+     "max_size": 0
+    },
+    "is_primary": {
+     "type": "int64"
+    },
+    "currencyid": {
+     "type": "string",
+     "bytes": 9,
+     "max_size": 0
+    },
+    "unit": {
+     "type": "string",
+     "bytes": 3,
+     "max_size": 0
+    }
+   },
+   "columns": [
+    "secid",
+    "boardid",
+    "title",
+    "board_group_id",
+    "market_id",
+    "market",
+    "engine_id",
+    "engine",
+    "is_traded",
+    "decimals",
+    "history_from",
+    "history_till",
+    "listed_from",
+    "listed_till",
+    "is_primary",
+    "currencyid",
+    "unit"
+   ],
+   "data": []
+  }
+ },
+ "http://iss.moex.com/iss/securities/SU26238RMFS4.json": {
+  "description": {
+   "metadata": {
+    "name": {
+     "type": "string",
+     "bytes": 189,
+     "max_size": 0
+    },
+    "title": {
+     "type": "string",
+     "bytes": 765,
+     "max_size": 0
+    },
+    "value": {
+     "type": "string",
+     "bytes": 6144,
+     "max_size": 0
+    },
+    "type": {
+     "type": "string",
+     "bytes": 21,
+     "max_size": 0
+    },
+    "sort_order": {
+     "type": "int64"
+    },
+    "is_hidden": {
+     "type": "int64"
+    },
+    "precision": {
+     "type": "int64"
+    }
+   },
+   "columns": [
+    "name",
+    "title",
+    "value",
+    "type",
+    "sort_order",
+    "is_hidden",
+    "precision"
+   ],
+   "data": [
+    [
+     "SECID",
+     "Код ценной бумаги",
+     "SU26238RMFS4",
+     "string",
+     1,
+     0,
+     null
+    ],
+    [
+     "ISSUENAME",
+     "Наименование ценной бумаги",
+     "облигации федерального займа с постоянным купонным доходом",
+     "string",
+     2,
+     0,
+     null
+    ],
+    [
+     "NAME",
+     "Полное наименование",
+     "ОФЗ-ПД 26238 15/05/2041",
+     "string",
+     3,
+     0,
+     null
+    ],
+    [
+     "SHORTNAME",
+     "Краткое наименование",
+     "ОФЗ 26238",
+     "string",
+     4,
+     0,
+     null
+    ],
+    [
+     "REGNUMBER",
+     "Номер государственной регистрации",
+     "26238RMFS",
+     "string",
+     5,
+     0,
+     null
+    ],
+    [
+     "ISIN",
+     "ISIN код",
+     "RU000A1038V6",
+     "string",
+     6,
+     0,
+     null
+    ],
+    [
+     "ISSUEDATE",
+     "Дата начала торгов",
+     "2021-06-16",
+     "date",
+     7,
+     0,
+     null
+    ],
+    [
+     "MATDATE",
+     "Дата погашения",
+     "2041-05-15",
+     "date",
+     8,
+     0,
+     null
+    ],
+    [
+     "INITIALFACEVALUE",
+     "Первоначальная номинальная стоимость",
+     "1000",
+     "number",
+     10,
+     0,
+     2
+    ],
+    [
+     "FACEUNIT",
+     "Валюта номинала",
+     "SUR",
+     "string",
+     11,
+     0,
+     null
+    ],
+    [
+     "LATNAME",
+     "Английское наименование",
+     "OFZ-PD 26238",
+     "string",
+     12,
+     1,
+     null
+    ],
+    [
+     "STARTDATEMOEX",
+     "Дата начала торгов на Московской Бирже",
+     "2021-06-23",
+     "date",
+     13,
+     0,
+     null
+    ],
+    [
+     "HASPROSPECTUS",
+     "Наличие проспекта",
+     "0",
+     "boolean",
+     14,
+     1,
+     0
+    ],
+    [
+     "DECISIONDATE",
+     "Дата принятия решения организатором торговли о включении ценной бумаги в Список",
+     "2021-06-15",
+     "date",
+     15,
+     1,
+     null
+    ],
+    [
+     "ISCONCESSIONAGREEMENT",
+     "Облигации размещены с целью финансирования соглашений о партнерстве",
+     "0",
+     "boolean",
+     16,
+     1,
+     0
+    ],
+    [
+     "HASDEFAULT",
+     "Допущен дефолт",
+     "0",
+     "boolean",
+     17,
+     1,
+     0
+    ],
+    [
+     "HASTECHNICALDEFAULT",
+     "Допущен технический дефолт",
+     "0",
+     "boolean",
+     18,
+     1,
+     0
+    ],
+    [
+     "EMITENTMISMATCHCUR",
+     "Эмитент не соответствует требованию на текущий Список",
+     "0",
+     "number",
+     21,
+     1,
+     0
+    ],
+    [
+     "LISTLEVEL",
+     "Уровень листинга",
+     "1",
+     "number",
+     23,
+     0,
+     0
+    ],
+    [
+     "DAYSTOREDEMPTION",
+     "Дней до погашения",
+     "5345",
+     "number",
+     25,
+     0,
+     0
+    ],
+    [
+     "ISSUESIZE",
+     "Объем выпуска",
+     "1000000000",
+     "number",
+     26,
+     0,
+     0
+    ],
+    [
+     "FACEVALUE",
+     "Номинальная стоимость",
+     "1000",
+     "number",
+     27,
+     0,
+     2
+    ],
+    [
+     "ISQUALIFIEDINVESTORS",
+     "Бумаги для квалифицированных инвесторов",
+     "0",
+     "boolean",
+     28,
+     0,
+     0
+    ],
+    [
+     "COUPONFREQUENCY",
+     "Периодичность выплаты купона в год",
+     "2",
+     "number",
+     30,
+     0,
+     0
+    ],
+    [
+     "COUPONDATE",
+     "Дата выплаты купона",
+     "2026-12-02",
+     "date",
+     31,
+     0,
+     null
+    ],
+    [
+     "COUPONPERCENT",
+     "Ставка купона, %",
+     "7.1",
+     "number",
+     32,
+     0,
+     2
+    ],
+    [
+     "COUPONVALUE",
+     "Сумма купона, в валюте номинала",
+     "35.4",
+     "number",
+     33,
+     0,
+     2
+    ],
+    [
+     "MORNINGSESSION",
+     "Допуск к утренней дополнительной торговой сессии",
+     "1",
+     "boolean",
+     38,
+     0,
+     0
+    ],
+    [
+     "EVENINGSESSION",
+     "Допуск к вечерней дополнительной торговой сессии",
+     "1",
+     "boolean",
+     39,
+     0,
+     0
+    ],
+    [
+     "WEEKENDSESSION",
+     "Допуск к дополнительной торговой сессии выходного дня",
+     "1",
+     "boolean",
+     40,
+     0,
+     0
+    ],
+    [
+     "REGISTRY_DATE",
+     "Дата государственной регистрации ценной бумаги",
+     "2021-06-11",
+     "date",
+     42,
+     0,
+     null
+    ],
+    [
+     "BOND_TYPE",
+     "Вид облигации",
+     "Облигация с фиксированным (известным) купоном",
+     "string",
+     43,
+     1,
+     null
+    ],
+    [
+     "BOND_SUBTYPE",
+     "Подвид облигации",
+     "До погашения",
+     "string",
+     44,
+     1,
+     null
+    ],
+    [
+     "TYPENAME",
+     "Вид/категория ценной бумаги",
+     "Государственная облигация",
+     "string",
+     9000,
+     0,
+     null
+    ],
+    [
+     "GROUP",
+     "Код типа инструмента",
+     "stock_bonds",
+     "string",
+     9001,
+     1,
+     null
+    ],
+    [
+     "TYPE",
+     "Тип бумаги",
+     "ofz_bond",
+     "string",
+     10000,
+     1,
+     null
+    ],
+    [
+     "GROUPNAME",
+     "Типа инструмента",
+     "Облигации",
+     "string",
+     10011,
+     1,
+     null
+    ],
+    [
+     "EMITTER_ID",
+     "Код эмитента",
+     "1228",
+     "number",
+     11000,
+     1,
+     null
+    ]
+   ]
+  },
+  "boards": {
+   "metadata": {
+    "secid": {
+     "type": "string",
+     "bytes": 51,
+     "max_size": 0
+    },
+    "boardid": {
+     "type": "string",
+     "bytes": 12,
+     "max_size": 0
+    },
+    "title": {
+     "type": "string",
+     "bytes": 381,
+     "max_size": 0
+    },
+    "board_group_id": {
+     "type": "int32"
+    },
+    "market_id": {
+     "type": "int32"
+    },
+    "market": {
+     "type": "string",
+     "bytes": 45,
+     "max_size": 0
+    },
+    "engine_id": {
+     "type": "int32"
+    },
+    "engine": {
+     "type": "string",
+     "bytes": 45,
+     "max_size": 0
+    },
+    "is_traded": {
+     "type": "int32"
+    },
+    "decimals": {
+     "type": "int32"
+    },
+    "history_from": {
+     "type": "date",
+     "bytes": 10,
+     "max_size": 0
+    },
+    "history_till": {
+     "type": "date",
+     "bytes": 10,
+     "max_size": 0
+    },
+    "listed_from": {
+     "type": "date",
+     "bytes": 10,
+     "max_size": 0
+    },
+    "listed_till": {
+     "type": "date",
+     "bytes": 10,
+     "max_size": 0
+    },
+    "is_primary": {
+     "type": "int32"
+    },
+    "currencyid": {
+     "type": "string",
+     "bytes": 9,
+     "max_size": 0
+    },
+    "unit": {
+     "type": "string",
+     "bytes": 3,
+     "max_size": 0
+    }
+   },
+   "columns": [
+    "secid",
+    "boardid",
+    "title",
+    "board_group_id",
+    "market_id",
+    "market",
+    "engine_id",
+    "engine",
+    "is_traded",
+    "decimals",
+    "history_from",
+    "history_till",
+    "listed_from",
+    "listed_till",
+    "is_primary",
+    "currencyid",
+    "unit"
+   ],
+   "data": [
+    [
+     "SU26238RMFS4",
+     "TQOB",
+     "Т+: Гособлигации - безадрес.",
+     58,
+     2,
+     "bonds",
+     1,
+     "stock",
+     1,
+     4,
+     "2021-06-23",
+     "2026-09-25",
+     "2021-06-23",
+     "2026-09-26",
+     1,
+     "RUB",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "AUCT",
+     "Размещение: Аукцион - безадрес.",
+     123,
+     2,
+     "bonds",
+     1,
+     "stock",
+     0,
+     4,
+     "2021-06-23",
+     "2023-03-30",
+     "2021-06-23",
+     "2023-03-30",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "PACT",
+     "Аукцион: адресные заявки",
+     257,
+     2,
+     "bonds",
+     1,
+     "stock",
+     0,
+     4,
+     "2023-04-26",
+     "2026-09-17",
+     "2023-04-26",
+     "2026-09-17",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "LIQB",
+     "Продажа обеспечения бирж.рынок - безадрес.",
+     120,
+     36,
+     "mamc",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2021-06-23",
+     "2026-09-26",
+     0,
+     null,
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "RPEY",
+     "РЕПО в ин.валюте (CNY) - адрес.",
+     2,
+     3,
+     "repo",
+     1,
+     "stock",
+     1,
+     6,
+     null,
+     null,
+     "2022-09-26",
+     "2026-09-26",
+     0,
+     "CNY",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "RPEU",
+     "РЕПО в ин. валюте (USD) - адрес.",
+     94,
+     3,
+     "repo",
+     1,
+     "stock",
+     1,
+     6,
+     null,
+     null,
+     "2021-06-23",
+     "2026-09-26",
+     0,
+     "USD",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "RPEO",
+     "РЕПО в ин. валюте (EUR) - адрес.",
+     90,
+     3,
+     "repo",
+     1,
+     "stock",
+     1,
+     6,
+     null,
+     null,
+     "2021-06-23",
+     "2026-09-26",
+     0,
+     "EUR",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "SOTC",
+     "Репортинг внебиржевых сделок (6264-У)",
+     71,
+     29,
+     "otc",
+     1,
+     "stock",
+     0,
+     5,
+     "2021-08-06",
+     "2022-11-03",
+     "2021-08-06",
+     "2022-11-03",
+     0,
+     null,
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "EQRP",
+     "РЕПО с ЦК 1 день - безадрес.",
+     50,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     "2021-06-23",
+     "2026-09-25",
+     "2021-06-23",
+     "2026-09-26",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "EQRD",
+     "РЕПО с ЦК 1 день (USD) - безадрес.",
+     92,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     "2021-08-11",
+     "2024-02-07",
+     "2021-06-23",
+     "2026-09-26",
+     0,
+     "USD",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "EQRE",
+     "РЕПО с ЦК 1 день (EUR) - безадрес.",
+     93,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2021-06-23",
+     "2026-09-26",
+     0,
+     "EUR",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "EQRY",
+     "РЕПО с ЦК 1 день (CNY) - безадрес.",
+     152,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     "2022-10-17",
+     "2024-09-06",
+     "2021-06-23",
+     "2026-09-26",
+     0,
+     "CNY",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "EQWP",
+     "РЕПО с ЦК 7 дн. - безадрес.",
+     76,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     "2021-09-06",
+     "2026-09-25",
+     "2021-06-23",
+     "2026-09-26",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "EQWD",
+     "РЕПО с ЦК 7 дней (USD) - безадрес.",
+     78,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     "2021-11-03",
+     "2021-12-14",
+     "2021-06-23",
+     "2026-09-26",
+     0,
+     "USD",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "EQWE",
+     "РЕПО с ЦК 7 дней (EUR) - безадрес.",
+     79,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2021-06-23",
+     "2026-09-26",
+     0,
+     "EUR",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "EQWY",
+     "РЕПО с ЦК 7 дней (CNY) - безадрес.",
+     1116,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2022-09-26",
+     "2026-09-26",
+     0,
+     "CNY",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "EQMP",
+     "РЕПО с ЦК 1 мес.(RUB) - безадрес.",
+     142,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     "2023-12-26",
+     "2023-12-26",
+     "2021-06-23",
+     "2026-09-26",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "EQMD",
+     "РЕПО с ЦК 1 мес. (USD) - безадрес.",
+     143,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2021-06-23",
+     "2026-09-26",
+     0,
+     "USD",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "EQME",
+     "РЕПО с ЦК 1 мес. (EUR) - безадрес.",
+     144,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2021-06-23",
+     "2026-09-26",
+     0,
+     "EUR",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "EQMY",
+     "РЕПО с ЦК 1 мес. (CNY) - безадрес.",
+     1118,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2022-09-26",
+     "2026-09-26",
+     0,
+     "CNY",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "EQTP",
+     "РЕПО с ЦК 3 мес. (RUB) - безадрес.",
+     145,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2021-06-23",
+     "2026-09-26",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "ETQD",
+     "РЕПО с ЦК 3 мес. (USD) - безадрес.",
+     146,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2021-06-23",
+     "2026-09-26",
+     0,
+     "USD",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "EQTE",
+     "РЕПО с ЦК 3 мес. (EUR) - безадрес.",
+     147,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2021-06-23",
+     "2026-09-26",
+     0,
+     "EUR",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "EQTY",
+     "РЕПО с ЦК 3 мес. (CNY) - безадрес",
+     1120,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2022-09-26",
+     "2026-09-26",
+     0,
+     "CNY",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "LIQR",
+     "РЕПО с ЦК: Урегулирование - безадрес.",
+     148,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     "2022-03-02",
+     "2026-09-21",
+     "2021-06-23",
+     "2026-09-26",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "PSRP",
+     "РЕПО с ЦК - адрес.",
+     65,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     "2021-06-23",
+     "2026-09-25",
+     "2021-06-23",
+     "2026-09-26",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "PSRD",
+     "РЕПО с ЦК (USD) - адрес.",
+     91,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     "2021-09-09",
+     "2023-09-05",
+     "2021-06-23",
+     "2026-09-26",
+     0,
+     "USD",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "PSRE",
+     "РЕПО с ЦК (EUR) - адрес.",
+     96,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     "2022-02-28",
+     "2022-03-23",
+     "2021-06-23",
+     "2026-09-26",
+     0,
+     "EUR",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "PSRY",
+     "РЕПО с ЦК (CNY) - адрес.",
+     153,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     "2023-01-30",
+     "2026-09-24",
+     "2021-06-23",
+     "2026-09-26",
+     0,
+     "CNY",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "PSRK",
+     "РЕПО с ЦК (KZT) - адрес.",
+     1422,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2025-06-23",
+     "2026-09-26",
+     0,
+     "KZT",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "PSRB",
+     "РЕПО с ЦК (BYN) - адрес.",
+     1424,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2025-06-23",
+     "2026-09-26",
+     0,
+     "BYN",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "PSOB",
+     "РПС: Облигации - адрес.",
+     284,
+     4,
+     "ndm",
+     1,
+     "stock",
+     1,
+     4,
+     "2021-07-19",
+     "2026-09-24",
+     "2021-06-23",
+     "2026-09-26",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "PSAU",
+     "Размещение - адрес.",
+     107,
+     4,
+     "ndm",
+     1,
+     "stock",
+     0,
+     4,
+     "2021-06-23",
+     "2026-09-17",
+     "2021-06-23",
+     "2026-09-17",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "OTCB",
+     "Анонимный РПС - адрес.",
+     126,
+     4,
+     "ndm",
+     1,
+     "stock",
+     0,
+     4,
+     null,
+     null,
+     "2021-06-23",
+     "2022-12-30",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "PTOB",
+     "РПС с ЦК: Облигации - адрес.",
+     282,
+     4,
+     "ndm",
+     1,
+     "stock",
+     1,
+     4,
+     "2021-09-06",
+     "2026-09-24",
+     "2021-06-23",
+     "2026-09-26",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "OCBR",
+     "OTC: Облигации с ЦК - двусторонние",
+     1017,
+     1014,
+     "ndm",
+     1012,
+     "otc",
+     1,
+     4,
+     "2022-08-12",
+     "2026-09-24",
+     "2022-04-25",
+     "2026-09-25",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "OCBU",
+     "OTC: Облигации с ЦК (USD) - двусторонние",
+     1019,
+     1014,
+     "ndm",
+     1012,
+     "otc",
+     0,
+     4,
+     null,
+     null,
+     "2022-04-25",
+     "2026-06-19",
+     0,
+     "USD",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "OCBY",
+     "OTC: Облигации с ЦК (CNY) - двусторонние",
+     1204,
+     1014,
+     "ndm",
+     1012,
+     "otc",
+     1,
+     4,
+     null,
+     null,
+     "2022-12-05",
+     "2026-09-25",
+     0,
+     "CNY",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "OCAR",
+     "OTC: Облигации с ЦК адрес. - двусторонние",
+     1263,
+     1014,
+     "ndm",
+     1012,
+     "otc",
+     1,
+     4,
+     null,
+     null,
+     "2023-04-10",
+     "2026-09-25",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "OCAY",
+     "OTC: Облигации с ЦК адрес. (CNY) - двусторонние",
+     1265,
+     1014,
+     "ndm",
+     1012,
+     "otc",
+     1,
+     4,
+     null,
+     null,
+     "2023-04-10",
+     "2026-09-25",
+     0,
+     "CNY",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "OCAU",
+     "OTC: Облигации с ЦК адрес. (USD) - двусторонние",
+     1267,
+     1014,
+     "ndm",
+     1012,
+     "otc",
+     0,
+     4,
+     null,
+     null,
+     "2023-04-10",
+     "2026-06-19",
+     0,
+     "USD",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "RPMO",
+     "РЕПО-М - адрес.",
+     201,
+     3,
+     "repo",
+     1,
+     "stock",
+     1,
+     4,
+     "2022-01-20",
+     "2026-09-25",
+     "2021-06-23",
+     "2026-09-26",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "RPEK",
+     "РЕПО-М в ин. валюте: (KZT) - адрес.",
+     1426,
+     3,
+     "repo",
+     1,
+     "stock",
+     1,
+     6,
+     null,
+     null,
+     "2025-06-23",
+     "2026-09-26",
+     0,
+     "KZT",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "RPEB",
+     "РЕПО-М в ин. валюте: (BYN) - адрес.",
+     1428,
+     3,
+     "repo",
+     1,
+     "stock",
+     1,
+     6,
+     null,
+     null,
+     "2025-06-23",
+     "2026-09-26",
+     0,
+     "BYN",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "FRRP",
+     "Аукцион РЕПО с ЦК 1 день - безадрес.",
+     288,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     "2023-06-30",
+     "2023-06-30",
+     "2021-07-05",
+     "2026-09-26",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "FROW",
+     "Аукцион РЕПО с ЦК 1 неделя - безадрес.",
+     289,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     "2023-01-26",
+     "2023-11-21",
+     "2021-07-05",
+     "2026-09-26",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "FRSW",
+     "Аукцион РЕПО с ЦК 2 недели - безадрес.",
+     296,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2021-10-28",
+     "2026-09-26",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "FRFW",
+     "Аукцион РЕПО с ЦК 5 недель - безадрес.",
+     297,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2021-10-28",
+     "2026-09-26",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "FROM",
+     "Аукцион РЕПО с ЦК 1 месяц - безадрес.",
+     290,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2021-07-05",
+     "2026-09-26",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "FRTM",
+     "Аукцион РЕПО с ЦК 3 месяца - безадрес.",
+     291,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2021-07-05",
+     "2026-09-26",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "FSRP",
+     "Аукцион обр.РЕПО с ЦК 1 день - безадрес.",
+     1247,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2023-03-01",
+     "2026-09-26",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "FSOW",
+     "Аукцион обр.РЕПО с ЦК 1 неделя - безадрес.",
+     1249,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2023-03-01",
+     "2026-09-26",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "FSSW",
+     "Аукцион обр.РЕПО с ЦК 2 недели - безадрес.",
+     1251,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2023-03-01",
+     "2026-09-26",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "FSOM",
+     "Аукцион обр.РЕПО с ЦК 1 месяц - безадрес.",
+     1253,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2023-03-01",
+     "2026-09-26",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "FSFW",
+     "Аукцион обр.РЕПО с ЦК 5 недель - безадрес.",
+     1255,
+     27,
+     "ccp",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2023-03-01",
+     "2026-09-26",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "CIQR",
+     "Урегулирование РЕПО с ЦК Нерезиденты - безадрес.",
+     1080,
+     1019,
+     "nonresccp",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2022-06-27",
+     "2026-09-26",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "CIQB",
+     "Урегулирование с ЦК Нерезиденты - безадрес.",
+     1082,
+     36,
+     "mamc",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2022-06-27",
+     "2026-09-26",
+     0,
+     null,
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "CTOB",
+     "РПС с ЦК Нерезиденты: Облигации - адрес.",
+     1062,
+     1015,
+     "nonresndm",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2022-06-27",
+     "2026-09-26",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "CPMO",
+     "РЕПО-M Нерезиденты - адрес.",
+     1071,
+     1017,
+     "nonresrepo",
+     1,
+     "stock",
+     1,
+     4,
+     null,
+     null,
+     "2022-06-27",
+     "2026-09-26",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "CPEU",
+     "РЕПО-M Нерезиденты (USD) - адрес.",
+     1073,
+     1017,
+     "nonresrepo",
+     1,
+     "stock",
+     1,
+     6,
+     null,
+     null,
+     "2022-06-27",
+     "2026-09-26",
+     0,
+     "USD",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "CPEO",
+     "РЕПО-M Нерезиденты (EUR) - адрес.",
+     1075,
+     1017,
+     "nonresrepo",
+     1,
+     "stock",
+     1,
+     6,
+     null,
+     null,
+     "2022-06-27",
+     "2026-09-26",
+     0,
+     "EUR",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "CPEY",
+     "РЕПО-M Нерезиденты (CNY) - адрес.",
+     1077,
+     1017,
+     "nonresrepo",
+     1,
+     "stock",
+     1,
+     6,
+     null,
+     null,
+     "2022-09-26",
+     "2026-09-26",
+     0,
+     "CNY",
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "OBBO",
+     "ОТС-система: облигации",
+     141,
+     39,
+     "bonds",
+     7,
+     "offboard",
+     0,
+     2,
+     null,
+     null,
+     "2021-06-23",
+     "2022-12-30",
+     0,
+     null,
+     "%"
+    ],
+    [
+     "SU26238RMFS4",
+     "QBND",
+     "Квоты",
+     1280,
+     1279,
+     "bonds",
+     1282,
+     "quotes",
+     1,
+     4,
+     null,
+     null,
+     "2023-06-05",
+     "2026-09-25",
+     0,
+     null,
+     "%"
+    ]
+   ]
+  }
+ },
+ "http://iss.moex.com/iss/securities/RU0009062285.json": {
+  "description": {
+   "metadata": {
+    "name": {
+     "type": "string",
+     "bytes": 189,
+     "max_size": 0
+    },
+    "title": {
+     "type": "string",
+     "bytes": 765,
+     "max_size": 0
+    },
+    "value": {
+     "type": "string",
+     "bytes": 6144,
+     "max_size": 0
+    },
+    "type": {
+     "type": "string",
+     "bytes": 21,
+     "max_size": 0
+    },
+    "sort_order": {
+     "type": "int64"
+    },
+    "is_hidden": {
+     "type": "int64"
+    },
+    "precision": {
+     "type": "int64"
+    }
+   },
+   "columns": [
+    "name",
+    "title",
+    "value",
+    "type",
+    "sort_order",
+    "is_hidden",
+    "precision"
+   ],
+   "data": [
+    [
+     "SECID",
+     "Код ценной бумаги",
+     "RU0009062285",
+     "string",
+     1,
+     0,
+     null
+    ],
+    [
+     "NAME",
+     "Полное наименование",
+     "ОАО \"Аэрофлот-росс.авл \" (2 в)",
+     "string",
+     3,
+     0,
+     null
+    ],
+    [
+     "SHORTNAME",
+     "Краткое наименование",
+     "Аэрофлот-2",
+     "string",
+     4,
+     0,
+     null
+    ],
+    [
+     "REGNUMBER",
+     "Номер государственной регистрации",
+     "1-02-00010-A",
+     "string",
+     6,
+     0,
+     null
+    ],
+    [
+     "ISSUESIZE",
+     "Объем выпуска",
+     "1107452150",
+     "number",
+     7,
+     0,
+     0
+    ],
+    [
+     "FACEVALUE",
+     "Номинальная стоимость",
+     "1",
+     "number",
+     8,
+     0,
+     2
+    ],
+    [
+     "FACEUNIT",
+     "Валюта номинала",
+     "SUR",
+     "string",
+     9,
+     0,
+     null
+    ],
+    [
+     "LATNAME",
+     "Английское наименование",
+     "Aeroflot",
+     "string",
+     11,
+     1,
+     null
+    ],
+    [
+     "TYPENAME",
+     "Вид/категория ценной бумаги",
+     "Акция обыкновенная",
+     "string",
+     9000,
+     0,
+     null
+    ],
+    [
+     "GROUP",
+     "Код типа инструмента",
+     "stock_shares",
+     "string",
+     9001,
+     1,
+     null
+    ],
+    [
+     "TYPE",
+     "Тип бумаги",
+     "common_share",
+     "string",
+     10000,
+     1,
+     null
+    ],
+    [
+     "GROUPNAME",
+     "Типа инструмента",
+     "Акции",
+     "string",
+     10011,
+     1,
+     null
+    ]
+   ]
+  },
+  "boards": {
+   "metadata": {
+    "secid": {
+     "type": "string",
+     "bytes": 51,
+     "max_size": 0
+    },
+    "boardid": {
+     "type": "string",
+     "bytes": 12,
+     "max_size": 0
+    },
+    "title": {
+     "type": "string",
+     "bytes": 381,
+     "max_size": 0
+    },
+    "board_group_id": {
+     "type": "int32"
+    },
+    "market_id": {
+     "type": "int32"
+    },
+    "market": {
+     "type": "string",
+     "bytes": 45,
+     "max_size": 0
+    },
+    "engine_id": {
+     "type": "int32"
+    },
+    "engine": {
+     "type": "string",
+     "bytes": 45,
+     "max_size": 0
+    },
+    "is_traded": {
+     "type": "int32"
+    },
+    "decimals": {
+     "type": "int32"
+    },
+    "history_from": {
+     "type": "date",
+     "bytes": 10,
+     "max_size": 0
+    },
+    "history_till": {
+     "type": "date",
+     "bytes": 10,
+     "max_size": 0
+    },
+    "listed_from": {
+     "type": "date",
+     "bytes": 10,
+     "max_size": 0
+    },
+    "listed_till": {
+     "type": "date",
+     "bytes": 10,
+     "max_size": 0
+    },
+    "is_primary": {
+     "type": "int32"
+    },
+    "currencyid": {
+     "type": "string",
+     "bytes": 9,
+     "max_size": 0
+    },
+    "unit": {
+     "type": "string",
+     "bytes": 3,
+     "max_size": 0
+    }
+   },
+   "columns": [
+    "secid",
+    "boardid",
+    "title",
+    "board_group_id",
+    "market_id",
+    "market",
+    "engine_id",
+    "engine",
+    "is_traded",
+    "decimals",
+    "history_from",
+    "history_till",
+    "listed_from",
+    "listed_till",
+    "is_primary",
+    "currencyid",
+    "unit"
+   ],
+   "data": [
+    [
+     "RU0009062285",
+     "EQBS",
+     "Основной режим: А2-Акции и паи - безадрес.",
+     6,
+     1,
+     "shares",
+     1,
+     "stock",
+     0,
+     2,
+     "2001-04-28",
+     "2004-02-12",
+     "2001-04-28",
+     "2004-02-12",
+     1,
+     "RUB",
+     "M"
+    ],
+    [
+     "RU0009062285",
+     "EQNL",
+     "Основной режим: Б-Акции и паи - безадрес.",
+     6,
+     1,
+     "shares",
+     1,
+     "stock",
+     0,
+     2,
+     "1998-02-19",
+     "2001-04-27",
+     "1998-02-19",
+     "2001-04-27",
+     0,
+     "RUB",
+     "M"
+    ],
+    [
+     "RU0009062285",
+     "RPEQ",
+     "РЕПО: Акции и паи - адрес.",
+     1,
+     3,
+     "repo",
+     1,
+     "stock",
+     0,
+     2,
+     "2002-09-12",
+     "2003-12-29",
+     "2002-09-12",
+     "2003-12-29",
+     0,
+     "RUB",
+     "%"
+    ],
+    [
+     "RU0009062285",
+     "PSES",
+     "РПС: А2-Акции и паи - адрес.",
+     8,
+     4,
+     "ndm",
+     1,
+     "stock",
+     0,
+     2,
+     "2002-12-02",
+     "2004-02-12",
+     "2002-12-02",
+     "2004-02-12",
+     0,
+     "RUB",
+     "M"
+    ],
+    [
+     "RU0009062285",
+     "PSNL",
+     "РПС: Б-Акции и паи - адрес.",
+     8,
+     4,
+     "ndm",
+     1,
+     "stock",
+     0,
+     2,
+     "2000-03-10",
+     "2000-11-28",
+     "2000-03-10",
+     "2000-11-28",
+     0,
+     "RUB",
+     "M"
+    ]
+   ]
+  }
+ },
+ "http://iss.moex.com/iss/securities/GLDRUB_TOM.json": {
+  "description": {
+   "metadata": {
+    "name": {
+     "type": "string",
+     "bytes": 189,
+     "max_size": 0
+    },
+    "title": {
+     "type": "string",
+     "bytes": 765,
+     "max_size": 0
+    },
+    "value": {
+     "type": "string",
+     "bytes": 6144,
+     "max_size": 0
+    },
+    "type": {
+     "type": "string",
+     "bytes": 21,
+     "max_size": 0
+    },
+    "sort_order": {
+     "type": "int64"
+    },
+    "is_hidden": {
+     "type": "int64"
+    },
+    "precision": {
+     "type": "int64"
+    }
+   },
+   "columns": [
+    "name",
+    "title",
+    "value",
+    "type",
+    "sort_order",
+    "is_hidden",
+    "precision"
+   ],
+   "data": [
+    [
+     "SECID",
+     "Код инструмента",
+     "GLDRUB_TOM",
+     "string",
+     1,
+     0,
+     null
+    ],
+    [
+     "SHORTNAME",
+     "Краткое наименование",
+     "GLDRUB_TOM",
+     "string",
+     2,
+     0,
+     null
+    ],
+    [
+     "NAME",
+     "Полное наименование",
+     "GLD/RUB_TOM - GLD/РУБ",
+     "string",
+     3,
+     0,
+     null
+    ],
+    [
+     "LATNAME",
+     "Английское наименование",
+     "GLDRUB_TOM - GLD/RUB",
+     "string",
+     4,
+     1,
+     null
+    ],
+    [
+     "LOTSIZE",
+     "Размер минимального лота, в ед. валюты лота",
+     "1",
+     "number",
+     7,
+     0,
+     null
+    ],
+    [
+     "FACEVALUE",
+     "Количество валюты лота, за которое указывается курс в котировках",
+     "1",
+     "number",
+     9,
+     0,
+     2
+    ],
+    [
+     "FACEUNIT",
+     "Валюта инструмента",
+     "GLD",
+     "string",
+     10,
+     0,
+     null
+    ],
+    [
+     "TYPENAME",
+     "Вид/категория ценной бумаги",
+     "Металл золото",
+     "string",
+     9000,
+     0,
+     null
+    ],
+    [
+     "GROUP",
+     "Код типа инструмента",
+     "currency_metal",
+     "string",
+     9001,
+     1,
+     null
+    ],
+    [
+     "TYPE",
+     "Тип бумаги",
+     "gold_metal",
+     "string",
+     10000,
+     1,
+     null
+    ],
+    [
+     "GROUPNAME",
+     "Типа инструмента",
+     "Драгоценные металлы",
+     "string",
+     10011,
+     1,
+     null
+    ]
+   ]
+  },
+  "boards": {
+   "metadata": {
+    "secid": {
+     "type": "string",
+     "bytes": 51,
+     "max_size": 0
+    },
+    "boardid": {
+     "type": "string",
+     "bytes": 12,
+     "max_size": 0
+    },
+    "title": {
+     "type": "string",
+     "bytes": 381,
+     "max_size": 0
+    },
+    "board_group_id": {
+     "type": "int32"
+    },
+    "market_id": {
+     "type": "int32"
+    },
+    "market": {
+     "type": "string",
+     "bytes": 45,
+     "max_size": 0
+    },
+    "engine_id": {
+     "type": "int32"
+    },
+    "engine": {
+     "type": "string",
+     "bytes": 45,
+     "max_size": 0
+    },
+    "is_traded": {
+     "type": "int32"
+    },
+    "decimals": {
+     "type": "int32"
+    },
+    "history_from": {
+     "type": "date",
+     "bytes": 10,
+     "max_size": 0
+    },
+    "history_till": {
+     "type": "date",
+     "bytes": 10,
+     "max_size": 0
+    },
+    "listed_from": {
+     "type": "date",
+     "bytes": 10,
+     "max_size": 0
+    },
+    "listed_till": {
+     "type": "date",
+     "bytes": 10,
+     "max_size": 0
+    },
+    "is_primary": {
+     "type": "int32"
+    },
+    "currencyid": {
+     "type": "string",
+     "bytes": 9,
+     "max_size": 0
+    },
+    "unit": {
+     "type": "string",
+     "bytes": 3,
+     "max_size": 0
+    }
+   },
+   "columns": [
+    "secid",
+    "boardid",
+    "title",
+    "board_group_id",
+    "market_id",
+    "market",
+    "engine_id",
+    "engine",
+    "is_traded",
+    "decimals",
+    "history_from",
+    "history_till",
+    "listed_from",
+    "listed_till",
+    "is_primary",
+    "currencyid",
+    "unit"
+   ],
+   "data": [
+    [
+     "GLDRUB_TOM",
+     "CETS",
+     "Системные сделки - безадрес.",
+     13,
+     10,
+     "selt",
+     3,
+     "currency",
+     1,
+     4,
+     "2013-10-21",
+     "2026-09-25",
+     "2013-10-21",
+     "2026-09-25",
+     1,
+     null,
+     "M"
+    ],
+    [
+     "GLDRUB_TOM",
+     "CNGD",
+     "Внесистемные сделки- адрес.",
+     46,
+     10,
+     "selt",
+     3,
+     "currency",
+     1,
+     4,
+     "2013-10-21",
+     "2026-09-25",
+     "2013-10-21",
+     "2026-09-25",
+     0,
+     null,
+     "M"
+    ],
+    [
+     "GLDRUB_TOM",
+     "LICU",
+     "Внесистемные сделки урегулирования - безадрес.",
+     151,
+     10,
+     "selt",
+     3,
+     "currency",
+     1,
+     4,
+     "2019-03-04",
+     "2026-09-25",
+     "2019-03-04",
+     "2026-09-25",
+     0,
+     null,
+     "M"
+    ],
+    [
+     "GLDRUB_TOM",
+     "SPEC",
+     "Поставка - безадресные",
+     140,
+     10,
+     "selt",
+     3,
+     "currency",
+     0,
+     4,
+     "2018-11-09",
+     "2026-09-25",
+     "2018-11-09",
+     "2026-09-25",
+     0,
+     null,
+     "M"
+    ]
+   ]
+  }
+ }
+}
