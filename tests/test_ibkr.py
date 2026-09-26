@@ -415,6 +415,28 @@ def test_ibkr_find_db_stock_dividend_for_tax_correction(prepare_db, monkeypatch)
     assert ibkr._id_map[JSF.ASSET_PAYMENTS] == {1: 332}
 
 
+# A refused tax lists a stock dividend of the statement among the payments it considered
+def test_ibkr_unmatched_tax_refusal_lists_stock_dividend(prepare_db, monkeypatch):
+    monkeypatch.setattr(Statement, 'save_debug_info', lambda self, **kwargs: None)
+    ibkr = StatementIBKR()
+    ibkr._data = {JSF.ASSET_PAYMENTS: [{'id': 1, 'type': JSF.PAYMENT_DIVIDEND, 'account': 1, 'symbol': 294,
+                                        'timestamp': 1672258800, 'number': '22598209881', 'amount': Decimal('8.11'),
+                                        'description': 'BCV (US0596951063) PAYMENT IN LIEU OF DIVIDEND (Ordinary Dividend)'}],
+                  JSF.ASSETS: [{'id': 1, JSF.SYMBOLS: [{'id': 294, 'symbol': 'BCV', 'isin': 'US0596951063'}]}]}
+    ibkr._map_db_account = lambda _: 0
+    ibkr._map_db_asset_by_symbol = lambda _: 0
+    ibkr.load_stock_dividend({'type': JSF.PAYMENT_STOCK_DIVIDEND, 'account': 1, 'symbol': 294, 'timestamp': 1672258800, 'number': '22598209889',
+                              'description': 'BCV (US0596951063) STOCK DIVIDEND US0596951063 18507808 FOR 1000000000 (BCV, BANCROFT FUND LTD, US0596951063)',
+                              'quantity': Decimal('0.2776'), 'value': Decimal('5.5'), 'proceeds': Decimal('0'),
+                              'code': '', 'asset_type': JSF.ASSET_STOCK, 'jal_processed': False}, [])
+
+    tax = {'account': 1, 'symbol': 294, 'timestamp': 1672258800, 'reported': 1672258800, 'amount': Decimal('-0.48'),
+           'action_id': '11111111111',
+           'description': 'BCV (US0596951063) STOCK DIVIDEND US0596951063 18507808 FOR 1000000000 - CH TAX'}
+    with pytest.raises(Statement_ImportError):
+        ibkr.find_dividend4tax(tax)
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 def test_ibkr_mlp_extra_tax_reported_separately_is_saved_as_fee():
     ibkr = StatementIBKR()

@@ -852,7 +852,7 @@ class StatementIBKR(StatementXML):
         action['id'] = max([0] + [x['id'] for x in self._data[JSF.ASSET_PAYMENTS]]) + 1
         action['amount'] = action['quantity']
         action['price'] = self._derived_price(action['value'], action['quantity'])
-        action['tax'] = 0
+        action['tax'] = Decimal('0')
         self.drop_extra_fields(action, ["quantity", "value", "proceeds", "code", "asset_type", "jal_processed"])
         self._data[JSF.ASSET_PAYMENTS].append(action)
         return 1
