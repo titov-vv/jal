@@ -32,6 +32,8 @@ DROP TABLE category_move;
 UPDATE categories SET name=name || ' (user)' WHERE name IN ('Discounts', 'Скидки');
 INSERT INTO categories (id, pid, name) VALUES (10, 2, 'Discounts');
 --------------------------------------------------------------------------------
+INSERT OR REPLACE INTO settings(name, value) VALUES ('RebuildDB', 1);
+--------------------------------------------------------------------------------
 -- Set new DB schema version
 UPDATE settings SET value=79 WHERE name='SchemaVersion';
 COMMIT;
