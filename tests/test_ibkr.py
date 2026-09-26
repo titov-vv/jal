@@ -446,6 +446,24 @@ def test_ibkr_mlp_extra_tax_reported_separately_is_saved_as_fee():
     assert extra_fees[0]['description'].endswith(' - Extra 10% tax due to IRS section 1446')
 
 
+# The extra tax carries the actionID of its dividend, as a real statement gives it, and is stored as a fee
+def test_ibkr_mlp_extra_tax_is_imported_as_fee(tmp_path, project_root, data_path, prepare_db_taxes):
+    statement = StatementIBKR()
+    statement.load(data_path + 'ibkr_mlp_extra_tax.xml')
+    statement.match_db_ids()
+    statement.import_into_db()
+
+    imported = [x for x in JalAccount.get_all_accounts() if x.number() == 'U7654321F'][0]
+    dividends = AssetPayment.get_list(imported.id(), subtype=AssetPayment.Dividend)
+    assert len(dividends) == 1
+    assert dividends[0].amount() == Decimal('5.25')
+    assert dividends[0].tax() == Decimal('1.94')
+    fees = AssetPayment.get_list(imported.id(), subtype=AssetPayment.AssetFee)
+    assert len(fees) == 1
+    assert fees[0].amount() == Decimal('-0.53')
+    assert fees[0].note().endswith(' - Extra 10% tax due to IRS section 1446')
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 def test_ibkr_spinoff_allows_fractional_entitlement_rounding():
     ibkr = StatementIBKR()

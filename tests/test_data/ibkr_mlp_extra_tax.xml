@@ -1,0 +1,18 @@
+<FlexQueryResponse queryName="Full" type="AF">
+<FlexStatements count="1">
+<FlexStatement accountId="U7654321F" fromDate="20230101" toDate="20231231" period="LastBusinessDay" whenGenerated="20240115;000000">
+<AccountInformation accountId="U7654321F" acctAlias="" model="" currency="USD" name="Ivan Ivanov" accountType="Individual" customerType="Individual" accountCapabilities="Cash" tradingPermissions="Stocks,Bonds" accountRepName="" accountRepPhone="" dateOpened="20210101" dateFunded="20210101" dateClosed="" ibEntity="IBLLC-US" primaryEmail="" />
+<CashReport>
+<CashReportCurrency accountId="U7654321F" acctAlias="" model="" currency="USD" levelOfDetail="Currency" fromDate="20230101" toDate="20231231" startingCash="0" endingCash="2.78" endingSettledCash="2.78" />
+</CashReport>
+<SecuritiesInfo>
+<SecurityInfo currency="USD" assetCategory="STK" subCategory="MLP" symbol="PIPE" description="PIPELINE PARTNERS LP" conid="30158322" securityID="US2222222222" securityIDType="ISIN" cusip="222222222" isin="US2222222222" listingExchange="NYSE" underlyingConid="" underlyingSymbol="" issuer="" multiplier="1" strike="" expiry="" putCall="" principalAdjustFactor="" maturity="" />
+</SecuritiesInfo>
+<CashTransactions>
+<CashTransaction accountId="U7654321F" acctAlias="" model="" currency="USD" fxRateToBase="1" assetCategory="STK" subCategory="MLP" symbol="PIPE" description="PIPE(US2222222222) CASH DIVIDEND USD 0.525 PER SHARE (Ordinary Dividend)" conid="30158322" securityID="US2222222222" securityIDType="ISIN" cusip="222222222" isin="US2222222222" listingExchange="NYSE" underlyingConid="" underlyingSymbol="" issuer="" multiplier="1" strike="" expiry="" putCall="" principalAdjustFactor="" dateTime="20230804;202000" settleDate="20230804" amount="5.25" type="Dividends" tradeID="" code="" transactionID="24658130931" reportDate="20230804" clientReference="" levelOfDetail="DETAIL" actionID="122517042" />
+<CashTransaction accountId="U7654321F" acctAlias="" model="" currency="USD" fxRateToBase="1" assetCategory="STK" subCategory="MLP" symbol="PIPE" description="PIPE(US2222222222) CASH DIVIDEND USD 0.525 PER SHARE - US TAX" conid="30158322" securityID="US2222222222" securityIDType="ISIN" cusip="222222222" isin="US2222222222" listingExchange="NYSE" underlyingConid="" underlyingSymbol="" issuer="" multiplier="1" strike="" expiry="" putCall="" principalAdjustFactor="" dateTime="20230804;202000" settleDate="20230804" amount="-1.94" type="Withholding Tax" tradeID="" code="" transactionID="24658130941" reportDate="20230804" clientReference="" levelOfDetail="DETAIL" actionID="122517042" />
+<CashTransaction accountId="U7654321F" acctAlias="" model="" currency="USD" fxRateToBase="1" assetCategory="STK" subCategory="MLP" symbol="PIPE" description="PIPE(US2222222222) CASH DIVIDEND USD 0.525 PER SHARE - US TAX" conid="30158322" securityID="US2222222222" securityIDType="ISIN" cusip="222222222" isin="US2222222222" listingExchange="NYSE" underlyingConid="" underlyingSymbol="" issuer="" multiplier="1" strike="" expiry="" putCall="" principalAdjustFactor="" dateTime="20230804;202000" settleDate="20230804" amount="-0.53" type="Withholding Tax" tradeID="" code="" transactionID="25184408117" reportDate="20231002" clientReference="" levelOfDetail="DETAIL" actionID="122517042" />
+</CashTransactions>
+</FlexStatement>
+</FlexStatements>
+</FlexQueryResponse>

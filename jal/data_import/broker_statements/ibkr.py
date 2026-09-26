@@ -1123,7 +1123,7 @@ class StatementIBKR(StatementXML):
                 tax['id'] = max([0] + [x['id'] for x in self._data[JSF.ASSET_PAYMENTS]]) + 1
                 tax['type'] = JSF.PAYMENT_FEE
                 tax['description'] += " - Extra 10% tax due to IRS section 1446"
-                self.drop_extra_fields(tax, ["source", "currency", "reported"])
+                self.drop_extra_fields(tax, ["source", "currency", "reported", "action_id"])
                 self._data[JSF.ASSET_PAYMENTS].append(tax)
             group_list = [x for x in group_list if x not in extra_taxes]
             if len(group_list) > 2:
