@@ -61,7 +61,7 @@ class StatementTvoyBroker(StatementXLS):
         while row < self._statement.shape[0]:
             if self._statement[self.HeaderCol][row].startswith('Итого') or self._statement[self.HeaderCol][row] == '':
                 break
-            currency_code = self.currency_id('RUB')   #FIXME - need to take account currency from headers
+            currency_code = self.currency_id('RUB')
             asset_id = self.asset_id({'isin': self._statement[headers['isin']][row],
                                       'symbol': self._statement[headers['name']][row],
                                       'reg_number': self._statement[headers['reg_number']][row],

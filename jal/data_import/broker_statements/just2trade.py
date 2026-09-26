@@ -66,7 +66,7 @@ class StatementJ2T(StatementXLS):
             asset_name = self._statement[headers['name']][row]
             if asset_name.endswith('*'):    # strip ending star if required
                 asset_name = asset_name[:-1]
-            currency_code = self.currency_id('USD')      # FIXME put account currency here
+            currency_code = self.currency_id('USD')
             if not self._statement[headers['isin']][row]:
                 self.asset_id({'type': JSF.ASSET_CRYPTO, 'symbol': asset_name,
                                'name': asset_name, 'currency': currency_code})
@@ -91,6 +91,7 @@ class StatementJ2T(StatementXLS):
             "number": "Номер сделки",
             "timestamp": "Дата сделки",
             "settlement": "дата расчетов",
+            "account_currency": "Валюта счета",
             "asset_name": "Описание",
             "isin": "ISIN",
             "asset": "Symbol",
@@ -117,7 +118,7 @@ class StatementJ2T(StatementXLS):
             symbol_id = self.symbol_id({'type': JSF.ASSET_STOCK, 'isin': self._statement[headers['isin']][row],
                                         'symbol': self._statement[headers['asset']][row],
                                         'name': self._statement[headers['asset_name']][row],
-                                        'currency': self.currency_id('USD')})  # FIXME - replace hardcoded 'USD'
+                                        'currency': self.currency_id('USD')})
             if self._statement[headers['B/S']][row].startswith('Купля'):
                 qty = self._statement[headers['qty']][row]
             elif self._statement[headers['B/S']][row].startswith('Продажа'):
@@ -137,7 +138,7 @@ class StatementJ2T(StatementXLS):
             price = self._derived_price(total, qty)
             # Settlement is stored as date in Excel report file
             settlement = self._date(self._statement[headers['settlement']][row])
-            account_id = self._find_account_id(self._account_number, 'USD')   # FIXME - replace hardcoded 'USD'
+            account_id = self._find_account_id(self._account_number, self._statement[headers['account_currency']][row])
             new_id = max([0] + [x['id'] for x in self._data[JSF.TRADES]]) + 1
             trade = {"id": new_id, "number": deal_number, "timestamp": timestamp, "settlement": settlement,
                      "account": account_id, "symbol": symbol_id, "quantity": qty, "price": price, "fee": fee}
@@ -174,7 +175,7 @@ class StatementJ2T(StatementXLS):
             deal_number = str(self._statement[headers['number']][row])
             symbol_id = self.symbol_id({'type': JSF.ASSET_CRYPTO, 'symbol': self._statement[headers['asset_name']][row],
                                         'name': self._statement[headers['asset_name']][row],
-                                        'currency': self.currency_id('USD')})  # FIXME - replace hardcoded 'USD'
+                                        'currency': self.currency_id('USD')})
             if self._statement[headers['B/S']][row].startswith('Купля'):
                 qty = self._statement[headers['qty']][row]
             elif self._statement[headers['B/S']][row].startswith('Продажа'):
@@ -213,6 +214,7 @@ class StatementJ2T(StatementXLS):
             "date": "Дата",
             "type": "Зачисление/списание",
             "amount": "Сумма",
+            "currency": "Валюта",
             "description": "Описание",
             "note": "Комментарий"
         }
@@ -244,7 +246,7 @@ class StatementJ2T(StatementXLS):
             operation = self._statement[headers['description']][row]
             if operation not in operations:
                 raise Statement_ImportError(self.tr("Unsuppported cash transaction ") + f"'{operation}'")
-            account_id = self._find_account_id(self._account_number, 'USD')  # FIXME - replace hardcoded 'USD'
+            account_id = self._find_account_id(self._account_number, self._statement[headers['currency']][row])
             if self._statement[headers['type']][row] == 'IN':
                 amount = self._statement[headers['amount']][row]
             elif self._statement[headers['type']][row] == 'OUT':
