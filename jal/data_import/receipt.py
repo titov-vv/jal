@@ -138,6 +138,34 @@ def discount_line(label: str, amount: Decimal, sign: Decimal) -> dict:
     return {'name': label, 'amount': -sign * amount, 'category': PredefinedCategory.Discounts}
 
 
+_VOUCHER_AMOUNT = r'\s+(?P<amount>\d+[,.]\d\d)\s*[€E]?\s*$'     # OCR joins with one space and reads '€' as 'E'
+
+
+def _amount_in(text: str, amount: Decimal) -> bool:
+    return bool(re.search(r'(?<![\d,.])' + str(int(amount)) + r'[,.]' + f"{amount % 1:.2f}"[2:] + r'(?!\d)', text))
+
+
+# Payments by voucher after the receipt's body, as (label, amount) pairs, and what doesn't let them be trusted.
+# What the voucher left to pay must be printed as another payment, which guards against a misread amount.
+def parse_vouchers(lines: list, label: str, total: Optional[Decimal]) -> tuple:
+    if not label:
+        return [], []
+    tail = lines[len(body_of(lines)):]
+    pattern, start = re.compile(r'^\s*(?P<label>(?:' + label + r').*?)' + _VOUCHER_AMOUNT), re.compile(r'^\s*' + label)
+    vouchers, problems = [], []
+    for line in tail:
+        if match := pattern.match(line):
+            vouchers.append((match['label'].strip(), Decimal(match['amount'].replace(',', '.'))))
+        elif start.match(line):
+            problems.append(f"no amount in '{line.strip()}'")
+    if vouchers and not problems:
+        rest = None if total is None else total - sum(amount for _, amount in vouchers)
+        if rest is None or rest < 0 or (rest and not any(_amount_in(x, rest) for x in tail)):
+            problems.append(f"{', '.join(f'{x} {a}' for x, a in vouchers)} leaves {rest} of {total} to pay, "
+                            f"which no payment line shows")
+    return ([], problems) if problems else (vouchers, [])
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 @dataclass
 class ReceiptItem:
@@ -163,7 +191,7 @@ def line_name(item: ReceiptItem) -> str:
 class ShopReceipt:
     NIF = ''                      # issuer's tax number, the key a profile is found by
     name = ''
-    discounts_netted = True       # False where a printed discount is a loyalty credit, not money off
+    discounts_netted = True       # False where an item's discount is already in its price or is a loyalty credit
     # Line patterns, tried in this order: a line is taken by the first one that matches
     DepartmentPattern = ''        # (?P<dept>)
     DiscountPattern = ''          # (?P<label>) (?P<amount>)
@@ -171,6 +199,7 @@ class ShopReceipt:
     QuantityPattern = ''          # printed under its item: (?P<qty>) (?P<price>)
     ItemPattern = ''              # (?P<name>) [(?P<amount>) (?P<vat>) (?P<qty>) (?P<price>)]
     DatetimePattern = ''          # (?P<year>) (?P<month>) (?P<day>) (?P<hour>) (?P<minute>) [(?P<second>)]
+    VoucherLabel = ''             # start of a payment line by voucher, which is outside the VAT table
 
     def __init__(self, lines: list):
         self.discounts = []       # (label, amount) pairs of the whole receipt, amount > 0 as money off
@@ -186,10 +215,8 @@ class ShopReceipt:
             return item.amount
         return item.amount - sum(amount for _, amount in item.discounts)
 
-    # Money off the whole receipt
+    # Money off the whole receipt, which its VAT table must share
     def receipt_discount(self) -> Decimal:
-        if not self.discounts_netted:
-            return Decimal('0')
         return sum((amount for _, amount in self.discounts), Decimal('0'))
 
     # Returns what doesn't add up: every VAT bucket and the grand total must equal the sum of the paid items,

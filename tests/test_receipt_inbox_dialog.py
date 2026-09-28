@@ -15,6 +15,7 @@ from tests.test_receipt_pdf import make_pdf, lidl_receipt, QR
 from jal.constants import PredefinedCategory, PredefinedAccountType, AccountData
 from jal.db.account import JalAccountCreator
 from jal.db.db import JalDB
+from jal.db.peer import JalPeer
 from jal.db.clock import local_zone
 from jal.db.settings import JalSettings
 from jal.db.operations import IncomeSpending
@@ -106,6 +107,26 @@ def test_discount_reading_must_agree_with_the_shop_profile(prepare_db, tmp_path)
     assert _paper_lines(tmp_path, LIDL, items, "informational", total="12.94") == []     # Lidl nets its discounts
 
 
+PINGO_DOCE = PHARMACY.replace("A:" + PHARMACY[2:11], "A:500829993")
+PAYMENTS = {"ocr": {"lines": [{"text": x} for x in ("Resumo", "TOTAL A PAGAR 11,94", "V. Deposito Volta 0,60",
+                                                    "Multibanco 11,34")]}}
+
+
+def test_paper_voucher_is_a_discount_line(owner, inbox):
+    extra = dict(paper_scan([("item", "LEITE", "11.94")]), **PAYMENTS)
+    make_jalr(inbox, "20260814-184200-00000001.jalr", codes=[PINGO_DOCE], extra=extra)
+    make_jalr(inbox, "20260814-184300-00000002.jalr", codes=[PINGO_DOCE.replace("G:", "G:X")], extra=PAYMENTS)
+    dialog = _dialog(owner)
+    voucher = {'name': "V. Deposito Volta", 'category': PredefinedCategory.Discounts, 'tag': None,
+               'amount': Decimal('0.60')}
+    for row, first in ((0, "LEITE"), (1, "NIF 500829993")):     # with items, and a QR alone
+        dialog.ui.InboxList.setCurrentCell(row, 0)
+        dialog.loadInboxReceipt()
+        lines = dialog.slip_lines.to_dict('records')
+        assert lines[0]['name'] == first and lines[-1] == voucher
+        assert sum(x['amount'] for x in lines) == Decimal('-11.34')
+
+
 def test_discount_above_every_item_is_refused(prepare_db, tmp_path):
     items = [("discount", "Poupança", "1.00"), ("item", "LEITE", "12.94")]
     assert _paper_lines(tmp_path, PHARMACY, items, "netted") == []
@@ -144,6 +165,53 @@ def test_discount_without_subtotal_stays_on_its_item(prepare_db, tmp_path):
 def test_receipt_discount_must_be_shared_by_the_vat_table(prepare_db, tmp_path):
     assert _subtotal_scan(tmp_path, vat=("3.90", "7.10")) == []      # C would be dearer than its items
     assert _subtotal_scan(tmp_path, vat=("4.50", "6.60")) == []      # the shares make 0.90, not 1.00
+
+
+def test_receipt_netted_reading_of_a_shop_without_profile(prepare_db, tmp_path):
+    qr, extra = _subtotal_receipt()
+    items = extra['paper']['items']
+    items.insert(1, dict(role="discount", text="Poupanca", amount="0.22", sign_printed="positive", source_lines=[2]))
+    for x in items[2:]:
+        x['source_lines'] = [x['source_lines'][0] + 1]
+    extra['validation']['discount_hypothesis'] = "receipt_netted"
+    extra.update(_ocr("SHOP", "(A) LEITE 5,00", "Poupanca 0,22", "(C) SALMAO 7,00", "SUBTOTAL 12,00",
+                      "Desconto Cartao 1,00", "TOTAL A PAGAR 11,00"))
+    lines = paper_lines(JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[qr], extra=extra)), AtQr.parse(qr))
+    assert [x['amount'] for x in lines] == [Decimal('-5.00'), Decimal('-7.00'), Decimal('1.00')]
+
+
+# A Continente scan: POUPANCA under an item is already in its price, 'Desconto Cartao' below SUBTOTAL is money off
+CONTINENTE = PHARMACY.replace("A:" + PHARMACY[2:11], "A:502011475")
+
+
+def _continente_scan(tmp_path, hypothesis, total, card_discount=True) -> list:
+    items = [dict(role="item", text="LEITE", amount="5.00", sign_printed="positive", tax_code="A", source_lines=[1]),
+             dict(role="discount", text="POUPANCA", amount="0.22", sign_printed="positive", source_lines=[2]),
+             dict(role="item", text="SALMAO", amount="7.00", sign_printed="positive", tax_code="C", source_lines=[3])]
+    texts = ["CONTINENTE", "(A) LEITE 5,00", "POUPANCA 0,22", "(C) SALMAO 7,00"]
+    tax_table = [{"code": "A", "total": "5.00"}, {"code": "C", "total": "7.00"}]
+    if card_discount:
+        items.append(dict(role="discount", text="Desconto Cartao Utilizado", amount="1.00", sign_printed="positive",
+                          source_lines=[5]))
+        texts += ["SUBTOTAL 12,00", "Desconto Cartao Utilizado 1,00"]
+        tax_table = [{"code": "A", "total": "4.40"}, {"code": "C", "total": "6.60"}]
+    extra = paper_scan(items, hypothesis=hypothesis, tax_table=tax_table)
+    extra.update(_ocr(*texts, f"TOTAL A PAGAR {total.replace('.', ',')}"))
+    qr = CONTINENTE.replace("O:11.94", f"O:{total}")
+    return paper_lines(JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[qr], extra=extra)), AtQr.parse(qr))
+
+
+def test_continente_item_saving_is_already_in_its_price(prepare_db, tmp_path):
+    assert _continente_scan(tmp_path, "informational", "12.00", card_discount=False) == [
+        {'name': "LEITE", 'amount': Decimal('-5.00')}, {'name': "SALMAO", 'amount': Decimal('-7.00')}]
+    assert _continente_scan(tmp_path, "netted", "11.78", card_discount=False) == []    # the profile knows better
+
+
+def test_continente_card_discount_is_money_off_beside_item_savings(prepare_db, tmp_path):
+    assert _continente_scan(tmp_path, None, "11.00") == [          # no reading of the phone balances both kinds
+        {'name': "LEITE", 'amount': Decimal('-5.00')}, {'name': "SALMAO", 'amount': Decimal('-7.00')},
+        {'name': "Desconto Cartao Utilizado", 'amount': Decimal('1.00'), 'category': PredefinedCategory.Discounts}]
+    assert _continente_scan(tmp_path, None, "10.78") == []
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -241,6 +309,19 @@ def test_cleared_receipt_stays_in_the_inbox(owner, inbox):
     dialog.addOperation()                     # nothing is loaded any more
     assert os.path.isfile(path)
     assert IncomeSpending.find_by_number(NUMBER) == 0
+
+
+def test_peer_of_the_last_receipt_is_not_reused(owner, inbox):
+    JalPeer(1).add_or_update_mapped_name("NIF 503340855")
+    make_jalr(inbox, "20260814-184200-00000001.jalr", codes=[LIDL])
+    make_jalr(inbox, "20260814-184300-00000002.jalr", codes=[LIDL.replace("A:503340855", "A:509999999")])
+    dialog = _dialog(owner)
+    dialog.ui.InboxList.setCurrentCell(0, 0)
+    dialog.loadInboxReceipt()
+    assert dialog.ui.PeerEdit.selected_id == 1
+    dialog.ui.InboxList.setCurrentCell(1, 0)
+    dialog.loadInboxReceipt()
+    assert dialog.ui.PeerEdit.selected_id == 0
 
 
 def test_unsupported_file_loads_nothing(owner, inbox):

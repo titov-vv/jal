@@ -237,10 +237,10 @@ class ImportReceiptDialog(QDialog):
         receipt, receipt_route = self._inbox[row]
         text = receipt.ocr_texts
         if receipt_route.kind == Route.PT_QR:
-            receipt_api = ReceiptOffline.from_at_qr(receipt_route.at_qr, receipt.captured_at)
+            receipt_api = ReceiptOffline.from_at_qr(receipt_route.at_qr, receipt.captured_at, text=text)
         elif receipt_route.kind == Route.PT_ITEMS:
             lines = paper_lines(receipt, receipt_route.at_qr)
-            receipt_api = ReceiptOffline.from_at_qr(receipt_route.at_qr, receipt.captured_at, lines)
+            receipt_api = ReceiptOffline.from_at_qr(receipt_route.at_qr, receipt.captured_at, lines, text)
         elif receipt_route.kind == Route.FNS:
             try:
                 receipt_api = ReceiptRuFNS(qr_text=receipt_route.code)
@@ -306,8 +306,7 @@ class ImportReceiptDialog(QDialog):
         self.slip_lines = pd.DataFrame(self.receipt_api.slip_lines())
         self.ui.SlipShopName.setText(self.receipt_api.shop_name())
         peer_id = JalPeer.get_id_by_mapped_name(self.ui.SlipShopName.text())
-        if peer_id is not None:
-            self.ui.PeerEdit.selected_id = peer_id
+        self.ui.PeerEdit.selected_id = peer_id if peer_id is not None else 0   # the last receipt's peer isn't reused
         self.ui.SlipDateTime.setDateTime(self.receipt_api.datetime())
         # A line may come with its category, the others get an empty one
         if 'category' in self.slip_lines:

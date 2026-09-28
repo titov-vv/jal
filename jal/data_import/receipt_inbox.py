@@ -54,6 +54,7 @@ class JalrFile:
     NO_VALUE = "no_value"
     NETTED = "netted"                    # values of 'validation.discount_hypothesis'
     INFORMATIONAL = "informational"
+    RECEIPT_NETTED = "receipt_netted"    # only a discount below SUBTOTAL is money off
     NOT_APPLICABLE = "not_applicable"
 
     def __init__(self, path: str, data: dict):

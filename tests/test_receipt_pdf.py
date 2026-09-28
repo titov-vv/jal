@@ -10,11 +10,12 @@ from tests.fixtures import project_root, data_path, prepare_db
 from tests.test_at_qr import LIDL
 from jal.constants import PredefinedCategory
 from jal.db.clock import local_zone
-from jal.data_import.receipt import parse_vat_table, parse_total, parse_card, shop_profile
+from jal.data_import.receipt import parse_vat_table, parse_total, parse_card, parse_vouchers, shop_profile
 from jal.data_import.receipt_pdf import layout_text, pdf_receipt
 from jal.data_import.receipt_api.pt_at_qr import AtQr
 from jal.data_import.shop_receipts.lidl import ReceiptLidl
 from jal.data_import.shop_receipts.pingo_doce import ReceiptPingoDoce
+from jal.data_import.shop_receipts.continente import ReceiptContinente
 
 LISBON_SUMMER = timezone(timedelta(hours=1))
 CAPTURED = datetime(2026, 8, 20, 9, 5, tzinfo=LISBON_SUMMER)
@@ -172,9 +173,105 @@ def test_pingo_doce_items_add_up():
     assert receipt.timestamp == datetime(2026, 8, 23, 19, 32)
 
 
+# Fabricated after the layout of a real Pingo Doce receipt, paid partly with a bottle deposit voucher
+PINGO_DOCE_VOUCHER = ["Registo C.R.C. Lisboa-Matricula/NIPC: 500829993",
+                      "MERCEARIA + PET FOOD",
+                      " E CHOCOLATE 3X50G                          3,29",
+                      "PADARIA/PASTELARIA",
+                      " C PAO TRIGO 400G         1,000 X 2,49     2,49",
+                      "       Poupanca Imediata                  (0,50)",
+                      "                                  Resumo",
+                      "TOTAL                                      5,78",
+                      "TOTAL POUPANCA                            (0,50)",
+                      "TOTAL A PAGAR      5,28",
+                      "TOTAL PAGO                                 5,28",
+                      " V. Deposito Volta                         0,60",
+                      "   9800000000000000000000000000",
+                      " Multibanco                                4,68",
+                      "Taxa      Valor s/IVA    Valor IVA  Valor c/IVA",
+                      " C  6%           1,88         0,11         1,99",
+                      " E 23%           2,67         0,62         3,29",
+                      "           004292 2026-09-27 19:49 0768 0068 0391",
+                      "Fatura Simplificada  FS 0391068260618/007693"]
+
+
+def test_pingo_doce_voucher_is_not_part_of_the_items():
+    receipt = ReceiptPingoDoce(PINGO_DOCE_VOUCHER)
+    assert receipt.problems() == []
+    assert receipt.items[0].department == "MERCEARIA + PET FOOD"
+    assert parse_vouchers(PINGO_DOCE_VOUCHER, ReceiptPingoDoce.VoucherLabel, receipt.total) == \
+        ([("V. Deposito Volta", Decimal('0.60'))], [])
+
+
+# As a phone reads a paper receipt: label and amount one space apart, '€' read as 'E'
+OCR_PAYMENTS = ["Resumo", "TOTAL A PAGAR 5,28", "V. Deposito Volta 0,60E", "Multibanco 4.68"]
+
+
+def test_voucher_as_ocr_reads_it():
+    assert parse_vouchers(OCR_PAYMENTS, ReceiptPingoDoce.VoucherLabel, Decimal('5.28')) == \
+        ([("V. Deposito Volta", Decimal('0.60'))], [])
+
+
+def test_voucher_that_leaves_an_amount_no_payment_shows_is_not_trusted():
+    misread = [x.replace("0,60E", "6,60E") for x in OCR_PAYMENTS]
+    for text, total in ((misread, Decimal('5.28')), (OCR_PAYMENTS, Decimal('5.38')), (OCR_PAYMENTS, None)):
+        vouchers, problems = parse_vouchers(text, ReceiptPingoDoce.VoucherLabel, total)
+        assert vouchers == [] and problems
+
+
+def test_voucher_without_an_amount_is_not_trusted():
+    text = OCR_PAYMENTS[:2] + ["V. Deposito Volta 0, 60", "Multibanco 4,68"]
+    vouchers, problems = parse_vouchers(text, ReceiptPingoDoce.VoucherLabel, Decimal('5.28'))
+    assert vouchers == [] and problems == ["no amount in 'V. Deposito Volta 0, 60'"]
+
+
+def test_voucher_paying_everything_needs_no_other_payment():
+    assert parse_vouchers(["TOTAL 0,60", "V. Deposito Volta 0,60"], ReceiptPingoDoce.VoucherLabel,
+                          Decimal('0.60')) == ([("V. Deposito Volta", Decimal('0.60'))], [])
+
+
+def test_voucher_label_among_the_items_is_not_a_payment():
+    assert parse_vouchers([" C V. ITEM 1,00", "TOTAL 1,00"], ReceiptPingoDoce.VoucherLabel, Decimal('1.00')) == ([], [])
+
+
+def test_continente_items_add_up():
+    receipt = ReceiptContinente(["NIF:   PT502011475|C.S:403.827.000,00|EUR",
+                                 "         Nro:FS AMO201/000001 26/09/2026 14:22",
+                                 "IVA   DESCRICAO                                  VALOR",
+                                 "Laticinios/Beb. Veg.:",
+                                 "(A)   LEITE PAST GORDO 1L                        1,19",
+                                 "Charcutaria&Queijos:",
+                                 "(C)   SALMAO FUMADO  200G                        6,99",
+                                 "Padaria:",
+                                 "     POUPANCA                                0,22",     # already in its price
+                                 "(A)   PAO DE QUEIJO UN",
+                                 "      5 X 0,29                                    1,45",
+                                 "(A)   PESSEGO VERMELHO",
+                                 "      0,705 X 2,49                                1,76",
+                                 "SUBTOTAL                                    11,39",
+                                 "Desconto Cartao Utilizado                         0,70",
+                                 "TOTAL A PAGAR                                10,69",
+                                 "Cartao Credito                                   10,69",
+                                 "Total de descontos e poupancas                    0,92",
+                                 "         %IVA          Total Liq.      IVA       Total",
+                                 "(A)       6,00%           3,93         0,24       4,17",
+                                 "(C)      23,00%           5,24         1,28       6,52"])
+    assert receipt.problems() == []
+    assert [(x.department, x.name, x.vat, receipt.paid(x)) for x in receipt.items] == [
+        ("Laticinios/Beb. Veg.", "LEITE PAST GORDO 1L", "A", Decimal('1.19')),
+        ("Charcutaria&Queijos", "SALMAO FUMADO  200G", "C", Decimal('6.99')),
+        ("Padaria", "PAO DE QUEIJO UN", "A", Decimal('1.45')),
+        ("Padaria", "PESSEGO VERMELHO", "A", Decimal('1.76'))]
+    assert (receipt.items[2].qty, receipt.items[2].price) == (Decimal('5'), Decimal('0.29'))
+    assert (receipt.items[3].qty, receipt.items[3].price) == (Decimal('0.705'), Decimal('2.49'))
+    assert receipt.discounts == [("Desconto Cartao Utilizado", Decimal('0.70'))]
+    assert receipt.timestamp == datetime(2026, 9, 26, 14, 22)
+
+
 def test_profiles_are_found_by_nif():
     assert shop_profile("503340855") is ReceiptLidl
     assert shop_profile("500829993") is ReceiptPingoDoce
+    assert shop_profile("502011475") is ReceiptContinente
     assert shop_profile("999999990") is None
 
 
@@ -223,3 +320,19 @@ def test_pdf_receipt_of_an_unknown_shop_is_one_line_of_its_total(prepare_db):
 
 def test_pdf_receipt_of_a_broken_file_is_nothing(prepare_db):
     assert pdf_receipt(b"%PDF-1.4 truncated", None, CAPTURED) is None
+
+
+def test_pdf_receipt_voucher_is_a_discount_line(prepare_db):
+    at_qr = AtQr.parse(QR.replace("A:503340855", "A:500829993").replace("O:4.84", "O:5.28"))
+    fragments = [(10, 800 - 15 * i, line) for i, line in enumerate(PINGO_DOCE_VOUCHER)]
+    lines = pdf_receipt(make_pdf(fragments), at_qr, CAPTURED).slip_lines()
+    assert lines[-1] == {'name': "V. Deposito Volta", 'amount': Decimal('0.60'), 'category': PredefinedCategory.Discounts}
+    assert sum(x['amount'] for x in lines) == Decimal('-4.68')     # what the card paid
+
+
+def test_pdf_receipt_voucher_reduces_a_receipt_of_one_line(prepare_db):
+    at_qr = AtQr.parse(QR.replace("A:503340855", "A:500829993").replace("O:4.84", "O:5.28"))
+    text = [x.replace("2,49     2,49", "2,49     2,59") for x in PINGO_DOCE_VOUCHER]    # a misread item
+    fragments = [(10, 800 - 15 * i, line) for i, line in enumerate(text)]
+    lines = pdf_receipt(make_pdf(fragments), at_qr, CAPTURED).slip_lines()
+    assert [x['amount'] for x in lines] == [Decimal('-5.28'), Decimal('0.60')]

@@ -6,7 +6,8 @@ from PySide6.QtCore import QDateTime, QDate, QTime
 from jal.data_import.receipt_api.receipt_api import ReceiptAPI
 from jal.data_import.receipt_api.pt_at_qr import AtQr
 from jal.data_import.receipt_inbox import JalrFile, PaperItem
-from jal.data_import.receipt import ReceiptItem, shop_profile, line_name, is_subtotal, vat_problems, discount_line
+from jal.data_import.receipt import ReceiptItem, shop_profile, line_name, is_subtotal, vat_problems, discount_line, \
+    parse_vouchers
 from jal.db.clock import local_zone
 
 
@@ -20,16 +21,20 @@ class ReceiptOffline(ReceiptAPI):
         self._lines = lines
         self._number = number
 
-    # A receipt of the Portuguese fiscal QR, for the day it gives: the 'lines' given or one line of its total
+    # A receipt of the Portuguese fiscal QR, for the day it gives: the 'lines' given or one line of its total,
+    # then the vouchers its 'text' shows as paid
     @classmethod
-    def from_at_qr(cls, at_qr: AtQr, captured_at: datetime, lines: Optional[list] = None) -> 'ReceiptOffline':
+    def from_at_qr(cls, at_qr: AtQr, captured_at: datetime, lines: Optional[list] = None,
+                   text: Optional[list] = None) -> 'ReceiptOffline':
         shop = f"NIF {at_qr.nif}"
         amount = at_qr.total if at_qr.is_return else -at_qr.total
         day = at_qr.date
         moment = captured_at.time() if captured_at.date() == day else time(0, 0)   # a scan made later has no time
         date_time = QDateTime(QDate(day.year, day.month, day.day),
                               QTime(moment.hour, moment.minute, moment.second), local_zone())
-        return cls(shop, date_time, lines or [{'name': shop, 'amount': amount}], at_qr.number)
+        lines = (lines or [{'name': shop, 'amount': amount}]) + \
+            voucher_lines(text or [], at_qr.nif, at_qr.total, Decimal('1') if at_qr.is_return else Decimal('-1'))
+        return cls(shop, date_time, lines, at_qr.number)
 
     def activate_session(self) -> bool:
         return True
@@ -51,9 +56,23 @@ class ReceiptOffline(ReceiptAPI):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# Discount lines of the payments by voucher that the shop profile of 'nif' finds in the receipt's text;
+# a voucher that can't be trusted is left out, to be added by hand
+def voucher_lines(text: list, nif: str, total: Optional[Decimal], sign: Decimal) -> list:
+    profile = shop_profile(nif) if nif else None
+    if profile is None:
+        return []
+    vouchers, problems = parse_vouchers(text, profile.VoucherLabel, total)
+    if problems:
+        logging.warning(ReceiptAPI.tr("Receipt voucher can't be read, add it by hand") + f" ({profile.name}): "
+                        + "; ".join(problems))
+    return [discount_line(label, amount, sign) for label, amount in vouchers]
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 # Lines of the items the phone read off a paper receipt, or [] when they can't be trusted (the receipt is then one
-# line of its total). A discount belongs to the item above it, or to the whole receipt below a SUBTOTAL row; the shop
-# profile, if any, says whether it is money off and must agree with the reading the phone found to balance.
+# line of its total). A discount belongs to the item above it, or to the whole receipt below a SUBTOTAL row. The shop
+# profile says whether an item's discount is money off, the receipt's is; without a profile the phone's reading does.
 def paper_lines(receipt: JalrFile, at_qr: AtQr) -> list:
     problems, items, discounts, item_rows = [], [], [], ()
     texts = receipt.ocr_texts
@@ -70,18 +89,18 @@ def paper_lines(receipt: JalrFile, at_qr: AtQr) -> list:
                 items[-1].discounts.append((x.text, x.amount))
         else:
             problems.append(f"'{x.text}' isn't an item or a discount of one")
-    netted = True
-    if discounts or any(x.discounts for x in items):
+    netted = receipt_netted = True
+    profile = shop_profile(at_qr.nif)
+    if profile is not None:            # the totals below prove it, whatever reading the phone balanced
+        netted = profile.discounts_netted
+    elif discounts or any(x.discounts for x in items):
         hypothesis = receipt.discount_hypothesis
-        if hypothesis not in (JalrFile.NETTED, JalrFile.INFORMATIONAL):
+        if hypothesis not in (JalrFile.NETTED, JalrFile.INFORMATIONAL, JalrFile.RECEIPT_NETTED):
             problems.append(f"discounts without a reading that balances them ('{hypothesis}')")
         netted = hypothesis == JalrFile.NETTED
-        profile = shop_profile(at_qr.nif)
-        if profile is not None and profile.discounts_netted != netted:
-            problems.append(f"discounts are {'' if profile.discounts_netted else 'not '}money off for "
-                            f"{profile.name}, the phone balanced them as '{hypothesis}'")
+        receipt_netted = hypothesis in (JalrFile.NETTED, JalrFile.RECEIPT_NETTED)
     paid = [(x, x.amount - sum(a for _, a in x.discounts) if netted else x.amount) for x in items]
-    discount = sum((a for _, a in discounts), Decimal('0')) if netted else Decimal('0')
+    discount = sum((a for _, a in discounts), Decimal('0')) if receipt_netted else Decimal('0')
     if discount and receipt.tax_table:
         if any(x['total'] is None for x in receipt.tax_table):
             problems.append("VAT table without totals")
