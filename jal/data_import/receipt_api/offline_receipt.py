@@ -1,6 +1,7 @@
+import re
 import logging
 from datetime import datetime, time
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from typing import Optional
 from PySide6.QtCore import QDateTime, QDate, QTime
 from jal.data_import.receipt_api.receipt_api import ReceiptAPI
@@ -73,6 +74,7 @@ def voucher_lines(text: list, nif: str, total: Optional[Decimal], sign: Decimal)
 # Lines of the items the phone read off a paper receipt, or [] when they can't be trusted (the receipt is then one
 # line of its total). A discount belongs to the item above it, or to the whole receipt below a SUBTOTAL row. The shop
 # profile says whether an item's discount is money off, the receipt's is; without a profile the phone's reading does.
+# Items that add up to the QR's base rather than its total are priced net of VAT and get it added.
 def paper_lines(receipt: JalrFile, at_qr: AtQr) -> list:
     problems, items, discounts, item_rows = [], [], [], ()
     texts = receipt.ocr_texts
@@ -107,9 +109,14 @@ def paper_lines(receipt: JalrFile, at_qr: AtQr) -> list:
         else:
             by_code = {}
             for x, amount in paid:
-                by_code[x.vat] = by_code.get(x.vat, Decimal('0')) + amount
+                row = vat_row(x.vat, receipt.tax_table)
+                code = x.vat if row is None else receipt.tax_table[row]['code']
+                by_code[code] = by_code.get(code, Decimal('0')) + amount
             problems += vat_problems(by_code, {x['code']: x['total'] for x in receipt.tax_table}, discount)
     total = sum((amount for _, amount in paid), Decimal('0')) - discount
+    if at_qr.tax_total and not discount and total == at_qr.total - at_qr.tax_total:     # priced net of VAT
+        paid = with_vat(paid, receipt.tax_table, problems)
+        total = sum((amount for _, amount in paid), Decimal('0'))
     if total != at_qr.total:
         problems.append(f"total: items {total}, QR code {at_qr.total}")
     if problems:
@@ -121,3 +128,44 @@ def paper_lines(receipt: JalrFile, at_qr: AtQr) -> list:
     if discount:
         lines += [discount_line(label, amount, sign) for label, amount in discounts]
     return lines
+
+
+# (item, amount) pairs of 'paid' with each item's VAT added at the rate of its VAT table row; a row's rounding cents
+# go to its largest item, so every row adds up to its base + tax
+def with_vat(paid: list, table: list, problems: list) -> list:
+    members = [[] for _ in table]
+    for i, (x, _) in enumerate(paid):
+        row = vat_row(x.vat, table)
+        if row is None:
+            problems.append(f"net of VAT: no VAT table row for '{x.name}' of VAT '{x.vat}'")
+            return paid
+        members[row].append(i)
+    result, cent = list(paid), Decimal('0.01')
+    for row, items in zip(table, members):
+        if row['rate'] is None or row['base'] is None or row['tax'] is None:
+            problems.append(f"net of VAT: VAT {row['code']} has no rate, base or tax")
+            continue
+        base = sum((paid[i][1] for i in items), Decimal('0'))
+        if base != row['base']:
+            problems.append(f"net of VAT: VAT {row['code']} items {base}, table base {row['base']}")
+            continue
+        vat = {i: (paid[i][1] * row['rate'] / 100).quantize(cent, rounding=ROUND_HALF_UP) for i in items}
+        rest = row['tax'] - sum(vat.values(), Decimal('0'))
+        if abs(rest) > cent * len(items) / 2:
+            problems.append(f"net of VAT: VAT {row['code']} items' tax {row['tax'] - rest}, table {row['tax']}")
+            continue
+        if items:
+            vat[max(items, key=lambda i: paid[i][1])] += rest
+        for i in items:
+            result[i] = (paid[i][0], paid[i][1] + vat[i])
+    return result
+
+
+# Index of the VAT table row of an item's VAT code: the same code, or else the same rate ('6%' is row '6,00%');
+# None if there is no such row or more than one
+def vat_row(code: str, table: list) -> Optional[int]:
+    rows = [i for i, x in enumerate(table) if x['code'] == code]
+    if not rows and (match := re.fullmatch(r'\s*(\d+(?:[.,]\d+)?)\s*%\s*', code)):
+        rate = Decimal(match[1].replace(',', '.'))
+        rows = [i for i, x in enumerate(table) if x['rate'] == rate]
+    return rows[0] if len(rows) == 1 else None

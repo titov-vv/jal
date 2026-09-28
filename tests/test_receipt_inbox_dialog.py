@@ -127,6 +127,31 @@ def test_paper_voucher_is_a_discount_line(owner, inbox):
         assert sum(x['amount'] for x in lines) == Decimal('-11.34')
 
 
+# Items priced net of VAT add up to the QR's base 10.66: 6% 6.92 + 0.42, 23% 3.74 + 0.86 (items' own VAT 0.87)
+NET_TAX_TABLE = [{"code": "6,00%", "rate": "6.00", "base": "6.92", "tax": "0.42", "total": "7.34"},
+                 {"code": "23,00%", "rate": "23.00", "base": "3.74", "tax": "0.86", "total": "4.60"}]
+
+
+def _net_scan(tmp_path, tax_table=NET_TAX_TABLE, codes=("6%", "23%", "23%", "23%")) -> list:
+    items = [dict(role="item", text=text, amount=amount, sign_printed="positive", tax_code=code)
+             for text, amount, code in zip(("LEITE", "VINHO", "CERVEJA", "SUMO"), ("6.92", "1.25", "1.24", "1.25"),
+                                           codes)]
+    extra = paper_scan(items, hypothesis="not_applicable", tax_table=tax_table)
+    return paper_lines(JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[PHARMACY], extra=extra)),
+                       AtQr.parse(PHARMACY))
+
+
+def test_items_net_of_vat_get_it_added(prepare_db, tmp_path):
+    assert [x['amount'] for x in _net_scan(tmp_path)] == \
+        [Decimal('-7.34'), Decimal('-1.53'), Decimal('-1.53'), Decimal('-1.54')]
+
+
+def test_items_net_of_vat_need_their_vat_table_row(prepare_db, tmp_path):
+    assert _net_scan(tmp_path, tax_table=()) == []
+    assert _net_scan(tmp_path, codes=("6%", "13%", "23%", "23%")) == []
+    assert _net_scan(tmp_path, codes=("23%", "6%", "23%", "23%")) == []      # rows' bases don't match
+
+
 def test_discount_above_every_item_is_refused(prepare_db, tmp_path):
     items = [("discount", "Poupança", "1.00"), ("item", "LEITE", "12.94")]
     assert _paper_lines(tmp_path, PHARMACY, items, "netted") == []
@@ -165,6 +190,16 @@ def test_discount_without_subtotal_stays_on_its_item(prepare_db, tmp_path):
 def test_receipt_discount_must_be_shared_by_the_vat_table(prepare_db, tmp_path):
     assert _subtotal_scan(tmp_path, vat=("3.90", "7.10")) == []      # C would be dearer than its items
     assert _subtotal_scan(tmp_path, vat=("4.50", "6.60")) == []      # the shares make 0.90, not 1.00
+
+
+def test_receipt_discount_shared_by_vat_rows_of_the_items_rates(prepare_db, tmp_path):
+    qr, extra = _subtotal_receipt()
+    for item, code in zip(extra['paper']['items'], ("6%", "23%")):
+        item['tax_code'] = code
+    extra['paper']['tax_table'] = [{"code": "6,00%", "rate": "6.00", "total": "4.40"},
+                                   {"code": "23,00%", "rate": "23.00", "total": "6.60"}]
+    lines = paper_lines(JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[qr], extra=extra)), AtQr.parse(qr))
+    assert [x['amount'] for x in lines] == [Decimal('-5.00'), Decimal('-7.00'), Decimal('1.00')]
 
 
 def test_receipt_netted_reading_of_a_shop_without_profile(prepare_db, tmp_path):
