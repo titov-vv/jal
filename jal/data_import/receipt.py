@@ -259,7 +259,8 @@ class ShopReceipt:
             ('quantity_amount', self.QuantityAmountPattern), ('quantity', self.QuantityPattern),
             ('item', self.ItemPattern)) if pattern]
         items, department, pending, subtotal = [], '', None, False
-        for line in lines:
+        indent = min((len(x) - len(x.lstrip(' ')) for x in lines if x.strip()), default=0)
+        for line in (x[indent:] for x in lines):   # the page may start left of the body, at a card slip
             if not line.strip():
                 continue
             if is_subtotal(line):

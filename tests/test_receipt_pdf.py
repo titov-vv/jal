@@ -106,6 +106,17 @@ def test_lidl_items_add_up():
     assert receipt.header == {'nif': "503340855", 'doc': "FS 0421/000317", 'atcud': "JFXK7T2P-317"}
 
 
+def test_lidl_items_indented_by_a_card_slip():
+    fragments = [(x + 18, y, t) for x, y, t in lidl_receipt()] + [(10, 480, "CARTAO: ****9915")]
+    lines = layout_text(make_pdf(fragments))
+    assert "   TOMATE REDONDO                         1,41 B" in lines
+    receipt = ReceiptLidl(lines)
+    assert receipt.problems() == []
+    assert [(x.name, receipt.paid(x), x.vat) for x in receipt.items] == [
+        ("TOMATE REDONDO", Decimal('1.00'), 'B'), ("MORANGO 300G", Decimal('1.99'), 'B'),
+        ("CROISSANT CHOCOLATE 80GR", Decimal('1.70'), 'A'), ("Saco de Papel", Decimal('0.15'), 'A')]
+
+
 def test_a_misread_item_is_caught():
     receipt = ReceiptLidl(layout_text(make_pdf(lidl_receipt(strawberries="2,09"))))
     assert receipt.problems() == ["VAT B: items 3.09, table 2.99", "total: items 4.94, receipt 4.84"]
