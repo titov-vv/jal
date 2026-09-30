@@ -14,6 +14,8 @@ from jal.data_import.statement import JSF, Statement, Statement_ImportError, Sta
 from jal.data_import.card_match import CardMatcher
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
+from jal.db.clock import local_time, ZONE_SPAN
+from jal.db.operations import Transfer
 from jal.db.peer import JalPeer
 from jal.db.settings import JalSettings
 from jal.db.settings_registry import SettingsRegistry, SettingDescriptor, SettingType
@@ -94,6 +96,7 @@ class StatementTrading212(Statement):
             JSF.ACCOUNTS: [],
             JSF.ASSETS: [],
             JSF.TRADES: [],
+            JSF.TRANSFERS: [],
             JSF.ASSET_PAYMENTS: [],
             JSF.INCOME_SPENDING: []
         }
@@ -109,7 +112,8 @@ class StatementTrading212(Statement):
         self._load_period(filename, rows)
         loaders = {"Market buy": self._load_trade, "Market sell": self._load_trade,
                    "Interest on cash": self._load_interest, "Spending cashback": self._load_cashback,
-                   "Card debit": self._load_card}
+                   "Card debit": self._load_card, "Deposit": self._load_transfer,
+                   "Withdrawal": self._load_transfer}
         for row in rows:
             action = row["Action"].strip()
             if action.startswith(self.DividendAction):
@@ -118,9 +122,8 @@ class StatementTrading212(Statement):
             try:
                 loader = loaders[action]
             except KeyError:
-                # Deposits, withdrawals and currency conversions land here. Nothing is guessed about a movement of
-                # money: the import stops with the name of what it doesn't know, and the module learns it from a
-                # real example of such a row.
+                # Currency conversions land here. Nothing is guessed about a movement of money: the import stops
+                # with the name of what it doesn't know, and the module learns it from a real example of such a row.
                 raise Statement_ImportError(self.tr("Unsupported Trading 212 operation: ") + f"'{action}'")
             loader(row)
         logging.info(self.tr("Statement loaded successfully: ") + self.name)
@@ -319,12 +322,59 @@ class StatementTrading212(Statement):
         self._card_rows.append({"id": operation_id, "timestamp": timestamp, "amount": amount,
                                 "merchant": merchant, "merchant_category": row["Merchant category"]})
 
+    # A deposit or a withdrawal names no account on the other side, so it is a transfer leg with that end unknown -
+    # see _recognize_transfers(). 'Total' is positive for a deposit and negative for a withdrawal.
+    def _load_transfer(self, row: dict) -> None:
+        symbol = self._single_symbol_record_of(self.currency_id(self._currency))['id']
+        amount = self._amount(row, "Total")
+        self._data[JSF.TRANSFERS].append({
+            "id": self._next_id(JSF.TRANSFERS),
+            "account": [0, self._account_id, 0] if amount > 0 else [self._account_id, 0, 0],
+            "symbol": [symbol, symbol],
+            "timestamp": self._timestamp(row),
+            "withdrawal": abs(amount),
+            "deposit": abs(amount),
+            "fee": Decimal('0'),
+            "number": row["ID"],
+            "description": row["Notes"]
+        })
+
     # ------------------------------------------------------------------------------------------------------------------
     def match_db_ids(self):
         super().match_db_ids()   # currencies and assets; the account matches nothing, as the file names none
         self._resolve_account()
         self._resolve_peer()
+        self._recognize_transfers()
         self._review_card_operations()
+
+    # A deposit or a withdrawal is usually typed in by hand as a complete transfer before the statement comes. A stored
+    # transfer of the same amount in the same direction on the same day of the user's clock is taken for it, the
+    # closest in time first and each one once; one without such a transfer is stored as a pending leg, to be completed
+    # in the unsettled transfers list.
+    def _recognize_transfers(self) -> None:
+        transfers = self._data[JSF.TRANSFERS]
+        if not transfers:
+            return
+        account_id = self.mapped_id(JSF.ACCOUNTS, self._account_id)
+        begin, end = self.period()
+        stored = Transfer.money_movements(account_id, begin - ZONE_SPAN, end + ZONE_SPAN)
+        candidates = []
+        for transfer in transfers:
+            incoming = transfer['account'][1] == self._account_id
+            day = local_time(transfer['timestamp']).date()
+            for movement in stored:
+                if movement['incoming'] == incoming and movement['amount'] == transfer['deposit'] \
+                        and local_time(movement['timestamp']).date() == day:
+                    candidates.append((abs(movement['timestamp'] - transfer['timestamp']), transfer['id'],
+                                       movement['oid']))
+        recognized, used = set(), set()
+        for _distance, transfer_id, oid in sorted(candidates):
+            if transfer_id not in recognized and oid not in used:
+                recognized.add(transfer_id)
+                used.add(oid)
+        for transfer in [x for x in transfers if x['id'] in recognized]:
+            self._skip(self.tr("transfer is in the database already"), transfer['number'])
+            transfers.remove(transfer)
 
     # The account is not matched but named - by the user, once, in the preferences. Everything else about the
     # import depends on it, so a setting that is missing or points at something else stops the import here.

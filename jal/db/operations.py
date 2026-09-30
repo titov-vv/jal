@@ -1922,6 +1922,24 @@ class Transfer(FeeCarrier, LedgerTransaction):
                         "AND oid<=:not_after_oid", params)
         return int(oid) if oid else 0
 
+    # Money transfers into or out of 'account_id' between 'begin' and 'end', settled or not, as seen from that account:
+    # [{oid, incoming, timestamp, amount}]
+    @classmethod
+    def money_movements(cls, account_id: int, begin: int, end: int) -> list:
+        movements = []
+        query = cls._exec("SELECT oid, 1, deposit_timestamp, deposit FROM transfers WHERE deposit_account=:account_id "
+                          "AND symbol_id IS NULL AND deposit_timestamp>=:begin AND deposit_timestamp<=:end "
+                          "UNION ALL "
+                          "SELECT oid, 0, withdrawal_timestamp, withdrawal FROM transfers "
+                          "WHERE withdrawal_account=:account_id AND symbol_id IS NULL "
+                          "AND withdrawal_timestamp>=:begin AND withdrawal_timestamp<=:end",
+                          [(":account_id", account_id), (":begin", begin), (":end", end)])
+        while query.next():
+            oid, incoming, timestamp, amount = cls._read_record(query)
+            movements.append({'oid': int(oid), 'incoming': bool(incoming), 'timestamp': int(timestamp),
+                              'amount': Decimal(amount)})
+        return movements
+
     # oid of the pending transfer that records the same movement as 'data' from the side 'data' completes, or 0 if
     # there is none (and 0 as well if there are several, which is not an answer but an ambiguity).
     #

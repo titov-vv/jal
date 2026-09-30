@@ -13,6 +13,7 @@ from jal.data_import.card_match import CardMatcher
 from jal.data_import.broker_statements.trading212 import StatementTrading212, T212_ACCOUNT_SETTING
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.db import JalDB
+from jal.db.ledger import Ledger
 from jal.db.operations import LedgerTransaction
 from jal.db.peer import JalPeer
 from jal.db.settings import JalSettings
@@ -187,6 +188,49 @@ def test_statement_t212_import(prepare_db_t212):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+def test_statement_t212_transfers(tmp_path, prepare_db_t212):
+    account_id = prepare_db_t212
+    bank = JalAccountCreator(currency_id=EUR, number='BANK', name='Bank', precision=2,
+                             account_type=PredefinedAccountType.Cash).commit().id()
+    # Typed in by hand, off the statement time by a quarter of an hour and by an hour
+    LedgerTransaction.create_new(LedgerTransaction.Transfer, {
+        'withdrawal_timestamp': dt2t(2603171315), 'withdrawal_account': bank, 'withdrawal': Decimal('5000'),
+        'deposit_timestamp': dt2t(2603171315), 'deposit_account': account_id, 'deposit': Decimal('5000')})
+    LedgerTransaction.create_new(LedgerTransaction.Transfer, {
+        'withdrawal_timestamp': dt2t(2603200713), 'withdrawal_account': account_id, 'withdrawal': Decimal('500'),
+        'deposit_timestamp': dt2t(2603200713), 'deposit_account': bank, 'deposit': Decimal('500')})
+    path = str(tmp_path / "from_2026-03-01_to_2026-03-31_x.csv")
+    with open(path, 'w', encoding='utf-8') as f:
+        f.write('\n'.join(['Action,Time (UTC),Notes,ID,Total,Currency (Total)',
+                           'Deposit,2026-03-17 13:30:28+00:00,"Bank Transfer",DEP1,5000.00,"EUR"',
+                           'Deposit,2026-03-18 13:30:28+00:00,"Bank Transfer",DEP2,5000.00,"EUR"',
+                           'Withdrawal,2026-03-20 08:13:01+00:00,"Sent to Bank Account",WD1,-500.00,"EUR"',
+                           'Withdrawal,2026-03-21 08:48:00+00:00,"Sent to Bank Account",WD2,-1000.00,"EUR"']))
+
+    def import_statement():
+        statement = StatementTrading212()
+        statement.load(path)
+        statement.validate_format()
+        statement.match_db_ids()
+        statement.import_into_db()
+        return statement
+
+    # The same amount on the same day is the stored transfer; one without such a transfer waits as a pending leg
+    statement = import_statement()
+    assert statement.skipped() == {"transfer is in the database already": 2}
+    assert JalDB._read("SELECT COUNT(*) FROM transfers") == 4
+    assert JalDB._read("SELECT COUNT(*) FROM transfers WHERE withdrawal_account IS NULL AND deposit_account=:account "
+                       "AND number='DEP2'", [(":account", account_id)]) == 1
+    assert Decimal(JalDB._read("SELECT withdrawal FROM transfers WHERE withdrawal_account=:account "
+                               "AND deposit_account IS NULL AND number='WD2'", [(":account", account_id)])) == 1000
+    Ledger().rebuild(from_timestamp=0)
+    assert JalAccount(account_id).get_asset_amount(dt2t(2603220000), EUR) == Decimal('8500')
+    # A re-import recognizes all of them, the pending legs included
+    assert import_statement().skipped() == {"transfer is in the database already": 4}
+    assert JalDB._read("SELECT COUNT(*) FROM transfers") == 4
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 def test_statement_t212_sell(prepare_db_t212):
     statement = StatementTrading212()
     statement.load(data_path_of(SECOND))
@@ -210,10 +254,10 @@ def test_statement_t212_refusals(tmp_path, prepare_db_t212):
             f.write('\n'.join(lines))
         return path
 
-    # An operation this module doesn't know is named and stops the import - a deposit or a withdrawal lands here,
-    # and guessing how money moved is exactly what must not happen
-    unknown = statement_of([header, 'Deposit,2026-03-02 10:00:00+00:00,,,,,ID1,,,,,100.00,"EUR",,,,'])
-    with pytest.raises(Statement_ImportError, match="Deposit"):
+    # An operation this module doesn't know is named and stops the import - guessing how money moved is exactly what
+    # must not happen
+    unknown = statement_of([header, 'Currency conversion,2026-03-02 10:00:00+00:00,,,,,ID1,,,,,-100.00,"EUR",,,,'])
+    with pytest.raises(Statement_ImportError, match="Currency conversion"):
         StatementTrading212().load(unknown)
 
     # A column Trading212 adds only when there was such an event is money that belongs to an operation
