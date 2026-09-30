@@ -200,6 +200,7 @@ class ShopReceipt:
     ItemPattern = ''              # (?P<name>) [(?P<amount>) (?P<vat>) (?P<qty>) (?P<price>)]
     DatetimePattern = ''          # (?P<year>) (?P<month>) (?P<day>) (?P<hour>) (?P<minute>) [(?P<second>)]
     VoucherLabel = ''             # start of a payment line by voucher, which is outside the VAT table
+    SubtotalPattern = ''          # a heading that, like SUBTOTAL, puts the discounts below it on the whole receipt
 
     def __init__(self, lines: list):
         self.discounts = []       # (label, amount) pairs of the whole receipt, amount > 0 as money off
@@ -258,12 +259,13 @@ class ShopReceipt:
             ('department', self.DepartmentPattern), ('discount', self.DiscountPattern),
             ('quantity_amount', self.QuantityAmountPattern), ('quantity', self.QuantityPattern),
             ('item', self.ItemPattern)) if pattern]
+        subtotal_heading = re.compile(self.SubtotalPattern) if self.SubtotalPattern else None
         items, department, pending, subtotal = [], '', None, False
         indent = min((len(x) - len(x.lstrip(' ')) for x in lines if x.strip()), default=0)
         for line in (x[indent:] for x in lines):   # the page may start left of the body, at a card slip
             if not line.strip():
                 continue
-            if is_subtotal(line):
+            if is_subtotal(line) or (subtotal_heading and subtotal_heading.match(line)):
                 pending, subtotal = None, True
                 continue
             for name, pattern in rules:

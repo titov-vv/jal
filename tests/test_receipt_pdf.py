@@ -214,6 +214,52 @@ def test_pingo_doce_voucher_is_not_part_of_the_items():
         ([("V. Deposito Volta", Decimal('0.60'))], [])
 
 
+# Fabricated after the layout of a real Pingo Doce receipt, with loyalty balance spent under 'Descontos Extra'
+PINGO_DOCE_BALANCE = ["Registo C.R.C. Lisboa-Matricula/NIPC: 500829993",
+                      "MERCEARIA + PET FOOD",
+                      " E TABLETE EXCELLE 100G                    5,49",
+                      "       Poupanca Imediata                  (1,40)",
+                      "FRUTAS E VEGETAIS",
+                      " C MACA GALA KG           0,925 X 1,99     1,84",
+                      "       Poupanca Imediata                  (0,18)",
+                      " C KIWI SUNGOLD ZESPRI                     3,99",
+                      "Descontos Extra",
+                      "       Saldo Pingo Doce                   (4,00)",
+                      "                                  Resumo",
+                      "TOTAL                                     11,32",
+                      "TOTAL POUPANCA                            (5,58)",
+                      "TOTAL A PAGAR       5,74",
+                      "TOTAL PAGO                                 5,74",
+                      " Multibanco                                5,64",
+                      " Saldo Deposito Volta                      0,10",
+                      "Taxa      Valor s/IVA    Valor IVA  Valor c/IVA",
+                      " C  6%           3,14         0,19         3,33",
+                      " E 23%           1,96         0,45         2,41",
+                      "Utilizou do seu saldo 4,10",
+                      "           007880 2026-08-26 18:10 0766 0066 0391"]
+
+
+def test_pingo_doce_balance_is_a_receipt_discount():
+    receipt = ReceiptPingoDoce(PINGO_DOCE_BALANCE)
+    assert receipt.problems() == []
+    assert [(x.name, receipt.paid(x), x.vat) for x in receipt.items] == [
+        ("TABLETE EXCELLE 100G", Decimal('4.09'), 'E'), ("MACA GALA KG", Decimal('1.66'), 'C'),
+        ("KIWI SUNGOLD ZESPRI", Decimal('3.99'), 'C')]
+    assert receipt.discounts == [("Saldo Pingo Doce", Decimal('4.00'))]
+    assert parse_vouchers(PINGO_DOCE_BALANCE, ReceiptPingoDoce.VoucherLabel, receipt.total) == \
+        ([("Saldo Deposito Volta", Decimal('0.10'))], [])
+
+
+def test_pdf_receipt_balance_and_voucher_are_discount_lines(prepare_db):
+    at_qr = AtQr.parse(QR.replace("A:503340855", "A:500829993").replace("O:4.84", "O:5.74"))
+    fragments = [(10, 800 - 15 * i, line) for i, line in enumerate(PINGO_DOCE_BALANCE)]
+    lines = pdf_receipt(make_pdf(fragments), at_qr, CAPTURED).slip_lines()
+    assert lines[-2:] == [
+        {'name': "Saldo Pingo Doce", 'amount': Decimal('4.00'), 'category': PredefinedCategory.Discounts},
+        {'name': "Saldo Deposito Volta", 'amount': Decimal('0.10'), 'category': PredefinedCategory.Discounts}]
+    assert sum(x['amount'] for x in lines) == Decimal('-5.64')     # what the card paid
+
+
 # As a phone reads a paper receipt: label and amount one space apart, '€' read as 'E'
 OCR_PAYMENTS = ["Resumo", "TOTAL A PAGAR 5,28", "V. Deposito Volta 0,60E", "Multibanco 4.68"]
 
