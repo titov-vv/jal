@@ -238,6 +238,14 @@ def test_statement_t212_refusals(tmp_path, prepare_db_t212):
     with pytest.raises(Statement_ImportError, match="Withholding tax"):
         StatementTrading212().load(dividend)
 
+    # A month of interest only has no instrument and card columns at all, and a card row can't go without its own
+    cash_header = 'Action,Time (UTC),Notes,ID,Total,Currency (Total)'
+    cash_only = statement_of([cash_header, 'Interest on cash,2026-03-02 10:00:00+00:00,"Interest on cash",ID1,0.12,"EUR"'])
+    StatementTrading212().load(cash_only)
+    card = statement_of([cash_header, 'Card debit,2026-03-02 10:00:00+00:00,,ID1,-10.00,"EUR"'])
+    with pytest.raises(Statement_ImportError, match="Merchant name"):
+        StatementTrading212().load(card)
+
     # A second currency means an account per currency, and the file says nothing about which is which
     two_currencies = statement_of([header,
                                    'Card debit,2026-03-02 10:00:00+00:00,,,,,ID1,,,,,-10.00,"EUR",,,"SHOP","RETAIL_STORES"',
