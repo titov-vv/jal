@@ -187,6 +187,30 @@ def test_discount_without_subtotal_stays_on_its_item(prepare_db, tmp_path):
     assert lines == [{'name': "LEITE", 'amount': Decimal('-5.00')}, {'name': "SALMAO", 'amount': Decimal('-6.00')}]
 
 
+# 'Total s/Desconto' isn't a SUBTOTAL row by its text: the phone's 'scope' says where the discount was printed
+def test_discount_scope_from_the_phone_overrides_the_subtotal_row(prepare_db, tmp_path):
+    def scan(scope, subtotal):
+        qr, extra = _subtotal_receipt(subtotal=subtotal)
+        extra['paper']['items'][-1]['scope'] = scope
+        return paper_lines(JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[qr], extra=extra)), AtQr.parse(qr))
+    assert [x['amount'] for x in scan("receipt", "Total s/Desconto 12,00 EUR")] == \
+           [Decimal('-5.00'), Decimal('-7.00'), Decimal('1.00')]
+    assert [x['amount'] for x in scan("item", "SUBTOTAL 12,00")] == [Decimal('-5.00'), Decimal('-6.00')]
+
+
+# SACO's VAT code wasn't read: its 0.20 may be in either row, the rest must still add up to the discount
+def test_item_without_vat_code_beside_a_receipt_discount(prepare_db, tmp_path):
+    def scan(vat):
+        qr, extra = _subtotal_receipt(vat=vat)
+        extra['paper']['items'].insert(0, dict(role="item", text="SACO", amount="0.20", sign_printed="positive",
+                                               source_lines=[0]))
+        qr = qr.replace("O:11.00", "O:11.20")
+        return paper_lines(JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[qr], extra=extra)), AtQr.parse(qr))
+    assert [x['amount'] for x in scan(("4.60", "6.60"))] == \
+           [Decimal('-0.20'), Decimal('-5.00'), Decimal('-7.00'), Decimal('1.00')]
+    assert scan(("4.40", "6.60")) == []      # the table is 0.20 short of the items less the discount
+
+
 def test_receipt_discount_must_be_shared_by_the_vat_table(prepare_db, tmp_path):
     assert _subtotal_scan(tmp_path, vat=("3.90", "7.10")) == []      # C would be dearer than its items
     assert _subtotal_scan(tmp_path, vat=("4.50", "6.60")) == []      # the shares make 0.90, not 1.00
@@ -213,6 +237,37 @@ def test_receipt_netted_reading_of_a_shop_without_profile(prepare_db, tmp_path):
                       "Desconto Cartao 1,00", "TOTAL A PAGAR 11,00"))
     lines = paper_lines(JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[qr], extra=extra)), AtQr.parse(qr))
     assert [x['amount'] for x in lines] == [Decimal('-5.00'), Decimal('-7.00'), Decimal('1.00')]
+
+
+# A GREEN file says what each line did ('effect'); jal follows it with no reading, no subtotal words and no profile
+def _effect_scan(tmp_path, qr, lines, total) -> list:
+    items = [dict(role=role, text=text, amount=amount, sign_printed="negative" if role == "item" and effect == "deduction"
+                  else "positive", effect=effect, source_lines=[n], **({"scope": scope} if scope else {}))
+             for n, (role, text, amount, effect, scope) in enumerate(lines)]
+    qr = qr.replace("O:11.94", f"O:{total}")
+    return paper_lines(JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[qr], extra=paper_scan(items))),
+                       AtQr.parse(qr))
+
+
+def test_effect_folds_item_deductions_and_keeps_receipt_ones(prepare_db, tmp_path):
+    lines = [("item", "LEITE", "5.00", "charge", None),
+             ("discount", "Promo", "0.50", "deduction", "item"),
+             ("item", "SALMAO", "7.00", "charge", None),
+             ("discount", "POUPANCA", "0.22", "none", "item"),          # already in SALMAO's price
+             ("item", "TARA", "0.30", "deduction", None),               # money back on an item line
+             ("discount", "Desconto Global", "1.00", "deduction", "receipt")]
+    assert _effect_scan(tmp_path, PHARMACY, lines, "10.20") == [
+        {'name': "LEITE", 'amount': Decimal('-4.50')}, {'name': "SALMAO", 'amount': Decimal('-7.00')},
+        {'name': "TARA", 'amount': Decimal('0.30')},
+        {'name': "Desconto Global", 'amount': Decimal('1.00'), 'category': PredefinedCategory.Discounts}]
+    assert _effect_scan(tmp_path, PHARMACY, lines, "10.42") == []     # lines that don't give the QR total
+
+
+def test_effect_is_taken_over_the_shop_profile(prepare_db, tmp_path):
+    lines = [("item", "LEITE", "5.00", "charge", None), ("discount", "POUPANCA", "0.22", "deduction", "item"),
+             ("item", "SALMAO", "7.00", "charge", None)]
+    assert _effect_scan(tmp_path, CONTINENTE, lines, "11.78") == [         # Continente's profile wouldn't net it
+        {'name': "LEITE", 'amount': Decimal('-4.78')}, {'name': "SALMAO", 'amount': Decimal('-7.00')}]
 
 
 # A Continente scan: POUPANCA under an item is already in its price, 'Desconto Cartao' below SUBTOTAL is money off

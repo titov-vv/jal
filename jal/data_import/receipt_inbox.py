@@ -23,6 +23,10 @@ class ReceiptCode:
 class PaperItem:
     ITEM = "item"
     DISCOUNT = "discount"
+    RECEIPT = "receipt"          # 'scope' of a discount printed below a subtotal row: off the whole receipt
+    CHARGE = "charge"            # 'effect' values, written by the phone on GREEN files only
+    DEDUCTION = "deduction"
+    NO_EFFECT = "none"
 
     role: str
     text: str
@@ -34,6 +38,8 @@ class PaperItem:
     tax_code: str = ''
     department: str = ''
     source_lines: tuple = ()     # indexes of its rows in 'ocr.lines'
+    scope: str = ''              # of a discount: 'item' or 'receipt'; '' in files written before the phone told
+    effect: str = ''             # what the line did to the total, proven by the phone; '' unless the file is GREEN
 
 
 def _money(value) -> Optional[Decimal]:
@@ -73,7 +79,8 @@ class JalrFile:
                                sign_printed=x['sign_printed'], quantity=_money(x.get('quantity')),
                                unit_price=_money(x.get('unit_price')), unit=x.get('unit') or '',
                                tax_code=x.get('tax_code') or '', department=x.get('department') or '',
-                               source_lines=tuple(x.get('source_lines') or ()))
+                               source_lines=tuple(x.get('source_lines') or ()), scope=x.get('scope') or '',
+                               effect=x.get('effect') or '')
                      for x in paper.get('items') or []]
             tax_table = [{'code': x['code'], 'rate': _money(x.get('rate')), 'base': _money(x.get('base')),
                           'tax': _money(x.get('tax')), 'total': _money(x.get('total'))}

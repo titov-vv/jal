@@ -72,20 +72,80 @@ def voucher_lines(text: list, nif: str, total: Optional[Decimal], sign: Decimal)
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Lines of the items the phone read off a paper receipt, or [] when they can't be trusted (the receipt is then one
-# line of its total). A discount belongs to the item above it, or to the whole receipt below a SUBTOTAL row. The shop
-# profile says whether an item's discount is money off, the receipt's is; without a profile the phone's reading does.
+# line of its total). A GREEN file says what each line did ('effect'); an older one is read by 'by_reading'.
 # Items that add up to the QR's base rather than its total are priced net of VAT and get it added.
 def paper_lines(receipt: JalrFile, at_qr: AtQr) -> list:
+    if receipt.paper_items and all(x.effect for x in receipt.paper_items):
+        paid, discounts, problems = by_effect(receipt.paper_items)
+    else:
+        paid, discounts, problems = by_reading(receipt, at_qr)
+    discount = sum((a for _, a in discounts), Decimal('0'))
+    if discount and receipt.tax_table:
+        if any(x['total'] is None for x in receipt.tax_table):
+            problems.append("VAT table without totals")
+        else:
+            by_code = {}
+            for x, amount in paid:
+                row = vat_row(x.vat, receipt.tax_table)
+                code = x.vat if row is None else receipt.tax_table[row]['code']
+                by_code[code] = by_code.get(code, Decimal('0')) + amount
+            unmarked = by_code.pop('', Decimal('0'))     # VAT code not read by the phone: any row may hold these items
+            problems += vat_problems(by_code, {x['code']: x['total'] for x in receipt.tax_table}, discount - unmarked)
+    total = sum((amount for _, amount in paid), Decimal('0')) - discount
+    if at_qr.tax_total and not discount and total == at_qr.total - at_qr.tax_total:     # priced net of VAT
+        paid = with_vat(paid, receipt.tax_table, problems)
+        total = sum((amount for _, amount in paid), Decimal('0'))
+    if total != at_qr.total:
+        problems.append(f"total: items {total}, QR code {at_qr.total}")
+    if problems:
+        logging.warning(ReceiptAPI.tr("Receipt items don't add up, the receipt is loaded as one line")
+                        + f" ({receipt.name}): " + "; ".join(problems))
+        return []
+    sign = Decimal('1') if at_qr.is_return else Decimal('-1')
+    lines = [{'name': line_name(x), 'amount': sign * amount} for x, amount in paid]
+    if discount:
+        lines += [discount_line(label, amount, sign) for label, amount in discounts]
+    return lines
+
+
+def _receipt_item(x: PaperItem) -> ReceiptItem:
+    return ReceiptItem(name=x.text, amount=x.amount, vat=x.tax_code, qty=x.quantity, price=x.unit_price,
+                       department=x.department)
+
+
+# (item, amount paid) pairs, receipt-wide discounts and problems by the phone's 'effect': a deduction printed under an
+# item is folded into it, one off the whole receipt is a discount of its own, a line of no effect is left out
+def by_effect(paper_items: list) -> tuple:
+    paid, discounts, problems = [], [], []
+    for x in paper_items:
+        if x.effect == PaperItem.CHARGE:
+            paid.append([_receipt_item(x), x.amount])
+        elif x.effect == PaperItem.DEDUCTION and x.role == PaperItem.ITEM:     # money back on an item line
+            paid.append([_receipt_item(x), -x.amount])
+        elif x.effect == PaperItem.DEDUCTION:
+            if x.scope == PaperItem.RECEIPT or not paid:
+                discounts.append((x.text, x.amount))
+            else:
+                paid[-1][0].discounts.append((x.text, x.amount))
+                paid[-1][1] -= x.amount
+        elif x.effect != PaperItem.NO_EFFECT:
+            problems.append(f"'{x.text}' has unknown effect '{x.effect}'")
+    return [tuple(x) for x in paid], discounts, problems
+
+
+# The same for a file without 'effect'. A discount belongs to the item above it, or to the whole receipt where the
+# phone says so (for files without 'scope': below a SUBTOTAL row). The shop profile says whether an item's discount
+# is money off, the receipt's is; without a profile the phone's reading does.
+def by_reading(receipt: JalrFile, at_qr: AtQr) -> tuple:
     problems, items, discounts, item_rows = [], [], [], ()
     texts = receipt.ocr_texts
     for x in receipt.paper_items:
         if x.role == PaperItem.ITEM:
-            items.append(ReceiptItem(name=x.text, amount=x.amount, vat=x.tax_code, qty=x.quantity,
-                                     price=x.unit_price, department=x.department))
+            items.append(_receipt_item(x))
             item_rows = x.source_lines
         elif x.role == PaperItem.DISCOUNT and items:
             between = texts[max(item_rows) + 1:min(x.source_lines)] if item_rows and x.source_lines else []
-            if any(is_subtotal(line) for line in between):
+            if x.scope == PaperItem.RECEIPT or not x.scope and any(is_subtotal(line) for line in between):
                 discounts.append((x.text, x.amount))
             else:
                 items[-1].discounts.append((x.text, x.amount))
@@ -102,32 +162,7 @@ def paper_lines(receipt: JalrFile, at_qr: AtQr) -> list:
         netted = hypothesis == JalrFile.NETTED
         receipt_netted = hypothesis in (JalrFile.NETTED, JalrFile.RECEIPT_NETTED)
     paid = [(x, x.amount - sum(a for _, a in x.discounts) if netted else x.amount) for x in items]
-    discount = sum((a for _, a in discounts), Decimal('0')) if receipt_netted else Decimal('0')
-    if discount and receipt.tax_table:
-        if any(x['total'] is None for x in receipt.tax_table):
-            problems.append("VAT table without totals")
-        else:
-            by_code = {}
-            for x, amount in paid:
-                row = vat_row(x.vat, receipt.tax_table)
-                code = x.vat if row is None else receipt.tax_table[row]['code']
-                by_code[code] = by_code.get(code, Decimal('0')) + amount
-            problems += vat_problems(by_code, {x['code']: x['total'] for x in receipt.tax_table}, discount)
-    total = sum((amount for _, amount in paid), Decimal('0')) - discount
-    if at_qr.tax_total and not discount and total == at_qr.total - at_qr.tax_total:     # priced net of VAT
-        paid = with_vat(paid, receipt.tax_table, problems)
-        total = sum((amount for _, amount in paid), Decimal('0'))
-    if total != at_qr.total:
-        problems.append(f"total: items {total}, QR code {at_qr.total}")
-    if problems:
-        logging.warning(ReceiptAPI.tr("Receipt items don't add up, the receipt is loaded as one line")
-                        + f" ({receipt.name}): " + "; ".join(problems))
-        return []
-    sign = Decimal('1') if at_qr.is_return else Decimal('-1')
-    lines = [{'name': line_name(x), 'amount': sign * amount} for x, amount in paid]
-    if discount:
-        lines += [discount_line(label, amount, sign) for label, amount in discounts]
-    return lines
+    return paid, discounts if receipt_netted else [], problems
 
 
 # (item, amount) pairs of 'paid' with each item's VAT added at the rate of its VAT table row; a row's rounding cents
