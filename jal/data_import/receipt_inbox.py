@@ -23,7 +23,9 @@ class ReceiptCode:
 class PaperItem:
     ITEM = "item"
     DISCOUNT = "discount"
+    UNDER_ITEM = "item"          # 'scope' of a discount printed under an item
     RECEIPT = "receipt"          # 'scope' of a discount printed below a subtotal row: off the whole receipt
+    POSITIVE = "positive"        # 'sign_printed' of an amount printed without a minus or parentheses
     CHARGE = "charge"            # 'effect' values, written by the phone on GREEN files only
     DEDUCTION = "deduction"
     NO_EFFECT = "none"
@@ -40,6 +42,7 @@ class PaperItem:
     source_lines: tuple = ()     # indexes of its rows in 'ocr.lines'
     scope: str = ''              # of a discount: 'item' or 'receipt'; '' in files written before the phone told
     effect: str = ''             # what the line did to the total, proven by the phone; '' unless the file is GREEN
+    confidence: Optional[Decimal] = None     # of the OCR, 0..1; None where the recognizer gave none
 
 
 def _money(value) -> Optional[Decimal]:
@@ -57,11 +60,8 @@ class JalrFile:
     PDF_IMPORT = "pdf_import"
     PDF_NAME = "original.pdf"
     GREEN = "green"
+    RED = "red"
     NO_VALUE = "no_value"
-    NETTED = "netted"                    # values of 'validation.discount_hypothesis'
-    INFORMATIONAL = "informational"
-    RECEIPT_NETTED = "receipt_netted"    # only a discount below SUBTOTAL is money off
-    NOT_APPLICABLE = "not_applicable"
 
     def __init__(self, path: str, data: dict):
         self._path = path
@@ -70,6 +70,7 @@ class JalrFile:
         self._captured_at = self._timestamp(data['captured_at'])
         self._codes = [ReceiptCode(x.get('format', ''), x['raw'], x.get('page', 0)) for x in data['codes']]
         self._paper_items, self._tax_table = self._read_paper(path, data.get('paper') or {})
+        self._shop_name = (data.get('paper') or {}).get('shop_name') or ''
 
     # A malformed 'paper' block is dropped rather than the file: the fiscal code alone still imports it
     @staticmethod
@@ -80,7 +81,7 @@ class JalrFile:
                                unit_price=_money(x.get('unit_price')), unit=x.get('unit') or '',
                                tax_code=x.get('tax_code') or '', department=x.get('department') or '',
                                source_lines=tuple(x.get('source_lines') or ()), scope=x.get('scope') or '',
-                               effect=x.get('effect') or '')
+                               effect=x.get('effect') or '', confidence=_money(x.get('confidence')))
                      for x in paper.get('items') or []]
             tax_table = [{'code': x['code'], 'rate': _money(x.get('rate')), 'base': _money(x.get('base')),
                           'tax': _money(x.get('tax')), 'total': _money(x.get('total'))}
@@ -167,9 +168,10 @@ class JalrFile:
     def ocr_texts(self) -> list:
         return [x.get('text', '') for x in (self._data.get('ocr') or {}).get('lines') or []]
 
+    # Shop name as printed in the header of a paper receipt
     @property
-    def discount_hypothesis(self) -> str:
-        return (self._data.get('validation') or {}).get('discount_hypothesis') or ''
+    def shop_name(self) -> str:
+        return self._shop_name
 
     def pdf_bytes(self) -> bytes:
         with zipfile.ZipFile(self._path) as container:
@@ -208,7 +210,8 @@ class Route:
     FNS = "fns"                  # Russian QR: the receipt is downloaded from FNS
     PDF = "pdf"                  # the document itself is parsed by a shop profile
     PT_QR = "pt_qr"              # only the Portuguese QR is readable: date, shop and total
-    PT_ITEMS = "pt_items"        # Portuguese QR plus the items the phone proved against its total
+    PT_ITEMS = "pt_items"        # Portuguese QR plus the items the phone read
+    UNVERIFIED = "unverified"    # a RED scan: no fiscal code that could be relied on, imported on confirmation only
     UNSUPPORTED = "unsupported"
     NO_CODE = "no_code"                   # reasons for UNSUPPORTED
     UNKNOWN_CODE = "unknown_code"
@@ -237,7 +240,10 @@ def route(receipt: JalrFile) -> Route:
     at_qr = next((x for x in (AtQr.parse(c.raw) for c in receipt.codes) if x is not None), None)
     if receipt.kind == JalrFile.PDF_IMPORT:
         return Route(Route.PDF, at_qr=at_qr)
+    has_items = receipt.kind == JalrFile.PAPER_SCAN and any(x.role == PaperItem.ITEM for x in receipt.paper_items)
     if at_qr is None:
+        if has_items:
+            return Route(Route.UNVERIFIED)
         return Route(Route.UNSUPPORTED, reason=Route.UNKNOWN_CODE if receipt.codes else Route.NO_CODE)
     if at_qr.total == 0:     # decided by the QR itself, so files older than the phone's 'no_value' status agree
         return Route(Route.UNSUPPORTED, reason=Route.NO_VALUE, at_qr=at_qr)
@@ -247,7 +253,6 @@ def route(receipt: JalrFile) -> Route:
         return Route(Route.UNSUPPORTED, reason=Route.DOCUMENT_TYPE, at_qr=at_qr)
     if at_qr.status != AtQr.NORMAL:
         return Route(Route.UNSUPPORTED, reason=Route.DOCUMENT_STATUS, at_qr=at_qr)
-    if receipt.kind == JalrFile.PAPER_SCAN and receipt.validation_status == JalrFile.GREEN \
-            and any(x.role == PaperItem.ITEM for x in receipt.paper_items):
-        return Route(Route.PT_ITEMS, at_qr=at_qr)
-    return Route(Route.PT_QR, at_qr=at_qr)
+    if receipt.validation_status == JalrFile.RED:     # a code the phone found unusable, e.g. not self-consistent
+        return Route(Route.UNVERIFIED, at_qr=at_qr)
+    return Route(Route.PT_ITEMS if has_items else Route.PT_QR, at_qr=at_qr)

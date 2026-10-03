@@ -167,6 +167,20 @@ def parse_vouchers(lines: list, label: str, total: Optional[Decimal]) -> tuple:
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# How far a line of the import dialog can be trusted; a line without a mark is of the fiscal code or of the user
+class LineTrust:
+    PROVEN = "proven"             # the receipt's lines add up to its total
+    READ = "read"                 # read well, but the receipt's lines don't add up
+    UNRELIABLE = "unreliable"     # read poorly, or the receipt has no usable fiscal code
+
+
+# What the import dialog says about a loaded receipt as a whole
+class Verdict:
+    RECONCILED = "reconciled"
+    NOT_RECONCILED = "not_reconciled"
+    NO_CODE = "no_code"
+
+
 @dataclass
 class ReceiptItem:
     name: str

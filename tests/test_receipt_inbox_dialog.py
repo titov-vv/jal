@@ -5,8 +5,8 @@ from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
 import pytest
-from PySide6.QtCore import QDateTime, QDate, QTime
-from PySide6.QtWidgets import QWidget, QHeaderView
+from PySide6.QtCore import Qt, QDateTime, QDate, QTime
+from PySide6.QtWidgets import QWidget, QHeaderView, QLineEdit, QMessageBox
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_ledger
 from tests.test_at_qr import LIDL
@@ -20,6 +20,7 @@ from jal.db.clock import local_zone
 from jal.db.settings import JalSettings
 from jal.db.operations import IncomeSpending
 from jal.data_import.receipt_api.pt_at_qr import AtQr
+from jal.data_import.receipt import LineTrust, Verdict
 from jal.data_import.receipt_inbox import JalrFile
 from jal.data_import.receipt_api.offline_receipt import ReceiptOffline, paper_lines
 from jal.data_import.receipt_api.ru_fns import ReceiptRuFNS
@@ -58,53 +59,41 @@ def test_tier0_credit_note_is_money_back(prepare_db):
 PHARMACY = LIDL.replace("A:503340855", "A:509103774")     # a shop without a profile
 
 
-def _paper_lines(tmp_path, qr, items, hypothesis=None, total=None) -> list:
+# Lines of a GREEN scan whose items say what they did ('effect'), and whether they are proven
+def _proven(tmp_path, qr, items, total=None, tax_table=()) -> tuple:
     qr = qr if total is None else qr.replace("O:11.94", f"O:{total}")
-    jalr = JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[qr], extra=paper_scan(items, hypothesis=hypothesis)))
-    return paper_lines(jalr, AtQr.parse(qr))
+    extra = paper_scan(items, tax_table=tax_table, effect=True)
+    return paper_lines(JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[qr], extra=extra)), AtQr.parse(qr))
+
+
+def _amounts(result: tuple) -> list:
+    return [x['amount'] for x in result[0]]
+
+
+def _proven_line(name, amount, **kwargs) -> dict:
+    return dict(name=name, amount=Decimal(amount), trust=LineTrust.PROVEN, **kwargs)
 
 
 def test_paper_items_are_lines(prepare_db, tmp_path):
     items = [{"role": "item", "text": "BANANA", "amount": "1.41", "sign_printed": "positive", "quantity": "0.705",
               "unit_price": "2.00", "tax_code": "A"},
              ("item", "LEITE", "10.53")]
-    assert _paper_lines(tmp_path, PHARMACY, items) == [{'name': "BANANA (0.705 x 2.00)", 'amount': Decimal('-1.41')},
-                                                       {'name': "LEITE", 'amount': Decimal('-10.53')}]
+    assert _proven(tmp_path, PHARMACY, items) == (
+        [_proven_line("BANANA (0.705 x 2.00)", '-1.41'), _proven_line("LEITE", '-10.53')], True)
 
 
 def test_paper_items_of_a_credit_note_are_money_back(prepare_db, tmp_path):
-    lines = _paper_lines(tmp_path, PHARMACY.replace("D:FS", "D:NC"), [("item", "LEITE", "11.94")])
-    assert lines == [{'name': "LEITE", 'amount': Decimal('11.94')}]
+    assert _proven(tmp_path, PHARMACY.replace("D:FS", "D:NC"), [("item", "LEITE", "11.94")]) == \
+        ([_proven_line("LEITE", '11.94')], True)
 
 
-def test_paper_items_that_miss_the_total_are_refused(prepare_db, tmp_path):
-    assert _paper_lines(tmp_path, PHARMACY, [("item", "LEITE", "11.93")]) == []
-
-
-def test_netted_discount_reduces_its_item(prepare_db, tmp_path):
-    items = [("item", "LEITE", "12.94"), ("discount", "Poupança", "1.00"), ("item", "PAO", "0.50")]
-    lines = _paper_lines(tmp_path, PHARMACY, items, "netted", total="12.44")
-    assert lines == [{'name': "LEITE", 'amount': Decimal('-11.94')}, {'name': "PAO", 'amount': Decimal('-0.50')}]
-
-
-def test_informational_discount_is_not_money_off(prepare_db, tmp_path):
-    items = [("item", "LEITE", "12.94"), ("discount", "POUPANCA", "1.00")]
-    assert _paper_lines(tmp_path, PHARMACY, items, "informational", total="12.94") == \
-        [{'name': "LEITE", 'amount': Decimal('-12.94')}]
-
-
-def test_discount_needs_a_reading_that_balances_it(prepare_db, tmp_path):
-    items = [("item", "LEITE", "12.94"), ("discount", "Poupança", "1.00")]
-    for hypothesis in ("not_applicable", None):
-        assert _paper_lines(tmp_path, PHARMACY, items, hypothesis, total="11.94") == []
-    assert _paper_lines(tmp_path, PHARMACY, [("item", "LEITE", "11.94")], "not_applicable") != []
-
-
-def test_discount_reading_must_agree_with_the_shop_profile(prepare_db, tmp_path):
-    items = [("item", "LEITE", "12.94"), ("discount", "Promoção Lidl Plus", "1.00")]
-    assert _paper_lines(tmp_path, LIDL, items, "netted", total="11.94") == \
-        [{'name': "LEITE", 'amount': Decimal('-11.94')}]
-    assert _paper_lines(tmp_path, LIDL, items, "informational", total="12.94") == []     # Lidl nets its discounts
+# Lines that say what they did but miss the QR's total are loaded as read, nothing folded, for the user to check
+def test_effect_lines_that_miss_the_total_are_not_proven(prepare_db, tmp_path):
+    items = [("item", "LEITE", "12.94"), ("discount", "Promo", "1.00")]
+    lines, proven = _proven(tmp_path, PHARMACY, items, total="11.90")
+    assert not proven
+    assert [(x['name'], x['amount']) for x in lines] == [("LEITE", Decimal('-12.94')), ("Promo", Decimal('1.00'))]
+    assert {x['trust'] for x in lines} == {LineTrust.UNRELIABLE}      # the fixture gives no OCR confidence
 
 
 PINGO_DOCE = PHARMACY.replace("A:" + PHARMACY[2:11], "A:500829993")
@@ -113,18 +102,19 @@ PAYMENTS = {"ocr": {"lines": [{"text": x} for x in ("Resumo", "TOTAL A PAGAR 11,
 
 
 def test_paper_voucher_is_a_discount_line(owner, inbox):
-    extra = dict(paper_scan([("item", "LEITE", "11.94")]), **PAYMENTS)
+    extra = dict(paper_scan([("item", "LEITE", "11.94")], effect=True), **PAYMENTS)
     make_jalr(inbox, "20260814-184200-00000001.jalr", codes=[PINGO_DOCE], extra=extra)
     make_jalr(inbox, "20260814-184300-00000002.jalr", codes=[PINGO_DOCE.replace("G:", "G:X")], extra=PAYMENTS)
     dialog = _dialog(owner)
     voucher = {'name': "V. Deposito Volta", 'category': PredefinedCategory.Discounts, 'tag': None,
-               'amount': Decimal('0.60')}
+               'amount': Decimal('0.60'), 'trust': ''}
     for row, first in ((0, "LEITE"), (1, "NIF 500829993")):     # with items, and a QR alone
         dialog.ui.InboxList.setCurrentCell(row, 0)
         dialog.loadInboxReceipt()
         lines = dialog.slip_lines.to_dict('records')
         assert lines[0]['name'] == first and lines[-1] == voucher
         assert sum(x['amount'] for x in lines) == Decimal('-11.34')
+        assert dialog.ui.DifferenceLbl.text() == "Difference: 0.00"     # the voucher is off the total to pay
 
 
 # Items priced net of VAT add up to the QR's base 10.66: 6% 6.92 + 0.42, 23% 3.74 + 0.86 (items' own VAT 0.87)
@@ -132,115 +122,83 @@ NET_TAX_TABLE = [{"code": "6,00%", "rate": "6.00", "base": "6.92", "tax": "0.42"
                  {"code": "23,00%", "rate": "23.00", "base": "3.74", "tax": "0.86", "total": "4.60"}]
 
 
-def _net_scan(tmp_path, tax_table=NET_TAX_TABLE, codes=("6%", "23%", "23%", "23%")) -> list:
+def _net_scan(tmp_path, tax_table=NET_TAX_TABLE, codes=("6%", "23%", "23%", "23%")) -> tuple:
     items = [dict(role="item", text=text, amount=amount, sign_printed="positive", tax_code=code)
              for text, amount, code in zip(("LEITE", "VINHO", "CERVEJA", "SUMO"), ("6.92", "1.25", "1.24", "1.25"),
                                            codes)]
-    extra = paper_scan(items, hypothesis="not_applicable", tax_table=tax_table)
-    return paper_lines(JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[PHARMACY], extra=extra)),
-                       AtQr.parse(PHARMACY))
+    return _proven(tmp_path, PHARMACY, items, tax_table=tax_table)
 
 
 def test_items_net_of_vat_get_it_added(prepare_db, tmp_path):
-    assert [x['amount'] for x in _net_scan(tmp_path)] == \
-        [Decimal('-7.34'), Decimal('-1.53'), Decimal('-1.53'), Decimal('-1.54')]
+    result = _net_scan(tmp_path)
+    assert result[1] and _amounts(result) == [Decimal('-7.34'), Decimal('-1.53'), Decimal('-1.53'), Decimal('-1.54')]
 
 
 def test_items_net_of_vat_need_their_vat_table_row(prepare_db, tmp_path):
-    assert _net_scan(tmp_path, tax_table=()) == []
-    assert _net_scan(tmp_path, codes=("6%", "13%", "23%", "23%")) == []
-    assert _net_scan(tmp_path, codes=("23%", "6%", "23%", "23%")) == []      # rows' bases don't match
+    net = [Decimal('-6.92'), Decimal('-1.25'), Decimal('-1.24'), Decimal('-1.25')]     # as read, VAT not added
+    for result in (_net_scan(tmp_path, tax_table=()), _net_scan(tmp_path, codes=("6%", "13%", "23%", "23%")),
+                   _net_scan(tmp_path, codes=("23%", "6%", "23%", "23%"))):     # the last: rows' bases don't match
+        assert not result[1] and _amounts(result) == net
 
 
-def test_discount_above_every_item_is_refused(prepare_db, tmp_path):
-    items = [("discount", "Poupança", "1.00"), ("item", "LEITE", "12.94")]
-    assert _paper_lines(tmp_path, PHARMACY, items, "netted") == []
-
-
-# A fabricated shop that prints 'SUBTOTAL', then a discount off the whole receipt: A = 5.00 - 0.60, C = 7.00 - 0.40
-def _subtotal_receipt(qr=PHARMACY, subtotal="SUBTOTAL 12,00", vat=("4.40", "6.60")) -> tuple:
+# A fabricated shop that prints a discount off the whole receipt: A = 5.00 - 0.60, C = 7.00 - 0.40
+def _receipt_discount(qr=PHARMACY, vat=("4.40", "6.60")) -> tuple:
     items = [dict(role="item", text="LEITE", amount="5.00", sign_printed="positive", tax_code="A", source_lines=[1]),
              dict(role="item", text="SALMAO", amount="7.00", sign_printed="positive", tax_code="C", source_lines=[2]),
-             dict(role="discount", text="Desconto Cartao", amount="1.00", sign_printed="positive", source_lines=[4])]
+             dict(role="discount", text="Desconto Cartao", amount="1.00", sign_printed="positive", source_lines=[4],
+                  scope="receipt")]
     tax_table = [{"code": "A", "total": vat[0]}, {"code": "C", "total": vat[1]}]
-    extra = paper_scan(items, hypothesis="netted", tax_table=tax_table)
-    extra.update(_ocr("SHOP", "(A) LEITE 5,00", "(C) SALMAO 7,00", subtotal, "Desconto Cartao 1,00",
+    extra = paper_scan(items, tax_table=tax_table, effect=True)
+    extra.update(_ocr("SHOP", "(A) LEITE 5,00", "(C) SALMAO 7,00", "SUBTOTAL 12,00", "Desconto Cartao 1,00",
                       "TOTAL A PAGAR 11,00"))
     return qr.replace("O:11.94", "O:11.00"), extra
 
 
-def _subtotal_scan(tmp_path, **kwargs) -> list:
-    qr, extra = _subtotal_receipt(**kwargs)
+def _receipt_discount_scan(tmp_path, **kwargs) -> tuple:
+    qr, extra = _receipt_discount(**kwargs)
     return paper_lines(JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[qr], extra=extra)), AtQr.parse(qr))
 
 
-def test_discount_below_subtotal_is_a_line_of_its_own(prepare_db, tmp_path):
-    assert _subtotal_scan(tmp_path) == [
-        {'name': "LEITE", 'amount': Decimal('-5.00')}, {'name': "SALMAO", 'amount': Decimal('-7.00')},
-        {'name': "Desconto Cartao", 'amount': Decimal('1.00'), 'category': PredefinedCategory.Discounts}]
-    lines = _subtotal_scan(tmp_path, qr=PHARMACY.replace("D:FS", "D:NC"))
-    assert [x['amount'] for x in lines] == [Decimal('5.00'), Decimal('7.00'), Decimal('-1.00')]
-
-
-def test_discount_without_subtotal_stays_on_its_item(prepare_db, tmp_path):
-    lines = _subtotal_scan(tmp_path, subtotal="Poupanca imediata")     # no VAT code either, still the item's own
-    assert lines == [{'name': "LEITE", 'amount': Decimal('-5.00')}, {'name': "SALMAO", 'amount': Decimal('-6.00')}]
-
-
-# 'Total s/Desconto' isn't a SUBTOTAL row by its text: the phone's 'scope' says where the discount was printed
-def test_discount_scope_from_the_phone_overrides_the_subtotal_row(prepare_db, tmp_path):
-    def scan(scope, subtotal):
-        qr, extra = _subtotal_receipt(subtotal=subtotal)
-        extra['paper']['items'][-1]['scope'] = scope
-        return paper_lines(JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[qr], extra=extra)), AtQr.parse(qr))
-    assert [x['amount'] for x in scan("receipt", "Total s/Desconto 12,00 EUR")] == \
-           [Decimal('-5.00'), Decimal('-7.00'), Decimal('1.00')]
-    assert [x['amount'] for x in scan("item", "SUBTOTAL 12,00")] == [Decimal('-5.00'), Decimal('-6.00')]
+def test_receipt_discount_is_a_line_of_its_own(prepare_db, tmp_path):
+    assert _receipt_discount_scan(tmp_path) == ([
+        _proven_line("LEITE", '-5.00'), _proven_line("SALMAO", '-7.00'),
+        _proven_line("Desconto Cartao", '1.00', category=PredefinedCategory.Discounts)], True)
+    result = _receipt_discount_scan(tmp_path, qr=PHARMACY.replace("D:FS", "D:NC"))
+    assert result[1] and _amounts(result) == [Decimal('5.00'), Decimal('7.00'), Decimal('-1.00')]
 
 
 # SACO's VAT code wasn't read: its 0.20 may be in either row, the rest must still add up to the discount
 def test_item_without_vat_code_beside_a_receipt_discount(prepare_db, tmp_path):
     def scan(vat):
-        qr, extra = _subtotal_receipt(vat=vat)
+        qr, extra = _receipt_discount(vat=vat)
         extra['paper']['items'].insert(0, dict(role="item", text="SACO", amount="0.20", sign_printed="positive",
-                                               source_lines=[0]))
+                                               source_lines=[0], effect="charge"))
         qr = qr.replace("O:11.00", "O:11.20")
         return paper_lines(JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[qr], extra=extra)), AtQr.parse(qr))
-    assert [x['amount'] for x in scan(("4.60", "6.60"))] == \
-           [Decimal('-0.20'), Decimal('-5.00'), Decimal('-7.00'), Decimal('1.00')]
-    assert scan(("4.40", "6.60")) == []      # the table is 0.20 short of the items less the discount
+    amounts = [Decimal('-0.20'), Decimal('-5.00'), Decimal('-7.00'), Decimal('1.00')]
+    result = scan(("4.60", "6.60"))
+    assert result[1] and _amounts(result) == amounts
+    result = scan(("4.40", "6.60"))      # the table is 0.20 short of the items less the discount
+    assert not result[1] and _amounts(result) == amounts
 
 
 def test_receipt_discount_must_be_shared_by_the_vat_table(prepare_db, tmp_path):
-    assert _subtotal_scan(tmp_path, vat=("3.90", "7.10")) == []      # C would be dearer than its items
-    assert _subtotal_scan(tmp_path, vat=("4.50", "6.60")) == []      # the shares make 0.90, not 1.00
+    assert not _receipt_discount_scan(tmp_path, vat=("3.90", "7.10"))[1]      # C would be dearer than its items
+    assert not _receipt_discount_scan(tmp_path, vat=("4.50", "6.60"))[1]      # the shares make 0.90, not 1.00
 
 
 def test_receipt_discount_shared_by_vat_rows_of_the_items_rates(prepare_db, tmp_path):
-    qr, extra = _subtotal_receipt()
+    qr, extra = _receipt_discount()
     for item, code in zip(extra['paper']['items'], ("6%", "23%")):
         item['tax_code'] = code
     extra['paper']['tax_table'] = [{"code": "6,00%", "rate": "6.00", "total": "4.40"},
                                    {"code": "23,00%", "rate": "23.00", "total": "6.60"}]
-    lines = paper_lines(JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[qr], extra=extra)), AtQr.parse(qr))
-    assert [x['amount'] for x in lines] == [Decimal('-5.00'), Decimal('-7.00'), Decimal('1.00')]
-
-
-def test_receipt_netted_reading_of_a_shop_without_profile(prepare_db, tmp_path):
-    qr, extra = _subtotal_receipt()
-    items = extra['paper']['items']
-    items.insert(1, dict(role="discount", text="Poupanca", amount="0.22", sign_printed="positive", source_lines=[2]))
-    for x in items[2:]:
-        x['source_lines'] = [x['source_lines'][0] + 1]
-    extra['validation']['discount_hypothesis'] = "receipt_netted"
-    extra.update(_ocr("SHOP", "(A) LEITE 5,00", "Poupanca 0,22", "(C) SALMAO 7,00", "SUBTOTAL 12,00",
-                      "Desconto Cartao 1,00", "TOTAL A PAGAR 11,00"))
-    lines = paper_lines(JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[qr], extra=extra)), AtQr.parse(qr))
-    assert [x['amount'] for x in lines] == [Decimal('-5.00'), Decimal('-7.00'), Decimal('1.00')]
+    result = paper_lines(JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[qr], extra=extra)), AtQr.parse(qr))
+    assert result[1] and _amounts(result) == [Decimal('-5.00'), Decimal('-7.00'), Decimal('1.00')]
 
 
 # A GREEN file says what each line did ('effect'); jal follows it with no reading, no subtotal words and no profile
-def _effect_scan(tmp_path, qr, lines, total) -> list:
+def _effect_scan(tmp_path, qr, lines, total) -> tuple:
     items = [dict(role=role, text=text, amount=amount, sign_printed="negative" if role == "item" and effect == "deduction"
                   else "positive", effect=effect, source_lines=[n], **({"scope": scope} if scope else {}))
              for n, (role, text, amount, effect, scope) in enumerate(lines)]
@@ -256,52 +214,78 @@ def test_effect_folds_item_deductions_and_keeps_receipt_ones(prepare_db, tmp_pat
              ("discount", "POUPANCA", "0.22", "none", "item"),          # already in SALMAO's price
              ("item", "TARA", "0.30", "deduction", None),               # money back on an item line
              ("discount", "Desconto Global", "1.00", "deduction", "receipt")]
-    assert _effect_scan(tmp_path, PHARMACY, lines, "10.20") == [
-        {'name': "LEITE", 'amount': Decimal('-4.50')}, {'name': "SALMAO", 'amount': Decimal('-7.00')},
-        {'name': "TARA", 'amount': Decimal('0.30')},
-        {'name': "Desconto Global", 'amount': Decimal('1.00'), 'category': PredefinedCategory.Discounts}]
-    assert _effect_scan(tmp_path, PHARMACY, lines, "10.42") == []     # lines that don't give the QR total
-
-
-def test_effect_is_taken_over_the_shop_profile(prepare_db, tmp_path):
-    lines = [("item", "LEITE", "5.00", "charge", None), ("discount", "POUPANCA", "0.22", "deduction", "item"),
-             ("item", "SALMAO", "7.00", "charge", None)]
-    assert _effect_scan(tmp_path, CONTINENTE, lines, "11.78") == [         # Continente's profile wouldn't net it
-        {'name': "LEITE", 'amount': Decimal('-4.78')}, {'name': "SALMAO", 'amount': Decimal('-7.00')}]
+    assert _effect_scan(tmp_path, PHARMACY, lines, "10.20") == ([
+        _proven_line("LEITE", '-4.50'), _proven_line("SALMAO", '-7.00'), _proven_line("TARA", '0.30'),
+        _proven_line("Desconto Global", '1.00', category=PredefinedCategory.Discounts)], True)
+    result = _effect_scan(tmp_path, PHARMACY, lines, "10.42")     # lines that don't give the QR total: all six as read
+    assert not result[1] and _amounts(result) == [Decimal('-5.00'), Decimal('0.50'), Decimal('-7.00'), Decimal('0.22'),
+                                                  Decimal('0.30'), Decimal('1.00')]
 
 
 # A Continente scan: POUPANCA under an item is already in its price, 'Desconto Cartao' below SUBTOTAL is money off
 CONTINENTE = PHARMACY.replace("A:" + PHARMACY[2:11], "A:502011475")
 
 
-def _continente_scan(tmp_path, hypothesis, total, card_discount=True) -> list:
-    items = [dict(role="item", text="LEITE", amount="5.00", sign_printed="positive", tax_code="A", source_lines=[1]),
-             dict(role="discount", text="POUPANCA", amount="0.22", sign_printed="positive", source_lines=[2]),
-             dict(role="item", text="SALMAO", amount="7.00", sign_printed="positive", tax_code="C", source_lines=[3])]
-    texts = ["CONTINENTE", "(A) LEITE 5,00", "POUPANCA 0,22", "(C) SALMAO 7,00"]
-    tax_table = [{"code": "A", "total": "5.00"}, {"code": "C", "total": "7.00"}]
-    if card_discount:
-        items.append(dict(role="discount", text="Desconto Cartao Utilizado", amount="1.00", sign_printed="positive",
-                          source_lines=[5]))
-        texts += ["SUBTOTAL 12,00", "Desconto Cartao Utilizado 1,00"]
-        tax_table = [{"code": "A", "total": "4.40"}, {"code": "C", "total": "6.60"}]
-    extra = paper_scan(items, hypothesis=hypothesis, tax_table=tax_table)
-    extra.update(_ocr(*texts, f"TOTAL A PAGAR {total.replace('.', ',')}"))
-    qr = CONTINENTE.replace("O:11.94", f"O:{total}")
-    return paper_lines(JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[qr], extra=extra)), AtQr.parse(qr))
+def test_effect_is_taken_over_the_shop_profile(prepare_db, tmp_path):
+    lines = [("item", "LEITE", "5.00", "charge", None), ("discount", "POUPANCA", "0.22", "deduction", "item"),
+             ("item", "SALMAO", "7.00", "charge", None)]
+    assert _effect_scan(tmp_path, CONTINENTE, lines, "11.78") == (          # Continente's profile wouldn't net it
+        [_proven_line("LEITE", '-4.78'), _proven_line("SALMAO", '-7.00')], True)
 
 
-def test_continente_item_saving_is_already_in_its_price(prepare_db, tmp_path):
-    assert _continente_scan(tmp_path, "informational", "12.00", card_discount=False) == [
-        {'name': "LEITE", 'amount': Decimal('-5.00')}, {'name': "SALMAO", 'amount': Decimal('-7.00')}]
-    assert _continente_scan(tmp_path, "netted", "11.78", card_discount=False) == []    # the profile knows better
+# ----------------------------------------------------------------------------------------------------------------------
+# A file without 'effect' (AMBER, RED, or written before the phone stamped it) is loaded as read: items as spent,
+# every discount a line of its own, each line marked by how well it was read
+def _as_read(tmp_path, qr, items, status="amber") -> tuple:
+    jalr = JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[qr] if qr else [], extra=paper_scan(items, status)))
+    return paper_lines(jalr, AtQr.parse(qr) if qr else None)
 
 
-def test_continente_card_discount_is_money_off_beside_item_savings(prepare_db, tmp_path):
-    assert _continente_scan(tmp_path, None, "11.00") == [          # no reading of the phone balances both kinds
-        {'name': "LEITE", 'amount': Decimal('-5.00')}, {'name': "SALMAO", 'amount': Decimal('-7.00')},
-        {'name': "Desconto Cartao Utilizado", 'amount': Decimal('1.00'), 'category': PredefinedCategory.Discounts}]
-    assert _continente_scan(tmp_path, None, "10.78") == []
+def _read_item(role, text, amount, confidence=None, sign="positive", scope=None) -> dict:
+    item = dict(role=role, text=text, amount=amount, sign_printed=sign, confidence=confidence)
+    return dict(item, scope=scope) if scope else item
+
+
+def test_unproven_lines_are_loaded_as_read_and_marked_by_confidence(prepare_db, tmp_path):
+    items = [_read_item("item", "LEITE", "12.94", 0.9), _read_item("discount", "Promo", "1.00", 0.5, scope="item"),
+             _read_item("item", "PAO", "0.50", 0.49), _read_item("item", "TARA", "0.30", 0.8, sign="negative"),
+             _read_item("item", "SACO", "0.10")]
+    assert _as_read(tmp_path, PHARMACY, items) == ([
+        {'name': "LEITE", 'amount': Decimal('-12.94'), 'trust': LineTrust.READ},
+        {'name': "Promo", 'amount': Decimal('1.00'), 'category': PredefinedCategory.Discounts, 'trust': LineTrust.READ},
+        {'name': "PAO", 'amount': Decimal('-0.50'), 'trust': LineTrust.UNRELIABLE},
+        {'name': "TARA", 'amount': Decimal('0.30'), 'trust': LineTrust.READ},
+        {'name': "SACO", 'amount': Decimal('-0.10'), 'trust': LineTrust.UNRELIABLE}], False)     # confidence unknown
+    result = _as_read(tmp_path, PHARMACY.replace("D:FS", "D:NC"), items)
+    assert _amounts(result) == [Decimal('12.94'), Decimal('-1.00'), Decimal('0.50'), Decimal('-0.30'), Decimal('0.10')]
+
+
+# A GREEN file older than 'effect' is not proven to jal either, though its lines happen to add up
+def test_green_file_without_effect_is_loaded_as_read(prepare_db, tmp_path):
+    lines, proven = _as_read(tmp_path, PHARMACY, [_read_item("item", "LEITE", "11.94", 0.9)], status="green")
+    assert not proven and lines == [{'name': "LEITE", 'amount': Decimal('-11.94'), 'trust': LineTrust.READ}]
+
+
+# Continente prints item savings that are already in the price: its profile leaves them out, but only where the
+# phone says the discount was printed under an item
+def test_shop_profile_leaves_out_item_discounts_already_in_the_price(prepare_db, tmp_path):
+    items = [_read_item("item", "LEITE", "5.00", 0.9), _read_item("discount", "POUPANCA", "0.22", 0.9, scope="item"),
+             _read_item("discount", "Desconto Cartao Utilizado", "1.00", 0.9, scope="receipt"),
+             _read_item("discount", "Desconto", "0.10", 0.9)]
+    assert _amounts(_as_read(tmp_path, CONTINENTE, items)) == [Decimal('-5.00'), Decimal('1.00'), Decimal('0.10')]
+    assert _amounts(_as_read(tmp_path, PHARMACY, items)) == \
+        [Decimal('-5.00'), Decimal('0.22'), Decimal('1.00'), Decimal('0.10')]
+    assert _amounts(_as_read(tmp_path, LIDL, items)) == \
+        [Decimal('-5.00'), Decimal('0.22'), Decimal('1.00'), Decimal('0.10')]          # Lidl nets its discounts
+
+
+# Nothing proves a RED scan, however well it was read; one without a fiscal code is a purchase
+def test_red_scan_lines_are_unreliable(prepare_db, tmp_path):
+    items = [_read_item("item", "LEITE", "12.94", 0.95), _read_item("discount", "Promo", "1.00", 0.95)]
+    for qr in (PHARMACY, None):
+        lines, proven = _as_read(tmp_path, qr, items, status="red")
+        assert not proven and [x['amount'] for x in lines] == [Decimal('-12.94'), Decimal('1.00')]
+        assert {x['trust'] for x in lines} == {LineTrust.UNRELIABLE}
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -511,16 +495,20 @@ def test_unreadable_pdf_loads_nothing(owner, inbox):
 
 # ----------------------------------------------------------------------------------------------------------------------
 def test_green_paper_scan_brings_its_items(owner, inbox):
-    items = [("item", "LEITE", "12.94"), ("discount", "Promoção Lidl Plus", "1.00")]
-    path = make_jalr(inbox, "20260814-184200-00000001.jalr", codes=[LIDL],
-                     extra=paper_scan(items, hypothesis="netted"))
+    items = [("item", "LEITE", "12.94"), dict(role="discount", text="Promoção Lidl Plus", amount="1.00",
+                                              sign_printed="negative", scope="item")]
+    path = make_jalr(inbox, "20260814-184200-00000001.jalr", codes=[LIDL], extra=paper_scan(items, effect=True))
     dialog = _dialog(owner)
     assert dialog.ui.InboxList.item(0, 2).text() == "Portuguese QR and items: NIF 503340855, 11.94"
     dialog.ui.InboxList.setCurrentCell(0, 0)
     dialog.loadInboxReceipt()
     assert dialog.slip_lines['name'].tolist() == ["LEITE"]
     assert dialog.slip_lines['amount'].tolist() == [Decimal('-11.94')]
+    assert dialog.slip_lines['trust'].tolist() == [LineTrust.PROVEN]
     assert dialog.ui.SlipDateTime.dateTime() == _local(2026, 8, 14, 18, 42)
+    assert dialog.ui.VerdictLbl.text() == "Reconciled automatically"
+    assert dialog.ui.TotalsLbl.text() == "Lines: -11.94    Receipt total: -11.94"
+    assert dialog.ui.DifferenceLbl.text() == "Difference: 0.00"
 
     dialog.ui.AccountEdit.selected_id = 1
     dialog.ui.PeerEdit.selected_id = 1
@@ -529,33 +517,159 @@ def test_green_paper_scan_brings_its_items(owner, inbox):
     oid = IncomeSpending.find_by_number(NUMBER)
     assert oid and IncomeSpending(oid).amount() == Decimal('-11.94')
     assert not os.path.exists(path)
+    assert dialog.ui.VerdictLbl.text() == '' and dialog.ui.TotalsLbl.text() == ''     # nothing is loaded any more
 
 
 def test_receipt_discount_line_comes_with_its_category(owner, inbox):
-    qr, extra = _subtotal_receipt()
+    qr, extra = _receipt_discount()
     make_jalr(inbox, "20260814-184200-00000001.jalr", codes=[qr], extra=extra)
     dialog = _dialog(owner)
     _load(dialog)
     assert dialog.slip_lines['category'].tolist() == [0, 0, PredefinedCategory.Discounts]
 
 
-def test_amber_paper_scan_is_one_line_of_the_total(owner, inbox):
-    make_jalr(inbox, "20260814-184200-00000001.jalr", codes=[LIDL],
-              extra=paper_scan([("item", "LEITE", "11.94")], status="amber"))
+def test_scan_without_items_is_one_line_of_the_total(owner, inbox):
+    make_jalr(inbox, "20260814-184200-00000001.jalr", codes=[LIDL], extra=paper_scan([], status="amber"))
     dialog = _dialog(owner)
     assert dialog.ui.InboxList.item(0, 2).text() == "Portuguese QR: NIF 503340855, 11.94"
-    dialog.ui.InboxList.setCurrentCell(0, 0)
-    dialog.loadInboxReceipt()
+    _load(dialog)
     assert dialog.slip_lines['name'].tolist() == ["NIF 503340855"]
     assert dialog.slip_lines['amount'].tolist() == [Decimal('-11.94')]
+    assert dialog.slip_lines['trust'].tolist() == ['']
+    assert dialog.ui.VerdictLbl.text() == "Not reconciled, check the lines"
 
 
-def test_green_items_that_dont_add_up_are_one_line_of_the_total(owner, inbox):
-    make_jalr(inbox, "20260814-184200-00000001.jalr", codes=[LIDL], extra=paper_scan([("item", "LEITE", "1.94")]))
+def _unreconciled(inbox, status="amber", codes=(LIDL,), **kwargs) -> str:
+    items = [_read_item("item", "LEITE", "10.00", 0.9), _read_item("item", "PAO", "1.00", 0.3)]
+    return make_jalr(inbox, "20260814-184200-00000001.jalr", codes=list(codes),
+                     extra=paper_scan(items, status=status, **kwargs))
+
+
+def test_amber_paper_scan_brings_its_lines_to_check(owner, inbox):
+    _unreconciled(inbox)
     dialog = _dialog(owner)
-    dialog.ui.InboxList.setCurrentCell(0, 0)
-    dialog.loadInboxReceipt()
-    assert dialog.slip_lines['amount'].tolist() == [Decimal('-11.94')]
+    assert dialog.ui.InboxList.item(0, 2).text() == "Portuguese QR and items: NIF 503340855, 11.94"
+    assert not dialog.ui.AddLineBtn.isEnabled() and not dialog.ui.DeleteLineBtn.isEnabled()
+    _load(dialog)
+    assert dialog.slip_lines['amount'].tolist() == [Decimal('-10.00'), Decimal('-1.00')]
+    assert dialog.slip_lines['trust'].tolist() == [LineTrust.READ, LineTrust.UNRELIABLE]
+    assert dialog.ui.VerdictLbl.text() == "Not reconciled, check the lines"
+    assert dialog.ui.TotalsLbl.text() == "Lines: -11.00    Receipt total: -11.94"
+    assert dialog.ui.DifferenceLbl.text() == "Difference: 0.94"
+    assert dialog.ui.AddLineBtn.isEnabled() and dialog.ui.DeleteLineBtn.isEnabled()
+    assert "Read confidently" in dialog.model.data(dialog.model.index(0, 0), Qt.ToolTipRole)
+    assert "Unreliable" in dialog.model.data(dialog.model.index(1, 3), Qt.ToolTipRole)
+
+
+def test_lines_are_fixed_by_hand_until_they_add_up(owner, inbox):
+    _unreconciled(inbox)
+    dialog = _dialog(owner)
+    _load(dialog)
+    model, delegate, editor = dialog.model, dialog.delegate, QLineEdit(dialog)
+    editor.setText("1,44")                                    # PAO was misread: -1.44 would do, the sign is the user's
+    delegate.setModelData(editor, model, model.index(1, 3))
+    assert dialog.slip_lines['amount'].tolist() == [Decimal('-10.00'), Decimal('1.44')]
+    assert dialog.slip_lines['trust'].tolist() == [LineTrust.READ, '']     # the user's amount carries no mark
+    assert dialog.ui.DifferenceLbl.text() == "Difference: 3.38"
+    editor.setText("one euro")                                # not an amount: the line stays
+    delegate.setModelData(editor, model, model.index(1, 3))
+    editor.setText("NaN")
+    delegate.setModelData(editor, model, model.index(1, 3))
+    assert dialog.slip_lines['amount'].tolist() == [Decimal('-10.00'), Decimal('1.44')]
+    editor.setText("-1.44")
+    delegate.setModelData(editor, model, model.index(1, 3))
+    editor.setText(" PAO DE FORMA ")
+    delegate.setModelData(editor, model, model.index(1, 0))
+    assert dialog.slip_lines['name'].tolist() == ["LEITE", "PAO DE FORMA"]
+
+    dialog.addLine()                                          # an item the phone missed
+    assert model.rowCount() == 3 and dialog.slip_lines.iloc[2].tolist() == ['', 0, None, Decimal('0'), '']
+    assert dialog.slip_lines['category'].dtype == int
+    model.setData(model.index(2, 0), "SACO")
+    model.setData(model.index(2, 3), Decimal('-0.60'))
+    dialog.addLine()                                          # and a line added by mistake
+    dialog.ui.LinesTableView.setCurrentIndex(model.index(3, 0))
+    dialog.deleteLine()
+    assert dialog.slip_lines['name'].tolist() == ["LEITE", "PAO DE FORMA", "SACO"]
+    assert dialog.ui.TotalsLbl.text() == "Lines: -12.04    Receipt total: -11.94"
+    assert dialog.ui.DifferenceLbl.text() == "Difference: -0.10"
+    dialog.ui.LinesTableView.setCurrentIndex(model.index(2, 0))
+    dialog.deleteLine()
+    model.setData(model.index(0, 3), Decimal('-10.50'))
+    assert dialog.ui.DifferenceLbl.text() == "Difference: 0.00"
+
+
+def test_lines_that_dont_add_up_are_added_on_confirmation_only(owner, inbox, monkeypatch):
+    path = _unreconciled(inbox)
+    dialog = _dialog(owner)
+    asked = []
+    monkeypatch.setattr(QMessageBox, "question", lambda *args: asked.append(args[3]) or QMessageBox.No)
+    _load_and_add(dialog)
+    assert len(asked) == 1 and "0.94" in asked[0]
+    assert _operations() == 0 and os.path.exists(path) and dialog.slip_lines is not None
+    monkeypatch.setattr(QMessageBox, "question", lambda *args: QMessageBox.Yes)
+    dialog.addOperation()
+    assert IncomeSpending(IncomeSpending.find_by_number(NUMBER)).amount() == Decimal('-11.00')
+    assert not os.path.exists(path)
+
+
+def test_receipt_without_lines_is_not_added(owner, inbox):
+    _unreconciled(inbox)
+    dialog = _dialog(owner)
+    _load(dialog)
+    dialog.model.removeRows(0, 2)
+    assert dialog.ui.TotalsLbl.text() == "Lines: 0.00    Receipt total: -11.94"
+    dialog.ui.AccountEdit.selected_id = 1
+    dialog.ui.PeerEdit.selected_id = 1
+    dialog.addOperation()
+    assert _operations() == 0
+
+
+def test_green_items_that_dont_add_up_are_loaded_as_read(owner, inbox):
+    make_jalr(inbox, "20260814-184200-00000001.jalr", codes=[LIDL],
+              extra=paper_scan([("item", "LEITE", "1.94")], effect=True))
+    dialog = _dialog(owner)
+    _load(dialog)
+    assert dialog.slip_lines['amount'].tolist() == [Decimal('-1.94')]
+    assert dialog.ui.VerdictLbl.text() == "Not reconciled, check the lines"
+    assert dialog.ui.DifferenceLbl.text() == "Difference: 10.00"
+
+
+# A RED scan is loaded only after the user confirms it; its code, if jal can parse it, still gives the total to check
+def test_red_scan_is_loaded_on_confirmation_only(owner, inbox, monkeypatch):
+    _unreconciled(inbox, status="red")
+    dialog = _dialog(owner)
+    assert dialog.ui.InboxList.item(0, 2).text() == "Not verified, Portuguese QR: NIF 503340855, 11.94"
+    monkeypatch.setattr(QMessageBox, "question", lambda *args: QMessageBox.No)
+    _load(dialog)
+    assert dialog.slip_lines is None and dialog.ui.VerdictLbl.text() == ''
+    monkeypatch.setattr(QMessageBox, "question", lambda *args: QMessageBox.Yes)
+    _load(dialog)
+    assert dialog.slip_lines['amount'].tolist() == [Decimal('-10.00'), Decimal('-1.00')]
+    assert dialog.slip_lines['trust'].tolist() == [LineTrust.UNRELIABLE, LineTrust.UNRELIABLE]
+    assert dialog.ui.VerdictLbl.text() == "No usable fiscal code, rescan recommended"
+    assert dialog.ui.DifferenceLbl.text() == "Difference: 0.94"
+
+
+# Without a code there is no total, no date and no document number: the scan's own time, and no second-import guard
+def test_red_scan_without_a_code_brings_its_lines_alone(owner, inbox, monkeypatch):
+    path = _unreconciled(inbox, status="red", codes=(), shop_name="MERCADO DA ESQUINA")
+    dialog = _dialog(owner)
+    assert dialog.ui.InboxList.item(0, 2).text() == "Not verified, no fiscal code"
+    asked = []
+    monkeypatch.setattr(QMessageBox, "question", lambda *args: asked.append(args[3]) or QMessageBox.Yes)
+    _load(dialog)
+    assert dialog.ui.SlipShopName.text() == "MERCADO DA ESQUINA"
+    assert dialog.ui.SlipDateTime.dateTime() == _local(2026, 8, 14, 18, 42)
+    assert dialog.ui.VerdictLbl.text() == "No usable fiscal code, rescan recommended"
+    assert dialog.ui.TotalsLbl.text() == "Lines: -11.00" and dialog.ui.DifferenceLbl.text() == ''
+    dialog.ui.AccountEdit.selected_id = 1
+    dialog.ui.PeerEdit.selected_id = 1
+    dialog.slip_lines['category'] = PredefinedCategory.Fees
+    dialog.addOperation()
+    assert len(asked) == 1                                    # the load was confirmed; there is no total to differ from
+    assert _operations() == 1 and not os.path.exists(path)
+    assert JalDB._read("SELECT number FROM actions") == ''
 
 
 def test_skipped_file_leaves_the_inbox_without_an_operation(owner, inbox):

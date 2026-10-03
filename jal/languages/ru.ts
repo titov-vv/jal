@@ -3674,118 +3674,188 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>ImportReceiptDialog</name>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="156"/>
+        <location filename="../data_import/shop_receipt.py" line="219"/>
         <source>Add</source>
         <translation>Добавить</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="157"/>
+        <location filename="../data_import/shop_receipt.py" line="220"/>
         <source>Clear</source>
         <translation>Очистить</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="194"/>
+        <location filename="../data_import/shop_receipt.py" line="260"/>
         <source>Set the phone receipt inbox folder in Preferences</source>
         <translation>Укажите папку входящих чеков с телефона в Параметрах</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="206"/>
+        <location filename="../data_import/shop_receipt.py" line="272"/>
         <source>Paper scan</source>
         <translation>Скан бумажного чека</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="207"/>
+        <location filename="../data_import/shop_receipt.py" line="273"/>
         <source>Image</source>
         <translation>Изображение</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="208"/>
+        <location filename="../data_import/shop_receipt.py" line="274"/>
         <source>PDF</source>
         <translation>PDF</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="215"/>
+        <location filename="../data_import/shop_receipt.py" line="281"/>
         <source>Portuguese QR</source>
         <translation>Португальский QR-код</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="218"/>
+        <location filename="../data_import/shop_receipt.py" line="284"/>
         <source>Portuguese QR and items</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="220"/>
+        <location filename="../data_import/shop_receipt.py" line="287"/>
+        <source>Not verified, no fiscal code</source>
+        <translation>Не проверен, нет фискального кода</translation>
+    </message>
+    <message>
+        <location filename="../data_import/shop_receipt.py" line="289"/>
+        <source>Not verified, Portuguese QR</source>
+        <translation>Не проверен, португальский QR</translation>
+    </message>
+    <message>
+        <location filename="../data_import/shop_receipt.py" line="291"/>
         <source>Russian QR</source>
         <translation>Российский QR-код</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="222"/>
+        <location filename="../data_import/shop_receipt.py" line="293"/>
         <source>PDF document</source>
         <translation>PDF-документ</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="224"/>
+        <location filename="../data_import/shop_receipt.py" line="295"/>
         <source>no QR code found</source>
         <translation>QR-код не найден</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="225"/>
+        <location filename="../data_import/shop_receipt.py" line="296"/>
         <source>QR code isn&apos;t recognized</source>
         <translation>QR-код не распознан</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="226"/>
+        <location filename="../data_import/shop_receipt.py" line="297"/>
         <source>document type isn&apos;t a sale or a return</source>
         <translation>тип документа - не продажа и не возврат</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="227"/>
+        <location filename="../data_import/shop_receipt.py" line="298"/>
         <source>document is annulled or not final</source>
         <translation>документ аннулирован или не окончательный</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="228"/>
+        <location filename="../data_import/shop_receipt.py" line="299"/>
         <source>no money moved (signed total 0.00)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="230"/>
+        <location filename="../data_import/shop_receipt.py" line="301"/>
         <source>Unsupported</source>
         <translation>Не поддерживается</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="254"/>
+        <location filename="../data_import/shop_receipt.py" line="317"/>
+        <source>Receipt without a usable fiscal code</source>
+        <translation>Чек без пригодного фискального кода</translation>
+    </message>
+    <message>
+        <location filename="../data_import/shop_receipt.py" line="318"/>
+        <source>The scan has no fiscal code that could be relied on, so nothing proves its lines. A rescan is recommended. Load it anyway?</source>
+        <translation>В скане нет фискального кода, на который можно положиться, поэтому его позиции ничем не подтверждены. Рекомендуется отсканировать чек заново. Всё равно загрузить?</translation>
+    </message>
+    <message>
+        <location filename="../data_import/shop_receipt.py" line="338"/>
         <source>Receipt file can&apos;t be read</source>
         <translation>Невозможно прочитать файл чека</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="261"/>
+        <location filename="../data_import/shop_receipt.py" line="345"/>
         <source>Receipt can&apos;t be imported</source>
         <translation>Невозможно импортировать чек</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="341"/>
+        <location filename="../data_import/shop_receipt.py" line="429"/>
+        <source>Reconciled automatically</source>
+        <translation>Сверен автоматически</translation>
+    </message>
+    <message>
+        <location filename="../data_import/shop_receipt.py" line="430"/>
+        <source>Not reconciled, check the lines</source>
+        <translation>Не сверен, проверьте позиции</translation>
+    </message>
+    <message>
+        <location filename="../data_import/shop_receipt.py" line="431"/>
+        <source>No usable fiscal code, rescan recommended</source>
+        <translation>Нет пригодного фискального кода, рекомендуется отсканировать заново</translation>
+    </message>
+    <message>
+        <location filename="../data_import/shop_receipt.py" line="462"/>
+        <source>Lines</source>
+        <translation>Позиции</translation>
+    </message>
+    <message>
+        <location filename="../data_import/shop_receipt.py" line="467"/>
+        <source>Receipt total</source>
+        <translation>Итог чека</translation>
+    </message>
+    <message>
+        <location filename="../data_import/shop_receipt.py" line="468"/>
+        <source>Difference</source>
+        <translation>Разница</translation>
+    </message>
+    <message>
+        <location filename="../data_import/shop_receipt.py" line="490"/>
+        <source>Not possible to import receipt: it has no lines</source>
+        <translation>Невозможно импортировать чек: в нём нет позиций</translation>
+    </message>
+    <message>
+        <location filename="../data_import/shop_receipt.py" line="493"/>
         <source>Not possible to import receipt: no account set for import</source>
         <translation>Невозможно импортировать чек: не выбран счёт для импорта</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="344"/>
+        <location filename="../data_import/shop_receipt.py" line="496"/>
         <source>Not possible to import receipt: can&apos;t import: no peer set for import</source>
         <translation>Невозможно импортировать чек: не выбран контрагент для импорта</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="347"/>
+        <location filename="../data_import/shop_receipt.py" line="499"/>
         <source>Not possible to import receipt: some categories are not set</source>
         <translation>Невозможно импортировать чек: некоторые категории не выбраны</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="352"/>
+        <location filename="../data_import/shop_receipt.py" line="504"/>
         <source>Not possible to import receipt: it is imported already</source>
         <translation>Невозможно импортировать чек: он уже импортирован</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="292"/>
-        <location filename="../data_import/shop_receipt.py" line="383"/>
+        <location filename="../data_import/shop_receipt.py" line="511"/>
+        <source>Lines don&apos;t add up</source>
+        <translation>Позиции не сходятся с итогом</translation>
+    </message>
+    <message>
+        <location filename="../data_import/shop_receipt.py" line="512"/>
+        <source>The lines differ from the receipt&apos;s total by</source>
+        <translation>Сумма позиций отличается от итога чека на</translation>
+    </message>
+    <message>
+        <location filename="../data_import/shop_receipt.py" line="513"/>
+        <source>Add the operation anyway?</source>
+        <translation>Всё равно добавить операцию?</translation>
+    </message>
+    <message>
+        <location filename="../data_import/shop_receipt.py" line="376"/>
+        <location filename="../data_import/shop_receipt.py" line="544"/>
         <source>Receipt file can&apos;t be moved out of the inbox</source>
         <translation>Невозможно переместить файл чека из папки входящих</translation>
     </message>
@@ -3813,7 +3883,7 @@ one for ParentCo and second for Subsidiary</source>
         <translation>&amp;Контрагент:</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="171"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="223"/>
         <source>&amp;Lines:</source>
         <translation>&amp;Позиции:</translation>
     </message>
@@ -3868,12 +3938,22 @@ one for ParentCo and second for Subsidiary</source>
         <translation> ➜ </translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="184"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="180"/>
+        <source>Add line</source>
+        <translation>Добавить позицию</translation>
+    </message>
+    <message>
+        <location filename="../ui/receipt_import_dlg.ui" line="187"/>
+        <source>Delete line</source>
+        <translation>Удалить позицию</translation>
+    </message>
+    <message>
+        <location filename="../ui/receipt_import_dlg.ui" line="236"/>
         <source>Account:</source>
         <translation>Счет:</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="204"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="256"/>
         <source>Set Tag for all lines</source>
         <translation>Установить тэг для всех позиций</translation>
     </message>
@@ -4577,8 +4657,8 @@ do you want to save them?</source>
     <message>
         <location filename="../db/operations.py" line="1000"/>
         <location filename="../db/operations.py" line="1108"/>
-        <location filename="../db/operations.py" line="2313"/>
-        <location filename="../db/operations.py" line="3026"/>
+        <location filename="../db/operations.py" line="2331"/>
+        <location filename="../db/operations.py" line="3044"/>
         <source>UNDEFINED</source>
         <translation>НЕОПРЕДЕЛЕНО</translation>
     </message>
@@ -4802,7 +4882,7 @@ do you want to save them?</source>
     <message>
         <location filename="../db/operations.py" line="1754"/>
         <location filename="../db/operations.py" line="1759"/>
-        <location filename="../db/operations.py" line="2821"/>
+        <location filename="../db/operations.py" line="2839"/>
         <source>(pending)</source>
         <translation>(в ожидании)</translation>
     </message>
@@ -4817,239 +4897,239 @@ do you want to save them?</source>
         <translation>Ошибка. Курс равен нулю</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1976"/>
-        <location filename="../db/operations.py" line="1989"/>
+        <location filename="../db/operations.py" line="1994"/>
+        <location filename="../db/operations.py" line="2007"/>
         <source>Arrival precedes departure, transfer is left unsettled: </source>
         <translation>Прибытие раньше отправления, перевод остаётся незавершённым: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1997"/>
+        <location filename="../db/operations.py" line="2015"/>
         <source>Transfer settled by transaction hash: </source>
         <translation>Перевод завершён по хэшу транзакции: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2211"/>
+        <location filename="../db/operations.py" line="2229"/>
         <source>Asset amount is not enough for asset transfer processing. Date: </source>
         <translation>Количество актива недостаточно для обработки перевода. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2216"/>
+        <location filename="../db/operations.py" line="2234"/>
         <source>Processed asset amount is less than transfer amount. Date: </source>
         <translation>Обработанное количество меньше, чем количество в трансфере. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2232"/>
+        <location filename="../db/operations.py" line="2250"/>
         <source>Asset withdrawal not found for transfer.</source>
         <translation>Списание актива не найдено для трансфера.</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2314"/>
+        <location filename="../db/operations.py" line="2332"/>
         <source>Symbol change</source>
         <translation>Смена символа</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2315"/>
+        <location filename="../db/operations.py" line="2333"/>
         <source>Split</source>
         <translation>Сплит</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2316"/>
+        <location filename="../db/operations.py" line="2334"/>
         <source>Spin-off</source>
         <translation>Выделение компании (спин-офф)</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2317"/>
+        <location filename="../db/operations.py" line="2335"/>
         <source>Merger</source>
         <translation>Реорганизация компании</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2318"/>
+        <location filename="../db/operations.py" line="2336"/>
         <source>Delisting</source>
         <translation>Делистинг</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2428"/>
+        <location filename="../db/operations.py" line="2446"/>
         <source>Asset isn&apos;t a part of corporate action results: </source>
         <translation>ЦБ не является результатом корпоративного действия: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2447"/>
+        <location filename="../db/operations.py" line="2465"/>
         <source>Corporate action type isn&apos;t defined. Date: </source>
         <translation>Не задан тип корпоративного события. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2452"/>
+        <location filename="../db/operations.py" line="2470"/>
         <source>Asset amount is not enough for corporate action processing. Date: </source>
         <translation>Количество ценных бумаг недостаточно для обработки корпоративного события. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2456"/>
+        <location filename="../db/operations.py" line="2474"/>
         <source>Unhandled case: Corporate action covers not full open position. Date: </source>
         <translation>Неподдерживаемый случай: Корпоративное событие покрывает не всю открытую позицию. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2462"/>
+        <location filename="../db/operations.py" line="2480"/>
         <source>Results value of corporate action doesn&apos;t match 100% of initial asset value. </source>
         <translation>Результаты корпоративного события не распределяют 100% стоимости изначального актива. </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2561"/>
-        <location filename="../db/operations.py" line="2598"/>
+        <location filename="../db/operations.py" line="2579"/>
+        <location filename="../db/operations.py" line="2616"/>
         <source>Wrapping fee</source>
         <translation>Комиссия обёртки</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2574"/>
+        <location filename="../db/operations.py" line="2592"/>
         <source>Move: </source>
         <translation>Перемещение: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2576"/>
+        <location filename="../db/operations.py" line="2594"/>
         <source>Supply to </source>
         <translation>Внесение в </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2578"/>
+        <location filename="../db/operations.py" line="2596"/>
         <source>Withdraw from </source>
         <translation>Вывод из </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2579"/>
+        <location filename="../db/operations.py" line="2597"/>
         <source>Wrapping</source>
         <translation>Обёртка</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2626"/>
+        <location filename="../db/operations.py" line="2644"/>
         <source>Wrapping assets aren&apos;t set. Operation: </source>
         <translation>Не указаны активы обёртки. Операция: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2628"/>
+        <location filename="../db/operations.py" line="2646"/>
         <source>Can&apos;t wrap an asset into itself. Operation: </source>
         <translation>Невозможно обернуть актив в самого себя. Операция: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2630"/>
+        <location filename="../db/operations.py" line="2648"/>
         <source>Wrapping quantities must be positive. Operation: </source>
         <translation>Количества в обёртке должны быть положительными. Операция: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2640"/>
+        <location filename="../db/operations.py" line="2658"/>
         <source>Asset amount is not enough for wrapping processing. Date: </source>
         <translation>Недостаточное количество актива для обработки обёртки. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2651"/>
+        <location filename="../db/operations.py" line="2669"/>
         <source>Processed asset amount is less than wrapped amount. Date: </source>
         <translation>Обработанное количество актива меньше обёрнутого количества. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2725"/>
+        <location filename="../db/operations.py" line="2743"/>
         <source>Outgoing bridge</source>
         <translation>Исходящий бридж</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2726"/>
+        <location filename="../db/operations.py" line="2744"/>
         <source>Incoming bridge</source>
         <translation>Входящий бридж</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2727"/>
+        <location filename="../db/operations.py" line="2745"/>
         <source>Bridge fee</source>
         <translation>Комиссия бриджа</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2728"/>
+        <location filename="../db/operations.py" line="2746"/>
         <source>Bridge in-kind fee</source>
         <translation>Комиссия бриджа активом</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2850"/>
+        <location filename="../db/operations.py" line="2868"/>
         <source>Bridge (awaiting matching):</source>
         <translation>Бридж (ожидает сопоставления):</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2854"/>
+        <location filename="../db/operations.py" line="2872"/>
         <source>In-kind fee:</source>
         <translation>Комиссия активом:</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2897"/>
+        <location filename="../db/operations.py" line="2915"/>
         <source>Bridge must move the same asset between accounts. Operation: </source>
         <translation>Бридж должен переносить один и тот же актив между счетами. Операция: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2900"/>
+        <location filename="../db/operations.py" line="2918"/>
         <source>Bridge between the same account isn&apos;t supported. Operation: </source>
         <translation>Бридж в рамках одного счёта не поддерживается. Операция: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2902"/>
+        <location filename="../db/operations.py" line="2920"/>
         <source>Bridge can&apos;t receive more asset than was sent. Operation: </source>
         <translation>Бридж не может получить актива больше, чем было отправлено. Операция: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2904"/>
+        <location filename="../db/operations.py" line="2922"/>
         <source>Bridge receive can&apos;t precede its send. Operation: </source>
         <translation>Получение по бриджу не может предшествовать отправке. Операция: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2919"/>
+        <location filename="../db/operations.py" line="2937"/>
         <source>Asset amount is not enough for bridge processing. Date: </source>
         <translation>Недостаточное количество актива для обработки бриджа. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2924"/>
+        <location filename="../db/operations.py" line="2942"/>
         <source>Processed asset amount is less than bridge amount. Date: </source>
         <translation>Обработанное количество актива меньше суммы бриджа. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2945"/>
+        <location filename="../db/operations.py" line="2963"/>
         <source>Asset withdrawal not found for bridge.</source>
         <translation>Не найдено списание актива для бриджа.</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2952"/>
+        <location filename="../db/operations.py" line="2970"/>
         <source>There is no FX rate to convert bridge cost basis. Date: </source>
         <translation>Нет валютного курса для пересчёта стоимости позиции бриджа. Дата: </translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3027"/>
+        <location filename="../db/operations.py" line="3045"/>
         <source>Authorization</source>
         <translation>Разрешение</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3028"/>
+        <location filename="../db/operations.py" line="3046"/>
         <source>Failed transaction</source>
         <translation>Неудавшаяся транзакция</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3029"/>
+        <location filename="../db/operations.py" line="3047"/>
         <source>Position command</source>
         <translation>Команда позиции</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3030"/>
+        <location filename="../db/operations.py" line="3048"/>
         <source>No-op</source>
         <translation>Без изменений</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3031"/>
+        <location filename="../db/operations.py" line="3049"/>
         <source>Contract call</source>
         <translation>Вызов контракта</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3032"/>
+        <location filename="../db/operations.py" line="3050"/>
         <source>Token account rent</source>
         <translation>Аренда токена</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3096"/>
+        <location filename="../db/operations.py" line="3114"/>
         <source>Rent</source>
         <translation>Аренда</translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3096"/>
+        <location filename="../db/operations.py" line="3114"/>
         <source>Gas</source>
         <translation>Газ</translation>
     </message>
@@ -5819,22 +5899,37 @@ This looks like the quantity a rebasing position gained without reporting it, wh
 <context>
     <name>PandasLinesModel</name>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="75"/>
+        <location filename="../data_import/shop_receipt.py" line="88"/>
+        <source>Reconciled: the lines add up to the receipt&apos;s total</source>
+        <translation>Сверено: позиции сходятся с итогом чека</translation>
+    </message>
+    <message>
+        <location filename="../data_import/shop_receipt.py" line="89"/>
+        <source>Read confidently, but the lines don&apos;t add up to the receipt&apos;s total</source>
+        <translation>Прочитано уверенно, но позиции не сходятся с итогом чека</translation>
+    </message>
+    <message>
+        <location filename="../data_import/shop_receipt.py" line="90"/>
+        <source>Unreliable: read poorly or without a fiscal code to check against</source>
+        <translation>Ненадёжно: прочитано плохо или нет фискального кода для сверки</translation>
+    </message>
+    <message>
+        <location filename="../data_import/shop_receipt.py" line="114"/>
         <source>Product name</source>
         <translation>Название продукта</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="77"/>
+        <location filename="../data_import/shop_receipt.py" line="116"/>
         <source>Category</source>
         <translation>Категория</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="79"/>
+        <location filename="../data_import/shop_receipt.py" line="118"/>
         <source>Tag</source>
         <translation>Метка</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="81"/>
+        <location filename="../data_import/shop_receipt.py" line="120"/>
         <source>Amount</source>
         <translation>Сумма</translation>
     </message>
@@ -6752,8 +6847,8 @@ One transaction moved this exact quantity as </source>
     <message>
         <location filename="../data_import/broker_statements/revolut.py" line="30"/>
         <location filename="../data_import/broker_statements/revolut.py" line="39"/>
-        <location filename="../data_import/broker_statements/trading212.py" line="30"/>
-        <location filename="../data_import/shop_receipt.py" line="35"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="32"/>
+        <location filename="../data_import/shop_receipt.py" line="38"/>
         <source>Import</source>
         <translation>Импорт</translation>
     </message>
@@ -6778,22 +6873,22 @@ One transaction moved this exact quantity as </source>
         <translation>Счёт, на который импортируются строки &apos;Deposit&apos; отчёта Revolut - проценты сберегательного кармана и движение денег в него и из него.</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="31"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="33"/>
         <source>Trading 212 account</source>
         <translation>Счёт Trading 212</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="33"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="35"/>
         <source>The account a Trading 212 statement is imported into. Such an export names no account, so the import can&apos;t tell which one a file belongs to and asks here instead.</source>
         <translation>Счёт, на который импортируется отчёт Trading 212. Такой отчёт не содержит номера счёта, поэтому импорт не может определить, какому счёту принадлежит файл, и спрашивает об этом здесь.</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="36"/>
+        <location filename="../data_import/shop_receipt.py" line="39"/>
         <source>Phone receipt inbox folder</source>
         <translation>Папка входящих чеков с телефона</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="37"/>
+        <location filename="../data_import/shop_receipt.py" line="40"/>
         <source>The folder the phone app&apos;s receipt files arrive in. An imported file is moved into its &apos;done&apos; subfolder.</source>
         <translation>Папка, в которую поступают файлы чеков из приложения на телефоне. Импортированный файл перемещается в её подпапку &apos;done&apos;.</translation>
     </message>
@@ -7366,30 +7461,35 @@ One transaction moved this exact quantity as </source>
         <translation>JSON тэг &apos;operationType&apos; отсутствует внутри тэга &apos;ticket&apos;</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_pdf.py" line="64"/>
+        <location filename="../data_import/receipt_pdf.py" line="66"/>
         <source>Package pypdf not found for PDF parsing.</source>
         <translation>Не обнаружен пакет pypdf, необходимый для чтения PDF файлов.</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_pdf.py" line="69"/>
+        <location filename="../data_import/receipt_pdf.py" line="71"/>
         <source>Receipt PDF can&apos;t be read</source>
         <translation>Невозможно прочитать PDF чека</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/offline_receipt.py" line="97"/>
-        <location filename="../data_import/receipt_pdf.py" line="85"/>
-        <source>Receipt items don&apos;t add up, the receipt is loaded as one line</source>
-        <translation>Позиции чека не сходятся с итогом, чек загружен одной позицией</translation>
-    </message>
-    <message>
-        <location filename="../data_import/receipt_pdf.py" line="93"/>
+        <location filename="../data_import/receipt_pdf.py" line="97"/>
         <source>Receipt PDF has no total that could be read</source>
         <translation>В PDF чека не удалось прочитать итоговую сумму</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_pdf.py" line="99"/>
+        <location filename="../data_import/receipt_pdf.py" line="106"/>
         <source>Receipt PDF has no date that could be read, the capture time is used</source>
         <translation>В PDF чека не удалось прочитать дату, использовано время создания файла</translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/offline_receipt.py" line="88"/>
+        <source>Receipt voucher can&apos;t be read, add it by hand</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/offline_receipt.py" line="103"/>
+        <location filename="../data_import/receipt_pdf.py" line="87"/>
+        <source>Receipt items don&apos;t add up, check the lines</source>
+        <translation>Позиции чека не сходятся с итогом, проверьте позиции</translation>
     </message>
 </context>
 <context>
@@ -9478,168 +9578,173 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
 <context>
     <name>StatementTrading212</name>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="69"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="72"/>
         <source>T&amp;rading 212</source>
         <translation>T&amp;rading 212</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="71"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="74"/>
         <source>Trading 212 statement (*.csv)</source>
         <translation>Отчёт Trading 212 (*.csv)</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="123"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="127"/>
         <source>Unsupported Trading 212 operation: </source>
         <translation>Неподдерживаемая операция Trading 212: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="125"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="129"/>
         <source>Statement loaded successfully: </source>
         <translation>Отчёт загружен успешно: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="132"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="136"/>
         <source>Statement file is empty: </source>
         <translation>Файл отчёта пуст: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="137"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="141"/>
         <source>Failed to read file: </source>
         <translation>Невозможно прочесть файл: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="139"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="143"/>
         <source>Failed to parse CSV file: </source>
         <translation>Невозможно разобрать CSV-файл: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="141"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="145"/>
         <source>Statement has no operations: </source>
         <translation>В отчёте нет операций: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="153"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="162"/>
         <source>Statement misses mandatory column(s): </source>
         <translation>В отчёте отсутствуют обязательные колонки: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="156"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="165"/>
         <source>Statement has a column this module doesn&apos;t know: </source>
         <translation>В отчёте есть колонка, неизвестная этому модулю: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="162"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="171"/>
         <source>Statement must have exactly one currency, found: </source>
         <translation>Отчёт должен быть в одной валюте, найдено: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="180"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="189"/>
         <source>Can&apos;t read operation timestamp: </source>
         <translation>Невозможно прочитать время операции: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="182"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="191"/>
         <source>Operation timestamp isn&apos;t in UTC: </source>
         <translation>Время операции указано не в UTC: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="189"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="198"/>
         <source>Mandatory value is empty: </source>
         <translation>Обязательное значение пусто: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="194"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="203"/>
         <source>Can&apos;t read a number: </source>
         <translation>Невозможно прочитать число: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="200"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="209"/>
         <source>Operation in a currency other than the account&apos;s: </source>
         <translation>Операция в валюте, отличной от валюты счёта: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="204"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="213"/>
         <source>Operation with a non-unity exchange rate: </source>
         <translation>Операция с курсом, отличным от единицы: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="209"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="218"/>
         <source>Instrument operation without a ticker: </source>
         <translation>Операция с инструментом без тикера: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="211"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="220"/>
         <source>Instrument operation without an ISIN: </source>
         <translation>Операция с инструментом без ISIN: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="228"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="237"/>
         <source>Trade has zero quantity: </source>
         <translation>Сделка с нулевым количеством: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="255"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="264"/>
         <source>Dividend with a withholding tax - check the gross amount: </source>
         <translation>Дивиденд с удержанным налогом - проверьте сумму до удержания: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="257"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="266"/>
         <source>Withholding tax in another currency: </source>
         <translation>Удержанный налог в другой валюте: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="329"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="376"/>
+        <source>transfer is in the database already</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/broker_statements/trading212.py" line="385"/>
         <source>No account is set for Trading 212 import - choose one in Settings, Preferences, Import</source>
         <translation>Не задан счёт для импорта Trading 212 - укажите его в Настройки, Параметры, Импорт</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="332"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="388"/>
         <source>The account set for Trading 212 import doesn&apos;t exist: </source>
         <translation>Счёт, заданный для импорта Trading 212, не существует: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="336"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="392"/>
         <source>The account set for Trading 212 import is in another currency: </source>
         <translation>Счёт, заданный для импорта Trading 212, ведётся в другой валюте: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="361"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="417"/>
         <source>Statement period is invalid</source>
         <translation>Неверный период отчёта</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="367"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="423"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="368"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="424"/>
         <source>This statement is older than what is recorded for the account </source>
         <translation>Этот отчёт старше, чем записи по счёту </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="370"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="426"/>
         <source>Interest and cashback rows will be stored a second time. Continue?</source>
         <translation>Строки процентов и кэшбэка будут записаны повторно. Продолжить?</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="372"/>
-        <location filename="../data_import/broker_statements/trading212.py" line="387"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="428"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="443"/>
         <source>Statement import was cancelled</source>
         <translation>Импорт отчёта прерван</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="393"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="449"/>
         <source>card purchase is in the database already</source>
         <translation>покупка по карте уже есть в базе данных</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="400"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="456"/>
         <source>Card purchases to import: </source>
         <translation>Покупок по карте к импорту: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="411"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="467"/>
         <source>Trading 212 card purchases</source>
         <translation>Покупки по карте Trading 212</translation>
     </message>

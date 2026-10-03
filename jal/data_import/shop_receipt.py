@@ -2,8 +2,11 @@ import base64
 import logging
 import zipfile
 import pandas as pd
-from PySide6.QtCore import Qt, Slot, QAbstractTableModel, QT_TRANSLATE_NOOP
-from PySide6.QtWidgets import QDialog, QDialogButtonBox, QHeaderView, QStyle, QStyledItemDelegate, QTableWidgetItem
+from decimal import Decimal, InvalidOperation
+from PySide6.QtCore import Qt, Slot, QAbstractTableModel, QModelIndex, QRect, QT_TRANSLATE_NOOP
+from PySide6.QtGui import QPalette
+from PySide6.QtWidgets import QDialog, QDialogButtonBox, QHeaderView, QLineEdit, QMessageBox, QStyle, \
+    QStyledItemDelegate, QTableWidgetItem
 from jal.constants import Setup
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 from jal.widgets.delegates import draw_item_panel
@@ -23,7 +26,7 @@ from jal.widgets.reference_dialogs import AccountListDialog, PeerListDialog, Cat
 from jal.ui.ui_receipt_import_dlg import Ui_ImportShopReceiptDlg
 from jal.data_import.receipt_api.offline_receipt import ReceiptOffline, paper_lines
 from jal.data_import.receipt_api.ru_fns import ReceiptRuFNS
-from jal.data_import.receipt import parse_card
+from jal.data_import.receipt import LineTrust, Verdict, parse_card
 from jal.data_import.receipt_pdf import layout_text, pdf_receipt
 from jal.data_import.receipt_inbox import JalrFile, Route, scan_inbox, move_done, route
 
@@ -40,6 +43,9 @@ SettingsRegistry.register(SettingDescriptor(
 #-----------------------------------------------------------------------------------------------------------------------
 # Custom model to display and edit slip lines
 class PandasLinesModel(QAbstractTableModel):
+    COLUMNS = ['name', 'category', 'tag', 'amount']     # of the view; the data has 'trust' after them
+    NAME, AMOUNT, TRUST = 0, 3, 4
+
     def __init__(self, data, parent=None):
         super().__init__(parent)
         self._data = data
@@ -53,21 +59,54 @@ class PandasLinesModel(QAbstractTableModel):
         return self._data.shape[0]
 
     def columnCount(self, parent=None):
-        return self._data.shape[1]
+        return len(self.COLUMNS)
 
     def data(self, index, role=Qt.DisplayRole):
         if index.isValid():
-            if role == Qt.DisplayRole:
+            if role == Qt.DisplayRole or role == Qt.EditRole:
                 return self._data.iloc[index.row(), index.column()]
+            if role == Qt.ToolTipRole:
+                return self._trust_text(self.trust(index.row()))
         return None
 
     def setData(self, index, value, role=Qt.EditRole):
         if index.isValid():
             if role == Qt.EditRole:
                 self._data.iloc[index.row(), index.column()] = value
-                self.dataChanged.emit(index, index)
+                if index.column() == self.AMOUNT:     # an amount the user has set is nobody's reading any more
+                    self._data.iloc[index.row(), self.TRUST] = ''
+                self.dataChanged.emit(self.index(index.row(), 0), self.index(index.row(), self.AMOUNT))
                 return True
         return False
+
+    # LineTrust of the line, '' for a line without a mark
+    def trust(self, row: int) -> str:
+        return self._data.iloc[row, self.TRUST]
+
+    def _trust_text(self, trust: str):
+        texts = {
+            LineTrust.PROVEN: self.tr("Reconciled: the lines add up to the receipt's total"),
+            LineTrust.READ: self.tr("Read confidently, but the lines don't add up to the receipt's total"),
+            LineTrust.UNRELIABLE: self.tr("Unreliable: read poorly or without a fiscal code to check against")
+        }
+        return texts.get(trust)
+
+    # Appends an empty line and returns its row
+    def add_line(self) -> int:
+        row = self.rowCount()
+        self.beginInsertRows(QModelIndex(), row, row)
+        self._data.loc[row] = ['', 0, None, Decimal('0'), '']
+        self.endInsertRows()
+        return row
+
+    def removeRows(self, row, count, parent=QModelIndex()):
+        if row < 0 or count < 1 or row + count > self.rowCount():
+            return False
+        self.beginRemoveRows(parent, row, row + count - 1)
+        self._data.drop(index=self._data.index[row:row + count], inplace=True)
+        self._data.reset_index(drop=True, inplace=True)
+        self.endRemoveRows()
+        return True
 
     def headerData(self, col, orientation, role=Qt.DisplayRole):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
@@ -83,6 +122,10 @@ class PandasLinesModel(QAbstractTableModel):
 
 
 class SlipLinesDelegate(QStyledItemDelegate):
+    TRUST_MEANING = {LineTrust.PROVEN: Meaning.POSITIVE, LineTrust.READ: Meaning.WARNING,
+                     LineTrust.UNRELIABLE: Meaning.NEGATIVE}
+    MARK_WIDTH = 4
+
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self._category_selector = None  # Need to prevent object deletion in a middle
@@ -98,8 +141,13 @@ class SlipLinesDelegate(QStyledItemDelegate):
             painter.setPen(pen)
         model = index.model()
         if index.column() == 0:
+            rect = option.rect
+            meaning = self.TRUST_MEANING.get(model.trust(index.row()))
+            if meaning is not None:     # a bar in the colour of the line's trust, explained by the tooltip
+                painter.fillRect(QRect(rect.left(), rect.top() + 2, self.MARK_WIDTH, rect.height() - 4),
+                                 Theme.text(meaning))
             text = model.data(index, Qt.DisplayRole)
-            painter.drawText(option.rect, Qt.AlignLeft | Qt.AlignVCenter, text)
+            painter.drawText(rect.adjusted(2 * self.MARK_WIDTH, 0, 0, 0), Qt.AlignLeft | Qt.AlignVCenter, text)
         if index.column() == 1:
             text = JalCategory(int(model.data(index, Qt.DisplayRole))).name()
             painter.drawText(option.rect, Qt.AlignLeft | Qt.AlignVCenter, text)
@@ -122,13 +170,28 @@ class SlipLinesDelegate(QStyledItemDelegate):
             self._tag_selector = ReferenceSelectorWidget(aParent, validate=False)
             self._tag_selector.setup_selector(TagTreeModel, TagsListDialog, aParent)
             return self._tag_selector
-        return None
+        return QLineEdit(aParent)
+
+    def setEditorData(self, editor, index):
+        if index.column() in (PandasLinesModel.NAME, PandasLinesModel.AMOUNT):
+            editor.setText(str(index.model().data(index, Qt.EditRole)))
+        else:
+            super().setEditorData(editor, index)
 
     def setModelData(self, editor, model, index):
+        if index.column() == 0:
+            model.setData(index, editor.text().strip())
         if index.column() == 1:
             model.setData(index, editor.selected_id)
         if index.column() == 2:
             model.setData(index, editor.selected_id)
+        if index.column() == 3:     # text that isn't an amount leaves the line as it was
+            try:
+                amount = Decimal(editor.text().replace(' ', '').replace(',', '.'))
+            except InvalidOperation:
+                return
+            if amount.is_finite():
+                model.setData(index, amount)
 
 #-----------------------------------------------------------------------------------------------------------------------
 class ImportReceiptDialog(QDialog):
@@ -163,10 +226,13 @@ class ImportReceiptDialog(QDialog):
         self.ui.InboxRefreshBtn.clicked.connect(self.refreshInbox)
         self.ui.InboxSkipBtn.clicked.connect(self.skipInboxReceipt)
         self.ui.InboxList.itemDoubleClicked.connect(self.loadInboxReceipt)
+        self.ui.AddLineBtn.clicked.connect(self.addLine)
+        self.ui.DeleteLineBtn.clicked.connect(self.deleteLine)
         self.ui.InboxList.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
         self.ui.InboxList.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeToContents)
 
         self.refreshInbox()
+        self._show_verdict()
         stored = JalSettings().getStr(self.GEOMETRY_KEY)
         if stored:
             self.restoreGeometry(base64.decodebytes(stored.encode('utf-8')))
@@ -216,6 +282,11 @@ class ImportReceiptDialog(QDialog):
         if receipt_route.kind == Route.PT_ITEMS:
             qr = receipt_route.at_qr
             return self.tr("Portuguese QR and items") + f": NIF {qr.nif}, {localize_decimal(qr.total)}"
+        if receipt_route.kind == Route.UNVERIFIED:
+            if receipt_route.at_qr is None:
+                return self.tr("Not verified, no fiscal code")
+            qr = receipt_route.at_qr
+            return self.tr("Not verified, Portuguese QR") + f": NIF {qr.nif}, {localize_decimal(qr.total)}"
         if receipt_route.kind == Route.FNS:
             return self.tr("Russian QR")
         if receipt_route.kind == Route.PDF:
@@ -239,8 +310,21 @@ class ImportReceiptDialog(QDialog):
         if receipt_route.kind == Route.PT_QR:
             receipt_api = ReceiptOffline.from_at_qr(receipt_route.at_qr, receipt.captured_at, text=text)
         elif receipt_route.kind == Route.PT_ITEMS:
-            lines = paper_lines(receipt, receipt_route.at_qr)
-            receipt_api = ReceiptOffline.from_at_qr(receipt_route.at_qr, receipt.captured_at, lines, text)
+            lines, proven = paper_lines(receipt, receipt_route.at_qr)
+            receipt_api = ReceiptOffline.from_at_qr(receipt_route.at_qr, receipt.captured_at, lines, text,
+                                                    Verdict.RECONCILED if proven else Verdict.NOT_RECONCILED)
+        elif receipt_route.kind == Route.UNVERIFIED:
+            if QMessageBox().question(self, self.tr("Receipt without a usable fiscal code"),
+                                      self.tr("The scan has no fiscal code that could be relied on, so nothing proves "
+                                              "its lines. A rescan is recommended. Load it anyway?"),
+                                      QMessageBox.Yes, QMessageBox.No) != QMessageBox.Yes:
+                return
+            lines, _ = paper_lines(receipt, receipt_route.at_qr)
+            if receipt_route.at_qr is None:
+                receipt_api = ReceiptOffline.unverified(receipt, lines)
+            else:
+                receipt_api = ReceiptOffline.from_at_qr(receipt_route.at_qr, receipt.captured_at, lines, text,
+                                                        Verdict.NO_CODE)
         elif receipt_route.kind == Route.FNS:
             try:
                 receipt_api = ReceiptRuFNS(qr_text=receipt_route.code)
@@ -315,10 +399,16 @@ class ImportReceiptDialog(QDialog):
             self.slip_lines['category'] = 0
         # Assign empty tags
         self.slip_lines['tag'] = None
-        self.slip_lines = self.slip_lines[['name', 'category', 'tag', 'amount']]
+        # A line may come with its trust, the others have no mark
+        self.slip_lines['trust'] = self.slip_lines['trust'].fillna('') if 'trust' in self.slip_lines else ''
+        self.slip_lines = self.slip_lines[PandasLinesModel.COLUMNS + ['trust']]
 
         self.model = PandasLinesModel(self.slip_lines, self)
         self.ui.LinesTableView.setModel(self.model)
+        self.model.dataChanged.connect(self._show_totals)
+        self.model.rowsInserted.connect(self._show_totals)
+        self.model.rowsRemoved.connect(self._show_totals)
+        self._show_verdict()
 
         self.delegate = SlipLinesDelegate(self.ui.LinesTableView)
         for column in range(self.model.columnCount()):
@@ -333,8 +423,71 @@ class ImportReceiptDialog(QDialog):
         self.ui.LinesTableView.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)   # a restored state may carry none
         self.ui.LinesTableView.show()
 
+    # The banner, the total footer and the line buttons of the loaded receipt, or of none
+    def _show_verdict(self):
+        verdicts = {
+            Verdict.RECONCILED: (self.tr("Reconciled automatically"), Meaning.POSITIVE),
+            Verdict.NOT_RECONCILED: (self.tr("Not reconciled, check the lines"), Meaning.WARNING),
+            Verdict.NO_CODE: (self.tr("No usable fiscal code, rescan recommended"), Meaning.NEGATIVE)
+        }
+        loaded = self.slip_lines is not None
+        text, meaning = verdicts.get(self.receipt_api.verdict() if loaded else '', ('', None))
+        self.ui.VerdictLbl.setText(text)
+        self._color_label(self.ui.VerdictLbl, meaning)
+        self.ui.AddLineBtn.setEnabled(loaded)
+        self.ui.DeleteLineBtn.setEnabled(loaded)
+        self._show_totals()
+
+    def _color_label(self, label, meaning):
+        palette = QPalette(self.palette())
+        if meaning is not None:
+            palette.setColor(QPalette.WindowText, Theme.text(meaning, palette.window().color()))
+        label.setPalette(palette)
+
+    # Amount the receipt's source says its lines add up to; None without a receipt or without such an amount
+    def _expected_total(self):
+        return self.receipt_api.total() if self.slip_lines is not None and self.receipt_api is not None else None
+
+    def _lines_total(self) -> Decimal:
+        return sum(self.slip_lines['amount'], Decimal('0'))
+
+    # The sum of the lines against the total of the receipt, with a difference highlighted
+    @Slot()
+    def _show_totals(self):
+        if self.slip_lines is None:
+            self.ui.TotalsLbl.setText('')
+            self.ui.DifferenceLbl.setText('')
+            return
+        total, expected = self._lines_total(), self._expected_total()
+        text = self.tr("Lines") + f": {localize_decimal(total, 2)}"
+        if expected is None:
+            self.ui.TotalsLbl.setText(text)
+            self.ui.DifferenceLbl.setText('')
+            return
+        self.ui.TotalsLbl.setText(text + "    " + self.tr("Receipt total") + f": {localize_decimal(expected, 2)}")
+        self.ui.DifferenceLbl.setText(self.tr("Difference") + f": {localize_decimal(total - expected, 2)}")
+        self._color_label(self.ui.DifferenceLbl, Meaning.NEGATIVE if total != expected else None)
+
+    @Slot()
+    def addLine(self):
+        if self.model is None or self.slip_lines is None:
+            return
+        index = self.model.index(self.model.add_line(), 0)
+        self.ui.LinesTableView.setCurrentIndex(index)
+        self.ui.LinesTableView.edit(index)
+
+    @Slot()
+    def deleteLine(self):
+        index = self.ui.LinesTableView.currentIndex()
+        if self.slip_lines is None or not index.isValid():
+            return
+        self.model.removeRows(index.row(), 1)
+
     def addOperation(self):
         if self.slip_lines is None:
+            return
+        if self.slip_lines.empty:
+            logging.warning(self.tr("Not possible to import receipt: it has no lines"))
             return
         if self.ui.AccountEdit.selected_id == 0:
             logging.warning(self.tr("Not possible to import receipt: no account set for import"))
@@ -351,6 +504,15 @@ class ImportReceiptDialog(QDialog):
             logging.warning(self.tr("Not possible to import receipt: it is imported already") + f" ({number})")
             self._finish_inbox_file()
             return
+
+        expected = self._expected_total()
+        if expected is not None and self._lines_total() != expected:
+            difference = localize_decimal(self._lines_total() - expected, 2)
+            if QMessageBox().question(self, self.tr("Lines don't add up"),
+                                      self.tr("The lines differ from the receipt's total by") + f" {difference}. "
+                                      + self.tr("Add the operation anyway?"),
+                                      QMessageBox.Yes, QMessageBox.No) != QMessageBox.Yes:
+                return
 
         details = []
         for index, row in self.slip_lines.iterrows():
@@ -389,3 +551,4 @@ class ImportReceiptDialog(QDialog):
         self._inbox_file = ''
         self._save_lines_columns()
         self.ui.LinesTableView.setModel(None)
+        self._show_verdict()

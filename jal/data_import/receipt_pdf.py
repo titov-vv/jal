@@ -6,7 +6,8 @@ from typing import Optional
 from PySide6.QtCore import QDateTime, QDate, QTime
 from jal.db.clock import local_zone
 from jal.widgets.helpers import dependency_present
-from jal.data_import.receipt import ShopReceipt, parse_header, parse_total, shop_profile, line_name, discount_line
+from jal.data_import.receipt import ShopReceipt, LineTrust, Verdict, parse_header, parse_total, shop_profile, \
+    line_name, discount_line
 from jal.data_import.receipt_api.receipt_api import ReceiptAPI
 from jal.data_import.receipt_api.offline_receipt import ReceiptOffline, voucher_lines
 from jal.data_import.receipt_api.pt_at_qr import AtQr
@@ -57,8 +58,8 @@ def layout_text(data: bytes) -> list:
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Reads a receipt PDF into the lines of the import dialog. With a shop profile whose items add up to the receipt's
-# VAT table and total, every item is a line; otherwise the receipt is one line of its total, to be split by hand.
+# Reads a receipt PDF into the lines of the import dialog. With a shop profile every item it finds is a line, proven
+# where they add up to the receipt's VAT table and total; otherwise the receipt is one line of its total.
 # A payment by voucher is a discount line in either case.
 def pdf_receipt(data: bytes, at_qr: Optional[AtQr], captured_at: datetime) -> Optional[ReceiptOffline]:
     if not dependency_present(['pypdf']):
@@ -74,7 +75,7 @@ def pdf_receipt(data: bytes, at_qr: Optional[AtQr], captured_at: datetime) -> Op
     shop = f"NIF {nif}" if nif else ''
     sign = Decimal('1') if at_qr is not None and at_qr.is_return else Decimal('-1')
     total = at_qr.total if at_qr is not None else parse_total(text)
-    lines, timestamp = [], None
+    lines, timestamp, verdict = [], None, Verdict.NOT_RECONCILED
     profile = shop_profile(nif) if nif else None
     if profile is not None:
         receipt = profile(text)     # type: ShopReceipt
@@ -83,18 +84,22 @@ def pdf_receipt(data: bytes, at_qr: Optional[AtQr], captured_at: datetime) -> Op
         if at_qr is not None and receipt.total is not None and receipt.total != at_qr.total:
             problems.append(f"total: receipt {receipt.total}, QR code {at_qr.total}")
         if problems:
-            logging.warning(ReceiptAPI.tr("Receipt items don't add up, the receipt is loaded as one line")
+            logging.warning(ReceiptAPI.tr("Receipt items don't add up, check the lines")
                             + f" ({profile.name}): " + "; ".join(problems))
         else:
-            lines = [{'name': line_name(x), 'amount': sign * receipt.paid(x)} for x in receipt.items]
-            if receipt.receipt_discount():
-                lines += [discount_line(label, amount, sign) for label, amount in receipt.discounts]
+            verdict = Verdict.RECONCILED
+        trust = LineTrust.READ if problems else LineTrust.PROVEN
+        lines = [{'name': line_name(x), 'amount': sign * receipt.paid(x)} for x in receipt.items]
+        lines += [discount_line(label, amount, sign) for label, amount in receipt.discounts]
+        lines = [dict(x, trust=trust) for x in lines]
     if not lines:
         if total is None:
             logging.warning(ReceiptAPI.tr("Receipt PDF has no total that could be read"))
             return None
         lines = [{'name': shop, 'amount': sign * total}]
-    lines += voucher_lines(text, nif, total, sign)     # the account paid that much less
+    vouchers = voucher_lines(text, nif, total, sign)     # the account paid that much less
+    lines += vouchers
+    expected = None if total is None else sign * total + sum(x['amount'] for x in vouchers)
     if at_qr is not None and (timestamp is None or timestamp.date() != at_qr.date):
         timestamp = datetime(at_qr.date.year, at_qr.date.month, at_qr.date.day)
     if timestamp is None:
@@ -106,4 +111,4 @@ def pdf_receipt(data: bytes, at_qr: Optional[AtQr], captured_at: datetime) -> Op
         number = at_qr.number
     else:
         number = f"{nif}:{header['doc']}" if nif and 'doc' in header else ''
-    return ReceiptOffline(shop, date_time, lines, number)
+    return ReceiptOffline(shop, date_time, lines, number, expected, verdict)

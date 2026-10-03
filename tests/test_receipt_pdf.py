@@ -10,7 +10,8 @@ from tests.fixtures import project_root, data_path, prepare_db
 from tests.test_at_qr import LIDL
 from jal.constants import PredefinedCategory
 from jal.db.clock import local_zone
-from jal.data_import.receipt import parse_vat_table, parse_total, parse_card, parse_vouchers, shop_profile
+from jal.data_import.receipt import LineTrust, Verdict, parse_vat_table, parse_total, parse_card, parse_vouchers, \
+    shop_profile
 from jal.data_import.receipt_pdf import layout_text, pdf_receipt
 from jal.data_import.receipt_api.pt_at_qr import AtQr
 from jal.data_import.shop_receipts.lidl import ReceiptLidl
@@ -255,7 +256,8 @@ def test_pdf_receipt_balance_and_voucher_are_discount_lines(prepare_db):
     fragments = [(10, 800 - 15 * i, line) for i, line in enumerate(PINGO_DOCE_BALANCE)]
     lines = pdf_receipt(make_pdf(fragments), at_qr, CAPTURED).slip_lines()
     assert lines[-2:] == [
-        {'name': "Saldo Pingo Doce", 'amount': Decimal('4.00'), 'category': PredefinedCategory.Discounts},
+        {'name': "Saldo Pingo Doce", 'amount': Decimal('4.00'), 'category': PredefinedCategory.Discounts,
+         'trust': LineTrust.PROVEN},
         {'name': "Saldo Deposito Volta", 'amount': Decimal('0.10'), 'category': PredefinedCategory.Discounts}]
     assert sum(x['amount'] for x in lines) == Decimal('-5.64')     # what the card paid
 
@@ -335,11 +337,12 @@ def test_profiles_are_found_by_nif():
 # ----------------------------------------------------------------------------------------------------------------------
 def test_pdf_receipt_brings_every_item(prepare_db):
     receipt = pdf_receipt(make_pdf(lidl_receipt(), form=True), AtQr.parse(QR), CAPTURED)
-    assert receipt.slip_lines() == [
+    assert receipt.slip_lines() == [dict(x, trust=LineTrust.PROVEN) for x in (
         {'name': "TOMATE REDONDO (0.744 x 1.89)", 'amount': Decimal('-1.00')},
         {'name': "MORANGO 300G", 'amount': Decimal('-1.99')},
         {'name': "CROISSANT CHOCOLATE 80GR (2 x 0.85)", 'amount': Decimal('-1.70')},
-        {'name': "Saco de Papel", 'amount': Decimal('-0.15')}]
+        {'name': "Saco de Papel", 'amount': Decimal('-0.15')})]
+    assert receipt.verdict() == Verdict.RECONCILED and receipt.total() == Decimal('-4.84')
     assert receipt.shop_name() == "NIF 503340855"
     assert receipt.number() == "503340855:FS 0421/000317"
     assert receipt.datetime() == QDateTime(QDate(2026, 8, 14), QTime(18, 53), local_zone())
@@ -348,18 +351,24 @@ def test_pdf_receipt_brings_every_item(prepare_db):
 def test_pdf_receipt_discount_is_a_line_of_its_own(prepare_db):
     at_qr = AtQr.parse(LIDL.replace("O:11.94", "O:4.34"))
     lines = pdf_receipt(make_pdf(lidl_receipt_with_card_discount()), at_qr, CAPTURED).slip_lines()
-    assert lines[-1] == {'name': "Promocao Cartao", 'amount': Decimal('0.50'), 'category': PredefinedCategory.Discounts}
+    assert lines[-1] == {'name': "Promocao Cartao", 'amount': Decimal('0.50'), 'category': PredefinedCategory.Discounts,
+                         'trust': LineTrust.PROVEN}
     assert sum(x['amount'] for x in lines) == Decimal('-4.34')
 
 
-def test_pdf_receipt_that_does_not_add_up_is_one_line_of_its_total(prepare_db):
+# Items that don't add up are still loaded, never collapsed into one line: the user checks them against the total
+def test_pdf_receipt_that_does_not_add_up_keeps_its_lines_unproven(prepare_db):
     receipt = pdf_receipt(make_pdf(lidl_receipt(strawberries="2,09")), AtQr.parse(QR), CAPTURED)
-    assert receipt.slip_lines() == [{'name': "NIF 503340855", 'amount': Decimal('-4.84')}]
+    lines = receipt.slip_lines()
+    assert [x['amount'] for x in lines] == [Decimal('-1.00'), Decimal('-2.09'), Decimal('-1.70'), Decimal('-0.15')]
+    assert {x['trust'] for x in lines} == {LineTrust.READ}
+    assert receipt.verdict() == Verdict.NOT_RECONCILED and receipt.total() == Decimal('-4.84')
 
 
-def test_pdf_receipt_whose_total_differs_from_the_qr_is_one_line_of_the_qr_total(prepare_db):
+def test_pdf_receipt_whose_total_differs_from_the_qr_is_checked_against_the_qr(prepare_db):
     receipt = pdf_receipt(make_pdf(lidl_receipt()), AtQr.parse(LIDL), CAPTURED)     # the QR says 11.94
-    assert receipt.slip_lines() == [{'name': "NIF 503340855", 'amount': Decimal('-11.94')}]
+    assert sum(x['amount'] for x in receipt.slip_lines()) == Decimal('-4.84')
+    assert receipt.verdict() == Verdict.NOT_RECONCILED and receipt.total() == Decimal('-11.94')
 
 
 def test_pdf_receipt_without_qr_reads_the_shop_and_number_from_the_text(prepare_db):
@@ -371,6 +380,7 @@ def test_pdf_receipt_without_qr_reads_the_shop_and_number_from_the_text(prepare_
 def test_pdf_receipt_of_an_unknown_shop_is_one_line_of_its_total(prepare_db):
     receipt = pdf_receipt(make_pdf(lidl_receipt(nif="509999999")), None, CAPTURED)
     assert receipt.slip_lines() == [{'name': "NIF 509999999", 'amount': Decimal('-4.84')}]
+    assert receipt.verdict() == Verdict.NOT_RECONCILED and receipt.total() == Decimal('-4.84')
     assert receipt.number() == "509999999:FS 0421/000317"
     assert receipt.datetime() == QDateTime(QDate(2026, 8, 20), QTime(9, 5), local_zone())   # no date read: capture
 
@@ -387,9 +397,12 @@ def test_pdf_receipt_voucher_is_a_discount_line(prepare_db):
     assert sum(x['amount'] for x in lines) == Decimal('-4.68')     # what the card paid
 
 
-def test_pdf_receipt_voucher_reduces_a_receipt_of_one_line(prepare_db):
+def test_pdf_receipt_voucher_is_taken_off_the_total_the_unproven_lines_are_checked_against(prepare_db):
     at_qr = AtQr.parse(QR.replace("A:503340855", "A:500829993").replace("O:4.84", "O:5.28"))
     text = [x.replace("2,49     2,49", "2,49     2,59") for x in PINGO_DOCE_VOUCHER]    # a misread item
     fragments = [(10, 800 - 15 * i, line) for i, line in enumerate(text)]
-    lines = pdf_receipt(make_pdf(fragments), at_qr, CAPTURED).slip_lines()
-    assert [x['amount'] for x in lines] == [Decimal('-5.28'), Decimal('0.60')]
+    receipt = pdf_receipt(make_pdf(fragments), at_qr, CAPTURED)
+    lines = receipt.slip_lines()
+    assert lines[-1]['amount'] == Decimal('0.60') and 'trust' not in lines[-1]
+    assert sum(x['amount'] for x in lines) == Decimal('-4.78')     # the misread item is 0.10 dearer
+    assert receipt.verdict() == Verdict.NOT_RECONCILED and receipt.total() == Decimal('-4.68')

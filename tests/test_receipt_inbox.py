@@ -41,16 +41,19 @@ def make_jalr(folder, name, kind="paper_scan", codes=(), schema="jal.receipt/1",
 
 
 # 'paper' and 'validation' blocks of a scan; items are (role, text, amount) or dicts of all the fields
-def paper_scan(items, status="green", hypothesis=None, tax_table=()) -> dict:
+# 'effect' stamps what a GREEN file says of each line: an item charges, a discount deducts
+def paper_scan(items, status="green", tax_table=(), effect=False, shop_name=None) -> dict:
     rows = []
     for x in items:
         if isinstance(x, tuple):
             role, text, amount = x
             x = {"role": role, "text": text, "amount": amount,
                  "sign_printed": "positive" if role == "item" else "negative", "tax_code": "A"}
+        if effect and "effect" not in x:
+            x = dict(x, effect="charge" if x["role"] == "item" else "deduction")
         rows.append(x)
-    return {"paper": {"shop_name": None, "printed_at": None, "tax_table": list(tax_table), "items": rows},
-            "validation": {"status": status, "checks": [], "discount_hypothesis": hypothesis}}
+    return {"paper": {"shop_name": shop_name, "printed_at": None, "tax_table": list(tax_table), "items": rows},
+            "validation": {"status": status, "checks": []}}
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -199,12 +202,14 @@ def test_paper_block_is_read(tmp_path):
             "confidence": 0.9}
     table = [{"code": "A", "rate": "6.00", "base": "1.33", "tax": "0.08", "total": "1.41", "source_line": 20}]
     jalr = JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[LIDL],
-                                   extra=paper_scan([item, ("discount", "Promo", "0.10")], hypothesis="netted",
-                                                    tax_table=table)))
-    assert jalr.validation_status == "green" and jalr.discount_hypothesis == JalrFile.NETTED
+                                   extra=paper_scan([item, ("discount", "Promo", "0.10")], tax_table=table,
+                                                    shop_name="MERCADO")))
+    assert jalr.validation_status == "green" and jalr.shop_name == "MERCADO"
     assert jalr.paper_items[0] == PaperItem("item", "BANANA", Decimal('1.41'), "positive", Decimal('0.705'),
-                                            Decimal('2.00'), "kg", "A", "FRUTAS", (3, 4))
+                                            Decimal('2.00'), "kg", "A", "FRUTAS", (3, 4),
+                                            confidence=Decimal('0.9'))
     assert jalr.paper_items[1].role == PaperItem.DISCOUNT and jalr.paper_items[1].quantity is None
+    assert jalr.paper_items[1].confidence is None
     assert jalr.tax_table == [{'code': "A", 'rate': Decimal('6.00'), 'base': Decimal('1.33'),
                                'tax': Decimal('0.08'), 'total': Decimal('1.41')}]
 
@@ -212,7 +217,7 @@ def test_paper_block_is_read(tmp_path):
 def test_scan_without_paper_block(tmp_path):
     jalr = JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[LIDL]))
     assert jalr.paper_items == [] and jalr.tax_table == []
-    assert jalr.validation_status == "unchecked" and jalr.discount_hypothesis == ''
+    assert jalr.validation_status == "unchecked" and jalr.shop_name == ''
 
 
 def test_malformed_paper_block_leaves_the_file_readable(tmp_path):
@@ -222,16 +227,33 @@ def test_malformed_paper_block_leaves_the_file_readable(tmp_path):
     assert route(jalr).kind == Route.PT_QR
 
 
-def test_route_items_of_a_green_paper_scan_only(tmp_path):
+# Items are routed whatever the phone's verdict: GREEN ones are proven, the others are loaded for the user to check
+def test_route_items_of_a_paper_scan(tmp_path):
     items = [("item", "BANANA", "11.94")]
-    jalr = JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[LIDL], extra=paper_scan(items)))
-    assert route(jalr).kind == Route.PT_ITEMS and route(jalr).at_qr.total == Decimal('11.94')
-    for i, status in enumerate(("amber", "red", "unchecked")):
+    for status in ("green", "amber", "unchecked"):
         jalr = JalrFile.open(make_jalr(tmp_path, f"{status}.jalr", codes=[LIDL], extra=paper_scan(items, status)))
-        assert route(jalr).kind == Route.PT_QR
+        assert route(jalr).kind == Route.PT_ITEMS and route(jalr).at_qr.total == Decimal('11.94')
     jalr = JalrFile.open(make_jalr(tmp_path, "b.jalr", kind="image_import", codes=[LIDL], extra=paper_scan(items)))
     assert route(jalr).kind == Route.PT_QR
     jalr = JalrFile.open(make_jalr(tmp_path, "c.jalr", codes=[LIDL], extra=paper_scan([])))
     assert route(jalr).kind == Route.PT_QR
     jalr = JalrFile.open(make_jalr(tmp_path, "d.jalr", codes=[LIDL.replace("E:N", "E:A")], extra=paper_scan(items)))
+    assert route(jalr).reason == Route.DOCUMENT_STATUS
+
+
+# A RED scan has no fiscal code to rely on: it is imported on confirmation only, a file with nothing read isn't at all
+def test_route_red_scan_is_unverified(tmp_path):
+    items = [("item", "BANANA", "11.94")]
+    jalr = JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[LIDL], extra=paper_scan(items, "red")))
+    result = route(jalr)
+    assert result.kind == Route.UNVERIFIED and result.at_qr.total == Decimal('11.94') and result.currency == "EUR"
+    jalr = JalrFile.open(make_jalr(tmp_path, "b.jalr", codes=[LIDL], extra=paper_scan([], "red")))
+    assert route(jalr).kind == Route.UNVERIFIED and route(jalr).at_qr is not None
+    for name, codes in (("c.jalr", []), ("d.jalr", ["7123529"])):
+        result = route(JalrFile.open(make_jalr(tmp_path, name, codes=codes, extra=paper_scan(items, "red"))))
+        assert result.kind == Route.UNVERIFIED and result.at_qr is None and result.currency == ''
+    result = route(JalrFile.open(make_jalr(tmp_path, "e.jalr", extra=paper_scan([], "red"))))
+    assert (result.kind, result.reason) == (Route.UNSUPPORTED, Route.NO_CODE)
+    jalr = JalrFile.open(make_jalr(tmp_path, "f.jalr", codes=[LIDL.replace("E:N", "E:A")],
+                                   extra=paper_scan(items, "red")))
     assert route(jalr).reason == Route.DOCUMENT_STATUS

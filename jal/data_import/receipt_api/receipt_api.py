@@ -1,3 +1,5 @@
+from decimal import Decimal
+from typing import Optional
 from PySide6.QtCore import QObject, Signal, QDateTime
 from PySide6.QtWidgets import QApplication
 
@@ -38,4 +40,12 @@ class ReceiptAPI(QObject):
 
     # Returns the fiscal document id that identifies the receipt, empty if the source gives none
     def number(self) -> str:
+        return ''
+
+    # Returns the amount the lines should add up to, in their sign; None if the source gives nothing to check against
+    def total(self) -> Optional[Decimal]:
+        return None
+
+    # Returns what is known about the receipt as a whole (a Verdict value), empty if the source gives no verdict
+    def verdict(self) -> str:
         return ''

@@ -7,35 +7,49 @@ from PySide6.QtCore import QDateTime, QDate, QTime
 from jal.data_import.receipt_api.receipt_api import ReceiptAPI
 from jal.data_import.receipt_api.pt_at_qr import AtQr
 from jal.data_import.receipt_inbox import JalrFile, PaperItem
-from jal.data_import.receipt import ReceiptItem, shop_profile, line_name, is_subtotal, vat_problems, discount_line, \
-    parse_vouchers
+from jal.data_import.receipt import ReceiptItem, LineTrust, Verdict, shop_profile, line_name, vat_problems, \
+    discount_line, parse_vouchers
 from jal.db.clock import local_zone
+
+OCR_CONFIDENCE_THRESHOLD = Decimal('0.5')     # provisional: the phone's own 'ocr_confidence' bar
 
 
 #-----------------------------------------------------------------------------------------------------------------------
 # A receipt that is already at hand (read from a file of the phone inbox): nothing to log in to or to download
 class ReceiptOffline(ReceiptAPI):
-    def __init__(self, shop_name: str, date_time: QDateTime, lines: list, number: str = ''):
+    def __init__(self, shop_name: str, date_time: QDateTime, lines: list, number: str = '',
+                 total: Optional[Decimal] = None, verdict: str = ''):
         super().__init__()
         self._shop_name = shop_name
         self._date_time = date_time
         self._lines = lines
         self._number = number
+        self._total = total
+        self._verdict = verdict
 
     # A receipt of the Portuguese fiscal QR, for the day it gives: the 'lines' given or one line of its total,
     # then the vouchers its 'text' shows as paid
     @classmethod
     def from_at_qr(cls, at_qr: AtQr, captured_at: datetime, lines: Optional[list] = None,
-                   text: Optional[list] = None) -> 'ReceiptOffline':
+                   text: Optional[list] = None, verdict: str = Verdict.NOT_RECONCILED) -> 'ReceiptOffline':
         shop = f"NIF {at_qr.nif}"
         amount = at_qr.total if at_qr.is_return else -at_qr.total
         day = at_qr.date
         moment = captured_at.time() if captured_at.date() == day else time(0, 0)   # a scan made later has no time
         date_time = QDateTime(QDate(day.year, day.month, day.day),
                               QTime(moment.hour, moment.minute, moment.second), local_zone())
-        lines = (lines or [{'name': shop, 'amount': amount}]) + \
-            voucher_lines(text or [], at_qr.nif, at_qr.total, Decimal('1') if at_qr.is_return else Decimal('-1'))
-        return cls(shop, date_time, lines, at_qr.number)
+        vouchers = voucher_lines(text or [], at_qr.nif, at_qr.total, Decimal('1') if at_qr.is_return else Decimal('-1'))
+        lines = (lines or [{'name': shop, 'amount': amount}]) + vouchers
+        return cls(shop, date_time, lines, at_qr.number, amount + sum(x['amount'] for x in vouchers), verdict)
+
+    # A scan without a fiscal code: only what the phone read, at the time of the scan; nothing to check the lines
+    # against and no document number to tell a second import by
+    @classmethod
+    def unverified(cls, receipt: JalrFile, lines: list) -> 'ReceiptOffline':
+        moment = receipt.captured_at
+        date_time = QDateTime(QDate(moment.year, moment.month, moment.day),
+                              QTime(moment.hour, moment.minute, moment.second), local_zone())
+        return cls(receipt.shop_name, date_time, lines, verdict=Verdict.NO_CODE)
 
     def activate_session(self) -> bool:
         return True
@@ -55,6 +69,12 @@ class ReceiptOffline(ReceiptAPI):
     def number(self) -> str:
         return self._number
 
+    def total(self) -> Optional[Decimal]:
+        return self._total
+
+    def verdict(self) -> str:
+        return self._verdict
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Discount lines of the payments by voucher that the shop profile of 'nif' finds in the receipt's text;
@@ -71,14 +91,25 @@ def voucher_lines(text: list, nif: str, total: Optional[Decimal], sign: Decimal)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Lines of the items the phone read off a paper receipt, or [] when they can't be trusted (the receipt is then one
-# line of its total). A GREEN file says what each line did ('effect'); an older one is read by 'by_reading'.
-# Items that add up to the QR's base rather than its total are priced net of VAT and get it added.
-def paper_lines(receipt: JalrFile, at_qr: AtQr) -> list:
-    if receipt.paper_items and all(x.effect for x in receipt.paper_items):
-        paid, discounts, problems = by_effect(receipt.paper_items)
-    else:
-        paid, discounts, problems = by_reading(receipt, at_qr)
+# Returns (lines, proven) of the items the phone read off a paper receipt; 'at_qr' is None without a fiscal code.
+# A file whose every line says what it did ('effect') is proven where that adds up to the QR's total; any other is
+# loaded as read, for the user to check.
+def paper_lines(receipt: JalrFile, at_qr: Optional[AtQr]) -> tuple:
+    sign = Decimal('1') if at_qr is not None and at_qr.is_return else Decimal('-1')
+    if at_qr is not None and receipt.paper_items and all(x.effect for x in receipt.paper_items):
+        lines, problems = proven_lines(receipt, at_qr, sign)
+        if not problems:
+            return lines, True
+        logging.warning(ReceiptAPI.tr("Receipt items don't add up, check the lines")
+                        + f" ({receipt.name}): " + "; ".join(problems))
+    reliable = at_qr is not None and receipt.validation_status != JalrFile.RED
+    return lines_as_read(receipt.paper_items, at_qr.nif if at_qr is not None else '', sign, reliable), False
+
+
+# Lines by the phone's 'effect' and what doesn't add up in them. Items that add up to the QR's base rather than its
+# total are priced net of VAT and get it added.
+def proven_lines(receipt: JalrFile, at_qr: AtQr, sign: Decimal) -> tuple:
+    paid, discounts, problems = by_effect(receipt.paper_items)
     discount = sum((a for _, a in discounts), Decimal('0'))
     if discount and receipt.tax_table:
         if any(x['total'] is None for x in receipt.tax_table):
@@ -97,14 +128,30 @@ def paper_lines(receipt: JalrFile, at_qr: AtQr) -> list:
         total = sum((amount for _, amount in paid), Decimal('0'))
     if total != at_qr.total:
         problems.append(f"total: items {total}, QR code {at_qr.total}")
-    if problems:
-        logging.warning(ReceiptAPI.tr("Receipt items don't add up, the receipt is loaded as one line")
-                        + f" ({receipt.name}): " + "; ".join(problems))
-        return []
-    sign = Decimal('1') if at_qr.is_return else Decimal('-1')
     lines = [{'name': line_name(x), 'amount': sign * amount} for x, amount in paid]
-    if discount:
-        lines += [discount_line(label, amount, sign) for label, amount in discounts]
+    lines += [discount_line(label, amount, sign) for label, amount in discounts]
+    return [dict(x, trust=LineTrust.PROVEN) for x in lines], problems
+
+
+# Lines as the phone read them, nothing folded: an item is spent (money back if printed negative), a discount is a
+# line of its own. A shop profile leaves out the discounts under an item where they are already in its price.
+# 'reliable' is False for a scan without a usable fiscal code.
+def lines_as_read(paper_items: list, nif: str, sign: Decimal, reliable: bool) -> list:
+    profile = shop_profile(nif) if nif else None
+    in_price = profile is not None and not profile.discounts_netted
+    lines = []
+    for x in paper_items:
+        if x.role == PaperItem.ITEM:
+            amount = x.amount if x.sign_printed == PaperItem.POSITIVE else -x.amount
+            line = {'name': line_name(_receipt_item(x)), 'amount': sign * amount}
+        elif x.role == PaperItem.DISCOUNT:
+            if in_price and x.scope == PaperItem.UNDER_ITEM:
+                continue
+            line = discount_line(x.text, x.amount, sign)
+        else:
+            continue
+        confident = reliable and x.confidence is not None and x.confidence >= OCR_CONFIDENCE_THRESHOLD
+        lines.append(dict(line, trust=LineTrust.READ if confident else LineTrust.UNRELIABLE))
     return lines
 
 
@@ -131,38 +178,6 @@ def by_effect(paper_items: list) -> tuple:
         elif x.effect != PaperItem.NO_EFFECT:
             problems.append(f"'{x.text}' has unknown effect '{x.effect}'")
     return [tuple(x) for x in paid], discounts, problems
-
-
-# The same for a file without 'effect'. A discount belongs to the item above it, or to the whole receipt where the
-# phone says so (for files without 'scope': below a SUBTOTAL row). The shop profile says whether an item's discount
-# is money off, the receipt's is; without a profile the phone's reading does.
-def by_reading(receipt: JalrFile, at_qr: AtQr) -> tuple:
-    problems, items, discounts, item_rows = [], [], [], ()
-    texts = receipt.ocr_texts
-    for x in receipt.paper_items:
-        if x.role == PaperItem.ITEM:
-            items.append(_receipt_item(x))
-            item_rows = x.source_lines
-        elif x.role == PaperItem.DISCOUNT and items:
-            between = texts[max(item_rows) + 1:min(x.source_lines)] if item_rows and x.source_lines else []
-            if x.scope == PaperItem.RECEIPT or not x.scope and any(is_subtotal(line) for line in between):
-                discounts.append((x.text, x.amount))
-            else:
-                items[-1].discounts.append((x.text, x.amount))
-        else:
-            problems.append(f"'{x.text}' isn't an item or a discount of one")
-    netted = receipt_netted = True
-    profile = shop_profile(at_qr.nif)
-    if profile is not None:            # the totals below prove it, whatever reading the phone balanced
-        netted = profile.discounts_netted
-    elif discounts or any(x.discounts for x in items):
-        hypothesis = receipt.discount_hypothesis
-        if hypothesis not in (JalrFile.NETTED, JalrFile.INFORMATIONAL, JalrFile.RECEIPT_NETTED):
-            problems.append(f"discounts without a reading that balances them ('{hypothesis}')")
-        netted = hypothesis == JalrFile.NETTED
-        receipt_netted = hypothesis in (JalrFile.NETTED, JalrFile.RECEIPT_NETTED)
-    paid = [(x, x.amount - sum(a for _, a in x.discounts) if netted else x.amount) for x in items]
-    return paid, discounts if receipt_netted else [], problems
 
 
 # (item, amount) pairs of 'paid' with each item's VAT added at the rate of its VAT table row; a row's rounding cents
