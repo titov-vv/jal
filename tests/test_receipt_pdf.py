@@ -1,7 +1,7 @@
 import os
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, date, timedelta, timezone
 from decimal import Decimal
 
 from PySide6.QtCore import QDateTime, QDate, QTime
@@ -12,7 +12,7 @@ from jal.constants import PredefinedCategory
 from jal.db.clock import local_zone
 from jal.data_import.receipt import LineTrust, Verdict, parse_vat_table, parse_total, parse_card, parse_vouchers, \
     shop_profile
-from jal.data_import.receipt_pdf import layout_text, pdf_receipt
+from jal.data_import.receipt_pdf import layout_text, pdf_receipt, GenericReceipt, parse_date, money
 from jal.data_import.receipt_api.pt_at_qr import AtQr
 from jal.data_import.shop_receipts.lidl import ReceiptLidl
 from jal.data_import.shop_receipts.pingo_doce import ReceiptPingoDoce
@@ -157,6 +157,7 @@ def test_card_digits_as_printed_and_as_misread():
     assert parse_card(["CARTA0: ****5678"]) == "5678"             # OCR: letter O read as zero
     assert parse_card(["CARTAO: #***34l6"]) == "3416"             # OCR: '*' as '#', '1' as 'l'
     assert parse_card(["Cartão: **** 9O12"]) == "9012"
+    assert parse_card(["Mastercard - 4321          August 18, 2026        EUR 43.05"]) == "4321"
 
 
 def test_card_digits_not_found():
@@ -406,3 +407,113 @@ def test_pdf_receipt_voucher_is_taken_off_the_total_the_unproven_lines_are_check
     assert lines[-1]['amount'] == Decimal('0.60') and 'trust' not in lines[-1]
     assert sum(x['amount'] for x in lines) == Decimal('-4.78')     # the misread item is 0.10 dearer
     assert receipt.verdict() == Verdict.NOT_RECONCILED and receipt.total() == Decimal('-4.68')
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Fabricated after the layout of an online subscription receipt: items priced net of a 23% tax, 20.00 + 15.00 = 35.00
+def invoice(rate="23%", tax="8.05", total="43.05", issued="August 18, 2026"):
+    return ["Receipt",
+            "Invoice number    ABCD1234\x000007",
+            "Date paid         " + issued,
+            "VAT Registration  EU VAT  IE1234567AB",
+            "Example Software, Inc.                Bill to",
+            "Description                               Qty    Unit price     Tax      Amount",
+            "Team plan                                  2       €10.00       " + rate + "      €20.00",
+            "Aug 18\x00Sep 18, 2026",
+            "Extra storage                              1       €15.00       " + rate + "      €15.00",
+            "                             Subtotal                                    €35.00",
+            "                             Total excluding tax                         €35.00",
+            "                             VAT - Portugal " + rate + " on €35.00                €" + tax,
+            "                             Total                                       €" + total,
+            "                             Amount paid                                 €" + total,
+            "Payment history",
+            "Payment method               Date                 Amount paid     Receipt number",
+            "Mastercard - 4321            " + issued + "      €" + total + "      1111\x002222"]
+
+
+def test_money_in_either_decimal_convention():
+    assert money("€18.00") == (Decimal('18.00'), "EUR")
+    assert money("1.234,56 €") == (Decimal('1234.56'), "EUR")
+    assert money("GBP 1,234.56") == (Decimal('1234.56'), "GBP")
+    assert money("-$5.00") == (Decimal('-5.00'), '')              # a dollar of which country is not printed
+    assert money("23%") is None and money("1") is None and money("1.234") is None
+
+
+def test_date_with_a_month_name_is_taken_at_any_age():
+    assert parse_date("August 18, 2026", date(2027, 3, 1)) == datetime(2026, 8, 18)
+    assert parse_date("18 Aug 2026", date(2027, 3, 1)) == datetime(2026, 8, 18)
+    assert parse_date("2026-08-18", date(2027, 3, 1)) == datetime(2026, 8, 18)
+    assert parse_date("Augustus 18", date(2026, 8, 20)) is None
+
+
+def test_date_of_digits_is_the_reading_within_a_week_of_the_capture():
+    assert parse_date("03/08/2026", date(2026, 8, 5)) == datetime(2026, 8, 3)       # day first
+    assert parse_date("08/03/2026", date(2026, 8, 5)) == datetime(2026, 8, 3)       # month first
+    assert parse_date("18.08.26", date(2026, 8, 20)) == datetime(2026, 8, 18)
+    assert parse_date("21/08/2026", date(2026, 8, 20)) == datetime(2026, 8, 21)     # the seller's day is ahead
+    assert parse_date("03/08/2026", date(2026, 8, 20)) is None                      # neither reading is recent
+    assert parse_date("03/08/2026", date(2026, 3, 9)) == datetime(2026, 3, 8)
+
+
+def test_generic_receipt_adds_the_tax_to_items_priced_net_of_it():
+    receipt = GenericReceipt(invoice(), date(2026, 8, 20))
+    assert [x.name for x in receipt.items] == ["Team plan Aug 18-Sep 18, 2026", "Extra storage"]
+    assert receipt.items[0].qty == 2 and receipt.items[0].price == Decimal('10.00')
+    assert receipt.problems() == []
+    assert [receipt.paid(x) for x in receipt.items] == [Decimal('24.60'), Decimal('18.45')]
+    assert receipt.total == Decimal('43.05') and receipt.currency == "EUR"
+    assert receipt.timestamp == datetime(2026, 8, 18)
+    assert receipt.shop == "VAT IE1234567AB" and receipt.number == "IE1234567AB:ABCD1234-0007"
+
+
+def test_generic_receipt_gives_the_rounding_of_the_tax_to_the_largest_item():
+    receipt = GenericReceipt(invoice(rate="6%", tax="2.10", total="37.10"), date(2026, 8, 20))
+    assert receipt.problems() == []
+    assert [receipt.paid(x) for x in receipt.items] == [Decimal('21.20'), Decimal('15.90')]
+
+
+def test_generic_receipt_whose_tax_is_in_the_prices_is_left_as_printed():
+    text = [x for x in invoice(total="35.00") if "Total excluding tax" not in x and "VAT - Portugal" not in x]
+    receipt = GenericReceipt(text, date(2026, 8, 20))
+    assert receipt.problems() == []
+    assert [receipt.paid(x) for x in receipt.items] == [Decimal('20.00'), Decimal('15.00')]
+
+
+def test_generic_receipt_that_does_not_add_up_is_caught():
+    assert GenericReceipt(invoice(total="43.15"), date(2026, 8, 20)).problems() == [
+        "total: items 35.00, tax 8.05, receipt 43.15"]
+    assert GenericReceipt(invoice(tax="8.15", total="43.15"), date(2026, 8, 20)).problems() == [
+        "net of VAT: VAT 23% items' tax 8.05, table 8.15", "total: items 35.00, tax 8.15, receipt 43.15"]
+    text = [x.replace("€15.00       23%      €15.00", "€15.00       23%      €16.00") for x in invoice()]
+    assert "subtotal: items 36.00, receipt 35.00" in GenericReceipt(text, date(2026, 8, 20)).problems()
+
+
+def test_generic_receipt_without_a_table_of_items_has_none():
+    receipt = GenericReceipt(["Example shop", "Total      9,99"], date(2026, 8, 20))
+    assert receipt.items == [] and receipt.total == Decimal('9.99')
+    assert receipt.problems() == ["no items found", "total: items 0, tax 0, receipt 9.99"]
+
+
+# Courier of the test PDF has no euro sign: the currency is printed as its code
+def invoice_fragments(lines):
+    return [(10 + 6 * (len(x) - len(x.lstrip())), 800 - 15 * i, x.strip().replace("€", "EUR ").replace("\x00", "-"))
+            for i, x in enumerate(lines)]
+
+
+def test_pdf_receipt_of_no_profile_is_read_by_its_labels(prepare_db):
+    receipt = pdf_receipt(make_pdf(invoice_fragments(invoice())), None, CAPTURED)
+    assert receipt.slip_lines() == [dict(x, trust=LineTrust.PROVEN) for x in (
+        {'name': "Team plan Aug 18-Sep 18, 2026 (2 x 10.00)", 'amount': Decimal('-24.60')},
+        {'name': "Extra storage", 'amount': Decimal('-18.45')})]
+    assert receipt.verdict() == Verdict.RECONCILED and receipt.total() == Decimal('-43.05')
+    assert receipt.shop_name() == "VAT IE1234567AB" and receipt.number() == "IE1234567AB:ABCD1234-0007"
+    assert receipt.currency() == "EUR"
+    assert receipt.datetime() == QDateTime(QDate(2026, 8, 18), QTime(0, 0), local_zone())
+
+
+def test_pdf_receipt_of_no_profile_that_does_not_add_up_keeps_its_lines_unproven(prepare_db):
+    receipt = pdf_receipt(make_pdf(invoice_fragments(invoice(total="43.15"))), None, CAPTURED)
+    lines = receipt.slip_lines()
+    assert [x['amount'] for x in lines] == [Decimal('-20.00'), Decimal('-15.00')]
+    assert {x['trust'] for x in lines} == {LineTrust.READ}
+    assert receipt.verdict() == Verdict.NOT_RECONCILED and receipt.total() == Decimal('-43.15')

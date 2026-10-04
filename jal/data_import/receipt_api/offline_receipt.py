@@ -18,7 +18,7 @@ OCR_CONFIDENCE_THRESHOLD = Decimal('0.5')     # provisional: the phone's own 'oc
 # A receipt that is already at hand (read from a file of the phone inbox): nothing to log in to or to download
 class ReceiptOffline(ReceiptAPI):
     def __init__(self, shop_name: str, date_time: QDateTime, lines: list, number: str = '',
-                 total: Optional[Decimal] = None, verdict: str = ''):
+                 total: Optional[Decimal] = None, verdict: str = '', currency: str = ''):
         super().__init__()
         self._shop_name = shop_name
         self._date_time = date_time
@@ -26,6 +26,7 @@ class ReceiptOffline(ReceiptAPI):
         self._number = number
         self._total = total
         self._verdict = verdict
+        self._currency = currency
 
     # A receipt of the Portuguese fiscal QR, for the day it gives: the 'lines' given or one line of its total,
     # then the vouchers its 'text' shows as paid
@@ -74,6 +75,9 @@ class ReceiptOffline(ReceiptAPI):
 
     def verdict(self) -> str:
         return self._verdict
+
+    def currency(self) -> str:
+        return self._currency
 
 
 # ----------------------------------------------------------------------------------------------------------------------

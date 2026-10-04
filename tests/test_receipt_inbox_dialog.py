@@ -11,7 +11,7 @@ from PySide6.QtWidgets import QWidget, QHeaderView, QLineEdit, QMessageBox
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_ledger
 from tests.test_at_qr import LIDL
 from tests.test_receipt_inbox import make_jalr, paper_scan, FNS
-from tests.test_receipt_pdf import make_pdf, lidl_receipt, QR
+from tests.test_receipt_pdf import make_pdf, lidl_receipt, QR, invoice, invoice_fragments
 from jal.constants import PredefinedCategory, PredefinedAccountType, AccountData
 from jal.db.account import JalAccountCreator
 from jal.db.db import JalDB
@@ -741,6 +741,16 @@ def test_card_account_is_the_one_in_the_currency_of_the_qr(owner, inbox, monkeyp
     assert dialog.ui.AccountEdit.selected_id == rub_id
     _load(dialog, 2)
     assert dialog.ui.AccountEdit.selected_id == 0          # three accounts hold the card
+
+
+def test_card_account_is_the_one_in_the_currency_a_pdf_without_a_code_prints(owner, inbox):
+    _card_account(cards="4321", currency_id=USD, name='Card.USD')
+    eur_id = _card_account(cards="4321", currency_id=EUR, name='Card.EUR')
+    make_jalr(inbox, "20260820-090500-00000001.jalr", kind="pdf_import", pdf=make_pdf(invoice_fragments(invoice())))
+    dialog = _dialog(owner)
+    _load(dialog)
+    assert dialog.ui.AccountEdit.selected_id == eur_id
+    assert dialog.ui.SlipShopName.text() == "VAT IE1234567AB"
 
 
 def test_account_of_the_previous_receipt_is_not_kept(owner, inbox):

@@ -345,7 +345,7 @@ class ImportReceiptDialog(QDialog):
             logging.warning(self.tr("Receipt can't be imported") + f" ({receipt.name}): " +
                             self._route_text(receipt_route))
             return
-        self._select_account_by_card(text, receipt_route.currency)
+        self._select_account_by_card(text, receipt_route.currency or receipt_api.currency())
         self.receipt_api = receipt_api
         self._inbox_file = receipt.path
         self.receipt_api.slip_load_ok.connect(self.slip_loaded)

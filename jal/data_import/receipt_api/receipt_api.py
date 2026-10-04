@@ -49,3 +49,7 @@ class ReceiptAPI(QObject):
     # Returns what is known about the receipt as a whole (a Verdict value), empty if the source gives no verdict
     def verdict(self) -> str:
         return ''
+
+    # Returns the code of the currency the receipt itself prints, empty if it prints none
+    def currency(self) -> str:
+        return ''
