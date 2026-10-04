@@ -127,10 +127,20 @@ class Ui_ImportShopReceiptDlg(object):
 
         self.gridLayout.addWidget(self.SlipShopName, 3, 1, 1, 1)
 
+        self.NoteLbl = QLabel(self.ReceiptGroup)
+        self.NoteLbl.setObjectName(u"NoteLbl")
+
+        self.gridLayout.addWidget(self.NoteLbl, 4, 0, 1, 1)
+
+        self.NoteEdit = QLineEdit(self.ReceiptGroup)
+        self.NoteEdit.setObjectName(u"NoteEdit")
+
+        self.gridLayout.addWidget(self.NoteEdit, 4, 1, 1, 5)
+
         self.VerdictLbl = QLabel(self.ReceiptGroup)
         self.VerdictLbl.setObjectName(u"VerdictLbl")
 
-        self.gridLayout.addWidget(self.VerdictLbl, 4, 1, 1, 5)
+        self.gridLayout.addWidget(self.VerdictLbl, 5, 1, 1, 5)
 
         self.LinesFooterLayout = QHBoxLayout()
         self.LinesFooterLayout.setObjectName(u"LinesFooterLayout")
@@ -159,13 +169,13 @@ class Ui_ImportShopReceiptDlg(object):
         self.LinesFooterLayout.addWidget(self.DifferenceLbl)
 
 
-        self.gridLayout.addLayout(self.LinesFooterLayout, 6, 1, 1, 5)
+        self.gridLayout.addLayout(self.LinesFooterLayout, 7, 1, 1, 5)
 
         self.LinesLbl = QLabel(self.ReceiptGroup)
         self.LinesLbl.setObjectName(u"LinesLbl")
         self.LinesLbl.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignTop)
 
-        self.gridLayout.addWidget(self.LinesLbl, 5, 0, 1, 1)
+        self.gridLayout.addWidget(self.LinesLbl, 6, 0, 1, 1)
 
         self.AccountLbl = QLabel(self.ReceiptGroup)
         self.AccountLbl.setObjectName(u"AccountLbl")
@@ -182,7 +192,12 @@ class Ui_ImportShopReceiptDlg(object):
         self.LinesTableView.verticalHeader().setVisible(False)
         self.LinesTableView.verticalHeader().setMinimumSectionSize(20)
 
-        self.gridLayout.addWidget(self.LinesTableView, 5, 1, 1, 5)
+        self.gridLayout.addWidget(self.LinesTableView, 6, 1, 1, 5)
+
+        self.AssignCategoryBtn = QPushButton(self.ReceiptGroup)
+        self.AssignCategoryBtn.setObjectName(u"AssignCategoryBtn")
+
+        self.gridLayout.addWidget(self.AssignCategoryBtn, 2, 5, 1, 1)
 
         self.AssignTagBtn = QPushButton(self.ReceiptGroup)
         self.AssignTagBtn.setObjectName(u"AssignTagBtn")
@@ -205,6 +220,7 @@ class Ui_ImportShopReceiptDlg(object):
 
 #if QT_CONFIG(shortcut)
         self.PeerLbl.setBuddy(self.SlipShopName)
+        self.NoteLbl.setBuddy(self.NoteEdit)
         self.LinesLbl.setBuddy(self.LinesTableView)
 #endif // QT_CONFIG(shortcut)
         QWidget.setTabOrder(self.InboxList, self.InboxLoadBtn)
@@ -214,8 +230,10 @@ class Ui_ImportShopReceiptDlg(object):
         QWidget.setTabOrder(self.SlipDateTime, self.PeerEdit)
         QWidget.setTabOrder(self.PeerEdit, self.SlipShopName)
         QWidget.setTabOrder(self.SlipShopName, self.AccountEdit)
-        QWidget.setTabOrder(self.AccountEdit, self.LinesTableView)
-        QWidget.setTabOrder(self.LinesTableView, self.AssignTagBtn)
+        QWidget.setTabOrder(self.AccountEdit, self.NoteEdit)
+        QWidget.setTabOrder(self.NoteEdit, self.LinesTableView)
+        QWidget.setTabOrder(self.LinesTableView, self.AssignCategoryBtn)
+        QWidget.setTabOrder(self.AssignCategoryBtn, self.AssignTagBtn)
         QWidget.setTabOrder(self.AssignTagBtn, self.AddLineBtn)
         QWidget.setTabOrder(self.AddLineBtn, self.DeleteLineBtn)
         QWidget.setTabOrder(self.DeleteLineBtn, self.DialogButtonBox)
@@ -245,6 +263,7 @@ class Ui_ImportShopReceiptDlg(object):
         self.DateTimeLbl.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Date / Time:", None))
         self.CorrespondenceLbl.setText(QCoreApplication.translate("ImportShopReceiptDlg", u" \u279c ", None))
         self.PeerLbl.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"&Peer:", None))
+        self.NoteLbl.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"&Note:", None))
         self.VerdictLbl.setText("")
         self.AddLineBtn.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Add line", None))
         self.DeleteLineBtn.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Delete line", None))
@@ -252,6 +271,13 @@ class Ui_ImportShopReceiptDlg(object):
         self.DifferenceLbl.setText("")
         self.LinesLbl.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"&Lines:", None))
         self.AccountLbl.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Account:", None))
-        self.AssignTagBtn.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Set Tag for all lines", None))
+#if QT_CONFIG(tooltip)
+        self.AssignCategoryBtn.setToolTip(QCoreApplication.translate("ImportShopReceiptDlg", u"Lines that have a category already keep it", None))
+#endif // QT_CONFIG(tooltip)
+        self.AssignCategoryBtn.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Assign Category", None))
+#if QT_CONFIG(tooltip)
+        self.AssignTagBtn.setToolTip(QCoreApplication.translate("ImportShopReceiptDlg", u"Lines that have a tag already keep it", None))
+#endif // QT_CONFIG(tooltip)
+        self.AssignTagBtn.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Assign Tag", None))
     # retranslateUi
 

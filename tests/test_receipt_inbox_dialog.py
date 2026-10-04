@@ -25,6 +25,7 @@ from jal.data_import.receipt_inbox import JalrFile
 from jal.data_import.receipt_api.offline_receipt import ReceiptOffline, paper_lines
 from jal.data_import.receipt_api.ru_fns import ReceiptRuFNS
 from jal.data_import.shop_receipt import ImportReceiptDialog, RECEIPT_INBOX_SETTING
+from jal.widgets.reference_dialogs import CategoryListDialog, TagsListDialog
 
 LISBON_SUMMER = timezone(timedelta(hours=1))
 RUB, USD, EUR = 1, 2, 3       # currency ids of the test database
@@ -360,6 +361,80 @@ def test_paper_scan_is_imported_and_leaves_the_inbox(owner, inbox):
     assert not os.path.exists(path)
     assert os.path.isfile(inbox / "done" / "20260814-184200-00000001.jalr")
     assert dialog.ui.InboxList.rowCount() == 0
+
+
+def test_note_goes_to_the_operation_and_is_not_reused(owner, inbox):
+    make_jalr(inbox, "20260814-184200-00000001.jalr", codes=[LIDL])
+    make_jalr(inbox, "20260814-184300-00000002.jalr", codes=[PHARMACY])
+    dialog = _dialog(owner)
+    dialog.ui.InboxList.setCurrentCell(0, 0)
+    dialog.loadInboxReceipt()
+    dialog.ui.NoteEdit.setText(" Weekly shopping ")
+    dialog.ui.AccountEdit.selected_id = 1
+    dialog.ui.PeerEdit.selected_id = 1
+    dialog.slip_lines['category'] = PredefinedCategory.Fees
+    dialog.addOperation()
+    assert dialog.ui.NoteEdit.text() == ''
+    _load_and_add(dialog)                     # the second receipt, without a note
+    notes = JalDB._read_to_list("SELECT number, note, note IS NULL FROM actions WHERE number!='' ORDER BY oid")
+    assert notes == [[NUMBER, "Weekly shopping", 0], [NUMBER.replace("503340855", "509103774"), '', 1]]
+
+
+def test_category_is_set_for_lines_without_one(owner, inbox, monkeypatch):
+    make_jalr(inbox, "20260814-184200-00000001.jalr", codes=[LIDL],
+              extra=paper_scan([("item", "LEITE", "1.41"), ("item", "PAO", "10.53")], effect=True))
+    dialog = _dialog(owner)
+    assert not dialog.ui.AssignCategoryBtn.isEnabled()   # nothing to categorize yet
+    dialog.ui.InboxList.setCurrentCell(0, 0)
+    dialog.loadInboxReceipt()
+    dialog.model.setData(dialog.model.index(0, 1), PredefinedCategory.Fees)
+
+    def choose(category_dialog, enable_selection=False, selected=0):
+        category_dialog.selected_id = PredefinedCategory.Taxes
+        return choose.accepted
+    monkeypatch.setattr(CategoryListDialog, "exec", choose)
+    choose.accepted = False                              # a cancelled choice changes nothing
+    dialog.ui.AssignCategoryBtn.click()
+    assert dialog.slip_lines['category'].tolist() == [PredefinedCategory.Fees, 0]
+    choose.accepted = True
+    dialog.ui.AssignCategoryBtn.click()
+    assert dialog.slip_lines['category'].tolist() == [PredefinedCategory.Fees, PredefinedCategory.Taxes]
+
+
+def test_tag_is_set_for_lines_without_one(owner, inbox, monkeypatch):
+    JalDB._exec("INSERT INTO tags (id, tag) VALUES (101, 'Trip')", commit=True)
+    JalDB._exec("INSERT INTO tags (id, tag) VALUES (102, 'Gift')", commit=True)
+    tag_id = 101
+    make_jalr(inbox, "20260814-184200-00000001.jalr", codes=[LIDL],
+              extra=paper_scan([("item", "LEITE", "1.41"), ("item", "PAO", "10.53")], effect=True))
+    dialog = _dialog(owner)
+    assert not dialog.ui.AssignTagBtn.isEnabled()        # nothing to tag yet
+    dialog.ui.InboxList.setCurrentCell(0, 0)
+    dialog.loadInboxReceipt()
+    assert dialog.ui.AssignTagBtn.isEnabled()
+
+    def choose(tags_dialog, enable_selection=False, selected=0):
+        tags_dialog.selected_id = tag_id
+        return choose.accepted
+    monkeypatch.setattr(TagsListDialog, "exec", choose)
+    choose.accepted = False                              # a cancelled choice changes nothing
+    dialog.ui.AssignTagBtn.click()
+    assert dialog.slip_lines['tag'].tolist() == [None, None]
+    choose.accepted = True
+    dialog.model.setData(dialog.model.index(0, 2), 102)  # a line that has its tag keeps it
+    dialog.ui.AssignTagBtn.click()
+    assert dialog.slip_lines['tag'].tolist() == [102, tag_id]
+    dialog.model.setData(dialog.model.index(0, 2), tag_id)
+
+    dialog.model.setData(dialog.model.index(1, 2), 0)    # the tag of a line is cleared in its editor
+    dialog.ui.AccountEdit.selected_id = 1
+    dialog.ui.PeerEdit.selected_id = 1
+    dialog.slip_lines['category'] = PredefinedCategory.Fees
+    dialog.addOperation()
+    oid = IncomeSpending.find_by_number(NUMBER)
+    tags = JalDB._read_to_list("SELECT tag_id, tag_id IS NULL FROM action_details WHERE pid=:oid ORDER BY id",
+                               [(":oid", oid)])
+    assert tags == [[tag_id, 0], ['', 1]]
 
 
 def test_the_same_receipt_twice_is_refused(owner, inbox):

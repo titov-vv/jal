@@ -165,14 +165,27 @@
         </property>
        </widget>
       </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="NoteLbl">
+        <property name="text">
+         <string>&amp;Note:</string>
+        </property>
+        <property name="buddy">
+         <cstring>NoteEdit</cstring>
+        </property>
+       </widget>
+      </item>
       <item row="4" column="1" colspan="5">
+       <widget class="QLineEdit" name="NoteEdit"/>
+      </item>
+      <item row="5" column="1" colspan="5">
        <widget class="QLabel" name="VerdictLbl">
         <property name="text">
          <string/>
         </property>
        </widget>
       </item>
-      <item row="6" column="1" colspan="5">
+      <item row="7" column="1" colspan="5">
        <layout class="QHBoxLayout" name="LinesFooterLayout">
         <item>
          <widget class="QPushButton" name="AddLineBtn">
@@ -217,7 +230,7 @@
         </item>
        </layout>
       </item>
-      <item row="5" column="0">
+      <item row="6" column="0">
        <widget class="QLabel" name="LinesLbl">
         <property name="text">
          <string>&amp;Lines:</string>
@@ -240,7 +253,7 @@
       <item row="2" column="4">
        <widget class="ReferenceSelectorWidget" name="AccountEdit"/>
       </item>
-      <item row="5" column="1" colspan="5">
+      <item row="6" column="1" colspan="5">
        <widget class="QTableView" name="LinesTableView">
         <attribute name="verticalHeaderVisible">
          <bool>false</bool>
@@ -250,10 +263,23 @@
         </attribute>
        </widget>
       </item>
+      <item row="2" column="5">
+       <widget class="QPushButton" name="AssignCategoryBtn">
+        <property name="toolTip">
+         <string>Lines that have a category already keep it</string>
+        </property>
+        <property name="text">
+         <string>Assign Category</string>
+        </property>
+       </widget>
+      </item>
       <item row="3" column="5">
        <widget class="QPushButton" name="AssignTagBtn">
+        <property name="toolTip">
+         <string>Lines that have a tag already keep it</string>
+        </property>
         <property name="text">
-         <string>Set Tag for all lines</string>
+         <string>Assign Tag</string>
         </property>
        </widget>
       </item>
@@ -297,7 +323,9 @@
   <tabstop>PeerEdit</tabstop>
   <tabstop>SlipShopName</tabstop>
   <tabstop>AccountEdit</tabstop>
+  <tabstop>NoteEdit</tabstop>
   <tabstop>LinesTableView</tabstop>
+  <tabstop>AssignCategoryBtn</tabstop>
   <tabstop>AssignTagBtn</tabstop>
   <tabstop>AddLineBtn</tabstop>
   <tabstop>DeleteLineBtn</tabstop>

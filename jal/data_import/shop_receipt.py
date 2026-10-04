@@ -18,6 +18,7 @@ from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.clock import local_zone
 from jal.db.category import JalCategory
+from jal.db.tag import JalTag
 from jal.db.operations import LedgerTransaction, IncomeSpending
 from jal.db.settings import JalSettings
 from jal.db.settings_registry import SettingsRegistry, SettingDescriptor
@@ -44,7 +45,7 @@ SettingsRegistry.register(SettingDescriptor(
 # Custom model to display and edit slip lines
 class PandasLinesModel(QAbstractTableModel):
     COLUMNS = ['name', 'category', 'tag', 'amount']     # of the view; the data has 'trust' after them
-    NAME, AMOUNT, TRUST = 0, 3, 4
+    NAME, CATEGORY, TAG, AMOUNT, TRUST = 0, 1, 2, 3, 4
 
     def __init__(self, data, parent=None):
         super().__init__(parent)
@@ -99,6 +100,13 @@ class PandasLinesModel(QAbstractTableModel):
         self.endInsertRows()
         return row
 
+    # Gives the value to the lines that have none in the column (CATEGORY or TAG) yet
+    def fill_empty(self, column: int, value: int):
+        for row in range(self.rowCount()):
+            if not self._data.iat[row, column]:
+                self._data.iat[row, column] = value
+                self.dataChanged.emit(self.index(row, column), self.index(row, column))
+
     def removeRows(self, row, count, parent=QModelIndex()):
         if row < 0 or count < 1 or row + count > self.rowCount():
             return False
@@ -150,6 +158,10 @@ class SlipLinesDelegate(QStyledItemDelegate):
             painter.drawText(rect.adjusted(2 * self.MARK_WIDTH, 0, 0, 0), Qt.AlignLeft | Qt.AlignVCenter, text)
         if index.column() == 1:
             text = JalCategory(int(model.data(index, Qt.DisplayRole))).name()
+            painter.drawText(option.rect, Qt.AlignLeft | Qt.AlignVCenter, text)
+        elif index.column() == 2:
+            tag_id = model.data(index, Qt.DisplayRole)
+            text = JalTag(int(tag_id)).name() if tag_id else ''
             painter.drawText(option.rect, Qt.AlignLeft | Qt.AlignVCenter, text)
         elif index.column() == 3:
             amount = model.data(index, Qt.DisplayRole)
@@ -210,6 +222,8 @@ class ImportReceiptDialog(QDialog):
         self.delegate = []
         self.slip_lines = None
         self.receipt_api = None
+        self._category_dialog = None  # built on the first click of AssignCategoryBtn
+        self._tags_dialog = None      # built on the first click of AssignTagBtn
         self._inbox = []              # (JalrFile, Route) per row of InboxList
         self._inbox_file = ''         # path of the inbox file the loaded receipt came from
 
@@ -228,6 +242,8 @@ class ImportReceiptDialog(QDialog):
         self.ui.InboxList.itemDoubleClicked.connect(self.loadInboxReceipt)
         self.ui.AddLineBtn.clicked.connect(self.addLine)
         self.ui.DeleteLineBtn.clicked.connect(self.deleteLine)
+        self.ui.AssignCategoryBtn.clicked.connect(self.assignCategory)
+        self.ui.AssignTagBtn.clicked.connect(self.assignTag)
         self.ui.InboxList.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
         self.ui.InboxList.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeToContents)
 
@@ -392,6 +408,7 @@ class ImportReceiptDialog(QDialog):
         peer_id = JalPeer.get_id_by_mapped_name(self.ui.SlipShopName.text())
         self.ui.PeerEdit.selected_id = peer_id if peer_id is not None else 0   # the last receipt's peer isn't reused
         self.ui.SlipDateTime.setDateTime(self.receipt_api.datetime())
+        self.ui.NoteEdit.clear()     # the last receipt's note isn't reused
         # A line may come with its category, the others get an empty one
         if 'category' in self.slip_lines:
             self.slip_lines['category'] = self.slip_lines['category'].fillna(0).astype(int)
@@ -436,6 +453,8 @@ class ImportReceiptDialog(QDialog):
         self._color_label(self.ui.VerdictLbl, meaning)
         self.ui.AddLineBtn.setEnabled(loaded)
         self.ui.DeleteLineBtn.setEnabled(loaded)
+        self.ui.AssignCategoryBtn.setEnabled(loaded)
+        self.ui.AssignTagBtn.setEnabled(loaded)
         self._show_totals()
 
     def _color_label(self, label, meaning):
@@ -483,6 +502,26 @@ class ImportReceiptDialog(QDialog):
             return
         self.model.removeRows(index.row(), 1)
 
+    # The category chosen in the categories dialog goes to the lines without a category
+    @Slot()
+    def assignCategory(self):
+        if self.model is None or self.slip_lines is None:
+            return
+        if self._category_dialog is None:
+            self._category_dialog = CategoryListDialog(self)
+        if self._category_dialog.exec(enable_selection=True):
+            self.model.fill_empty(PandasLinesModel.CATEGORY, self._category_dialog.selected_id)
+
+    # The tag chosen in the tags dialog goes to the lines without a tag
+    @Slot()
+    def assignTag(self):
+        if self.model is None or self.slip_lines is None:
+            return
+        if self._tags_dialog is None:
+            self._tags_dialog = TagsListDialog(self)
+        if self._tags_dialog.exec(enable_selection=True):
+            self.model.fill_empty(PandasLinesModel.TAG, self._tags_dialog.selected_id)
+
     def addOperation(self):
         if self.slip_lines is None:
             return
@@ -518,7 +557,7 @@ class ImportReceiptDialog(QDialog):
         for index, row in self.slip_lines.iterrows():
             details.append({
                 "category_id": row['category'],
-                "tag_id": row['tag'],
+                "tag_id": row['tag'] or None,     # a tag cleared in the editor is 0
                 "amount": row['amount'],
                 "note": row['name']
             })
@@ -529,6 +568,8 @@ class ImportReceiptDialog(QDialog):
             "number": number,
             "lines": details
         }
+        if self.ui.NoteEdit.text().strip():
+            operation["note"] = self.ui.NoteEdit.text().strip()
         LedgerTransaction.create_new(LedgerTransaction.IncomeSpending, operation)
         JalPeer(self.ui.PeerEdit.selected_id).add_or_update_mapped_name(self.ui.SlipShopName.text(), )
         self._finish_inbox_file()
@@ -549,6 +590,7 @@ class ImportReceiptDialog(QDialog):
     def clearSlipData(self):
         self.slip_lines = None
         self._inbox_file = ''
+        self.ui.NoteEdit.clear()
         self._save_lines_columns()
         self.ui.LinesTableView.setModel(None)
         self._show_verdict()
