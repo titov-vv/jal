@@ -19,6 +19,7 @@ the world: a shop, an employer, a landlord, a tax office.
 | **Account** | Which of your accounts the money left or entered. |
 | **Peer** | Who was on the other side. |
 | **Note** (top) | A remark about the whole operation. |
+| **#** | The fiscal number of an imported [shop receipt](09-importing.md#shop-receipts-experimental), shown but not editable; empty for anything typed by hand. |
 | The table | One line per thing being paid for. |
 
 Each line of the table has:

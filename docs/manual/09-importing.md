@@ -133,12 +133,34 @@ per item bought:
 
 ![The receipt import dialog](img/dlg_receipt.png)
 
-Receipts arrive from the phone app into the inbox folder set in *Preferences*. Select one in the
-list and press **Load**; a Russian receipt is fetched from the tax service (FNS) by its QR code. The
-lines appear at the bottom, where you choose the account and the peer and press **Add**.
+> **The phone app is not publicly available yet.** Receipts reach JAL only as files written by its
+> companion Android app, *ReceiptScan*, which scans paper receipts and takes in the PDFs and images
+> a shop sends. Until that app is published the list stays empty and this dialog has nothing to
+> import. Typing a receipt's codes in by hand, scanning a QR code with the computer's camera and
+> the *Lidl Plus* and *Pingo Doce* logins of earlier versions are gone.
 
-This feature depends on services that change without notice, and it is not needed for anything else
-in JAL.
+Receipts arrive from the phone app into the inbox folder set in
+[*Preferences*](12-settings-and-maintenance.md#import). The list shows each file with the time it
+was captured, what it is (*Paper scan*, *Image* or *PDF*) and how it will be imported; a file that
+cannot be imported says why. Select one and press **Load**:
+
+* a Portuguese receipt is checked against its fiscal QR code, and its lines come from the scan or
+  from the shop's PDF;
+* a Russian receipt is fetched from the tax service (FNS) by its QR code.
+
+A banner above the lines tells how far they can be trusted — *Reconciled automatically*, *Not
+reconciled, check the lines* or *No usable fiscal code, rescan recommended* — each line carries a
+mark of its own, and the footer compares the sum of the lines with the receipt's total. Lines can
+be edited, added and deleted; **Assign Category** and **Assign Tag** fill the lines that have none
+yet. A discount off the whole receipt becomes a line of its own in the *Discounts* category.
+
+Choose the account and the peer and press **Add**. The account is chosen for you when the receipt
+names a card whose last four digits are recorded in an account's details (*Card (last 4 digits)*).
+The imported file moves into the inbox's `done` subfolder, as does one you dismiss with **Skip**.
+The operation keeps the receipt's fiscal number in its **#** field, and a receipt whose number is
+in the ledger already is refused, so nothing is imported twice.
+
+This feature is not needed for anything else in JAL.
 
 ## Prices and exchange rates
 

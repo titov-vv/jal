@@ -30,6 +30,10 @@ Which of your accounts a statement belongs to, for the exports that name no acco
 row to pick the account. Those imports refuse to run until the account they need is set —
 see [chapter 9](09-importing.md#broker-statements).
 
+*Phone receipt inbox folder* is the folder the phone app's receipt files arrive in; an imported file
+is moved into its `done` subfolder. It is needed only for
+[shop receipts](09-importing.md#shop-receipts-experimental).
+
 Changes take effect when you press **OK**; **Cancel** discards them.
 
 ## Language

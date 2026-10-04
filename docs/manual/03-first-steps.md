@@ -52,7 +52,7 @@ Fill it in:
 | **Bank/Broker** | The institution. Leave it as *None* for cash. Type into the box to search, or press **…** to pick from the list — where a new institution can be added. |
 | **Status** | *Active* for an account you use day to day. *Background* keeps the account fully in the books but folds it away into one summary row. *Closed* is for an account that no longer exists — see [*Accounts you no longer use*](05-everyday-money.md#accounts-you-no-longer-use). |
 | **Investing** | Tick it **only** for accounts that can hold shares, funds, bonds or crypto. |
-| **Account details** | Extra facts, added with the **+** button next to the table: *Account #*, *Credit* (a card's credit limit), *Country*, *Precision* (how many decimals the account counts in — 2 for money), *Tag* (see [*Tags*](05-everyday-money.md#tags)), *Opened on* and *Closed on* (the dates, for your own record). |
+| **Account details** | Extra facts, added with the **+** button next to the table: *Account #*, *Credit* (a card's credit limit), *Country*, *Precision* (how many decimals the account counts in — 2 for money), *Tag* (see [*Tags*](05-everyday-money.md#tags)), *Opened on* and *Closed on* (the dates, for your own record), *Card (last 4 digits)* (lets a [shop receipt](09-importing.md#shop-receipts-experimental) paid by that card find its account). |
 
 Click **OK**. Repeat for every account you have, then **Close**.
 

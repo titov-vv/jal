@@ -183,7 +183,7 @@
     <message>
         <location filename="../constants.py" line="484"/>
         <source>Card (last 4 digits)</source>
-        <translation type="unfinished"></translation>
+        <translation>Карта (последние 4 цифры)</translation>
     </message>
 </context>
 <context>
@@ -3711,7 +3711,7 @@ one for ParentCo and second for Subsidiary</source>
     <message>
         <location filename="../data_import/shop_receipt.py" line="300"/>
         <source>Portuguese QR and items</source>
-        <translation type="unfinished"></translation>
+        <translation>Португальский QR-код и позиции</translation>
     </message>
     <message>
         <location filename="../data_import/shop_receipt.py" line="303"/>
@@ -3756,7 +3756,7 @@ one for ParentCo and second for Subsidiary</source>
     <message>
         <location filename="../data_import/shop_receipt.py" line="315"/>
         <source>no money moved (signed total 0.00)</source>
-        <translation type="unfinished"></translation>
+        <translation>движения денег нет (итог с учётом знака 0.00)</translation>
     </message>
     <message>
         <location filename="../data_import/shop_receipt.py" line="317"/>
@@ -3920,12 +3920,12 @@ one for ParentCo and second for Subsidiary</source>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="86"/>
         <source>Move the selected file into the &apos;done&apos; folder without importing it</source>
-        <translation type="unfinished"></translation>
+        <translation>Переместить выбранный файл в папку &apos;done&apos; без импорта</translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="89"/>
         <source>S&amp;kip</source>
-        <translation type="unfinished"></translation>
+        <translation>Пропу&amp;стить</translation>
     </message>
     <message>
         <location filename="../ui/receipt_import_dlg.ui" line="137"/>
@@ -4013,7 +4013,7 @@ one for ParentCo and second for Subsidiary</source>
     <message>
         <location filename="../ui/widgets/income_spending_operation.ui" line="23"/>
         <source>#</source>
-        <translation type="unfinished">№</translation>
+        <translation>№</translation>
     </message>
     <message>
         <location filename="../ui/widgets/income_spending_operation.ui" line="40"/>
@@ -7503,7 +7503,7 @@ One transaction moved this exact quantity as </source>
     <message>
         <location filename="../data_import/receipt_api/offline_receipt.py" line="92"/>
         <source>Receipt voucher can&apos;t be read, add it by hand</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось прочитать ваучер в чеке, добавьте его вручную</translation>
     </message>
     <message>
         <location filename="../data_import/receipt_api/offline_receipt.py" line="107"/>
@@ -9710,7 +9710,7 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
     <message>
         <location filename="../data_import/broker_statements/trading212.py" line="376"/>
         <source>transfer is in the database already</source>
-        <translation type="unfinished"></translation>
+        <translation>перевод уже есть в базе данных</translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/trading212.py" line="385"/>
