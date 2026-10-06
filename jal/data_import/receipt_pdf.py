@@ -107,7 +107,7 @@ def parse_date(text: str, captured: date) -> Optional[datetime]:
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# A receipt of a seller that has no shop profile, read by the labels invoices commonly print: a table of items under
+# An invoice of a seller that has no shop profile, read by the labels invoices commonly print: a table of items under
 # a 'Description ... Amount' heading, then the subtotal, the tax and the total. It has the surface of ShopReceipt.
 class GenericReceipt:
     name = "generic"
@@ -220,7 +220,71 @@ class GenericReceipt:
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Reads a receipt PDF into the lines of the import dialog. Every item that its shop profile finds, or the generic
+# A till receipt of a seller that has no shop profile: every line above the total that ends in an amount is an item,
+# named by the rest of the line or, where that is codes only, by the line above. It has the surface of ShopReceipt.
+class GenericTill:
+    name = "generic till"
+    _BODY_END = re.compile(r'^\s*(sub-?\s*total|total)\b', re.I)
+    _TOTAL = re.compile(r'total(?: a pagar)?(?: ?\((?P<currency>[A-Z]{3})\))?', re.I)
+    _VAT_CODE = re.compile(r'(?<=\d)\s+\(?[A-Z]\)?\s*$')     # may be printed after the amount
+    _WORD = re.compile(r'[^\W\d_]{3}')
+
+    def __init__(self, lines: list):
+        self.discounts = []
+        self.currency = self.shop = self.number = ''
+        self.timestamp = None
+        end = next((i for i, x in enumerate(lines) if self._BODY_END.match(x)), 0)
+        self.items = self._parse_items(lines[:end])
+        self.total = self._parse_total(lines[end:])
+
+    def _parse_items(self, lines: list) -> list:
+        items, above = [], ''
+        for line in lines:
+            cells = _CELL.findall(self._VAT_CODE.sub('', line))
+            amount = money(cells[-1]) if cells else None
+            if amount is None:
+                if self._WORD.search(line):
+                    above = line.strip()
+                continue
+            name = ' '.join(cells[:-1])
+            if not self._WORD.search(name):
+                name, above = above, ''
+            if name:
+                items.append(ReceiptItem(name=name, amount=amount[0]))
+        return items
+
+    def _parse_total(self, lines: list) -> Optional[Decimal]:
+        for line in lines:
+            cells = _CELL.findall(line)
+            value = money(cells[-1]) if len(cells) > 1 else None
+            if value is not None and (match := self._TOTAL.fullmatch(' '.join(cells[:-1]))):
+                self.currency = (match['currency'] or value[1]).upper()
+                return value[0]
+        return None
+
+    # Amount the item was paid with
+    def paid(self, item: ReceiptItem) -> Decimal:
+        return item.amount
+
+    def problems(self) -> list:
+        problems = [] if self.items else ["no items found"]
+        items = sum((x.amount for x in self.items), Decimal('0'))
+        if items != self.total:
+            problems.append(f"total: items {items}, receipt {self.total}")
+        return problems
+
+
+# A receipt without a shop profile is an invoice where the table of one is found, otherwise a till receipt
+def generic_receipt(lines: list, captured: date):
+    invoice = GenericReceipt(lines, captured)
+    if invoice.items:
+        return invoice
+    till = GenericTill(lines)
+    return till if till.items else invoice
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Reads a receipt PDF into the lines of the import dialog. Every item that its shop profile finds, or a generic
 # reader without one, is a line, proven where they add up to the receipt's own totals; otherwise the receipt is
 # one line of its total.
 # A payment by voucher is a discount line in either case.
@@ -237,7 +301,7 @@ def pdf_receipt(data: bytes, at_qr: Optional[AtQr], captured_at: datetime) -> Op
     nif = at_qr.nif if at_qr is not None else header.get('nif', '')
     sign = Decimal('1') if at_qr is not None and at_qr.is_return else Decimal('-1')
     profile = shop_profile(nif) if nif else None
-    receipt = profile(text) if profile is not None else GenericReceipt(text, captured_at.date())
+    receipt = profile(text) if profile is not None else generic_receipt(text, captured_at.date())
     generic = receipt if profile is None else None
     shop = f"NIF {nif}" if nif else generic.shop
     total = at_qr.total if at_qr is not None else parse_total(text)

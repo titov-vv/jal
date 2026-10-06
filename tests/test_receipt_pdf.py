@@ -12,7 +12,8 @@ from jal.constants import PredefinedCategory
 from jal.db.clock import local_zone
 from jal.data_import.receipt import LineTrust, Verdict, parse_vat_table, parse_total, parse_card, parse_vouchers, \
     shop_profile
-from jal.data_import.receipt_pdf import layout_text, pdf_receipt, GenericReceipt, parse_date, money
+from jal.data_import.receipt_pdf import layout_text, pdf_receipt, GenericReceipt, GenericTill, generic_receipt, \
+    parse_date, money
 from jal.data_import.receipt_api.pt_at_qr import AtQr
 from jal.data_import.shop_receipts.lidl import ReceiptLidl
 from jal.data_import.shop_receipts.pingo_doce import ReceiptPingoDoce
@@ -378,8 +379,22 @@ def test_pdf_receipt_without_qr_reads_the_shop_and_number_from_the_text(prepare_
     assert receipt.number() == "503340855:FS 0421/000317"
 
 
-def test_pdf_receipt_of_an_unknown_shop_is_one_line_of_its_total(prepare_db):
+def test_pdf_receipt_of_an_unknown_shop_is_read_as_a_till_receipt(prepare_db):
     receipt = pdf_receipt(make_pdf(lidl_receipt(nif="509999999")), None, CAPTURED)
+    assert receipt.slip_lines() == [dict(x, trust=LineTrust.PROVEN) for x in (
+        {'name': "TOMATE REDONDO", 'amount': Decimal('-1.41')},
+        {'name': "Promocao Lidl Plus", 'amount': Decimal('0.41')},
+        {'name': "MORANGO 300G", 'amount': Decimal('-1.99')},
+        {'name': "CROISSANT CHOCOLATE 80GR", 'amount': Decimal('-1.70')},
+        {'name': "Saco de Papel", 'amount': Decimal('-0.15')})]
+    assert receipt.verdict() == Verdict.RECONCILED and receipt.total() == Decimal('-4.84')
+    assert receipt.number() == "509999999:FS 0421/000317"
+
+
+def test_pdf_receipt_of_an_unknown_shop_without_items_is_one_line_of_its_total(prepare_db):
+    fragments = [(46, 800, "Loja Teste"), (46, 785, "NIF:509999999"), (10, 770, "No : FS 0421/000317"),
+                 (10, 755, "Total"), (232, 755, "4,84")]
+    receipt = pdf_receipt(make_pdf(fragments), None, CAPTURED)
     assert receipt.slip_lines() == [{'name': "NIF 509999999", 'amount': Decimal('-4.84')}]
     assert receipt.verdict() == Verdict.NOT_RECONCILED and receipt.total() == Decimal('-4.84')
     assert receipt.number() == "509999999:FS 0421/000317"
@@ -492,6 +507,44 @@ def test_generic_receipt_without_a_table_of_items_has_none():
     receipt = GenericReceipt(["Example shop", "Total      9,99"], date(2026, 8, 20))
     assert receipt.items == [] and receipt.total == Decimal('9.99')
     assert receipt.problems() == ["no items found", "total: items 0, tax 0, receipt 9.99"]
+
+
+# Fabricated after the layout of a real DIY shop receipt: the name is above the line of its VAT code, EAN and amount
+def till(hose="12.40", total="18.09"):
+    return ["              LOJA DE TESTE",
+            "             TEL: 210 000 000",
+            "FACTURA SIMPLIFICADA",
+            "No: FS 20260000001/000042    06/10/2026",
+            "_________________________________________",
+            "DESENTUPIDOR 3M D.6MM",
+            "J   1234567890123                            5.69",
+            "MANGUEIRA 15M",
+            "J   1234567890456                           " + hose,
+            "--------",
+            "SUB  TOTAL                                  18.09",
+            "TOTAL (EUR)                                 " + total,
+            "CARTAO         (EUR)                        " + total,
+            "IVA J a 23.00 %        3.38       SI :      14.71",
+            "                    NIPC 509999999"]
+
+
+def test_till_receipt_names_an_item_by_the_line_above_its_codes():
+    receipt = GenericTill(till())
+    assert [(x.name, x.amount) for x in receipt.items] == [("DESENTUPIDOR 3M D.6MM", Decimal('5.69')),
+                                                           ("MANGUEIRA 15M", Decimal('12.40'))]
+    assert receipt.total == Decimal('18.09') and receipt.currency == "EUR"
+    assert receipt.problems() == []
+
+
+def test_till_receipt_that_does_not_add_up_is_caught():
+    assert GenericTill(till(hose="12.90")).problems() == ["total: items 18.59, receipt 18.09"]
+    assert GenericTill(till()[:10]).problems() == ["no items found", "total: items 0, receipt None"]
+
+
+def test_receipt_of_no_profile_is_an_invoice_by_its_table_and_a_till_receipt_without_one():
+    assert isinstance(generic_receipt(invoice(), date(2026, 8, 20)), GenericReceipt)
+    assert isinstance(generic_receipt(till(), date(2026, 10, 6)), GenericTill)
+    assert isinstance(generic_receipt(["Example shop", "Total      9,99"], date(2026, 8, 20)), GenericReceipt)
 
 
 # Courier of the test PDF has no euro sign: the currency is printed as its code
