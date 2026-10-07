@@ -167,7 +167,7 @@ class StatementKuCoin(StatementCSV):
             if coin == self._currency:
                 continue
             self.symbol_id({'type': JSF.ASSET_CRYPTO, 'symbol': coin, 'name': coin,
-                            'currency': self.currency_id(self._currency), 'location': AssetLocation.CEX_EXCHANGE})
+                            'currency': self.currency_id(self._currency), 'location': AssetLocation.CEX_KUCOIN})
 
     # The snapshot file spans the whole requested period whether or not anything happened, so it dates the statement
     # better than the operations alone do - but the ledger may reach past the last snapshot (KuCoin writes snapshots
@@ -327,21 +327,20 @@ class StatementKuCoin(StatementCSV):
     # Coins leaving for a chain. The ledger debit includes the withdrawal fee, so what actually travelled - and what
     # the receiving wallet will report - is the debit less that fee. Storing the debit instead would leave a
     # permanent discrepancy against the arrival on the other side.
+    # It is the sending half of a bridge: the coin arrives as a listing of another location.
     def _coin_withdrawal(self, row):
         fee = self._amount(row['Fee'])
         amount = -self._delta(row) - fee
         details = self._enrichment('withdrawals', row, amount)
         symbol = self._symbol_of(row['Currency'])
-        transfer = {"id": self._next_id(JSF.TRANSFERS), "account": [self._account_id, 0, self._account_id],
-                    "symbol": [symbol, symbol], "timestamp": self._timestamp(row['Time(UTC)']),
-                    "withdrawal": amount, "deposit": Decimal('0'), "fee": fee,
-                    "number": details['Hash'] if details else '',
-                    "description": self._note(row, details['Transfer Network'] if details else '')}
+        network = details['Transfer Network'] if details else ''
+        address = details['Withdrawal Address/Account'] if details else ''
+        bridge = {"id": self._next_id(JSF.BRIDGES), "account": self._account_id, "symbol": symbol,
+                  "timestamp": self._timestamp(row['Time(UTC)']), "qty": amount,
+                  "tx_hash": details['Hash'] if details else '', "description": self._note(row, network, address)}
         if fee:
-            transfer['fee_symbol'] = symbol
-        if details and details['Withdrawal Address/Account']:
-            transfer['counterparty_address'] = details['Withdrawal Address/Account']
-        self._data[JSF.TRANSFERS].append(transfer)
+            bridge.update({'fee_symbol': symbol, 'fee_qty': fee})
+        self._data[JSF.BRIDGES].append(bridge)
 
     def _staking_reward(self, row):
         self._add_payment(JSF.PAYMENT_STAKING_REWARD, row)
@@ -361,13 +360,13 @@ class StatementKuCoin(StatementCSV):
             "timestamp": self._timestamp(row['Time(UTC)']), "symbol": self._symbol_of(row['Currency']),
             "amount": amount, "description": self._note(row)})
 
-    # The operation name, whatever KuCoin remarked about it and the detail the enrichment file added (the network a
-    # coin travelled over, the method a deposit came by). Repetitions are dropped - KuCoin often puts the same word
-    # in the type and in the remark - while the order is kept.
+    # The operation name, whatever KuCoin remarked about it and the details the enrichment file added (the network a
+    # coin travelled over and the address it went to, the method a deposit came by). Repetitions are dropped - KuCoin
+    # often puts the same word in the type and in the remark - while the order is kept.
     @staticmethod
-    def _note(row, extra: str = '') -> str:
+    def _note(row, *extra) -> str:
         parts = []
-        for part in (row['Type'], row.get('Remark', ''), extra):
+        for part in (row['Type'], row.get('Remark', ''), *extra):
             if part and part not in parts:
                 parts.append(part)
         return ', '.join(parts)

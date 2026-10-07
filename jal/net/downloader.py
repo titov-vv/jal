@@ -38,7 +38,7 @@ SECONDS_IN_DAY = 86400
 # Locations that are priced by this source: every blockchain, plus coins held on a centralized exchange. They are
 # quoted in USD only, so a single (asset, USD) series is stored for a crypto asset no matter which currency its
 # listings or accounts are denominated in - see download_asset_prices().
-LLAMA_LOCATIONS = AssetLocation.BLOCKCHAINS + [AssetLocation.CEX_EXCHANGE]
+LLAMA_LOCATIONS = AssetLocation.CRYPTO_LOCATIONS
 
 # A coin that has no contract address on a chain JAL supports - one held by an exchange, or the native coin of a
 # chain JAL doesn't support - is priced through DeFiLlama's CoinGecko passthrough, by the id recorded for the asset

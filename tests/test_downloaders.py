@@ -357,7 +357,7 @@ def test_addressless_token_has_no_key(prepare_db):
 # what the source is keyed by - for a coin held by an exchange as well as for the native coin of a chain JAL
 # doesn't support. A ticker is never turned into a key.
 def test_coin_id_identifies_a_coin_without_an_address(prepare_db):
-    asset_id, symbol_id = create_crypto('Polkadot', 'DOT', 2, AssetLocation.CEX_EXCHANGE)
+    asset_id, symbol_id = create_crypto('Polkadot', 'DOT', 2, AssetLocation.CEX)
     assert llama_coin_keys(JalSymbol(symbol_id)) == []       # Nothing is guessed from the ticker
     JalAsset(asset_id).update_data({'coin_id': 'polkadot'})
     assert llama_coin_key(JalSymbol(symbol_id)) == 'coingecko:polkadot'

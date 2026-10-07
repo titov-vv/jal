@@ -811,127 +811,142 @@ Do you want to delete the account anyway?</source>
 <context>
     <name>AssetLocation</name>
     <message>
-        <location filename="../constants.py" line="622"/>
+        <location filename="../constants.py" line="637"/>
         <source>Unknown</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="623"/>
+        <location filename="../constants.py" line="638"/>
         <source>Cash</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="624"/>
+        <location filename="../constants.py" line="639"/>
         <source>Bank account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="625"/>
+        <location filename="../constants.py" line="640"/>
         <source>NYSE</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="626"/>
+        <location filename="../constants.py" line="641"/>
         <source>Nasdaq</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="627"/>
+        <location filename="../constants.py" line="642"/>
         <source>LSE</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="628"/>
+        <location filename="../constants.py" line="643"/>
         <source>Euronext</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="629"/>
+        <location filename="../constants.py" line="644"/>
         <source>Frankfurt Borse</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="630"/>
+        <location filename="../constants.py" line="645"/>
         <source>Borsa Italiana</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="631"/>
+        <location filename="../constants.py" line="646"/>
         <source>Warsaw Stock Exchange</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="632"/>
+        <location filename="../constants.py" line="647"/>
         <source>TMX TSX</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="633"/>
+        <location filename="../constants.py" line="648"/>
         <source>MOEX</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="634"/>
+        <location filename="../constants.py" line="649"/>
         <source>Crypto exchange</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="635"/>
+        <location filename="../constants.py" line="650"/>
         <source>Nasdaq Helsinki</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="636"/>
+        <location filename="../constants.py" line="651"/>
         <source>Ethereum</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="637"/>
+        <location filename="../constants.py" line="652"/>
         <source>Arbitrum</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="638"/>
+        <location filename="../constants.py" line="653"/>
         <source>Bitcoin</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="639"/>
+        <location filename="../constants.py" line="654"/>
         <source>Solana</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="640"/>
+        <location filename="../constants.py" line="655"/>
         <source>Tron</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="641"/>
+        <location filename="../constants.py" line="656"/>
         <source>Hyperliquid</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="642"/>
+        <location filename="../constants.py" line="657"/>
         <source>Avalanche</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="643"/>
+        <location filename="../constants.py" line="658"/>
         <source>NEAR</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="644"/>
+        <location filename="../constants.py" line="659"/>
         <source>Cardano</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="645"/>
+        <location filename="../constants.py" line="660"/>
         <source>Polkadot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="646"/>
+        <location filename="../constants.py" line="661"/>
+        <source>Binance</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="662"/>
+        <source>KuCoin</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="663"/>
+        <source>Bitget</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../constants.py" line="664"/>
         <source>Victoria Seguros</source>
         <translation></translation>
     </message>
@@ -7463,22 +7478,22 @@ One transaction moved this exact quantity as </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_pdf.py" line="229"/>
+        <location filename="../data_import/receipt_pdf.py" line="293"/>
         <source>Package pypdf not found for PDF parsing.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_pdf.py" line="234"/>
+        <location filename="../data_import/receipt_pdf.py" line="298"/>
         <source>Receipt PDF can&apos;t be read</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_pdf.py" line="262"/>
+        <location filename="../data_import/receipt_pdf.py" line="326"/>
         <source>Receipt PDF has no total that could be read</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_pdf.py" line="271"/>
+        <location filename="../data_import/receipt_pdf.py" line="335"/>
         <source>Receipt PDF has no date that could be read, the capture time is used</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7489,7 +7504,7 @@ One transaction moved this exact quantity as </source>
     </message>
     <message>
         <location filename="../data_import/receipt_api/offline_receipt.py" line="107"/>
-        <location filename="../data_import/receipt_pdf.py" line="252"/>
+        <location filename="../data_import/receipt_pdf.py" line="316"/>
         <source>Receipt items don&apos;t add up, check the lines</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8604,7 +8619,7 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/bitget.py" line="321"/>
+        <location filename="../data_import/broker_statements/bitget.py" line="328"/>
         <source>Reward doesn&apos;t increase the balance: </source>
         <translation></translation>
     </message>
@@ -8622,62 +8637,62 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_csv.py" line="76"/>
+        <location filename="../data_import/statement_csv.py" line="77"/>
         <source>Unknown file in statement archive was skipped: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_csv.py" line="79"/>
+        <location filename="../data_import/statement_csv.py" line="80"/>
         <source>Duplicate file in statement archive: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_csv.py" line="83"/>
+        <location filename="../data_import/statement_csv.py" line="84"/>
         <source>Can&apos;t read statement archive: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_csv.py" line="86"/>
+        <location filename="../data_import/statement_csv.py" line="87"/>
         <source>Statement archive has no file(s) for: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_csv.py" line="88"/>
+        <location filename="../data_import/statement_csv.py" line="89"/>
         <source>Statement loaded successfully: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_csv.py" line="110"/>
+        <location filename="../data_import/statement_csv.py" line="111"/>
         <source>Can&apos;t decode statement file: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_csv.py" line="115"/>
+        <location filename="../data_import/statement_csv.py" line="116"/>
         <source>Statement file is empty: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_csv.py" line="126"/>
+        <location filename="../data_import/statement_csv.py" line="127"/>
         <source>Statement file row has too few fields: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_csv.py" line="129"/>
+        <location filename="../data_import/statement_csv.py" line="130"/>
         <source>Statement file row has unexpected data: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_csv.py" line="152"/>
+        <location filename="../data_import/statement_csv.py" line="153"/>
         <source>Column(s) not found in statement file: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_csv.py" line="162"/>
+        <location filename="../data_import/statement_csv.py" line="163"/>
         <source>Statement contains operations that aren&apos;t supported yet: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement_csv.py" line="168"/>
+        <location filename="../data_import/statement_csv.py" line="169"/>
         <source>Can&apos;t read timestamp: </source>
         <translation></translation>
     </message>
@@ -9292,32 +9307,32 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/kucoin.py" line="358"/>
+        <location filename="../data_import/broker_statements/kucoin.py" line="357"/>
         <source>Reward doesn&apos;t increase the balance: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/kucoin.py" line="390"/>
+        <location filename="../data_import/broker_statements/kucoin.py" line="389"/>
         <source>Statement has no balance snapshots - import can&apos;t be verified</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/kucoin.py" line="412"/>
+        <location filename="../data_import/broker_statements/kucoin.py" line="411"/>
         <source>Replaying the statement doesn&apos;t reproduce the balance KuCoin reports: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/kucoin.py" line="417"/>
+        <location filename="../data_import/broker_statements/kucoin.py" line="416"/>
         <source>Held in KuCoin Earn on top of the reported balance: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/kucoin.py" line="420"/>
+        <location filename="../data_import/broker_statements/kucoin.py" line="419"/>
         <source>Statement balances verified against exchange snapshots: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/kucoin.py" line="441"/>
+        <location filename="../data_import/broker_statements/kucoin.py" line="440"/>
         <source>Filled orders don&apos;t match the trades recorded in the account history: </source>
         <translation></translation>
     </message>
@@ -11059,37 +11074,37 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
 <context>
     <name>TokenList</name>
     <message>
-        <location filename="../constants.py" line="677"/>
+        <location filename="../constants.py" line="695"/>
         <source>Jupiter verified tokens</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="678"/>
+        <location filename="../constants.py" line="696"/>
         <source>Uniswap default list</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="679"/>
+        <location filename="../constants.py" line="697"/>
         <source>CoinGecko token list</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="680"/>
+        <location filename="../constants.py" line="698"/>
         <source>DappRadar tokens blacklist</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="681"/>
+        <location filename="../constants.py" line="699"/>
         <source>MyEtherWallet token list</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="682"/>
+        <location filename="../constants.py" line="700"/>
         <source>CoinGecko Tron token list</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="683"/>
+        <location filename="../constants.py" line="701"/>
         <source>CoinGecko Avalanche token list</source>
         <translation></translation>
     </message>
@@ -11097,12 +11112,12 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
 <context>
     <name>TokenListKind</name>
     <message>
-        <location filename="../constants.py" line="659"/>
+        <location filename="../constants.py" line="677"/>
         <source>Allow-list</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="660"/>
+        <location filename="../constants.py" line="678"/>
         <source>Block-list</source>
         <translation></translation>
     </message>

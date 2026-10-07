@@ -495,6 +495,10 @@ def test_a_wallet_is_marked_by_its_blockchain(prepare_db):
         assert AssetLocation.icon_of(location), f"no glyph declared for location {location}"
         assert not chain_icon(location).isNull(), f"the file of location {location} is missing from jal/img"
     assert AssetLocation.icon_of(AssetLocation.NYSE_EXCHANGE) == ''     # an exchange is not a chain
+    # a crypto exchange is marked with the logo of its statement importer
+    for location in (AssetLocation.CEX_BINANCE, AssetLocation.CEX_KUCOIN, AssetLocation.CEX_BITGET):
+        assert not chain_icon(location).isNull(), f"the file of location {location} is missing from jal/img"
+    assert chain_icon(AssetLocation.CEX).isNull()
 
 
 # The account type column of the accounts list is where that mark is shown

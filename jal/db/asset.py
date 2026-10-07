@@ -198,13 +198,13 @@ class JalAsset(JalDB):
     def add_symbol(self, symbol: str, currency_id, location_id: int) -> int:
         # A traditional security is a single listing no matter which venue a statement happens to name (the exchange
         # is informational), so it is matched by (asset, symbol, currency) with the location ignored and the
-        # first-seen location kept. A blockchain token is a genuinely separate listing per chain - keyed by its own
-        # contract address - so for a chain location the match and the deactivation are scoped by location too, and a
-        # new chain adds a second active symbol rather than replacing the existing one.
-        on_chain = location_id in AssetLocation.BLOCKCHAINS
+        # first-seen location kept. A crypto asset is a genuinely separate listing per chain and per exchange, so
+        # there the match and the deactivation are scoped by location too, and a new location adds a second active
+        # symbol rather than replacing the existing one.
+        scoped = location_id in AssetLocation.CRYPTO_LOCATIONS
         scope = [(":asset_id", self._id), (":currency", currency_id)]
-        location_clause = " AND location_id=:location_id" if on_chain else ""
-        if on_chain:
+        location_clause = " AND location_id=:location_id" if scoped else ""
+        if scoped:
             scope.append((":location_id", location_id))
         existing = self._read("SELECT id FROM asset_symbol "
                               "WHERE asset_id=:asset_id AND symbol=:symbol AND currency_id IS :currency" + location_clause,

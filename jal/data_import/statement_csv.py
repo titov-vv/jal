@@ -61,6 +61,7 @@ class StatementCSV(Statement):
             JSF.TRADES: [],
             JSF.TRANSFERS: [],
             JSF.SWAPS: [],
+            JSF.BRIDGES: [],
             JSF.ASSET_PAYMENTS: []
         }
         self._files = {}

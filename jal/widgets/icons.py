@@ -297,7 +297,11 @@ class JalIcon(UserDict):
 
 # ----------------------------------------------------------------------------------------------------------------------
 # The mark of a blockchain: the picture its own fetcher wears in the menu, taken from the location→file map that
-# lives beside AssetLocation.BLOCKCHAINS. An empty icon where the location isn't a chain.
+# lives beside AssetLocation.BLOCKCHAINS. A crypto exchange is marked the same way, with the picture of its statement
+# importer. An empty icon where the location is neither.
 def chain_icon(location_id: int) -> QIcon:
     icon_name = AssetLocation.icon_of(location_id)
-    return JalIcon.module_icon(CHAIN_PREFIX, icon_name) if icon_name else QIcon()
+    if icon_name:
+        return JalIcon.module_icon(CHAIN_PREFIX, icon_name)
+    icon_name = AssetLocation.cex_icon_of(location_id)
+    return JalIcon.module_icon(AUX_PREFIX, icon_name) if icon_name else QIcon()

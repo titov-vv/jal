@@ -166,7 +166,7 @@ class StatementBitget(StatementCSV):
             if coin == self._currency:
                 continue
             self.symbol_id({'type': JSF.ASSET_CRYPTO, 'symbol': coin, 'name': coin,
-                            'currency': self.currency_id(self._currency), 'location': AssetLocation.CEX_EXCHANGE})
+                            'currency': self.currency_id(self._currency), 'location': AssetLocation.CEX_BITGET})
 
     # Bitget names no reporting period anywhere - the export file names carry the moment of the export and nothing
     # about the range that was asked for - so the statement is dated by the operations it actually contains.
@@ -298,19 +298,26 @@ class StatementBitget(StatementCSV):
     # Value leaving for a chain. The amount is taken from the ledger and never from the deposit/withdrawal file:
     # that file reports the gross debit, so using it would record a leg larger than what actually arrived on the
     # other side by exactly the fee, and leave a phantom discrepancy on every settled withdrawal.
+    # A coin is the sending half of a bridge (it arrives as a listing of another location), money is a transfer.
     def _withdrawal(self, row):
         details = self._details(row)
-        money = row['Coin'] == self._currency
-        symbol = self.currency_symbol_id(self._currency) if money else self._symbol_of(row['Coin'])
         amount = abs(self._amount(row['Amount']))
         fee = abs(self._amount(row['Fee']))
-        transfer = {"id": self._next_id(JSF.TRANSFERS), "account": [self._account_id, 0, self._account_id],
-                    "symbol": [symbol, symbol], "timestamp": self._timestamp(row['Date']),
-                    "withdrawal": amount, "deposit": amount if money else Decimal('0'), "fee": fee,
-                    "number": details['TxID'] if details else '', "description": row['Type']}
-        if fee and not money:
-            transfer['fee_symbol'] = symbol
-        self._data[JSF.TRANSFERS].append(transfer)
+        if row['Coin'] == self._currency:
+            symbol = self.currency_symbol_id(self._currency)
+            self._data[JSF.TRANSFERS].append({
+                "id": self._next_id(JSF.TRANSFERS), "account": [self._account_id, 0, self._account_id],
+                "symbol": [symbol, symbol], "timestamp": self._timestamp(row['Date']),
+                "withdrawal": amount, "deposit": amount, "fee": fee,
+                "number": details['TxID'] if details else '', "description": row['Type']})
+            return
+        symbol = self._symbol_of(row['Coin'])
+        bridge = {"id": self._next_id(JSF.BRIDGES), "account": self._account_id, "symbol": symbol,
+                  "timestamp": self._timestamp(row['Date']), "qty": amount,
+                  "tx_hash": details['TxID'] if details else '', "description": row['Type']}
+        if fee:
+            bridge.update({'fee_symbol': symbol, 'fee_qty': fee})
+        self._data[JSF.BRIDGES].append(bridge)
 
     # Coins credited without anything given for them. Bitget's rebate arrives long after the trade it rewards and
     # after the position it was earned on may already have left the exchange, so it can't be folded back into that

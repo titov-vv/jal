@@ -86,7 +86,7 @@ def test_kucoin_account_and_assets(kucoin):
              for s in a[JSF.SYMBOLS]}
     assert sorted(coins) == ['ADA', 'USDT']
     for symbol in coins.values():
-        assert symbol['location'] == AssetLocation.CEX_EXCHANGE
+        assert symbol['location'] == AssetLocation.CEX_KUCOIN
     # closing EUR: 999 in, 900.9 spent buying USDT, 189.81 received selling it
     assert account['cash_end'] == Decimal('287.91')
 
@@ -118,19 +118,23 @@ def test_kucoin_coin_for_coin_fill_is_a_swap_with_the_refund_folded_into_its_fee
 
 def test_kucoin_transfers(kucoin):
     transfers = kucoin._data[JSF.TRANSFERS]
-    assert len(transfers) == 3
+    assert len(transfers) == 2
     # a fiat deposit stores the gross the bank sent plus the fee taken out of it, so the balance moves by the net 999
     fiat = _one(transfers, number='FIAT-1')
     assert (fiat['withdrawal'], fiat['deposit'], fiat['fee']) == (Decimal('1000'), Decimal('1000'), Decimal('1'))
     assert fiat['account'] == [0, 1, 1]          # the far end is a bank JAL doesn't know
     assert 'counterparty_address' not in fiat
     # a withdrawal stores what actually travelled (the ledger debit less the fee), which is what the receiving
-    # wallet will report - storing the debit would leave a permanent 0.5 discrepancy when the two legs are paired
-    withdrawal = _one(transfers, number='0x' + 'b2' * 32)
-    assert withdrawal['withdrawal'] == Decimal('100')
-    assert withdrawal['fee'] == Decimal('0.5')
+    # wallet will report - storing the debit would leave a permanent 0.5 discrepancy when the two legs are paired.
+    # It is the sending half of a bridge, as the coin arrives as a listing of the chain and not of the exchange
+    withdrawal = _one(kucoin._data[JSF.BRIDGES], tx_hash='0x' + 'b2' * 32)
+    assert withdrawal['account'] == 1
+    assert withdrawal['symbol'] == _symbol_named(kucoin, 'USDT')
+    assert withdrawal['qty'] == Decimal('100')
+    assert withdrawal['fee_qty'] == Decimal('0.5')
     assert withdrawal['fee_symbol'] == _symbol_named(kucoin, 'USDT')
-    assert withdrawal['counterparty_address'] == '0x' + '22' * 20
+    # the network and the address it was sent to are kept readable, for the leg is paired by hand
+    assert 'ARBITRUM' in withdrawal['description'] and '0x' + '22' * 20 in withdrawal['description']
     # a deposit names no counterparty: the address KuCoin prints is its own, and the sender is never disclosed
     deposit = _one(transfers, number='0x' + 'a1' * 32)
     assert deposit['withdrawal'] == Decimal('50')
@@ -156,7 +160,7 @@ def test_kucoin_payments_keep_the_source_operation_name(kucoin):
 def test_kucoin_internal_moves_are_not_operations(kucoin):
     # 'Transfer' rows shuffle coins between the Main and HF Trading buckets and 'KuCoin Earn Locked' moves them into
     # an Earn product. All are internal to the one account they are imported into, so none becomes an operation.
-    for section in (JSF.TRANSFERS, JSF.SWAPS, JSF.TRADES, JSF.ASSET_PAYMENTS):
+    for section in (JSF.TRANSFERS, JSF.BRIDGES, JSF.SWAPS, JSF.TRADES, JSF.ASSET_PAYMENTS):
         assert not [x for x in kucoin._data[section] if 'Transfer' in str(x.get('description', ''))]
         assert not [x for x in kucoin._data[section] if 'Earn Locked' in str(x.get('description', ''))]
 
@@ -177,7 +181,7 @@ def test_kucoin_refuses_an_unknown_operation(kucoin, data_path):
         {'UID': '100000001', 'Account Type': 'mainAccount', 'Currency': 'USDT', 'Side': 'Deposit',
          'Amount': '1', 'Fee': '0', 'Time(UTC)': '2025-01-14 10:00:00', 'Remark': '', 'Type': 'Margin Interest'}]
     statement._data = {JSF.PERIOD: [None, None], JSF.ACCOUNTS: [], JSF.ASSETS: [], JSF.TRADES: [],
-                       JSF.TRANSFERS: [], JSF.SWAPS: [], JSF.ASSET_PAYMENTS: []}
+                       JSF.TRANSFERS: [], JSF.SWAPS: [], JSF.BRIDGES: [], JSF.ASSET_PAYMENTS: []}
     with pytest.raises(Statement_ImportError, match="Unsupported KuCoin operation"):
         statement._load_statement()
 
@@ -263,9 +267,9 @@ def test_bitget_trade_fee_is_folded_into_the_side_it_was_charged_in(bitget):
 def test_bitget_withdrawal_amount_comes_from_the_ledger_not_the_transfer_file(bitget):
     # The deposit/withdrawal file reports 99.8 - the GROSS account debit - while 99.5 actually travelled and 0.3 was
     # the fee. Taking the file's figure would leave a phantom 0.3 discrepancy against the wallet on the other side.
-    withdrawal = _one(bitget._data[JSF.TRANSFERS], number='0x' + 'c3' * 32)
-    assert withdrawal['withdrawal'] == Decimal('99.5')
-    assert withdrawal['fee'] == Decimal('0.3')
+    withdrawal = _one(bitget._data[JSF.BRIDGES], tx_hash='0x' + 'c3' * 32)
+    assert withdrawal['qty'] == Decimal('99.5')
+    assert withdrawal['fee_qty'] == Decimal('0.3')
     assert Decimal(bitget._rows('transfers')[0]['Quantity']) == Decimal('99.8')   # what the file itself claims
 
 
@@ -317,13 +321,13 @@ def test_cex_coins_are_priced_by_recorded_coin_id(prepare_db):
     currency = JalAsset(JalAsset.get_base_currency())
     for ticker, coin_id in (('USDT', 'tether'), ('ADA', 'cardano'), ('DOT', 'polkadot'), ('NEAR', 'near')):
         coin = JalAssetCreator(PredefinedAsset.Crypto, ticker, '').commit()
-        symbol_id = coin.add_symbol(ticker, currency.id(), location_id=AssetLocation.CEX_EXCHANGE)
+        symbol_id = coin.add_symbol(ticker, currency.id(), location_id=AssetLocation.CEX)
         assert llama_coin_key(JalSymbol(symbol_id)) == ''       # nothing is known about the coin yet
         coin.update_data({'coin_id': coin_id})
         assert llama_coin_key(JalSymbol(symbol_id)) == f"coingecko:{coin_id}"
     # A coin whose id was never recorded has no key at all, and the downloader reports it instead of guessing one
     unknown = JalAssetCreator(PredefinedAsset.Crypto, 'NOSUCHCOIN', '').commit()
-    unknown_symbol = unknown.add_symbol('NOSUCHCOIN', currency.id(), location_id=AssetLocation.CEX_EXCHANGE)
+    unknown_symbol = unknown.add_symbol('NOSUCHCOIN', currency.id(), location_id=AssetLocation.CEX)
     assert llama_coin_key(JalSymbol(unknown_symbol)) == ''
 
 
@@ -341,17 +345,53 @@ def test_kucoin_statement_imports_into_the_database(prepare_db, data_path):
     # listing of the same coin later on
     usdt = JalAsset.find({'symbol': 'USDT', 'type': PredefinedAsset.Crypto})
     assert usdt.id()
-    assert JalSymbol(usdt.active_symbol_ids()[0]).location() == AssetLocation.CEX_EXCHANGE
-    # 2 trades + 1 swap + 3 transfers + 3 payments, and nothing at all for the internal bucket moves
+    assert JalSymbol(usdt.active_symbol_ids()[0]).location() == AssetLocation.CEX_KUCOIN
+    # 2 trades + 1 swap + 2 transfers + 1 pending half-bridge + 3 payments, and nothing at all for the internal
+    # bucket moves
     assert _table_count('trades') == 2
     assert _table_count('swaps') == 1
-    assert _table_count('transfers') == 3
+    assert _table_count('transfers') == 2
+    assert _table_count('bridges') == 1
     payments = AssetIncome.get_list(account.id())
     assert sorted(x.subtype() for x in payments) == [AssetIncome.StakingReward, AssetIncome.Reward,
                                                      AssetIncome.Reward]
     # the Earn payout is the only staking income; the referral bonus and the platform grant both took the promo type
     assert _one_payment(payments, AssetIncome.StakingReward).amount() == Decimal('0.5')
     assert sorted(x.amount() for x in payments if x.subtype() == AssetIncome.Reward) == [Decimal('2'), Decimal('10')]
+
+
+def _import_kucoin(data_path):
+    statement = StatementKuCoin()
+    statement.load(data_path + 'kucoin.zip')
+    statement.validate_format()
+    statement.match_db_ids()
+    statement.import_into_db()
+
+
+def test_kucoin_coin_keeps_off_a_chain_listing_of_the_same_asset(prepare_db, data_path):
+    # The coin is already known as a token of a chain, in the currency of the exchange account. The statement must
+    # join that asset without borrowing its listing: an operation on the exchange would then claim a chain.
+    eur = JalAsset.find({'symbol': 'EUR', 'type': PredefinedAsset.Money}).id()
+    usdt = JalAssetCreator(PredefinedAsset.Crypto, 'Tether', '').commit()
+    on_chain = usdt.add_symbol('USDT', eur, location_id=AssetLocation.ETH_BLOCKCHAIN)
+    _import_kucoin(data_path)
+
+    listings = [x for x in JalAsset(usdt.id()).active_symbol_ids() if x != on_chain]
+    assert [JalSymbol(x).location() for x in listings] == [AssetLocation.CEX_KUCOIN]
+    used = "SELECT COUNT(*) FROM {} WHERE {}=:symbol"
+    for table, column in (('trades', 'symbol_id'), ('transfers', 'symbol_id'), ('bridges', 'out_symbol_id'),
+                          ('swaps', 'out_symbol_id'), ('swaps', 'in_symbol_id')):
+        assert int(JalDB._read(used.format(table, column), [(":symbol", on_chain)])) == 0
+    # the withdrawal waits for its arrival as a half-bridge that left on the exchange's own listing
+    half = JalDB._read("SELECT out_symbol_id, out_qty, in_account_id FROM bridges", named=True)
+    assert (half['out_symbol_id'], Decimal(half['out_qty']), half['in_account_id']) == (listings[0], Decimal('100'), '')
+
+
+def test_kucoin_statement_is_not_imported_twice(prepare_db, data_path):
+    _import_kucoin(data_path)
+    counts = {x: _table_count(x) for x in ('trades', 'swaps', 'transfers', 'bridges', 'asset_payments')}
+    _import_kucoin(data_path)
+    assert {x: _table_count(x) for x in counts} == counts
 
 
 def test_reward_payment_is_valued_like_a_staking_reward(prepare_db):

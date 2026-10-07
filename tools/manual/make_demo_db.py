@@ -142,7 +142,7 @@ def create_assets() -> dict:
          AssetLocation.NYSE_EXCHANGE, SymbolId.ISIN, "IE0000000024"),
         ('mrail', PredefinedAsset.Bond, "Meridian Rail 4.4% 2031", 'us', "MRAIL31", USD,
          AssetLocation.NYSE_EXCHANGE, SymbolId.ISIN, "US0000000031"),
-        ('btc', PredefinedAsset.Crypto, "Bitcoin", '', "BTC", USD, AssetLocation.CEX_EXCHANGE, None, None),
+        ('btc', PredefinedAsset.Crypto, "Bitcoin", '', "BTC", USD, AssetLocation.CEX, None, None),
         ('eth', PredefinedAsset.Crypto, "Ethereum", '', "ETH", USD, AssetLocation.ETH_BLOCKCHAIN,
          SymbolId.ETH_ADDRESS, ''),
         ('usdc', PredefinedAsset.Crypto, "USD Coin", '', "USDC", USD, AssetLocation.ETH_BLOCKCHAIN,

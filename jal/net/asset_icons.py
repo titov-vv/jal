@@ -90,7 +90,7 @@ def icon_url(symbol: JalSymbol) -> str:
         if AssetLocation.is_native_coin(location, symbol.symbol()):
             return TRUSTWALLET_URL.format(chain=_NATIVE_COIN_FOLDERS[location], path="info/logo.png")
         return ''
-    if location == AssetLocation.CEX_EXCHANGE:
+    if location in AssetLocation.CEXES:
         folder = _CEX_NATIVE_COINS.get(symbol.symbol().upper())
         return '' if folder is None else TRUSTWALLET_URL.format(chain=folder, path="info/logo.png")
     # Parqet below is a source of company and fund logos, so only a security is looked up there. A currency is

@@ -521,12 +521,7 @@ class AssetLocation(PredefinedList, QObject):
     TMX_EXCHANGE = 207
     MOEX_EXCHANGE = 208
     EURONEXT_EXCHANGE = 209
-    # Coins held on a centralized crypto exchange. One shared location rather than one per exchange: for a location
-    # that is not a blockchain JalAsset.add_symbol() matches a listing by (asset, ticker, currency) and ignores the
-    # location, so a coin held on two exchanges would reuse the first one's listing anyway and a per-exchange
-    # location would be a lie on the second. What the location does say is true of every exchange alike - the coin
-    # is a claim on a custodian and sits on no chain the user controls.
-    CEX_EXCHANGE = 210
+    CEX = 210  # A crypto exchange that has no location of its own (see CEXES)
     HEL_EXCHANGE = 211
     ETH_BLOCKCHAIN = 301
     ARB_BLOCKCHAIN = 302
@@ -540,12 +535,20 @@ class AssetLocation(PredefinedList, QObject):
     NEAR_BLOCKCHAIN = 308  # Chain that JAL knows but has no fetcher for
     ADA_BLOCKCHAIN = 309   # Chain that JAL knows but has no fetcher for
     DOT_BLOCKCHAIN = 310   # Chain that JAL knows but has no fetcher for
+    CEX_BINANCE = 401
+    CEX_KUCOIN = 402
+    CEX_BITGET = 403
     SMA_VICTORIA = 999
 
     # Locations that are blockchains. It is the single definition of that set: the 'Chain' attribute of a wallet
     # account and the crypto quote downloader are both restricted to it, so a new chain is added in one place.
     BLOCKCHAINS = [ETH_BLOCKCHAIN, ARB_BLOCKCHAIN, BTC_BLOCKCHAIN, SOL_BLOCKCHAIN, TRX_BLOCKCHAIN, HL_BLOCKCHAIN,
                    AVAX_BLOCKCHAIN, NEAR_BLOCKCHAIN, ADA_BLOCKCHAIN, DOT_BLOCKCHAIN]
+
+    # Centralized crypto exchanges. A coin held on one is a claim on the custodian and sits on no chain.
+    CEXES = [CEX, CEX_BINANCE, CEX_KUCOIN, CEX_BITGET]
+    # Locations where a crypto asset has a listing of its own (see JalAsset.add_symbol)
+    CRYPTO_LOCATIONS = BLOCKCHAINS + CEXES
 
     # Glyph of each blockchain, as the name of the file that carries it in jal/img (with CHAIN_PREFIX in front of
     # it - see JalIcon.module_icon). The fetcher of each chain names the same file, but a chain is drawn wherever an
@@ -568,6 +571,18 @@ class AssetLocation(PredefinedList, QObject):
     @classmethod
     def icon_of(cls, location_id: int) -> str:
         return cls._CHAIN_ICONS.get(location_id, '')
+
+    # Logo of each exchange: the file its statement importer wears in the menu (with AUX_PREFIX in front of it)
+    _CEX_ICONS = {
+        CEX_BINANCE: 'binance.png',
+        CEX_KUCOIN: 'kucoin.png',
+        CEX_BITGET: 'bitget.png'
+    }
+
+    # Name of the image file that marks the given exchange, or '' if the location has none
+    @classmethod
+    def cex_icon_of(cls, location_id: int) -> str:
+        return cls._CEX_ICONS.get(location_id, '')
 
     # Identifier that holds a token's contract (or mint) address on each chain. The address is the only trustworthy
     # key for a token - tickers and names are chosen by whoever deployed the contract - so it identifies a token
@@ -631,7 +646,7 @@ class AssetLocation(PredefinedList, QObject):
             self.WSE_EXCHANGE: self.tr("Warsaw Stock Exchange"),
             self.TMX_EXCHANGE: self.tr("TMX TSX"),
             self.MOEX_EXCHANGE: self.tr("MOEX"),
-            self.CEX_EXCHANGE: self.tr("Crypto exchange"),
+            self.CEX: self.tr("Crypto exchange"),
             self.HEL_EXCHANGE: self.tr("Nasdaq Helsinki"),
             self.ETH_BLOCKCHAIN: self.tr("Ethereum"),
             self.ARB_BLOCKCHAIN: self.tr("Arbitrum"),
@@ -643,6 +658,9 @@ class AssetLocation(PredefinedList, QObject):
             self.NEAR_BLOCKCHAIN: self.tr("NEAR"),
             self.ADA_BLOCKCHAIN: self.tr("Cardano"),
             self.DOT_BLOCKCHAIN: self.tr("Polkadot"),
+            self.CEX_BINANCE: self.tr("Binance"),
+            self.CEX_KUCOIN: self.tr("KuCoin"),
+            self.CEX_BITGET: self.tr("Bitget"),
             self.SMA_VICTORIA: self.tr("Victoria Seguros")
         }
 

@@ -124,14 +124,14 @@ def test_addressless_token_gets_no_icon(prepare_db):
 def test_icon_url_of_exchange_coins(prepare_db):
     # A coin on a centralized exchange has no address, so only a coin that is the native coin of a known chain
     # can be recognized by its ticker...
-    btc = _crypto_listing('Bitcoin', 'BTC', AssetLocation.CEX_EXCHANGE)
+    btc = _crypto_listing('Bitcoin', 'BTC', AssetLocation.CEX)
     assert icon_url(btc) == "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/bitcoin/" \
                             "info/logo.png"
     # ... a chain JAL merely knows about counts as known here as much as a chain it fetches
-    dot = _crypto_listing('Polkadot', 'DOT', AssetLocation.CEX_EXCHANGE)
+    dot = _crypto_listing('Polkadot', 'DOT', AssetLocation.CEX)
     assert '/blockchains/polkadot/info/logo.png' in icon_url(dot)
     # ... while a token held on an exchange gets no icon rather than a guessed one
-    usdt = _crypto_listing('Tether', 'USDT', AssetLocation.CEX_EXCHANGE)
+    usdt = _crypto_listing('Tether', 'USDT', AssetLocation.CEX)
     assert icon_url(usdt) == ''
 
 
@@ -275,7 +275,7 @@ def test_coingecko_icons_lookup():
 # ALGO rather than a coin native to a chain JAL knows: the recorded id is then the ONLY thing the listing can be
 # identified by, which is what this is about (an exchange-held DOT wears the logo of the Polkadot chain instead).
 def test_coin_icon_is_downloaded_by_its_recorded_id(prepare_db, monkeypatch):
-    algo = _crypto_listing('Algorand', 'ALGO', AssetLocation.CEX_EXCHANGE)
+    algo = _crypto_listing('Algorand', 'ALGO', AssetLocation.CEX)
     algo.asset().update_data({'coin_id': 'algorand'})
     requested = []
     monkeypatch.setattr("jal.net.downloader.WebRequest",
@@ -291,7 +291,7 @@ def test_coin_icon_is_downloaded_by_its_recorded_id(prepare_db, monkeypatch):
 def test_coin_logos_are_looked_up_in_one_request(prepare_db, monkeypatch):
     listings = []
     for ticker, coin_id in (('DOT', 'polkadot'), ('ALGO', 'algorand'), ('NLC', 'nologocoin')):
-        listing = _crypto_listing(f"{ticker} coin", ticker, AssetLocation.CEX_EXCHANGE)
+        listing = _crypto_listing(f"{ticker} coin", ticker, AssetLocation.CEX)
         listing.asset().update_data({'coin_id': coin_id})
         listings.append(JalSymbol(listing.id()))
     requested = []
@@ -312,7 +312,7 @@ def test_coin_logos_are_looked_up_in_one_request(prepare_db, monkeypatch):
 # A rate limit is the normal answer of this source, and it says nothing about whether a logo exists - so a coin
 # whose lookup didn't come through keeps its icon unset and is asked again on the next download.
 def test_rate_limited_coin_lookup_is_retried(prepare_db, monkeypatch):
-    algo = _crypto_listing('Algorand', 'ALGO', AssetLocation.CEX_EXCHANGE)
+    algo = _crypto_listing('Algorand', 'ALGO', AssetLocation.CEX)
     algo.asset().update_data({'coin_id': 'algorand'})
     requested = []
     monkeypatch.setattr("jal.net.downloader.WebRequest", _fake_web_request({'coins/markets': (429, '')}, requested))
