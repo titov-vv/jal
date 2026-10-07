@@ -398,7 +398,7 @@ def _rebasing_position(withdrawn, measured=_CHAIN_QTY):
     create_trades(1, [(t_buy, t_buy, 4, _LEDGER_QTY, Decimal('1'), Decimal('0'))])
     create_conversions(1, [(t_supply, 4, str(_LEDGER_QTY), 5, str(_LEDGER_QTY))])
     create_conversions(1, [(t_exit, 5, str(withdrawn), 4, str(withdrawn))])
-    create_quotes(5, 2, [(t_buy, Decimal('1')), (t_exit, Decimal('1'))])   # a reward has to be priced to be booked
+    create_quotes(5, 2, [(t_buy, Decimal('1')), (t_exit, Decimal('1'))])   # what the interest is worth is reported at this quote
     # Only a token whose quantity can grow on its own may have a shortage explained as interest
     JalDB()._exec("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) VALUES(5, :dt, '1')",
                   [(":dt", AssetData.Rebasing)], commit=True)
@@ -442,9 +442,9 @@ def test_a_withdrawal_beyond_the_books_realizes_the_whole_accrual(prepare_db_fif
     assert JalChainBalance().latest(1, 5, d2t(220501)) is None
 
 
-# The accrual is INCOME and is booked as one - valued at the market of the day, opening a lot at that basis. That is
-# the opposite of the truncation crumb, which comes in free precisely so that it moves no basis.
-def test_the_realized_accrual_is_income_at_market_value(prepare_db_fifo):
+# The accrual is lending interest and is booked as the interest a movement announces is: a lot of its own at zero
+# cost, so that it takes nothing from the basis of the principal.
+def test_the_realized_accrual_is_lending_interest_at_zero_cost(prepare_db_fifo):
     t_exit = _rebasing_position(Decimal('7700'))
     with pytest.raises(LedgerAssetShortage) as stop:
         Ledger().rebuild(from_timestamp=0)
@@ -455,17 +455,18 @@ def test_the_realized_accrual_is_income_at_market_value(prepare_db_fifo):
         "SELECT type, amount FROM asset_incomes WHERE account_id=1 AND symbol_id=:s",
         [(":s", symbol_id_for(5, 2))], named=True)
     assert len(payments) == 1
-    assert int(payments[0]['type']) == AssetIncome.StakingReward
+    assert int(payments[0]['type']) == AssetIncome.LendingInterest
     assert Decimal(payments[0]['amount']) == _ACCRUED
-    # ...and it carried VALUE into the position. The ledger posting of a rebase crumb is worth exactly zero; this one
-    # is worth the accrued quantity at the market of the day, which is what makes it income rather than a correction.
     booked = JalDB()._read_to_list(
         "SELECT amount, value FROM ledger WHERE otype=:otype AND account_id=1 AND asset_id=5 "
         "AND book_account=:assets",
         [(":otype", LedgerTransaction.AssetIncome), (":assets", BookAccount.Assets)], named=True)
     assert len(booked) == 1
     assert Decimal(booked[0]['amount']) == _ACCRUED
-    assert Decimal(booked[0]['value']) == _ACCRUED * Decimal('1')
+    assert Decimal(booked[0]['value']) == Decimal('0')
+    # ... while what it is worth is still reported: the accrued quantity at the quote of the day
+    income = LedgerTransaction.get_operation(LedgerTransaction.AssetIncome, operation_id(LedgerTransaction.AssetIncome, 1))
+    assert income.amount(2) == _ACCRUED * Decimal('1')
 
 
 # CASE 3 - the full close. Everything the chain holds comes out, so the whole accrual is realized and the position

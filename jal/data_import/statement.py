@@ -20,6 +20,7 @@ from jal.db.token_blacklist import normalize_address, JalTokenBlacklist
 from jal.db.operations import LedgerTransaction, AssetPayment, AssetIncome, ChainAction, CorporateAction, \
     Trade, Transfer, FeeKind
 from jal.db.bridge_matcher import BridgeMatcher
+from jal.db.lending_interest import split_welded_interest
 from jal.db.transfer_settlement import TransferSettlement
 from jal.widgets.token_select import SelectTokenActionDialog
 from jal.net.moex import MOEX
@@ -73,7 +74,8 @@ class JSF:
     PAYMENT_STOCK_VESTING = 'stock_vesting'
     PAYMENT_FEE = 'fee'
     PAYMENT_GAS_FEE = 'gas_fee'                 # gas burned by a transaction that moved nothing
-    PAYMENT_STAKING_REWARD = 'staking_reward'   # coins received for staking (or as lending interest)
+    PAYMENT_STAKING_REWARD = 'staking_reward'   # coins received for staking
+    PAYMENT_LENDING_INTEREST = 'lending_interest'   # interest a lending position paid in its receipt token
     PAYMENT_REWARD = 'reward'                   # coins received for anything else (referral/platform bonus, rebate)
     PAYMENT_DUST_ATTACK = 'dust_attack'         # unsolicited native-coin dust below the per-chain threshold
     PAYMENT_TOKEN_RENT = 'token_rent'            # native coin locked as the rent of a token account
@@ -954,6 +956,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     # Imports a basis-preserving exchange of one asset into another on the same account (a wrap, a lending
     # supply/withdrawal, liquid staking). Its record has the same shape as a same-chain swap - the difference is
     # entirely in how the ledger treats it, so it is a section of its own rather than a flag on a swap.
+    # Interest a rebasing receipt token welded onto the movement is booked apart - see split_welded_interest().
     def _import_conversions(self, conversions):
         for conversion in conversions:
             operation = deepcopy(conversion)
@@ -970,6 +973,9 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 operation.pop('fee_symbol', None)
             if 'description' in operation:
                 operation['note'] = operation.pop('description')
+            interest = split_welded_interest(operation)
+            if interest:
+                LedgerTransaction.create_new(LedgerTransaction.AssetIncome, interest)
             LedgerTransaction.create_new(LedgerTransaction.Conversion, operation)
 
     def _import_asset_payments(self, payments):
@@ -1022,6 +1028,9 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 LedgerTransaction.create_new(LedgerTransaction.ChainAction, self._as_chain_action(operation))
             elif operation['type'] == JSF.PAYMENT_STAKING_REWARD:
                 operation['type'] = AssetIncome.StakingReward
+                LedgerTransaction.create_new(LedgerTransaction.AssetIncome, operation)
+            elif operation['type'] == JSF.PAYMENT_LENDING_INTEREST:
+                operation['type'] = AssetIncome.LendingInterest
                 LedgerTransaction.create_new(LedgerTransaction.AssetIncome, operation)
             elif operation['type'] == JSF.PAYMENT_REWARD:
                 operation['type'] = AssetIncome.Reward

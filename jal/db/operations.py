@@ -1061,7 +1061,7 @@ class AssetPayment(AssetPaymentBase):
 class AssetIncome(AssetPaymentBase):
     StockDividend = 1
     StockVesting = 2
-    StakingReward = 3      # Coins received for staking; lending interest is recorded the same way
+    StakingReward = 3      # Coins received for staking
     # Coins received for something other than staking - a referral or platform bonus, a fee rebate paid out too late
     # to belong to the trade it came from. Accounted exactly as a StakingReward (an inflow with no counterpart,
     # valued at the last known quote and opening a lot at that basis); it exists only to keep the two apart, since
@@ -1084,6 +1084,9 @@ class AssetIncome(AssetPaymentBase):
     # receiving account nothing - at the quote of the moment it arrives - rather than at the value it left the payer
     # at, which this account never bore.
     TokenRentReturn = 7
+    # Interest a lending position paid in its own receipt token. The lot opens at ZERO cost and on the day the
+    # interest arrived, so it never dilutes the basis or borrows the age of the principal.
+    LendingInterest = 8
     _db_table = "asset_incomes"
     _otype = LedgerTransaction.AssetIncome
     _extra_columns = ('price',)   # The price a grant was made at, which only a source can state
@@ -1112,7 +1115,8 @@ class AssetIncome(AssetPaymentBase):
             AssetIncome.Reward: LedgerTransaction.tr("Reward"),
             AssetIncome.DustAttack: LedgerTransaction.tr("Dust attack"),
             AssetIncome.RebaseAdjustment: LedgerTransaction.tr("Rebase adjustment"),
-            AssetIncome.TokenRentReturn: LedgerTransaction.tr("Token account rent returned")
+            AssetIncome.TokenRentReturn: LedgerTransaction.tr("Token account rent returned"),
+            AssetIncome.LendingInterest: LedgerTransaction.tr("Lending interest")
         }
 
     @classmethod
@@ -1124,7 +1128,8 @@ class AssetIncome(AssetPaymentBase):
             AssetIncome.Reward: JalIcon.REWARD,
             AssetIncome.DustAttack: JalIcon.DUST,
             AssetIncome.RebaseAdjustment: JalIcon.REBASE,
-            AssetIncome.TokenRentReturn: JalIcon.TOKEN_RENT_RETURN
+            AssetIncome.TokenRentReturn: JalIcon.TOKEN_RENT_RETURN,
+            AssetIncome.LendingInterest: JalIcon.INTEREST
         }
 
     def __init__(self, oid=None, opart=None):
@@ -1143,6 +1148,8 @@ class AssetIncome(AssetPaymentBase):
             # gained without announcing it, and the cost basis of the position it belongs to was paid in full long
             # before. Pricing the crumb at market would move basis into it and out of the units that were bought.
             return Decimal('0')
+        if self._subtype == AssetIncome.LendingInterest:
+            return Decimal('0')   # nothing was paid for it; what it is worth is reported by amount()
         if self._subtype in (AssetIncome.StockDividend, AssetIncome.StockVesting):
             if self._price is None:
                 logging.debug(f"Unpriced stock dividend/vesting. Operation: {self.dump()}")

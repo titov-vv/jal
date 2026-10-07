@@ -79,6 +79,8 @@ class AssetIncomeWidget(AbstractOperationDetails):
             self.ui.amount_label.setText(self.tr("Dust received"))
         elif income_type_id == AssetIncome.RebaseAdjustment:
             self.ui.amount_label.setText(self.tr("Quantity gained"))   # booked at zero, see the subtype
+        elif income_type_id == AssetIncome.LendingInterest:
+            self.ui.amount_label.setText(self.tr("Interest received"))   # booked at zero, see the subtype
         elif income_type_id == AssetIncome.TokenRentReturn:
             self.ui.amount_label.setText(self.tr("Rent returned"))
         else:
