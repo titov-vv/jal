@@ -306,6 +306,10 @@ class EVMFetcher(ChainFetcher):
             # staking it: the position is kept, only its shape changes, so it is a basis-preserving Conversion.
             if len(outs) == 1 and len(ins) == 1:
                 return self._emit_conversion(timestamp, outs, ins, tx['hash'], gas, protocol)
+            # A withdrawal of no more than the interest accrued burns nothing, so nothing leaves the wallet
+            a_token = self._settled_rebasing_token(tx)
+            if a_token is not None and not outs and len(ins) - (a_token in ins) == 1:
+                return self._emit_withdrawal_of_interest(timestamp, a_token, ins, tx['hash'], gas, protocol)
             # A protocol may also just pay out - a reward accrued on the supplied position, delivered with nothing
             # going the other way. That is a real inflow with no counterpart, which is what a StakingReward is.
             if ins and not outs:
@@ -752,6 +756,34 @@ class EVMFetcher(ChainFetcher):
         in_asset, in_data = next(iter(ins.items()))
         self._add_conversion(timestamp, out_asset, abs(out_data['amount']), in_asset, in_data['amount'], tx_hash,
                              note=protocol,
+                             fee=gas, fee_asset_id=self._native_asset_id() if gas > Decimal('0') else None)
+
+    # The rebasing token whose interest this transaction settled with no burn, or None. An aToken burns
+    # 'amount - accrued' on a withdrawal, and when the interest is the larger of the two it MINTS the difference
+    # instead - or burns a zero amount when they are equal.
+    def _settled_rebasing_token(self, tx: dict):
+        for record in tx['tokens']:
+            sender, receiver = self._norm(record.get('from', '')), self._norm(record.get('to', ''))
+            minted = sender == _ZERO_ADDRESS and receiver == self._address()
+            burnt_nothing = sender == self._address() and receiver == _ZERO_ADDRESS \
+                and not str(record.get('value', '')).strip('0')
+            contract = self._norm(record.get('contractAddress', ''))
+            if (minted or burnt_nothing) and self._rebasing_token(contract).id():
+                return self._token_asset_id(record.get('tokenSymbol', ''), record.get('tokenName', ''),
+                                            address=contract)
+        return None
+
+    # Emits a withdrawal that took out no more than the interest the position had accrued: the interest is all of
+    # what was minted plus all of what was withdrawn, and the withdrawn part is then converted into the underlying.
+    def _emit_withdrawal_of_interest(self, timestamp: int, a_token: int, ins: dict, tx_hash: str, gas: Decimal,
+                                     protocol: str = '') -> None:
+        minted = ins[a_token]['amount'] if a_token in ins else Decimal('0')
+        underlying, withdrawn = next((asset_id, data['amount']) for asset_id, data in ins.items()
+                                     if asset_id != a_token)
+        # One second earlier: the conversion surrenders part of the interest, so it has to be on the books by then
+        self._add_payment(JSF.PAYMENT_LENDING_INTEREST, timestamp - 1, a_token, minted + withdrawn, tx_hash,
+                          note=protocol)
+        self._add_conversion(timestamp, a_token, withdrawn, underlying, withdrawn, tx_hash, note=protocol,
                              fee=gas, fee_asset_id=self._native_asset_id() if gas > Decimal('0') else None)
 
     # Emits claimed rewards as StakingReward payments (each opens a lot at market value, so a reward has a cost

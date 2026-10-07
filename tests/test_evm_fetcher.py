@@ -1644,3 +1644,48 @@ def test_a_small_interest_mint_in_a_relayed_claim_does_not_blacklist_the_token(e
     assert [p['amount'] for p in rewards] == [Decimal('24.601465')]
     assert not JalTokenBlacklist.is_blacklisted(AssetLocation.ETH_BLOCKCHAIN, A_TOKEN)
     assert fetcher.skipped() == {}
+
+
+# A withdrawal smaller than the accrued interest: the aToken mints the difference instead of burning, so two assets
+# arrive and none leaves. It is not a payout - all of it is interest, and part of it was converted.
+def test_a_withdrawal_smaller_than_the_interest_is_interest_and_a_conversion(eth_wallet, monkeypatch):
+    _a_token()
+    aave = "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2"
+    f1 = "0xf1" + "0" * 62
+    pages = {
+        "txlist": [_tx(f1, 100, WALLET, aave, value=0, method='0x69328dec', gas_used='120000')],
+        "tokentx": [_a_token_tx(f1, ZERO, WALLET, 3 * 10 ** 6),         # accrued 5, withdrew 2: 3 are minted ...
+                    _token_tx(f1, 100, aave, WALLET, 2 * 10 ** 6)],     # ... and 2 USDC come back
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    interest = _interest(data)
+    assert len(interest) == 1 and len(data[JSF.ASSET_PAYMENTS]) == 1
+    assert interest[0]['amount'] == Decimal('5') and interest[0]['symbol'] in _a_token_symbol_ids(data)
+    assert interest[0]['description'] == 'Aave v3 Pool'
+    conversions = _conversions(data)
+    assert len(conversions) == 1
+    assert conversions[0]['out_symbol'] in _a_token_symbol_ids(data) and conversions[0]['out_qty'] == Decimal('2')
+    assert conversions[0]['in_symbol'] in _usdc_symbol_ids(data) and conversions[0]['in_qty'] == Decimal('2')
+    assert interest[0]['timestamp'] == conversions[0]['timestamp'] - 1
+    assert conversions[0]['fee_qty'] > Decimal('0')                      # the gas rides the conversion
+    assert fetcher.skipped() == {}
+
+
+# The interest exactly equal to the amount: the burn is of zero, and what comes back is still not a payout
+def test_a_withdrawal_equal_to_the_interest_is_interest_and_a_conversion(eth_wallet, monkeypatch):
+    _a_token()
+    aave = "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2"
+    f2 = "0xf2" + "0" * 62
+    pages = {
+        "txlist": [_tx(f2, 100, WALLET, aave, value=0, method='0x69328dec')],
+        "tokentx": [_a_token_tx(f2, WALLET, ZERO, 0), _token_tx(f2, 100, aave, WALLET, 2 * 10 ** 6)],
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    assert [p['amount'] for p in _interest(data)] == [Decimal('2')]
+    conversions = _conversions(data)
+    assert [(c['out_qty'], c['in_qty']) for c in conversions] == [(Decimal('2'), Decimal('2'))]
+    assert not [p for p in data[JSF.ASSET_PAYMENTS] if p['type'] == JSF.PAYMENT_STAKING_REWARD]

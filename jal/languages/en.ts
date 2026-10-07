@@ -3095,37 +3095,37 @@ one for ParentCo and second for Subsidiary</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="320"/>
+        <location filename="../net/chain_fetchers/evm.py" line="324"/>
         <source>unrecognized reward-claim shape</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="337"/>
+        <location filename="../net/chain_fetchers/evm.py" line="341"/>
         <source>unrecognized swap shape</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="382"/>
+        <location filename="../net/chain_fetchers/evm.py" line="386"/>
         <source>asset exchange through an unregistered contract </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="384"/>
+        <location filename="../net/chain_fetchers/evm.py" line="388"/>
         <source>unrecognized multi-asset transaction</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="386"/>
+        <location filename="../net/chain_fetchers/evm.py" line="390"/>
         <source>incoming asset through an unregistered contract</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="709"/>
+        <location filename="../net/chain_fetchers/evm.py" line="713"/>
         <source>unrecognized cross-chain transaction shape</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="604"/>
+        <location filename="../net/chain_fetchers/evm.py" line="608"/>
         <source>token with a malformed contract address</source>
         <translation></translation>
     </message>
@@ -3155,32 +3155,32 @@ one for ParentCo and second for Subsidiary</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="313"/>
+        <location filename="../net/chain_fetchers/evm.py" line="317"/>
         <source>unrecognized lending/wrap shape</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="329"/>
+        <location filename="../net/chain_fetchers/evm.py" line="333"/>
         <source>unrecognized custody shape</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="548"/>
+        <location filename="../net/chain_fetchers/evm.py" line="552"/>
         <source>Address poisoning, imitating </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="633"/>
+        <location filename="../net/chain_fetchers/evm.py" line="637"/>
         <source>token transfer with an unreadable amount</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="636"/>
+        <location filename="../net/chain_fetchers/evm.py" line="640"/>
         <source>zero-amount token transfer</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="621"/>
+        <location filename="../net/chain_fetchers/evm.py" line="625"/>
         <source>token quarantined as dust/spam</source>
         <translation></translation>
     </message>
@@ -6765,7 +6765,7 @@ One transaction moved this exact quantity as </source>
         <location filename="../db/settings_registry.py" line="175"/>
         <location filename="../net/chain_fetchers/avalanche.py" line="48"/>
         <location filename="../net/chain_fetchers/bitcoin.py" line="381"/>
-        <location filename="../net/chain_fetchers/evm.py" line="915"/>
+        <location filename="../net/chain_fetchers/evm.py" line="947"/>
         <location filename="../net/chain_fetchers/solana.py" line="515"/>
         <location filename="../net/chain_fetchers/tron.py" line="349"/>
         <source>Blockchain</source>
@@ -6842,12 +6842,12 @@ One transaction moved this exact quantity as </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="916"/>
+        <location filename="../net/chain_fetchers/evm.py" line="948"/>
         <source>ETH dust threshold</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="917"/>
+        <location filename="../net/chain_fetchers/evm.py" line="949"/>
         <source>An incoming ETH transfer below this amount, from an address you never dealt with, is recorded as a dust attack instead of an ordinary transfer. Applies to every EVM chain whose native coin is ETH (Ethereum, Arbitrum, ...); a chain with a coin of its own has a threshold of its own.</source>
         <translation></translation>
     </message>
