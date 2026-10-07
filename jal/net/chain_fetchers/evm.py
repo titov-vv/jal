@@ -38,6 +38,7 @@ _NO_TRANSACTIONS = "No transactions found"   # status=0 message that means "empt
 # nothing and leaves the cursor where it was, silently, for as long as the account exists.
 _MAX_BLOCK = 999999999999
 
+_ZERO_ADDRESS = '0x' + '0' * 40    # a token is minted from it and burnt to it
 _METHOD_APPROVE = '0x095ea7b3'    # approve(address,uint256) selector, the one gas-only call worth naming apart
 
 # What a transaction that moved NOTHING was, read from the method it called. Curated by hand like the protocol
@@ -276,6 +277,7 @@ class EVMFetcher(ChainFetcher):
         is_error = own and own_record.get('isError', '0') == '1'
         timestamp = tx['timestamp']
 
+        self._extract_lending_interest(tx, timestamp)
         deltas = self._wallet_deltas(tx)
         # Address-poisoning dust is pulled out before anything below looks at 'deltas': it is never part of a
         # swap/lending/bridge shape, and left in it would skew that classification (a real single-asset receive
@@ -466,6 +468,47 @@ class EVMFetcher(ChainFetcher):
                 self._merge_counterparty(entry, counterparty, signed)
         return {asset_id: data for asset_id, data in deltas.items() if data['amount'] != Decimal('0')}
 
+    # Takes the interest a rebasing receipt token settled out of the transaction and records it as a LendingInterest
+    # payment of its own. An aToken that is TRANSFERRED - swapped, moved, paid out as a reward - mints what the
+    # holder accrued in a separate event of the same transaction, and netted with the movement it would understate
+    # what left the wallet or overstate what arrived.
+    # It is a mint only beside another leg of the same token with a real counterparty: a supply mints with the
+    # interest welded into its one event, which split_welded_interest() reads at import.
+    def _extract_lending_interest(self, tx: dict, timestamp: int) -> None:
+        interest, protocols = defaultdict(Decimal), {}
+        for record in list(tx['tokens']):
+            minted = self._norm(record.get('from', '')) == _ZERO_ADDRESS
+            if not minted or self._norm(record.get('to', '')) != self._address():
+                continue
+            contract = self._norm(record.get('contractAddress', ''))
+            token = self._rebasing_token(contract)
+            if not token.id() or not self._moved_with_a_counterparty(tx, contract):
+                continue
+            # Not through the spam filter: the token is marked by hand, and a small mint from the zero address in
+            # a claim somebody else sent is exactly what the filter would quarantine - blacklisting the token.
+            amount = self._token_amount(record)
+            tx['tokens'].remove(record)
+            if amount is not None:
+                asset_id = self._token_asset_id(record.get('tokenSymbol', ''), record.get('tokenName', ''),
+                                                address=contract)
+                interest[asset_id] += amount
+                protocols[asset_id] = token.asset().protocol()
+        for asset_id, amount in sorted(interest.items()):
+            # One second earlier: an outgoing movement surrenders the interest, so it has to be on the books by then
+            self._add_payment(JSF.PAYMENT_LENDING_INTEREST, timestamp - 1, asset_id, amount, tx['hash'],
+                              note=protocols[asset_id])
+
+    # True if the transaction moves this token between the wallet and anyone but the zero address
+    def _moved_with_a_counterparty(self, tx: dict, contract: str) -> bool:
+        return any(self._norm(record.get('contractAddress', '')) == contract
+                   and self._norm(self._counterparty_of(record)) != _ZERO_ADDRESS for record in tx['tokens'])
+
+    # The stored listing of a token marked as rebasing (see AssetData.Rebasing), or an empty one - for a token JAL
+    # doesn't hold yet as well, since the mark is set by hand.
+    def _rebasing_token(self, contract: str) -> JalSymbol:
+        symbol = JalSymbol.find_by_identifier(AssetLocation.address_id_of(self.location_id), contract)
+        return symbol if symbol.id() and symbol.asset().rebasing() else JalSymbol(0)
+
     # Pulls the native coin's entry out of 'deltas' and records it as a DustAttack payment instead, when it is
     # incoming, below the chain's threshold, and not from a wallet of the user's own - address-poisoning dust, the
     # same shape tron.py and solana.py record. It is still real coin that changed the wallet's balance - unlike a
@@ -562,14 +605,8 @@ class EVMFetcher(ChainFetcher):
             return None
         symbol, name = record.get('tokenSymbol', ''), record.get('tokenName', '')
         incoming = self._norm(record.get('to', '')) == self._address()
-        try:
-            decimals = int(record.get('tokenDecimal', '0'))
-            amount = Decimal(record.get('value', '0')) / (Decimal('10') ** decimals)
-        except (ValueError, ArithmeticError):
-            self._skip(self.tr("token transfer with an unreadable amount"), tx_hash)
-            return None
-        if amount <= Decimal('0'):
-            self._skip(self.tr("zero-amount token transfer"), tx_hash)
+        amount = self._token_amount(record)
+        if amount is None:
             return None
         initiated = self._own_record(tx) is not None
         counterparty = record.get('from', '') if incoming else record.get('to', '')
@@ -585,6 +622,20 @@ class EVMFetcher(ChainFetcher):
             return None
         asset_id = self._token_asset_id(symbol, name, address=address)
         return asset_id, (amount if incoming else -amount), self._counterparty_note(record), counterparty
+
+    # The quantity a token record moved, or None (and a skip noted) when it states none that can be used
+    def _token_amount(self, record: dict):
+        tx_hash = record.get('hash', '')
+        try:
+            decimals = int(record.get('tokenDecimal', '0'))
+            amount = Decimal(record.get('value', '0')) / (Decimal('10') ** decimals)
+        except (ValueError, ArithmeticError):
+            self._skip(self.tr("token transfer with an unreadable amount"), tx_hash)
+            return None
+        if amount <= Decimal('0'):
+            self._skip(self.tr("zero-amount token transfer"), tx_hash)
+            return None
+        return amount
 
     # The name of the swap protocol that moved BOTH sides of a transaction the wallet did not sign, or '' when there
     # is none - see the call site for what it is for.

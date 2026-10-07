@@ -1506,3 +1506,141 @@ def test_a_reverted_position_command_is_a_failed_transaction(eth_wallet, monkeyp
                         _tx(n, 100, WALLET, _SAFETY_MODULE, method='0x69328dec', function='cooldown()',
                             is_error='1'))
     assert payment['event'] == JSF.EVENT_FAILED
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# LENDING INTEREST SETTLED BY A TRANSFER. An aToken that is transferred mints what its holder accrued in an event of
+# its own, in the same transaction. Netted with the movement it would hide in it - so it is taken out first and
+# recorded as lending interest.
+A_TOKEN = "0x23878914efe38d27c4d67ab83ed1b93a74d4086a"
+ZERO = "0x0000000000000000000000000000000000000000"
+
+
+def _a_token(rebasing=True):
+    from jal.constants import AssetData
+    from jal.db.db import JalDB
+    creator = JalAssetCreator(PredefinedAsset.Crypto, 'Aave Ethereum USDT')
+    symbol_id = creator.add_symbol('aEthUSDT', 2, AssetLocation.ETH_BLOCKCHAIN)
+    creator.add_identifier(symbol_id, SymbolId.ETH_ADDRESS, A_TOKEN)
+    asset = creator.commit()
+    marks = {AssetData.Protocol: 'Aave v3'}
+    if rebasing:
+        marks[AssetData.Rebasing] = '1'
+    for datatype, value in marks.items():
+        JalDB()._exec("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) VALUES(:a, :dt, :v)",
+                      [(":a", asset.id()), (":dt", datatype), (":v", value)], commit=True)
+    asset.invalidate_cache()
+
+
+def _a_token_tx(tx_hash, frm, to, value):
+    return _token_tx(tx_hash, 100, frm, to, value, contract=A_TOKEN, symbol='aEthUSDT', name='Aave Ethereum USDT')
+
+
+def _interest(data) -> list:
+    return [p for p in data[JSF.ASSET_PAYMENTS] if p['type'] == JSF.PAYMENT_LENDING_INTEREST]
+
+
+def _a_token_symbol_ids(data) -> list:
+    return [s['id'] for a in data[JSF.ASSETS] for s in a[JSF.SYMBOLS] if s['symbol'] == 'aEthUSDT']
+
+
+# A reward claim paid in the aToken: the claim is the amount the distributor sent, the mint beside it is interest
+def test_interest_minted_beside_a_reward_claim_is_not_part_of_the_reward(eth_wallet, monkeypatch):
+    _a_token()
+    merkl = "0x3ef3d8ba38ebe18db133cec108f4d14ce00dd9ae"
+    e1 = "0xe1" + "0" * 62
+    pages = {
+        "txlist": [_tx(e1, 100, WALLET, merkl, value=0, method='0xb61d27f6')],
+        "tokentx": [_a_token_tx(e1, ZERO, WALLET, 1880422),            # 1.880422 accrued since the last touch ...
+                    _a_token_tx(e1, merkl, WALLET, 21471142)],         # ... and the 21.471142 that was claimed
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    rewards = [p for p in data[JSF.ASSET_PAYMENTS] if p['type'] == JSF.PAYMENT_STAKING_REWARD]
+    assert [p['amount'] for p in rewards] == [Decimal('21.471142')]
+    interest = _interest(data)
+    assert len(interest) == 1
+    assert interest[0]['amount'] == Decimal('1.880422') and interest[0]['symbol'] in _a_token_symbol_ids(data)
+    assert interest[0]['timestamp'] == rewards[0]['timestamp'] - 1 and interest[0]['number'] == e1
+    assert interest[0]['description'] == 'Aave v3'
+    assert fetcher.skipped() == {}
+
+
+# A swap of the aToken: what left the wallet is the whole amount sent, not the amount less the interest
+def test_interest_minted_beside_a_swap_leaves_the_swapped_amount_whole(eth_wallet, monkeypatch):
+    _a_token()
+    router = "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"     # registered as ProtocolCategory.SWAP
+    e2 = "0xe2" + "0" * 62
+    pages = {
+        "txlist": [_tx(e2, 100, WALLET, router, value=0, method='0x3593564c')],
+        "tokentx": [_a_token_tx(e2, ZERO, WALLET, 5 * 10 ** 6),
+                    _a_token_tx(e2, WALLET, router, 1000 * 10 ** 6),
+                    _token_tx(e2, 100, router, WALLET, 999 * 10 ** 6)],
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    swaps = _swaps(data)
+    assert len(swaps) == 1
+    assert swaps[0]['out_symbol'] in _a_token_symbol_ids(data) and swaps[0]['out_qty'] == Decimal('1000')
+    assert swaps[0]['in_symbol'] in _usdc_symbol_ids(data) and swaps[0]['in_qty'] == Decimal('999')
+    assert [p['amount'] for p in _interest(data)] == [Decimal('5')]
+
+
+# A supply mints too, but with the interest welded into its one event - nothing is taken out of it here
+# (split_welded_interest() reads it at import)
+def test_a_supply_mint_is_left_to_the_conversion(eth_wallet, monkeypatch):
+    _a_token()
+    aave = "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2"
+    e3 = "0xe3" + "0" * 62
+    pages = {
+        "txlist": [_tx(e3, 100, WALLET, aave, value=0, method='0x617ba037')],
+        "tokentx": [_token_tx(e3, 100, WALLET, aave, 40 * 10 ** 6),     # 40 USDC supplied ...
+                    _a_token_tx(e3, ZERO, WALLET, 43 * 10 ** 6)],       # ... 43 minted: 40 and 3 of interest
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    conversions = _conversions(data)
+    assert len(conversions) == 1
+    assert conversions[0]['out_qty'] == Decimal('40') and conversions[0]['in_qty'] == Decimal('43')
+    assert _interest(data) == []
+
+
+# The mark is the licence: a token not marked as rebasing keeps its mint in the movement
+def test_a_mint_of_an_unmarked_token_stays_in_the_movement(eth_wallet, monkeypatch):
+    _a_token(rebasing=False)
+    merkl = "0x3ef3d8ba38ebe18db133cec108f4d14ce00dd9ae"
+    e4 = "0xe4" + "0" * 62
+    pages = {
+        "txlist": [_tx(e4, 100, WALLET, merkl, value=0, method='0xb61d27f6')],
+        "tokentx": [_a_token_tx(e4, ZERO, WALLET, 1880422), _a_token_tx(e4, merkl, WALLET, 21471142)],
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    assert _interest(data) == []
+    rewards = [p for p in data[JSF.ASSET_PAYMENTS] if p['type'] == JSF.PAYMENT_STAKING_REWARD]
+    assert [p['amount'] for p in rewards] == [Decimal('23.351564')]
+
+
+# A claim somebody else sent, with an interest mint worth less than the dust threshold: the spam filter would
+# quarantine such a leg and blacklist the token with it. A token marked by hand is not asked.
+def test_a_small_interest_mint_in_a_relayed_claim_does_not_blacklist_the_token(eth_wallet, monkeypatch):
+    _a_token()
+    merkl = "0x3ef3d8ba38ebe18db133cec108f4d14ce00dd9ae"
+    e5 = "0xe5" + "0" * 62
+    pages = {
+        "txlist": [],                                                   # the wallet did not sign it
+        "tokentx": [_a_token_tx(e5, ZERO, WALLET, 19353),               # 0.019353 of interest
+                    _a_token_tx(e5, merkl, WALLET, 24601465)],
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    assert [p['amount'] for p in _interest(data)] == [Decimal('0.019353')]
+    rewards = [p for p in data[JSF.ASSET_PAYMENTS] if p['type'] == JSF.PAYMENT_STAKING_REWARD]
+    assert [p['amount'] for p in rewards] == [Decimal('24.601465')]
+    assert not JalTokenBlacklist.is_blacklisted(AssetLocation.ETH_BLOCKCHAIN, A_TOKEN)
+    assert fetcher.skipped() == {}
