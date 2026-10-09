@@ -186,12 +186,12 @@ class JalSymbol(JalDB):
     # asset. This mirrors the split a symbol-scoped JalAsset.update_data used to perform.
     def update_data(self, data: dict) -> None:
         identifier_types = {'isin': SymbolId.ISIN, 'reg_number': SymbolId.REG_CODE, 'cusip': SymbolId.CUSIP}
+        asset_data = {key: value for key, value in data.items() if key not in identifier_types}
+        if asset_data:   # Goes first: it raises on an unknown key before anything is written
+            self.asset().update_data(asset_data)
         for key, id_type in identifier_types.items():
             if data.get(key):
                 self.update_identifier(id_type, data[key])
-        asset_data = {key: value for key, value in data.items() if key not in identifier_types}
-        if asset_data:
-            self.asset().update_data(asset_data)
 
     # Refreshes this symbol's data after a write. Identifiers also appear in JalAsset's cache (_data['ID']), so the
     # global invalidation is used to keep both caches consistent (mirrors JalTag.replace_with).

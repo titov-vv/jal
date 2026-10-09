@@ -4,7 +4,7 @@ import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import create_assets, symbol_id_for, create_trades, create_actions
-from jal.constants import PredefinedAsset, SymbolId, AssetLocation
+from jal.constants import PredefinedAsset, SymbolId, AssetLocation, AssetData
 from jal.db.db import JalDB
 from jal.db.account import JalAccountCreator
 from jal.db.asset import JalAsset, JalAssetCreator
@@ -228,3 +228,21 @@ def test_an_asset_not_listed_in_that_currency_has_no_ticker(prepare_db):
 def test_money_is_one_symbol_whatever_currency_is_asked_for(prepare_db):
     assert JalAsset(2).symbol(currency=3) == JalAsset(2).symbol()
     assert len(JalAsset(2).tickers(currency=3)) == 1
+
+
+# A key that update_data() has no updater for is an error of the caller, on both entry points, and writes nothing.
+# A known key with an empty value is skipped silently.
+def test_update_data_refuses_an_unknown_key(prepare_db):
+    create_assets([('XYZ', 'Test bond', '', 2, PredefinedAsset.Bond, 0)])   # asset id 4
+    asset = JalAsset(4)
+
+    with pytest.raises(ValueError, match="Unknown asset data key"):
+        asset.update_data({'principal': '1000', AssetData.PrincipalValue: '500'})
+    assert JalAsset(4).principal() == Decimal('0')
+    with pytest.raises(ValueError, match="Unknown asset data key"):
+        JalSymbol(symbol_id_for(4)).update_data({'isin': 'US1234567890', 'bogus': 0})
+    assert JalSymbol(symbol_id_for(4)).identifier(SymbolId.ISIN) == ''
+
+    JalSymbol(symbol_id_for(4)).update_data({'isin': 'US1234567890', 'principal': '1000', 'expiry': 0})
+    assert JalSymbol(symbol_id_for(4)).identifier(SymbolId.ISIN) == 'US1234567890'
+    assert JalAsset(4).principal() == Decimal('1000')

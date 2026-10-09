@@ -503,14 +503,14 @@ class JalAsset(JalDB):
             'principal': self._update_principal,
             'coin_id': self._update_coin_id
         }
+        unknown = [key for key in data if key not in updaters]
+        if unknown:   # Nothing is written if any key is wrong
+            raise ValueError(f"Unknown asset data key(s) {unknown}, expected any of {list(updaters)}")
         if not self._id:
             return
         for key in data:
-            if data[key]:
-                try:
-                    updaters[key](data[key])
-                except KeyError:  # No updater for this key is present
-                    continue
+            if data[key]:   # An empty value means 'not known' and is skipped
+                updaters[key](data[key])
         self._data = self.db_cache.update_data(self._load_asset_data, (self._id,))  # Reload asset data from DB
 
     # ------------------------------------------------------------------------------------------------------------------

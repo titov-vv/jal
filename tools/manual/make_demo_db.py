@@ -156,7 +156,7 @@ def create_assets() -> dict:
         if id_type is not None and id_value:
             creator.add_identifier(symbol_id, id_type, id_value)
         assets[key] = creator.commit().id()
-    JalAsset(assets['mrail']).update_data({AssetData.PrincipalValue: '1000'})
+    JalAsset(assets['mrail']).update_data({'principal': '1000'})
     # A receipt token names its venue; the attribute has no setter of its own, it is entered by hand in the asset dialog
     JalDB._exec("INSERT INTO asset_data(asset_id, datatype, value) VALUES(:a, :t, 'Aave v3')",
                 [(":a", assets['ausdc']), (":t", AssetData.Protocol)], commit=True)
