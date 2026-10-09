@@ -131,6 +131,16 @@
    "symbol": 3,
    "amount": -4.37,
    "description": "MUn(120549262) PAYMENT IN LIEU OF DIVIDEND (ICFDUK Dividend)"
+  },
+  {
+   "id": 2,
+   "type": "fee",
+   "account": 1,
+   "timestamp": 1657065600,
+   "number": "1018307482",
+   "symbol": 3,
+   "amount": -0.02,
+   "description": "CFD BORROW FEE FOR MU for 06-JUL-2022"
   }
  ],
  "income_spending": [
@@ -149,19 +159,6 @@
   },
   {
    "id": 2,
-   "timestamp": 1657065600,
-   "account": 1,
-   "peer": 0,
-   "lines": [
-    {
-     "amount": -0.02,
-     "category": 5,
-     "description": "CFD BORROW FEE FOR MU for 06-JUL-2022"
-    }
-   ]
-  },
-  {
-   "id": 3,
    "timestamp": 1657065600,
    "account": 1,
    "peer": 0,

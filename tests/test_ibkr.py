@@ -254,6 +254,31 @@ def test_ibkr_cfd(tmp_path, project_root, data_path, prepare_db_taxes):
     assert IBKR._data == statement
 
 
+
+# A CFD charge that names an asset is stored as a fee of that asset whatever it is called, and one that names none
+# is a spending only when it is a known kind of interest
+def test_ibkr_cfd_charge_on_an_asset_is_an_asset_fee(caplog):
+    ibkr = StatementIBKR()
+    ibkr._data = {JSF.ASSET_PAYMENTS: [{'id': 4}], JSF.INCOME_SPENDING: []}
+    charges = [
+        {'account': 1, 'symbol': 3, 'timestamp': 1657065600, 'amount': Decimal('-0.02'), 'number': '11',
+         'description': 'CFD BORROW FEE FOR MU for 06-JUL-2022'},
+        {'account': 1, 'symbol': 3, 'timestamp': 1657065600, 'amount': Decimal('-0.50'), 'number': '12',
+         'description': 'SOMETHING NEW FOR MU'},
+        {'account': 1, 'symbol': StatementIBKR.NoAsset, 'timestamp': 1657065600, 'amount': Decimal('-0.06'),
+         'number': '13', 'description': 'SHORT CFD INTEREST FOR 06-JUL-2022'},
+        {'account': 1, 'symbol': StatementIBKR.NoAsset, 'timestamp': 1657065600, 'amount': Decimal('-0.07'),
+         'number': '14', 'description': 'SOMETHING NEW'},
+    ]
+    ibkr.load_cfd_charges(charges)
+
+    fees = [x for x in ibkr._data[JSF.ASSET_PAYMENTS] if x.get('type') == JSF.PAYMENT_FEE]
+    assert [(x['id'], x['symbol'], x['amount'], x['number']) for x in fees] == [
+        (5, 3, Decimal('-0.02'), '11'), (6, 3, Decimal('-0.50'), '12')]
+    assert [(x['id'], x['lines'][0]['amount']) for x in ibkr._data[JSF.INCOME_SPENDING]] == [(1, Decimal('-0.06'))]
+    unknown = [x.message for x in caplog.records if 'Unknown CFD charge description' in x.message]
+    assert [x.split(': ')[1] for x in unknown] == ['SOMETHING NEW FOR MU', 'SOMETHING NEW']
+
 # ----------------------------------------------------------------------------------------------------------------------
 def test_ibkr_corp_actions(tmp_path, project_root, data_path, prepare_db_taxes):
     with open(data_path + 'ibkr_corp_actions.json', 'r', encoding='utf-8') as json_file:

@@ -1179,18 +1179,21 @@ class StatementIBKR(StatementXML):
 
     def load_cfd_charges(self, charges):
         cnt = 0
-        charges_base = max([0] + [x['id'] for x in self._data[JSF.INCOME_SPENDING]]) + 1
-        for i, charge in enumerate(charges):
-            if charge['symbol'] != self.NoAsset and not charge['description'].startswith('CFD BORROW FEE FOR'):
-                # FIXME if asset is present -> put this charge not in Income/Spending but in Asset Payments section
-                logging.warning(self.tr("Unknown CFD charge description: ") + charge['description'])
+        next_id = lambda section: max([0] + [x['id'] for x in self._data[section]]) + 1
+        for charge in charges:
+            if charge['symbol'] != self.NoAsset:   # A charge that names an asset is a fee of that asset
+                if not charge['description'].startswith('CFD BORROW FEE FOR'):
+                    logging.warning(self.tr("Unknown CFD charge description: ") + charge['description'])
+                charge['id'] = next_id(JSF.ASSET_PAYMENTS)
+                charge['type'] = JSF.PAYMENT_FEE
+                self._data[JSF.ASSET_PAYMENTS].append(charge)
+                cnt += 1
                 continue
-            if charge['symbol'] == self.NoAsset and not (
-                    charge['description'].startswith('LONG CFD INTEREST FOR') or
+            if not (charge['description'].startswith('LONG CFD INTEREST FOR') or
                     charge['description'].startswith('SHORT CFD INTEREST FOR')):
                 logging.warning(self.tr("Unknown CFD charge description: ") + charge['description'])
                 continue
-            charge['id'] = charges_base + i
+            charge['id'] = next_id(JSF.INCOME_SPENDING)
             charge['peer'] = 0
             charge['lines'] = [{'amount': charge['amount'], 'category': PredefinedCategory.Fees, 'description': charge['description']}]
             self.drop_extra_fields(charge, ["amount", "symbol", "description", "number"])

@@ -15,14 +15,6 @@
       "report_template":"fee"
     },
     {
-      "amount":0.02,
-      "amount_rub":1.17,
-      "note":"CFD BORROW FEE FOR MU for 06-JUL-2022",
-      "payment_date":1657065600,
-      "rate":58.5118,
-      "report_template":"fee"
-    },
-    {
       "amount":0.06,
       "amount_rub":3.51,
       "note":"SHORT CFD INTEREST FOR 06-JUL-2022",
@@ -31,8 +23,8 @@
       "report_template":"fee"
     },
     {
-      "amount":0.36,
-      "amount_rub":22.3,
+      "amount":0.34,
+      "amount_rub":21.13,
       "report_template":"totals"
     }
   ],
