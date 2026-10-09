@@ -295,9 +295,7 @@ class ReferenceDataDialog(QDialog):
     def setSelectedName(self, selected_id):
         pass
 
-    @Signal
-    def selected_name_changed(self):
-        pass
+    selected_name_changed = Signal()
 
     SelectedName = Property(str, getSelectedName, setSelectedName, notify=selected_name_changed)
 
