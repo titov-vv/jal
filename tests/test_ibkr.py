@@ -14,7 +14,7 @@ from jal.db.account import JalAccount
 from jal.db.asset import JalAsset, AssetData
 from jal.db.db import JalDB
 from jal.db.operations import AssetPayment, AssetIncome
-from jal.constants import PredefinedAsset, BookAccount, SymbolId, AssetLocation
+from jal.constants import PredefinedAsset, PredefinedCategory, BookAccount, SymbolId, AssetLocation
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -484,6 +484,18 @@ def test_ibkr_mlp_extra_tax_is_imported_as_fee(tmp_path, project_root, data_path
     assert len(fees) == 1
     assert fees[0].amount() == Decimal('-0.53')
     assert fees[0].note().endswith(' - Extra 10% tax due to IRS section 1446')
+
+    # The ledger keeps the extra tax apart from the withholding one and arrives at the ending cash of the statement
+    Ledger().rebuild(from_timestamp=0)
+    booked = JalDB._read_to_list("SELECT book_account, category_id, SUM(CAST(amount AS REAL)) FROM ledger "
+                                 "WHERE category_id IS NOT NULL GROUP BY book_account, category_id "
+                                 "ORDER BY book_account, category_id")
+    assert [(book, category, round(amount, 2)) for book, category, amount in booked] == [
+        (BookAccount.Costs, PredefinedCategory.Fees, 0.53),
+        (BookAccount.Costs, PredefinedCategory.Taxes, 1.94),
+        (BookAccount.Incomes, PredefinedCategory.Dividends, -5.25)
+    ]
+    assert imported.get_asset_amount(d2t(240101), imported.currency()) == Decimal('2.78')
 
 
 # A holding bought out for cash is stored as a sale at the offer price

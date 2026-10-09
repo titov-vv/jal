@@ -1028,14 +1028,10 @@ class AssetPayment(AssetPaymentBase):
             return
         if not self._peer_id:
             raise LedgerError(LedgerTransaction.tr("Can't process dividend as bank isn't set for investment account: ") + self._account_name)
-        if self._subtype == AssetPayment.Dividend:
-            category = PredefinedCategory.Dividends
-        elif self._subtype == AssetPayment.BondInterest:
-            category = PredefinedCategory.Interest
-        elif self._subtype == AssetPayment.AssetFee:
-            category = PredefinedCategory.Fees
-        else:
-            raise LedgerError(LedgerTransaction.tr("Unsupported dividend type.") + f" Operation: {self.dump()}")
+        # Any other subtype is refused by __init__ already
+        category = {AssetPayment.Dividend: PredefinedCategory.Dividends,
+                    AssetPayment.BondInterest: PredefinedCategory.Interest,
+                    AssetPayment.AssetFee: PredefinedCategory.Fees}[self._subtype]
         operation_value = (self._amount - self._tax)
         if operation_value > Decimal('0'):
             credit_returned = ledger.returnCredit(self, self._account.id(), operation_value)
@@ -1248,8 +1244,9 @@ class AssetIncome(AssetPaymentBase):
                               + self._account_name)
         asset_amount = ledger.getAmount(BookAccount.Assets, self._account.id(), self._asset.id())
         if asset_amount < Decimal('0'):
-            raise NotImplemented(LedgerTransaction.tr("Not supported action: asset income closes short trade.") +
-                                 f" Operation: {self.dump()}")
+            # A LedgerError, so the rebuild stops with a reason for the user instead of a traceback
+            raise LedgerError(LedgerTransaction.tr("Not supported action: asset income closes short trade.") +
+                              f" Operation: {self.dump()}")
         self._account.open_trade(JalOpenTrade(self, self.price(), self._amount), self._asset)
         ledger.appendTransaction(self, BookAccount.Assets, self._amount,
                                  asset_id=self._asset.id(), value=self._amount * self.price())
