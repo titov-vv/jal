@@ -682,3 +682,47 @@ def test_ibkr_fee_charged_on_an_asset_is_imported_as_asset_fee(tmp_path, project
     assert [(book, category, round(amount, 2)) for book, category, amount in booked] == [
         (BookAccount.Costs, PredefinedCategory.Fees, 4.01)]
     assert imported.get_asset_amount(d2t(260101), imported.currency()) == Decimal('-4.01')
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# A reversed dividend is dropped together with its reversal. The match is exact first, then ignoring the description,
+# then ignoring the report date; a reversal that matches nothing stops the import
+def test_ibkr_dividend_reversal_is_matched_in_three_ways():
+    ibkr = StatementIBKR()
+    paid = lambda symbol, description, reported: {
+        'type': 'Dividends', 'account': 1, 'symbol': symbol, 'currency': 1, 'timestamp': 1720210800,
+        'reported': reported, 'amount': Decimal('50'), 'action_id': str(symbol), 'description': description}
+    reversed_ = lambda symbol, description, reported: {**paid(symbol, description, reported), 'amount': Decimal('-50')}
+    kept = paid(14, 'KEPT CASH DIVIDEND', 1720137600)
+    dividends = [
+        paid(11, 'AAA CASH DIVIDEND', 1720137600), reversed_(11, 'AAA CASH DIVIDEND - REVERSAL', 1720137600),
+        paid(12, 'BBB CASH DIVIDEND (Ordinary Dividend)', 1720137600), reversed_(12, 'CANCEL BBB CASH DIVIDEND', 1720137600),
+        paid(13, 'CCC CASH DIVIDEND', 1720137600), reversed_(13, 'CCC CASH DIVIDEND - REVERSAL', 1725148800),
+        kept]
+    assert ibkr.aggregate_dividends(dividends) == [kept]
+
+    with pytest.raises(Statement_ImportError):
+        ibkr.aggregate_dividends([kept, reversed_(15, 'DDD CASH DIVIDEND - REVERSAL', 1720137600)])
+
+
+# A dividend and its tax, both reversed two months later under another report date, leave nothing behind
+def test_ibkr_reversed_dividend_takes_its_reversed_tax_with_it(tmp_path, project_root, data_path, prepare_db_taxes):
+    statement = StatementIBKR()
+    statement.load(data_path + 'ibkr_dividend_reversal.xml')
+    assert statement._data[JSF.ASSET_PAYMENTS] == []
+
+
+# ... and a tax that was not reversed with its dividend has no payment left to belong to, so the import is refused
+def test_ibkr_tax_left_by_a_reversed_dividend_halts_the_import(tmp_path, project_root, data_path, prepare_db_taxes,
+                                                               monkeypatch):
+    monkeypatch.setattr(Statement, 'save_debug_info', lambda self, **kwargs: None)
+    with open(data_path + 'ibkr_dividend_reversal.xml', 'r', encoding='utf-8') as xml_file:
+        lines = xml_file.read().splitlines()
+    tax_reversals = [x for x in lines if 'type="Withholding Tax"' in x and 'reportDate="20240901"' in x]
+    assert len(tax_reversals) == 1
+    without_tax_reversal = tmp_path / 'tax_not_reversed.xml'
+    without_tax_reversal.write_text('\n'.join(x for x in lines if x not in tax_reversals), encoding='utf-8')
+
+    statement = StatementIBKR()
+    with pytest.raises(Statement_ImportError, match="withholding tax matches no payment"):
+        statement.load(str(without_tax_reversal))
