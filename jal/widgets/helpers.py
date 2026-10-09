@@ -4,7 +4,7 @@ from functools import cmp_to_key, partial
 from PySide6.QtCore import Qt, QCollator, QItemSelectionModel, QSize, QTimer
 from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtWidgets import (QApplication, QAbstractItemView, QDialog, QTableView, QTreeView, QDateTimeEdit,
-                               QStyle, QSplitter)
+                               QStyle, QSplitter, QStyledItemDelegate)
 from jal.constants import Setup
 from jal.db.clock import local_moment, local_reading, local_time, window_bound
 from jal.db.icon import JalIcons
@@ -121,7 +121,7 @@ def grid_icon_size(view) -> int:
 # The icon size has to be set explicitly on both: a view that was never told one clamps every decoration to the
 # style's 16 px, whatever the font is doing.
 def set_grids_metrics(widget):
-    from jal.widgets.delegates import GridLinesDelegate    # Deferred import to break a circular import: delegates.py needs DateFormat from this module.
+    from jal.widgets.delegates import GridLinesDelegate, KbSafeItemDelegate    # Deferred import to break a circular import: delegates.py needs DateFormat from this module.
     for table in widget.findChildren(QTableView):
         height = grid_row_height(table)
         # The floor goes with the height: a font-derived metric can't be written into a .ui file, and the 20 px
@@ -129,6 +129,8 @@ def set_grids_metrics(widget):
         table.verticalHeader().setMinimumSectionSize(height)
         table.verticalHeader().setDefaultSectionSize(height)
         table.setIconSize(QSize(grid_icon_size(table), grid_icon_size(table)))
+        if type(table.itemDelegate()) is QStyledItemDelegate:   # Qt's default closes a cell editor on a layout switch
+            table.setItemDelegate(KbSafeItemDelegate(table))          # So we need to replace it
     for tree in widget.findChildren(QTreeView):
         if not isinstance(tree.itemDelegate(), GridLinesDelegate):
             tree.setItemDelegate(GridLinesDelegate(tree))

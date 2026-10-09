@@ -3,8 +3,8 @@ from decimal import Decimal, InvalidOperation
 from PySide6.QtWidgets import (QApplication, QWidget, QStyle, QStyledItemDelegate, QStyleOptionViewItem,
                                QLineEdit, QDateTimeEdit, QTreeView, QComboBox)
 from PySide6.QtCore import Qt, QModelIndex, QEvent, QLocale, QDateTime, QDate, QRect, QTime, QTimeZone
-from PySide6.QtGui import QDoubleValidator, QBrush, QIcon, QKeyEvent, QPalette
-from PySide6.QtSql import QSqlQueryModel
+from PySide6.QtGui import QDoubleValidator, QBrush, QIcon, QKeyEvent, QPalette, QGuiApplication
+from PySide6.QtSql import QSqlQueryModel, QSqlRelationalDelegate
 from jal.constants import IconOwner, Setup
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 from jal.db.clock import local_datetime, local_time, local_zone, window_bound
@@ -114,9 +114,29 @@ class DateTimeEditWithReset(QDateTimeEdit):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# Keeps a cell editor open while the whole application is inactive: a desktop keyboardlayout switcher takes the
+# keyboard away for a moment, and Qt commits and closes the editor of a window that was deactivated.
+class KbSafeEditorMixin:
+    def eventFilter(self, editor, event):
+        if (event.type() == QEvent.FocusOut and event.reason() == Qt.ActiveWindowFocusReason
+                and QGuiApplication.applicationState() != Qt.ApplicationActive):
+            return False
+        return super().eventFilter(editor, event)
+
+
+# The delegates an in-cell editor of jal descends from instead of the Qt classes
+class KbSafeItemDelegate(KbSafeEditorMixin, QStyledItemDelegate):
+    pass
+
+
+class KbSafeRelationalDelegate(KbSafeEditorMixin, QSqlRelationalDelegate):
+    pass
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 # QTreeView doesn't draw grid lines and have no normal method to implement it
 # So the purpose of this delegate is solely to draw dotted box around report cell
-class GridLinesDelegate(QStyledItemDelegate):
+class GridLinesDelegate(KbSafeItemDelegate):
     def __init__(self, parent=None):
         self._parent = parent
         super().__init__(parent=parent)
@@ -294,7 +314,7 @@ class FloatDelegate(GridLinesDelegate):
 # ----------------------------------------------------------------------------------------------------------------------
 # This is special delegate that have only one purpose - to apply filters for Symbol widgets in operations.
 # Currently only currency_id is sent for Asset dialog initialization.
-class SymbolDelegate(QStyledItemDelegate):
+class SymbolDelegate(KbSafeItemDelegate):
     def setEditorData(self, editor, index):
         account_id_idx = index.sibling(index.row(), index.model().fieldIndex('account_id'))
         account_currency = JalAccount(index.model().data(account_id_idx, Qt.EditRole)).currency()
@@ -357,7 +377,7 @@ class TimezoneDelegate(GridLinesDelegate):
 # This delegate is used to present user with a lookup combobox for selection from predefined constant values
 # Constructor parameter 'constant_class' indicates which constant set to be used
 # (it should be a descendant of PredefinedList class)
-class ConstantLookupDelegate(QStyledItemDelegate):
+class ConstantLookupDelegate(KbSafeItemDelegate):
     def __init__(self, constant_class, parent=None):
         self._parent = parent
         super().__init__(parent=parent)
@@ -388,7 +408,7 @@ class ConstantLookupDelegate(QStyledItemDelegate):
 #   dialog_class - class of the selection dialog to be used for selection (from reference_dialogs.py). It is passed
 #                  on to the selector widget, which builds it when the user first asks for it.
 #   selector_parent, model_args, dialog_args - passed on to ReferenceSelectorWidget.setup_selector()
-class LookupSelectorDelegate(QStyledItemDelegate):
+class LookupSelectorDelegate(KbSafeItemDelegate):
     def __init__(self, parent, model_class, dialog_class, selector_parent=None, model_args=None, dialog_args=None):
         super().__init__(parent=parent)
         self._selector = None
@@ -630,7 +650,7 @@ class TickerIconsDelegate(GridLinesDelegate):
 # Each number is displayed on its own line
 # colors - display positive/negative values with green/red color
 # signs - display +/- sign before the number if True or only "-" if False
-class ColoredAmountsDelegate(QStyledItemDelegate):
+class ColoredAmountsDelegate(KbSafeItemDelegate):
     def __init__(self, parent=None, colors=True, signs=True):
         self._view = parent
         self._colors = colors

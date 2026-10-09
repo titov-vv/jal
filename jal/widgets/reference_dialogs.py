@@ -3,7 +3,6 @@ import logging
 from PySide6.QtCore import Qt, Slot, Signal, Property, QPoint
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMenu, QDialog, QDialogButtonBox, QMessageBox, QHeaderView, QAbstractItemView
-from PySide6.QtSql import QSqlRelationalDelegate
 from jal.constants import CmWidth, CmDelegate, CmReference, AccountStatus
 from jal.db.common_models import AccountListModel, PeerTreeModel, CategoryTreeModel, TagTreeModel, QuotesListModel, \
     ResidenceListModel, TokenBlacklistModel
@@ -15,7 +14,7 @@ from jal.db.category import JalCategory
 from jal.db.tag import JalTag
 from jal.widgets.selection_dialog import SelectReferenceDialog
 from jal.ui.ui_reference_data_dlg import Ui_ReferenceDataDialog
-from jal.widgets.delegates import BoolDelegate, FloatDelegate, GridLinesDelegate, TimestampDelegate, LookupSelectorDelegate, AssetSelectorDelegate, ConstantLookupDelegate, TimezoneDelegate
+from jal.widgets.delegates import BoolDelegate, FloatDelegate, GridLinesDelegate, TimestampDelegate, LookupSelectorDelegate, AssetSelectorDelegate, ConstantLookupDelegate, TimezoneDelegate, KbSafeRelationalDelegate
 from jal.widgets.icons import JalIcon
 from jal.db.settings import JalSettings
 from jal.widgets.assets_dialogs import SymbolListDialog
@@ -261,7 +260,7 @@ class ReferenceDataDialog(QDialog):
             elif spec.delegate_type == CmDelegate.GRID:
                 delegate = GridLinesDelegate(self._view)
             elif spec.delegate_type == CmDelegate.LOOKUP:
-                delegate = QSqlRelationalDelegate(self._view)
+                delegate = KbSafeRelationalDelegate(self._view)
             elif spec.delegate_type == CmDelegate.REFERENCE:
                 delegate_class = LookupSelectorDelegate
                 if spec.delegate_details == CmReference.TAG:

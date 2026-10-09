@@ -1,14 +1,15 @@
 import logging
 from decimal import Decimal, InvalidOperation
 from PySide6.QtCore import Qt, Slot, QDateTime, QTimeZone, QLocale
-from PySide6.QtSql import QSqlRelation, QSqlRelationalDelegate
+from PySide6.QtSql import QSqlRelation
 from PySide6.QtWidgets import QDialog, QDataWidgetMapper, QStyledItemDelegate, QComboBox, QLineEdit, QMessageBox, QHeaderView
 from jal.ui.ui_symbol_edit_dlg import Ui_SymbolDialog
 from jal.constants import PredefinedAsset, AssetData, IconOwner, SymbolId, AssetLocation
 from jal.db.helpers import localize_decimal, db_row2dict
 from jal.db.asset_models import AssetRecordModel, AssetSymbolsModel, SymbolIdentifiersModel, AssetDataModel
 from jal.db.common_models import TagTreeModel
-from jal.widgets.delegates import DateTimeEditWithReset, BoolDelegate, ConstantLookupDelegate
+from jal.widgets.delegates import (DateTimeEditWithReset, BoolDelegate, ConstantLookupDelegate, KbSafeItemDelegate,
+                                   KbSafeRelationalDelegate)
 from jal.widgets.icons import JalIcon
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 from jal.widgets.reference_dialogs import TagsListDialog
@@ -18,7 +19,7 @@ from jal.widgets.helpers import set_grids_metrics, DateFormat
 # ----------------------------------------------------------------------------------------------------------------------
 # Compound delegate for the 'asset_data' grid: column 'datatype' picks an AssetData attribute, column 'value' shows
 # an editor that depends on the type registered for the currently selected attribute (str/int/float/date/tag).
-class AssetAttributeDelegate(QStyledItemDelegate):
+class AssetAttributeDelegate(KbSafeItemDelegate):
     def __init__(self, key_column, value_column, tag_model_class, tag_dialog_class, parent=None):
         super().__init__(parent=parent)
         self._key = key_column
@@ -183,7 +184,7 @@ class SymbolDialog(QDialog):
         view.setColumnHidden(model.fieldIndex("asset_id"), True)
         view.horizontalHeader().setSectionResizeMode(model.fieldIndex("symbol"), QHeaderView.Stretch)
         model.setRelation(model.fieldIndex("currency_id"), QSqlRelation("currencies", "id", "symbol"))
-        self._currency_delegate = QSqlRelationalDelegate(view)
+        self._currency_delegate = KbSafeRelationalDelegate(view)
         view.setItemDelegateForColumn(model.fieldIndex("currency_id"), self._currency_delegate)
         self._location_delegate = ConstantLookupDelegate(AssetLocation, view)
         view.setItemDelegateForColumn(model.fieldIndex("location_id"), self._location_delegate)

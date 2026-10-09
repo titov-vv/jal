@@ -1,7 +1,7 @@
 import logging
 from decimal import Decimal, InvalidOperation
 from PySide6.QtCore import Qt, Slot, QLocale, QDate, QDateTime, QTime, QTimeZone
-from PySide6.QtWidgets import QDialog, QDataWidgetMapper, QStyledItemDelegate, QComboBox, QLineEdit, QMessageBox, QHeaderView
+from PySide6.QtWidgets import QDialog, QDataWidgetMapper, QComboBox, QLineEdit, QMessageBox, QHeaderView
 from jal.ui.ui_account_edit_dlg import Ui_AccountDialog
 from jal.constants import AccountData, IconOwner, PredefinedAccountType, AccountStatus, PredefinedAgents, AssetLocation
 from jal.db.helpers import localize_decimal
@@ -11,7 +11,7 @@ from jal.db.asset import JalAsset
 from jal.db.common_models import AccountRecordModel, AccountDataModel, PeerTreeModel
 from jal.db.token_blacklist import normalize_address, is_valid_address
 from jal.widgets.custom.db_lookup_combobox import DbLookupComboBox
-from jal.widgets.delegates import DateTimeEditWithReset
+from jal.widgets.delegates import DateTimeEditWithReset, KbSafeItemDelegate
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 from jal.widgets.icons import JalIcon
 from jal.widgets.helpers import set_grids_metrics, DateFormat
@@ -21,7 +21,7 @@ from jal.widgets.helpers import set_grids_metrics, DateFormat
 # Compound delegate for the account details grid (mirrors SymbolDialog's AssetAttributeDelegate): the 'datatype'
 # column picks an AccountData attribute, the 'value' column shows an editor that depends on the picked attribute's
 # type (str/int/float/date/country/chain/tag).
-class AccountAttributeDelegate(QStyledItemDelegate):
+class AccountAttributeDelegate(KbSafeItemDelegate):
     def __init__(self, key_column, value_column, tag_model_class, tag_dialog_class, parent=None):
         super().__init__(parent=parent)
         self._key = key_column

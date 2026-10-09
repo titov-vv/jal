@@ -6,10 +6,10 @@ from decimal import Decimal, InvalidOperation
 from PySide6.QtCore import Qt, Slot, QAbstractTableModel, QModelIndex, QRect, QT_TRANSLATE_NOOP
 from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QDialog, QDialogButtonBox, QHeaderView, QLineEdit, QMessageBox, QStyle, \
-    QStyledItemDelegate, QTableWidgetItem
+    QTableWidgetItem
 from jal.constants import Setup
 from jal.widgets.reference_selector import ReferenceSelectorWidget
-from jal.widgets.delegates import draw_item_panel
+from jal.widgets.delegates import draw_item_panel, KbSafeItemDelegate
 from jal.widgets.helpers import (set_grids_metrics, set_date_formats, restore_columns, save_columns, ts2dt)
 from jal.widgets.theme import Theme, Meaning
 from jal.db.helpers import localize_decimal
@@ -129,7 +129,7 @@ class PandasLinesModel(QAbstractTableModel):
         return None
 
 
-class SlipLinesDelegate(QStyledItemDelegate):
+class SlipLinesDelegate(KbSafeItemDelegate):
     TRUST_MEANING = {LineTrust.PROVEN: Meaning.POSITIVE, LineTrust.READ: Meaning.WARNING,
                      LineTrust.UNRELIABLE: Meaning.NEGATIVE}
     MARK_WIDTH = 4
