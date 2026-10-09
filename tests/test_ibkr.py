@@ -629,3 +629,31 @@ def test_ibkr_a_payment_stored_without_an_action_id_is_not_imported_twice(tmp_pa
     again.match_db_ids()
     again.import_into_db()
     assert len(AssetPayment.get_list(imported.id())) == 1
+
+
+# An ADR fee names the asset it was charged on and is stored as a fee of that asset; a fee that names none stays
+# an ordinary spending
+def test_ibkr_fee_charged_on_an_asset_is_imported_as_asset_fee(tmp_path, project_root, data_path, prepare_db_taxes):
+    statement = StatementIBKR()
+    statement.load(data_path + 'ibkr_adr_fee.xml')
+    statement.match_db_ids()
+    statement.import_into_db()
+
+    imported = [x for x in JalAccount.get_all_accounts() if x.number() == 'U7654321'][0]
+    fees = AssetPayment.get_list(imported.id(), subtype=AssetPayment.AssetFee)
+    assert len(fees) == 1
+    assert fees[0].amount() == Decimal('-4')
+    assert fees[0].timestamp() == d2t(251111) + 20 * 3600 + 20 * 60
+    assert fees[0].number() == '160219822'
+    assert fees[0].note() == 'ERIC(294821608) ADR Fee USD 0.02 PER SHARE - FEE'
+    assert fees[0].asset().name() == 'ERICSSON (LM) TEL-SP ADR'
+    spendings = JalDB._read_to_list("SELECT amount, category_id, note FROM action_details")
+    assert spendings == [['-0.01', PredefinedCategory.Fees, 'U******1:US CONSOLIDATED SNAPSHOT FOR OCT 2025']]
+
+    # Both are costs of the same category and together they arrive at the ending cash of the statement
+    Ledger().rebuild(from_timestamp=0)
+    booked = JalDB._read_to_list("SELECT book_account, category_id, SUM(CAST(amount AS REAL)) FROM ledger "
+                                 "WHERE category_id IS NOT NULL GROUP BY book_account, category_id")
+    assert [(book, category, round(amount, 2)) for book, category, amount in booked] == [
+        (BookAccount.Costs, PredefinedCategory.Fees, 4.01)]
+    assert imported.get_asset_amount(d2t(260101), imported.currency()) == Decimal('-4.01')

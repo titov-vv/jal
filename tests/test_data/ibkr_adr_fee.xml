@@ -1,0 +1,17 @@
+<FlexQueryResponse queryName="Full" type="AF">
+<FlexStatements count="1">
+<FlexStatement accountId="U7654321" fromDate="20251118" toDate="20251118" period="LastBusinessDay" whenGenerated="20251119;035252">
+<AccountInformation accountId="U7654321" acctAlias="" model="" currency="USD" name="Ivan Ivanov" accountType="Individual" customerType="Individual" accountCapabilities="Cash" tradingPermissions="Stocks,Bonds" accountRepName="" accountRepPhone="" dateOpened="20210101" dateFunded="20210101" dateClosed="" ibEntity="IBLLC-US" primaryEmail="" />
+<CashReport>
+<CashReportCurrency accountId="U7654321" acctAlias="" model="" currency="USD" levelOfDetail="Currency" fromDate="20251118" toDate="20251118" startingCash="0" endingCash="-4.01" endingSettledCash="-4.01" />
+</CashReport>
+<SecuritiesInfo>
+<SecurityInfo currency="USD" assetCategory="STK" subCategory="ADR" symbol="ERIC" description="ERICSSON (LM) TEL-SP ADR" conid="268977" securityID="US2948216088" securityIDType="ISIN" cusip="294821608" isin="US2948216088" listingExchange="NASDAQ" underlyingConid="" underlyingSymbol="" issuer="" multiplier="1" strike="" expiry="" putCall="" principalAdjustFactor="" maturity="" />
+</SecuritiesInfo>
+<CashTransactions>
+<CashTransaction accountId="U7654321" acctAlias="" model="" currency="USD" fxRateToBase="1" assetCategory="STK" symbol="ERIC" description="ERIC(294821608) ADR Fee USD 0.02 PER SHARE - FEE" conid="268977" securityID="US2948216088" securityIDType="ISIN" cusip="294821608" isin="US2948216088" listingExchange="NASDAQ" underlyingConid="" underlyingSymbol="ERIC" underlyingSecurityID="" underlyingListingExchange="" issuer="" multiplier="1" strike="" expiry="" putCall="" principalAdjustFactor="" dateTime="20251111;202000" settleDate="20251111" amount="-4" type="Other Fees" tradeID="" code="" transactionID="36301442146" reportDate="20251118" clientReference="" levelOfDetail="DETAIL" actionID="160219822" serialNumber="" deliveryType="" commodityType="" fineness="0.0" weight="0.0" />
+<CashTransaction accountId="U7654321" acctAlias="" model="" currency="USD" fxRateToBase="1" assetCategory="" symbol="" description="U******1:US CONSOLIDATED SNAPSHOT FOR OCT 2025" conid="" securityID="" securityIDType="" cusip="" isin="" listingExchange="" underlyingConid="" underlyingSymbol="" underlyingSecurityID="" underlyingListingExchange="" issuer="" multiplier="0" strike="" expiry="" putCall="" principalAdjustFactor="" dateTime="20251118;171334" settleDate="20251118" amount="-0.01" type="Other Fees" tradeID="" code="" transactionID="36314271999" reportDate="20251118" clientReference="" levelOfDetail="DETAIL" actionID="" serialNumber="" deliveryType="" commodityType="" fineness="0.0" weight="0.0" />
+</CashTransactions>
+</FlexStatement>
+</FlexStatements>
+</FlexQueryResponse>

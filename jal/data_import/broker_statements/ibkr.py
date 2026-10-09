@@ -993,9 +993,20 @@ class StatementIBKR(StatementXML):
 
         payment_base = max([0] + [x['id'] for x in self._data[JSF.INCOME_SPENDING]]) + 1
         fees = list(filter(lambda tr: 'type' in tr and tr['type'] in ['Other Fees',
-                                                                      'Commission Adjustments',  #FIXME Link this fee with asset
+                                                                      'Commission Adjustments',
                                                                       'Broker Interest Paid',
                                                                       'Broker Interest Received'], cash))
+        # A fee that names an asset (an ADR fee) is a fee of that asset, the rest are ordinary spendings
+        asset_fees = [x for x in fees if x['symbol'] and x['type'] in ['Other Fees', 'Commission Adjustments']]
+        fees = [x for x in fees if x not in asset_fees]
+        asset_payments_base = max([0] + [x['id'] for x in self._data[JSF.ASSET_PAYMENTS]]) + 1
+        for i, fee in enumerate(asset_fees):
+            fee['id'] = asset_payments_base + i
+            fee['type'] = JSF.PAYMENT_FEE
+            fee['number'] = fee.pop('action_id')
+            self.drop_extra_fields(fee, ["currency", "reported", "tid"])
+            self._data[JSF.ASSET_PAYMENTS].append(fee)
+            cnt += 1
         for i, fee in enumerate(fees):
             fee['id'] = payment_base + i
             fee['peer'] = 0
