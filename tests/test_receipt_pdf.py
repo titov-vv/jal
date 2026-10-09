@@ -541,6 +541,25 @@ def test_till_receipt_that_does_not_add_up_is_caught():
     assert GenericTill(till()[:10]).problems() == ["no items found", "total: items 0, receipt None"]
 
 
+# Fabricated after the layout of a real furniture shop receipt: the amount is on a line of its own, before a VAT code
+# that is a digit
+def test_till_receipt_reads_an_amount_followed_by_a_numeric_vat_code():
+    receipt = GenericTill([" Art/EAN 10000001       20143",
+                           " CAIXA cx 3 17x27x17 verde",
+                           "                                          11,99   0",
+                           " Art/EAN 20000002",
+                           " BOLACHA aveia 600g",
+                           "                                           6,50   0",
+                           "                                  -------------",
+                           " Total                      18,49",
+                           " Total de artigos     2",
+                           "  Cod.   Taxa       Liquido     IVA",
+                           "   0  23,00 % de     15,03     3,46"])
+    assert [(x.name, x.amount) for x in receipt.items] == [("CAIXA cx 3 17x27x17 verde", Decimal('11.99')),
+                                                           ("BOLACHA aveia 600g", Decimal('6.50'))]
+    assert receipt.total == Decimal('18.49') and receipt.problems() == []
+
+
 def test_receipt_of_no_profile_is_an_invoice_by_its_table_and_a_till_receipt_without_one():
     assert isinstance(generic_receipt(invoice(), date(2026, 8, 20)), GenericReceipt)
     assert isinstance(generic_receipt(till(), date(2026, 10, 6)), GenericTill)

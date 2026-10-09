@@ -226,7 +226,7 @@ class GenericTill:
     name = "generic till"
     _BODY_END = re.compile(r'^\s*(sub-?\s*total|total)\b', re.I)
     _TOTAL = re.compile(r'total(?: a pagar)?(?: ?\((?P<currency>[A-Z]{3})\))?', re.I)
-    _VAT_CODE = re.compile(r'(?<=\d)\s+\(?[A-Z]\)?\s*$')     # may be printed after the amount
+    _VAT_CODE = re.compile(r'(?<=\d)\s+\(?[A-Z0-9]\)?\s*$')     # a letter or a digit, may be printed after the amount
     _WORD = re.compile(r'[^\W\d_]{3}')
 
     def __init__(self, lines: list):
