@@ -352,10 +352,17 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         for asset in self._data[JSF.ASSETS]:
             if asset['type'] != JSF.ASSET_MONEY or self.mapped_id(JSF.ASSETS, asset['id']):
                 continue
-            symbol = self._single_symbol_record_of(asset['id'])
-            asset_id = JalAsset.find({'symbol': symbol['symbol'], 'type': self._asset_types[asset['type']]}).id()
+            asset_id = self._db_currency_id(asset['id'])
             if asset_id:
                 self.set_mapped_id(JSF.ASSETS, asset['id'], asset_id)
+
+    # Returns the db id of a statement currency (0 if the database doesn't have it)
+    def _db_currency_id(self, currency_id) -> int:
+        db_id = self.mapped_id(JSF.ASSETS, currency_id)
+        if not db_id:
+            symbol = self._single_symbol_record_of(currency_id)
+            db_id = JalAsset.find({'symbol': symbol['symbol'], 'type': PredefinedAsset.Money}).id()
+        return db_id
 
     # Returns the first non-empty value of 'key' among symbol records of the asset ('' if none)
     def _asset_identifier(self, asset: dict, key: str) -> str:
@@ -1223,7 +1230,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 # an asset that is listed under more than one ticker in this currency has to be refused rather than
                 # answered with the several of them run together, which would create a listing under a ticker that
                 # exists nowhere (see JalAsset.tickers).
-                tickers = db_asset.tickers(asset_info['currency'])
+                tickers = db_asset.tickers(self._db_currency_id(asset_info['currency']))
                 if len(tickers) > 1:
                     raise Statement_ImportError(self.tr("Asset found in the database is listed under several tickers, "
                                                         "it can't be matched by one: ") + f"{db_asset.name()}: {tickers}")

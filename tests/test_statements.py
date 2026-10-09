@@ -62,7 +62,7 @@ def test_statement_kit(tmp_path, project_root, data_path, prepare_db_moex):
 
 # ----------------------------------------------------------------------------------------------------------------------
 def test_statement_just2trade(tmp_path, project_root, data_path, prepare_db_moex):
-    create_assets([('JNJ', 'JOHNSON & JOHNSON', 'US4781601046', 1, PredefinedAsset.Stock, 0)])   # ID = 9
+    create_assets([('JNJ', 'JOHNSON & JOHNSON', 'US4781601046', 2, PredefinedAsset.Stock, 0)])   # ID = 9
 
     statement, expected_map = load_expected_statement(data_path + 'j2t.json')
     J2T = StatementJ2T()
@@ -124,3 +124,17 @@ def test_reimport_creates_nothing_jsf(tmp_path, project_root, data_path, prepare
     assert imported['fees'] > 0
     _import_statement(Statement, data_path + 'ibkr.json')
     assert _operation_counts() == imported
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# An asset found in the database gets the ticker of its listing in the statement's currency, even when the
+# statement numbers that currency differently from the database
+def test_offline_search_ticker_by_currency(prepare_db):
+    create_assets([('TST', 'Test asset', 'US0000000001', 2, PredefinedAsset.Stock, 0)])   # listed in USD (db id 2)
+    statement = Statement()
+    statement._data = {JSF.ASSETS: []}
+    usd = statement.currency_id('USD')
+    assert usd == 1   # the statement id of USD is the db id of RUB
+    asset_id = statement.asset_id({'isin': 'US0000000001', 'currency': usd, 'search_offline': True})
+    symbols = statement._asset(asset_id)[JSF.SYMBOLS]
+    assert [(x['symbol'], x['currency']) for x in symbols] == [('TST', usd)]
