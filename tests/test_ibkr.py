@@ -546,6 +546,14 @@ def test_ibkr_mlp_extra_tax_is_imported_as_fee(tmp_path, project_root, data_path
     assert imported.get_asset_amount(d2t(240101), imported.currency()) == Decimal('2.78')
 
 
+# An exercise record of a kind JAL doesn't know is reported and skipped, the rest of the statement is still loaded
+def test_ibkr_unknown_option_exercise_type_is_reported(caplog):
+    ibkr = StatementIBKR()
+    ibkr._data = {JSF.TRADES: []}
+    ibkr.load_options([{'operation': 'Cash Settlement', 'symbol': 161, 'account': 1, 'number': '1'}])
+    assert "Option E&A&E action isn't implemented: Cash Settlement" in caplog.text
+
+
 # A tax charged on a trade adds to the commission of that trade, a standalone one is a fee of its asset
 def test_ibkr_transaction_tax_adds_to_the_trade_fee(tmp_path, project_root, data_path, prepare_db_taxes):
     statement = StatementIBKR()

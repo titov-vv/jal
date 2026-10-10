@@ -10,7 +10,7 @@ from jal.data_import.broker_statements.tvoy import StatementTvoyBroker
 from jal.data_import.broker_statements.kit import StatementKIT
 from jal.data_import.broker_statements.just2trade import StatementJ2T
 from jal.data_import.broker_statements.vtb import StatementVTB
-from jal.data_import.statement import JSF, Statement
+from jal.data_import.statement import JSF, Statement, Statement_ImportError
 from jal.db.db import JalDB
 
 from jal.constants import PredefinedAsset
@@ -138,3 +138,12 @@ def test_offline_search_ticker_by_currency(prepare_db):
     asset_id = statement.asset_id({'isin': 'US0000000001', 'currency': usd, 'search_offline': True})
     symbols = statement._asset(asset_id)[JSF.SYMBOLS]
     assert [(x['symbol'], x['currency']) for x in symbols] == [('TST', usd)]
+
+
+# An online search source that asset_id() doesn't know is refused, not silently answered with a new asset
+def test_unknown_online_search_source_is_refused(prepare_db):
+    statement = Statement()
+    statement._data = {JSF.ASSETS: []}
+    with pytest.raises(Statement_ImportError):
+        statement.asset_id({'symbol': 'AAA', 'search_online': 'NOWHERE'})
+    assert statement._data[JSF.ASSETS] == []

@@ -1265,7 +1265,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 moex_asset['note'] = "MOEX"
                 return self.asset_id(moex_asset)  # Call itself once again to cross-check downloaded data
             else:
-                Statement_ImportError(self.tr("Unknown online search source: ") + asset_info['search_online'])
+                raise Statement_ImportError(self.tr("Unknown online search source: ") + asset_info['search_online'])
         if asset is None:
             if asset_info.get('should_exist', False):
                 raise Statement_ImportError(self.tr("Can't locate asset in statement data: ") + f"'{asset_info}'")

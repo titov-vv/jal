@@ -638,7 +638,7 @@ class StatementIBKR(StatementXML):
                 description = transaction_desctiption[option['operation']]
             except KeyError:
                 logging.error(
-                    self.tr("Option E&A&E action isn't implemented: ") + f"{option['transactionType']}")
+                    self.tr("Option E&A&E action isn't implemented: ") + f"{option['operation']}")
             if description:
                 trade = [x for x in self._data[JSF.TRADES] if x['account'] == option['account']
                          and x['symbol'] == option['symbol'] and x['number'] == option['number']]
