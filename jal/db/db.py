@@ -488,7 +488,7 @@ class JalDB:
         self.validate_operation_data(table_name, fields, data)
         oid = self.locate_operation(table_name, fields, data, duplicate_before)
         if oid:
-            logging.warning(self.tr("Operation already present in db and was skipped: ") + f"{table_name}, {data}")
+            logging.warning(JalDB.tr("Operation already present in db and was skipped: ") + f"{table_name}, {data}")
             # A child that may ARRIVE LATER is still stored.
             children = [x for x in fields if fields[x].get('children') and fields[x].get('append_on_duplicate')]
         else:

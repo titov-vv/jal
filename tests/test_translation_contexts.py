@@ -31,6 +31,7 @@ def _parse():
     tr_contexts = {}    # (module, class) -> the context its own tr() passes to QApplication.translate()
     calls = []          # (file, line, module, enclosing class, what was named before '.tr', the string)
     f_string_calls = []
+    classes = []        # (module, class) of every top-level class
     for path in _sources():
         module = str(path.relative_to(JAL_DIR.parent)).replace(os.sep, ".")[:-3]
         tree = ast.parse(path.read_text(), str(path))
@@ -38,6 +39,8 @@ def _parse():
 
         class Visitor(ast.NodeVisitor):
             def visit_ClassDef(self, node):
+                if not stack:
+                    classes.append((module, node.name))
                 stack.append(node.name)
                 for item in node.body:
                     if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)) and item.name == "tr":
@@ -65,7 +68,7 @@ def _parse():
                 self.generic_visit(node)
 
         Visitor().visit(tree)
-    return tr_contexts, calls, f_string_calls
+    return tr_contexts, calls, f_string_calls, classes
 
 
 # The context this class really asks for: the first tr() in its MRO decides, and a class that inherits Qt's own
@@ -80,7 +83,7 @@ def _runtime_context(cls, tr_contexts):
 @pytest.fixture(scope="module")
 def audit():
     _ = QApplication.instance() or QApplication([])
-    tr_contexts, calls, f_string_calls = _parse()
+    tr_contexts, calls, f_string_calls, _classes = _parse()
     resolved, unimportable = {}, set()
     for _path, _line, module, cls_name, holder, _text in calls:
         named = holder if holder not in ("self", "cls") else cls_name
@@ -111,6 +114,36 @@ def test_a_string_is_collected_under_the_context_it_is_looked_up_in(audit):
             mismatched.append(f"{path.name}:{line} {holder}.tr({text[:40]!r}) is collected under '{collected}' "
                               f"but looked up in '{runtime}' - name the class that owns the context")
     assert mismatched == []
+
+
+# A class that hard-codes a context in its own tr() takes the strings of its base classes with it: their self.tr()
+# runs on its instance and asks for ITS context, while lupdate filed them under the base class. StatementIBKR did
+# that to every message of Statement and StatementXML. A class with Qt's own tr() is safe - that one looks through
+# the contexts of all its bases.
+def test_own_tr_does_not_hide_the_strings_of_base_classes():
+    _ = QApplication.instance() or QApplication([])
+    tr_contexts, calls, _f_strings, classes = _parse()
+    inherited = {}      # (module, class) -> its self.tr() calls
+    for path, line, module, cls_name, holder, text in calls:
+        if holder == "self":
+            inherited.setdefault((module, cls_name), []).append((path, line, text))
+    hidden = set()
+    for module, name in classes:
+        try:
+            cls = getattr(importlib.import_module(module), name)
+        except Exception:      # an optional dependency - not this test's job
+            continue
+        owner = next((base for base in cls.__mro__ if "tr" in base.__dict__), None)
+        context = tr_contexts.get((owner.__module__, owner.__name__)) if owner else None
+        if context is None:
+            continue           # Qt's own tr()
+        for base in cls.__mro__:
+            if base.__name__ == context:
+                continue
+            for path, line, text in inherited.get((base.__module__, base.__name__), []):
+                hidden.add(f"{path.name}:{line} self.tr({text[:40]!r}) is collected under '{base.__name__}' but "
+                           f"{name} looks it up in '{context}'")
+    assert sorted(hidden) == []
 
 
 # lupdate never sees a tr() written inside an f-string, so the string reaches no .ts file at all

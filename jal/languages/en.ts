@@ -8751,7 +8751,7 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
     <name>StatementIBKR</name>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="52"/>
-        <location filename="../data_import/broker_statements/ibkr.py" line="405"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="383"/>
         <source>Asset type isn&apos;t supported: </source>
         <translation></translation>
     </message>
@@ -8761,400 +8761,385 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="114"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="439"/>
         <source>Multiple account match for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="440"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="422"/>
         <source>Can&apos;t get currencies for currency exchange: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="447"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="429"/>
         <source>Can&apos;t get account currency for account: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="491"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="481"/>
         <source>Load IB Flex-statement for account </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="519"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="509"/>
         <source>Securities loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="528"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="518"/>
         <source>Trades loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="574"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="564"/>
         <source>Only internal transfers are supported: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="583"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="573"/>
         <source>Unknown transfer direction: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="590"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="580"/>
         <source>Outgoing asset transfer not implemented yet: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="603"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="593"/>
         <source>Option assignment</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="604"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="594"/>
         <source>Option exercise</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="605"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="595"/>
         <source>Option expiration</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="606"/>
-        <location filename="../data_import/broker_statements/ibkr.py" line="607"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="596"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="597"/>
         <source>Option assignment/exercise</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="616"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="606"/>
         <source>Option E&amp;A&amp;E action isn&apos;t implemented: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="624"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="614"/>
         <source>Original trade not found for Option E&amp;A&amp;E operation: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="626"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="616"/>
         <source>Options E&amp;A&amp;E loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="643"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="633"/>
         <source>every record has an &apos;actionID&apos; attribute</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="644"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="634"/>
         <source>Enable the field &apos;Action ID&apos; for the section &apos;Corporate Actions&apos; in the configuration of your Flex Query and get the statement again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="648"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="638"/>
         <source>&apos;actionID&apos; attribute of every record has a value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="677"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="667"/>
         <source>records of one action have the same type, account and date</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="679"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="669"/>
         <source>an action has one record per asset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="681"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="671"/>
         <source>Corporate action type is not supported: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="637"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="627"/>
         <source>Corporate actions loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="152"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="130"/>
         <source>&amp;Interactive Brokers</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="154"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="132"/>
         <source>IBKR flex-query (*.xml)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="366"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="344"/>
         <source>Interactive Brokers report type not found</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="368"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="346"/>
         <source>You try to import Trade confimation report, not Activity report</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="370"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="348"/>
         <source>Unknown Interactive Brokers report type: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="468"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="458"/>
         <source>Can&apos;t resolve an exact symbol for: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="485"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="475"/>
         <source>Can&apos;t find account for a given masked account: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="486"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="476"/>
         <source>Please create one.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="802"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="792"/>
         <source>Can&apos;t parse Spin-off description </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="807"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="797"/>
         <source>Spin-off initial asset not found </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="813"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="803"/>
         <source>Spin-off rounding error is too big </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="836"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="826"/>
         <source>Can&apos;t parse Stock Dividend description </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="858"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="848"/>
         <source>Can&apos;t parse Split description </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="894"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="884"/>
         <source>Can&apos;t parse granted stock description </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="908"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="892"/>
+        <source>Stock award withholding matches no vesting </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/broker_statements/ibkr.py" line="896"/>
         <source>Multiple vesting matched withholding </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="917"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="905"/>
         <source>Stock grant operations loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="989"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="977"/>
         <source>Cash transactions loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1024"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="986"/>
+        <source>Import cancelled, cash transactions of unsupported type were found:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1009"/>
         <source>Payment was reversed by approximate description: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1025"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1010"/>
         <source>Payment was reversed with different reported date: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1031"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1016"/>
         <source>Can&apos;t find match for reversal: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1023"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1008"/>
         <source>Payment was reversed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="902"/>
-        <source>stock award withholdings that match no vesting</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="903"/>
-        <source>Stock award withholding matches no vesting and was NOT imported: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="995"/>
-        <source>cash transactions of unsupported type</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="999"/>
-        <source>Cash transactions of unsupported type were NOT imported: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1000"/>
-        <source>total amount: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1089"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1074"/>
         <source>Too many records for MLP tax: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1109"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1094"/>
         <source>Can&apos;t find trade for tax: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1114"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1099"/>
         <source>Unexpected tax source: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1120"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1105"/>
         <source>Transaction taxes loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1134"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1119"/>
         <source>Sales taxes loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1141"/>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1149"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1126"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1134"/>
         <source>Unknown CFD charge description: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1157"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1142"/>
         <source>CFD charges loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1175"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1160"/>
         <source>*** MANUAL ENTRY REQUIRED ***</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1176"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1161"/>
         <source>Unhandled tax country pattern found: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1222"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1207"/>
         <source>several payments carry this corporate action id</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1227"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1212"/>
         <source>no single payment of that day to fall back on</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1228"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1213"/>
         <source>the statement gives no corporate action id to match on</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1267"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1252"/>
         <source>Withholding tax matches no payment: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1269"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1254"/>
         <source>    Payments considered: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="699"/>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1276"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="689"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1261"/>
         <source>Failed to collect debug information: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="684"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="674"/>
         <source>number of withdrawn (-) / received (+) records is </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="685"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="675"/>
         <source> or </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="692"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="682"/>
         <source>Please create an issue at </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="693"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="683"/>
         <source> and attach the statement dump (its file name is in the log, the account number is masked in it) - it helps to make JAL better. The former way of import, that matched records by description, is kept under the git tag </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="703"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="693"/>
         <source>Corporate action isn&apos;t what JAL expects it to be.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="704"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="694"/>
         <source>Expected: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="704"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="694"/>
         <source>Found:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="739"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="729"/>
         <source>A cancelled corporate action was dropped together with its cancellation. JAL has no example of such statement, please share yours at </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="744"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="734"/>
         <source>a cancellation repeats the record it cancels with an opposite quantity</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="778"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="768"/>
         <source>an asset withdrawn for nothing in exchange has proceeds</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="787"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="777"/>
         <source>a merger that pays proceeds has &apos;CASH&apos; in its description</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="860"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="850"/>
         <source>a split that changes ISIN has a withdrawn (-) and a received (+) record</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1277"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1262"/>
         <source>Import cancelled, withholding tax matches no payment: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1184"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1169"/>
         <source>Tax adjustment for dividend: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1307"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1292"/>
         <source>Can&apos;t find a FlexStatement in first {} bytes of {}</source>
         <translation></translation>
     </message>

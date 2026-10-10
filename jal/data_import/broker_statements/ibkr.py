@@ -95,33 +95,11 @@ class IBKR_Asset:
 # -----------------------------------------------------------------------------------------------------------------------
 # Returns True if masked value ('U***XXXX') matches with given account number.
 def is_account(masked_value, account_number) -> bool:
-    if re.compile(f"^{masked_value.replace('*', '.')}$").match(account_number):
-        return True
-    else:
-        return False
+    return re.fullmatch(masked_value.replace('*', '.'), account_number) is not None
 
 # -----------------------------------------------------------------------------------------------------------------------
 class IBKR_Account:
-    def __init__(self, accounts_list, number, currency_ids):
-        self.id = None
-        account_ids = []
-        for currency in currency_ids:
-            match = [x for x in accounts_list if is_account(number, x['number']) and x['currency'] == currency]
-            if match:
-                if len(match) == 1:
-                    account_ids.append(match[0]["id"])
-                else:
-                    logging.error(QApplication.translate("StatementIBKR", "Multiple account match for ") + f"{number}")
-            else:
-                new_id = max([0] + [x['id'] for x in accounts_list]) + 1
-                account_ids.append(new_id)
-                account = {"id": new_id, "number": number, "currency": currency, "precision": IBKR_CALCULATION_PRECISION}
-                accounts_list.append(account)
-        if account_ids:
-            if len(account_ids) == 1:
-                self.id = account_ids[0]
-            else:
-                self.id = account_ids
+    pass
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -412,13 +390,17 @@ class StatementIBKR(StatementXML):
                 asset_data['isin'] = xml_element.attrib['isin']
             if 'cusip' in xml_element.attrib and xml_element.attrib['cusip']:
                 asset_data['cusip'] = xml_element.attrib['cusip']
-            if 'listingExchange' in xml_element.attrib and xml_element.attrib['listingExchange'] \
-                    and xml_element.attrib['listingExchange'] != 'VALUE':  # don't store 'VALUE' or empty exchange
+            if self._is_exchange(xml_element.attrib.get('listingExchange', '')):
                 asset_data['note'] = xml_element.attrib['listingExchange']
             if xml_element.tag == 'CashTransaction' and 'isin' not in asset_data and 'cusip' not in asset_data:
                 asset_data.update(self._ids_by_action(xml_element))
             symbol_id = self.symbol_id(asset_data)
         return symbol_id
+
+    # 'VALUE' and an empty name aren't stored as an exchange of a symbol
+    @staticmethod
+    def _is_exchange(name: str) -> bool:
+        return bool(name) and name != 'VALUE'
 
     # ISIN and CUSIP for a cash transaction that has none: the ones that other records of its actionID agree on
     def _ids_by_action(self, xml_element) -> dict:
@@ -447,12 +429,20 @@ class StatementIBKR(StatementXML):
                     logging.error(self.tr("Can't get account currency for account: ") + f"{xml_element}")
                 return default_value
             currency = [xml_element.attrib['currency']]
-        currency_ids = [self.currency_id(code) for code in currency]
-        account_id = IBKR_Account(self._data[JSF.ACCOUNTS], xml_element.attrib[attr_name], currency_ids).id
-        if account_id is None:
-            return default_value
-        else:
-            return account_id
+        account_ids = [self._account_id(xml_element.attrib[attr_name], self.currency_id(code)) for code in currency]
+        return account_ids[0] if len(account_ids) == 1 else account_ids
+
+    # Id of the account with the given (probably masked) number and currency, the account is created if there is none
+    def _account_id(self, number, currency) -> int:
+        match = [x for x in self._data[JSF.ACCOUNTS] if is_account(number, x['number']) and x['currency'] == currency]
+        if len(match) > 1:
+            raise Statement_ImportError(self.tr("Multiple account match for ") + f"{number}")
+        if match:
+            return match[0]['id']
+        account = {"id": self._next_id(JSF.ACCOUNTS), "number": number, "currency": currency,
+                   "precision": IBKR_CALCULATION_PRECISION}
+        self._data[JSF.ACCOUNTS].append(account)
+        return account['id']
 
     # Returns the id of the exact symbol record matching given ticker/isin (0 if not found).
     # Ambiguity (an isin-matched asset trading under several symbols, none matching the ticker) is a hard failure.
@@ -505,7 +495,7 @@ class StatementIBKR(StatementXML):
             if asset['type'] == IBKR_AssetType.NotSupported:   # Skip not supported type of asset
                 continue
             asset['symbol'] = asset['symbol'].removesuffix(self.ReplacedSuffix)
-            if asset['exchange'] and asset['exchange'] != 'VALUE':  # don't store 'VALUE' or empty exchange
+            if self._is_exchange(asset['exchange']):
                 asset['note'] = asset['exchange']
             if asset['maturity']:
                 asset['expiry'] = asset['maturity']
@@ -899,9 +889,7 @@ class StatementIBKR(StatementXML):
             main_data = lambda x: {i: x[i] for i in x if i not in ['description', 'operation', 'amount']}
             matched_vesting = [x for x in vestings if main_data(x) == main_data(withholding)]
             if not matched_vesting:
-                self._skip(self.tr("stock award withholdings that match no vesting"), f"{withholding}")
-                logging.warning(self.tr("Stock award withholding matches no vesting and was NOT imported: ") +
-                                f"{ts2d(withholding['vesting_date'])} {remove_exponent(withholding['amount'])}")
+                raise Statement_ImportError(self.tr("Stock award withholding matches no vesting ") + f"'{withholding}'")
             if len(matched_vesting) == 1:
                 matched_vesting[0]['amount'] += withholding['amount']
             if len(matched_vesting) > 1:
@@ -918,7 +906,7 @@ class StatementIBKR(StatementXML):
 
     def load_cash_transactions(self, cash):
         cnt = 0
-        self._report_unsupported_cash(cash)
+        self._refuse_unsupported_cash(cash)
         # Records are picked by type here, as their fields (the type as well) are changed below
         of_type = lambda *types: [x for x in cash if x['type'] in types]
         without_tid = lambda records: [{key: x[key] for key in x if key != 'tid'} for x in records]
@@ -973,7 +961,7 @@ class StatementIBKR(StatementXML):
         for i, fee in enumerate(asset_fees):
             fee['id'] = asset_payments_base + i
             fee['type'] = JSF.PAYMENT_FEE
-            fee['number'] = fee.pop('action_id')
+            fee['number'] = fee.pop('action_id') or fee['number']   # a commission adjustment has a trade id only
             self.drop_extra_fields(fee, ["currency", "reported", "tid"])
             self._data[JSF.ASSET_PAYMENTS].append(fee)
             cnt += 1
@@ -988,17 +976,14 @@ class StatementIBKR(StatementXML):
 
         logging.info(self.tr("Cash transactions loaded: ") + f"{cnt} ({len(cash)})")
 
-    # Cash transactions of a type that isn't imported are counted and named in the log, not dropped silently
-    def _report_unsupported_cash(self, cash):
+    # Stops the import if the statement has a cash transaction of a type that JAL doesn't import
+    def _refuse_unsupported_cash(self, cash):
         unsupported = [x for x in cash if x['type'] not in self.CashTransactionTypes]
-        for record in unsupported:
-            self._skip(self.tr("cash transactions of unsupported type") + f" '{record['type']}'",
-                       f"{ts2d(record['timestamp'])} {remove_exponent(record['amount'])} {record['description']}")
-        for cash_type in sorted({x['type'] for x in unsupported}):
-            records = [x for x in unsupported if x['type'] == cash_type]
-            logging.warning(self.tr("Cash transactions of unsupported type were NOT imported: ") +
-                            f"'{cash_type}' x {len(records)}, " + self.tr("total amount: ") +
-                            f"{remove_exponent(sum(x['amount'] for x in records))}")
+        if unsupported:
+            found = [f"    {ts2d(x['timestamp'])} '{x['type']}' {remove_exponent(x['amount'])}: {x['description']}"
+                     for x in unsupported]
+            raise Statement_ImportError("\n".join(
+                [self.tr("Import cancelled, cash transactions of unsupported type were found:")] + found))
 
     # Takes out of 'payments' the first record that is equal to 'target'. The comparison is repeated without the
     # fields of every next element of 'ignored' until something matches. Returns the index of that element, -1 if none
