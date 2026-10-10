@@ -110,12 +110,12 @@ class StatementPSB(StatementXLS):
                     settlement = self._date(datetime.strptime(self._statement[headers['*settlement']][row],
                                                               "%d.%m.%Y"))
                 account_id = self._find_account_id(self._account_number, currency)
-                new_id = max([0] + [x['id'] for x in self._data[JSF.TRADES]]) + 1
+                new_id = self._next_id(JSF.TRADES)
                 trade = {"id": new_id, "number": deal_number, "timestamp": timestamp, "settlement": settlement,
                          "account": account_id, "symbol": symbol_id, "quantity": qty, "price": price, "fee": fee}
                 self._data[JSF.TRADES].append(trade)
                 if bond_interest != 0:
-                    new_id = max([0] + [x['id'] for x in self._data[JSF.ASSET_PAYMENTS]]) + 1
+                    new_id = self._next_id(JSF.ASSET_PAYMENTS)
                     payment = {"id": new_id, "type": JSF.PAYMENT_INTEREST, "account": account_id,
                                "timestamp": timestamp,
                                "number": deal_number, "symbol": symbol_id, "amount": bond_interest, "description": "НКД"}
@@ -174,7 +174,7 @@ class StatementPSB(StatementXLS):
 
     def transfer_in(self, timestamp, account_id, amount):
         account = [x for x in self._data[JSF.ACCOUNTS] if x["id"] == account_id][0]
-        new_id = max([0] + [x['id'] for x in self._data[JSF.TRANSFERS]]) + 1
+        new_id = self._next_id(JSF.TRANSFERS)
         currency_symbol = self._single_symbol_of(account['currency'])
         transfer = {"id": new_id, "account": [0, account_id, 0],
                     "symbol": [currency_symbol, currency_symbol], "timestamp": timestamp,
@@ -183,7 +183,7 @@ class StatementPSB(StatementXLS):
 
     def transfer_out(self, timestamp, account_id, amount):
         account = [x for x in self._data[JSF.ACCOUNTS] if x["id"] == account_id][0]
-        new_id = max([0] + [x['id'] for x in self._data[JSF.TRANSFERS]]) + 1
+        new_id = self._next_id(JSF.TRANSFERS)
         currency_symbol = self._single_symbol_of(account['currency'])
         transfer = {"id": new_id, "account": [account_id, 0, 0],
                     "symbol": [currency_symbol, currency_symbol], "timestamp": timestamp,
@@ -225,7 +225,7 @@ class StatementPSB(StatementXLS):
                                         'reg_number': self._statement[headers['reg_number']][row],
                                         'currency': code, 'search_online': "MOEX"})
             note = self._statement[headers['operation']][row] + " " + self._statement[headers['asset_name']][row]
-            new_id = max([0] + [x['id'] for x in self._data[JSF.ASSET_PAYMENTS]]) + 1
+            new_id = self._next_id(JSF.ASSET_PAYMENTS)
             payment = {"id": new_id, "type": JSF.PAYMENT_INTEREST, "account": account_id, "timestamp": timestamp,
                        "symbol": symbol_id, "amount": amount, "tax": tax, "description": note}
             self._data[JSF.ASSET_PAYMENTS].append(payment)
@@ -262,7 +262,7 @@ class StatementPSB(StatementXLS):
             symbol_id = self.symbol_id({'isin': self._statement[headers['isin']][row],
                                         'reg_number': self._statement[headers['reg_number']][row],
                                         'currency': code, 'search_online': "MOEX"})
-            new_id = max([0] + [x['id'] for x in self._data[JSF.ASSET_PAYMENTS]]) + 1
+            new_id = self._next_id(JSF.ASSET_PAYMENTS)
             payment = {"id": new_id, "type": JSF.PAYMENT_DIVIDEND, "account": account_id, "timestamp": timestamp,
                        "symbol": symbol_id, "amount": amount, "tax": tax, "description": ''}
             self._data[JSF.ASSET_PAYMENTS].append(payment)

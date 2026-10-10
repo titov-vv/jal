@@ -145,12 +145,12 @@ class StatementTvoyBroker(StatementXLS):
             settlement = self._date(datetime.strptime(self._statement[headers['settlement']][row], "%d.%m.%Y"))
             account_id = self._find_account_id(self._account_number, currency)
             symbol_id = self._single_symbol_of(asset_id)
-            new_id = max([0] + [x['id'] for x in self._data[JSF.TRADES]]) + 1
+            new_id = self._next_id(JSF.TRADES)
             trade = {"id": new_id, "number": str(deal_number), "timestamp": timestamp, "settlement": settlement,
                      "account": account_id, "symbol": symbol_id, "quantity": qty, "price": price, "fee": fee}
             self._data[JSF.TRADES].append(trade)
             if bond_interest != 0:
-                new_id = max([0] + [x['id'] for x in self._data[JSF.ASSET_PAYMENTS]]) + 1
+                new_id = self._next_id(JSF.ASSET_PAYMENTS)
                 payment = {"id": new_id, "type": JSF.PAYMENT_INTEREST, "account": account_id, "timestamp": timestamp,
                            "number": str(deal_number), "symbol": symbol_id, "amount": bond_interest, "description": "НКД"}
                 self._data[JSF.ASSET_PAYMENTS].append(payment)
@@ -217,7 +217,7 @@ class StatementTvoyBroker(StatementXLS):
             timestamp = self._moment(datetime.strptime(ts_string, "%d.%m.%Y %H:%M:%S"))
             settlement = self._date(datetime.strptime(self._statement[headers['settlement']][row], "%d.%m.%Y"))
             account_id = self._find_account_id(self._account_number, currency)
-            new_id = max([0] + [x['id'] for x in self._data[JSF.TRADES]]) + 1
+            new_id = self._next_id(JSF.TRADES)
             trade = {"id": new_id, "number": deal_number, "timestamp": timestamp, "settlement": settlement,
                      "account": account_id, "symbol": symbol_id, "quantity": qty, "price": price, "fee": fee}
             self._data[JSF.TRADES].append(trade)
@@ -290,7 +290,7 @@ class StatementTvoyBroker(StatementXLS):
         currency_name = self._single_symbol_record_of(currency_id)['symbol']
         account_from = self._find_account_id(transfer['account_from'], currency_name)
         account_to = self._find_account_id(transfer['account_to'], currency_name)
-        new_id = max([0] + [x['id'] for x in self._data[JSF.TRANSFERS]]) + 1
+        new_id = self._next_id(JSF.TRANSFERS)
         transfer = {"id": new_id, "account": [account_from, account_to, 0], "symbol": [symbol, symbol],
                     "timestamp": timestamp, "withdrawal": qty, "deposit": qty, "fee": Decimal('0'), "description": description}
         self._data[JSF.TRANSFERS].append(transfer)
@@ -299,7 +299,7 @@ class StatementTvoyBroker(StatementXLS):
         currency_id = self._symbol(symbol)['currency']
         currency_name = self._single_symbol_record_of(currency_id)['symbol']
         account_id = self._find_account_id(self._account_number, currency_name)
-        new_id = max([0] + [x['id'] for x in self._data[JSF.TRANSFERS]]) + 1
+        new_id = self._next_id(JSF.TRANSFERS)
         transfer = {"id": new_id, "account": [0, account_id, 0], "symbol": [symbol, symbol],
                     "timestamp": timestamp, "withdrawal": qty, "deposit": qty, "fee": Decimal('0'), "description": description}
         self._data[JSF.TRANSFERS].append(transfer)
@@ -369,7 +369,7 @@ class StatementTvoyBroker(StatementXLS):
         currency_name = self._symbol(currency_symbol)['symbol']
         account_from = self._find_account_id(transfer['account_from'], currency_name)
         account_to = self._find_account_id(transfer['account_to'], currency_name)
-        new_id = max([0] + [x['id'] for x in self._data[JSF.TRANSFERS]]) + 1
+        new_id = self._next_id(JSF.TRANSFERS)
         transfer = {"id": new_id, "account": [account_from, account_to, 0], "number": number,
                     "symbol": [currency_symbol, currency_symbol], "timestamp": timestamp,
                     "withdrawal": amount, "deposit": amount, "fee": Decimal('0'), "description": description}
@@ -378,7 +378,7 @@ class StatementTvoyBroker(StatementXLS):
     def transfer_in(self, timestamp, number, account_id, amount, description):
         account = [x for x in self._data[JSF.ACCOUNTS] if x["id"] == account_id][0]
         currency_symbol = self._single_symbol_of(account['currency'])
-        new_id = max([0] + [x['id'] for x in self._data[JSF.TRANSFERS]]) + 1
+        new_id = self._next_id(JSF.TRANSFERS)
         transfer = {"id": new_id, "account": [0, account_id, 0], "number": number,
                     "symbol": [currency_symbol, currency_symbol], "timestamp": timestamp,
                     "withdrawal": amount, "deposit": amount, "fee": Decimal('0'), "description": description}
@@ -387,7 +387,7 @@ class StatementTvoyBroker(StatementXLS):
     def transfer_out(self, timestamp, number, account_id, amount, description):
         account = [x for x in self._data[JSF.ACCOUNTS] if x["id"] == account_id][0]
         currency_symbol = self._single_symbol_of(account['currency'])
-        new_id = max([0] + [x['id'] for x in self._data[JSF.TRANSFERS]]) + 1
+        new_id = self._next_id(JSF.TRANSFERS)
         transfer = {"id": new_id, "account": [account_id, 0, 0], "number": number,
                     "symbol": [currency_symbol, currency_symbol], "timestamp": timestamp,
                     "withdrawal": -amount, "deposit": -amount, "fee": Decimal('0'), "description": description}
@@ -426,7 +426,7 @@ class StatementTvoyBroker(StatementXLS):
             if 'TAX_TEXT' in dividend_data and dividend_data['TAX_TEXT']:
                 short_description += '; ' + dividend_data['TAX_TEXT'].strip()
         amount = amount + tax   # Statement contains value after taxation while JAL stores value before tax
-        new_id = max([0] + [x['id'] for x in self._data[JSF.ASSET_PAYMENTS]]) + 1
+        new_id = self._next_id(JSF.ASSET_PAYMENTS)
         payment = {"id": new_id, "type": JSF.PAYMENT_DIVIDEND, "account": account_id, "timestamp": timestamp,
                    "number": number, "symbol": symbol_id, "amount": amount, "tax": tax, "description": short_description}
         self._data[JSF.ASSET_PAYMENTS].append(payment)
@@ -440,7 +440,7 @@ class StatementTvoyBroker(StatementXLS):
             return
         interest_data = parts.groupdict()
         symbol_id = self.symbol_id({'symbol': interest_data['NAME'], 'should_exist': True})
-        new_id = max([0] + [x['id'] for x in self._data[JSF.ASSET_PAYMENTS]]) + 1
+        new_id = self._next_id(JSF.ASSET_PAYMENTS)
         payment = {"id": new_id, "type": JSF.PAYMENT_INTEREST, "account": account_id, "timestamp": timestamp,
                    "number": number, "symbol": symbol_id, "amount": amount, "description": description}
         self._data[JSF.ASSET_PAYMENTS].append(payment)
@@ -463,19 +463,19 @@ class StatementTvoyBroker(StatementXLS):
         qty = asset_cancel['quantity']
         price = self._derived_price(amount, qty)
         note = description + ", " + asset_cancel['note']
-        new_id = max([0] + [x['id'] for x in self._data[JSF.TRADES]]) + 1
+        new_id = self._next_id(JSF.TRADES)
         trade = {"id": new_id, "number": asset_cancel['number'], "timestamp": timestamp, "settlement": timestamp,
                  "account": account_id, "symbol": symbol_id, "quantity": qty, "price": price, "fee": Decimal('0'), "note": note}
         self._data[JSF.TRADES].append(trade)
 
     def tax(self, timestamp, _number, account_id, amount, description):
-        new_id = max([0] + [x['id'] for x in self._data[JSF.INCOME_SPENDING]]) + 1
+        new_id = self._next_id(JSF.INCOME_SPENDING)
         tax = {"id": new_id, "timestamp": timestamp, "account": account_id, "peer": 0,
                "lines": [{"amount": amount, "category": PredefinedCategory.Taxes, "description": description}]}
         self._data[JSF.INCOME_SPENDING].append(tax)
 
     def fee(self, timestamp, _number, account_id, amount, description):
-        new_id = max([0] + [x['id'] for x in self._data[JSF.INCOME_SPENDING]]) + 1
+        new_id = self._next_id(JSF.INCOME_SPENDING)
         fee = {"id": new_id, "timestamp": timestamp, "account": account_id, "peer": 0,
                "lines": [{"amount": amount, "category": PredefinedCategory.Fees, "description": description}]}
         self._data[JSF.INCOME_SPENDING].append(fee)

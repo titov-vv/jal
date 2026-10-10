@@ -139,7 +139,7 @@ class StatementJ2T(StatementXLS):
             # Settlement is stored as date in Excel report file
             settlement = self._date(self._statement[headers['settlement']][row])
             account_id = self._find_account_id(self._account_number, self._statement[headers['account_currency']][row])
-            new_id = max([0] + [x['id'] for x in self._data[JSF.TRADES]]) + 1
+            new_id = self._next_id(JSF.TRADES)
             trade = {"id": new_id, "number": deal_number, "timestamp": timestamp, "settlement": settlement,
                      "account": account_id, "symbol": symbol_id, "quantity": qty, "price": price, "fee": fee}
             self._data[JSF.TRADES].append(trade)
@@ -194,7 +194,7 @@ class StatementJ2T(StatementXLS):
             assert total * qty > 0
             price = self._derived_price(total, qty)
             account_id = self._find_account_id(self._account_number, self._statement[headers['account_currency']][row])
-            new_id = max([0] + [x['id'] for x in self._data[JSF.TRADES]]) + 1
+            new_id = self._next_id(JSF.TRADES)
             trade = {"id": new_id, "number": deal_number, "timestamp": timestamp, "settlement": settlement,
                      "account": account_id, "symbol": symbol_id, "quantity": qty, "price": price, "fee": fee}
             self._data[JSF.TRADES].append(trade)
@@ -325,7 +325,7 @@ class StatementJ2T(StatementXLS):
             raise Statement_ImportError(self.tr("Dividend description miss some data ") + f"'{note}'")
         symbol_id = self._find_symbol_by_name(dividend['asset'])
         ex_date = self._date(datetime.strptime(dividend['date'], "%d/%m/%Y"))
-        new_id = max([0] + [x['id'] for x in self._data[JSF.ASSET_PAYMENTS]]) + 1
+        new_id = self._next_id(JSF.ASSET_PAYMENTS)
         payment = {"id": new_id, "type": JSF.PAYMENT_DIVIDEND, "account": account_id, "timestamp": timestamp,
                    "ex_date": ex_date, "symbol": symbol_id, "amount": amount, "description": note}
         self._data[JSF.ASSET_PAYMENTS].append(payment)
@@ -347,14 +347,14 @@ class StatementJ2T(StatementXLS):
             dividend_record['tax'] = amount
 
     def fee(self, timestamp, account_id, amount, note):
-        new_id = max([0] + [x['id'] for x in self._data[JSF.INCOME_SPENDING]]) + 1
+        new_id = self._next_id(JSF.INCOME_SPENDING)
         fee = {"id": new_id, "timestamp": timestamp, "account": account_id, "peer": 0,
                "lines": [{"amount": amount, "category": PredefinedCategory.Fees, "description": note}]}
         self._data[JSF.INCOME_SPENDING].append(fee)
 
     def transfer_in(self, timestamp, account_id, amount, note):
         account = [x for x in self._data[JSF.ACCOUNTS] if x["id"] == account_id][0]
-        new_id = max([0] + [x['id'] for x in self._data[JSF.TRANSFERS]]) + 1
+        new_id = self._next_id(JSF.TRANSFERS)
         currency_symbol = self._single_symbol_of(account['currency'])
         transfer = {"id": new_id, "account": [0, account_id, 0],
                     "symbol": [currency_symbol, currency_symbol], "timestamp": timestamp,
@@ -363,7 +363,7 @@ class StatementJ2T(StatementXLS):
 
     def transfer_out(self, timestamp, account_id, amount, note):
         account = [x for x in self._data[JSF.ACCOUNTS] if x["id"] == account_id][0]
-        new_id = max([0] + [x['id'] for x in self._data[JSF.TRANSFERS]]) + 1
+        new_id = self._next_id(JSF.TRANSFERS)
         currency_symbol = self._single_symbol_of(account['currency'])
         transfer = {"id": new_id, "account": [account_id, 0, 0],
                     "symbol": [currency_symbol, currency_symbol], "timestamp": timestamp,

@@ -167,12 +167,12 @@ class StatementVTB(StatementXLS):
             timestamp = self._moment(self._statement[headers['datetime']][row])
             settlement = self._date(self._statement[headers['settlement']][row])
             account_id = self._find_account_id(self._account_number, currency)
-            new_id = max([0] + [x['id'] for x in self._data[JSF.TRADES]]) + 1
+            new_id = self._next_id(JSF.TRADES)
             trade = {"id": new_id, "number": deal_number, "timestamp": timestamp, "settlement": settlement,
                      "account": account_id, "symbol": symbol_id, "quantity": qty, "price": price, "fee": fee}
             self._data[JSF.TRADES].append(trade)
             if bond_interest != 0:
-                new_id = max([0] + [x['id'] for x in self._data[JSF.ASSET_PAYMENTS]]) + 1
+                new_id = self._next_id(JSF.ASSET_PAYMENTS)
                 payment = {"id": new_id, "type": JSF.PAYMENT_INTEREST, "account": account_id, "timestamp": timestamp,
                            "number": deal_number, "symbol": symbol_id, "amount": bond_interest, "description": "НКД"}
                 self._data[JSF.ASSET_PAYMENTS].append(payment)
@@ -212,7 +212,7 @@ class StatementVTB(StatementXLS):
             fee = self._statement[headers['fee1']][row] + self._statement[headers['fee2']][row]
             timestamp = self._moment(self._statement[headers['datetime']][row])
             account_id = self._find_account_id(self._account_number, 'RUR')
-            new_id = max([0] + [x['id'] for x in self._data[JSF.TRADES]]) + 1
+            new_id = self._next_id(JSF.TRADES)
             trade = {"id": new_id, "number": deal_number, "timestamp": timestamp,
                      "account": account_id, "symbol": symbol_id, "quantity": qty, "price": price, "fee": fee}
             self._data[JSF.TRADES].append(trade)
@@ -262,7 +262,7 @@ class StatementVTB(StatementXLS):
             deposit = self._statement[headers['deposit']][row]
             fee = self._statement[headers['fee1']][row] + self._statement[headers['fee2']][row]
             description = self._statement[headers['description']][row]
-            new_id = max([0] + [x['id'] for x in self._data[JSF.TRANSFERS]]) + 1
+            new_id = self._next_id(JSF.TRANSFERS)
             transfer = {"id": new_id, "account": [account_from, account_to, account_fee], "timestamp": timestamp, "number" : number,
                         "symbol": [self.currency_symbol_id(symbols_data['A']), self.currency_symbol_id(symbols_data['B'])],
                         "withdrawal": withdrawal, "deposit": deposit, "fee": fee, "description": description}
@@ -365,7 +365,7 @@ class StatementVTB(StatementXLS):
 
     def transfer_in(self, timestamp, account_id, amount, description):
         account = [x for x in self._data[JSF.ACCOUNTS] if x["id"] == account_id][0]
-        new_id = max([0] + [x['id'] for x in self._data[JSF.TRANSFERS]]) + 1
+        new_id = self._next_id(JSF.TRANSFERS)
         currency_symbol = self._single_symbol_of(account['currency'])
         transfer = {"id": new_id, "account": [0, account_id, 0],
                     "symbol": [currency_symbol, currency_symbol], "timestamp": timestamp,
@@ -374,7 +374,7 @@ class StatementVTB(StatementXLS):
 
     def transfer_out(self, timestamp, account_id, amount, description):
         account = [x for x in self._data[JSF.ACCOUNTS] if x["id"] == account_id][0]
-        new_id = max([0] + [x['id'] for x in self._data[JSF.TRANSFERS]]) + 1
+        new_id = self._next_id(JSF.TRANSFERS)
         currency_symbol = self._single_symbol_of(account['currency'])
         transfer = {"id": new_id, "account": [account_id, 0, 0],
                     "symbol": [currency_symbol, currency_symbol], "timestamp": timestamp,
@@ -388,7 +388,7 @@ class StatementVTB(StatementXLS):
             raise Statement_ImportError(self.tr("Can't parse bond interest description ") + f"'{description}'")
         interest_data = parts.groupdict()
         asset_id = self._asset_by_identifier('reg_number', interest_data['reg_number'])['id']
-        new_id = max([0] + [x['id'] for x in self._data[JSF.ASSET_PAYMENTS]]) + 1
+        new_id = self._next_id(JSF.ASSET_PAYMENTS)
         payment = {"id": new_id, "type": JSF.PAYMENT_INTEREST, "account": account_id, "timestamp": timestamp,
                    "symbol": self._single_symbol_of(asset_id), "amount": amount, "description": description}
         self._data[JSF.ASSET_PAYMENTS].append(payment)
@@ -405,7 +405,7 @@ class StatementVTB(StatementXLS):
             amount += tax
         except DecimalException:
             raise Statement_ImportError(self.tr("Failed to convert dividend tax ") + f"'{description}'")
-        new_id = max([0] + [x['id'] for x in self._data[JSF.ASSET_PAYMENTS]]) + 1
+        new_id = self._next_id(JSF.ASSET_PAYMENTS)
         payment = {"id": new_id, "type": JSF.PAYMENT_DIVIDEND, "account": account_id, "timestamp": timestamp,
                    "symbol": self._single_symbol_of(asset_id), "amount": amount, "tax": tax, "description": description}
         self._data[JSF.ASSET_PAYMENTS].append(payment)
@@ -425,7 +425,7 @@ class StatementVTB(StatementXLS):
         asset_cancel = match[0]
         qty = asset_cancel['quantity']
         price = self._derived_price(amount, qty)
-        new_id = max([0] + [x['id'] for x in self._data[JSF.TRADES]]) + 1
+        new_id = self._next_id(JSF.TRADES)
         trade = {"id": new_id, "timestamp": timestamp, "settlement": timestamp, "account": account_id,
                  "symbol": symbol_id, "quantity": qty, "price": price, "fee": Decimal('0'), "note": description}
         self._data[JSF.TRADES].append(trade)
@@ -434,13 +434,13 @@ class StatementVTB(StatementXLS):
         if description.startswith("Комиссия банка за заключение сделок") \
             or description.startswith("Комиссия за брокерские услуги по проведению расчетов по заключенным сделкам"):
             return  # Skip these operations as they are already included in trade fees
-        new_id = max([0] + [x['id'] for x in self._data[JSF.INCOME_SPENDING]]) + 1
+        new_id = self._next_id(JSF.INCOME_SPENDING)
         fee = {"id": new_id, "peer": 0, "account": account_id, "timestamp": timestamp,
                'lines': [{'amount': amount, 'category': PredefinedCategory.Fees, 'description': description}]}
         self._data[JSF.INCOME_SPENDING].append(fee)
 
     def broker_interest(self, timestamp, account_id, amount, description):
-        new_id = max([0] + [x['id'] for x in self._data[JSF.INCOME_SPENDING]]) + 1
+        new_id = self._next_id(JSF.INCOME_SPENDING)
         interest = {"id": new_id, "peer": 0, "account": account_id, "timestamp": timestamp,
                'lines': [{'amount': amount, 'category': PredefinedCategory.Interest, 'description': 'Сумма процентов по СпецЗайму'}]}
         self._data[JSF.INCOME_SPENDING].append(interest)

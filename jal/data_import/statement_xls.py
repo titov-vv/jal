@@ -184,7 +184,7 @@ class StatementXLS(Statement):
     def _load_accounts(self):
         currencies = [x for x in self._data[JSF.ASSETS] if x['type'] == JSF.ASSET_MONEY]
         for currency in currencies:
-            id = max([0] + [x['id'] for x in self._data[JSF.ACCOUNTS]]) + 1
+            id = self._next_id(JSF.ACCOUNTS)
             account = {"id": id, "number": self._account_number, "currency": currency['id']}
             self._data[JSF.ACCOUNTS].append(account)
 
