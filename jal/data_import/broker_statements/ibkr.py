@@ -1152,7 +1152,7 @@ class StatementIBKR(StatementXML):
                 trade = self._find_in_list(self._data[JSF.TRADES], "number", tax['number'])
                 if trade is None:
                     raise Statement_ImportError(self.tr("Can't find trade for tax: ") + f"{ts2dt(tax['timestamp'])}, '{tax['symbol']}' - {tax['description']}")
-                trade['fee'] += tax['amount']
+                trade['fee'] -= tax['amount']   # a charged tax is negative, the fee of a trade is a positive cost
                 cnt += 1
             else:
                 if tax['source'] != 'STANDALONE':

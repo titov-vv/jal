@@ -546,6 +546,18 @@ def test_ibkr_mlp_extra_tax_is_imported_as_fee(tmp_path, project_root, data_path
     assert imported.get_asset_amount(d2t(240101), imported.currency()) == Decimal('2.78')
 
 
+# A tax charged on a trade adds to the commission of that trade, a standalone one is a fee of its asset
+def test_ibkr_transaction_tax_adds_to_the_trade_fee(tmp_path, project_root, data_path, prepare_db_taxes):
+    statement = StatementIBKR()
+    statement.load(data_path + 'ibkr_transaction_tax.xml')
+
+    trades = statement._data[JSF.TRADES]
+    assert len(trades) == 1
+    assert trades[0]['fee'] == Decimal('5.007792848')   # commission 1.987792848 + tax 3.02
+    fees = [x for x in statement._data[JSF.ASSET_PAYMENTS] if x['type'] == JSF.PAYMENT_FEE]
+    assert [(x['amount'], x['description']) for x in fees] == [(Decimal('-0.249018'), 'French Transaction Tax')]
+
+
 # A holding bought out for cash is stored as a sale at the offer price
 def test_ibkr_cash_merger_is_imported_as_sell_trade(tmp_path, project_root, data_path, prepare_db_taxes):
     statement = StatementIBKR()

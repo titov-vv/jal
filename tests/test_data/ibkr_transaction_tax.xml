@@ -1,0 +1,16 @@
+<FlexQueryResponse queryName="Full" type="AF">
+<FlexStatements count="1">
+<FlexStatement accountId="U7654321" fromDate="20190101" toDate="20201231" period="LastBusinessDay" whenGenerated="20210115;000000">
+<CashReport>
+<CashReportCurrency accountId="U7654321" acctAlias="" model="" currency="USD" levelOfDetail="Currency" fromDate="20190101" toDate="20201231" startingCash="0" endingCash="46863.382189152" endingSettledCash="46863.382189152" />
+</CashReport>
+<Trades>
+<Trade accountId="U7654321" acctAlias="" model="" currency="USD" fxRateToBase="1" assetCategory="STK" symbol="AAPL" description="APPLE INC" conid="265598" securityID="US0378331005" securityIDType="ISIN" cusip="037833100" isin="US0378331005" listingExchange="NASDAQ" underlyingConid="" underlyingSymbol="" underlyingSecurityID="" underlyingListingExchange="" issuer="" multiplier="1" strike="" expiry="" tradeID="2674741000" putCall="" reportDate="20200128" principalAdjustFactor="" dateTime="20200128;124606" tradeDate="20200128" settleDateTarget="20200130" transactionType="ExchTrade" exchange="ISLAND" quantity="-148" tradePrice="316.68" tradeMoney="-46868.64" proceeds="46868.64" taxes="-3.02" ibCommission="-1.987792848" ibCommissionCurrency="USD" netCash="46863.632207152" closePrice="317.69" openCloseIndicator="C" notes="" levelOfDetail="EXECUTION" />
+</Trades>
+<TransactionTaxes>
+<TransactionTax accountId="U7654321" acctAlias="" model="" currency="USD" fxRateToBase="1" assetCategory="STK" symbol="AAPL" description="APPLE INC" conid="265598" securityID="US0378331005" securityIDType="ISIN" cusip="037833100" isin="US0378331005" listingExchange="NASDAQ" underlyingConid="" underlyingSymbol="" underlyingSecurityID="" underlyingListingExchange="" issuer="" multiplier="1" strike="" expiry="" putCall="" principalAdjustFactor="" date="20200128;124606" taxDescription="UK Stamp Tax" quantity="-148" reportDate="20200128" taxAmount="-3.02" tradeId="2674741000" tradePrice="316.68" source="TRADE" code="" levelOfDetail="SUMMARY" />
+<TransactionTax accountId="U7654321" acctAlias="" model="" currency="USD" fxRateToBase="1" assetCategory="STK" symbol="BABA" description="ALIBABA GROUP HOLDING-SP ADR" conid="15435308" securityID="US01609W1027" securityIDType="ISIN" cusip="01609W102" isin="US01609W1027" listingExchange="NYSE" underlyingConid="" underlyingSymbol="" underlyingSecurityID="" underlyingListingExchange="" issuer="" multiplier="1" strike="" expiry="" putCall="" principalAdjustFactor="" date="20190211" taxDescription="French Transaction Tax" quantity="0" reportDate="20190211" taxAmount="-0.249018" tradeId="10200887550" tradePrice="0.0000" source="STANDALONE" code="" levelOfDetail="SUMMARY" />
+</TransactionTaxes>
+</FlexStatement>
+</FlexStatements>
+</FlexQueryResponse>
