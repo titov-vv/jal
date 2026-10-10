@@ -598,21 +598,15 @@ class StatementIBKR(StatementXML):
         }
         cnt = 0
         for option in options:
-            description = ''
-            try:
-                description = transaction_desctiption[option['operation']]
-            except KeyError:
-                logging.error(
-                    self.tr("Option E&A&E action isn't implemented: ") + f"{option['operation']}")
-            if description:
-                trade = [x for x in self._data[JSF.TRADES] if x['account'] == option['account']
-                         and x['symbol'] == option['symbol'] and x['number'] == option['number']]
-                if len(trade) == 1:
-                    trade[0]['note'] = description
-                else:
-                    raise Statement_ImportError(
-                        self.tr("Original trade not found for Option E&A&E operation: ") + f"{option}")
-                cnt += 1
+            if option['operation'] not in transaction_desctiption:
+                raise Statement_ImportError(self.tr("Option E&A&E action isn't implemented: ") + f"{option['operation']}")
+            trade = [x for x in self._data[JSF.TRADES] if x['account'] == option['account']
+                     and x['symbol'] == option['symbol'] and x['number'] == option['number']]
+            if len(trade) != 1:
+                raise Statement_ImportError(
+                    self.tr("Original trade not found for Option E&A&E operation: ") + f"{option}")
+            trade[0]['note'] = transaction_desctiption[option['operation']]
+            cnt += 1
         logging.info(self.tr("Options E&A&E loaded: ") + f"{cnt} ({len(options)})")
 
     def load_corporate_actions(self, actions):
@@ -1131,8 +1125,8 @@ class StatementIBKR(StatementXML):
                 continue
             if not (charge['description'].startswith('LONG CFD INTEREST FOR') or
                     charge['description'].startswith('SHORT CFD INTEREST FOR')):
-                logging.warning(self.tr("Unknown CFD charge description: ") + charge['description'])
-                continue
+                raise Statement_ImportError(self.tr("Unsupported CFD charge: ") + f"{ts2d(charge['timestamp'])} "
+                                            f"{remove_exponent(charge['amount'])}: {charge['description']}")
             charge['id'] = self._next_id(JSF.INCOME_SPENDING)
             charge['peer'] = 0
             charge['lines'] = [{'amount': charge['amount'], 'category': PredefinedCategory.Fees, 'description': charge['description']}]
@@ -1156,11 +1150,8 @@ class StatementIBKR(StatementXML):
         TaxFullPattern = r"^(?P<description>.*) - (?P<country>\w\w) TAX$"
 
         parts = re.match(TaxFullPattern, tax['description'], re.IGNORECASE)
-        if not parts:
-            logging.warning(self.tr("*** MANUAL ENTRY REQUIRED ***"))
-            logging.warning(self.tr("Unhandled tax country pattern found: ") + f"{tax['description']}")
-            return 0
-        self.set_asset_country(tax['symbol'], parts.groupdict()['country'].lower())
+        if parts:   # a description without a country leaves the country of the asset as it is
+            self.set_asset_country(tax['symbol'], parts.groupdict()['country'].lower())
 
         dividend = self.find_dividend4tax(tax)      # refuses the whole statement if it finds no single payment
         new_tax = dividend.get('tax', Decimal('0')) - tax['amount']

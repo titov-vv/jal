@@ -257,7 +257,7 @@ def test_ibkr_cfd(tmp_path, project_root, data_path, prepare_db_taxes):
 
 
 # A CFD charge that names an asset is stored as a fee of that asset whatever it is called, and one that names none
-# is a spending only when it is a known kind of interest
+# is a spending when it is a known kind of interest
 def test_ibkr_cfd_charge_on_an_asset_is_an_asset_fee(caplog):
     ibkr = StatementIBKR()
     ibkr._data = {JSF.ASSET_PAYMENTS: [{'id': 4}], JSF.INCOME_SPENDING: []}
@@ -268,8 +268,6 @@ def test_ibkr_cfd_charge_on_an_asset_is_an_asset_fee(caplog):
          'description': 'SOMETHING NEW FOR MU'},
         {'account': 1, 'symbol': StatementIBKR.NoAsset, 'timestamp': 1657065600, 'amount': Decimal('-0.06'),
          'number': '13', 'description': 'SHORT CFD INTEREST FOR 06-JUL-2022'},
-        {'account': 1, 'symbol': StatementIBKR.NoAsset, 'timestamp': 1657065600, 'amount': Decimal('-0.07'),
-         'number': '14', 'description': 'SOMETHING NEW'},
     ]
     ibkr.load_cfd_charges(charges)
 
@@ -278,7 +276,35 @@ def test_ibkr_cfd_charge_on_an_asset_is_an_asset_fee(caplog):
         (5, 3, Decimal('-0.02'), '11'), (6, 3, Decimal('-0.50'), '12')]
     assert [(x['id'], x['lines'][0]['amount']) for x in ibkr._data[JSF.INCOME_SPENDING]] == [(1, Decimal('-0.06'))]
     unknown = [x.message for x in caplog.records if 'Unknown CFD charge description' in x.message]
-    assert [x.split(': ')[1] for x in unknown] == ['SOMETHING NEW FOR MU', 'SOMETHING NEW']
+    assert [x.split(': ')[1] for x in unknown] == ['SOMETHING NEW FOR MU']
+
+
+# ... and of an unknown kind it stops the import
+def test_ibkr_unknown_cfd_charge_without_an_asset_halts_the_import():
+    ibkr = StatementIBKR()
+    ibkr._data = {JSF.ASSET_PAYMENTS: [], JSF.INCOME_SPENDING: []}
+    charge = {'account': 1, 'symbol': StatementIBKR.NoAsset, 'timestamp': 1657065600, 'amount': Decimal('-0.07'),
+              'number': '14', 'description': 'SOMETHING NEW'}
+    with pytest.raises(Statement_ImportError, match="2022.*-0.07: SOMETHING NEW"):
+        ibkr.load_cfd_charges([charge])
+    assert ibkr._data[JSF.INCOME_SPENDING] == []
+
+
+# A withholding tax whose description names no country is applied to its dividend like any other
+def test_ibkr_tax_without_a_country_is_applied_to_its_dividend():
+    ibkr = StatementIBKR()
+    ibkr._data = {
+        JSF.ASSET_PAYMENTS: [{'id': 1, 'type': JSF.PAYMENT_DIVIDEND, 'account': 1, 'symbol': 95, 'number': '777',
+                              'timestamp': d2t(250214), 'amount': Decimal('13.73'), 'description': 'O CASH DIVIDEND'}],
+        JSF.ASSETS: [{'id': 1, JSF.SYMBOLS: [{'id': 95, 'symbol': 'O', 'isin': 'US7561091049'}]}]
+    }
+    ibkr._map_db_account = lambda _: 0
+    ibkr._map_db_asset_by_symbol = lambda _: 0
+    tax = {'account': 1, 'symbol': 95, 'timestamp': d2t(250214), 'reported': d2t(250214), 'amount': Decimal('-2.06'),
+           'action_id': '777', 'description': 'O(US7561091049) CASH DIVIDEND USD 0.264 PER SHARE'}
+    assert ibkr.apply_tax_withheld(tax) == 1
+    assert ibkr._data[JSF.ASSET_PAYMENTS][0]['tax'] == Decimal('2.06')
+    assert 'country' not in ibkr._data[JSF.ASSETS][0]
 
 # ----------------------------------------------------------------------------------------------------------------------
 def test_ibkr_corp_actions(tmp_path, project_root, data_path, prepare_db_taxes):
@@ -547,12 +573,12 @@ def test_ibkr_mlp_extra_tax_is_imported_as_fee(tmp_path, project_root, data_path
     assert imported.get_asset_amount(d2t(240101), imported.currency()) == Decimal('2.78')
 
 
-# An exercise record of a kind JAL doesn't know is reported and skipped, the rest of the statement is still loaded
-def test_ibkr_unknown_option_exercise_type_is_reported(caplog):
+# An exercise record of a kind JAL doesn't know stops the import
+def test_ibkr_unknown_option_exercise_type_halts_the_import():
     ibkr = StatementIBKR()
     ibkr._data = {JSF.TRADES: []}
-    ibkr.load_options([{'operation': 'Cash Settlement', 'symbol': 161, 'account': 1, 'number': '1'}])
-    assert "Option E&A&E action isn't implemented: Cash Settlement" in caplog.text
+    with pytest.raises(Statement_ImportError, match="Option E&A&E action isn't implemented: Cash Settlement"):
+        ibkr.load_options([{'operation': 'Cash Settlement', 'symbol': 161, 'account': 1, 'number': '1'}])
 
 
 # A cash transaction of a type that isn't imported stops the import and is named in the message
