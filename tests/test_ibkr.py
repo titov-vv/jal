@@ -3,6 +3,7 @@ from decimal import Decimal
 
 import pytest
 
+from PySide6.QtCore import QCoreApplication, QTranslator
 from PySide6.QtWidgets import QMessageBox
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
@@ -838,3 +839,18 @@ def test_ibkr_tax_left_by_a_reversed_dividend_halts_the_import(tmp_path, project
     statement = StatementIBKR()
     with pytest.raises(Statement_ImportError, match="withholding tax matches no payment"):
         statement.load(str(without_tax_reversal))
+
+
+# Messages that come from the base classes are translated for an IBKR statement as well as its own ones
+def test_ibkr_messages_of_base_classes_are_translated(project_root):
+    translator = QTranslator()
+    assert translator.load(project_root + '/jal/languages/ru.qm')
+    QCoreApplication.installTranslator(translator)
+    try:
+        ibkr = StatementIBKR()
+        for message in ["Securities loaded: ",          # StatementIBKR
+                        "Failed to load attribute: ",   # StatementXML
+                        "Symbol id not found: "]:       # Statement
+            assert ibkr.tr(message) != message
+    finally:
+        QCoreApplication.removeTranslator(translator)

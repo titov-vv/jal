@@ -49,7 +49,7 @@ class IBKR_AssetType:
             self.type = self._asset_types[asset_type]
         except KeyError:
             raise Statement_ImportError(
-                QApplication.translate("IBKR", "Asset type isn't supported: ") + f"'{asset_type}'")
+                QApplication.translate("StatementIBKR", "Asset type isn't supported: ") + f"'{asset_type}'")
         if self.type == JSF.ASSET_STOCK and subtype:  # distinguish ADR and ETF from stocks
             try:
                 self.type = self._asset_types[subtype]
@@ -81,7 +81,7 @@ class IBKR_CorpActionType:
             self.type = self._corporate_action_types[action_type]
         except KeyError:
             raise Statement_ImportError(
-                QApplication.translate("IBKR", "Corporate action isn't supported: ") + f"{action_type}")
+                QApplication.translate("StatementIBKR", "Corporate action isn't supported: ") + f"{action_type}")
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -111,7 +111,7 @@ class IBKR_Account:
                 if len(match) == 1:
                     account_ids.append(match[0]["id"])
                 else:
-                    logging.error(QApplication.translate("IBKR", "Multiple account match for ") + f"{number}")
+                    logging.error(QApplication.translate("StatementIBKR", "Multiple account match for ") + f"{number}")
             else:
                 new_id = max([0] + [x['id'] for x in accounts_list]) + 1
                 account_ids.append(new_id)
@@ -318,10 +318,6 @@ class StatementIBKR(StatementXML):
                                      ('transactionID', 'number', str, '')],
                           'loader': self.load_transfers}
         }
-
-    @staticmethod
-    def tr(text):
-        return QApplication.translate("StatementIBKR", text)
 
     @staticmethod
     def capabilities() -> set:
@@ -1308,7 +1304,7 @@ class StatementIBKR(StatementXML):
             with open(file) as f:
                 m = re.search(pattern, f.read(READ_COUNT))
                 if not m:
-                    logging.error(StatementIBKR.tr("Can't find a FlexStatement in first {} bytes of {}").format(READ_COUNT,file))
+                    logging.error(QApplication.translate("StatementIBKR", "Can't find a FlexStatement in first {} bytes of {}").format(READ_COUNT, file))
                     return []
                 start = int(m.group(1))
                 end = int(m.group(2))

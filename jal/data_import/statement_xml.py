@@ -110,7 +110,7 @@ class StatementXML(Statement):
         self.validate_file_header_attributes(xml_root.findall('.')[0].attrib)
         statements = xml_root.findall(self.statements_path)
         if len(statements) == 0:
-            logging.info(self.tr("No statement was found in file: " + filename))
+            logging.info(self.tr("No statement was found in file: ") + filename)
             return
         try:
             statement = statements[index]
@@ -128,10 +128,7 @@ class StatementXML(Statement):
                 continue  # skip header description
             section_elements = statement.xpath(section)  # Actually should be list of 0 or 1 element
             if section_elements:
-                section_data = self.get_section_data(section_elements[0])
-                if section_data is None:
-                    return
-                self._sections[section]['loader'](section_data)
+                self._sections[section]['loader'](self.get_section_data(section_elements[0]))
         self.strip_unused_data()
 
     def validate_file_header_attributes(self, xml_data):
