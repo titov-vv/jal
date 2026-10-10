@@ -25,16 +25,6 @@ DIVIDENDS_TABLE_ASSET_FIELD = 8
 IBKR_DAY_MARKERS = (20 * 3600 + 20 * 60, 20 * 3600 + 24 * 60, 20 * 3600 + 25 * 60, 20 * 3600 + 26 * 60)
 
 # -----------------------------------------------------------------------------------------------------------------------
-class IBKRCashOp:
-    Dividend = 0
-    TaxWithhold = 1
-    DepositWithdrawal = 2
-    Fee = 3
-    Interest = 4
-    BondInterest = 5
-
-
-# -----------------------------------------------------------------------------------------------------------------------
 class IBKR_AssetType:
     NotSupported = -1
     _asset_types = {
@@ -394,36 +384,24 @@ class StatementIBKR(StatementXML):
     def attr_corp_action_type(self, xml_element, attr_name, default_value):
         if attr_name not in xml_element.attrib:
             return default_value
-        asset_category = self.attr_asset_type(xml_element, 'assetCategory', None)
         return IBKR_CorpActionType(xml_element.attrib[attr_name]).type
 
     def attr_currency(self, xml_element, attr_name, default_value):
         if attr_name not in xml_element.attrib:
             return default_value
-        currency_id = self.currency_id(xml_element.attrib[attr_name])
-        if currency_id is None:
-            return default_value
-        else:
-            return currency_id
+        return self.currency_id(xml_element.attrib[attr_name])
 
     def attr_asset(self, xml_element, attr_name, default_value):
         if attr_name not in xml_element.attrib:
             return default_value
         if xml_element.attrib[attr_name] == '':
             return default_value
-        if xml_element.tag == 'CashTransaction' and attr_name == 'currency':
-            asset_category = JSF.ASSET_MONEY
-        else:
-            asset_category = self.attr_asset_type(xml_element, 'assetCategory', None)
+        asset_category = self.attr_asset_type(xml_element, 'assetCategory', None)
         if xml_element.tag == 'Trade' and asset_category == JSF.ASSET_MONEY:
             currency = xml_element.attrib[attr_name].split('.')
             symbol_id = [self.currency_symbol_id(code) for code in currency]
-            if not symbol_id:
-                return default_value
         elif xml_element.tag == 'Transfer' and asset_category == JSF.ASSET_MONEY:
             symbol_id = self.currency_symbol_id(xml_element.attrib['currency'])
-            if not symbol_id:
-                return default_value
         else:
             symbol = xml_element.attrib[attr_name]
             if symbol.endswith('.OLD'):
@@ -612,7 +590,7 @@ class StatementIBKR(StatementXML):
                 transfer['symbol'] = [transfer['symbol'], transfer['symbol']]
                 transfer['description'] = transfer.pop('type') + ' ' + transfer['description']
                 transfer['fee'] = Decimal('0')
-                self.drop_extra_fields(transfer, ["direction", "amount", "company", "quantity"])
+                self.drop_extra_fields(transfer, ["direction", "company", "quantity"])
             else:
                 if transfer['direction'] != "IN":
                     raise Statement_ImportError(self.tr("Outgoing asset transfer not implemented yet: ") + f"{transfer}")
@@ -820,8 +798,6 @@ class StatementIBKR(StatementXML):
         if parts is None:
             raise Statement_ImportError(self.tr("Can't parse Spin-off description ") + f"'{action}'")
         spinoff = parts.groupdict()
-        if len(spinoff) != SpinOffPattern.count("(?P<"):  # check that expected number of groups was matched
-            raise Statement_ImportError(self.tr("Spin-off description miss some data ") + f"'{action}'")
         spinoff['symbol_old'] = self.normalize_corp_action_symbol(spinoff['symbol_old'])
         symbol_old = self.locate_symbol(spinoff['symbol_old'], spinoff['isin_old'])
         if not symbol_old:
@@ -1168,7 +1144,7 @@ class StatementIBKR(StatementXML):
 
     def load_taxes(self, taxes):
         cnt = 0
-        for i, tax in enumerate(taxes):
+        for tax in taxes:
             if tax['source'] == 'TRADE':
                 trade = self._find_in_list(self._data[JSF.TRADES], "number", tax['number'])
                 if trade is None:
@@ -1378,5 +1354,4 @@ class StatementIBKR(StatementXML):
                         break
                     idx += 1
                 files.insert(idx, item)
-                f.close()
         return [x[2] for x in files]
