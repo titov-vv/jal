@@ -4990,6 +4990,16 @@ do you want to save them?</source>
         <translation>Неподдерживаемый случай: Корпоративное событие покрывает не всю открытую позицию. Дата: </translation>
     </message>
     <message>
+        <location filename="../db/operations.py" line="2470"/>
+        <source>Corporate action of this type isn&apos;t supported for a short position. Date: </source>
+        <translation>Корпоративное событие этого типа не поддерживается для короткой позиции. Дата: </translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="2473"/>
+        <source>Corporate action on a short position has to result in a short position. Date: </source>
+        <translation>Результатом корпоративного события над короткой позицией должна быть короткая позиция. Дата: </translation>
+    </message>
+    <message>
         <location filename="../db/operations.py" line="2484"/>
         <source>Results value of corporate action doesn&apos;t match 100% of initial asset value. </source>
         <translation>Результаты корпоративного события не распределяют 100% стоимости изначального актива. </translation>
@@ -8881,6 +8891,16 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <location filename="../data_import/broker_statements/ibkr.py" line="632"/>
         <source>&apos;actionID&apos; attribute of every record has a value</source>
         <translation>атрибут &apos;actionID&apos; каждой записи имеет значение</translation>
+    </message>
+    <message>
+        <location filename="../data_import/broker_statements/ibkr.py" line="641"/>
+        <source>every record of an option has a &apos;figi&apos; attribute</source>
+        <translation>у каждой записи об опционе есть атрибут &apos;figi&apos;</translation>
+    </message>
+    <message>
+        <location filename="../data_import/broker_statements/ibkr.py" line="642"/>
+        <source>Enable the field &apos;FIGI&apos; for the sections &apos;Corporate Actions&apos;, &apos;Trades&apos; and &apos;Financial Instrument Information&apos; in the configuration of your Flex Query and get the statement again.</source>
+        <translation>Включите поле &apos;FIGI&apos; для секций &apos;Corporate Actions&apos;, &apos;Trades&apos; и &apos;Financial Instrument Information&apos; в настройках вашего Flex-отчёта и получите отчёт заново.</translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="661"/>

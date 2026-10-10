@@ -33,7 +33,9 @@ that, exporting is a click.
 
 Keep every field of sections switched on (*Select All*). **Action ID** is the  one JAL cannot do without: 
 it is how JAL mergers lines for the same event, and a statement that has no **Action ID** can be refused 
-with a message saying so.
+with a message saying so. **FIGI** is the other one - it allows JAL to identify assets correctly 
+(especially if you trade options: it is how JAL recognizes an option that got another symbol when its 
+underlying asset was split).
 
 ### Trading 212
 

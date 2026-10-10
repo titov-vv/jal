@@ -162,7 +162,7 @@ class StatementIBKR(StatementXML):
                                           ('assetCategory', 'type', IBKR_AssetType, IBKR_AssetType.NotSupported),
                                           ('description', 'name', str, None),
                                           ('isin', 'isin', str, ''),
-                                          # ('figi', 'figi', str, ''),
+                                          ('figi', 'figi', str, ''),
                                           ('cusip', 'cusip', str, ''),
                                           ('expiry', 'expiry', datetime, 0),
                                           ('maturity', 'maturity', datetime, 0),
@@ -210,6 +210,8 @@ class StatementIBKR(StatementXML):
                                             ('currency', 'currency', str, None),
                                             ('description', 'description', str, None),
                                             ('quantity', 'quantity', Decimal, None),
+                                            ('multiplier', 'multiplier', Decimal, Decimal('1')),
+                                            ('figi', 'figi', str, ''),
                                             ('value', 'value', Decimal, None),
                                             ('proceeds', 'proceeds', Decimal, None),
                                             ('code', 'code', str, '')],
@@ -390,6 +392,8 @@ class StatementIBKR(StatementXML):
                 asset_data['isin'] = xml_element.attrib['isin']
             if 'cusip' in xml_element.attrib and xml_element.attrib['cusip']:
                 asset_data['cusip'] = xml_element.attrib['cusip']
+            if xml_element.attrib.get('figi', ''):
+                asset_data['figi'] = xml_element.attrib['figi']
             if self._is_exchange(xml_element.attrib.get('listingExchange', '')):
                 asset_data['note'] = xml_element.attrib['listingExchange']
             if xml_element.tag == 'CashTransaction' and 'isin' not in asset_data and 'cusip' not in asset_data:
@@ -613,6 +617,7 @@ class StatementIBKR(StatementXML):
         # A corporate action takes effect for a whole day
         for action in actions:
             action['timestamp_day_only'] = True
+            action['quantity'] *= action.pop('multiplier')   # an option is counted in contracts
         self.check_corporate_action_ids(actions)
         self.remove_cancelled_corporate_actions(actions)
         cnt = 0
@@ -630,14 +635,23 @@ class StatementIBKR(StatementXML):
         empty = [x for x in actions if not x['action_id']]
         if empty:
             self._refuse_corp_action(empty, self.tr("'actionID' attribute of every record has a value"))
+        # An adjusted option gets another symbol, and FIGI is the only thing that tells it is the same option
+        no_figi = [x for x in actions if x['asset_type'] == JSF.ASSET_OPTION and not x['figi']]
+        if no_figi:
+            self._refuse_corp_action(no_figi, self.tr("every record of an option has a 'figi' attribute"),
+                                     self.tr("Enable the field 'FIGI' for the sections 'Corporate Actions', 'Trades' "
+                                             "and 'Financial Instrument Information' in the configuration of your "
+                                             "Flex Query and get the statement again."))
 
-    # Records of one corporate action share an actionID - returns a (withdrawn, received) pair of record lists per action
+    # Records of one corporate action share an actionID - returns a (withdrawn, received) pair of record lists per action.
+    # An option adjusted by an action of its underlying asset has the actionID of that action: it is an action of its own.
     def corporate_action_legs(self, actions) -> list:
         key_func = lambda x: (x['account'], x['symbol'], x['type'], x['description'], x['timestamp'])
+        option_of = lambda x: self._symbol_asset(x['symbol'])['id'] if x['asset_type'] == JSF.ASSET_OPTION else 0
         groups = {}
         for action in sorted(actions, key=key_func):
             if action['quantity'] != 0:   # There might be 0 quantity value - it should be ignored
-                groups.setdefault(action['action_id'], []).append(action)
+                groups.setdefault((action['action_id'], option_of(action)), []).append(action)
         legs = [([x for x in group if x['quantity'] < 0], [x for x in group if x['quantity'] > 0])
                 for group in groups.values()]
         # Actions that give an asset go first, the ones that only take it away are after them
@@ -740,7 +754,7 @@ class StatementIBKR(StatementXML):
     # Stores a corporate action record that was already given its 'symbol', 'quantity' and 'outcome'
     def _store_corp_action(self, action) -> None:
         action['id'] = self._next_id(JSF.CORP_ACTIONS)
-        self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "action_id", "currency"])
+        self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "action_id", "currency", "figi"])
         self._data[JSF.CORP_ACTIONS].append(action)
 
     # Stores an asset that was withdrawn for money as a sell trade, at the price that its proceeds give
@@ -752,7 +766,7 @@ class StatementIBKR(StatementXML):
         record['note'] = record.pop('description')
         record['fee'] = Decimal('0')
         self.drop_extra_fields(record, ["type", "value", "proceeds", "code", "asset_type", "action_id", "currency",
-                                        "timestamp_day_only"])
+                                        "timestamp_day_only", "figi"])
         self._data[JSF.TRADES].append(record)
 
     def load_merger(self, withdrawn, received) -> int:
@@ -824,7 +838,8 @@ class StatementIBKR(StatementXML):
         action['amount'] = action['quantity']
         action['price'] = self._derived_price(action['value'], action['quantity'])
         action['tax'] = Decimal('0')
-        self.drop_extra_fields(action, ["quantity", "value", "proceeds", "code", "asset_type", "action_id", "currency"])
+        self.drop_extra_fields(action, ["quantity", "value", "proceeds", "code", "asset_type", "action_id", "currency",
+                                        "figi"])
         self._data[JSF.ASSET_PAYMENTS].append(action)
         return 1
 

@@ -161,19 +161,19 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
          'ID': {(14, SymbolId.ISIN): 'CA05156X8843', (14, SymbolId.CUSIP): '05156X884'}},
         {'id': 15, 'type_id': PredefinedAsset.Stock, 'full_name': 'VERB TECHNOLOGY CO INC', 'country_id': 0,
          'symbols': [{'id': 16, 'symbol': 'VERB', 'currency_id': 2, 'location_id': AssetLocation.NASDAQ_EXCHANGE, 'active': 1}],
-         'ID': {(16, SymbolId.ISIN): 'US92337U2033', (16, SymbolId.CUSIP): '92337U203'}},
+         'ID': {(16, SymbolId.FIGI): 'BBG004DZSW71', (16, SymbolId.ISIN): 'US92337U2033', (16, SymbolId.CUSIP): '92337U203'}},
         {'id': 16, 'type_id': PredefinedAsset.Stock, 'full_name': 'VERB TECHNOLOGY CO INC', 'country_id': 0,
          'symbols': [{'id': 17, 'symbol': 'VERB', 'currency_id': 2, 'location_id': AssetLocation.NASDAQ_EXCHANGE, 'active': 1}],
-         'ID': {(17, SymbolId.ISIN): 'US92337U3023', (17, SymbolId.CUSIP): '92337U302'}},
+         'ID': {(17, SymbolId.FIGI): 'BBG004DZSW71', (17, SymbolId.ISIN): 'US92337U3023', (17, SymbolId.CUSIP): '92337U302'}},
         {'id': 17, 'type_id': PredefinedAsset.Stock, 'full_name': 'VOLCON INC', 'country_id': 0,
          'symbols': [{'id': 18, 'symbol': 'VLCN', 'currency_id': 2, 'location_id': AssetLocation.NASDAQ_EXCHANGE, 'active': 1}],
-         'ID': {(18, SymbolId.ISIN): 'US92864V4005', (18, SymbolId.CUSIP): '92864V400'}},
+         'ID': {(18, SymbolId.FIGI): 'BBG012GNY0K6', (18, SymbolId.ISIN): 'US92864V4005', (18, SymbolId.CUSIP): '92864V400'}},
         {'id': 18, 'type_id': PredefinedAsset.Stock, 'full_name': 'VOLCON INC', 'country_id': 0,
          'symbols': [{'id': 19, 'symbol': 'VLCN', 'currency_id': 2, 'location_id': AssetLocation.NASDAQ_EXCHANGE, 'active': 1}],
-         'ID': {(19, SymbolId.ISIN): 'US92864V2025', (19, SymbolId.CUSIP): '92864V202'}},
+         'ID': {(19, SymbolId.FIGI): 'BBG012GNY0K6', (19, SymbolId.ISIN): 'US92864V2025', (19, SymbolId.CUSIP): '92864V202'}},
         {'id': 19, 'type_id': PredefinedAsset.Stock, 'full_name': 'VOLCON INC', 'country_id': 0,
          'symbols': [{'id': 20, 'symbol': 'VLCN', 'currency_id': 2, 'location_id': AssetLocation.NASDAQ_EXCHANGE, 'active': 1}],
-         'ID': {(20, SymbolId.ISIN): 'US92864V3015', (20, SymbolId.CUSIP): '92864V301'}}
+         'ID': {(20, SymbolId.FIGI): 'BBG012GNY0K6', (20, SymbolId.ISIN): 'US92864V3015', (20, SymbolId.CUSIP): '92864V301'}}
     ]
     assets = JalAsset.get_assets()
     assert len(assets) == len(test_assets)
@@ -348,12 +348,14 @@ def test_ibkr_merger_legs_are_paired_by_action_id():
         'type': 'merger', 'account': 1, 'symbol': 29, 'asset_type': 'stock', 'timestamp': 1646857500,
         'number': '19750736274', 'action_id': '123456789', 'currency': 'USD',
         'description': '20220309164306BGTK(US34520J2078) MERGED(Acquisition) WITH US0896931054 1 FOR 1 (BGTK, BIG TOKEN INC, US0896931054)',
-        'quantity': Decimal('10000'), 'value': Decimal('24'), 'proceeds': Decimal('0'), 'code': ''
+        'quantity': Decimal('10000'), 'multiplier': Decimal('1'), 'figi': '', 'value': Decimal('24'),
+        'proceeds': Decimal('0'), 'code': ''
     }, {
         'type': 'merger', 'account': 1, 'symbol': 28, 'asset_type': 'stock', 'timestamp': 1646857500,
         'number': '19750736269', 'action_id': '123456789', 'currency': 'USD',
         'description': '20220309164306BGTK(US34520J2078) MERGED(Acquisition) WITH US0896931054 1 FOR 1 (BGTK.OLD, FORCE PROTECTION VIDEO EQUIP, US34520J2078)',
-        'quantity': Decimal('-10000'), 'value': Decimal('-20'), 'proceeds': Decimal('0'), 'code': ''
+        'quantity': Decimal('-10000'), 'multiplier': Decimal('1'), 'figi': '', 'value': Decimal('-20'),
+        'proceeds': Decimal('0'), 'code': ''
     }]
 
     ibkr.load_corporate_actions(actions)
@@ -363,7 +365,7 @@ def test_ibkr_merger_legs_are_paired_by_action_id():
     assert merger['symbol'] == 28
     assert merger['quantity'] == Decimal('10000')
     assert merger['outcome'] == [{'symbol': 29, 'quantity': Decimal('10000'), 'share': Decimal('0')}]
-    assert 'action_id' not in merger and 'currency' not in merger
+    assert 'action_id' not in merger and 'currency' not in merger and 'figi' not in merger and 'multiplier' not in merger
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -880,3 +882,74 @@ def test_ibkr_messages_of_base_classes_are_translated(project_root):
             assert ibkr.tr(message) != message
     finally:
         QCoreApplication.removeTranslator(translator)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# A real 2 for 1 split of XLE that adjusts a short call written on it. The record of the option has the actionID of
+# the record of the stock, counts contracts and names the option by the symbol it got with the halved strike.
+# The profit is the 'fifoPnlRealized' that IBKR reports for the expiration of the option.
+def test_ibkr_split_adjusts_a_short_option(tmp_path, project_root, data_path, prepare_db_taxes):
+    statement = StatementIBKR()
+    statement.load(data_path + 'ibkr_option_split.xml')
+
+    ticker = lambda symbol_id: statement._symbol(symbol_id)['symbol']
+    splits = [(ticker(x['symbol']), x['quantity'], ticker(x['outcome'][0]['symbol']), x['outcome'][0]['quantity'],
+               x['outcome'][0]['share'], x['type']) for x in statement._data[JSF.CORP_ACTIONS]]
+    assert sorted(splits) == [
+        ('XLE', Decimal('100'), 'XLE', Decimal('200'), Decimal('1'), JSF.ACTION_SPLIT),
+        ('XLE 251226C00046750', Decimal('-100'), 'XLE 251226C00046750', Decimal('-200'), Decimal('1'), JSF.ACTION_SPLIT)
+    ]
+    options = [x for x in statement._data[JSF.ASSETS] if x['type'] == JSF.ASSET_OPTION]
+    assert [sorted(s['symbol'] for s in x[JSF.SYMBOLS]) for x in options] == [
+        ['XLE 251226C00046750', 'XLE 251226C00093500']]   # one option under the symbols of both strikes
+
+    statement.validate_format()
+    statement.match_db_ids()
+    statement.import_into_db()
+    Ledger().rebuild(from_timestamp=0)
+
+    assert JalAsset(4).symbol_id(SymbolId.FIGI) == 'BBG000BJ20S2'
+    assert JalAsset(5).symbol_id(SymbolId.FIGI) == 'BBG01YDDY9Y7'
+    deals = JalAccount(1).closed_trades_list()
+    assert [(x.asset().id(), x.qty(), x.open_qty(), x.open_price(adjusted=True), x.close_price(), x.profit())
+            for x in deals] == [(5, Decimal('-200'), Decimal('-100'), Decimal('0.925'), Decimal('0'), Decimal('184.37131'))]
+    amounts = LedgerAmounts("amount_acc")
+    assert amounts[(BookAccount.Assets, 1, 4)] == Decimal('200')
+    assert amounts[(BookAccount.Assets, 1, 5)] == Decimal('0')
+
+
+# The option was sold in one statement and adjusted in the next one: it is found in the database by its FIGI
+def test_ibkr_adjusted_option_joins_the_option_stored_before(tmp_path, project_root, data_path, prepare_db_taxes):
+    with open(data_path + 'ibkr_option_split.xml', 'r', encoding='utf-8') as xml_file:
+        lines = xml_file.read().splitlines()
+    is_later = lambda x: x.startswith('<CorporateAction ') or 'tradeDate="20251226"' in x or \
+                         (x.startswith('<SecurityInfo ') and 'assetCategory="OPT"' in x)
+    assert len([x for x in lines if is_later(x)]) == 4
+    parts = {'november.xml': [x for x in lines if not is_later(x)],
+             'december.xml': [x.replace('fromDate="20251101"', 'fromDate="20251201"') for x in lines
+                              if not x.startswith('<Trade ') or is_later(x)]}
+    for name, part in parts.items():
+        (tmp_path / name).write_text('\n'.join(part), encoding='utf-8')
+        statement = StatementIBKR()
+        statement.load(str(tmp_path / name))
+        statement.match_db_ids()
+        statement.import_into_db()
+    Ledger().rebuild(from_timestamp=0)
+
+    option = JalAsset(5)
+    assert option.symbol() == 'XLE 251226C00046750'   # the symbol of the adjusted option replaced the former one
+    assert [x.profit() for x in JalAccount(1).closed_trades_list(asset=option)] == [Decimal('184.37131')]
+    assert LedgerAmounts("amount_acc")[(BookAccount.Assets, 1, 5)] == Decimal('0')
+
+
+# Without FIGI an adjusted option is another asset than the one that was sold, so the import asks for the field
+def test_ibkr_option_action_without_figi_halts_the_import(tmp_path, project_root, data_path, prepare_db_taxes,
+                                                          monkeypatch):
+    dumps = []
+    monkeypatch.setattr(Statement, 'save_debug_info', lambda self, **kwargs: dumps.append(kwargs['debug_info']))
+    with pytest.raises(Statement_ImportError) as refusal:
+        load_changed(tmp_path, data_path, 'ibkr_option_split.xml', ' figi="BBG01YDDY9Y7"', '', count=4)
+    assert "'figi' attribute" in str(refusal.value) and 'Flex Query' in str(refusal.value)
+    assert 'XLE 251226C00046750' in str(refusal.value)
+    assert dumps == []                          # nothing to report - it is the query that has to be fixed
+

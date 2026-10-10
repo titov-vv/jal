@@ -140,8 +140,11 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     # Outcomes of the cross-chain token prompt (see _resolve_cross_chain_token): merge into an existing asset,
     # create a brand-new asset, or discard (blacklist) the token.
     TOKEN_MERGE, TOKEN_CREATE_NEW, TOKEN_DISCARD = 1, 2, 3
-    ID_KEYS = ['isin', 'reg_number', 'cusip']   # security identifiers that symbol records may carry
-    _identifier_types = {'isin': SymbolId.ISIN, 'reg_number': SymbolId.REG_CODE, 'cusip': SymbolId.CUSIP}
+    ID_KEYS = ['isin', 'reg_number', 'cusip', 'figi']   # security identifiers that symbol records may carry
+    # FIGI is stored for any asset, but an asset is found by it only when the record has no other identifier
+    MATCH_KEYS = ['isin', 'reg_number', 'cusip']
+    _identifier_types = {'isin': SymbolId.ISIN, 'reg_number': SymbolId.REG_CODE, 'cusip': SymbolId.CUSIP,
+                         'figi': SymbolId.FIGI}
     _asset_types = {
         JSF.ASSET_MONEY: PredefinedAsset.Money,
         JSF.ASSET_STOCK: PredefinedAsset.Stock,
@@ -420,6 +423,12 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 search['cusip'] = cusip
             if search:
                 asset_id = JalAsset.find(search).id()
+                if asset_id:
+                    self.set_mapped_id(JSF.ASSETS, asset['id'], asset_id)
+                    continue
+            figi = self._asset_identifier(asset, 'figi')
+            if figi and not isin and not search:
+                asset_id = JalAsset.find({'figi': figi}).id()
                 if asset_id:
                     self.set_mapped_id(JSF.ASSETS, asset['id'], asset_id)
                     continue
@@ -1161,6 +1170,11 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 raise Statement_ImportError(self.tr("Multiple match for ") + f"'{key}'='{value}': {matches}")
         return None
 
+    # The only asset that carries the given FIGI: a FIGI outlives a change of ISIN, so several assets may share it
+    def _asset_by_figi(self, figi: str) -> dict | None:
+        matches = [a for a in self._data[JSF.ASSETS] if any(s.get('figi') == figi for s in a[JSF.SYMBOLS])]
+        return matches[0] if len(matches) == 1 else None
+
     # Helper function that takes list of dictionaries and returns one element where key=value
     # exception is raised if multiple elements found
     # Returns None if nothing was found in the list
@@ -1211,10 +1225,12 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     def asset_id(self, asset_info) -> int:
         asset = None
         asset_info = {k: v for k, v in asset_info.items() if v}  # drop keys with empty values
-        for key in self.ID_KEYS:
+        for key in self.MATCH_KEYS:
             if asset is None and key in asset_info:
                 asset = self._asset_by_identifier(key, asset_info[key])
-        has_code = any(asset_info.get(key, '') for key in self.ID_KEYS)
+        if asset is None and 'figi' in asset_info and not any(key in asset_info for key in self.MATCH_KEYS):
+            asset = self._asset_by_figi(asset_info['figi'])
+        has_code = any(asset_info.get(key, '') for key in self.MATCH_KEYS)
         if not has_code and asset is None and 'symbol' in asset_info:
             symbols = [(a, s) for a in self._data[JSF.ASSETS] for s in a[JSF.SYMBOLS]
                        if s['symbol'] == asset_info['symbol']]

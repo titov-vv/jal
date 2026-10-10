@@ -630,7 +630,7 @@ class JalAsset(JalDB):
     @classmethod
     def find(cls, data: dict) -> "JalAsset":
         data = dict(data)   # don't pollute caller's dict with the defaults below
-        for key in ('isin', 'name', 'country', 'symbol', 'reg_number', 'cusip'):
+        for key in ('isin', 'name', 'country', 'symbol', 'reg_number', 'cusip', 'figi'):
             data.setdefault(key, '')
         return cls(cls._find_asset(data))
 
@@ -658,6 +658,11 @@ class JalAsset(JalDB):
                             [(":datatype", SymbolId.CUSIP), (":cusip", data['cusip'])], check_unique=True)
             if aid is not None:
                 return aid
+        if data['figi']:   # A FIGI outlives a change of ISIN, so it names an asset only while one asset carries it
+            assets = cls._read_to_list("SELECT DISTINCT s.asset_id FROM symbol_ids i LEFT JOIN asset_symbol s ON s.id=i.symbol_id WHERE id_type=:datatype AND id_value=:figi",
+                                       [(":datatype", SymbolId.FIGI), (":figi", data['figi'])])
+            if len(assets) == 1:
+                return assets[0]
         if data['symbol']:
             symbols = cls._read_to_list("SELECT s.asset_id, a.type_id, d.value AS expiry FROM asset_symbol s "
                                          "LEFT JOIN assets a ON s.asset_id=a.id "

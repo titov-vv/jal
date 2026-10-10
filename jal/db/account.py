@@ -549,7 +549,7 @@ class JalAccount(JalDB):
             # 'c_qty' relates the stored quantity to the quantity of the operation that opened the lot, which for a
             # closed deal is its 'open_qty'. It is written for reporting only and never multiplies a quantity again.
             remaining_qty = qty
-            q_adjustment = qty / trade.open_qty() if trade.open_qty() else Decimal('1')
+            q_adjustment = qty / abs(trade.open_qty()) if trade.open_qty() else Decimal('1')   # a short deal has a negative quantity
         # slice_id carries the slice's stable identity: a trade taken from open_trades_list() (a state change of an
         # existing slice after partial consumption) keeps it; a freshly opened or carried-over slice has None here and
         # the trades_opened_set_slice trigger assigns the new row's own id as its slice identity.

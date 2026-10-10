@@ -385,6 +385,35 @@ def test_taxes_cfd_short_dividends(tmp_path, data_path, prepare_db_taxes):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# A short call that a split of its underlying asset turned from 1 contract into 2 and that expired worthless:
+# the premium (185.00 USD at 80 RUB) is the income, the commission of the sale (0.62869 USD) is the only expense
+def test_taxes_short_option_adjusted_by_split(tmp_path, data_path, prepare_db_taxes):
+    create_quotes(2, 1, [(d2t(251101), 80.0), (d2t(251226), 78.0), (d2t(251229), 77.0)])
+
+    IBKR = StatementIBKR()
+    IBKR.load(data_path + 'ibkr_option_split.xml')
+    IBKR.validate_format()
+    IBKR.match_db_ids()
+    IBKR.import_into_db()
+
+    ledger = Ledger()  # Build ledger to have FIFO deals table
+    ledger.rebuild(from_timestamp=0)
+
+    deal, totals = TaxesRussia().prepare_tax_report(2025, 1)['ПФИ']
+    expected = {
+        'report_template': 'corporate_action', 'o_type': 'Продажа', 'c_type': 'Покупка',
+        'o_qty': Decimal('-100'), 'o_price': Decimal('1.85'), 'o_amount': Decimal('185.00'),
+        'o_fee': Decimal('0.62869'), 'o_fee_rub': Decimal('50.30'),
+        'c_qty': Decimal('-200'), 'c_price': Decimal('0'), 'c_amount': Decimal('0.00'), 'c_fee': Decimal('0'),
+        'income': Decimal('185.00'), 'income_rub': Decimal('14800.00'), 'spending_rub': Decimal('50.30'),
+        'profit': Decimal('184.37'), 'profit_rub': Decimal('14749.70')
+    }
+    assert {key: deal[key] for key in expected} == expected
+    assert 'SPLIT 2 FOR 1 (XLE 251226C00046750' in deal['note']
+    assert (totals['income_rub'], totals['spending_rub']) == (Decimal('14800.00'), Decimal('50.30'))
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 # The flow report sorts its rows by account number, and a cash account, a wallet or a deposit carries none. An absent
 # number has to sort beside the numbers that are there rather than crash the report - which is every report of this
 # kind, as an account without a number is the common case abroad.

@@ -2464,17 +2464,30 @@ class CorporateAction(LedgerTransaction):
             payments.append({"timestamp": timestamp, "day_only": day_only, "amount": amount, "note": note})
         return payments
 
+    # A short position is carried over by a split and by a symbol change only, and it has to stay short
+    def _verify_short_position_action(self) -> None:
+        if self._subtype not in (CorporateAction.Split, CorporateAction.SymbolChange):
+            raise LedgerError(LedgerTransaction.tr("Corporate action of this type isn't supported for a short position. Date: ")
+                              + f"{ts2dt(self._timestamp)}, Operation: {self.dump()}")
+        if any(x['qty'] >= Decimal('0') for x in self._results):
+            raise LedgerError(LedgerTransaction.tr("Corporate action on a short position has to result in a short position. Date: ")
+                              + f"{ts2dt(self._timestamp)}, Operation: {self.dump()}")
+
     def processLedger(self, ledger):
         if self._subtype == CorporateAction.NA:
             raise LedgerError(LedgerTransaction.tr("Corporate action type isn't defined. Date: ") \
                   + f"{ts2dt(self._timestamp)}, " + f"{self._account.name()} - {self._symbol.symbol()}")
         # Get asset amount accumulated before current operation
         asset_amount = ledger.getAmount(BookAccount.Assets, self._account.id(), self._asset.id())
-        if asset_amount < self._qty:
+        # An action with a negative quantity is an action on a short position: every quantity and value is mirrored
+        sign = Decimal('-1') if self._qty < Decimal('0') else Decimal('1')
+        if sign < Decimal('0'):
+            self._verify_short_position_action()
+        if sign * asset_amount < sign * self._qty:
             raise LedgerError(LedgerTransaction.tr("Asset amount is not enough for corporate action processing. Date: ")
                               + f"{ts2dt(self._timestamp)}, "
                               + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
-        if asset_amount > self._qty:
+        if sign * asset_amount > sign * self._qty:
             raise LedgerError(LedgerTransaction.tr("Unhandled case: Corporate action covers not full open position. Date: ")
                               + f"{ts2dt(self._timestamp)}, "
                               + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
@@ -2484,9 +2497,10 @@ class CorporateAction(LedgerTransaction):
             raise LedgerError(LedgerTransaction.tr("Results value of corporate action doesn't match 100% of initial asset value. ")
                               + f"Date: {ts2dt(self._timestamp)}, Asset amount: {asset_amount}, "
                               + f"Distributed: {100.0 * float(allocation)}%, Operation: {self.dump()}")
-        processed_qty, processed_value = self._close_deals_fifo(Decimal('-1.0'), self._qty)
+        processed_qty, processed_value = self._close_deals_fifo(-sign, abs(self._qty))
         # Withdraw value with old quantity of old asset
-        ledger.appendTransaction(self, BookAccount.Assets, -processed_qty, asset_id=self._asset.id(), value=-processed_value)
+        ledger.appendTransaction(self, BookAccount.Assets, -sign * processed_qty, asset_id=self._asset.id(),
+                                 value=-sign * processed_value)
         if self._subtype == CorporateAction.Delisting:  # Map value to costs and exit - nothing more for delisting
             ledger.appendTransaction(self, BookAccount.Costs, processed_value, category=PredefinedCategory.Profit, peer=self._broker, tag=self._asset.tag().id())
             return
@@ -2503,10 +2517,10 @@ class CorporateAction(LedgerTransaction):
             else:
                 # The quantity the action produced is allocated over the lots it carries over, so they add up to it
                 # exactly; their price keeps the coefficient that preserves the value of each lot.
-                for trade, lot_qty in zip(closed_trades, allocate_qty(closed_trades, qty)):
+                for trade, lot_qty in zip(closed_trades, allocate_qty(closed_trades, abs(qty))):
                     self._account.open_trade(trade, asset, modified_by=self, qty=lot_qty,
                                              price_adjustment=share * self._qty / qty)
-                ledger.appendTransaction(self, BookAccount.Assets, qty, asset_id=asset.id(), value=value)
+                ledger.appendTransaction(self, BookAccount.Assets, qty, asset_id=asset.id(), value=sign * value)
 
 # ----------------------------------------------------------------------------------------------------------------------
 # A same-account exchange of one asset into another that PRESERVES THE COST BASIS and recognizes no income.

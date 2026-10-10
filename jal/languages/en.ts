@@ -4983,6 +4983,16 @@ do you want to save them?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../db/operations.py" line="2470"/>
+        <source>Corporate action of this type isn&apos;t supported for a short position. Date: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/operations.py" line="2473"/>
+        <source>Corporate action on a short position has to result in a short position. Date: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../db/operations.py" line="2484"/>
         <source>Results value of corporate action doesn&apos;t match 100% of initial asset value. </source>
         <translation type="unfinished"></translation>
@@ -8854,6 +8864,16 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="632"/>
         <source>&apos;actionID&apos; attribute of every record has a value</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/broker_statements/ibkr.py" line="641"/>
+        <source>every record of an option has a &apos;figi&apos; attribute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/broker_statements/ibkr.py" line="642"/>
+        <source>Enable the field &apos;FIGI&apos; for the sections &apos;Corporate Actions&apos;, &apos;Trades&apos; and &apos;Financial Instrument Information&apos; in the configuration of your Flex Query and get the statement again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
