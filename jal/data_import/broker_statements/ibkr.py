@@ -7,7 +7,7 @@ from decimal import Decimal
 from lxml import etree
 
 from PySide6.QtWidgets import QApplication
-from jal.constants import PredefinedCategory
+from jal.constants import Setup, PredefinedCategory
 from jal.widgets.helpers import ts2dt, ts2d
 from jal.db.helpers import format_decimal, remove_exponent
 from jal.db.account import JalAccount
@@ -150,6 +150,8 @@ class StatementIBKR(StatementXML):
     ReversalSuffix = " - REVERSAL"
     CancelPrefix = "CANCEL "
     NoAsset = -1
+    NoActionID = '<missing>'    # stands for 'actionID' of a corporate action that has no such attribute at all
+    FormerCorpActionsTag = 'ibkr-corp-actions-by-description'
 
     def __init__(self):
         super().__init__()
@@ -232,6 +234,8 @@ class StatementIBKR(StatementXML):
                                             ('assetCategory', 'asset_type', IBKR_AssetType, IBKR_AssetType.NotSupported),
                                             ('dateTime', 'timestamp', datetime, None),
                                             ('transactionID', 'number', str, ''),
+                                            ('actionID', 'action_id', str, self.NoActionID),
+                                            ('currency', 'currency', str, None),
                                             ('description', 'description', str, None),
                                             ('quantity', 'quantity', Decimal, None),
                                             ('value', 'value', Decimal, None),
@@ -334,17 +338,7 @@ class StatementIBKR(StatementXML):
         # Dump statement info relevant to given symbol's asset
         debug_info = 'Statement data:\n----------------------------------------------------------------\n'
         assert self._statement is not None
-        symbols = [x['symbol'] for x in self._symbol_asset(symbol)[JSF.SYMBOLS]]
-        for symbol_name in symbols:
-            elements = self._statement.findall(f".//*[@symbol='{symbol_name}']")
-            for element in elements:
-                # The dump is written to be sent on to someone who has no business knowing whose account it is, so
-                # what names the account goes, and so does the running balance - it says nothing about the records
-                # that could not be reconciled, and it is the one figure in them that describes the whole portfolio.
-                for attribute, replacement in (('accountId', 'U7654321'), ('acctAlias', ''), ('balance', '')):
-                    if attribute in element.attrib:
-                        element.attrib[attribute] = replacement
-                debug_info += etree.tostring(element).decode("utf-8")
+        debug_info += self._masked_xml(self._asset_elements(symbol))
         debug_info += "----------------------------------------------------------------\n"
         # Dump asset_payments info from database for the given symbol's asset
         db_account = self._map_db_account(account)
@@ -355,6 +349,27 @@ class StatementIBKR(StatementXML):
         debug_info += str(payments)
         debug_info += "\n----------------------------------------------------------------\n"
         super().save_debug_info(debug_info=debug_info)
+
+    # Statement records that mention any symbol of the given symbol's asset
+    def _asset_elements(self, symbol) -> list:
+        elements = []
+        for symbol_name in [x['symbol'] for x in self._symbol_asset(symbol)[JSF.SYMBOLS]]:
+            elements += self._statement.findall(f".//*[@symbol='{symbol_name}']")
+        return elements
+
+    # XML text of the given statement records with the account number, its alias and the cash balance wiped out
+    @staticmethod
+    def _masked_xml(elements) -> str:
+        xml_text = ''
+        for element in elements:
+            # The dump is written to be sent on to someone who has no business knowing whose account it is, so
+            # what names the account goes, and so does the running balance - it says nothing about the records
+            # that could not be reconciled, and it is the one figure in them that describes the whole portfolio.
+            for attribute, replacement in (('accountId', 'U7654321'), ('acctAlias', ''), ('balance', '')):
+                if attribute in element.attrib:
+                    element.attrib[attribute] = replacement
+            xml_text += etree.tostring(element).decode("utf-8")
+        return xml_text
 
     def validate_file_header_attributes(self, attributes):
         if 'type' not in attributes:
@@ -424,8 +439,21 @@ class StatementIBKR(StatementXML):
             if 'listingExchange' in xml_element.attrib and xml_element.attrib['listingExchange'] \
                     and xml_element.attrib['listingExchange'] != 'VALUE':  # don't store 'VALUE' or empty exchange
                 asset_data['note'] = xml_element.attrib['listingExchange']
+            if xml_element.tag == 'CashTransaction' and 'isin' not in asset_data and 'cusip' not in asset_data:
+                asset_data.update(self._ids_by_action(xml_element))
             symbol_id = self.symbol_id(asset_data)
         return symbol_id
+
+    # ISIN and CUSIP for a cash transaction that has none: the ones that other records of its actionID agree on
+    def _ids_by_action(self, xml_element) -> dict:
+        action_id = xml_element.attrib.get('actionID', '')
+        if not action_id or self._statement is None:
+            return {}
+        records = self._statement.findall(f".//CashTransaction[@actionID='{action_id}']")
+        ids = {(x.attrib.get('isin', ''), x.attrib.get('cusip', '')) for x in records} - {('', '')}
+        if len(ids) != 1:
+            return {}
+        return {key: value for key, value in zip(('isin', 'cusip'), ids.pop()) if value}
 
     def attr_account(self, xml_element, attr_name, default_value):
         if attr_name not in xml_element.attrib:
@@ -626,74 +654,98 @@ class StatementIBKR(StatementXML):
         # A corporate action takes effect for a whole day
         for action in actions:
             action['timestamp_day_only'] = True
-
-        action_loaders = {
-            JSF.ACTION_MERGER: self.load_merger,
-            JSF.ACTION_SPINOFF: self.load_spinoff,
-            JSF.ACTION_SYMBOL_CHANGE: self.load_symbol_change,
-            JSF.PAYMENT_STOCK_DIVIDEND: self.load_stock_dividend,
-            JSF.ACTION_SPLIT: self.load_split,
-            JSF.ACTION_BOND_MATURITY: self.load_bond_maturity,
-            JSF.ACTION_DELISTING: self.load_delisting,
-            JSF.ACTION_RIGHTS_ISSUE: self.load_none
-        }
-
-        cnt = 0
+        self.check_corporate_action_ids(actions)
         self.remove_cancelled_corporate_actions(actions)
-
-        # If stocks were bought/sold on a corporate action day IBKR may put several records for one corporate
-        # action. So first step is to aggregate quantity.
-        key_func = lambda x: (x['account'], x['symbol'], x['type'], x['description'], x['timestamp'])
-        actions_sorted = sorted(actions, key=key_func)
-        actions_aggregated = []
-        for k, group in groupby(actions_sorted, key=key_func):
-            group_list = list(group)
-            part = group_list[0]  # Take fist of several actions as a basis
-            part['quantity'] = sum(action['quantity'] for action in group_list)  # and update quantity in it
-            part['jal_processed'] = False  # This flag will be used to mark already processed records
-            actions_aggregated.append(part)
-            cnt += len(group_list) - 1
-        # Now split in 2 parts: A for new stocks deposit, B for old stocks withdrawal
-        # There might be 0 quantity value - it should be ignored
-        parts_a = [action for action in actions_aggregated if action['quantity'] > 0]
-        parts_b = [action for action in actions_aggregated if action['quantity'] < 0]
-        # Process sequentially '+' and '-', 'jal_processed' will set True when '+' has pair record in '-'
-        for action in parts_a + parts_b:
-            if action['jal_processed']:
-                continue
-            if action['type'] in action_loaders:
-                cnt += action_loaders[action['type']](action, parts_b)
-            else:
-                raise Statement_ImportError(
-                    self.tr("Corporate action type is not supported: ") + f"{action}")
+        cnt = 0
+        for withdrawn, received in self.corporate_action_legs(actions):
+            cnt += self.load_corporate_action(withdrawn, received)
         logging.info(self.tr("Corporate actions loaded: ") + f"{cnt} ({len(actions)})")
 
-    # Find record in list 'parts_b' (second parts of corporate actions) which matches
-    # given symbol and description with more details from corp_action itself
-    def find_corp_action_pair(self, symbol, description, action, parts_b):
-        expected = self.normalize_corp_action_description(description)
-        paired_record = list(filter(
-            lambda pair: pair['symbol'] == symbol
-                         and (self.normalize_corp_action_description(pair['description']).startswith(expected + ", ")
-                              or self.normalize_corp_action_description(pair['description']).startswith(expected + ".OLD, ")
-                              or self.normalize_corp_action_description(pair['description']).startswith(expected + "D, ")
-                              or self.normalize_corp_action_description(pair['description']).startswith(expected + "D.OLD, "))
-                         and pair['type'] == action['type']
-                         and pair['timestamp'] == action['timestamp'], parts_b))
-        if len(paired_record) != 1:
-            raise Statement_ImportError(self.tr("Can't find paired record for ") + f"{action}")
-        return paired_record
+    # The actionID is the only link between the records of one corporate action, so every record has to carry it
+    def check_corporate_action_ids(self, actions):
+        missing = [x for x in actions if x['action_id'] == self.NoActionID]
+        if missing:
+            self._refuse_corp_action(missing, self.tr("every record has an 'actionID' attribute"),
+                                     self.tr("Enable the field 'Action ID' for the section 'Corporate Actions' in "
+                                             "the configuration of your Flex Query and get the statement again."))
+        empty = [x for x in actions if not x['action_id']]
+        if empty:
+            self._refuse_corp_action(empty, self.tr("'actionID' attribute of every record has a value"))
+
+    # Records of one corporate action share an actionID - returns a (withdrawn, received) pair of record lists per action
+    def corporate_action_legs(self, actions) -> list:
+        key_func = lambda x: (x['account'], x['symbol'], x['type'], x['description'], x['timestamp'])
+        groups = {}
+        for action in sorted(actions, key=key_func):
+            if action['quantity'] != 0:   # There might be 0 quantity value - it should be ignored
+                groups.setdefault(action['action_id'], []).append(action)
+        legs = [([x for x in group if x['quantity'] < 0], [x for x in group if x['quantity'] > 0])
+                for group in groups.values()]
+        # Actions that give an asset go first, the ones that only take it away are after them
+        return sorted(legs, key=lambda x: (not x[1], key_func((x[1] + x[0])[0])))
+
+    # Checks that the records of an action are what its type has to have and stores the action
+    def load_corporate_action(self, withdrawn, received) -> int:
+        # Loader and the allowed numbers of (withdrawn, received) records for every type of action
+        action_loaders = {
+            JSF.ACTION_MERGER: (self.load_merger, [(1, 0), (1, 1), (1, 2)]),
+            JSF.ACTION_SPINOFF: (self.load_spinoff, [(0, 1)]),
+            JSF.ACTION_SYMBOL_CHANGE: (self.load_symbol_change, [(1, 1)]),
+            JSF.PAYMENT_STOCK_DIVIDEND: (self.load_stock_dividend, [(0, 1)]),
+            JSF.ACTION_SPLIT: (self.load_split, [(1, 0), (0, 1), (1, 1)]),
+            JSF.ACTION_BOND_MATURITY: (self.load_bond_maturity, [(1, 0)]),
+            JSF.ACTION_DELISTING: (self.load_delisting, [(1, 0)]),
+            JSF.ACTION_RIGHTS_ISSUE: (self.load_none, [(1, 0), (0, 1)])
+        }
+        legs = withdrawn + received
+        if any(len({x[field] for x in legs}) != 1 for field in ('type', 'account', 'timestamp')):
+            self._refuse_corp_action(legs, self.tr("records of one action have the same type, account and date"))
+        if len({x['symbol'] for x in legs}) != len(legs):
+            self._refuse_corp_action(legs, self.tr("an action has one record per asset"))
+        if legs[0]['type'] not in action_loaders:
+            raise Statement_ImportError(self.tr("Corporate action type is not supported: ") + f"{legs[0]}")
+        loader, allowed = action_loaders[legs[0]['type']]
+        if (len(withdrawn), len(received)) not in allowed:
+            self._refuse_corp_action(legs, self.tr("number of withdrawn (-) / received (+) records is ") +
+                                     self.tr(" or ").join([f"{x}/{y}" for x, y in allowed]))
+        return loader(withdrawn, received)
+
+    # Stops the import: tells what was expected from the records of a corporate action and shows them as they are.
+    # With no 'advice' given the user is asked to report the case and gets a dump of these records to attach.
+    def _refuse_corp_action(self, legs, expected: str, advice: str = '') -> None:
+        if not advice:
+            advice = self.tr("Please create an issue at ") + f"{Setup.REPO_URL}/issues" + \
+                     self.tr(" and attach the statement dump (its file name is in the log, the account number is "
+                             "masked in it) - it helps to make JAL better. The former way of import, that matched "
+                             "records by description, is kept under the git tag ") + f"'{self.FormerCorpActionsTag}'."
+            try:
+                self.save_corp_action_dump(legs)
+            except Exception as e:
+                logging.error(self.tr("Failed to collect debug information: ") + f"{e}")
+        found = [f"    {ts2d(x['timestamp'])} quantity {remove_exponent(x['quantity'])}"
+                 f" proceeds {remove_exponent(x['proceeds'])} actionID '{x['action_id']}'"
+                 f" transactionID '{x['number']}' code '{x['code']}': {x['description']}" for x in legs]
+        raise Statement_ImportError("\n".join([self.tr("Corporate action isn't what JAL expects it to be."),
+                                               self.tr("Expected: ") + expected, self.tr("Found:")] + found + [advice]))
+
+    # Saves statement records of the given corporate action and of the assets it mentions
+    def save_corp_action_dump(self, legs):
+        assert self._statement is not None
+        elements = []
+        for action_id in {x['action_id'] for x in legs if x['action_id'] and x['action_id'] != self.NoActionID}:
+            elements += self._statement.findall(f".//CorporateAction[@actionID='{action_id}']")
+        for symbol in {x['symbol'] for x in legs}:
+            elements += [x for x in self._asset_elements(symbol) if x not in elements]
+        debug_info = 'Statement data:\n----------------------------------------------------------------\n'
+        debug_info += self._masked_xml(elements)
+        debug_info += "----------------------------------------------------------------\n"
+        super().save_debug_info(debug_info=debug_info)
 
     @staticmethod
     def normalize_corp_action_symbol(symbol: str) -> str:
         # Some IBKR descriptions prefix the old symbol with a 14-digit timestamp-like value.
         normalized = re.sub(r"^\d{14}(?=\w)", "", symbol)
         return normalized if normalized else symbol
-
-    @classmethod
-    def normalize_corp_action_description(cls, description: str) -> str:
-        # IBKR may also prepend the same 14-digit value to the symbol inside parentheses.
-        return re.sub(r"\((\d{14})(?=\w)", "(", description)
 
     # Takes cancelled corporate actions and tries to find and remove original one form actions list
     def remove_cancelled_corporate_actions(self, actions):
@@ -708,92 +760,59 @@ class StatementIBKR(StatementXML):
                 delete_elements += [c_id, matched[0]]
         for idx in sorted(delete_elements, reverse=True):
             del actions[idx]
-        for action in actions:
-            if action['code'] == StatementIBKR.CancelledFlag:
-                raise Statement_ImportError(self.tr("Can't process cancelled corporate action") + f" '{action}'")
+        if delete_elements:
+            logging.warning(self.tr("A cancelled corporate action was dropped together with its cancellation. "
+                                    "JAL has no example of such statement, please share yours at ") +
+                            f"{Setup.REPO_URL}/issues")
+        unmatched = [x for x in actions if x['code'] == StatementIBKR.CancelledFlag]
+        if unmatched:
+            self._refuse_corp_action(unmatched, self.tr("a cancellation repeats the record it cancels with an "
+                                                        "opposite quantity"))
 
     # Dummy loader to skip some corporate actions
-    def load_none(self, action, parts_b) -> int:
+    def load_none(self, _withdrawn, _received) -> int:
         return 0
 
-    def load_merger(self, action, parts_b) -> int:
-        MergerPatterns = [
-            r"^(?P<symbol_old>.*)(.OLD)?\((?P<isin_old>\w+)\) +MERGED\([\w ]+\) +WITH +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>.*)(.OLD)?, (?P<name>.*), (?P<id>\w+)\)$",
-            r"^(?P<symbol_old>.*)(.OLD)?\((?P<isin_old>\w+)\) +CASH and STOCK MERGER +\([\w ]+\) +(?P<isin_new>[\w ]+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +AND +(?P<currency>\w+) +(\d+(\.\d+)?) +\((?P<symbol>[\w ]+)(.OLD)?, (?P<name>.*), (?P<id>\w+)\)$",
-            r"^(?P<symbol_old>.*)(.OLD)?\((?P<isin_old>\w+)\) +CASH and STOCK MERGER +\([\w ]+\) +(?P<isin_new>[\w ]+) +(?P<X>\d+) +FOR +(?P<Y>\d+), +(?P<isin_new2>[\w ]+) +(?P<X2>\d+) +FOR +(?P<Y2>\d+) +AND +(?P<currency>\w+) +(\d+(\.\d+)?) +\((?P<symbol>[\w ]+)(.OLD)?, (?P<name>.*), (?P<id>\w+)\)$",
-            r"^(?P<symbol_old>.*)\((?P<isin_old>\w+)\) +TENDERED TO +(?P<isin_new>\w+) +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>.*), +(?P<name>.*), +(?P<id>.*)\)$",
-            r"^(?P<symbol_old>.*)\((?P<isin_old>\w+)\) +MERGED\([\w ]+\) +FOR (?P<currency>\w+) (?P<price>\d+\.\d+) PER SHARE +\((?P<symbol>.*), (?P<name>.*)( - TENDER ODD LOT)?, (?P<id>\w+)\)$",  # "TENDER ODD LOT" part is optional
-            r"^(?P<symbol_old>.*)(.OLD)?\((?P<isin_old>\w+)\) +MERGED\([\w ]+\) +WITH +(?P<isin_new>.*) +(?P<X>\d+) +FOR +(?P<Y>\d+), +(?P<isin_new2>.*) +(?P<X2>\d+) +FOR +(?P<Y2>\d+) +\((?P<symbol>.*)(.OLD)?, (?P<name>.*), (?P<id>\w+)\)$"
-            ]
+    # Quantity of a corporate action record in pieces (IBKR gives bonds by their face value)
+    @staticmethod
+    def _corp_action_qty(leg) -> Decimal:
+        return leg['quantity'] / (IBKR_Asset.BondPrincipal if leg['asset_type'] == JSF.ASSET_BOND else Decimal('1'))
 
-        parts = None
-        pattern_id = -1
-        for pattern_id, pattern in enumerate(MergerPatterns):
-            parts = re.match(pattern, action['description'], re.IGNORECASE)
-            if parts:
-                break
-
-        if parts is None:
-            raise Statement_ImportError(self.tr("Can't parse Merger description ") + f"'{action}'")
-        merger_a = parts.groupdict()
-
-        if len(merger_a) != MergerPatterns[pattern_id].count("(?P<"):  # check expected number of matches
-            raise Statement_ImportError(self.tr("Merger description miss some data ") + f"'{action}'")
-
-        merger_a['symbol_old'] = self.normalize_corp_action_symbol(merger_a['symbol_old'])
-        description_b = action['description'][:parts.span('symbol')[0]] + merger_a['symbol_old']
-        symbol_b = self.locate_symbol(merger_a['symbol_old'], merger_a['isin_old'])
-
-        if pattern_id == 4:  # Asset converted to money -> store it as a sell trade
-            action['id'] = max([0] + [x['id'] for x in self._data[JSF.TRADES]]) + 1
-            action['settlement'] = action['timestamp']
-            action['price'] = self._derived_price(action['proceeds'], action['quantity'])
-            action['note'] = action.pop('description')
-            action['fee'] = Decimal('0')
-            self.drop_extra_fields(action, ["type", "value", "proceeds", "code", "asset_type", "jal_processed",
-                                            "timestamp_day_only"])
-            self._data[JSF.TRADES].append(action)
+    def load_merger(self, withdrawn, received) -> int:
+        old = withdrawn[0]
+        if not received:  # Asset converted to money -> store it as a sell trade
+            if not old['proceeds']:
+                self._refuse_corp_action(withdrawn, self.tr("an asset withdrawn for nothing in exchange has proceeds"))
+            old['id'] = max([0] + [x['id'] for x in self._data[JSF.TRADES]]) + 1
+            old['settlement'] = old['timestamp']
+            old['price'] = self._derived_price(old['proceeds'], old['quantity'])
+            old['note'] = old.pop('description')
+            old['fee'] = Decimal('0')
+            self.drop_extra_fields(old, ["type", "value", "proceeds", "code", "asset_type", "action_id", "currency",
+                                         "timestamp_day_only"])
+            self._data[JSF.TRADES].append(old)
             return 1
+        action = received[0]
+        action['id'] = max([0] + [x['id'] for x in self._data[JSF.CORP_ACTIONS]]) + 1
+        action['outcome'] = [{'symbol': x['symbol'], 'quantity': self._corp_action_qty(x), 'share': Decimal('0')}
+                             for x in received]
+        if old['proceeds']:  # Cash payment is a part of corporate action
+            if 'CASH' not in old['description'].upper():
+                self._refuse_corp_action(withdrawn + received,
+                                         self.tr("a merger that pays proceeds has 'CASH' in its description"))
+            payment = {'symbol': self.currency_symbol_id(old['currency']),
+                       'quantity': old['proceeds'], 'share': Decimal('0')}
+            action['outcome'].insert(0, payment)
+        action['symbol'] = old['symbol']
+        action['quantity'] = -self._corp_action_qty(old)
+        self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "action_id", "currency"])
+        self._data[JSF.CORP_ACTIONS].append(action)
+        return len(withdrawn) + len(received)
 
-        paired_record = self.find_corp_action_pair(symbol_b, description_b, action, parts_b)
-        # Adjust quantity for bonds
-        adj_factor = IBKR_Asset.BondPrincipal if action['asset_type'] == JSF.ASSET_BOND else Decimal('1')
-        existing_action = None
-        # Special processing if 1 asset is converted into two other assets
-        if pattern_id == 2 or pattern_id == 5:
-            existing_action = self.locate_existing_merger(action['timestamp'],
-                                                          action['account'], paired_record[0]['symbol'])
-        if existing_action is None:
-            action['id'] = max([0] + [x['id'] for x in self._data[JSF.CORP_ACTIONS]]) + 1
-            action['outcome'] = [{'symbol': action['symbol'], 'quantity': action['quantity']/adj_factor, 'share': Decimal('0')}]
-            action['symbol'] = paired_record[0]['symbol']
-            action['quantity'] = -paired_record[0]['quantity']/adj_factor
-            # Process cash payment if it is present as part of corporate action
-            if pattern_id == 1 or pattern_id == 2:
-                payment = {'symbol': self.currency_symbol_id(parts['currency']),
-                           'quantity': paired_record[0]['proceeds'], 'share': Decimal('0')}
-                action['outcome'].insert(0, payment)
-            self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "jal_processed"])
-            self._data[JSF.CORP_ACTIONS].append(action)
-        else:
-            next_outcome = {'symbol': action['symbol'], 'quantity': action['quantity']/adj_factor, 'share': Decimal('0')}
-            existing_action['outcome'].append(next_outcome)
-        paired_record[0]['jal_processed'] = True
-        return 2
-
-    def locate_existing_merger(self, timestamp, account, symbol):
-        existing_merger = list(filter(
-            lambda merger: merger['type'] == JSF.ACTION_MERGER and merger['timestamp'] == timestamp
-                           and merger['account'] == account and merger['symbol'] == symbol, self._data[JSF.CORP_ACTIONS]))
-        if len(existing_merger) == 0:
-            return None
-        if len(existing_merger) != 1:
-            raise Statement_ImportError(self.tr("Multiple merger records already exist at ") + f"{timestamp}")
-        return existing_merger[0]
-
-    def load_spinoff(self, action, _parts_b) -> int:
+    def load_spinoff(self, _withdrawn, received) -> int:
         SpinOffPattern = r"^(?P<symbol_old>.*)\((?P<isin_old>\w+)\) +SPINOFF +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>.*), (?P<name>.*), (?P<id>\w+)\)$"
 
+        action = received[0]
         parts = re.match(SpinOffPattern, action['description'], re.IGNORECASE)
         if parts is None:
             raise Statement_ImportError(self.tr("Can't parse Spin-off description ") + f"'{action}'")
@@ -816,35 +835,24 @@ class StatementIBKR(StatementXML):
                              {'symbol': action['symbol'], 'quantity': action['quantity'], 'share': Decimal('0')}]
         action['symbol'] = symbol_old
         action['quantity'] = qty_old
-        self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "jal_processed"])
+        self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "action_id", "currency"])
         self._data[JSF.CORP_ACTIONS].append(action)
         return 1
 
-    def load_symbol_change(self, action, parts_b) -> int:
-        SymbolChangePattern = r"^(?P<symbol_old>.*)\((?P<isin_old>\w+)\) +CUSIP\/ISIN CHANGE TO +\((?P<isin_new>\w+)\) +\((?P<symbol>.*), (?P<name>.*), (?P<id>\w+)\)$"
-
-        parts = re.match(SymbolChangePattern, action['description'], re.IGNORECASE)
-        if parts is None:
-            raise Statement_ImportError(self.tr("Can't parse Symbol Change description ") + f"'{action}'")
-        isin_change = parts.groupdict()
-        if len(isin_change) != SymbolChangePattern.count("(?P<"):  # check that expected number of groups was matched
-            raise Statement_ImportError(self.tr("Symbol Change description miss some data ") + f"'{action}'")
-        isin_change['symbol_old'] = self.normalize_corp_action_symbol(isin_change['symbol_old'])
-        description_b = action['description'][:parts.span('symbol')[0]] + isin_change['symbol_old']
-        symbol_b = self.locate_symbol(isin_change['symbol_old'], isin_change['isin_old'])
-        paired_record = self.find_corp_action_pair(symbol_b, description_b, action, parts_b)
+    def load_symbol_change(self, withdrawn, received) -> int:
+        action = received[0]
         action['id'] = max([0] + [x['id'] for x in self._data[JSF.CORP_ACTIONS]]) + 1
         action['outcome'] = [{'symbol': action['symbol'], 'quantity': action['quantity'], 'share': Decimal('1')}]
-        action['symbol'] = paired_record[0]['symbol']
-        action['quantity'] = -paired_record[0]['quantity']
-        self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "jal_processed"])
+        action['symbol'] = withdrawn[0]['symbol']
+        action['quantity'] = -withdrawn[0]['quantity']
+        self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "action_id", "currency"])
         self._data[JSF.CORP_ACTIONS].append(action)
-        paired_record[0]['jal_processed'] = True
         return 2
 
-    def load_stock_dividend(self, action, parts_b) -> int:
+    def load_stock_dividend(self, _withdrawn, received) -> int:
         StockDividendPattern = r"^(?P<description>.*) +(?P<tail>\(.*\))$"
 
+        action = received[0]
         parts = re.match(StockDividendPattern, action['description'], re.IGNORECASE)
         if parts is None:
             raise Statement_ImportError(self.tr("Can't parse Stock Dividend description ") + f"'{action}'")
@@ -854,45 +862,37 @@ class StatementIBKR(StatementXML):
         action['amount'] = action['quantity']
         action['price'] = self._derived_price(action['value'], action['quantity'])
         action['tax'] = Decimal('0')
-        self.drop_extra_fields(action, ["quantity", "value", "proceeds", "code", "asset_type", "jal_processed"])
+        self.drop_extra_fields(action, ["quantity", "value", "proceeds", "code", "asset_type", "action_id", "currency"])
         self._data[JSF.ASSET_PAYMENTS].append(action)
         return 1
 
-    def load_split(self, action, parts_b) -> int:
+    def load_split(self, withdrawn, received) -> int:
         SplitPattern = r"^(?P<symbol_old>.*)\((?P<isin_old>\w+)\) +SPLIT +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>.*), (?P<name>.*), (?P<id>\w+)*\)$"
 
-        parts = re.match(SplitPattern, action['description'], re.IGNORECASE)
-        if parts is None:
-            raise Statement_ImportError(self.tr("Can't parse Split description ") + f"'{action}'")
-        split = parts.groupdict()
-        if len(split) != SplitPattern.count("(?P<"):  # check that expected number of groups was matched
-            raise Statement_ImportError(self.tr("Split description miss some data ") + f"'{action}'")
-        split['symbol_old'] = self.normalize_corp_action_symbol(split['symbol_old'])
-        if parts['id'] is None or parts['isin_old'] == parts['id']:  # Simple split without ISIN change
-            qty_delta = action['quantity']
-            qty_old = qty_delta / (Decimal(int(split['X'])) / int(split['Y']) - 1)
-            qty_new = qty_old + qty_delta
-            action['id'] = max([0] + [x['id'] for x in self._data[JSF.CORP_ACTIONS]]) + 1
-            action['outcome'] = [{'symbol': action['symbol'], 'quantity': qty_new, 'share': Decimal('1')}]
-            action['quantity'] = qty_old
-            self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "jal_processed"])
-            self._data[JSF.CORP_ACTIONS].append(action)
-            return 1
-        else:  # Split together with ISIN change and there should be 2nd record available
-            description_b = action['description'][:parts.span('symbol')[0]] + split['symbol_old']
-            symbol_b = self.locate_symbol(split['symbol_old'], split['isin_old'])
-            paired_record = self.find_corp_action_pair(symbol_b, description_b, action, parts_b)
-            action['id'] = max([0] + [x['id'] for x in self._data[JSF.CORP_ACTIONS]]) + 1
+        action = (received + withdrawn)[0]
+        action['id'] = max([0] + [x['id'] for x in self._data[JSF.CORP_ACTIONS]]) + 1
+        if withdrawn and received:  # Split together with ISIN change: old asset is withdrawn and new one is received
             action['outcome'] = [{'symbol': action['symbol'], 'quantity': action['quantity'], 'share': Decimal('1')}]
-            action['symbol'] = paired_record[0]['symbol']
-            action['quantity'] = -paired_record[0]['quantity']
-            self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "jal_processed"])
-            self._data[JSF.CORP_ACTIONS].append(action)
-            paired_record[0]['jal_processed'] = True
-            return 2
+            action['symbol'] = withdrawn[0]['symbol']
+            action['quantity'] = -withdrawn[0]['quantity']
+        else:  # Simple split without ISIN change: the only record is a change of quantity
+            parts = re.match(SplitPattern, action['description'], re.IGNORECASE)
+            if parts is None:
+                raise Statement_ImportError(self.tr("Can't parse Split description ") + f"'{action}'")
+            if parts['id'] is not None and parts['isin_old'] != parts['id']:
+                self._refuse_corp_action([action], self.tr("a split that changes ISIN has a withdrawn (-) and "
+                                                           "a received (+) record"))
+            qty_delta = action['quantity']
+            qty_old = qty_delta / (Decimal(int(parts['X'])) / int(parts['Y']) - 1)
+            action['outcome'] = [{'symbol': action['symbol'], 'quantity': qty_old + qty_delta, 'share': Decimal('1')}]
+            action['quantity'] = qty_old
+        self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "action_id", "currency"])
+        self._data[JSF.CORP_ACTIONS].append(action)
+        return len(withdrawn) + len(received)
 
     # Bond maturity is processed as ordinary bond
-    def load_bond_maturity(self, action, parts_b) -> int:
+    def load_bond_maturity(self, withdrawn, _received) -> int:
+        action = withdrawn[0]
         action['id'] = max([0] + [x['id'] for x in self._data[JSF.TRADES]]) + 1
         action['quantity'] = action['quantity'] / IBKR_Asset.BondPrincipal
         action['price'] = self._derived_price(action['proceeds'], action['quantity'])
@@ -900,11 +900,12 @@ class StatementIBKR(StatementXML):
         action['note'] = action['description']
         action['fee'] = Decimal('0')
         self.drop_extra_fields(action, ["description", "value", "proceeds", "type", "code", "asset_type",
-                                        "jal_processed", "timestamp_day_only"])
+                                        "action_id", "currency", "timestamp_day_only"])
         self._data[JSF.TRADES].append(action)
         return 1
 
-    def load_delisting(self, action, parts_b) -> int:
+    def load_delisting(self, withdrawn, _received) -> int:
+        action = withdrawn[0]
         # There might be delisting for issued rights - we don't need to store it as it isn't a real asset
         asset = self._symbol_asset(action['symbol'])
         if asset['type'] == JSF.ASSET_RIGHTS:
@@ -912,7 +913,7 @@ class StatementIBKR(StatementXML):
         action['id'] = max([0] + [x['id'] for x in self._data[JSF.CORP_ACTIONS]]) + 1
         action['quantity'] = -action['quantity']
         action['outcome'] = []
-        self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "jal_processed"])
+        self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "action_id", "currency"])
         self._data[JSF.CORP_ACTIONS].append(action)
         return 1
 

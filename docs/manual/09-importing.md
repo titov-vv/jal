@@ -31,6 +31,10 @@ Pick one or more files and JAL does the rest. For Interactive Brokers, set the F
 the broker's site to include trades, cash transactions, corporate actions and open positions; after
 that, exporting is a click.
 
+Keep every field of sections switched on (*Select All*). **Action ID** is the  one JAL cannot do without: 
+it is how JAL mergers lines for the same event, and a statement that has no **Action ID** can be refused 
+with a message saying so.
+
 ### Trading 212
 
 Two things about this broker are unlike the rest.

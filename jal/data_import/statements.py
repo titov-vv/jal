@@ -4,7 +4,7 @@ import os
 from collections import defaultdict
 
 from PySide6.QtCore import QObject, Signal
-from PySide6.QtWidgets import QFileDialog
+from PySide6.QtWidgets import QFileDialog, QMessageBox
 from jal.constants import Setup
 from jal.db.settings import JalSettings, FolderFor
 from jal.widgets.helpers import sort_menu_items
@@ -85,6 +85,7 @@ class Statements(QObject):
                 logging.info(self.tr("Statement import completed successfully"))
             except Statement_ImportError as e:
                 logging.error(self.tr("Import failed: ") + str(e))
+                QMessageBox().critical(None, self.tr("Import failed"), str(e), QMessageBox.Ok)
                 self.load_failed.emit()
                 return
         self.load_completed.emit(statement.period()[1], totals)

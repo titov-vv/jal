@@ -23,6 +23,7 @@
     - на вопросы *Include Canceled Trades?, Include Currency Rates?, Display Account Alias in Place of Account ID?, Breakout by Day?* ответить No.  
     После этого нажать *Continue* и затем *Create*  
 При выборе секций будет появляться окно для более детальной настройки - я рекомендую оставлять верхнюю часть *"Options"* без изменений, а в нижней выбирать *"Select All"*, чтобы включить все галочки (пример на скриншоте ниже).  
+Во всех секциях обязательно должно быть включено поле *Action ID*, если оно доступно - по нему *jal* собирает вместе записи об одном события, и без него загрузка отчёта может быть прервана ошибкой.  
 ![IBRK account](https://github.com/titov-vv/jal/blob/master/docs/ru-tax-3ndfl/img/ibkr_selection_example.png?raw=true)  
       
 2. Вновь созданный flex-отчет появится в списке *Activity Flex Query*. Его нужно запустить по нажатию на стрелку вправо (команда *Run*).

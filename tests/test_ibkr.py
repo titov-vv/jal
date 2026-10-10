@@ -313,99 +313,122 @@ def test_ibkr_q1_tax_correction_does_not_match_future_dividend(prepare_db):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-def test_ibkr_merger_with_prefixed_old_symbol_pairs_correctly():
+# Legs of a corporate action are paired by their actionID, whatever a symbol in the description looks like
+def test_ibkr_merger_legs_are_paired_by_action_id():
     ibkr = StatementIBKR()
     ibkr._data = {JSF.CORP_ACTIONS: []}
-    ibkr.locate_symbol = lambda symbol, isin: {
-        ('BGTK', 'US34520J2078'): 28,
-    }.get((symbol, isin))
-
-    action = {
-        'type': 'merger',
-        'account': 1,
-        'symbol': 29,
-        'asset_type': 'stock',
-        'timestamp': 1646857500,
-        'number': '19750736274',
+    actions = [{
+        'type': 'merger', 'account': 1, 'symbol': 29, 'asset_type': 'stock', 'timestamp': 1646857500,
+        'number': '19750736274', 'action_id': '123456789', 'currency': 'USD',
         'description': '20220309164306BGTK(US34520J2078) MERGED(Acquisition) WITH US0896931054 1 FOR 1 (BGTK, BIG TOKEN INC, US0896931054)',
-        'quantity': Decimal('10000'),
-        'value': Decimal('24'),
-        'proceeds': Decimal('0'),
-        'code': '',
-        'jal_processed': False,
-    }
-    parts_b = [{
-        'type': 'merger',
-        'account': 1,
-        'symbol': 28,
-        'asset_type': 'stock',
-        'timestamp': 1646857500,
-        'number': '19750736269',
+        'quantity': Decimal('10000'), 'value': Decimal('24'), 'proceeds': Decimal('0'), 'code': ''
+    }, {
+        'type': 'merger', 'account': 1, 'symbol': 28, 'asset_type': 'stock', 'timestamp': 1646857500,
+        'number': '19750736269', 'action_id': '123456789', 'currency': 'USD',
         'description': '20220309164306BGTK(US34520J2078) MERGED(Acquisition) WITH US0896931054 1 FOR 1 (BGTK.OLD, FORCE PROTECTION VIDEO EQUIP, US34520J2078)',
-        'quantity': Decimal('-10000'),
-        'value': Decimal('-20'),
-        'proceeds': Decimal('0'),
-        'code': '',
-        'jal_processed': False,
+        'quantity': Decimal('-10000'), 'value': Decimal('-20'), 'proceeds': Decimal('0'), 'code': ''
     }]
 
-    loaded = ibkr.load_merger(action, parts_b)
+    ibkr.load_corporate_actions(actions)
 
-    assert loaded == 2
-    assert parts_b[0]['jal_processed'] is True
     assert len(ibkr._data[JSF.CORP_ACTIONS]) == 1
     merger = ibkr._data[JSF.CORP_ACTIONS][0]
     assert merger['symbol'] == 28
     assert merger['quantity'] == Decimal('10000')
     assert merger['outcome'] == [{'symbol': 29, 'quantity': Decimal('10000'), 'share': Decimal('0')}]
+    assert 'action_id' not in merger and 'currency' not in merger
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-def test_ibkr_split_with_prefixed_parenthetical_symbol_pairs_correctly():
+# Two real reverse splits with a change of ISIN: each one is a pair of records that share an actionID
+def test_ibkr_split_legs_are_paired_by_action_id(tmp_path, project_root, data_path, prepare_db_taxes):
     ibkr = StatementIBKR()
-    ibkr._data = {JSF.CORP_ACTIONS: []}
-    ibkr.locate_symbol = lambda symbol, isin: {
-        ('VYNE', 'US92941V2097'): 171,
-    }.get((symbol, isin))
+    ibkr.load(data_path + 'ibkr_split_action_id.xml')
 
-    action = {
-        'type': 'split',
-        'account': 1,
-        'symbol': 170,
-        'asset_type': 'stock',
-        'timestamp': 1676060700,
-        'number': '23018699773',
-        'description': 'VYNE(US92941V2097) SPLIT 1 FOR 18 (VYNE, VYNE THERAPEUTICS INC, US92941V3087)',
-        'quantity': Decimal('0.6944'),
-        'value': Decimal('0'),
-        'proceeds': Decimal('0'),
-        'code': '',
-        'jal_processed': False,
-    }
-    parts_b = [{
-        'type': 'split',
-        'account': 1,
-        'symbol': 171,
-        'asset_type': 'stock',
-        'timestamp': 1676060700,
-        'number': '23018699768',
-        'description': 'VYNE(US92941V2097) SPLIT 1 FOR 18 (20230213002014VYNE, VYNE THERAPEUTICS INC, US92941V2097)',
-        'quantity': Decimal('-12.5'),
-        'value': Decimal('0'),
-        'proceeds': Decimal('0'),
-        'code': '',
-        'jal_processed': False,
-    }]
+    isin = lambda symbol_id: ibkr._symbol(symbol_id)['isin']
+    splits = [(isin(x['symbol']), x['quantity'], isin(x['outcome'][0]['symbol']), x['outcome'][0]['quantity'],
+               x['outcome'][0]['share'], x['type']) for x in ibkr._data[JSF.CORP_ACTIONS]]
+    assert sorted(splits) == [
+        ('US74347G1922', Decimal('3'), 'US74350P6759', Decimal('0.6'), Decimal('1'), JSF.ACTION_SPLIT),
+        ('US90187E3036', Decimal('15000'), 'US90187E4026', Decimal('15'), Decimal('1'), JSF.ACTION_SPLIT)
+    ]
 
-    loaded = ibkr.load_split(action, parts_b)
 
-    assert loaded == 2
-    assert parts_b[0]['jal_processed'] is True
-    assert len(ibkr._data[JSF.CORP_ACTIONS]) == 1
-    split = ibkr._data[JSF.CORP_ACTIONS][0]
-    assert split['symbol'] == 171
-    assert split['quantity'] == Decimal('12.5')
-    assert split['outcome'] == [{'symbol': 170, 'quantity': Decimal('0.6944'), 'share': Decimal('1')}]
+# ----------------------------------------------------------------------------------------------------------------------
+# A tax given back on the '.OLD' symbol with neither ISIN nor CUSIP gets the asset of the dividend it has the actionID
+# of, though the ticker alone is ambiguous here: SQQQ is both the asset before a split and the one after it
+def test_ibkr_tax_without_identifiers_finds_its_asset_by_action_id(tmp_path, project_root, data_path, prepare_db_taxes):
+    ibkr = StatementIBKR()
+    ibkr.load(data_path + 'ibkr_old_symbol_tax.xml')
+
+    assert len(ibkr._data[JSF.ASSET_PAYMENTS]) == 1
+    dividend = ibkr._data[JSF.ASSET_PAYMENTS][0]
+    assert ibkr._symbol(dividend['symbol'])['isin'] == 'US74347G1922'
+    assert dividend['amount'] == Decimal('0.96')
+    assert dividend.get('tax', Decimal('0')) == Decimal('0')   # -0.29 +0.29 -0.29 +0.29
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Loads a statement of test data after a change made in its text
+def load_changed(tmp_path, data_path, file_name, old, new, count=1) -> StatementIBKR:
+    with open(data_path + file_name, 'r', encoding='utf-8') as xml_file:
+        text = xml_file.read()
+    assert text.count(old) == count
+    with open(tmp_path / file_name, 'w', encoding='utf-8') as xml_file:
+        xml_file.write(text.replace(old, new))
+    ibkr = StatementIBKR()
+    ibkr.load(str(tmp_path / file_name))
+    return ibkr
+
+
+# A corporate action without 'actionID' attribute isn't imported: Flex Query has to be set up to give it
+def test_ibkr_corporate_action_without_action_id_halts_the_import(tmp_path, project_root, data_path, prepare_db_taxes,
+                                                                  monkeypatch):
+    dumps = []
+    monkeypatch.setattr(Statement, 'save_debug_info', lambda self, **kwargs: dumps.append(kwargs['debug_info']))
+    with pytest.raises(Statement_ImportError) as refusal:
+        load_changed(tmp_path, data_path, 'ibkr_corp_actions.xml', ' actionID="SYNT-EXAMPLE-1"', '', count=2)
+    assert "'actionID' attribute" in str(refusal.value) and 'Flex Query' in str(refusal.value)
+    assert 'TWOHD.OLD' in str(refusal.value)   # the records are shown
+    assert dumps == []                          # nothing to report - it is the query that has to be fixed
+
+
+# An empty 'actionID' is not expected at all: the user is asked to report it and gets a dump to attach
+def test_ibkr_corporate_action_with_empty_action_id_halts_the_import(tmp_path, project_root, data_path,
+                                                                     prepare_db_taxes, monkeypatch):
+    dumps = []
+    monkeypatch.setattr(Statement, 'save_debug_info', lambda self, **kwargs: dumps.append(kwargs['debug_info']))
+    with pytest.raises(Statement_ImportError) as refusal:
+        load_changed(tmp_path, data_path, 'ibkr_corp_actions.xml', 'actionID="SYNT-EXAMPLE-1"', 'actionID=""', count=2)
+    assert '/issues' in str(refusal.value) and StatementIBKR.FormerCorpActionsTag in str(refusal.value)
+    assert len(dumps) == 1
+    assert 'TWOHD' in dumps[0] and 'U7654321' in dumps[0]
+
+
+# Records of an action that are not what its type has to have stop the import and say what differs
+@pytest.mark.parametrize("file_name, old, new, count, expected", [
+    # a leg of a split with ISIN change is on its own
+    ('ibkr_corp_actions.xml', 'quantity="-35" fifoPnlRealized="0" mtmPnl="0" code="" type="RS" actionID="SYNT-EXAMPLE-1"',
+     'quantity="-35" fifoPnlRealized="0" mtmPnl="0" code="" type="RS" actionID="SYNT-EXAMPLE-9"', 1, 'a split that changes ISIN'),
+    # both legs of a split take the asset away
+    ('ibkr_corp_actions.xml', 'quantity="0.035"', 'quantity="-0.035"', 1, 'withdrawn (-) / received (+) records is 1/0 or 0/1 or 1/1'),
+    # legs of one action are of different types
+    ('ibkr_corp_actions.xml', 'code="" type="RS" actionID="SYNT-EXAMPLE-1" transactionID="25164201877"',
+     'code="" type="IC" actionID="SYNT-EXAMPLE-1" transactionID="25164201877"', 1, 'the same type, account and date'),
+    # a spin-off shares its id with another record
+    ('ibkr_merger_spinoff.xml', 'actionID="SYNT-EXAMPLE-2"', 'actionID="SYNT-EXAMPLE-1"', 1, 'the same type, account and date'),
+    # a merger pays money that its description says nothing about
+    ('ibkr_merger_complex.xml', 'CASH and STOCK MERGER', 'STOCK MERGER', 6, "has 'CASH' in its description"),
+    # a cancellation that cancels nothing
+    ('ibkr_spinoff.xml', 'mtmPnl="0" code="" type="SO"', 'mtmPnl="0" code="Ca" type="SO"', 1, 'a cancellation repeats the record'),
+])
+def test_ibkr_unexpected_corporate_action_halts_the_import(tmp_path, project_root, data_path, prepare_db_taxes,
+                                                           monkeypatch, file_name, old, new, count, expected):
+    monkeypatch.setattr(Statement, 'save_debug_info', lambda self, **kwargs: None)
+    with pytest.raises(Statement_ImportError) as refusal:
+        load_changed(tmp_path, data_path, file_name, old, new, count)
+    assert expected in str(refusal.value)
+    assert '/issues' in str(refusal.value)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -450,10 +473,10 @@ def test_ibkr_unmatched_tax_refusal_lists_stock_dividend(prepare_db, monkeypatch
                   JSF.ASSETS: [{'id': 1, JSF.SYMBOLS: [{'id': 294, 'symbol': 'BCV', 'isin': 'US0596951063'}]}]}
     ibkr._map_db_account = lambda _: 0
     ibkr._map_db_asset_by_symbol = lambda _: 0
-    ibkr.load_stock_dividend({'type': JSF.PAYMENT_STOCK_DIVIDEND, 'account': 1, 'symbol': 294, 'timestamp': 1672258800, 'number': '22598209889',
+    ibkr.load_stock_dividend([], [{'type': JSF.PAYMENT_STOCK_DIVIDEND, 'account': 1, 'symbol': 294, 'timestamp': 1672258800, 'number': '22598209889',
                               'description': 'BCV (US0596951063) STOCK DIVIDEND US0596951063 18507808 FOR 1000000000 (BCV, BANCROFT FUND LTD, US0596951063)',
                               'quantity': Decimal('0.2776'), 'value': Decimal('5.5'), 'proceeds': Decimal('0'),
-                              'code': '', 'asset_type': JSF.ASSET_STOCK, 'jal_processed': False}, [])
+                              'code': '', 'asset_type': JSF.ASSET_STOCK}])
 
     tax = {'account': 1, 'symbol': 294, 'timestamp': 1672258800, 'reported': 1672258800, 'amount': Decimal('-0.48'),
            'action_id': '11111111111',
@@ -558,11 +581,10 @@ def test_ibkr_spinoff_allows_fractional_entitlement_rounding():
         'quantity': Decimal('17'),
         'value': Decimal('30.77'),
         'proceeds': Decimal('0'),
-        'code': '',
-        'jal_processed': False
+        'code': ''
     }
 
-    assert ibkr.load_spinoff(action, None) == 1
+    assert ibkr.load_spinoff([], [action]) == 1
     assert ibkr._data[JSF.CORP_ACTIONS][0]['symbol'] == 11
     assert ibkr._data[JSF.CORP_ACTIONS][0]['quantity'] == 50   # rounded to a whole number, so an int
 
