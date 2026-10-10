@@ -280,12 +280,7 @@ class StatementTvoyBroker(StatementXLS):
             logging.warning(self.tr("Asset transfer was skipped as it will be loaded from the destination account report: ") + description)
             return
         TransferPattern = r"^Перевод ЦБ на с\/с (?P<account_to>[\w|\/]+) с с\/с (?P<account_from>[\w|\/]+)\..*$"
-        parts = re.match(TransferPattern, description, re.IGNORECASE)
-        if parts is None:
-            raise Statement_ImportError(self.tr("Can't parse asset transfer description ") + f"'{description}'")
-        transfer = parts.groupdict()
-        if len(transfer) != TransferPattern.count("(?P<"):  # check that expected number of groups was matched
-            raise Statement_ImportError(self.tr("Asset transfer description miss some data ") + f"'{description}'")
+        transfer = self._parsed(TransferPattern, description, self.tr("Can't parse asset transfer description "))
         currency_id = self._symbol(symbol)['currency']
         currency_name = self._single_symbol_record_of(currency_id)['symbol']
         account_from = self._find_account_id(transfer['account_from'], currency_name)
@@ -356,12 +351,7 @@ class StatementTvoyBroker(StatementXLS):
         TransferPattern = r"^Перевод ДС на с\/с (?P<account_to>[\w|\/]+) с с\/с (?P<account_from>[\w|\/]+)\..*$"
         if amount < 0:  # there should be positive paired record
             return
-        parts = re.match(TransferPattern, description, re.IGNORECASE)
-        if parts is None:
-            raise Statement_ImportError(self.tr("Can't parse money transfer description ") + f"'{description}'")
-        transfer = parts.groupdict()
-        if len(transfer) != TransferPattern.count("(?P<"):  # check that expected number of groups was matched
-            raise Statement_ImportError(self.tr("Money transfer description miss some data ") + f"'{description}'")
+        transfer = self._parsed(TransferPattern, description, self.tr("Can't parse money transfer description "))
         if transfer['account_from'] == transfer['account_to']:  # It is a technical record for incoming transfer
             return
         currency_id = [x for x in self._data[JSF.ACCOUNTS] if x["id"] == account_id][0]['currency']
@@ -403,10 +393,7 @@ class StatementTvoyBroker(StatementXLS):
         # DividendPattern = r"> (?P<NOTE>.*) \((?P<REG_NUMBER>.*)\)((?P<DESCR2> .*)?(?P<TAX_TEXT> налог (в размере (?P<TAX>\d+\.\d\d) )?.*удержан))?\. НДС не облагается\."
         ISINPattern = r"[A-Z]{2}.{9}\d"
 
-        parts = re.match(DividendPattern, description, re.IGNORECASE)
-        if parts is None:
-            raise Statement_ImportError(self.tr("Can't parse dividend description ") + f"'{description}'")
-        dividend_data = parts.groupdict()
+        dividend_data = self._parsed(DividendPattern, description, self.tr("Can't parse dividend description "))
         isin_match = re.match(ISINPattern, dividend_data['REG_NUMBER'])
         currency_code = self.currency_id('RUB')
         if isin_match:

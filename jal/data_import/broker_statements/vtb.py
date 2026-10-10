@@ -1,5 +1,4 @@
 import logging
-import re
 from decimal import Decimal, DecimalException
 from datetime import datetime
 from jal.constants import PredefinedCategory
@@ -92,12 +91,7 @@ class StatementVTB(StatementXLS):
                 row += 1  # This is an asset class separator - move to the next row
                 continue
             asset_name = self._statement[headers['name']][row]
-            parts = re.match(AssetPattern, asset_name, re.IGNORECASE)
-            if parts is None:
-                raise Statement_ImportError(self.tr("Can't parse asset name ") + f"'{asset_name}'")
-            asset_data = parts.groupdict()
-            if len(asset_data) != AssetPattern.count("(?P<"):  # check that expected number of groups was matched
-                raise Statement_ImportError(self.tr("Asset name miss some data ") + f"'{asset_name}'")
+            asset_data = self._parsed(AssetPattern, asset_name, self.tr("Can't parse asset name "))
             if asset_data['name'].endswith('_'):
                 row +=1  # This is a "fake" asset created for a specific action (e.g. split) - skip it
                 continue
@@ -241,10 +235,7 @@ class StatementVTB(StatementXLS):
         while row < self._statement.shape[0]:
             if self._statement[self.HeaderCol][row] == '':
                 break
-            parts = re.match(SymbolPattern, self._statement[headers['symbol']][row], re.IGNORECASE)
-            if parts is None:
-                raise Statement_ImportError(self.tr("Can't parse currency exchange symbol") + f"'{self._statement[headers['symbol']][row]}'")
-            symbols_data = parts.groupdict()
+            symbols_data = self._parsed(SymbolPattern, self._statement[headers['symbol']][row], self.tr("Can't parse currency exchange symbol"))
             if self._statement[headers['B/S']][row] == 'Покупка':
                 symbols_data['A'], symbols_data['B'] = symbols_data['B'], symbols_data['A']
             elif self._statement[headers['B/S']][row] == 'Продажа':
@@ -383,10 +374,7 @@ class StatementVTB(StatementXLS):
 
     def interest(self, timestamp, account_id, amount, description):
         BondInterestPattern = r"^Куп\. дох\. по обл\. .* (?P<reg_number>\S*), \S*\..*$"
-        parts = re.match(BondInterestPattern, description, re.IGNORECASE)
-        if parts is None:
-            raise Statement_ImportError(self.tr("Can't parse bond interest description ") + f"'{description}'")
-        interest_data = parts.groupdict()
+        interest_data = self._parsed(BondInterestPattern, description, self.tr("Can't parse bond interest description "))
         asset_id = self._asset_by_identifier('reg_number', interest_data['reg_number'])['id']
         new_id = self._next_id(JSF.ASSET_PAYMENTS)
         payment = {"id": new_id, "type": JSF.PAYMENT_INTEREST, "account": account_id, "timestamp": timestamp,
@@ -395,10 +383,7 @@ class StatementVTB(StatementXLS):
 
     def dividend(self, timestamp, account_id, amount, description):
         DividendPattern = r"^Дивиденды .* (?P<reg_number>\S*), .*. Удержан налог в размере (?P<tax>\d+\.\d\d) руб.$"
-        parts = re.match(DividendPattern, description, re.IGNORECASE)
-        if parts is None:
-            raise Statement_ImportError(self.tr("Can't parse dividend description ") + f"'{description}'")
-        dividend_data = parts.groupdict()
+        dividend_data = self._parsed(DividendPattern, description, self.tr("Can't parse dividend description "))
         asset_id = self._asset_by_identifier('reg_number', dividend_data['reg_number'])['id']
         try:
             tax = Decimal(dividend_data['tax'])
@@ -412,10 +397,7 @@ class StatementVTB(StatementXLS):
 
     def bond_maturity(self, timestamp, account_id, amount, description):
         MaturityPattern = r"^Ден\.ср-ва от погаш\. номин\.ст-ти обл\. .* (?P<reg_number>\S*), .* Налог не удерживается\.$"
-        parts = re.match(MaturityPattern, description, re.IGNORECASE)
-        if parts is None:
-            raise Statement_ImportError(self.tr("Can't parse bond maturity description ") + f"'{description}'")
-        bond_maturity = parts.groupdict()
+        bond_maturity = self._parsed(MaturityPattern, description, self.tr("Can't parse bond maturity description "))
         symbol_id = self._single_symbol_of(self._asset_by_identifier('reg_number', bond_maturity['reg_number'])['id'])
         match = [x for x in self.asset_withdrawal if x['symbol'] == symbol_id and (timestamp - x['timestamp']) <= MAX_T_DELTA*86400]
         if not match:

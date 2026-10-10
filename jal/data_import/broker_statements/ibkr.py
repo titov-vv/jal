@@ -795,10 +795,7 @@ class StatementIBKR(StatementXML):
         SpinOffPattern = r"^(?P<symbol_old>.*)\((?P<isin_old>\w+)\) +SPINOFF +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>.*), (?P<name>.*), (?P<id>\w+)\)$"
 
         action = received[0]
-        parts = re.match(SpinOffPattern, action['description'], re.IGNORECASE)
-        if parts is None:
-            raise Statement_ImportError(self.tr("Can't parse Spin-off description ") + f"'{action}'")
-        spinoff = parts.groupdict()
+        spinoff = self._parsed(SpinOffPattern, action['description'], self.tr("Can't parse Spin-off description "), action)
         spinoff['symbol_old'] = self.normalize_corp_action_symbol(spinoff['symbol_old'])
         symbol_old = self.locate_symbol(spinoff['symbol_old'], spinoff['isin_old'])
         if not symbol_old:
@@ -829,10 +826,8 @@ class StatementIBKR(StatementXML):
         StockDividendPattern = r"^(?P<description>.*) +(?P<tail>\(.*\))$"
 
         action = received[0]
-        parts = re.match(StockDividendPattern, action['description'], re.IGNORECASE)
-        if parts is None:
-            raise Statement_ImportError(self.tr("Can't parse Stock Dividend description ") + f"'{action}'")
-        action['description'] = parts.groupdict()['description']
+        parts = self._parsed(StockDividendPattern, action['description'], self.tr("Can't parse Stock Dividend description "), action)
+        action['description'] = parts['description']
 
         action['id'] = self._next_id(JSF.ASSET_PAYMENTS)
         action['amount'] = action['quantity']
@@ -852,9 +847,7 @@ class StatementIBKR(StatementXML):
             action['symbol'] = withdrawn[0]['symbol']
             action['quantity'] = -withdrawn[0]['quantity']
         else:  # Simple split without ISIN change: the only record is a change of quantity
-            parts = re.match(SplitPattern, action['description'], re.IGNORECASE)
-            if parts is None:
-                raise Statement_ImportError(self.tr("Can't parse Split description ") + f"'{action}'")
+            parts = self._parsed(SplitPattern, action['description'], self.tr("Can't parse Split description "), action)
             if parts['id'] is not None and parts['isin_old'] != parts['id']:
                 self._refuse_corp_action([action], self.tr("a split that changes ISIN has a withdrawn (-) and "
                                                            "a received (+) record"))
@@ -887,10 +880,8 @@ class StatementIBKR(StatementXML):
         # Get each operation type
         VestingPattern = r"^Stock Award (?P<operation>Grant for Cash Deposit|Vesting|Withholding)$"
         for vesting in granted_stocks:
-            try:
-                vesting['operation'] = re.match(VestingPattern, vesting['description']).groupdict()['operation']
-            except AttributeError:
-                raise Statement_ImportError(self.tr("Can't parse granted stock description ") + f"'{vesting}'")
+            vesting['operation'] = self._parsed(VestingPattern, vesting['description'], self.tr("Can't parse granted stock description "),
+                                                vesting, ignore_case=False)['operation']
         # Subtract withholding from vesting value
         vestings = [x for x in deepcopy(granted_stocks) if x['operation'] == "Vesting"]
         withholdings = [x for x in deepcopy(granted_stocks) if x['operation'] == "Withholding"]

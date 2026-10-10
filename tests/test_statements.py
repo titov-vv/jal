@@ -158,3 +158,18 @@ def test_unknown_online_search_source_is_refused(prepare_db):
     with pytest.raises(Statement_ImportError):
         statement.asset_id({'symbol': 'AAA', 'search_online': 'NOWHERE'})
     assert statement._data[JSF.ASSETS] == []
+
+
+def test_parsed_returns_named_groups_or_stops(prepare_db):
+    statement = Statement()
+    pattern = r"^Transfer to (?P<account_to>\w+)( from (?P<account_from>\w+))?$"
+    assert statement._parsed(pattern, "transfer to A1 from B2", "Can't parse ") == {'account_to': 'A1', 'account_from': 'B2'}
+    assert statement._parsed(pattern, "Transfer to A1", "Can't parse ") == {'account_to': 'A1', 'account_from': None}
+    with pytest.raises(Statement_ImportError) as error:
+        statement._parsed(pattern, "Dividend", "Can't parse ")
+    assert str(error.value) == "Can't parse 'Dividend'"
+    with pytest.raises(Statement_ImportError) as error:   # the record is quoted in place of the text
+        statement._parsed(pattern, "Dividend", "Can't parse ", {'id': 7})
+    assert str(error.value) == "Can't parse '{'id': 7}'"
+    with pytest.raises(Statement_ImportError):
+        statement._parsed(pattern, "transfer to A1", "Can't parse ", ignore_case=False)

@@ -1,5 +1,4 @@
 import logging
-import re
 from decimal import Decimal
 from datetime import datetime
 
@@ -317,12 +316,7 @@ class StatementJ2T(StatementXLS):
 
     def dividend(self, timestamp, account_id, amount, note):
         DividendPattern = r"Дивиденды;\s+(Начисление дивидендов полученных по счету.*\.\s+)?Инструмент\s+(?P<asset>.*);\s+Дата отсечки\s+(?P<date>.*)"
-        parts = re.match(DividendPattern, note, re.IGNORECASE)  # FIXME - below code used in ibkr.py as well
-        if parts is None:
-            raise Statement_ImportError(self.tr("Can't parse Dividend description ") + f"'{note}'")
-        dividend = parts.groupdict()
-        if len(dividend) != DividendPattern.count("(?P<"):  # check that expected number of groups was matched
-            raise Statement_ImportError(self.tr("Dividend description miss some data ") + f"'{note}'")
+        dividend = self._parsed(DividendPattern, note, self.tr("Can't parse Dividend description "))
         symbol_id = self._find_symbol_by_name(dividend['asset'])
         ex_date = self._date(datetime.strptime(dividend['date'], "%d/%m/%Y"))
         new_id = self._next_id(JSF.ASSET_PAYMENTS)
@@ -332,12 +326,7 @@ class StatementJ2T(StatementXLS):
 
     def tax(self, timestamp, amount, note):
         TaxPattern = r"Налог на дивиденды;\s+(Начисление дивидендов полученных по счету.*\.\s+)?Инструмент\s+(?P<asset>.*);\s+Дата отсечки\s+(?P<date>.*)"
-        parts = re.match(TaxPattern, note, re.IGNORECASE)  # FIXME - below code used in ibkr.py as well
-        if parts is None:
-            raise Statement_ImportError(self.tr("Can't parse Dividend description ") + f"'{note}'")
-        tax = parts.groupdict()
-        if len(tax) != TaxPattern.count("(?P<"):  # check that expected number of groups was matched
-            raise Statement_ImportError(self.tr("Dividend description miss some data ") + f"'{note}'")
+        tax = self._parsed(TaxPattern, note, self.tr("Can't parse Dividend description "))
         symbol_id = self._find_symbol_by_name(tax['asset'])
         ex_date = self._date(datetime.strptime(tax['date'], "%d/%m/%Y"))
         dividend_record = self._locate_dividend(symbol_id, timestamp, ex_date)

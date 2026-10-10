@@ -1,4 +1,5 @@
 import json
+import re
 
 import sys
 import logging
@@ -285,6 +286,14 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     @staticmethod
     def _date(day: datetime) -> int:
         return int(day.replace(tzinfo=timezone.utc).timestamp())
+
+    # Named groups of a text that has to match the pattern; the import stops with the given message otherwise.
+    # The message quotes the text, or the record it comes from if one is given.
+    def _parsed(self, pattern: str, text: str, error: str, record=None, ignore_case: bool = True) -> dict:
+        parts = re.match(pattern, text, re.IGNORECASE if ignore_case else 0)
+        if parts is None:
+            raise Statement_ImportError(error + f"'{text if record is None else record}'")
+        return parts.groupdict()
 
     # The price of a trade that its source reports the total money of. A source states the price it quoted, rounded
     # to its own number of decimals, and that price times the reported quantity doesn't give back the money that
