@@ -169,6 +169,7 @@ class ChainFetchers(QObject):
         # collected and reported together at the end instead of aborting the whole run.
         skipped = {}
         failed = []
+        quarantined = []
         imported_any = False
         label = fetcher_class.display_symbol or descriptor['name']
         self._cancelled = False
@@ -193,6 +194,7 @@ class ChainFetchers(QObject):
                     continue
                 finally:
                     self._fetcher = None
+                    quarantined += fetcher.quarantined()
                     self.update_progress.emit(100.0 * (i + 1) / len(accounts))
                 imported_any = True
                 for reason, count in fetcher.skipped().items():
@@ -204,6 +206,7 @@ class ChainFetchers(QObject):
         finally:
             self.show_progress.emit(False)
         self._report_skipped(skipped)
+        self._report_quarantined(descriptor['name'], quarantined)
         self._report_failures(failed)
         # The three checks below refine what was just imported and each of them costs network requests of its own, so
         # a run the user stopped does not go on to spend them. Nothing is lost by that: all three are idempotent and
@@ -364,6 +367,15 @@ class ChainFetchers(QObject):
         QMessageBox().information(None, self.tr("Not everything was imported"),
                                   self.tr("These transactions were recognized but not imported:") + "\n\n" + details,
                                   QMessageBox.Ok)
+
+    # Names the tokens the run has blacklisted by itself, so that a real token hidden by mistake doesn't look like
+    # missing data. The names come from the chain and are not trusted - the address is what identifies a token.
+    def _report_quarantined(self, chain: str, quarantined: list) -> None:
+        if not quarantined:
+            return
+        details = "\n".join(f"{x.name_hint()} ({x.address()})" for x in quarantined)
+        logging.warning(self.tr("Tokens were hidden as dust/spam, review them in the token blacklist") +
+                        f" - {chain}:\n" + details)
 
     # Wallets whose fetch failed are reported together, so one broken account (a bad address, a network error) is
     # visible without hiding the wallets that were imported successfully in the same run.

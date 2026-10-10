@@ -245,6 +245,21 @@ def test_filter_of_a_batch(lists):
     assert len(JalTokenBlacklist.get_all()) == 1
 
 
+# A filter names what it has hidden itself, once - a token that was blacklisted before is not its doing
+def test_filter_remembers_what_it_quarantined(lists):
+    JalTokenBlacklist.add(AssetLocation.ETH_BLOCKCHAIN, NEW_ETH, "OLD", auto=False)
+    token_filter = TokenFilter(lists=lists)
+    assert token_filter.quarantined() == []
+    fake = TokenCandidate(AssetLocation.ETH_BLOCKCHAIN, SCAM_ETH, symbol="FAKE", incoming=True, value=None)
+    assert not token_filter.accept(fake)
+    assert not token_filter.accept(fake)
+    assert not token_filter.accept(TokenCandidate(AssetLocation.ETH_BLOCKCHAIN, NEW_ETH, symbol="OLD"))
+    assert token_filter.accept(TokenCandidate(AssetLocation.ETH_BLOCKCHAIN, ONEINCH_ETH, symbol="USDC"))
+    hidden = token_filter.quarantined()
+    assert [(x.name_hint(), x.address(), x.is_auto()) for x in hidden] == [
+        ("FAKE", normalize_address(AssetLocation.ETH_BLOCKCHAIN, SCAM_ETH), True)]
+
+
 def test_dust_threshold_is_configurable(lists):
     candidate = TokenCandidate(AssetLocation.ETH_BLOCKCHAIN, NEW_ETH, incoming=True, value=Decimal('5'))
     assert TokenFilter(lists=lists).classify(candidate) == TokenVerdict.Import   # default threshold is 1

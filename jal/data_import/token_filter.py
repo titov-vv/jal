@@ -38,6 +38,7 @@ class TokenFilter:
     def __init__(self, lists: TokenListProvider = None, dust_threshold: Decimal = None):
         self._lists = lists if lists is not None else TokenListProvider()
         self._dust_threshold = self._configured_threshold() if dust_threshold is None else dust_threshold
+        self._quarantined = []   # JalTokenBlacklist entries this filter has added itself
 
     # The threshold is user-editable in the preferences dialog ('TokenDustThreshold'). A value that isn't a
     # number is ignored in favour of the built-in default - a broken setting must not stop an import.
@@ -71,9 +72,14 @@ class TokenFilter:
         if verdict == TokenVerdict.Import:
             return True
         if not JalTokenBlacklist.is_blacklisted(candidate.location_id, candidate.address):
-            JalTokenBlacklist.add(candidate.location_id, candidate.address,
-                                  name_hint=candidate.symbol if candidate.symbol else candidate.name, auto=True)
+            self._quarantined.append(JalTokenBlacklist.add(
+                candidate.location_id, candidate.address,
+                name_hint=candidate.symbol if candidate.symbol else candidate.name, auto=True))
         return False
+
+    # Tokens that were blacklisted by this filter (not the ones it found blacklisted already)
+    def quarantined(self) -> list:
+        return list(self._quarantined)
 
     # A dust airdrop is an incoming token from an address the user never dealt with, that is either known to be
     # fraudulent or carries no meaningful value (including a value that can't be established at all).

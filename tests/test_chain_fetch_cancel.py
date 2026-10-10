@@ -4,6 +4,7 @@ import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db
 from jal.constants import PredefinedAccountType, AssetLocation, AccountData
+from jal.data_import.token_filter import TokenCandidate
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.net.chain_fetchers.fetcher import ChainFetcher
 from jal.net.chain_fetchers.fetchers import ChainFetchers
@@ -44,9 +45,12 @@ class _FakeFetcher(ChainFetcher):
     imported = []          # ... and of those that reached import_fetched()
     interrupt = None       # callable that presses 'Stop' while the first wallet is being read
     interrupt_on_import = None    # ... or while it is being imported
+    spam = []              # (address, symbol) of worthless tokens every wallet's history holds
 
     def _fetch(self) -> str:
         _FakeFetcher.fetched.append(self._account.name())
+        for address, symbol in _FakeFetcher.spam:
+            self._filter.accept(TokenCandidate(self.location_id, address, symbol=symbol, value=None))
         hook = _FakeFetcher.interrupt if len(_FakeFetcher.fetched) == 1 else None
         self._wait_for(_SlowRequest(on_slice=hook))
         return f"cursor-{self._account.name()}"
@@ -74,6 +78,7 @@ def registry(wallets, monkeypatch):
     _FakeFetcher.imported = []
     _FakeFetcher.interrupt = None
     _FakeFetcher.interrupt_on_import = None
+    _FakeFetcher.spam = []
     fetchers = ChainFetchers(None)
     fetchers.items = [{'name': 'Fake chain', 'module': SimpleNamespace(FakeFetcher=_FakeFetcher),
                        'loader_class': 'FakeFetcher', 'location_id': _FakeFetcher.location_id, 'icon': ''}]
@@ -103,6 +108,24 @@ def test_a_fetch_that_is_not_stopped_reads_every_wallet(registry, wallets):
     assert _cursor(wallets[0]) == 'cursor-BTC wallet 1'
     assert _cursor(wallets[1]) == 'cursor-BTC wallet 2'
     assert registry.checks == ['_settle_transfers', '_absorb_rebase_residue', '_audit_swaps']
+
+
+# Tokens hidden as spam are named once per run, in a warning, and a run that hid nothing says nothing
+def test_a_run_names_the_tokens_it_has_hidden(registry, caplog):
+    with caplog.at_level('WARNING'):
+        _load(registry)
+    assert caplog.records == []
+    _FakeFetcher.spam = [('fake-token-1', 'FAKE'), ('fake-token-2', 'SCAM')]
+    with caplog.at_level('WARNING'):
+        _load(registry)
+    assert [x.levelname for x in caplog.records] == ['WARNING']
+    lines = caplog.records[0].getMessage().split("\n")
+    assert lines[0].endswith(" - Fake chain:")
+    assert lines[1:] == ['FAKE (fake-token-1)', 'SCAM (fake-token-2)']   # the second wallet met them blacklisted
+    caplog.clear()
+    with caplog.at_level('WARNING'):
+        _load(registry)
+    assert caplog.records == []   # nothing new was hidden by the third run
 
 
 def test_stop_while_the_chain_is_being_read_abandons_that_wallet_and_the_rest_of_the_run(registry, wallets):

@@ -2164,12 +2164,12 @@ Do you want to delete the category anyway?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetcher.py" line="287"/>
+        <location filename="../net/chain_fetchers/fetcher.py" line="291"/>
         <source>held for the wallet - to be merged with its counter-leg or converted</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetcher.py" line="293"/>
+        <location filename="../net/chain_fetchers/fetcher.py" line="297"/>
         <source>arriving leg - to be merged with its pending sending half</source>
         <translation></translation>
     </message>
@@ -2197,109 +2197,114 @@ Do you want to delete the category anyway?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="179"/>
-        <location filename="../net/chain_fetchers/fetchers.py" line="203"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="180"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="205"/>
         <source>Interrupted by user</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="191"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="192"/>
         <source>Blockchain fetch failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="200"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="202"/>
         <source>Transactions were fetched from blockchain for account: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="234"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="237"/>
         <source>Pending transfers could not be settled: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="239"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="242"/>
         <source>Settling of transfers was interrupted by user</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="242"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="245"/>
         <source>Transfers settled from the route they were sent by: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="280"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="283"/>
         <source>Cross-chain check of swaps could not be completed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="285"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="288"/>
         <source>Check of swaps was interrupted by user</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="290"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="293"/>
         <source>Check these swaps</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="291"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="294"/>
         <source>The aggregator that routed these operations describes them differently than they are booked. Each one has to be corrected by hand - what the ledger says about them is wrong:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="298"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="301"/>
         <source>fetching page</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="303"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="306"/>
         <source>checking swaps</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="308"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="311"/>
         <source>settling transfers</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="332"/>
-        <location filename="../net/chain_fetchers/fetchers.py" line="338"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="335"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="341"/>
         <source>Token lists</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="333"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="336"/>
         <source>Token allow/block lists are not loaded yet. They are needed to tell real tokens from unsolicited spam airdrops during import, and will be downloaded now.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="339"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="342"/>
         <source>Token lists could not be loaded (see log for details). Fetching now could hide real tokens as spam, so the import was stopped. Try again later, or load the lists manually from the Import menu.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="374"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="377"/>
+        <source>Tokens were hidden as dust/spam, review them in the token blacklist</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/fetchers.py" line="386"/>
         <source>Some wallets could not be fetched</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="375"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="387"/>
         <source>Fetching failed for these wallets:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="363"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="366"/>
         <source>Some transactions were not imported:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="364"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="367"/>
         <source>Not everything was imported</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="365"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="368"/>
         <source>These transactions were recognized but not imported:</source>
         <translation></translation>
     </message>
@@ -4673,7 +4678,7 @@ do you want to save them?</source>
         <location filename="../db/operations.py" line="1000"/>
         <location filename="../db/operations.py" line="1107"/>
         <location filename="../db/operations.py" line="2335"/>
-        <location filename="../db/operations.py" line="3048"/>
+        <location filename="../db/operations.py" line="3062"/>
         <source>UNDEFINED</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4897,7 +4902,7 @@ do you want to save them?</source>
     <message>
         <location filename="../db/operations.py" line="1758"/>
         <location filename="../db/operations.py" line="1763"/>
-        <location filename="../db/operations.py" line="2843"/>
+        <location filename="../db/operations.py" line="2857"/>
         <source>(pending)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4968,17 +4973,17 @@ do you want to save them?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2469"/>
+        <location filename="../db/operations.py" line="2478"/>
         <source>Corporate action type isn&apos;t defined. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2474"/>
+        <location filename="../db/operations.py" line="2487"/>
         <source>Asset amount is not enough for corporate action processing. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2478"/>
+        <location filename="../db/operations.py" line="2491"/>
         <source>Unhandled case: Corporate action covers not full open position. Date: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -4993,168 +4998,168 @@ do you want to save them?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2484"/>
+        <location filename="../db/operations.py" line="2497"/>
         <source>Results value of corporate action doesn&apos;t match 100% of initial asset value. </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2583"/>
-        <location filename="../db/operations.py" line="2620"/>
+        <location filename="../db/operations.py" line="2597"/>
+        <location filename="../db/operations.py" line="2634"/>
         <source>Wrapping fee</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2596"/>
+        <location filename="../db/operations.py" line="2610"/>
         <source>Move: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2598"/>
+        <location filename="../db/operations.py" line="2612"/>
         <source>Supply to </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2600"/>
+        <location filename="../db/operations.py" line="2614"/>
         <source>Withdraw from </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2601"/>
+        <location filename="../db/operations.py" line="2615"/>
         <source>Wrapping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2648"/>
+        <location filename="../db/operations.py" line="2662"/>
         <source>Wrapping assets aren&apos;t set. Operation: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2650"/>
+        <location filename="../db/operations.py" line="2664"/>
         <source>Can&apos;t wrap an asset into itself. Operation: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2652"/>
+        <location filename="../db/operations.py" line="2666"/>
         <source>Wrapping quantities must be positive. Operation: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2662"/>
+        <location filename="../db/operations.py" line="2676"/>
         <source>Asset amount is not enough for wrapping processing. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2673"/>
+        <location filename="../db/operations.py" line="2687"/>
         <source>Processed asset amount is less than wrapped amount. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2747"/>
+        <location filename="../db/operations.py" line="2761"/>
         <source>Outgoing bridge</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2748"/>
+        <location filename="../db/operations.py" line="2762"/>
         <source>Incoming bridge</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2749"/>
+        <location filename="../db/operations.py" line="2763"/>
         <source>Bridge fee</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2750"/>
+        <location filename="../db/operations.py" line="2764"/>
         <source>Bridge in-kind fee</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2872"/>
+        <location filename="../db/operations.py" line="2886"/>
         <source>Bridge (awaiting matching):</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2876"/>
+        <location filename="../db/operations.py" line="2890"/>
         <source>In-kind fee:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2919"/>
+        <location filename="../db/operations.py" line="2933"/>
         <source>Bridge must move the same asset between accounts. Operation: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2922"/>
+        <location filename="../db/operations.py" line="2936"/>
         <source>Bridge between the same account isn&apos;t supported. Operation: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2924"/>
+        <location filename="../db/operations.py" line="2938"/>
         <source>Bridge can&apos;t receive more asset than was sent. Operation: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2926"/>
+        <location filename="../db/operations.py" line="2940"/>
         <source>Bridge receive can&apos;t precede its send. Operation: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2941"/>
+        <location filename="../db/operations.py" line="2955"/>
         <source>Asset amount is not enough for bridge processing. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2946"/>
+        <location filename="../db/operations.py" line="2960"/>
         <source>Processed asset amount is less than bridge amount. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2967"/>
+        <location filename="../db/operations.py" line="2981"/>
         <source>Asset withdrawal not found for bridge.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2974"/>
+        <location filename="../db/operations.py" line="2988"/>
         <source>There is no FX rate to convert bridge cost basis. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3049"/>
+        <location filename="../db/operations.py" line="3063"/>
         <source>Authorization</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3050"/>
+        <location filename="../db/operations.py" line="3064"/>
         <source>Failed transaction</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3051"/>
+        <location filename="../db/operations.py" line="3065"/>
         <source>Position command</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3052"/>
+        <location filename="../db/operations.py" line="3066"/>
         <source>No-op</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3053"/>
+        <location filename="../db/operations.py" line="3067"/>
         <source>Contract call</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3054"/>
+        <location filename="../db/operations.py" line="3068"/>
         <source>Token account rent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3118"/>
+        <location filename="../db/operations.py" line="3132"/>
         <source>Rent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3118"/>
+        <location filename="../db/operations.py" line="3132"/>
         <source>Gas</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8258,282 +8263,282 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
 <context>
     <name>Statement</name>
     <message>
-        <location filename="../data_import/statement.py" line="327"/>
+        <location filename="../data_import/statement.py" line="330"/>
         <source>Failed to read JSON from file: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="329"/>
+        <location filename="../data_import/statement.py" line="332"/>
         <source>Failed to read file: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="334"/>
+        <location filename="../data_import/statement.py" line="337"/>
         <source>Unsupported db_ids domain: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="602"/>
+        <location filename="../data_import/statement.py" line="611"/>
         <source>Statement is not a valid JSF document</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="609"/>
+        <location filename="../data_import/statement.py" line="618"/>
         <source>Invalid statement section: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="612"/>
+        <location filename="../data_import/statement.py" line="621"/>
         <source>Invalid asset record: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="658"/>
+        <location filename="../data_import/statement.py" line="667"/>
         <source>Statement period starts before last recorded operation for the account </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="659"/>
+        <location filename="../data_import/statement.py" line="668"/>
         <source>Continue import?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="676"/>
+        <location filename="../data_import/statement.py" line="685"/>
         <source>Can&apos;t create asset: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="688"/>
+        <location filename="../data_import/statement.py" line="697"/>
         <source>Unmatched currency for symbol: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="754"/>
+        <location filename="../data_import/statement.py" line="763"/>
         <source>Invalid category for income/spending: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="781"/>
+        <location filename="../data_import/statement.py" line="790"/>
         <source>Unmatched symbol for transfer: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="801"/>
+        <location filename="../data_import/statement.py" line="810"/>
         <source>Both ends of a transfer are unknown: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="911"/>
+        <location filename="../data_import/statement.py" line="920"/>
         <source>Unmatched symbol for trade: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="997"/>
+        <location filename="../data_import/statement.py" line="1006"/>
         <source>Unmatched symbol for payment: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1086"/>
-        <location filename="../data_import/statement.py" line="1092"/>
+        <location filename="../data_import/statement.py" line="1095"/>
+        <location filename="../data_import/statement.py" line="1101"/>
         <source>Unmatched symbol for corporate action: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1300"/>
+        <location filename="../data_import/statement.py" line="1316"/>
         <source>Can&apos;t resolve an exact symbol for: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="719"/>
+        <location filename="../data_import/statement.py" line="728"/>
         <source>Unmatched currency for account: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="738"/>
+        <location filename="../data_import/statement.py" line="747"/>
         <source>Can&apos;t create account: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="745"/>
+        <location filename="../data_import/statement.py" line="754"/>
         <source>Unmatched account for income/spending: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="775"/>
+        <location filename="../data_import/statement.py" line="784"/>
         <source>Unmatched account for transfer: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="786"/>
+        <location filename="../data_import/statement.py" line="795"/>
         <source>Impossible to convert asset type in transfer: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="814"/>
+        <location filename="../data_import/statement.py" line="823"/>
         <source>Unmatched fee symbol for transfer: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="894"/>
+        <location filename="../data_import/statement.py" line="903"/>
         <source>transfers that could not be settled with the leg already stored</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="896"/>
+        <location filename="../data_import/statement.py" line="905"/>
         <source>Transfer was not settled and was not stored, its leg stays pending: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="908"/>
+        <location filename="../data_import/statement.py" line="917"/>
         <source>Unmatched account for trade: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="927"/>
+        <location filename="../data_import/statement.py" line="936"/>
         <source>Unmatched account for swap: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="931"/>
+        <location filename="../data_import/statement.py" line="940"/>
         <source>Unmatched symbol for swap: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="949"/>
+        <location filename="../data_import/statement.py" line="958"/>
         <source>Unmatched account for bridge: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="952"/>
+        <location filename="../data_import/statement.py" line="961"/>
         <source>Unmatched symbol for bridge: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="972"/>
+        <location filename="../data_import/statement.py" line="981"/>
         <source>Unmatched account for conversion: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="976"/>
+        <location filename="../data_import/statement.py" line="985"/>
         <source>Unmatched symbol for conversion: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="993"/>
+        <location filename="../data_import/statement.py" line="1002"/>
         <source>Unmatched account for payment: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1004"/>
+        <location filename="../data_import/statement.py" line="1013"/>
         <source>Unmatched fee symbol for payment: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1009"/>
+        <location filename="../data_import/statement.py" line="1018"/>
         <source>Unmatched fee account for payment: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1052"/>
+        <location filename="../data_import/statement.py" line="1061"/>
         <source>Unsupported payment type: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1083"/>
+        <location filename="../data_import/statement.py" line="1092"/>
         <source>Unmatched account for corporate action: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1098"/>
+        <location filename="../data_import/statement.py" line="1107"/>
         <source>Unsupported corporate action: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1112"/>
+        <location filename="../data_import/statement.py" line="1121"/>
         <source>Multiple accounts found: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1135"/>
+        <location filename="../data_import/statement.py" line="1144"/>
         <source>Asset id not found</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1144"/>
-        <location filename="../data_import/statement.py" line="1152"/>
+        <location filename="../data_import/statement.py" line="1153"/>
+        <location filename="../data_import/statement.py" line="1161"/>
         <source>Symbol id not found: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1161"/>
-        <location filename="../data_import/statement.py" line="1173"/>
-        <location filename="../data_import/statement.py" line="1223"/>
+        <location filename="../data_import/statement.py" line="1170"/>
+        <location filename="../data_import/statement.py" line="1187"/>
+        <location filename="../data_import/statement.py" line="1239"/>
         <source>Multiple match for </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1185"/>
+        <location filename="../data_import/statement.py" line="1199"/>
         <source>Multiple currency match for </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1198"/>
+        <location filename="../data_import/statement.py" line="1212"/>
         <source>Can&apos;t find exact symbol for asset: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1235"/>
+        <location filename="../data_import/statement.py" line="1251"/>
         <source>Asset found in the database is listed under several tickers, it can&apos;t be matched by one: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1259"/>
+        <location filename="../data_import/statement.py" line="1275"/>
         <source>Can&apos;t find asset on moex.com: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1263"/>
+        <location filename="../data_import/statement.py" line="1279"/>
         <source>Unsupported asset type from moex.com: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1268"/>
+        <location filename="../data_import/statement.py" line="1284"/>
         <source>Unknown online search source: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1271"/>
+        <location filename="../data_import/statement.py" line="1287"/>
         <source>Can&apos;t locate asset in statement data: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="661"/>
+        <location filename="../data_import/statement.py" line="670"/>
         <source>Statement import was cancelled</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="606"/>
-        <location filename="../data_import/statement.py" line="649"/>
+        <location filename="../data_import/statement.py" line="615"/>
+        <location filename="../data_import/statement.py" line="658"/>
         <source>Statement period is invalid</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="342"/>
+        <location filename="../data_import/statement.py" line="345"/>
         <source>Some sections are not supported: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="238"/>
+        <location filename="../data_import/statement.py" line="241"/>
         <source>Debug information is saved in </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="240"/>
+        <location filename="../data_import/statement.py" line="243"/>
         <source>Failed to write statement dump into: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="657"/>
+        <location filename="../data_import/statement.py" line="666"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
@@ -8761,7 +8766,7 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
     <name>StatementIBKR</name>
     <message>
         <location filename="../data_import/broker_statements/ibkr.py" line="52"/>
-        <location filename="../data_import/broker_statements/ibkr.py" line="383"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="385"/>
         <source>Asset type isn&apos;t supported: </source>
         <translation></translation>
     </message>
@@ -8771,98 +8776,98 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="439"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="443"/>
         <source>Multiple account match for </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="422"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="426"/>
         <source>Can&apos;t get currencies for currency exchange: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="429"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="433"/>
         <source>Can&apos;t get account currency for account: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="481"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="485"/>
         <source>Load IB Flex-statement for account </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="509"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="513"/>
         <source>Securities loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="518"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="522"/>
         <source>Trades loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="564"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="568"/>
         <source>Only internal transfers are supported: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="573"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="577"/>
         <source>Unknown transfer direction: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="580"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="584"/>
         <source>Outgoing asset transfer not implemented yet: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="593"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="597"/>
         <source>Option assignment</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="594"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="598"/>
         <source>Option exercise</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="595"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="599"/>
         <source>Option expiration</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="596"/>
-        <location filename="../data_import/broker_statements/ibkr.py" line="597"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="600"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="601"/>
         <source>Option assignment/exercise</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="602"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="606"/>
         <source>Option E&amp;A&amp;E action isn&apos;t implemented: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="607"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="611"/>
         <source>Original trade not found for Option E&amp;A&amp;E operation: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="610"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="614"/>
         <source>Options E&amp;A&amp;E loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="627"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="632"/>
         <source>every record has an &apos;actionID&apos; attribute</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="628"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="633"/>
         <source>Enable the field &apos;Action ID&apos; for the section &apos;Corporate Actions&apos; in the configuration of your Flex Query and get the statement again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="632"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="637"/>
         <source>&apos;actionID&apos; attribute of every record has a value</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8877,22 +8882,22 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="661"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="675"/>
         <source>records of one action have the same type, account and date</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="663"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="677"/>
         <source>an action has one record per asset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="665"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="679"/>
         <source>Corporate action type is not supported: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="621"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="626"/>
         <source>Corporate actions loaded: </source>
         <translation></translation>
     </message>
@@ -8907,253 +8912,253 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="344"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="346"/>
         <source>Interactive Brokers report type not found</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="346"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="348"/>
         <source>You try to import Trade confimation report, not Activity report</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="348"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="350"/>
         <source>Unknown Interactive Brokers report type: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="458"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="462"/>
         <source>Can&apos;t resolve an exact symbol for: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="475"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="479"/>
         <source>Can&apos;t find account for a given masked account: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="476"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="480"/>
         <source>Please create one.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="786"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="800"/>
         <source>Can&apos;t parse Spin-off description </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="791"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="805"/>
         <source>Spin-off initial asset not found </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="797"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="811"/>
         <source>Spin-off rounding error is too big </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="820"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="834"/>
         <source>Can&apos;t parse Stock Dividend description </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="842"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="857"/>
         <source>Can&apos;t parse Split description </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="878"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="893"/>
         <source>Can&apos;t parse granted stock description </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="886"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="901"/>
         <source>Stock award withholding matches no vesting </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="890"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="905"/>
         <source>Multiple vesting matched withholding </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="899"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="914"/>
         <source>Stock grant operations loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="971"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="986"/>
         <source>Cash transactions loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="980"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="995"/>
         <source>Import cancelled, cash transactions of unsupported type were found:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1003"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1018"/>
         <source>Payment was reversed by approximate description: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1004"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1019"/>
         <source>Payment was reversed with different reported date: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1010"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1025"/>
         <source>Can&apos;t find match for reversal: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1002"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1017"/>
         <source>Payment was reversed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1068"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1083"/>
         <source>Too many records for MLP tax: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1088"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1103"/>
         <source>Can&apos;t find trade for tax: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1093"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1108"/>
         <source>Unexpected tax source: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1099"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1114"/>
         <source>Transaction taxes loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1113"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1128"/>
         <source>Sales taxes loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1120"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1135"/>
         <source>Unknown CFD charge description: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1136"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1151"/>
         <source>CFD charges loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1198"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1213"/>
         <source>several payments carry this corporate action id</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1203"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1218"/>
         <source>no single payment of that day to fall back on</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1204"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1219"/>
         <source>the statement gives no corporate action id to match on</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1243"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1258"/>
         <source>Withholding tax matches no payment: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1245"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1260"/>
         <source>    Payments considered: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="683"/>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1252"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="697"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1267"/>
         <source>Failed to collect debug information: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="668"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="682"/>
         <source>number of withdrawn (-) / received (+) records is </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="669"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="683"/>
         <source> or </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="676"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="690"/>
         <source>Please create an issue at </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="677"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="691"/>
         <source> and attach the statement dump (its file name is in the log, the account number is masked in it) - it helps to make JAL better. The former way of import, that matched records by description, is kept under the git tag </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="687"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="701"/>
         <source>Corporate action isn&apos;t what JAL expects it to be.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="688"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="702"/>
         <source>Expected: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="688"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="702"/>
         <source>Found:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="723"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="737"/>
         <source>A cancelled corporate action was dropped together with its cancellation. JAL has no example of such statement, please share yours at </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="728"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="742"/>
         <source>a cancellation repeats the record it cancels with an opposite quantity</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="762"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="776"/>
         <source>an asset withdrawn for nothing in exchange has proceeds</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="771"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="785"/>
         <source>a merger that pays proceeds has &apos;CASH&apos; in its description</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="844"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="859"/>
         <source>a split that changes ISIN has a withdrawn (-) and a received (+) record</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1128"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1143"/>
         <source>Unsupported CFD charge: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1253"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1268"/>
         <source>Import cancelled, withholding tax matches no payment: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1160"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1175"/>
         <source>Tax adjustment for dividend: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/ibkr.py" line="1283"/>
+        <location filename="../data_import/broker_statements/ibkr.py" line="1298"/>
         <source>Can&apos;t find a FlexStatement in first {} bytes of {}</source>
         <translation></translation>
     </message>

@@ -132,6 +132,10 @@ class ChainFetcher(Statement):
         self._commit_state()
         return totals
 
+    # Tokens this fetcher has blacklisted as dust/spam - written at fetch(), so they stand even if the import fails
+    def quarantined(self) -> list:
+        return self._filter.quarantined()
+
     # Stores whatever else a fetcher must remember between runs, on the same terms as the sync cursor: only after the
     # data has reached the database. A fetcher that carries state across fetches (Solana remembers how much sits in
     # each stake account) must never let it get ahead of the operations that justify it.
