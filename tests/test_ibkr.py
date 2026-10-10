@@ -739,6 +739,18 @@ def test_ibkr_dividend_reversal_is_matched_in_three_ways():
         ibkr.aggregate_dividends([kept, reversed_(15, 'DDD CASH DIVIDEND - REVERSAL', 1720137600)])
 
 
+# A tax withheld in two equal parts and reversed once leaves one part: the reversal takes a record, not every equal one
+def test_ibkr_tax_reversal_takes_one_of_identical_parts():
+    ibkr = StatementIBKR()
+    ibkr._data = {JSF.ASSET_PAYMENTS: [],
+                  JSF.ASSETS: [{'id': 61, 'type': JSF.ASSET_STOCK, JSF.SYMBOLS: [{'id': 161, 'symbol': 'AAA'}]}]}
+    tax = lambda amount: {
+        'type': 'Withholding Tax', 'account': 1, 'symbol': 161, 'currency': 1, 'timestamp': 1720210800,
+        'reported': 1720137600, 'amount': Decimal(amount), 'action_id': '777',
+        'description': 'AAA(US0000000001) CASH DIVIDEND - US TAX'}
+    assert ibkr.aggregate_taxes([tax('-5'), tax('-5'), tax('5')]) == [tax('-5')]
+
+
 # A dividend and its tax, both reversed two months later under another report date, leave nothing behind
 def test_ibkr_reversed_dividend_takes_its_reversed_tax_with_it(tmp_path, project_root, data_path, prepare_db_taxes):
     statement = StatementIBKR()

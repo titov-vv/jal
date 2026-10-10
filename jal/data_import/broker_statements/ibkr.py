@@ -1108,7 +1108,7 @@ class StatementIBKR(StatementXML):
                         not_matched_reversals.append(reversal)
             else:
                 payments.remove(t_payment)    # it is possible to kill exact match silently
-        taxes = [x for x in taxes if x in payments or x in not_matched_reversals]
+        taxes = payments + not_matched_reversals
 
         # Sometimes IB split tax in several parts for Payment in Lieu of Dividend
         # Below code aggregates such taxes but only negative values (positive might be a correction of previous tax)
