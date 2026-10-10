@@ -554,6 +554,31 @@ def test_ibkr_unknown_option_exercise_type_is_reported(caplog):
     assert "Option E&A&E action isn't implemented: Cash Settlement" in caplog.text
 
 
+# A cash transaction of a type that isn't imported is named in the log and counted, the others are imported as usual
+def test_ibkr_unsupported_cash_transaction_is_reported(caplog):
+    ibkr = StatementIBKR()
+    ibkr._data = {JSF.ASSET_PAYMENTS: [], JSF.TRANSFERS: [], JSF.INCOME_SPENDING: [], JSF.ASSETS: []}
+    cash = lambda cash_type, amount: {
+        'type': cash_type, 'account': 1, 'symbol': 0, 'currency': 1, 'timestamp': 1720210800,
+        'timestamp_day_only': True, 'reported': 1720137600, 'amount': Decimal(amount), 'number': '', 'tid': '1',
+        'action_id': '', 'description': 'SOMETHING'}
+    ibkr.load_cash_transactions([cash('Broker Fees', '-1.5'), cash('Broker Fees', '-2'), cash('Other Fees', '-3')])
+    assert ibkr.skipped() == {"cash transactions of unsupported type 'Broker Fees'": 2}
+    assert "'Broker Fees' x 2, total amount: -3.5" in caplog.text
+    assert len(ibkr._data[JSF.INCOME_SPENDING]) == 1
+
+
+# A withholding that finds no vesting to be taken from is reported, as nothing is stored for it
+def test_ibkr_stock_award_withholding_without_vesting_is_reported(caplog):
+    ibkr = StatementIBKR()
+    ibkr._data = {JSF.ASSET_PAYMENTS: []}
+    ibkr.load_granted_stocks([{'account': 1, 'symbol': 161, 'award_date': 1700000000, 'vesting_date': 1720137600,
+                               'description': 'Stock Award Withholding', 'amount': Decimal('-0.1307'), 'price': '10'}])
+    assert ibkr.skipped() == {"stock award withholdings that match no vesting": 1}
+    assert "Stock award withholding matches no vesting and was NOT imported" in caplog.text
+    assert ibkr._data[JSF.ASSET_PAYMENTS] == []
+
+
 # A tax charged on a trade adds to the commission of that trade, a standalone one is a fee of its asset
 def test_ibkr_transaction_tax_adds_to_the_trade_fee(tmp_path, project_root, data_path, prepare_db_taxes):
     statement = StatementIBKR()

@@ -152,6 +152,9 @@ class StatementIBKR(StatementXML):
     NoAsset = -1
     NoActionID = '<missing>'    # stands for 'actionID' of a corporate action that has no such attribute at all
     FormerCorpActionsTag = 'ibkr-corp-actions-by-description'
+    CashTransactionTypes = ['Dividends', 'Payment In Lieu Of Dividends', 'Bond Interest Paid', 'Bond Interest Received',
+                            'Withholding Tax', 'Deposits/Withdrawals', 'Other Fees', 'Commission Adjustments',
+                            'Broker Interest Paid', 'Broker Interest Received']   # the ones that are imported
 
     def __init__(self):
         super().__init__()
@@ -933,6 +936,10 @@ class StatementIBKR(StatementXML):
         for withholding in withholdings:
             main_data = lambda x: {i: x[i] for i in x if i not in ['description', 'operation', 'amount']}
             matched_vesting = [x for x in vestings if main_data(x) == main_data(withholding)]
+            if not matched_vesting:
+                self._skip(self.tr("stock award withholdings that match no vesting"), f"{withholding}")
+                logging.warning(self.tr("Stock award withholding matches no vesting and was NOT imported: ") +
+                                f"{ts2d(withholding['vesting_date'])} {remove_exponent(withholding['amount'])}")
             if len(matched_vesting) == 1:
                 matched_vesting[0]['amount'] += withholding['amount']
             if len(matched_vesting) > 1:
@@ -950,6 +957,7 @@ class StatementIBKR(StatementXML):
     def load_cash_transactions(self, cash):
         drop_fields = lambda x, y: {i: x[i] for i in x if i not in y}  # removes from dict(x) fields listed in [y]
         cnt = 0
+        self._report_unsupported_cash(cash)
         dividends = list(filter(lambda tr: tr['type'] in ['Dividends', 'Payment In Lieu Of Dividends'], cash))
         dividends = [drop_fields(x, ['tid']) for x in dividends]  # remove 'tid' field as not used for dividends
         dividends = self.aggregate_dividends(dividends)
@@ -1022,6 +1030,18 @@ class StatementIBKR(StatementXML):
             cnt += 1
 
         logging.info(self.tr("Cash transactions loaded: ") + f"{cnt} ({len(cash)})")
+
+    # Cash transactions of a type that isn't imported are counted and named in the log, not dropped silently
+    def _report_unsupported_cash(self, cash):
+        unsupported = [x for x in cash if x['type'] not in self.CashTransactionTypes]
+        for record in unsupported:
+            self._skip(self.tr("cash transactions of unsupported type") + f" '{record['type']}'",
+                       f"{ts2d(record['timestamp'])} {remove_exponent(record['amount'])} {record['description']}")
+        for cash_type in sorted({x['type'] for x in unsupported}):
+            records = [x for x in unsupported if x['type'] == cash_type]
+            logging.warning(self.tr("Cash transactions of unsupported type were NOT imported: ") +
+                            f"'{cash_type}' x {len(records)}, " + self.tr("total amount: ") +
+                            f"{remove_exponent(sum(x['amount'] for x in records))}")
 
     # Method takes a list of dividend dictionaries and checks for REVERSAL and CANCEL
     # For such description it looks for matching record (for the same symbol) with opposite amount and the same payment
