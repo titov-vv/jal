@@ -40,6 +40,17 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_ibkr):
     assert IBKR._id_map == expected_map
 
 
+# Money and asset movements: currency exchanges, deposits and withdrawals, internal transfers, broker interest,
+# a commission adjustment and a sales tax
+def test_statement_ibkr_cash_flows(tmp_path, project_root, data_path, prepare_db_ibkr):
+    statement, expected_map = load_expected_statement(data_path + 'ibkr_cash_flows.json')
+    IBKR = StatementIBKR()
+    IBKR.load(data_path + 'ibkr_cash_flows.xml')
+    assert IBKR._data == statement
+    assert IBKR._id_map == expected_map
+    assert IBKR.skipped() == {}
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 # This test normally generates warning message:
 # WARNING  root:tvoy.py:280 Asset transfer was skipped as it will be loaded from the destination account report: Перевод ЦБ с субсчета 12345 на субсчет 54321. Код клиента 01495.

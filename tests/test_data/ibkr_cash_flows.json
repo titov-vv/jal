@@ -1,0 +1,359 @@
+{
+ "period": [
+  1577836800,
+  1607903999
+ ],
+ "accounts": [
+  {
+   "number": "U7654321",
+   "currency": 1,
+   "cash_begin": 0,
+   "cash_end": 0,
+   "cash_end_settled": 0,
+   "id": 1,
+   "precision": 10
+  },
+  {
+   "number": "U7654321",
+   "currency": 2,
+   "cash_begin": 12.345,
+   "cash_end": 1234567.249966388,
+   "cash_end_settled": 1234567.89,
+   "id": 2,
+   "precision": 10
+  },
+  {
+   "number": "TEST_ACC",
+   "currency": 2,
+   "cash_begin": 0,
+   "cash_end": 0,
+   "cash_end_settled": 0,
+   "id": 3,
+   "precision": 10
+  },
+  {
+   "number": "U7654321",
+   "currency": 3,
+   "cash_begin": 0,
+   "cash_end": 0,
+   "cash_end_settled": 0,
+   "id": 4,
+   "precision": 10
+  },
+  {
+   "number": "TEST_ACC",
+   "currency": 3,
+   "cash_begin": 0,
+   "cash_end": 0,
+   "cash_end_settled": 0,
+   "id": 5,
+   "precision": 10
+  },
+  {
+   "id": 6,
+   "number": "U7654321",
+   "currency": 4,
+   "precision": 10
+  }
+ ],
+ "assets": [
+  {
+   "id": 1,
+   "type": "money",
+   "name": "RUB",
+   "symbols": [
+    {
+     "id": 1,
+     "symbol": "RUB"
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "type": "money",
+   "name": "USD",
+   "symbols": [
+    {
+     "id": 2,
+     "symbol": "USD"
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "type": "money",
+   "name": "CAD",
+   "symbols": [
+    {
+     "id": 3,
+     "symbol": "CAD"
+    }
+   ]
+  },
+  {
+   "id": 4,
+   "type": "money",
+   "name": "EUR",
+   "symbols": [
+    {
+     "id": 4,
+     "symbol": "EUR"
+    }
+   ]
+  },
+  {
+   "id": 5,
+   "type": "stock",
+   "symbols": [
+    {
+     "id": 5,
+     "symbol": "EWLL",
+     "currency": 2,
+     "note": "PINK",
+     "isin": "US30051D2053",
+     "cusip": "30051D205"
+    }
+   ]
+  },
+  {
+   "id": 6,
+   "type": "stock",
+   "name": "AMAZON.COM INC",
+   "symbols": [
+    {
+     "id": 6,
+     "symbol": "AMZN",
+     "currency": 2,
+     "note": "NASDAQ",
+     "isin": "US0231351067",
+     "cusip": "023135106"
+    }
+   ]
+  }
+ ],
+ "trades": [],
+ "transfers": [
+  {
+   "symbol": [
+    4,
+    2
+   ],
+   "account": [
+    6,
+    2,
+    2
+   ],
+   "timestamp": 1580461370,
+   "fee": 3,
+   "number": "2674343226",
+   "id": 1,
+   "withdrawal": 890.47,
+   "deposit": 1000,
+   "description": "IDEALFX"
+  },
+  {
+   "symbol": [
+    1,
+    2
+   ],
+   "account": [
+    1,
+    2,
+    2
+   ],
+   "timestamp": 1581340108,
+   "fee": 2,
+   "number": "2645393202",
+   "id": 2,
+   "withdrawal": 78986.6741,
+   "deposit": 1234,
+   "description": "IDEALFX"
+  },
+  {
+   "symbol": [
+    1,
+    2
+   ],
+   "account": [
+    1,
+    2,
+    2
+   ],
+   "timestamp": 1590537232,
+   "fee": 0,
+   "number": "2845906676",
+   "id": 3,
+   "withdrawal": 44.07,
+   "deposit": 0.621778209,
+   "description": "IDEALFX"
+  },
+  {
+   "account": [
+    0,
+    1,
+    0
+   ],
+   "symbol": [
+    1,
+    1
+   ],
+   "timestamp": 1600389000,
+   "number": "13778635822",
+   "description": "CASH RECEIPTS / ELECTRONIC FUND TRANSFERS",
+   "id": 4,
+   "withdrawal": 123456.78,
+   "deposit": 123456.78,
+   "fee": 0
+  },
+  {
+   "account": [
+    2,
+    0,
+    0
+   ],
+   "symbol": [
+    2,
+    2
+   ],
+   "timestamp": 1605744000,
+   "number": "14333901913",
+   "description": "DISBURSEMENT INITIATED BY John Doe",
+   "id": 5,
+   "withdrawal": 1234,
+   "deposit": 1234,
+   "fee": 0
+  },
+  {
+   "account": [
+    0,
+    2,
+    0
+   ],
+   "symbol": [
+    2,
+    2
+   ],
+   "timestamp": 1663372800,
+   "number": "1234567890",
+   "description": "CASH RECEIPTS / ELECTRONIC FUND TRANSFERS",
+   "id": 6,
+   "withdrawal": 100,
+   "deposit": 100,
+   "fee": 0
+  },
+  {
+   "account": [
+    0,
+    2,
+    0
+   ],
+   "symbol": [
+    2,
+    2
+   ],
+   "timestamp": 1663372800,
+   "number": "1234567891",
+   "description": "CASH RECEIPTS / ELECTRONIC FUND TRANSFERS",
+   "id": 7,
+   "withdrawal": 100,
+   "deposit": 100,
+   "fee": 0
+  },
+  {
+   "account": [
+    3,
+    2,
+    0
+   ],
+   "symbol": [
+    6,
+    6
+   ],
+   "timestamp": 1685717120,
+   "description": "INTERNAL TRANSFER (--)",
+   "number": "24055511103",
+   "id": 8,
+   "withdrawal": 7,
+   "deposit": 7,
+   "fee": 0
+  },
+  {
+   "account": [
+    2,
+    3,
+    0
+   ],
+   "symbol": [
+    2,
+    2
+   ],
+   "timestamp": 1694791565,
+   "description": "INTERNAL TRANSFER FROM U7654321 TO TEST_ACC",
+   "number": "21632131212",
+   "id": 9,
+   "withdrawal": 12345,
+   "deposit": 12345,
+   "fee": 0
+  },
+  {
+   "account": [
+    3,
+    2,
+    0
+   ],
+   "symbol": [
+    2,
+    2
+   ],
+   "timestamp": 1683375918,
+   "description": "INTERNAL TRANSFER FROM TEST_ACC TO U7654321",
+   "number": "16377745681",
+   "id": 10,
+   "withdrawal": 150,
+   "deposit": 150,
+   "fee": 0
+  }
+ ],
+ "corporate_actions": [],
+ "asset_payments": [
+  {
+   "type": "fee",
+   "account": 2,
+   "symbol": 5,
+   "timestamp": 1601476920,
+   "timestamp_day_only": false,
+   "amount": 0.6905565,
+   "number": "",
+   "description": "COMMISS COMPUTED AFTER TRADE REPORTED (EWLL)",
+   "id": 1
+  }
+ ],
+ "income_spending": [
+  {
+   "account": 1,
+   "timestamp": 1591142400,
+   "id": 1,
+   "peer": 0,
+   "lines": [
+    {
+     "amount": 0.5,
+     "category": 8,
+     "description": "RUB CREDIT INT FOR MAY-2020"
+    }
+   ]
+  },
+  {
+   "account": 2,
+   "timestamp": 1604534400,
+   "id": 2,
+   "peer": 0,
+   "lines": [
+    {
+     "amount": -0.0105,
+     "category": 6,
+     "description": "VAT Spain 21%: 0.05 USD t*****71:Global Snapshot PnP"
+    }
+   ]
+  }
+ ]
+}
