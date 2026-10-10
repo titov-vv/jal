@@ -883,7 +883,8 @@ class StatementIBKR(StatementXML):
                 self._refuse_corp_action([action], self.tr("a split that changes ISIN has a withdrawn (-) and "
                                                            "a received (+) record"))
             qty_delta = action['quantity']
-            qty_old = qty_delta / (Decimal(int(parts['X'])) / int(parts['Y']) - 1)
+            # Not qty_delta / (X/Y - 1): a ratio like 7/3 has no exact decimal form
+            qty_old = remove_exponent(qty_delta * int(parts['Y']) / (int(parts['X']) - int(parts['Y'])))
             action['outcome'] = [{'symbol': action['symbol'], 'quantity': qty_old + qty_delta, 'share': Decimal('1')}]
             action['quantity'] = qty_old
         self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "action_id", "currency"])

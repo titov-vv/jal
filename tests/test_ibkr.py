@@ -718,6 +718,25 @@ def test_ibkr_fee_charged_on_an_asset_is_imported_as_asset_fee(tmp_path, project
     assert imported.get_asset_amount(d2t(260101), imported.currency()) == Decimal('-4.01')
 
 
+# A split reported as one change of quantity gives back the whole numbers it started from
+@pytest.mark.parametrize("ratio, delta, held, result", [
+    ("7 FOR 3", '12', '9', '21'),       # 7/3 has no finite decimal form
+    ("1 FOR 3", '-20', '30', '10'),
+    ("1 FOR 7", '-60', '70', '10'),
+    ("3 FOR 2", '0.75', '1.5', '2.25')
+])
+def test_ibkr_split_quantity_is_exact(ratio, delta, held, result):
+    ibkr = StatementIBKR()
+    ibkr._data = {JSF.CORP_ACTIONS: []}
+    record = {'type': JSF.ACTION_SPLIT, 'account': 1, 'symbol': 161, 'timestamp': 1720137600, 'number': '1',
+              'quantity': Decimal(delta), 'description': f"AAA(US0000000001) SPLIT {ratio} (AAA, AAA INC, US0000000001)"}
+    withdrawn, received = ([record], []) if Decimal(delta) < 0 else ([], [record])
+    assert ibkr.load_split(withdrawn, received) == 1
+    action = ibkr._data[JSF.CORP_ACTIONS][0]
+    assert str(action['quantity']) == held
+    assert [str(x['quantity']) for x in action['outcome']] == [result]
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 # A reversed dividend is dropped together with its reversal. The match is exact first, then ignoring the description,
 # then ignoring the report date; a reversal that matches nothing stops the import
