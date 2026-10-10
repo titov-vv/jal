@@ -139,6 +139,7 @@ class StatementIBKR(StatementXML):
     ReversalCode = 'Re'
     ReversalSuffix = " - REVERSAL"
     CancelPrefix = "CANCEL "
+    ReplacedSuffix = '.OLD'     # IB may add it to a symbol of an asset that is being replaced
     NoAsset = -1
     NoActionID = '<missing>'    # stands for 'actionID' of a corporate action that has no such attribute at all
     FormerCorpActionsTag = 'ibkr-corp-actions-by-description'
@@ -403,9 +404,7 @@ class StatementIBKR(StatementXML):
         elif xml_element.tag == 'Transfer' and asset_category == JSF.ASSET_MONEY:
             symbol_id = self.currency_symbol_id(xml_element.attrib['currency'])
         else:
-            symbol = xml_element.attrib[attr_name]
-            if symbol.endswith('.OLD'):
-                symbol = symbol[:-len('.OLD')]
+            symbol = xml_element.attrib[attr_name].removesuffix(self.ReplacedSuffix)
             if asset_category == IBKR_AssetType.NotSupported:
                 raise Statement_ImportError(self.tr("Asset type isn't supported: ") + f"'{asset_category}' ({symbol})")
             asset_data = {'symbol': symbol, 'type': asset_category}
@@ -509,8 +508,7 @@ class StatementIBKR(StatementXML):
         for asset in assets:
             if asset['type'] == IBKR_AssetType.NotSupported:   # Skip not supported type of asset
                 continue
-            # IB may use '.OLD' suffix if asset is being replaced
-            asset['symbol'] = asset['symbol'][:-len('.OLD')] if asset['symbol'].endswith('.OLD') else asset['symbol']
+            asset['symbol'] = asset['symbol'].removesuffix(self.ReplacedSuffix)
             if asset['exchange'] and asset['exchange'] != 'VALUE':  # don't store 'VALUE' or empty exchange
                 asset['note'] = asset['exchange']
             if asset['maturity']:
@@ -923,11 +921,21 @@ class StatementIBKR(StatementXML):
         logging.info(self.tr("Stock grant operations loaded: ") + f"{cnt} ({len(granted_stocks)})")
 
     def load_cash_transactions(self, cash):
-        drop_fields = lambda x, y: {i: x[i] for i in x if i not in y}  # removes from dict(x) fields listed in [y]
         cnt = 0
         self._report_unsupported_cash(cash)
-        dividends = list(filter(lambda tr: tr['type'] in ['Dividends', 'Payment In Lieu Of Dividends'], cash))
-        dividends = [drop_fields(x, ['tid']) for x in dividends]  # remove 'tid' field as not used for dividends
+        # Records are picked by type here, as their fields (the type as well) are changed below
+        of_type = lambda *types: [x for x in cash if x['type'] in types]
+        without_tid = lambda records: [{key: x[key] for key in x if key != 'tid'} for x in records]
+        dividends = without_tid(of_type('Dividends', 'Payment In Lieu Of Dividends'))
+        bond_interests = of_type('Bond Interest Paid', 'Bond Interest Received')
+        taxes = without_tid(of_type('Withholding Tax'))
+        transfers = of_type('Deposits/Withdrawals')
+        fees = of_type('Other Fees', 'Commission Adjustments', 'Broker Interest Paid', 'Broker Interest Received')
+        # A fee that names an asset (an ADR fee) is a fee of that asset, the rest are ordinary spendings
+        is_asset_fee = lambda x: x['symbol'] and x['type'] in ('Other Fees', 'Commission Adjustments')
+        asset_fees = [x for x in fees if is_asset_fee(x)]
+        fees = [x for x in fees if not is_asset_fee(x)]
+
         dividends = self.aggregate_dividends(dividends)
         asset_payments_base = self._next_id(JSF.ASSET_PAYMENTS)
         for i, dividend in enumerate(dividends):
@@ -938,7 +946,6 @@ class StatementIBKR(StatementXML):
             self._data[JSF.ASSET_PAYMENTS].append(dividend)
             cnt += 1
         asset_payments_base += cnt
-        bond_interests = list(filter(lambda tr: tr['type'] in ['Bond Interest Paid', 'Bond Interest Received'], cash))
         for i, bond_interest in enumerate(bond_interests):
             bond_interest['id'] = asset_payments_base + i
             bond_interest['type'] = JSF.PAYMENT_INTEREST
@@ -946,14 +953,10 @@ class StatementIBKR(StatementXML):
             self._data[JSF.ASSET_PAYMENTS].append(bond_interest)
             cnt += 1
 
-        taxes = list(filter(lambda tr: tr['type'] == 'Withholding Tax', cash))
-        taxes = [drop_fields(x, ['tid']) for x in taxes]
-        taxes = self.aggregate_taxes(taxes)
-        for tax in taxes:
+        for tax in self.aggregate_taxes(taxes):
             cnt += self.apply_tax_withheld(tax)
 
         transfer_base = self._next_id(JSF.TRANSFERS)
-        transfers = list(filter(lambda tr: tr['type'] == 'Deposits/Withdrawals', cash))
         for i, transfer in enumerate(transfers):
             transfer['id'] = transfer_base + i
             transfer['number'] = transfer.pop('tid')
@@ -970,13 +973,6 @@ class StatementIBKR(StatementXML):
             cnt += 1
 
         payment_base = self._next_id(JSF.INCOME_SPENDING)
-        fees = list(filter(lambda tr: 'type' in tr and tr['type'] in ['Other Fees',
-                                                                      'Commission Adjustments',
-                                                                      'Broker Interest Paid',
-                                                                      'Broker Interest Received'], cash))
-        # A fee that names an asset (an ADR fee) is a fee of that asset, the rest are ordinary spendings
-        asset_fees = [x for x in fees if x['symbol'] and x['type'] in ['Other Fees', 'Commission Adjustments']]
-        fees = [x for x in fees if x not in asset_fees]
         asset_payments_base = self._next_id(JSF.ASSET_PAYMENTS)
         for i, fee in enumerate(asset_fees):
             fee['id'] = asset_payments_base + i
@@ -988,10 +984,7 @@ class StatementIBKR(StatementXML):
         for i, fee in enumerate(fees):
             fee['id'] = payment_base + i
             fee['peer'] = 0
-            if fee['type'] == 'Broker Interest Received':
-                category = PredefinedCategory.Interest
-            else:
-                category = PredefinedCategory.Fees
+            category = PredefinedCategory.Interest if fee['type'] == 'Broker Interest Received' else PredefinedCategory.Fees
             fee['lines'] = [{'amount': fee['amount'], 'category': category, 'description': fee['description']}]
             self.drop_extra_fields(fee, ["type", "amount", "timestamp_day_only", "description", "symbol", "number", "currency", "reported", "tid", "action_id"])
             self._data[JSF.INCOME_SPENDING].append(fee)
@@ -1011,6 +1004,18 @@ class StatementIBKR(StatementXML):
                             f"'{cash_type}' x {len(records)}, " + self.tr("total amount: ") +
                             f"{remove_exponent(sum(x['amount'] for x in records))}")
 
+    # Takes out of 'payments' the first record that is equal to 'target'. The comparison is repeated without the
+    # fields of every next element of 'ignored' until something matches. Returns the index of that element, -1 if none
+    @staticmethod
+    def _take_matching(payments: list, target: dict, ignored: list) -> int:
+        for i, fields in enumerate(ignored):
+            compared = lambda x: {key: x[key] for key in x if key not in fields}
+            matched = [x for x in payments if compared(x) == compared(target)]
+            if matched:
+                payments.remove(matched[0])
+                return i
+        return -1
+
     # Method takes a list of dividend dictionaries and checks for REVERSAL and CANCEL
     # For such description it looks for matching record (for the same symbol) with opposite amount and the same payment
     # and report dates. Description may be different!
@@ -1018,109 +1023,65 @@ class StatementIBKR(StatementXML):
         is_reversal = lambda x: self.ReversalSuffix in x or x.startswith(self.CancelPrefix)
         payments = [x for x in deepcopy(dividends) if not is_reversal(x['description'])]
         reversals = [x for x in deepcopy(dividends) if is_reversal(x['description'])]
-        # Drop reversals that match payments exactly
+        # Fields that are left out of comparison and what is said about a match found that way
+        matches = [((), logging.info, self.tr("Payment was reversed: ")),
+                   (('description',), logging.warning, self.tr("Payment was reversed by approximate description: ")),
+                   (('reported',), logging.warning, self.tr("Payment was reversed with different reported date: "))]
         for reversal in reversals:
-            t_payment = deepcopy(reversal)  # target payment to search for
-            t_payment['description'] = t_payment['description'].replace(self.ReversalSuffix, '')
-            t_payment['description'] = t_payment['description'].replace(self.CancelPrefix, '')
-            t_payment['amount'] = -t_payment['amount']
-            if t_payment not in payments:
-                no_description = lambda x: {i:x[i] for i in x if i != 'description'}
-                m_payments = [x for x in payments if no_description(x) == no_description(t_payment)]
-                if len(m_payments):
-                    payments.remove(m_payments[0])
-                    logging.warning(self.tr("Payment was reversed by approximate description: ") +
-                                    f"{ts2dt(t_payment['timestamp'])}, '{t_payment['description']}': {t_payment['amount']}")
-                    continue
-                no_reported = lambda x: {i: x[i] for i in x if i != 'reported'}
-                m_payments = [x for x in payments if no_reported(x) == no_reported(t_payment)]
-                if len(m_payments):
-                    payments.remove(m_payments[0])
-                    logging.warning(self.tr("Payment was reversed with different reported date: ") +
-                                    f"{ts2dt(t_payment['timestamp'])}, '{t_payment['description']}': {t_payment['amount']}")
-                    continue
+            description = reversal['description'].replace(self.ReversalSuffix, '').replace(self.CancelPrefix, '')
+            target = {**reversal, 'description': description, 'amount': -reversal['amount']}
+            matched = self._take_matching(payments, target, [x[0] for x in matches])
+            if matched < 0:
                 raise Statement_ImportError(self.tr("Can't find match for reversal: ") + f"{reversal}")
-            else:
-                payments.remove(t_payment) # Source payment found -> remove it
-                logging.info(self.tr("Payment was reversed: ") +
-                             f"{ts2dt(t_payment['timestamp'])}, '{t_payment['description']}': {t_payment['amount']}")
+            _, log, message = matches[matched]
+            log(message + f"{ts2dt(target['timestamp'])}, '{target['description']}': {target['amount']}")
         return payments
 
-    # Method takes a list of taxes and checks if we have the same amount added and deducted the same day
-    # First it tries to find exact match. Second it does it again ignoring reportDate.
+    # Method takes a list of taxes and checks if we have the same amount added and deducted the same day,
+    # joins the parts of a tax together and stores extra taxes of MLP as fees. Returns the taxes to apply to dividends
     def aggregate_taxes(self, taxes: list) -> list:
-        def is_mlp_extra_tax(tax: dict) -> bool:
-            if tax['amount'] >= 0:
-                return False
-            dividends = [x for x in self._data[JSF.ASSET_PAYMENTS] if
-                         (x['type'] == JSF.PAYMENT_DIVIDEND or x['type'] == JSF.PAYMENT_STOCK_DIVIDEND)
-                         and x['symbol'] == tax['symbol'] and x['account'] == tax['account'] and x['timestamp'] == tax['timestamp']]
-            try:
-                db_account = self._map_db_account(tax['account'])
-                db_asset = self._map_db_asset_by_symbol(tax['symbol'])
-            except RuntimeError:
-                db_account = 0
-                db_asset = 0
-            if db_account and db_asset:
-                db_dividends = AssetPayment.get_list(db_account, db_asset, AssetPayment.Dividend)
-                db_dividends += AssetIncome.get_list(db_account, db_asset, AssetIncome.StockDividend)
-                for db_dividend in db_dividends:
-                    if db_dividend.timestamp() == tax['timestamp']:
-                        dividends.append({
-                            "amount": db_dividend.amount(),
-                        })
-            tax_amount = abs(tax['amount'])
-            for dividend in dividends:
-                dividend_amount = abs(dividend['amount'])
-                if abs(Decimal('0.1') * dividend_amount - tax_amount) <= Decimal('0.01'):
-                    return True
-            return False
+        taxes = self._drop_reversed_taxes(taxes)
+        taxes = self._join_taxes_in_lieu(taxes)
+        return self._store_mlp_extra_taxes(taxes)
 
+    # A returned tax takes away the tax it returns: an exact match first, then with another report date,
+    # then with another description as well. A returned tax that matches nothing is kept
+    def _drop_reversed_taxes(self, taxes: list) -> list:
         payments = [x for x in deepcopy(taxes) if x['amount'] < 0]
         reversals = [x for x in deepcopy(taxes) if x['amount'] > 0]
         not_matched_reversals = []
         for reversal in reversals:
-            t_payment = deepcopy(reversal)   # target payment to search for
-            t_payment['description'] = t_payment['description'].replace(self.CancelPrefix, '')
-            t_payment['amount'] = -t_payment['amount']
-            if t_payment not in payments:
-                no_report = lambda x: {i: x[i] for i in x if i != 'reported'}
-                m_payments = [x for x in payments if no_report(x) == no_report(t_payment)]
-                if len(m_payments):
-                    payments.remove(m_payments[0])
-                else:
-                    no_d_and_r = lambda x: {i: x[i] for i in x if i != 'description' and i != 'reported'}
-                    m_payments = [x for x in payments if no_d_and_r(x) == no_d_and_r(t_payment)]
-                    if len(m_payments):
-                        payments.remove(m_payments[0])
-                    else:
-                        not_matched_reversals.append(reversal)
-            else:
-                payments.remove(t_payment)    # it is possible to kill exact match silently
-        taxes = payments + not_matched_reversals
+            target = {**reversal, 'description': reversal['description'].replace(self.CancelPrefix, ''),
+                      'amount': -reversal['amount']}
+            if self._take_matching(payments, target, [(), ('reported',), ('description', 'reported')]) < 0:
+                not_matched_reversals.append(reversal)
+        return payments + not_matched_reversals
 
-        # Sometimes IB split tax in several parts for Payment in Lieu of Dividend
-        # Below code aggregates such taxes but only negative values (positive might be a correction of previous tax)
+    # Sometimes IB split tax in several parts for Payment in Lieu of Dividend
+    # Below code aggregates such taxes but only negative values (positive might be a correction of previous tax)
+    def _join_taxes_in_lieu(self, taxes: list) -> list:
         key_func = lambda x: (x['account'], x['symbol'], x['currency'], x['description'], x['timestamp'], x['reported'])
         taxes_sorted = sorted(taxes, key=key_func)
         tax_in_lieu = [x for x in taxes_sorted if x['amount'] < 0 and 'PAYMENT IN LIEU OF DIVIDEND' in x['description']]
         other_taxes = [x for x in taxes_sorted if x not in tax_in_lieu]
         lieu_aggregated = []
-        for k, group in groupby(tax_in_lieu, key=key_func):
+        for _, group in groupby(tax_in_lieu, key=key_func):
             group_list = list(group)
             part = group_list[0]  # Take fist of several actions as a basis
             part['amount'] = sum(tax['amount'] for tax in group_list)  # and update quantity in it
             lieu_aggregated.append(part)
-        taxes_aggregated = sorted(other_taxes + lieu_aggregated, key=key_func)
+        return sorted(other_taxes + lieu_aggregated, key=key_func)
 
-        # There might be additional record to withhold 10% of extra tax on partnerships (currently faced for MLP) reported in different dates
+    # There might be additional record to withhold 10% of extra tax on partnerships (currently faced for MLP) reported
+    # in different dates. It is stored as a fee of the asset, the rest of the taxes is returned
+    def _store_mlp_extra_taxes(self, taxes: list) -> list:
         key_func = lambda x: (x['account'], x['symbol'], x['currency'], x['description'], x['timestamp'])
-        mlp_taxes = [x for x in taxes_aggregated if self._symbol_asset(x['symbol'])['type'] == JSF.ASSET_MLP]
-        non_mlp_taxes = [x for x in taxes_aggregated if x not in mlp_taxes]
-        mlp_processed  = []
-        for k, group in groupby(mlp_taxes, key=key_func):
+        mlp_taxes = [x for x in taxes if self._symbol_asset(x['symbol'])['type'] == JSF.ASSET_MLP]
+        non_mlp_taxes = [x for x in taxes if x not in mlp_taxes]
+        mlp_processed = []
+        for _, group in groupby(mlp_taxes, key=key_func):
             group_list = sorted(list(group), key=lambda x: (x['amount']))
-            extra_taxes = [x for x in group_list if is_mlp_extra_tax(x)]
+            extra_taxes = [x for x in group_list if self._is_mlp_extra_tax(x)]
             for tax in extra_taxes:
                 tax['id'] = self._next_id(JSF.ASSET_PAYMENTS)
                 tax['type'] = JSF.PAYMENT_FEE
@@ -1131,8 +1092,17 @@ class StatementIBKR(StatementXML):
             if len(group_list) > 2:
                 raise Statement_ImportError(self.tr("Too many records for MLP tax: ") + f"{group_list}")
             mlp_processed.extend(group_list)
-        taxes_processed = sorted(non_mlp_taxes + mlp_processed, key=key_func)
-        return taxes_processed
+        return sorted(non_mlp_taxes + mlp_processed, key=key_func)
+
+    # True for a tax that is 10% of a dividend paid for the same asset at the same time (to within a cent)
+    def _is_mlp_extra_tax(self, tax: dict) -> bool:
+        if tax['amount'] >= 0:
+            return False
+        amounts = [x['amount'] for x in self._data[JSF.ASSET_PAYMENTS] if
+                   (x['type'] == JSF.PAYMENT_DIVIDEND or x['type'] == JSF.PAYMENT_STOCK_DIVIDEND)
+                   and x['symbol'] == tax['symbol'] and x['account'] == tax['account'] and x['timestamp'] == tax['timestamp']]
+        amounts += [x.amount() for x in self._db_dividends(tax) if x.timestamp() == tax['timestamp']]
+        return any(abs(Decimal('0.1') * abs(amount) - abs(tax['amount'])) <= Decimal('0.01') for amount in amounts)
 
     def load_taxes(self, taxes):
         cnt = 0
@@ -1261,8 +1231,8 @@ class StatementIBKR(StatementXML):
                                    self.tr("no single payment of that day to fall back on") if action_id
                                    else self.tr("the statement gives no corporate action id to match on"))
 
-    # Dividends of this account and asset that are already in the database, in the shape a statement record has.
-    def _stored_dividends(self, tax) -> list:
+    # Dividends of the account and asset of the given tax that are already in the database
+    def _db_dividends(self, tax) -> list:
         try:
             db_account = self._map_db_account(tax['account'])
             db_asset = self._map_db_asset_by_symbol(tax['symbol'])
@@ -1270,8 +1240,11 @@ class StatementIBKR(StatementXML):
             return []
         if not db_account or not db_asset:
             return []
-        stored = AssetPayment.get_list(db_account, db_asset, AssetPayment.Dividend)
-        stored += AssetIncome.get_list(db_account, db_asset, AssetIncome.StockDividend)
+        return (AssetPayment.get_list(db_account, db_asset, AssetPayment.Dividend) +
+                AssetIncome.get_list(db_account, db_asset, AssetIncome.StockDividend))
+
+    # The same dividends in the shape a statement record has.
+    def _stored_dividends(self, tax) -> list:
         return [{
             "id": self.statement_payment_id(payment.oid()),
             "account": tax['account'],
@@ -1281,7 +1254,7 @@ class StatementIBKR(StatementXML):
             "amount": payment.amount(),
             "tax": payment.tax(),
             "description": payment.note()
-        } for payment in stored]
+        } for payment in self._db_dividends(tax)]
 
     # Stops the import and leaves behind everything needed to work out why.
     #
