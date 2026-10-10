@@ -579,6 +579,20 @@ def test_ibkr_stock_award_withholding_without_vesting_is_reported(caplog):
     assert ibkr._data[JSF.ASSET_PAYMENTS] == []
 
 
+# A new payment never takes an id that is reserved for a payment stored in the database (statement_payment_id)
+def test_ibkr_new_payment_id_avoids_ids_reserved_for_stored_payments():
+    ibkr = StatementIBKR()
+    ibkr._data = {JSF.ASSET_PAYMENTS: [], JSF.TRANSFERS: [], JSF.INCOME_SPENDING: [], JSF.ASSETS: []}
+    reserved = [ibkr.statement_payment_id(501), ibkr.statement_payment_id(502)]   # candidates that matched no tax
+    ibkr.load_cash_transactions([{
+        'type': 'Other Fees', 'account': 1, 'symbol': 161, 'currency': 1, 'timestamp': 1720210800,
+        'timestamp_day_only': True, 'reported': 1720137600, 'amount': Decimal('-0.5'), 'number': '', 'tid': '1',
+        'action_id': '777', 'description': 'AAA(US0000000001) ADR FEE'}])
+    fee = ibkr._data[JSF.ASSET_PAYMENTS][0]
+    assert fee['id'] not in reserved
+    assert ibkr.mapped_id(JSF.ASSET_PAYMENTS, fee['id']) == 0
+
+
 # A tax charged on a trade adds to the commission of that trade, a standalone one is a fee of its asset
 def test_ibkr_transaction_tax_adds_to_the_trade_fee(tmp_path, project_root, data_path, prepare_db_taxes):
     statement = StatementIBKR()

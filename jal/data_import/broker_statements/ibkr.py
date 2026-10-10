@@ -556,7 +556,7 @@ class StatementIBKR(StatementXML):
         logging.info(self.tr("Trades loaded: ") + f"{trades_loaded + transfers_loaded} ({len(ib_trades)})")
 
     def load_trades(self, trades):
-        trade_base = max([0] + [x['id'] for x in self._data[JSF.TRADES]]) + 1
+        trade_base = self._next_id(JSF.TRADES)
         cnt = 0
         for i, trade in enumerate(sorted(trades, key=lambda x: x['timestamp'])):
             trade['id'] = trade_base + i
@@ -576,7 +576,7 @@ class StatementIBKR(StatementXML):
         return cnt
 
     def load_cash_deposits_withdrawals(self, transfers):
-        transfer_base = max([0] + [x['id'] for x in self._data[JSF.TRANSFERS]]) + 1
+        transfer_base = self._next_id(JSF.TRANSFERS)
         cnt = 0
         for i, transfer in enumerate(sorted(transfers, key=lambda x: x['timestamp'])):
             transfer['id'] = transfer_base + i
@@ -594,7 +594,7 @@ class StatementIBKR(StatementXML):
         return cnt
 
     def load_transfers(self, transfers):
-        transfer_base = max([0] + [x['id'] for x in self._data[JSF.TRANSFERS]]) + 1
+        transfer_base = self._next_id(JSF.TRANSFERS)
         cnt = 0
         for i, transfer in enumerate(transfers):
             transfer['id'] = transfer_base + i
@@ -786,7 +786,7 @@ class StatementIBKR(StatementXML):
         if not received:  # Asset converted to money -> store it as a sell trade
             if not old['proceeds']:
                 self._refuse_corp_action(withdrawn, self.tr("an asset withdrawn for nothing in exchange has proceeds"))
-            old['id'] = max([0] + [x['id'] for x in self._data[JSF.TRADES]]) + 1
+            old['id'] = self._next_id(JSF.TRADES)
             old['settlement'] = old['timestamp']
             old['price'] = self._derived_price(old['proceeds'], old['quantity'])
             old['note'] = old.pop('description')
@@ -796,7 +796,7 @@ class StatementIBKR(StatementXML):
             self._data[JSF.TRADES].append(old)
             return 1
         action = received[0]
-        action['id'] = max([0] + [x['id'] for x in self._data[JSF.CORP_ACTIONS]]) + 1
+        action['id'] = self._next_id(JSF.CORP_ACTIONS)
         action['outcome'] = [{'symbol': x['symbol'], 'quantity': self._corp_action_qty(x), 'share': Decimal('0')}
                              for x in received]
         if old['proceeds']:  # Cash payment is a part of corporate action
@@ -833,7 +833,7 @@ class StatementIBKR(StatementXML):
         if abs(rounded_qty_old - qty_old) > Decimal('0.01') and abs(implied_spinoff_qty - action['quantity']) >= Decimal('1'):
             raise Statement_ImportError(self.tr("Spin-off rounding error is too big ") + f"'{action}'")
         qty_old = rounded_qty_old
-        action['id'] = max([0] + [x['id'] for x in self._data[JSF.CORP_ACTIONS]]) + 1
+        action['id'] = self._next_id(JSF.CORP_ACTIONS)
         action['outcome'] = [{'symbol': symbol_old, 'quantity': qty_old, 'share': Decimal('0')},
                              {'symbol': action['symbol'], 'quantity': action['quantity'], 'share': Decimal('0')}]
         action['symbol'] = symbol_old
@@ -844,7 +844,7 @@ class StatementIBKR(StatementXML):
 
     def load_symbol_change(self, withdrawn, received) -> int:
         action = received[0]
-        action['id'] = max([0] + [x['id'] for x in self._data[JSF.CORP_ACTIONS]]) + 1
+        action['id'] = self._next_id(JSF.CORP_ACTIONS)
         action['outcome'] = [{'symbol': action['symbol'], 'quantity': action['quantity'], 'share': Decimal('1')}]
         action['symbol'] = withdrawn[0]['symbol']
         action['quantity'] = -withdrawn[0]['quantity']
@@ -861,7 +861,7 @@ class StatementIBKR(StatementXML):
             raise Statement_ImportError(self.tr("Can't parse Stock Dividend description ") + f"'{action}'")
         action['description'] = parts.groupdict()['description']
 
-        action['id'] = max([0] + [x['id'] for x in self._data[JSF.ASSET_PAYMENTS]]) + 1
+        action['id'] = self._next_id(JSF.ASSET_PAYMENTS)
         action['amount'] = action['quantity']
         action['price'] = self._derived_price(action['value'], action['quantity'])
         action['tax'] = Decimal('0')
@@ -873,7 +873,7 @@ class StatementIBKR(StatementXML):
         SplitPattern = r"^(?P<symbol_old>.*)\((?P<isin_old>\w+)\) +SPLIT +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>.*), (?P<name>.*), (?P<id>\w+)*\)$"
 
         action = (received + withdrawn)[0]
-        action['id'] = max([0] + [x['id'] for x in self._data[JSF.CORP_ACTIONS]]) + 1
+        action['id'] = self._next_id(JSF.CORP_ACTIONS)
         if withdrawn and received:  # Split together with ISIN change: old asset is withdrawn and new one is received
             action['outcome'] = [{'symbol': action['symbol'], 'quantity': action['quantity'], 'share': Decimal('1')}]
             action['symbol'] = withdrawn[0]['symbol']
@@ -897,7 +897,7 @@ class StatementIBKR(StatementXML):
     # Bond maturity is processed as ordinary bond
     def load_bond_maturity(self, withdrawn, _received) -> int:
         action = withdrawn[0]
-        action['id'] = max([0] + [x['id'] for x in self._data[JSF.TRADES]]) + 1
+        action['id'] = self._next_id(JSF.TRADES)
         action['quantity'] = action['quantity'] / IBKR_Asset.BondPrincipal
         action['price'] = self._derived_price(action['proceeds'], action['quantity'])
         action['settlement'] = action['timestamp']                    # Settled by the same date
@@ -914,7 +914,7 @@ class StatementIBKR(StatementXML):
         asset = self._symbol_asset(action['symbol'])
         if asset['type'] == JSF.ASSET_RIGHTS:
             return 0
-        action['id'] = max([0] + [x['id'] for x in self._data[JSF.CORP_ACTIONS]]) + 1
+        action['id'] = self._next_id(JSF.CORP_ACTIONS)
         action['quantity'] = -action['quantity']
         action['outcome'] = []
         self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "action_id", "currency"])
@@ -944,7 +944,7 @@ class StatementIBKR(StatementXML):
                 matched_vesting[0]['amount'] += withholding['amount']
             if len(matched_vesting) > 1:
                 raise Statement_ImportError(self.tr("Multiple vesting matched withholding ") + f"'{matched_vesting}' / '{withholding}'")
-        asset_payments_base = max([0] + [x['id'] for x in self._data[JSF.ASSET_PAYMENTS]]) + 1
+        asset_payments_base = self._next_id(JSF.ASSET_PAYMENTS)
         for i, vesting in enumerate(vestings):
             vesting['id'] = asset_payments_base + i
             vesting['type'] = JSF.PAYMENT_STOCK_VESTING
@@ -961,7 +961,7 @@ class StatementIBKR(StatementXML):
         dividends = list(filter(lambda tr: tr['type'] in ['Dividends', 'Payment In Lieu Of Dividends'], cash))
         dividends = [drop_fields(x, ['tid']) for x in dividends]  # remove 'tid' field as not used for dividends
         dividends = self.aggregate_dividends(dividends)
-        asset_payments_base = max([0] + [x['id'] for x in self._data[JSF.ASSET_PAYMENTS]]) + 1
+        asset_payments_base = self._next_id(JSF.ASSET_PAYMENTS)
         for i, dividend in enumerate(dividends):
             dividend['id'] = asset_payments_base + i
             dividend['type'] = JSF.PAYMENT_DIVIDEND
@@ -984,7 +984,7 @@ class StatementIBKR(StatementXML):
         for tax in taxes:
             cnt += self.apply_tax_withheld(tax)
 
-        transfer_base = max([0] + [x['id'] for x in self._data[JSF.TRANSFERS]]) + 1
+        transfer_base = self._next_id(JSF.TRANSFERS)
         transfers = list(filter(lambda tr: tr['type'] == 'Deposits/Withdrawals', cash))
         for i, transfer in enumerate(transfers):
             transfer['id'] = transfer_base + i
@@ -1001,7 +1001,7 @@ class StatementIBKR(StatementXML):
             self._data[JSF.TRANSFERS].append(transfer)
             cnt += 1
 
-        payment_base = max([0] + [x['id'] for x in self._data[JSF.INCOME_SPENDING]]) + 1
+        payment_base = self._next_id(JSF.INCOME_SPENDING)
         fees = list(filter(lambda tr: 'type' in tr and tr['type'] in ['Other Fees',
                                                                       'Commission Adjustments',
                                                                       'Broker Interest Paid',
@@ -1009,7 +1009,7 @@ class StatementIBKR(StatementXML):
         # A fee that names an asset (an ADR fee) is a fee of that asset, the rest are ordinary spendings
         asset_fees = [x for x in fees if x['symbol'] and x['type'] in ['Other Fees', 'Commission Adjustments']]
         fees = [x for x in fees if x not in asset_fees]
-        asset_payments_base = max([0] + [x['id'] for x in self._data[JSF.ASSET_PAYMENTS]]) + 1
+        asset_payments_base = self._next_id(JSF.ASSET_PAYMENTS)
         for i, fee in enumerate(asset_fees):
             fee['id'] = asset_payments_base + i
             fee['type'] = JSF.PAYMENT_FEE
@@ -1154,7 +1154,7 @@ class StatementIBKR(StatementXML):
             group_list = sorted(list(group), key=lambda x: (x['amount']))
             extra_taxes = [x for x in group_list if is_mlp_extra_tax(x)]
             for tax in extra_taxes:
-                tax['id'] = max([0] + [x['id'] for x in self._data[JSF.ASSET_PAYMENTS]]) + 1
+                tax['id'] = self._next_id(JSF.ASSET_PAYMENTS)
                 tax['type'] = JSF.PAYMENT_FEE
                 tax['description'] += " - Extra 10% tax due to IRS section 1446"
                 self.drop_extra_fields(tax, ["source", "currency", "reported", "action_id"])
@@ -1178,7 +1178,7 @@ class StatementIBKR(StatementXML):
             else:
                 if tax['source'] != 'STANDALONE':
                     logging.warning(self.tr("Unexpected tax source: ") + f"{ts2dt(tax['timestamp'])}, '{tax['source']}': {tax['description']}")
-                tax['id'] = max([0] + [x['id'] for x in self._data[JSF.ASSET_PAYMENTS]]) + 1
+                tax['id'] = self._next_id(JSF.ASSET_PAYMENTS)
                 tax['type'] = JSF.PAYMENT_FEE
                 self.drop_extra_fields(tax, ["source", "number"])
                 self._data[JSF.ASSET_PAYMENTS].append(tax)
@@ -1187,7 +1187,7 @@ class StatementIBKR(StatementXML):
 
     def load_sales_taxes(self, taxes):
         cnt = 0
-        id_base = max([0] + [x['id'] for x in self._data[JSF.INCOME_SPENDING]]) + 1
+        id_base = self._next_id(JSF.INCOME_SPENDING)
         for i, tax in enumerate(taxes):
             tax['id'] = id_base + i
             tax['peer'] = 0
@@ -1201,12 +1201,11 @@ class StatementIBKR(StatementXML):
 
     def load_cfd_charges(self, charges):
         cnt = 0
-        next_id = lambda section: max([0] + [x['id'] for x in self._data[section]]) + 1
         for charge in charges:
             if charge['symbol'] != self.NoAsset:   # A charge that names an asset is a fee of that asset
                 if not charge['description'].startswith('CFD BORROW FEE FOR'):
                     logging.warning(self.tr("Unknown CFD charge description: ") + charge['description'])
-                charge['id'] = next_id(JSF.ASSET_PAYMENTS)
+                charge['id'] = self._next_id(JSF.ASSET_PAYMENTS)
                 charge['type'] = JSF.PAYMENT_FEE
                 self._data[JSF.ASSET_PAYMENTS].append(charge)
                 cnt += 1
@@ -1215,7 +1214,7 @@ class StatementIBKR(StatementXML):
                     charge['description'].startswith('SHORT CFD INTEREST FOR')):
                 logging.warning(self.tr("Unknown CFD charge description: ") + charge['description'])
                 continue
-            charge['id'] = next_id(JSF.INCOME_SPENDING)
+            charge['id'] = self._next_id(JSF.INCOME_SPENDING)
             charge['peer'] = 0
             charge['lines'] = [{'amount': charge['amount'], 'category': PredefinedCategory.Fees, 'description': charge['description']}]
             self.drop_extra_fields(charge, ["amount", "symbol", "description", "number"])
