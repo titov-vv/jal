@@ -286,11 +286,6 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     def _date(day: datetime) -> int:
         return int(day.replace(tzinfo=timezone.utc).timestamp())
 
-    # returns timestamp that is equal to the last second of initial timestamp
-    def _end_of_date(self, timestamp) -> int:   #FIXME - something similar is in helpers.py -> refactor
-        end_of_day = datetime.fromtimestamp(timestamp, tz=timezone.utc).replace(hour=23, minute=59, second=59)
-        return int(end_of_day.replace(tzinfo=timezone.utc).timestamp())
-
     # The price of a trade that its source reports the total money of. A source states the price it quoted, rounded
     # to its own number of decimals, and that price times the reported quantity doesn't give back the money that
     # actually moved - the quantity is what the amount bought, not the other way round. So the quotient of the two

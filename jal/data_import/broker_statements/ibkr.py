@@ -9,7 +9,7 @@ from lxml import etree
 from PySide6.QtWidgets import QApplication
 from jal.constants import Setup, PredefinedCategory
 from jal.widgets.helpers import ts2dt, ts2d
-from jal.db.helpers import format_decimal, remove_exponent
+from jal.db.helpers import day_end, format_decimal, remove_exponent
 from jal.db.account import JalAccount
 from jal.db.operations import AssetPayment, AssetIncome
 from jal.data_import.statement import JSF, Statement_ImportError, Statement_Capabilities
@@ -481,7 +481,7 @@ class StatementIBKR(StatementXML):
 
     def load_header(self, header):
         self._data[JSF.PERIOD][0] = header['period_start']
-        self._data[JSF.PERIOD][1] = self._end_of_date(header['period_end'])
+        self._data[JSF.PERIOD][1] = day_end(header['period_end'])
         logging.info(self.tr("Load IB Flex-statement for account ") +
                      f"{header['account']}: {datetime.fromtimestamp(header['period_start'], tz=timezone.utc).strftime('%Y-%m-%d')}" +
                      f" - {datetime.fromtimestamp(header['period_end'], tz=timezone.utc).strftime('%Y-%m-%d')}")

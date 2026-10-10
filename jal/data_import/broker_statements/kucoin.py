@@ -4,6 +4,7 @@ from decimal import Decimal
 from jal.constants import AssetLocation, PredefinedAccountType
 from jal.data_import.statement import JSF, Statement_ImportError
 from jal.data_import.statement_csv import StatementCSV
+from jal.db.helpers import day_end
 
 JAL_STATEMENT_CLASS = "StatementKuCoin"
 
@@ -175,7 +176,7 @@ class StatementKuCoin(StatementCSV):
     # that covers both and no operation of the statement can fall outside it.
     def _load_period(self):
         stamps = [x['Time(UTC)'] for x in self._rows('snapshots')] + [x['Time(UTC)'] for x in self._ledger()]
-        self._data[JSF.PERIOD] = [self._timestamp(min(stamps)), self._end_of_date(self._timestamp(max(stamps)))]
+        self._data[JSF.PERIOD] = [self._timestamp(min(stamps)), day_end(self._timestamp(max(stamps)))]
 
     def _symbol_of(self, coin: str) -> int:
         return self.symbol_id({'type': JSF.ASSET_CRYPTO, 'symbol': coin,

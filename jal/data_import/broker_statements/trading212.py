@@ -15,6 +15,7 @@ from jal.data_import.card_match import CardMatcher
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.clock import local_time, ZONE_SPAN
+from jal.db.helpers import day_end
 from jal.db.operations import Transfer
 from jal.db.peer import JalPeer
 from jal.db.settings import JalSettings
@@ -175,7 +176,7 @@ class StatementTrading212(Statement):
         match = self.FilenamePattern.search(os.path.basename(filename))
         if match:
             begin = self._date(datetime.strptime(match.group('start'), "%Y-%m-%d"))
-            end = self._end_of_date(self._date(datetime.strptime(match.group('end'), "%Y-%m-%d")))
+            end = day_end(self._date(datetime.strptime(match.group('end'), "%Y-%m-%d")))
         else:   # A file renamed by hand still states its period - by the operations it holds
             timestamps = [self._timestamp(row) for row in rows]
             begin, end = min(timestamps), max(timestamps)

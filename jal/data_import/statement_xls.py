@@ -5,6 +5,7 @@ from decimal import Decimal, DecimalException
 from datetime import datetime
 from zipfile import ZipFile
 from jal.data_import.statement import Statement, JSF, Statement_ImportError
+from jal.db.helpers import day_end
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -130,7 +131,7 @@ class StatementXLS(Statement):
         statement_dates = parts.groupdict()
         start_day = self._date(datetime.strptime(statement_dates['S'], "%d.%m.%Y"))
         end_day = self._date(datetime.strptime(statement_dates['E'], "%d.%m.%Y"))
-        self._data[JSF.PERIOD] = [start_day, self._end_of_date(end_day)]
+        self._data[JSF.PERIOD] = [start_day, day_end(end_day)]
 
     def _get_account_number(self):
         if self.AccountPattern[2] is None:
