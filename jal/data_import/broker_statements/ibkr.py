@@ -759,22 +759,32 @@ class StatementIBKR(StatementXML):
     def _corp_action_qty(leg) -> Decimal:
         return leg['quantity'] / (IBKR_Asset.BondPrincipal if leg['asset_type'] == JSF.ASSET_BOND else Decimal('1'))
 
+    # Stores a corporate action record that was already given its 'symbol', 'quantity' and 'outcome'
+    def _store_corp_action(self, action) -> None:
+        action['id'] = self._next_id(JSF.CORP_ACTIONS)
+        self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "action_id", "currency"])
+        self._data[JSF.CORP_ACTIONS].append(action)
+
+    # Stores an asset that was withdrawn for money as a sell trade, at the price that its proceeds give
+    def _store_sale(self, record) -> None:
+        record['id'] = self._next_id(JSF.TRADES)
+        record['quantity'] = self._corp_action_qty(record)
+        record['settlement'] = record['timestamp']    # Settled by the same date
+        record['price'] = self._derived_price(record['proceeds'], record['quantity'])
+        record['note'] = record.pop('description')
+        record['fee'] = Decimal('0')
+        self.drop_extra_fields(record, ["type", "value", "proceeds", "code", "asset_type", "action_id", "currency",
+                                        "timestamp_day_only"])
+        self._data[JSF.TRADES].append(record)
+
     def load_merger(self, withdrawn, received) -> int:
         old = withdrawn[0]
         if not received:  # Asset converted to money -> store it as a sell trade
             if not old['proceeds']:
                 self._refuse_corp_action(withdrawn, self.tr("an asset withdrawn for nothing in exchange has proceeds"))
-            old['id'] = self._next_id(JSF.TRADES)
-            old['settlement'] = old['timestamp']
-            old['price'] = self._derived_price(old['proceeds'], old['quantity'])
-            old['note'] = old.pop('description')
-            old['fee'] = Decimal('0')
-            self.drop_extra_fields(old, ["type", "value", "proceeds", "code", "asset_type", "action_id", "currency",
-                                         "timestamp_day_only"])
-            self._data[JSF.TRADES].append(old)
+            self._store_sale(old)
             return 1
         action = received[0]
-        action['id'] = self._next_id(JSF.CORP_ACTIONS)
         action['outcome'] = [{'symbol': x['symbol'], 'quantity': self._corp_action_qty(x), 'share': Decimal('0')}
                              for x in received]
         if old['proceeds']:  # Cash payment is a part of corporate action
@@ -786,8 +796,7 @@ class StatementIBKR(StatementXML):
             action['outcome'].insert(0, payment)
         action['symbol'] = old['symbol']
         action['quantity'] = -self._corp_action_qty(old)
-        self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "action_id", "currency"])
-        self._data[JSF.CORP_ACTIONS].append(action)
+        self._store_corp_action(action)
         return len(withdrawn) + len(received)
 
     def load_spinoff(self, _withdrawn, received) -> int:
@@ -809,23 +818,19 @@ class StatementIBKR(StatementXML):
         if abs(rounded_qty_old - qty_old) > Decimal('0.01') and abs(implied_spinoff_qty - action['quantity']) >= Decimal('1'):
             raise Statement_ImportError(self.tr("Spin-off rounding error is too big ") + f"'{action}'")
         qty_old = rounded_qty_old
-        action['id'] = self._next_id(JSF.CORP_ACTIONS)
         action['outcome'] = [{'symbol': symbol_old, 'quantity': qty_old, 'share': Decimal('0')},
                              {'symbol': action['symbol'], 'quantity': action['quantity'], 'share': Decimal('0')}]
         action['symbol'] = symbol_old
         action['quantity'] = qty_old
-        self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "action_id", "currency"])
-        self._data[JSF.CORP_ACTIONS].append(action)
+        self._store_corp_action(action)
         return 1
 
     def load_symbol_change(self, withdrawn, received) -> int:
         action = received[0]
-        action['id'] = self._next_id(JSF.CORP_ACTIONS)
         action['outcome'] = [{'symbol': action['symbol'], 'quantity': action['quantity'], 'share': Decimal('1')}]
         action['symbol'] = withdrawn[0]['symbol']
         action['quantity'] = -withdrawn[0]['quantity']
-        self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "action_id", "currency"])
-        self._data[JSF.CORP_ACTIONS].append(action)
+        self._store_corp_action(action)
         return 2
 
     def load_stock_dividend(self, _withdrawn, received) -> int:
@@ -849,7 +854,6 @@ class StatementIBKR(StatementXML):
         SplitPattern = r"^(?P<symbol_old>.*)\((?P<isin_old>\w+)\) +SPLIT +(?P<X>\d+) +FOR +(?P<Y>\d+) +\((?P<symbol>.*), (?P<name>.*), (?P<id>\w+)*\)$"
 
         action = (received + withdrawn)[0]
-        action['id'] = self._next_id(JSF.CORP_ACTIONS)
         if withdrawn and received:  # Split together with ISIN change: old asset is withdrawn and new one is received
             action['outcome'] = [{'symbol': action['symbol'], 'quantity': action['quantity'], 'share': Decimal('1')}]
             action['symbol'] = withdrawn[0]['symbol']
@@ -866,22 +870,12 @@ class StatementIBKR(StatementXML):
             qty_old = remove_exponent(qty_delta * int(parts['Y']) / (int(parts['X']) - int(parts['Y'])))
             action['outcome'] = [{'symbol': action['symbol'], 'quantity': qty_old + qty_delta, 'share': Decimal('1')}]
             action['quantity'] = qty_old
-        self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "action_id", "currency"])
-        self._data[JSF.CORP_ACTIONS].append(action)
+        self._store_corp_action(action)
         return len(withdrawn) + len(received)
 
-    # Bond maturity is processed as ordinary bond
+    # Bond maturity is stored as a sale of the bond
     def load_bond_maturity(self, withdrawn, _received) -> int:
-        action = withdrawn[0]
-        action['id'] = self._next_id(JSF.TRADES)
-        action['quantity'] = action['quantity'] / IBKR_Asset.BondPrincipal
-        action['price'] = self._derived_price(action['proceeds'], action['quantity'])
-        action['settlement'] = action['timestamp']                    # Settled by the same date
-        action['note'] = action['description']
-        action['fee'] = Decimal('0')
-        self.drop_extra_fields(action, ["description", "value", "proceeds", "type", "code", "asset_type",
-                                        "action_id", "currency", "timestamp_day_only"])
-        self._data[JSF.TRADES].append(action)
+        self._store_sale(withdrawn[0])
         return 1
 
     def load_delisting(self, withdrawn, _received) -> int:
@@ -890,11 +884,9 @@ class StatementIBKR(StatementXML):
         asset = self._symbol_asset(action['symbol'])
         if asset['type'] == JSF.ASSET_RIGHTS:
             return 0
-        action['id'] = self._next_id(JSF.CORP_ACTIONS)
         action['quantity'] = -action['quantity']
         action['outcome'] = []
-        self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "action_id", "currency"])
-        self._data[JSF.CORP_ACTIONS].append(action)
+        self._store_corp_action(action)
         return 1
 
     def load_granted_stocks(self, granted_stocks):
