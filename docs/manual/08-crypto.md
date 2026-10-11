@@ -131,6 +131,10 @@ carries the **protocol** attribute (see [chapter 6](06-investments.md#assets-and
 protocols. When neither side is marked it is simply called *Wrapping*. Imports also write the name of
 the protocol into the note.
 
+A protocol that gives **no receipt token** back — Aave v4 — has nothing to wrap into: the supply is
+a transfer into a staked position instead, see
+[Lending with no receipt token](#lending-with-no-receipt-token-aave-v4).
+
 Choosing *Wrapping* where a *Swap* belongs (or the other way round) is the one modelling mistake
 here that matters, because it decides whether a taxable profit exists.
 
@@ -200,6 +204,30 @@ protocol, the venue). Unstaking is settled the same way, in the opposite directi
 venues whose balances JAL can read on chain — how much the position has **accrued** but not yet paid
 out. Rewards that *were* paid out arrive in your wallet and are recorded there as an *Asset Income*
 of type **Staking reward**.
+
+### Lending with no receipt token (Aave v4)
+
+Aave v4 hands nothing back when you supply: the coins go to one of its **Hubs** and the position is
+only a figure kept by the **Spoke** you used. With no receipt token to hold, JAL treats it exactly
+like staking:
+
+* a **supply** is fetched as a transfer out of the wallet, marked `[custody] Aave v4 Main Spoke`. Settle
+  it once with **Assign a staked position…**, creating the position on **Ethereum** at the address the
+  transfer went to (the Hub). Every later supply and withdrawal then finds that position by itself;
+* the position is listed in *Staked positions*, and its **Accrued** column shows the interest earned
+  so far once the balances are read (**Import → Download quotes…** with *Ethereum* ticked);
+* a **withdrawal** is your own money coming back until everything you supplied has returned. Only
+  what comes back **beyond** that is interest, recorded in the wallet as an *Asset Income* of type
+  **Lending interest**. So a partial withdrawal shows no income; the interest appears with the
+  withdrawal that takes out the last of what you put in, and with any after it.
+
+Keep **one asset per position** for now: its on-chain balance is read only while the position holds
+a single asset.
+
+Currently the *Main Spoke* of the *Core Hub* on Ethereum is known. A supply made through another
+Spoke **stops the fetch** at that transaction, saying *Aave v4 Core Hub reached through an
+unregistered contract*, rather than recording it as an ordinary transfer; nothing is lost, and the
+fetch picks it up from there once a version of JAL that knows the Spoke is installed.
 
 ### Wrapped positions
 

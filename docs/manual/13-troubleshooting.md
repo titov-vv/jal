@@ -77,6 +77,18 @@ balances after it are not to be trusted.
 The summary of the above: something raised an error and everything after that moment is not computed.
 Fix the operation the log complains about, then *Ledger → Re-build ledger…*.
 
+### “import stopped at an unsupported transaction (…); it will be retried next time”
+
+A blockchain fetch met a transaction it cannot classify and stopped there instead of guessing.
+Everything before it was imported; that transaction and all later ones are fetched again next time.
+The text in brackets says why. With *Aave v4 Core Hub reached through an unregistered contract 0x…*
+you supplied to (or withdrew from) Aave v4 through a Spoke or gateway this version of JAL does not
+know — see [chapter 8](08-crypto.md#lending-with-no-receipt-token-aave-v4).
+
+**Fix:** nothing in your data is wrong and nothing is lost. Update JAL; if the newest version still
+stops there, [report it](#reporting-a-problem) with the bracketed text — the contract address in it
+is what has to be added.
+
 ### “Open lots don't add up to the position, check the account precision”
 
 The account counts fewer decimals than the asset needs — typically a crypto account left at the

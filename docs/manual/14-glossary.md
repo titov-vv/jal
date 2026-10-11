@@ -89,8 +89,9 @@ timeline. Set in *Data → Residence*.
 **Settlement date** — when a trade actually clears, usually a day or two after it was executed. Some
 tax calculations use it rather than the trade date.
 
-**Staked position** — coins that have left your wallet into staking but are still yours. Kept as an
-account of its own; see the *Staked positions* report.
+**Staked position** — coins that have left your wallet into staking, or into a lending protocol that
+issues no receipt token (Aave v4), but are still yours. Kept as an account of its own; see the
+*Staked positions* report.
 
 **Swap** — an operation exchanging one asset for another at a market rate, on one account. It
 **realises** a profit or a loss. Compare *wrapping*.
