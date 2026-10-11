@@ -116,14 +116,14 @@ class PortfolioReportWindow(MdiWidget):
             actionEstimateTaxRu.triggered.connect(partial(self.estimateSaleTax, index, 'ru'))
             tax_submenu.addAction(actionEstimateTaxRu)
             contextMenu.addSeparator()
-            actionSetTag = QAction(icon=JalIcon[JalIcon.TAG], text=self.tr("Set asset tag"), parent=self.ui.PortfolioTreeView)
-            actionSetTag.triggered.connect(partial(self.setTag, index))
-            contextMenu.addAction(actionSetTag)
             if index.model().get_data_for_tax(index)[1]:   # a group row names no asset
+                actionSetTag = QAction(icon=JalIcon[JalIcon.TAG], text=self.tr("Set asset tag"), parent=self.ui.PortfolioTreeView)
+                actionSetTag.triggered.connect(partial(self.setTag, index))
+                contextMenu.addAction(actionSetTag)
                 actionSetCountry = QAction(text=self.tr("Set asset country"), parent=self.ui.PortfolioTreeView)
                 actionSetCountry.triggered.connect(partial(self.setCountry, index))
                 contextMenu.addAction(actionSetCountry)
-            contextMenu.addSeparator()
+                contextMenu.addSeparator()
         actionExpandAll = QAction(text=self.tr("Expand all"),parent=self.ui.PortfolioTreeView)
         actionExpandAll.triggered.connect(self.ui.PortfolioTreeView.expandAll)
         contextMenu.addAction(actionExpandAll)
@@ -163,11 +163,12 @@ class PortfolioReportWindow(MdiWidget):
         account, asset_id, currency, asset_qty = model.get_data_for_tax(index)
         asset = JalAsset(asset_id)
         dialog = SelectReferenceDialog(self, self.tr("Please select tag"),
-                                       self.tr("Select tag for {} ({}): ").format(asset.symbol(currency),asset.name()),
+                                       self.tr("Select tag for {} ({}): ").format(asset.symbol(currency or None), asset.name()),
                                        TagTreeModel, TagsListDialog)
         if dialog.exec() != QDialog.Accepted:
             return
         asset.set_tag(dialog.selected_id)
+        self.holdings_model.prepareData()   # the tag is a grouping of the report
 
     @Slot()
     def setCountry(self, index):

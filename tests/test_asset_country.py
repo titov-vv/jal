@@ -1,8 +1,8 @@
 import os
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
-from PySide6.QtCore import QDate
-from PySide6.QtWidgets import QWidget, QInputDialog
+from PySide6.QtCore import QDate, QPoint, QModelIndex
+from PySide6.QtWidgets import QWidget, QInputDialog, QDialog, QMenu
 
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import d2t, create_stocks, create_quotes, create_trades
@@ -13,6 +13,8 @@ from jal.db.country import JalCountry
 from jal.db.db import JalDB
 from jal.db.ledger import Ledger
 from jal.reports.portfolio import PortfolioReportWindow
+from jal.widgets.icons import JalIcon
+from jal.widgets.selection_dialog import SelectReferenceDialog
 
 USD = 2
 
@@ -98,3 +100,45 @@ def test_a_cancelled_dialog_changes_nothing(prepare_db, monkeypatch):
     monkeypatch.setattr(QInputDialog, "getItem", lambda *args: (JalCountry(1).name(), False))
     window.setCountry(model.index(0, 0, model.index(0, 0)))
     assert _stored_country(asset_id) == 0
+
+
+# What the context menu of the report offers on the given row
+def _menu_of(window, index, monkeypatch) -> list:
+    view = window.ui.PortfolioTreeView
+    JalIcon()   # loads the icon cache the menu is built from
+    monkeypatch.setattr(view, "indexAt", lambda pos: index)
+    monkeypatch.setattr(QMenu, "popup", lambda menu, pos: None)
+    window.onHoldingsContextMenu(QPoint(0, 0))
+    return [action.text() for menu in view.findChildren(QMenu) for action in menu.actions()]
+
+
+def test_the_tag_and_the_country_are_offered_on_asset_rows_only(prepare_db, monkeypatch):
+    window = _report_with_a_position(_stock())
+    model = window.holdings_model
+    country_row = model.index(0, 0)
+    assert "Set asset tag" not in _menu_of(window, country_row, monkeypatch)
+    assert "Set asset country" not in _menu_of(window, country_row, monkeypatch)
+    offered = _menu_of(window, model.index(0, 0, country_row), monkeypatch)
+    assert "Set asset tag" in offered and "Set asset country" in offered
+
+
+def test_the_report_sets_the_tag_and_regroups(prepare_db, monkeypatch):
+    asset_id = _stock()
+    window = _report_with_a_position(asset_id)
+    window.ui.GroupCombo.setCurrentIndex(window.ui.GroupCombo.findData("tag"))
+    model = window.holdings_model
+    tag_id, tag = JalDB._read("SELECT id, tag FROM tags WHERE tag='Cash'")
+    position = next(model.index(row, 0, group) for group in [model.index(x, 0) for x in range(model.rowCount(QModelIndex()))]
+                    for row in range(model.rowCount(group))
+                    if model.get_data_for_tax(model.index(row, 0, group))[1] == asset_id)
+
+    def pick(dialog):
+        dialog.selected_id = tag_id
+        return QDialog.Accepted
+    monkeypatch.setattr(SelectReferenceDialog, "exec", pick)
+    window.setTag(position)
+    assert JalAsset(asset_id).tag().id() == tag_id
+    groups = [model._root.getChild(row) for row in range(model._root.childrenCount())]
+    held = {group.details()['tag']: [group.getChild(row).details()['asset_id'] for row in range(group.childrenCount())]
+            for group in groups}
+    assert asset_id in held[tag]
