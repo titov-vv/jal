@@ -167,6 +167,10 @@ class ReportTreeModel(QAbstractItemModel):
         self._groups = new_groups
         return True
 
+    # The fields the report is grouped by, outermost first
+    def grouping(self) -> list:
+        return list(self._groups)
+
     def prepareData(self):
         if not self._view_configured:
             self.configureView()

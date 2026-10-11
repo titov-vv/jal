@@ -130,7 +130,17 @@ class PortfolioReportWindow(MdiWidget):
         actionCollapseAll = QAction(text=self.tr("Collapse all"), parent=self.ui.PortfolioTreeView)
         actionCollapseAll.triggered.connect(self.ui.PortfolioTreeView.collapseAll)
         contextMenu.addAction(actionCollapseAll)
+        for level in range(2, len(self.holdings_model.grouping()) + 1):   # level 1 is "Collapse all"
+            actionLevel = QAction(text=self.tr("Expand to level {}").format(level), parent=self.ui.PortfolioTreeView)
+            actionLevel.triggered.connect(partial(self.expandToLevel, level))
+            contextMenu.addAction(actionLevel)
         contextMenu.popup(self.ui.PortfolioTreeView.viewport().mapToGlobal(pos))
+
+    # Leaves exactly 'level' levels of group rows visible
+    @Slot()
+    def expandToLevel(self, level: int):
+        self.ui.PortfolioTreeView.collapseAll()
+        self.ui.PortfolioTreeView.expandToDepth(level - 2)
 
     @Slot()
     def showPriceChart(self, index):

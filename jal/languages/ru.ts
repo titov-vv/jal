@@ -6482,6 +6482,11 @@ One transaction moved this exact quantity as </source>
         <translation>Свернуть все</translation>
     </message>
     <message>
+        <location filename="../reports/portfolio.py" line="134"/>
+        <source>Expand to level {}</source>
+        <translation>Развернуть до уровня {}</translation>
+    </message>
+    <message>
         <location filename="../reports/portfolio.py" line="154"/>
         <source>Warning</source>
         <translation>Предупреждение</translation>
