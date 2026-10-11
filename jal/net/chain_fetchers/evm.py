@@ -5,7 +5,7 @@ from collections import defaultdict
 
 from PySide6.QtCore import QT_TRANSLATE_NOOP
 
-from jal.constants import AssetLocation, PredefinedAccountType
+from jal.constants import AssetLocation, AccountData, PredefinedAccountType
 from jal.data_import.statement import Statement_ImportError, JSF
 from jal.data_import.token_filter import TokenCandidate
 from jal.db.account import JalAccount
@@ -105,6 +105,7 @@ class EVMFetcher(ChainFetcher):
         # Block from which this fetch could no longer read the history, see _note_window_limit(). None = it read
         # everything the chain had.
         self._window_limit = None
+        self._supplied = None    # {"<container>:<token>": principal held by a DEPOSIT protocol}, loaded by _fetch
 
     # ------------------------------------------------------------------------------------------------------------------
     def _api_key(self) -> str:
@@ -204,6 +205,7 @@ class EVMFetcher(ChainFetcher):
             raise Statement_ImportError(self.tr("Not a valid EVM address: ") + address)
         start_block = self._start_block()
         self._window_limit = None
+        self._supplied = self._load_supplied()
         native = self._get_pages("txlist", start_block)
         tokens = self._get_pages("tokentx", start_block)
         internal = self._get_pages("txlistinternal", start_block)
@@ -216,17 +218,18 @@ class EVMFetcher(ChainFetcher):
         # transaction imports on its own without any manual replay. A block is committed atomically: its operations
         # become safe only once the whole block has classified without a halt.
         last_safe_block = start_block - 1
-        checkpoint = self._checkpoint()
+        checkpoint, supplied = self._checkpoint(), dict(self._supplied)
         current_block = None
         for tx in transactions:
             if current_block is not None and tx['block'] != current_block:
                 last_safe_block = current_block
-                checkpoint = self._checkpoint()
+                checkpoint, supplied = self._checkpoint(), dict(self._supplied)
             current_block = tx['block']
             try:
                 self._classify_transaction(tx)
             except _HaltImport as halt:
                 self._restore(checkpoint)   # drop this block's partial operations - it is retried next fetch
+                self._supplied = supplied
                 self._skip(self.tr("import stopped at an unsupported transaction (") + halt.reason
                            + self.tr("); it will be retried next time"), tx['hash'])
                 return str(last_safe_block) if last_safe_block >= start_block else ''
@@ -299,6 +302,12 @@ class EVMFetcher(ChainFetcher):
                                   note=self._call_note(own_record, subject),
                                   event=self._gas_event(own_record, is_error), subject_asset_id=subject)
             return
+        if category is None:
+            hub = self._hub_moved_with(deltas)
+            if hub:
+                # Naming both lets the user register the contract (and add it to the readers of the hub's positions)
+                raise _HaltImport(protocol_name(self.location_id, hub)
+                                  + self.tr(" reached through an unregistered contract ") + contract)
         contract, category, protocol = self._forwarded_protocol(own, outs, ins, contract, category, protocol)
 
         if category == ProtocolCategory.LENDING:
@@ -322,7 +331,7 @@ class EVMFetcher(ChainFetcher):
             if ins and not outs:
                 return self._emit_rewards(timestamp, ins, tx['hash'], gas, protocol)
             raise _HaltImport(self.tr("unrecognized reward-claim shape"))
-        if category == ProtocolCategory.CUSTODY:
+        if category in (ProtocolCategory.CUSTODY, ProtocolCategory.DEPOSIT):
             # The contract keeps the asset on the wallet's behalf and hands back no receipt token, so nothing about
             # the position changes hands: what leaves is still owned, what comes back was owned all along. Both
             # directions are therefore plain transfers - never income (which is what REWARD would make of a return of
@@ -331,6 +340,10 @@ class EVMFetcher(ChainFetcher):
             # earned inside the container is invisible here and stays unrecognized until it is actually claimed.
             if outs and ins:   # something was given back in exchange - that is not custody, don't guess at it
                 raise _HaltImport(self.tr("unrecognized custody shape"))
+            if category == ProtocolCategory.DEPOSIT:
+                gas = self._split_deposit_interest(timestamp, deltas, tx['hash'], gas, protocol)
+                if not deltas:
+                    return
             return self._emit_transfers(timestamp, deltas, tx['hash'], gas, own_record, is_error,
                                         mark=self._custody_mark(protocol))
 
@@ -416,6 +429,73 @@ class EVMFetcher(ChainFetcher):
             self._add_payment(JSF.PAYMENT_GAS_FEE, timestamp, self._native_asset_id(), gas, tx_hash,
                               note=self._call_note(own_record, subject),
                               event=self._gas_event(own_record, is_error), subject_asset_id=subject)
+
+    # Address of a ProtocolCategory.HUB that any of the wallet's movements was with, '' when there is none
+    def _hub_moved_with(self, deltas: dict) -> str:
+        for data in deltas.values():
+            for address in data['sent_to'] | {data['counterparty'] or ''}:
+                if protocol_category(self.location_id, address) == ProtocolCategory.HUB:
+                    return address
+        return ''
+
+    # Principal-first split of what a DEPOSIT protocol returns: a return is principal until everything supplied is
+    # back, and the excess is LendingInterest (the rule solana.py and hyperliquid.py follow for an unstake).
+    # 'deltas' is changed in place; returns the gas still to be charged on the transfers.
+    def _split_deposit_interest(self, timestamp: int, deltas: dict, tx_hash: str, gas: Decimal,
+                                protocol: str) -> Decimal:
+        interests = []
+        for asset_id, data in sorted(deltas.items()):
+            if not data['counterparty']:
+                raise _HaltImport(self.tr("unrecognized custody shape"))
+            key = f"{data['counterparty']}:{self._asset_address(asset_id)}"
+            if data['amount'] < Decimal('0'):
+                self._supplied[key] = self._supplied.get(key, Decimal('0')) - data['amount']
+                continue
+            supplied = self._supplied.get(key)
+            if supplied is None:
+                # Never income out of a returned deposit (CRYPTO_PATH #61)
+                self._skip(self.tr("withdrawal whose deposit predates the sync cursor - interest not separated"),
+                           tx_hash)
+                continue
+            principal = min(data['amount'], supplied)
+            # An exhausted principal is kept as zero: what comes back after it is interest, not an unknown deposit
+            self._supplied[key] = supplied - principal
+            if data['amount'] > principal:
+                interests.append((asset_id, data['amount'] - principal))
+            if principal > Decimal('0'):
+                data['amount'] = principal
+            else:
+                del deltas[asset_id]
+        for position, (asset_id, interest) in enumerate(interests):
+            carried = gas if position == 0 and not deltas else Decimal('0')   # no transfer is left to carry the gas
+            self._add_payment(JSF.PAYMENT_LENDING_INTEREST, timestamp, asset_id, interest, tx_hash, note=protocol,
+                              fee=carried, fee_asset_id=self._native_asset_id() if carried > Decimal('0') else None)
+            gas -= carried
+        return gas
+
+    # Contract address of a statement asset, '' for the native coin
+    def _asset_address(self, asset_id: int) -> str:
+        for asset in self._data[JSF.ASSETS]:
+            if asset['id'] == asset_id:
+                return asset[JSF.SYMBOLS][0].get('address', '')
+        return ''
+
+    def _load_supplied(self) -> dict:
+        stored = self._account.get_data(AccountData.StakeAccounts) or ''
+        if not stored:
+            return {}
+        try:
+            return {key: Decimal(amount) for key, amount in json.loads(stored).items()}
+        except (json.JSONDecodeError, TypeError, ValueError, ArithmeticError, AttributeError):
+            logging.warning(self.tr("Unreadable staking state of account ") + self._account.name())
+            return {}
+
+    # Stored only after the import, like the sync cursor (see ChainFetcher._commit_state)
+    def _commit_state(self) -> None:
+        if not self._supplied:
+            return
+        self._account.set_data(AccountData.StakeAccounts,
+                               json.dumps({key: str(amount) for key, amount in self._supplied.items()}))
 
     # ------------------------------------------------------------------------------------------------------------------
     # Resolves a protocol the wallet reached THROUGH a token instead of calling it, as the (contract, category,

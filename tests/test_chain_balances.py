@@ -1025,3 +1025,63 @@ def test_the_merkle_root_is_rebuilt_as_the_contract_verifies_it():
 def test_an_unreadable_distribution_is_refused(payload):
     from jal.net import stakelink
     assert stakelink.distribution_entry(payload, bytes.fromhex(_ROOT[2:]), ETH_WALLET_ADDRESS) is None
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# AAVE V4. The box sits at the Core Hub and the position is read from the Main Spoke. The figures are the real
+# reading of 2026-10-11 (asset 8 of the hub, reserve 11 of the spoke), scaled down to what the fixture's wallet
+# holds: its LINK stands in for USDG, with 6 decimals.
+def _fake_aave_v4(monkeypatch, asset_id=8, reserve_id=11, supplied=78569082):
+    from jal.net import aave
+    asked = []
+    answers = {aave.SELECTOR_HUB_ASSET_ID: asset_id, aave.SELECTOR_SPOKE_RESERVE_ID: reserve_id,
+               aave.SELECTOR_SPOKE_SUPPLIED: supplied, '0x313ce567': 6}
+
+    def fake_get(self, url, params):
+        asked.append((params['to'], params['data']))
+        answer = answers.get(params['data'][:10])
+        return {'result': _word(answer)} if answer is not None else \
+            {'error': {'code': -32000, 'message': 'execution reverted'}}
+    monkeypatch.setattr(ChainBalanceReader, "_get", fake_get)
+    return asked
+
+
+def _aave_v4_box():
+    from jal.net import aave
+    box = _link_box("USDG @Aave v4", address=aave.CORE_HUB)
+    _stake_link(box.id(), Decimal('78.568911'))
+    return box
+
+
+def test_the_aave_v4_position_is_what_the_spoke_says_was_supplied(link_wallet, monkeypatch):
+    from jal.net import aave
+    box = _aave_v4_box()
+    asked = _fake_aave_v4(monkeypatch)
+
+    assert ChainBalanceReader().read_staking_boxes(NOW) == 1
+    assert JalChainBalance().latest(box.id(), LINK, NOW)['amount'] == Decimal('78.569082')
+    accrual = JalChainBalance().accrual(box.id(), LINK, box.holdings(NOW)[0]['amount'], NOW)
+    assert accrual['delta'] == Decimal('0.000171')
+    # the hub is asked for the asset, the spoke for the reserve of that hub's asset and then for the wallet
+    assert (aave.CORE_HUB, aave.SELECTOR_HUB_ASSET_ID + '0' * 24 + LINK_CONTRACT[2:]) in asked
+    assert (aave.MAIN_SPOKE, aave.SELECTOR_SPOKE_RESERVE_ID + '0' * 24 + aave.CORE_HUB[2:] + format(8, '064x')) in asked
+    assert (aave.MAIN_SPOKE, aave.SELECTOR_SPOKE_SUPPLIED + format(11, '064x') + '0' * 24 + 'a' * 40) in asked
+
+
+# An emptied position is a real zero ...
+def test_an_emptied_aave_v4_position_is_recorded_as_zero(link_wallet, monkeypatch):
+    box = _aave_v4_box()
+    _fake_aave_v4(monkeypatch, supplied=0)
+
+    assert ChainBalanceReader().read_staking_boxes(NOW) == 1
+    assert JalChainBalance().latest(box.id(), LINK, NOW)['amount'] == Decimal('0')
+
+
+# ... while a view that reverted says nothing, and nothing is stored
+@pytest.mark.parametrize("failing", ['asset_id', 'reserve_id', 'supplied'])
+def test_an_aave_v4_view_that_reverts_stores_nothing(link_wallet, monkeypatch, failing):
+    box = _aave_v4_box()
+    _fake_aave_v4(monkeypatch, **{failing: None})
+
+    assert ChainBalanceReader().read_staking_boxes(NOW) == 0
+    assert JalChainBalance().latest(box.id(), LINK, NOW) is None

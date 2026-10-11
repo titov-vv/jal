@@ -19,6 +19,9 @@ class ProtocolCategory:
     BRIDGE = 'bridge'         # cross-chain bridge - deferred to P5
     REWARD = 'reward'         # protocol that pays out a claimable reward - booked as a StakingReward
     CUSTODY = 'custody'       # holds the asset for the wallet and issues NO receipt token -> plain transfers
+    DEPOSIT = 'deposit'       # CUSTODY that returns the asset with its interest -> transfers + LendingInterest
+    HUB = 'hub'               # holds the assets of a protocol that is entered through OTHER contracts; an asset
+                              # moving with it through a contract that isn't registered halts the import
 
 
 # {location_id: {normalized_address: (ProtocolCategory, name)}}. Every address below is marked with the protocol it
@@ -55,6 +58,8 @@ _REGISTRY = {
         '0xa95c5ebb86e0de73b4fb8c47a45b792cfea28c23': (ProtocolCategory.CUSTODY, 'stake.link SDL staking'),
         '0xf398e66b1273a34558aebbec550dccaf4acc7714': (ProtocolCategory.REWARD, 'FluidMerkleDistributor'),
         '0xd833484b198d3d05707832cc1c2d62b520d95b8a': (ProtocolCategory.REWARD, 'FluidMerkleDistributor'),
+        '0x94e7a5dcbe816e498b89ab752661904e2f56c485': (ProtocolCategory.DEPOSIT, 'Aave v4 Main Spoke'),
+        '0xcca852bc40e560adc3b1cc58ca5b55638ce826c9': (ProtocolCategory.HUB, 'Aave v4 Core Hub'),
     },
     AssetLocation.ARB_BLOCKCHAIN: {
         '0xa51afafe0263b40edaef0df8781ea9aa03e381a3': (ProtocolCategory.SWAP, 'Uniswap Universal Router (V4)'),

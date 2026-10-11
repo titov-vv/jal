@@ -473,6 +473,58 @@ class ChainBalanceReader(JalDB):
         return None
 
     # ------------------------------------------------------------------------------------------------------------------
+    # AAVE V4. The box sits at the Hub (where the asset moved to), the position is kept by the Spokes: what the wallet
+    # supplied of the box's asset is summed over the Hub's known Spokes (aave.V4_SPOKES).
+    # The figure is per wallet, like stake.link's, hence the same guard. A box holding several assets is not read
+    # (_sole_asset_of) - one asset per Hub box for now.
+    def _aave_v4_supplied(self, box: JalStakingBox, timestamp: int):
+        wallet = self._wallet_of_box(box)
+        if wallet is None or not wallet.address():
+            return None
+        if not self._box_may_take_account_total(box, wallet, timestamp):
+            return None
+        asset = self._sole_asset_of(box, timestamp)
+        if asset is None:
+            return None
+        chain = self._evm_chains().get(box.chain())
+        contract = self._contract_of(asset.id(), box.chain())
+        if chain is None or not contract:
+            return None
+        api_key = JalSettings().getStr(chain.api_key_setting).strip()
+        if not api_key:
+            logging.warning(self.tr("On-chain balance not read - the API key isn't set: ") + chain.api_name)
+            return None
+        decimals = self._token_decimals(asset, chain, contract, api_key)
+        if decimals is None:
+            return None
+        hub = normalize_address(box.chain(), box.address())
+        supplied = self._aave_v4_position(chain, hub, contract, wallet.address(), api_key)
+        if supplied is None:
+            logging.warning(self.tr("Could not read the Aave v4 position of ") + f"{asset.symbol()} @ {box.name()}")
+            return None
+        return asset.id(), Decimal(supplied) / (Decimal('10') ** decimals)
+
+    # What one wallet supplied of one token through the known Spokes of a Hub, in the token's smallest unit.
+    # None when any view didn't answer: a revert is never read as zero.
+    def _aave_v4_position(self, chain, hub: str, token: str, address: str, api_key: str):
+        asset_id = aave.amount_answer(
+            self._eth_call(chain, hub, aave.call_data(aave.SELECTOR_HUB_ASSET_ID, token), api_key))
+        if asset_id is None:
+            return None
+        supplied = 0
+        for spoke in aave.V4_SPOKES[hub]:
+            reserve_id = aave.amount_answer(
+                self._eth_call(chain, spoke, aave.call_data(aave.SELECTOR_SPOKE_RESERVE_ID, hub, asset_id), api_key))
+            if reserve_id is None:
+                return None
+            amount = aave.amount_answer(self._eth_call(
+                chain, spoke, aave.call_data(aave.SELECTOR_SPOKE_SUPPLIED, reserve_id, address), api_key))
+            if amount is None:
+                return None
+            supplied += amount
+        return supplied
+
+    # ------------------------------------------------------------------------------------------------------------------
     # REBASING ASSETS. The other half of what this module reads, and the one the whole design was built from: an Aave
     # aToken's balance is a scaled number times the reserve's liquidity index, and that index rises EVERY BLOCK with
     # no event and no transfer behind it. A fetcher that can only book what a chain announces is therefore short by
@@ -562,7 +614,9 @@ class ChainBalanceReader(JalDB):
     # and each of them reports what it holds in its own way. So here the chain says nothing and the contract says
     # everything - the same split the protocol registry makes for a transaction's counterparty.
     def _evm_box_readers(self) -> dict:
-        return {AssetLocation.ETH_BLOCKCHAIN: {stakelink.PRIORITY_POOL: self._stakelink_priority_pool_balance}}
+        readers = {stakelink.PRIORITY_POOL: self._stakelink_priority_pool_balance}
+        readers.update({hub: self._aave_v4_supplied for hub in aave.V4_SPOKES})
+        return {AssetLocation.ETH_BLOCKCHAIN: readers}
 
     # A box of an EVM chain is read by the contract it points at. One pointing at a contract with no reader is left
     # alone, exactly as a box of an unlisted venue is - the absence is the correct outcome, not a gap.

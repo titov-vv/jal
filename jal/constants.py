@@ -449,7 +449,8 @@ class AccountData(PredefinedList, QObject):
     SyncCursor = 7     # Position of the last completed blockchain fetch, its format is defined by the fetcher
     DepositEnd = 8     # Maturity date of a term deposit box (timestamp)
     DepositRate = 9    # Nominal interest rate of a term deposit box, per cent per annum
-    StakeAccounts = 10  # Native staking state of a wallet: {stake account address: amount staked}, as JSON
+    StakeAccounts = 10  # Staking state of a wallet: {stake account address: amount staked}, as JSON. An EVM wallet
+                        # keys it by "<container>:<token>" - see EVMFetcher._split_deposit_interest()
     StakeProtocol = 11  # Protocol/venue that holds the asset of a staking box, named as a human calls it. It is the
                         # same name the protocol registry (net/chain_fetchers/protocols.py) writes into the
                         # description of a custody transfer, which is what ties a box to the legs it settles.

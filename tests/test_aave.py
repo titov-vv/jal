@@ -63,3 +63,18 @@ def test_an_answer_of_the_wrong_length_is_not_a_quantity():
 def test_both_safety_modules_are_registered_and_normalized():
     assert aave.SAFETY_MODULES == (aave.STAKED_AAVE, aave.STAKED_GHO)
     assert all(x == x.lower() and len(x) == 42 for x in aave.SAFETY_MODULES)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Aave v4. The selectors are the ones the live Core Hub and Main Spoke answered on 2026-10-11.
+def test_v4_call_data_packs_addresses_and_integers_as_words():
+    data = aave.call_data(aave.SELECTOR_SPOKE_RESERVE_ID, aave.CORE_HUB, 8)
+    assert data == '0x42aef1f1' + '0' * 24 + aave.CORE_HUB[2:] + format(8, '064x')
+    assert aave.call_data(aave.SELECTOR_SPOKE_SUPPLIED, 11, STAKER) == '0xf1568a89' + format(11, '064x') + '0' * 24 + STAKER[2:]
+    assert aave.call_data(aave.SELECTOR_HUB_ASSET_ID, 'not an address') == ''
+    assert aave.call_data(aave.SELECTOR_HUB_ASSET_ID, -1) == ''
+
+
+def test_v4_spokes_are_registered_per_hub_and_normalized():
+    assert aave.V4_SPOKES == {aave.CORE_HUB: (aave.MAIN_SPOKE,)}
+    assert all(x == x.lower() and len(x) == 42 for x in (aave.CORE_HUB, aave.MAIN_SPOKE))

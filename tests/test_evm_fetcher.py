@@ -1689,3 +1689,142 @@ def test_a_withdrawal_equal_to_the_interest_is_interest_and_a_conversion(eth_wal
     conversions = _conversions(data)
     assert [(c['out_qty'], c['in_qty']) for c in conversions] == [(Decimal('2'), Decimal('2'))]
     assert not [p for p in data[JSF.ASSET_PAYMENTS] if p['type'] == JSF.PAYMENT_STAKING_REWARD]
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Aave v4: the wallet calls a Spoke, the asset moves to the Hub and no receipt token comes back (a DEPOSIT protocol).
+# The first test is the real supply of 2026-10-10 with the wallet anonymized.
+V4_SPOKE = "0x94e7a5dcbe816e498b89ab752661904e2f56c485"
+V4_HUB = "0xcca852bc40e560adc3b1cc58ca5b55638ce826c9"
+_V4_KEY = f"{V4_HUB}:{USDC_CONTRACT}"
+
+
+def _v4_supply(tx_hash, block, amount):
+    return {"txlist": [_tx(tx_hash, block, WALLET, V4_SPOKE, method='0xac9650d8', gas_used='209292',
+                           gas_price='80000000', function='multicall(bytes[] data)')],
+            "tokentx": [_token_tx(tx_hash, block, WALLET, V4_HUB, amount)]}
+
+
+def _v4_withdraw(tx_hash, block, amount):
+    return {"txlist": [_tx(tx_hash, block, WALLET, V4_SPOKE, method='0x69328dec')],
+            "tokentx": [_token_tx(tx_hash, block, V4_HUB, WALLET, amount)]}
+
+
+def _joined(*histories):
+    return {action: [r for history in histories for r in history.get(action, [])]
+            for action in ("txlist", "tokentx", "txlistinternal")}
+
+
+def _interest(data):
+    return [x for x in data.get(JSF.ASSET_PAYMENTS, []) if x['type'] == JSF.PAYMENT_LENDING_INTEREST]
+
+
+def test_aave_v4_supply_is_a_custody_transfer_to_the_hub(eth_wallet, monkeypatch):
+    fetcher, data = _drive(eth_wallet, monkeypatch, _v4_supply("0xd1" + "0" * 62, 100, 7856891138))
+
+    transfers = _transfers(data)
+    assert len(transfers) == 1
+    assert transfers[0]['account'] == [1, 0, 1] and transfers[0]['withdrawal'] == Decimal('7856.891138')
+    assert transfers[0]['fee'] == Decimal('0.00001674336')
+    assert transfers[0]['counterparty_address'] == V4_HUB          # what a staking box at the Hub settles by
+    assert transfers[0]['description'].startswith(f"{TransferMark.CUSTODY} Aave v4 Main Spoke: ")
+    assert data.get(JSF.ASSET_PAYMENTS, []) == [] and fetcher.skipped() == {}
+    assert fetcher._supplied == {_V4_KEY: Decimal('7856.891138')}
+
+
+def test_aave_v4_partial_withdrawal_is_all_principal(eth_wallet, monkeypatch):
+    pages = _joined(_v4_supply("0xd1" + "0" * 62, 100, 1000 * 10 ** 6), _v4_withdraw("0xd2" + "0" * 62, 101, 400 * 10 ** 6))
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    transfers = _transfers(data)
+    assert [x['account'] for x in transfers] == [[1, 0, 1], [0, 1, 1]]
+    assert transfers[1]['withdrawal'] == Decimal('400')
+    assert _interest(data) == []
+    assert fetcher._supplied == {_V4_KEY: Decimal('600')}
+
+
+def test_aave_v4_withdrawal_above_the_principal_splits_off_the_interest(eth_wallet, monkeypatch):
+    pages = _joined(_v4_supply("0xd1" + "0" * 62, 100, 1000 * 10 ** 6),
+                    _v4_withdraw("0xd2" + "0" * 62, 101, 400 * 10 ** 6),
+                    _v4_withdraw("0xd3" + "0" * 62, 102, 612345678))
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    transfers = _transfers(data)
+    assert [x['withdrawal'] for x in transfers] == [Decimal('1000'), Decimal('400'), Decimal('600')]
+    interest = _interest(data)
+    assert len(interest) == 1
+    assert interest[0]['amount'] == Decimal('12.345678') and interest[0]['description'] == 'Aave v4 Main Spoke'
+    assert interest[0]['number'] == "0xd3" + "0" * 62
+    assert 'fee' not in interest[0] and transfers[2]['fee'] > Decimal('0')    # the gas rides the transfer
+    assert fetcher._supplied == {_V4_KEY: Decimal('0')}
+
+
+# Once the principal is back, whatever else the position pays out is interest - not a deposit JAL never saw
+def test_aave_v4_withdrawal_after_the_principal_is_all_interest(eth_wallet, monkeypatch):
+    pages = _joined(_v4_supply("0xd1" + "0" * 62, 100, 1000 * 10 ** 6),
+                    _v4_withdraw("0xd2" + "0" * 62, 101, 1000 * 10 ** 6),
+                    _v4_withdraw("0xd3" + "0" * 62, 102, 5 * 10 ** 6))
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    assert len(_transfers(data)) == 2
+    interest = _interest(data)
+    assert len(interest) == 1 and interest[0]['amount'] == Decimal('5')
+    assert interest[0]['fee'] > Decimal('0')                       # no transfer is left to carry the gas
+    assert fetcher.skipped() == {}
+
+
+# Nothing to measure the interest against: all of it is returned principal, never income
+def test_aave_v4_withdrawal_of_an_unseen_deposit_is_not_income(eth_wallet, monkeypatch):
+    fetcher, data = _drive(eth_wallet, monkeypatch, _v4_withdraw("0xd2" + "0" * 62, 101, 400 * 10 ** 6))
+
+    assert len(_transfers(data)) == 1 and _transfers(data)[0]['withdrawal'] == Decimal('400')
+    assert _interest(data) == []
+    assert any('interest not separated' in reason for reason in fetcher.skipped())
+
+
+def test_aave_v4_principal_is_remembered_between_fetches(eth_wallet, monkeypatch):
+    fetcher, _ = _drive(eth_wallet, monkeypatch, _v4_supply("0xd1" + "0" * 62, 100, 1000 * 10 ** 6))
+    assert not JalAccount(eth_wallet.id()).get_data(AccountData.StakeAccounts)    # not before the import
+    fetcher.import_fetched()
+    assert json.loads(JalAccount(eth_wallet.id()).get_data(AccountData.StakeAccounts)) == {_V4_KEY: '1000'}
+
+    fetcher, data = _drive(JalAccount(eth_wallet.id()), monkeypatch, _v4_withdraw("0xd3" + "0" * 62, 102, 1003 * 10 ** 6))
+    assert _transfers(data)[0]['withdrawal'] == Decimal('1000')
+    assert _interest(data)[0]['amount'] == Decimal('3')
+
+
+# A halt rolls the block back, and the principal it counted goes with it
+def test_aave_v4_principal_of_a_halted_block_is_not_remembered(eth_wallet, monkeypatch):
+    unknown = "0x" + "7" * 40
+    halting = {"txlist": [_tx("0xd4" + "0" * 62, 100, WALLET, unknown)],
+               "tokentx": [_token_tx("0xd4" + "0" * 62, 100, WALLET, unknown, 10 ** 6),
+                           _token_tx("0xd4" + "0" * 62, 100, unknown, WALLET, 10 ** 18, contract="0x" + "8" * 40,
+                                     symbol='XYZ', name='Xyz', decimals='18')]}
+    halting["txlist"][0]['transactionIndex'] = '5'
+    fetcher, data = _drive(eth_wallet, monkeypatch, _joined(_v4_supply("0xd1" + "0" * 62, 100, 1000 * 10 ** 6), halting))
+
+    assert _transfers(data) == [] and fetcher._new_cursor == ''
+    assert fetcher._supplied == {}
+
+
+# A Spoke JAL doesn't know: the position would be booked but never read, so the import stops and names the contract
+def test_aave_v4_hub_reached_through_an_unregistered_spoke_halts(eth_wallet, monkeypatch):
+    spoke = "0x" + "5" * 40
+    pages = {"txlist": [_tx("0xd5" + "0" * 62, 100, WALLET, spoke, method='0xac9650d8')],
+             "tokentx": [_token_tx("0xd5" + "0" * 62, 100, WALLET, V4_HUB, 1000 * 10 ** 6)]}
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    assert _transfers(data) == [] and fetcher._new_cursor == '' and fetcher._supplied == {}
+    assert any(f"Aave v4 Core Hub reached through an unregistered contract {spoke}" in reason
+               for reason in fetcher.skipped())
+
+
+# ... and the same for what the hub pays out in a transaction the wallet didn't sign
+def test_aave_v4_hub_paying_out_in_a_foreign_transaction_halts(eth_wallet, monkeypatch):
+    manager = "0x" + "6" * 40
+    pages = {"txlist": [_tx("0xd6" + "0" * 62, 100, manager, "0x" + "5" * 40)],
+             "tokentx": [_token_tx("0xd6" + "0" * 62, 100, V4_HUB, WALLET, 1000 * 10 ** 6)]}
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    assert _transfers(data) == [] and fetcher._new_cursor == ''
+    assert any("Aave v4 Core Hub reached through an unregistered contract" in reason for reason in fetcher.skipped())
