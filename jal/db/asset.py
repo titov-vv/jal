@@ -493,6 +493,14 @@ class JalAsset(JalDB):
         self._tag = JalTag(tag_id)
         self._data = self.db_cache.update_data(self._load_asset_data, (self._id,))  # Reload asset data from DB
 
+    def set_country(self, country_id: int) -> None:
+        if self._country.id() == country_id:
+            return
+        _ = self._exec("UPDATE assets SET country_id=:country_id WHERE id=:asset_id",
+                       [(":country_id", country_id), (":asset_id", self._id)])
+        self._country = JalCountry(country_id)
+        self._data = self.db_cache.update_data(self._load_asset_data, (self._id,))  # Reload asset data from DB
+
     # Updates asset-level data fields with information provided in data dictionary. Per-symbol identifiers
     # (isin/reg_number/cusip) are NOT handled here - they belong to a listing and are written via JalSymbol.
     def update_data(self, data: dict) -> None:

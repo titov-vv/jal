@@ -2,12 +2,13 @@ from functools import partial
 
 from PySide6.QtCore import Qt, Slot, QObject, QDate
 from PySide6.QtGui import QAction
-from PySide6.QtWidgets import QMenu, QDialog, QMessageBox
+from PySide6.QtWidgets import QMenu, QDialog, QMessageBox, QInputDialog
 from jal.ui.reports.ui_portfolio_report import Ui_PortfolioWidget
 from jal.reports.reports import Reports
 from jal.constants import AccountStatus
 from jal.db.clock import day_finish, now_dt
 from jal.db.asset import JalAsset
+from jal.db.country import JalCountry
 from jal.db.holdings_model import HoldingsModel
 from jal.widgets.mdi import MdiWidget
 from jal.db.tax_estimator import TaxEstimator
@@ -118,6 +119,10 @@ class PortfolioReportWindow(MdiWidget):
             actionSetTag = QAction(icon=JalIcon[JalIcon.TAG], text=self.tr("Set asset tag"), parent=self.ui.PortfolioTreeView)
             actionSetTag.triggered.connect(partial(self.setTag, index))
             contextMenu.addAction(actionSetTag)
+            if index.model().get_data_for_tax(index)[1]:   # a group row names no asset
+                actionSetCountry = QAction(text=self.tr("Set asset country"), parent=self.ui.PortfolioTreeView)
+                actionSetCountry.triggered.connect(partial(self.setCountry, index))
+                contextMenu.addAction(actionSetCountry)
             contextMenu.addSeparator()
         actionExpandAll = QAction(text=self.tr("Expand all"),parent=self.ui.PortfolioTreeView)
         actionExpandAll.triggered.connect(self.ui.PortfolioTreeView.expandAll)
@@ -163,3 +168,17 @@ class PortfolioReportWindow(MdiWidget):
         if dialog.exec() != QDialog.Accepted:
             return
         asset.set_tag(dialog.selected_id)
+
+    @Slot()
+    def setCountry(self, index):
+        account, asset_id, currency, asset_qty = index.model().get_data_for_tax(index)
+        asset = JalAsset(asset_id)
+        countries = JalCountry.names()
+        current = list(countries).index(asset.country().id()) if asset.country().id() in countries else 0
+        name, accepted = QInputDialog.getItem(self, self.tr("Please select country"),
+                                              self.tr("Select country for {} ({}): ").format(asset.symbol(currency or None), asset.name()),
+                                              list(countries.values()), current, False)
+        if not accepted:
+            return
+        asset.set_country(list(countries)[list(countries.values()).index(name)])
+        self.holdings_model.prepareData()   # the country is a grouping of the report

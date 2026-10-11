@@ -42,6 +42,16 @@ class JalCountry(JalDB):
             "WHERE country_id=:country_id AND l.language=:language",
             [(":country_id", country_id), (":language", language)])
 
+    # Returns {id: name} of all countries, names in the current interface language and in their order
+    @classmethod
+    def names(cls) -> dict:
+        query = cls._exec("SELECT id, name FROM countries_ext ORDER BY name")
+        countries = {}
+        while query.next():
+            country_id, name = cls._read_record(query, cast=[int, str])
+            countries[country_id] = name
+        return countries
+
     def id(self) -> int:
         return self._id
 
