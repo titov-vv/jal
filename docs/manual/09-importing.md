@@ -27,6 +27,12 @@ blockchain can hand you the data, JAL will read it.
 | **KuCoin** (crypto exchange) | export archive, `.zip` |
 | **Bitget** (crypto exchange) | export archive, `.zip` |
 
+> **KIT Finance, PSB Broker and VTB Investments are stale.** These three importers were written for
+> older statement layouts and are no longer kept up with the brokers' changes. If one of them fails
+> on your statement, open a request for improvement in the
+> [issue tracker](https://github.com/titov-vv/jal/issues) — an example statement, with your personal
+> data cleaned out of it, will be required.
+
 Pick one or more files and JAL does the rest. For Interactive Brokers, set the Flex Query up once at
 the broker's site to include trades, cash transactions, corporate actions and open positions; after
 that, exporting is a click.

@@ -31,7 +31,8 @@ the chain, staked positions are tracked separately and rewards that are earned b
 crypto from DeFiLlama; currency rates from the European and the Russian central banks
 - Broker, bank and crypto exchange statement import:
     1. International: Interactive Brokers Flex statement (xml), Freedom Finance (xml), Just2Trade (xlsx), Trading 212 (csv), Revolut (csv).
-    2. Russian: KIT Finance (xlsx), PSB broker (xlsx/xls), VTB Investments (xlsx), Tvoy Broker (zip).
+    2. Russian: KIT Finance (xlsx), PSB broker (xlsx/xls), VTB Investments (xlsx), Tvoy Broker (zip).  
+       *KIT Finance, PSB and VTB import is stale: if it fails on your statement, open an [issue](https://github.com/titov-vv/jal/issues) with a request for improvement (a statement example with personal data cleaned out will be required).*
     3. Crypto exchanges: KuCoin (zip), Bitget (zip).
 - Investments report for tax declaration preparation for Russia and Portugal.  
 Russian tax estimation for open positions.
