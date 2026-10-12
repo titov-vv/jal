@@ -1,3 +1,4 @@
+import logging
 import re
 from datetime import datetime, timedelta
 from decimal import Decimal
@@ -497,6 +498,20 @@ def test_bitget_fiat_deposit_given_its_sending_account_is_not_imported_twice(pre
     counts = _operation_counts()
     _import_bitget(data_path)
     assert _operation_counts() == counts
+
+
+def test_import_says_how_many_operations_were_new_and_how_many_were_already_present(prepare_db, data_path, caplog):
+    summary = "Operations imported (new / already present): "
+    with caplog.at_level(logging.INFO):
+        _import_kucoin(data_path)
+    first = [x.getMessage() for x in caplog.records if x.getMessage().startswith(summary)]
+    assert first == [summary + "transfers 2 / 0; trades 2 / 0; swaps 1 / 0; bridges 1 / 0; asset incomes 3 / 0"]
+    caplog.clear()
+    with caplog.at_level(logging.INFO):
+        _import_kucoin(data_path)
+    second = [x.getMessage() for x in caplog.records if x.getMessage().startswith(summary)]
+    assert second == [summary + "transfers 0 / 2; trades 0 / 2; swaps 0 / 1; bridges 0 / 1; asset incomes 0 / 3"]
+    assert JalDB._operation_tally is None
 
 
 def test_reward_payment_is_valued_like_a_staking_reward(prepare_db):

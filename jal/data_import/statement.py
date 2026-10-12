@@ -678,6 +678,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     def import_into_db(self):
         db = JalDB()
         db.start_transaction()
+        JalDB._operation_tally = tally = {}
         try:
             for section in self._section_loaders:
                 if section in self._data:
@@ -694,7 +695,10 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             JalAsset.db_cache.clear_cache()   # Caches may reference rolled back rows
             JalAccount.db_cache.clear_cache()
             raise
+        finally:
+            JalDB._operation_tally = None
         db.commit_transaction()
+        self._log_summary(tally)
 
         totals = defaultdict(dict)
         for account in self._data[JSF.ACCOUNTS]:
@@ -703,6 +707,19 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 currency_id = self.mapped_id(JSF.ASSETS, account['currency'])
                 totals[account_id][currency_id] = account['cash_end']
         return totals
+
+    # One line saying how many operations of each kind the import stored and how many it found already present
+    def _log_summary(self, tally: dict) -> None:
+        kinds = {"actions": self.tr("incomes/spendings"), "transfers": self.tr("transfers"),
+                 "trades": self.tr("trades"), "swaps": self.tr("swaps"), "bridges": self.tr("bridges"),
+                 "conversions": self.tr("conversions"), "asset_payments": self.tr("asset payments"),
+                 "asset_incomes": self.tr("asset incomes"), "asset_actions": self.tr("corporate actions"),
+                 "chain_actions": self.tr("chain actions")}
+        parts = [f"{kinds[table]} {tally[table][0]} / {tally[table][1]}" for table in kinds if table in tally]
+        if parts:
+            logging.info(self.tr("Operations imported (new / already present): ") + "; ".join(parts))
+        else:
+            logging.info(self.tr("Statement brought no operations"))
 
     def _check_period(self, period):
         if len(period) != 2:
@@ -929,6 +946,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         stored = LedgerTransaction.get_operation(LedgerTransaction.Transfer, oid, Transfer.Outgoing)
         if 'fee' in operation:
             stored.update_fee(operation['fee'], operation.get('fee_account', 0), operation.get('fee_symbol_id'))
+        JalDB.log_duplicate("transfers", operation)
         return True
 
     # What happened when this record met a transfer that an earlier import stored knowing only ONE of its ends: the

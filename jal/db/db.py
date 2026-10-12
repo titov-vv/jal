@@ -109,6 +109,7 @@ class JalDB:
     _sql_call_count = 0
     _trace_sql_requests = os.environ.get('TRACE_SQL', '').upper() == 'YES'
     _in_transaction = False   # True while an explicit transaction is open (see start_transaction())
+    _operation_tally = None   # {table: [stored, skipped]} while a statement import counts what it does
     PATH_APP = auto()
     PATH_DB_FILE = auto()
     PATH_LANG = auto()
@@ -493,6 +494,7 @@ class JalDB:
             children = [x for x in fields if fields[x].get('children') and fields[x].get('append_on_duplicate')]
         else:
             oid = self.insert_operation(table_name, fields, data, otype)
+            self._count_operation(table_name, 0)
             children = [x for x in fields if fields[x].get('children')]
         for child in children:
             for item in data.get(child, []):
@@ -510,6 +512,13 @@ class JalDB:
     @staticmethod
     def log_duplicate(table_name, data):
         logging.warning(JalDB.tr("Operation already present in db and was skipped: ") + f"{table_name}, {data}")
+        JalDB._count_operation(table_name, 1)
+
+    # Counts a stored (0) or a skipped (1) record of 'table_name' while an import keeps a tally
+    @staticmethod
+    def _count_operation(table_name, outcome):
+        if JalDB._operation_tally is not None:
+            JalDB._operation_tally.setdefault(table_name, [0, 0])[outcome] += 1
 
     # The next free ordering value among the children of one parent, so that a child appended later sits after the
     # ones stored before it and no two of them share a place.
