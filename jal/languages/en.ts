@@ -5798,97 +5798,102 @@ This looks like the quantity a rebasing position gained without reporting it, wh
 <context>
     <name>OperationsWidget</name>
     <message>
-        <location filename="../widgets/operations_widget.py" line="147"/>
+        <location filename="../widgets/operations_widget.py" line="149"/>
         <source>Reconcile</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="149"/>
+        <location filename="../widgets/operations_widget.py" line="151"/>
         <source>Assign tag</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="151"/>
+        <location filename="../widgets/operations_widget.py" line="153"/>
         <source>Copy</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="153"/>
+        <location filename="../widgets/operations_widget.py" line="155"/>
         <source>Delete</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="107"/>
+        <location filename="../widgets/operations_widget.py" line="109"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="108"/>
+        <location filename="../widgets/operations_widget.py" line="110"/>
         <source>Are you sure to delete selected transaction(s)?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="155"/>
+        <location filename="../widgets/operations_widget.py" line="157"/>
         <source>Match cross-chain legs…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="186"/>
+        <location filename="../widgets/operations_widget.py" line="188"/>
         <source>Assign an account…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="187"/>
+        <location filename="../widgets/operations_widget.py" line="189"/>
         <source>Match with another leg…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="188"/>
+        <location filename="../widgets/operations_widget.py" line="190"/>
         <source>Convert into a swap…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="189"/>
+        <location filename="../widgets/operations_widget.py" line="191"/>
         <source>Convert into a bridge…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="259"/>
+        <location filename="../widgets/operations_widget.py" line="193"/>
+        <source>Record as a spending or an income…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/operations_widget.py" line="268"/>
         <source>Show accounts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="269"/>
+        <location filename="../widgets/operations_widget.py" line="278"/>
         <source>Use credit limits</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="274"/>
+        <location filename="../widgets/operations_widget.py" line="283"/>
         <source>Group by tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="280"/>
+        <location filename="../widgets/operations_widget.py" line="289"/>
         <source>Balance history chart</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="288"/>
+        <location filename="../widgets/operations_widget.py" line="297"/>
         <source>Expand all</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="291"/>
+        <location filename="../widgets/operations_widget.py" line="300"/>
         <source>Collapse all</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="312"/>
+        <location filename="../widgets/operations_widget.py" line="321"/>
         <source>Please select tag</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="313"/>
+        <location filename="../widgets/operations_widget.py" line="322"/>
         <source>Choose tag to be assigned to selected operations:</source>
         <translation></translation>
     </message>

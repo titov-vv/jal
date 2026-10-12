@@ -1454,12 +1454,19 @@ def test_operations_offers_the_settlements_on_a_pending_transfer_leg(wallets):
 
     assert names == ['Assign an account…', 'Match with another leg…', 'Convert into a swap…',
                      'Convert into a bridge…']
+    # An asset leg is not a payment; a money leg is offered the conversion too
+    asset_leg = Transfer.pending_legs()[0]['oid']
+    assert len(widget._pending_transfer_actions(asset_leg)) == 4
+    money_leg = _money_leg(True, '20', d2t(210105))
+    assert [action.text() for action in widget._pending_transfer_actions(money_leg)][4:] \
+        == ['Record as a spending or an income…']
 
 
 # _settle_pending_transfer() opens each of them the same way, so they have to agree on the shape it relies on:
 # constructed from (oid, parent), and reporting through 'changed' whether anything was written.
 @pytest.mark.parametrize("dialog_class",
-                         [TransferAssignDialog, TransferMatchDialog, SwapConvertDialog, BridgeConvertDialog])
+                         [TransferAssignDialog, TransferMatchDialog, SwapConvertDialog, BridgeConvertDialog,
+                          TransferPaymentDialog])
 def test_every_settlement_dialog_takes_a_leg_and_reports_what_it_did(wallets, dialog_class):
     _funded_wallet_a()
     _transfer(WALLET_A, None, 400, d2t(210103))

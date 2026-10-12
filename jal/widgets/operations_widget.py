@@ -19,11 +19,13 @@ from jal.db.balances_model import BalancesModel
 from jal.db.operations_model import OperationsModel
 from jal.db.common_models import TagTreeModel
 from jal.db.operations import LedgerTransaction
+from jal.db.transfer_settlement import TransferSettlement
 from jal.widgets.bridge_match_dialog import BridgeMatchDialog
 from jal.widgets.bridge_convert_dialog import BridgeConvertDialog
 from jal.widgets.swap_convert_dialog import SwapConvertDialog
 from jal.widgets.transfer_assign_dialog import TransferAssignDialog
 from jal.widgets.transfer_match_dialog import TransferMatchDialog
+from jal.widgets.transfer_payment_dialog import TransferPaymentDialog
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -174,19 +176,22 @@ class OperationsWidget(MdiWidget):
         # the user happens to be standing, for the leg they are already looking at.
         if single and self._is_pending_transfer(self.current_index):
             contextMenu.addSeparator()
-            for action in self._pending_transfer_actions():
+            for action in self._pending_transfer_actions(self._operation_at(self.current_index)[1]):
                 contextMenu.addAction(action)
         contextMenu.popup(self.ui.OperationsTableView.viewport().mapToGlobal(pos))
 
     # The settlements of a one-legged transfer, as menu actions. They are built here rather than kept as members
     # because each has to outlive the menu only as long as it is shown.
-    def _pending_transfer_actions(self) -> list:
+    # Recording the leg as a spending or an income is offered for the leg 'oid' when it is one of money.
+    def _pending_transfer_actions(self, oid: int = 0) -> list:
         actions = []
-        for icon, name, slot in (
-                (JalIcon.TRANSFER_IN, self.tr("Assign an account…"), self.assign_transfer_end),
-                (JalIcon.TRANSFER_OUT, self.tr("Match with another leg…"), self.match_transfer_leg),
-                (JalIcon.TRANSFER_ASSET_OUT, self.tr("Convert into a swap…"), self.convert_leg_to_swap),
-                (JalIcon.TRANSFER_ASSET_IN, self.tr("Convert into a bridge…"), self.convert_leg_to_bridge)):
+        offered = [(JalIcon.TRANSFER_IN, self.tr("Assign an account…"), self.assign_transfer_end),
+                   (JalIcon.TRANSFER_OUT, self.tr("Match with another leg…"), self.match_transfer_leg),
+                   (JalIcon.TRANSFER_ASSET_OUT, self.tr("Convert into a swap…"), self.convert_leg_to_swap),
+                   (JalIcon.TRANSFER_ASSET_IN, self.tr("Convert into a bridge…"), self.convert_leg_to_bridge)]
+        if oid and not TransferSettlement().refusal_to_convert_to_income_spending(oid):
+            offered.append((JalIcon.MINUS, self.tr("Record as a spending or an income…"), self.convert_leg_to_payment))
+        for icon, name, slot in offered:
             action = QAction(JalIcon[icon], name, self)
             action.triggered.connect(slot)
             actions.append(action)
@@ -236,7 +241,11 @@ class OperationsWidget(MdiWidget):
     def convert_leg_to_bridge(self):
         self._settle_pending_transfer(BridgeConvertDialog)
 
-    # Opens one of the settlement dialogs on the selected pending leg. All four take the leg's oid and report through
+    @Slot()
+    def convert_leg_to_payment(self):
+        self._settle_pending_transfer(TransferPaymentDialog)
+
+    # Opens one of the settlement dialogs on the selected pending leg. They all take the leg's oid and report through
     # 'changed' whether they wrote anything, so what is left is to tell the main window to rebuild the ledger - every
     # one of them writes real operations.
     def _settle_pending_transfer(self, dialog_class) -> None:
