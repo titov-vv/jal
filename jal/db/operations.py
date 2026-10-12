@@ -1944,6 +1944,27 @@ class Transfer(FeeCarrier, LedgerTransaction):
                               'amount': Decimal(amount)})
         return movements
 
+    # oid of the money transfer that records the movement the one-ended 'data' describes, or 0 if there is none.
+    # The far end may have been filled in since (by hand or by settlement), so only the known side is compared;
+    # 'number' stays in the key, as it is all that tells two same-day payments of one amount apart.
+    @classmethod
+    def find_money_leg(cls, data: dict, not_after_oid: int = None) -> int:
+        if data.get('symbol_id') is not None:
+            return 0
+        known = [x for x in ('withdrawal', 'deposit') if data.get(f"{x}_account") is not None]
+        if len(known) != 1:
+            return 0
+        side = known[0]
+        query = (f"SELECT oid FROM transfers WHERE symbol_id IS NULL AND {side}_account=:account "
+                 f"AND {side}_timestamp=:timestamp AND {side}=:amount AND number=:number")
+        params = [(":account", data[f"{side}_account"]), (":timestamp", data[f"{side}_timestamp"]),
+                  (":amount", data[side]), (":number", data.get('number', ''))]
+        if not_after_oid is not None:
+            query += " AND oid<=:not_after_oid"
+            params.append((":not_after_oid", not_after_oid))
+        oid = cls._read(query + " ORDER BY oid LIMIT 1", params)
+        return int(oid) if oid else 0
+
     # oid of the pending transfer that records the same movement as 'data' from the side 'data' completes, or 0 if
     # there is none (and 0 as well if there are several, which is not an answer but an ambiguity).
     #
@@ -2817,6 +2838,20 @@ class Bridge(FeeCarrier, LedgerTransaction):
     # A bridge is pending while its arriving leg is unknown (the sent value is still in transit)
     def is_pending(self) -> bool:
         return not self._has_in
+
+    # True if the send 'data' describes is stored already, as a bridge or as the cross-chain swap its half was turned
+    # into. Matching the arrival re-stamps the half and fills its other side (BridgeMatcher._adopt), so the send is
+    # known by its transaction, account, asset and quantity only; a send without a hash is never matched here.
+    @classmethod
+    def departure_is_stored(cls, data: dict) -> bool:
+        if not data.get('out_tx_hash'):
+            return False
+        params = [(":hash", data['out_tx_hash']), (":account_id", data['out_account_id']),
+                  (":symbol_id", data['out_symbol_id']), (":qty", data['out_qty'])]
+        return bool(cls._read("SELECT oid FROM bridges WHERE out_tx_hash=:hash AND out_account_id=:account_id "
+                              "AND out_symbol_id=:symbol_id AND out_qty=:qty "
+                              "UNION ALL SELECT oid FROM swaps WHERE tx_hash=:hash AND account_id=:account_id "
+                              "AND out_symbol_id=:symbol_id AND out_qty=:qty LIMIT 1", params))
 
     # Every cross-chain send whose arrival is still awaited, as of 'timestamp' - the bridge counterpart of
     # Transfer.pending_legs(), in the same shape, so one worklist can list both.

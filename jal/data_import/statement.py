@@ -20,7 +20,7 @@ from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.symbol import JalSymbol
 from jal.db.token_blacklist import normalize_address, JalTokenBlacklist
 from jal.db.operations import LedgerTransaction, AssetPayment, AssetIncome, ChainAction, CorporateAction, \
-    Trade, Transfer, FeeKind
+    Trade, Transfer, Bridge, FeeKind
 from jal.db.bridge_matcher import BridgeMatcher
 from jal.db.lending_interest import split_welded_interest
 from jal.db.transfer_settlement import TransferSettlement
@@ -870,6 +870,10 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 continue
             if stored_before and self._complete_pending_transfer(operation, stored_before) != self.NOT_PENDING:
                 continue
+            # A money leg whose far end was filled in after an earlier import is the same movement still
+            if Transfer.find_money_leg(operation, duplicate_before):
+                JalDB.log_duplicate("transfers", operation)
+                continue
             LedgerTransaction.create_new(LedgerTransaction.Transfer, operation, duplicate_before=duplicate_before)
 
     # True if this incoming movement is already booked as the ARRIVING LEG of a cross-chain operation - a bridge or a
@@ -1000,6 +1004,9 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 operation['fee_qty'] = source['fee_qty']
             if source.get('description'):
                 operation['note'] = source['description']
+            if Bridge.departure_is_stored(operation):
+                JalDB.log_duplicate("bridges", operation)
+                continue
             LedgerTransaction.create_new(LedgerTransaction.Bridge, operation)
 
     # Imports a basis-preserving exchange of one asset into another on the same account (a wrap, a lending

@@ -488,7 +488,7 @@ class JalDB:
         self.validate_operation_data(table_name, fields, data)
         oid = self.locate_operation(table_name, fields, data, duplicate_before)
         if oid:
-            logging.warning(JalDB.tr("Operation already present in db and was skipped: ") + f"{table_name}, {data}")
+            self.log_duplicate(table_name, data)
             # A child that may ARRIVE LATER is still stored.
             children = [x for x in fields if fields[x].get('children') and fields[x].get('append_on_duplicate')]
         else:
@@ -506,6 +506,10 @@ class JalDB:
                 # And no 'otype': a child is not an operation and gets no row in the root
                 self.create_operation(fields[child]['child_table'], fields[child]['child_fields'], item)
         return oid
+
+    @staticmethod
+    def log_duplicate(table_name, data):
+        logging.warning(JalDB.tr("Operation already present in db and was skipped: ") + f"{table_name}, {data}")
 
     # The next free ordering value among the children of one parent, so that a child appended later sits after the
     # ones stored before it and no two of them share a place.

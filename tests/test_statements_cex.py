@@ -11,6 +11,7 @@ from jal.data_import.broker_statements.kucoin import StatementKuCoin
 from jal.data_import.broker_statements.bitget import StatementBitget
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset, JalAssetCreator
+from jal.db.bridge_matcher import BridgeMatcher
 from jal.db.db import JalDB
 from jal.db.ledger import Ledger
 from jal.db.operations import AssetPayment, LedgerTransaction, Trade, AssetIncome
@@ -392,6 +393,73 @@ def test_kucoin_statement_is_not_imported_twice(prepare_db, data_path):
     counts = {x: _table_count(x) for x in ('trades', 'swaps', 'transfers', 'bridges', 'asset_payments')}
     _import_kucoin(data_path)
     assert {x: _table_count(x) for x in counts} == counts
+
+
+def _import_bitget(data_path):
+    statement = StatementBitget()
+    statement.load(data_path + 'bitget.zip')
+    statement.validate_format()
+    statement.match_db_ids()
+    statement.import_into_db()
+
+
+def _operation_counts() -> dict:
+    return {x: _table_count(x) for x in ('trades', 'swaps', 'transfers', 'bridges', 'asset_payments', 'fees')}
+
+
+# A wallet for a withdrawal to arrive at, and the leg that arrived there - an hour BEFORE the exchange's own stamp
+def _arrival(half: dict) -> dict:
+    wallet = JalAccountCreator(currency_id=JalAccount(int(half['out_account_id'])).currency(), number='',
+                               name='ARB wallet', investing=1, organization=1,
+                               account_type=PredefinedAccountType.Wallet, address='0x' + '1' * 40,
+                               chain=AssetLocation.ARB_BLOCKCHAIN).commit().id()
+    return {'in_timestamp': int(half['out_timestamp']) - 3600, 'in_account_id': wallet,
+            'in_symbol_id': int(half['out_symbol_id']), 'in_qty': Decimal(half['out_qty']), 'in_tx_hash': '0xa1'}
+
+
+def test_bitget_statement_is_not_imported_twice(prepare_db, data_path):
+    _import_bitget(data_path)
+    counts = _operation_counts()
+    _import_bitget(data_path)
+    assert _operation_counts() == counts
+
+
+def test_bitget_withdrawal_matched_to_its_arrival_is_not_imported_twice(prepare_db, data_path):
+    _import_bitget(data_path)
+    half = JalDB._read("SELECT oid, out_timestamp, out_account_id, out_symbol_id, out_qty FROM bridges", named=True)
+    leg = _arrival(half)
+    # what BridgeMatcher._adopt() writes when the legs disagree about the moment: both ends take the arrival's
+    JalDB._exec("UPDATE bridges SET out_timestamp=:ts, in_timestamp=:ts, in_account_id=:acc, in_symbol_id=:sym, "
+                "in_qty=:qty, in_tx_hash=:hash WHERE oid=:oid",
+                [(":ts", leg['in_timestamp']), (":acc", leg['in_account_id']), (":sym", leg['in_symbol_id']),
+                 (":qty", leg['in_qty']), (":hash", leg['in_tx_hash']), (":oid", int(half['oid']))], commit=True)
+    counts = _operation_counts()
+    _import_bitget(data_path)
+    assert _operation_counts() == counts
+
+
+def test_bitget_withdrawal_turned_into_a_cross_chain_swap_is_not_imported_twice(prepare_db, data_path):
+    _import_bitget(data_path)
+    half = JalDB._read("SELECT oid, out_timestamp, out_account_id, out_symbol_id, out_qty FROM bridges", named=True)
+    BridgeMatcher()._create_swap(int(half['oid']), _arrival(half))
+    JalDB._exec("DELETE FROM bridges WHERE oid=:oid", [(":oid", int(half['oid']))], commit=True)
+    counts = _operation_counts()
+    assert counts['bridges'] == 0
+    _import_bitget(data_path)
+    assert _operation_counts() == counts
+
+
+def test_bitget_fiat_deposit_given_its_sending_account_is_not_imported_twice(prepare_db, data_path):
+    _import_bitget(data_path)
+    bank = JalAccountCreator(currency_id=JalAccount(1).currency(), number='', name='Bank', investing=0,
+                             organization=1, account_type=PredefinedAccountType.Bank).commit().id()
+    # the far end is filled in afterwards, with the time the money left the bank
+    JalDB._exec("UPDATE transfers SET withdrawal_account=:bank, withdrawal_timestamp=withdrawal_timestamp-10800 "
+                "WHERE withdrawal_account IS NULL AND symbol_id IS NULL", [(":bank", bank)], commit=True)
+    assert int(JalDB._read("SELECT COUNT(*) FROM transfers WHERE withdrawal_account=:bank", [(":bank", bank)])) == 1
+    counts = _operation_counts()
+    _import_bitget(data_path)
+    assert _operation_counts() == counts
 
 
 def test_reward_payment_is_valued_like_a_staking_reward(prepare_db):
