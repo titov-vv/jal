@@ -1,4 +1,6 @@
 import logging
+import re
+from datetime import datetime, timedelta
 from decimal import Decimal
 
 from jal.constants import AssetLocation, PredefinedAccountType
@@ -90,6 +92,8 @@ class StatementKuCoin(StatementCSV):
     # to one's own wallet with the arrival fetched from the chain. Only the coin deposits and withdrawals carry one;
     # a fiat deposit is a money transfer and money transfers carry no symbol, which keeps them out of hash matching.
     _transfers_are_unique_per_transaction = True
+    # A time column names the zone the export was asked in: "Time(UTC)" or "Time(UTC+01:00)" - see _read_as_utc()
+    ZoneColumn = re.compile(r"^(.*)\(UTC([+-])(\d{2}):(\d{2})\)$")
 
     def __init__(self):
         super().__init__()
@@ -101,6 +105,7 @@ class StatementKuCoin(StatementCSV):
         self._coupon_refunds = []
 
     def _load_statement(self):
+        self._read_as_utc()
         self._refuse_unhandled(self.HandledFiles)
         self._verify_columns()
         self._load_account()
@@ -109,6 +114,29 @@ class StatementKuCoin(StatementCSV):
         self._load_trades()
         self._load_ledger()
         self._validate_balances()
+
+    # Re-reads an export made in another zone as the UTC one the parser is written for: a column "X(UTC+01:00)"
+    # becomes "X(UTC)" and its values move by the offset the name states.
+    def _read_as_utc(self):
+        for key, rows in self._files.items():
+            self._files[key] = [self._row_as_utc(row) for row in rows]
+
+    def _row_as_utc(self, row: dict) -> dict:
+        converted = {}
+        for column, value in row.items():
+            zone = self.ZoneColumn.match(column)
+            if zone is None:
+                converted[column] = value
+                continue
+            name, sign, hours, minutes = zone.groups()
+            if value:
+                offset = timedelta(hours=int(hours), minutes=int(minutes)) * (1 if sign == '+' else -1)
+                try:
+                    value = (datetime.strptime(value, self.DateFormat) - offset).strftime(self.DateFormat)
+                except ValueError:
+                    raise Statement_ImportError(self.tr("Can't read timestamp: ") + f"'{value}'")
+            converted[f"{name}(UTC)"] = value
+        return converted
 
     def _verify_columns(self):
         self._check_columns('funding', ['UID', 'Currency', 'Side', 'Amount', 'Fee', 'Time(UTC)', 'Remark', 'Type'])

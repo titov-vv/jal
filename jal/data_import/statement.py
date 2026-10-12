@@ -420,6 +420,20 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         db_symbol = JalSymbol.find_by_identifier(id_type, address)
         return db_symbol.asset().id() if db_symbol.id() else 0
 
+    # The asset that already lists one of these tickers at the very location the statement names (an exchange), or 0.
+    # It settles a ticker that several assets carry, which the plain ticker match below leaves unmatched.
+    def _match_by_listing(self, asset: dict) -> int:
+        found = set()
+        for symbol in asset[JSF.SYMBOLS]:
+            if not symbol.get('location'):
+                continue
+            found.update(JalDB._read_to_list(
+                "SELECT DISTINCT s.asset_id FROM asset_symbol s JOIN assets a ON a.id=s.asset_id "
+                "WHERE s.symbol=:symbol COLLATE NOCASE AND s.location_id=:location AND a.type_id=:type",
+                [(":symbol", symbol['symbol']), (":location", symbol['location']),
+                 (":type", self._asset_types[asset['type']])]))
+        return int(found.pop()) if len(found) == 1 else 0
+
     # Matches non-money assets against the db: by isin first, then by reg_number/cusip, then by
     # symbol ticker (with identifier mismatch guards)
     def _match_assets(self):
@@ -465,6 +479,10 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 if asset_id:
                     self.set_mapped_id(JSF.ASSETS, asset['id'], asset_id)
                     continue
+            asset_id = self._match_by_listing(asset)
+            if asset_id:
+                self.set_mapped_id(JSF.ASSETS, asset['id'], asset_id)
+                continue
             for symbol in asset[JSF.SYMBOLS]:
                 search_data = {'symbol': symbol['symbol'], 'type': self._asset_types[asset['type']]}
                 if isin:

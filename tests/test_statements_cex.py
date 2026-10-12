@@ -1,4 +1,7 @@
+import re
+from datetime import datetime, timedelta
 from decimal import Decimal
+from zipfile import ZipFile
 
 import pytest
 
@@ -171,6 +174,27 @@ def test_kucoin_period_covers_operations_past_the_last_snapshot(kucoin):
     first = min(x['timestamp'] for x in kucoin._data[JSF.TRANSFERS])
     last = max(x['timestamp'] for x in kucoin._data[JSF.ASSET_PAYMENTS])
     assert start <= first and end >= last
+
+
+# The same archive as KuCoin writes it when the export is asked in another zone: the zone is in the column names
+def _kucoin_in_zone(data_path, target: str, label: str, hours: int) -> None:
+    stamp = re.compile(rb'(?<![\d-])(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})(?![\d:])')
+    shift = lambda m: (datetime.strptime(m.group(1).decode(), "%Y-%m-%d %H:%M:%S")
+                       + timedelta(hours=hours)).strftime("%Y-%m-%d %H:%M:%S").encode()
+    with ZipFile(data_path + 'kucoin.zip') as source, ZipFile(target, 'w') as archive:
+        for name in source.namelist():
+            archive.writestr(name, stamp.sub(shift, source.read(name).replace(b'(UTC)', label.encode())))
+
+
+@pytest.mark.parametrize("label, hours", [('(UTC+01:00)', 1), ('(UTC-05:00)', -5)])
+def test_kucoin_export_made_in_another_zone_reads_the_same(kucoin, data_path, tmp_path, label, hours):
+    target = str(tmp_path / 'kucoin_zone.zip')
+    _kucoin_in_zone(data_path, target, label, hours)
+    statement = StatementKuCoin()
+    statement.load(target)
+    assert statement._data[JSF.PERIOD] == kucoin._data[JSF.PERIOD]
+    for section in (JSF.TRADES, JSF.SWAPS, JSF.TRANSFERS, JSF.BRIDGES, JSF.ASSET_PAYMENTS):
+        assert statement._data[section] == kucoin._data[section]
 
 
 def test_kucoin_refuses_an_unknown_operation(kucoin, data_path):
@@ -386,6 +410,19 @@ def test_kucoin_coin_keeps_off_a_chain_listing_of_the_same_asset(prepare_db, dat
     # the withdrawal waits for its arrival as a half-bridge that left on the exchange's own listing
     half = JalDB._read("SELECT out_symbol_id, out_qty, in_account_id FROM bridges", named=True)
     assert (half['out_symbol_id'], Decimal(half['out_qty']), half['in_account_id']) == (listings[0], Decimal('100'), '')
+
+
+def test_kucoin_coin_joins_the_asset_that_holds_its_exchange_listing(prepare_db, data_path):
+    # Two assets carry the ticker, so the ticker alone names neither - the exchange listing does
+    eur = JalAsset.find({'symbol': 'EUR', 'type': PredefinedAsset.Money}).id()
+    held = JalAssetCreator(PredefinedAsset.Crypto, 'Tether', '').commit()
+    listing = held.add_symbol('USDT', eur, location_id=AssetLocation.CEX_KUCOIN)
+    JalAssetCreator(PredefinedAsset.Crypto, 'Tether on a chain', '').commit().add_symbol(
+        'USDT', eur, location_id=AssetLocation.ETH_BLOCKCHAIN)
+    _import_kucoin(data_path)
+
+    assert int(JalDB._read("SELECT COUNT(*) FROM asset_symbol WHERE symbol='USDT'")) == 2
+    assert int(JalDB._read("SELECT out_symbol_id FROM bridges")) == listing
 
 
 def test_kucoin_statement_is_not_imported_twice(prepare_db, data_path):
