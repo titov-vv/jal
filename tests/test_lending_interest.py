@@ -1,6 +1,8 @@
 # Interest a rebasing receipt token (an Aave aToken) welds onto a supply or a withdrawal is booked apart from the
 # conversion, as a lot of its own at zero cost and dated on the day it arrived.
 from decimal import Decimal
+import pytest
+from PySide6.QtWidgets import QWidget, QMessageBox
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo
 from tests.helpers import d2t, create_stocks, create_trades, create_conversions, symbol_id_for
@@ -11,7 +13,8 @@ from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.operations import LedgerTransaction, AssetIncome
 from jal.db.db import JalDB
-from jal.db.lending_interest import split_welded_interest
+from jal.db.lending_interest import split_welded_interest, stored_welded_interest, book_welded_interest
+from jal.widgets.symbol_dialog import SymbolDialog
 from jal.updates import jal_delta_80
 
 USDG, A_USDG, STK = 4, 5, 6   # asset ids of _assets()
@@ -151,3 +154,64 @@ def test_delta_80_splits_the_stored_conversions(prepare_db_fifo):
     Ledger().rebuild(from_timestamp=0)
     assert JalAccount(1).get_asset_amount(t_move, A_USDG) == Decimal('0')
     assert JalAccount(1).get_asset_amount(t_move, USDG) == Decimal('105')
+
+
+# Two supplies and a withdrawal imported while aUSDG wasn't marked as rebasing yet, and a wrapping of another pair
+def _wrappings_stored_before_the_mark():
+    create_stocks([('USDG', 'Stablecoin'), ('aUSDG', 'Lending receipt'), ('stkUSDG', 'Share token'),
+                   ('ETH', 'Coin'), ('aETH', 'Lending receipt')], currency_id=2)   # the last two are 7 and 8
+    create_trades(1, [(d2t(220101), d2t(220101), USDG, Decimal('110'), Decimal('1'), Decimal('0')),
+                      (d2t(220101), d2t(220101), 7, Decimal('1'), Decimal('1'), Decimal('0'))])
+    create_conversions(1, [(d2t(220201), USDG, '60', A_USDG, '60'), (d2t(220301), USDG, '40', A_USDG, '43'),
+                           (d2t(220401), A_USDG, '93', USDG, '95'), (d2t(220501), 7, '1', 8, '1.05')])
+    assert stored_welded_interest() == []
+    _mark(A_USDG, AssetData.Rebasing, '1')
+    _mark(8, AssetData.Rebasing, '1')
+
+
+# A mark set after the import: the stored conversions of that asset are split, once, and no other asset is touched
+def test_stored_conversions_are_split_for_one_asset(prepare_db_fifo):
+    _wrappings_stored_before_the_mark()
+    found = stored_welded_interest(A_USDG)
+    assert [Decimal(interest['amount']) for _, interest in found] == [Decimal('3'), Decimal('2')]
+    assert _incomes() == []                                 # looking writes nothing
+    book_welded_interest(found)
+    book_welded_interest(found)
+
+    assert stored_welded_interest(A_USDG) == []
+    assert _stored_conversions() == [(Decimal('60'), Decimal('60')), (Decimal('40'), Decimal('40')),
+                                     (Decimal('95'), Decimal('95')), (Decimal('1'), Decimal('1.05'))]
+    assert [(x['timestamp'], Decimal(x['amount'])) for x in _incomes()] == [
+        (d2t(220301) - 1, Decimal('3')), (d2t(220401) - 1, Decimal('2'))]
+    assert len(stored_welded_interest()) == 1               # the other asset still waits for its own answer
+
+
+@pytest.fixture
+def owner(prepare_db_fifo):
+    parent = QWidget()   # a parentless dialog crashes the collector - see tests/test_dialog_buttons.py
+    yield parent
+    parent.deleteLater()
+
+
+# Saving a rebasing asset asks before the stored wrappings are rewritten; 'No' changes nothing and is asked again
+def test_asset_editor_offers_to_split_stored_interest(owner, monkeypatch):
+    _wrappings_stored_before_the_mark()
+    asked, answer = [], [QMessageBox.No]
+    monkeypatch.setattr(QMessageBox, 'question', lambda *args: asked.append(args[3]) or answer[0])
+
+    def save(asset_id):
+        dialog = SymbolDialog(owner)
+        dialog.setSelectedId(asset_id)
+        dialog.accept()
+
+    save(USDG)                                              # the plain side of the pair is not asked about
+    assert asked == []
+    save(A_USDG)
+    assert len(asked) == 1 and ': 2\n' in asked[0] and ' aUSDG\n' in asked[0]
+    assert _incomes() == [] and len(stored_welded_interest(A_USDG)) == 2
+    answer[0] = QMessageBox.Yes
+    save(A_USDG)
+    assert len(asked) == 2 and len(_incomes()) == 2 and stored_welded_interest(A_USDG) == []
+    assert JalAccount(1).get_asset_amount(d2t(220401), USDG) == Decimal('105')   # the ledger is rebuilt at once
+    save(A_USDG)                                            # nothing is left to ask about
+    assert len(asked) == 2

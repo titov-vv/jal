@@ -5,7 +5,12 @@ from PySide6.QtSql import QSqlRelation
 from PySide6.QtWidgets import QDialog, QDataWidgetMapper, QStyledItemDelegate, QComboBox, QLineEdit, QMessageBox, QHeaderView
 from jal.ui.ui_symbol_edit_dlg import Ui_SymbolDialog
 from jal.constants import PredefinedAsset, AssetData, IconOwner, SymbolId, AssetLocation
+from jal.db.db import JalDB
+from jal.db.asset import JalAsset
+from jal.db.symbol import JalSymbol
+from jal.db.ledger import Ledger
 from jal.db.helpers import localize_decimal, db_row2dict
+from jal.db.lending_interest import stored_welded_interest, book_welded_interest
 from jal.db.asset_models import AssetRecordModel, AssetSymbolsModel, SymbolIdentifiersModel, AssetDataModel
 from jal.db.common_models import TagTreeModel
 from jal.widgets.delegates import (DateTimeEditWithReset, BoolDelegate, ConstantLookupDelegate, KbSafeItemDelegate,
@@ -363,7 +368,26 @@ class SymbolDialog(QDialog):
             logging.fatal(self.tr("Asset submit failed: ") + self._model.lastError().text())
             return
         self._model.database().commit()
+        self._offer_interest_split()
         super().accept()
+
+    # A rebasing mark set after the import leaves the interest inside the stored wrappings - offers to book it apart
+    def _offer_interest_split(self):
+        JalDB().invalidate_cache()   # the mark may have been changed in this dialog
+        if not JalAsset(self._asset_id).rebasing():
+            return
+        found = stored_welded_interest(self._asset_id)
+        if not found:
+            return
+        total = sum(interest['amount'] for _, interest in found)
+        ticker = JalSymbol(found[0][1]['symbol_id']).symbol()
+        question = self.tr("Wrappings with lending interest inside: ") + f"{len(found)}\n" + \
+            self.tr("Interest in total: ") + f"{localize_decimal(total)} {ticker}\n" + \
+            self.tr("Book it apart as 'Lending interest'?")
+        if QMessageBox().question(self, self.tr("Lending interest"), question,
+                                  QMessageBox.Yes, QMessageBox.No) == QMessageBox.Yes:
+            book_welded_interest(found)
+            Ledger().rebuild()
 
     def reject(self) -> None:
         self._model.database().rollback()

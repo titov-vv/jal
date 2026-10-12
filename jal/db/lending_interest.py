@@ -1,6 +1,8 @@
 from decimal import Decimal
+from jal.db.db import JalDB
+from jal.db.helpers import format_decimal
 from jal.db.symbol import JalSymbol
-from jal.db.operations import AssetIncome
+from jal.db.operations import LedgerTransaction, AssetIncome
 
 
 # A rebasing receipt token (an Aave aToken) announces the interest it accrued by welding it onto the next movement:
@@ -26,3 +28,33 @@ def split_welded_interest(conversion: dict):
     return {'timestamp': conversion['timestamp'] - 1, 'number': conversion.get('tx_hash', ''),
             'type': AssetIncome.LendingInterest, 'account_id': conversion['account_id'], 'symbol_id': symbol_id,
             'amount': in_qty - out_qty, 'note': conversion.get('note', '')}
+
+
+# Stored conversions that still carry welded interest, as (conversion, interest) pairs with the conversion already
+# made equal - of every asset, or of 'asset_id' alone. Nothing is written.
+def stored_welded_interest(asset_id: int = 0) -> list:
+    query = ("SELECT c.oid, c.timestamp, c.account_id, c.tx_hash, c.out_symbol_id, c.out_qty, c.in_symbol_id, "
+             "c.in_qty, c.note FROM conversions c")
+    params = []
+    if asset_id:
+        query += (" JOIN asset_symbol o ON o.id=c.out_symbol_id JOIN asset_symbol i ON i.id=c.in_symbol_id "
+                  "WHERE o.asset_id=:asset_id OR i.asset_id=:asset_id")
+        params = [(":asset_id", asset_id)]
+    found = []
+    for conversion in JalDB._read_to_list(query + " ORDER BY c.timestamp", params, named=True):
+        interest = split_welded_interest(conversion)
+        if interest is not None:
+            found.append((conversion, interest))
+    return found
+
+
+# Books what stored_welded_interest() found - what the statement import does for a new conversion.
+# The income is created before the conversion is rewritten and is not created twice (see locate_operation()), and
+# a conversion already rewritten has nothing left to split - so an interrupted run may be repeated.
+def book_welded_interest(found: list) -> None:
+    for conversion, interest in found:
+        LedgerTransaction.create_new(LedgerTransaction.AssetIncome, interest)
+        JalDB._exec("UPDATE conversions SET out_qty=:out_qty, in_qty=:in_qty WHERE oid=:oid",
+                    [(":out_qty", format_decimal(Decimal(conversion['out_qty']))),
+                     (":in_qty", format_decimal(Decimal(conversion['in_qty']))), (":oid", conversion['oid'])])
+    JalDB().commit()
