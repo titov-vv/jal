@@ -14,6 +14,7 @@ from jal.widgets.mdi import MdiWidget
 from jal.widgets.swap_convert_dialog import SwapConvertDialog
 from jal.widgets.transfer_assign_dialog import TransferAssignDialog
 from jal.widgets.transfer_match_dialog import TransferMatchDialog
+from jal.widgets.transfer_payment_dialog import TransferPaymentDialog
 from jal.widgets.helpers import set_grids_metrics
 
 JAL_REPORT_CLASS = "UnsettledTransfersReport"
@@ -73,6 +74,7 @@ class UnsettledTransfersReportWindow(MdiWidget):
         self.ui.SwapButton.pressed.connect(self.convertToSwap)
         self.ui.BridgeButton.pressed.connect(self.convertToBridge)
         self.ui.DustButton.pressed.connect(self.writeOffAsDust)
+        self.ui.PaymentButton.pressed.connect(self.convertToPayment)
         self.ui.LegendButton.pressed.connect(self.showLegend)
         self.ui.ReportTreeView.doubleClicked.connect(self.matchLegAt)
         self.ui.ReportTreeView.customContextMenuRequested.connect(self.onContextMenu)
@@ -83,6 +85,7 @@ class UnsettledTransfersReportWindow(MdiWidget):
         self.ui.SwapButton.setEnabled(False)
         self.ui.BridgeButton.setEnabled(False)
         self.ui.DustButton.setEnabled(False)
+        self.ui.PaymentButton.setEnabled(False)
         self.ui.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.ui.ReportTreeView.model()))
 
     # The list is a read of the 'transfers' table, so everything that writes one leaves it stale - not only the
@@ -184,6 +187,17 @@ class UnsettledTransfersReportWindow(MdiWidget):
         dialog.exec()
         self._settled(dialog.changed)
 
+    # Replaces the selected money leg by a spending or an income - for the leg whose other end is a person, so that
+    # no account will ever be found for it
+    @Slot()
+    def convertToPayment(self):
+        oid = self._pending_oid(self.ui.ReportTreeView.currentIndex())
+        if not oid:
+            return
+        dialog = TransferPaymentDialog(oid, parent=self)
+        dialog.exec()
+        self._settled(dialog.changed)
+
     # Completes a pending half-bridge listed here, with the same dialog the Operations list opens on it
     @Slot()
     def matchBridge(self):
@@ -257,6 +271,8 @@ class UnsettledTransfersReportWindow(MdiWidget):
         # Only an ARRIVAL can be unsolicited: what the user sent, the user sent
         self.ui.DustButton.setEnabled(bool(pending and not TransferSettlement().refusal_to_mark_dust(
             self._pending_oid(index))))
+        self.ui.PaymentButton.setEnabled(bool(
+            pending and not TransferSettlement().refusal_to_convert_to_income_spending(self._pending_oid(index))))
 
     @Slot(QPoint)
     def onContextMenu(self, position):
@@ -273,6 +289,8 @@ class UnsettledTransfersReportWindow(MdiWidget):
             menu.addAction(self.tr("Match with another leg..."), partial(self.matchLegAt, index))
             menu.addAction(self.tr("Convert into a swap..."), self.convertToSwap)
             menu.addAction(self.tr("Convert into a bridge..."), self.convertToBridge)
+            if not TransferSettlement().refusal_to_convert_to_income_spending(self._pending_oid(index)):
+                menu.addAction(self.tr("Record as a spending or an income..."), self.convertToPayment)
             if not TransferSettlement().refusal_to_mark_dust(self._pending_oid(index)):
                 menu.addSeparator()
                 menu.addAction(self.tr("Write off as dust..."), self.writeOffAsDust)

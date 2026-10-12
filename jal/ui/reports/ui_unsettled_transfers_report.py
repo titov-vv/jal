@@ -117,16 +117,21 @@ class Ui_UnsettledTransfersWidget(object):
 
         self.gridLayout.addWidget(self.DustButton, 0, 18, 1, 1)
 
+        self.PaymentButton = QPushButton(self.ReportParamsFrame)
+        self.PaymentButton.setObjectName(u"PaymentButton")
+
+        self.gridLayout.addWidget(self.PaymentButton, 0, 19, 1, 1)
+
         self.SaveButton = QPushButton(self.ReportParamsFrame)
         self.SaveButton.setObjectName(u"SaveButton")
 
-        self.gridLayout.addWidget(self.SaveButton, 0, 19, 1, 1)
+        self.gridLayout.addWidget(self.SaveButton, 0, 20, 1, 1)
 
         self.LegendButton = QToolButton(self.ReportParamsFrame)
         self.LegendButton.setObjectName(u"LegendButton")
         self.LegendButton.setAutoRaise(True)
 
-        self.gridLayout.addWidget(self.LegendButton, 0, 20, 1, 1)
+        self.gridLayout.addWidget(self.LegendButton, 0, 21, 1, 1)
 
         self.currencyGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
 
@@ -169,7 +174,8 @@ class Ui_UnsettledTransfersWidget(object):
         QWidget.setTabOrder(self.MatchButton, self.SwapButton)
         QWidget.setTabOrder(self.SwapButton, self.BridgeButton)
         QWidget.setTabOrder(self.BridgeButton, self.DustButton)
-        QWidget.setTabOrder(self.DustButton, self.SaveButton)
+        QWidget.setTabOrder(self.DustButton, self.PaymentButton)
+        QWidget.setTabOrder(self.PaymentButton, self.SaveButton)
         QWidget.setTabOrder(self.SaveButton, self.LegendButton)
         QWidget.setTabOrder(self.LegendButton, self.ReportTreeView)
 
@@ -226,6 +232,10 @@ class Ui_UnsettledTransfersWidget(object):
         self.DustButton.setToolTip(QCoreApplication.translate("UnsettledTransfersWidget", u"Write off a leg nobody sent as the dust attack it is", None))
 #endif // QT_CONFIG(tooltip)
         self.DustButton.setText(QCoreApplication.translate("UnsettledTransfersWidget", u"Dust", None))
+#if QT_CONFIG(tooltip)
+        self.PaymentButton.setToolTip(QCoreApplication.translate("UnsettledTransfersWidget", u"Record a money leg as the spending or the income it is", None))
+#endif // QT_CONFIG(tooltip)
+        self.PaymentButton.setText(QCoreApplication.translate("UnsettledTransfersWidget", u"Payment...", None))
         self.SaveButton.setText(QCoreApplication.translate("UnsettledTransfersWidget", u"Save...", None))
 #if QT_CONFIG(tooltip)
         self.LegendButton.setToolTip(QCoreApplication.translate("UnsettledTransfersWidget", u"What the row colors mean", None))

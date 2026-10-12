@@ -12,6 +12,7 @@ from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QDialog, QMessageBox
 from jal.constants import Setup, AssetLocation, PredefinedAccountType, PredefinedAsset, PredefinedAgents, SymbolId
 from jal.db.db import JalDB
+from jal.db.clock import local_time, ZONE_SPAN
 from jal.db.helpers import is_day_marker, remove_exponent, wall_clock_timestamp
 from jal.db.settings import JalSettings
 from jal.db.account import JalAccount, JalAccountCreator
@@ -251,6 +252,34 @@ class Statement(QObject):   # derived from QObject to have proper string transla
 
     def skipped(self) -> dict:
         return dict(self._skipped)
+
+    # Drops the one-ended money transfers of the given statement account that are stored already, and returns their
+    # statement ids. A stored transfer of the same amount in the same direction on the same day of the user's clock
+    # is taken for the movement, the closest in time first and each one once.
+    def _drop_stored_transfers(self, statement_account: int) -> set:
+        transfers = [x for x in self._data[JSF.TRANSFERS]
+                     if sorted(x['account'][:2]) == [0, statement_account]]
+        if not transfers:
+            return set()
+        begin, end = self.period()
+        stored = Transfer.money_movements(self.mapped_id(JSF.ACCOUNTS, statement_account),
+                                          begin - ZONE_SPAN, end + ZONE_SPAN)
+        candidates = []
+        for transfer in transfers:
+            incoming = transfer['account'][1] == statement_account
+            day = local_time(transfer['timestamp']).date()
+            for movement in stored:
+                if movement['incoming'] == incoming and movement['amount'] == transfer['deposit'] \
+                        and local_time(movement['timestamp']).date() == day:
+                    candidates.append((abs(movement['timestamp'] - transfer['timestamp']), transfer['id'],
+                                       movement['oid']))
+        recognized, used = set(), set()
+        for _distance, transfer_id, oid in sorted(candidates):
+            if transfer_id not in recognized and oid not in used:
+                recognized.add(transfer_id)
+                used.add(oid)
+        self._data[JSF.TRANSFERS] = [x for x in self._data[JSF.TRANSFERS] if x['id'] not in recognized]
+        return recognized
 
     # Returns a specific capabilities that is supported by some statement modules
     @staticmethod

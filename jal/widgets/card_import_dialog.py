@@ -17,6 +17,8 @@ from jal.widgets.reference_dialogs import PeerListDialog, CategoryListDialog
 # 'peer' and 'category' start empty: a merchant string as the acquirer sent it is not a peer of this ledger, and
 # a merchant code the acquirer sent is not a spending category, so neither can be filled in without the user.
 # A statement that has no merchant code at all (Revolut) leaves that column empty.
+# A row marked 'transfer' is a transfer leg that resembles a stored operation: ticked, it is stored as a leg and
+# takes no peer and no category.
 class CardOperationsModel(QAbstractTableModel):
     DATE, MERCHANT, MCC, AMOUNT, STORED, IMPORT, PEER, CATEGORY, DESCRIPTION = range(9)
 
@@ -51,8 +53,9 @@ class CardOperationsModel(QAbstractTableModel):
         if index.column() == self.IMPORT:
             return flags | Qt.ItemIsUserCheckable
         if index.column() in (self.PEER, self.CATEGORY, self.DESCRIPTION):
-            # A row that isn't imported needs nothing filled in, so its editors stay shut
-            return (flags | Qt.ItemIsEditable) if self._rows[index.row()]['import'] else flags
+            # A row that isn't imported needs nothing filled in, so its editors stay shut - as do a transfer's
+            record = self._rows[index.row()]
+            return (flags | Qt.ItemIsEditable) if record['import'] and 'transfer' not in record['row'] else flags
         return flags
 
     def data(self, index, role=Qt.DisplayRole):
@@ -111,7 +114,7 @@ class CardOperationsModel(QAbstractTableModel):
 
     # True when every row that is going to be imported knows its peer and its category
     def is_complete(self) -> bool:
-        return all(x['peer'] and x['category'] for x in self._rows if x['import'])
+        return all(x['peer'] and x['category'] for x in self._rows if x['import'] and 'transfer' not in x['row'])
 
     def decisions(self) -> list:
         return [{'import': x['import'], 'peer': x['peer'], 'category': x['category'],
@@ -139,8 +142,11 @@ class CardImportDialog(QDialog):
         self._model = CardOperationsModel(rows, proposal, self)
 
         layout = QVBoxLayout(self)
-        layout.addWidget(QLabel(self.tr("Purchases that are in the database already are unticked. Tick a purchase "
-                                        "to import it and give it a peer and a category:"), self))
+        prompt = self.tr("Purchases that are in the database already are unticked. Tick a purchase "
+                         "to import it and give it a peer and a category:")
+        if any('transfer' in x for x in rows):
+            prompt += "\n" + self.tr("A transfer that is ticked is stored as an unsettled transfer and needs neither.")
+        layout.addWidget(QLabel(prompt, self))
         self._view = QTableView(self)
         self._view.setObjectName("CardOperationsView")   # the name its stored column layout is keyed by
         self._view.setModel(self._model)

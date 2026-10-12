@@ -136,6 +136,11 @@ Each row is money or an asset "in transit". The buttons and the right-click menu
 really was: an account of yours, a staked position, the other leg of a movement already recorded, a
 swap, a bridge, or dust to be written off. See [chapter 8](08-crypto.md#transfers-with-one-end-missing).
 
+Money sent to or received from a person never finds a second account. **Payment…** (or *Record as a
+spending or an income…* in the menu) asks for a peer and a category and replaces the leg by a spending
+when the money left and by an income when it arrived, a fee of the transfer becoming a *Fees* line of
+the same operation.
+
 Keeping this list empty is what keeps your balances honest.
 
 ## Operations by category, peer or tag

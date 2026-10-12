@@ -14,9 +14,7 @@ from jal.data_import.statement import JSF, Statement, Statement_ImportError, Sta
 from jal.data_import.card_match import CardMatcher
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
-from jal.db.clock import local_time, ZONE_SPAN
 from jal.db.helpers import day_end
-from jal.db.operations import Transfer
 from jal.db.peer import JalPeer
 from jal.db.settings import JalSettings
 from jal.db.settings_registry import SettingsRegistry, SettingDescriptor, SettingType
@@ -348,34 +346,11 @@ class StatementTrading212(Statement):
         self._recognize_transfers()
         self._review_card_operations()
 
-    # A deposit or a withdrawal is usually typed in by hand as a complete transfer before the statement comes. A stored
-    # transfer of the same amount in the same direction on the same day of the user's clock is taken for it, the
-    # closest in time first and each one once; one without such a transfer is stored as a pending leg, to be completed
-    # in the unsettled transfers list.
+    # A deposit or a withdrawal is usually typed in by hand as a complete transfer before the statement comes, and
+    # then it is not stored again (see _drop_stored_transfers); one without such a transfer is stored as a pending
+    # leg, to be completed in the unsettled transfers list.
     def _recognize_transfers(self) -> None:
-        transfers = self._data[JSF.TRANSFERS]
-        if not transfers:
-            return
-        account_id = self.mapped_id(JSF.ACCOUNTS, self._account_id)
-        begin, end = self.period()
-        stored = Transfer.money_movements(account_id, begin - ZONE_SPAN, end + ZONE_SPAN)
-        candidates = []
-        for transfer in transfers:
-            incoming = transfer['account'][1] == self._account_id
-            day = local_time(transfer['timestamp']).date()
-            for movement in stored:
-                if movement['incoming'] == incoming and movement['amount'] == transfer['deposit'] \
-                        and local_time(movement['timestamp']).date() == day:
-                    candidates.append((abs(movement['timestamp'] - transfer['timestamp']), transfer['id'],
-                                       movement['oid']))
-        recognized, used = set(), set()
-        for _distance, transfer_id, oid in sorted(candidates):
-            if transfer_id not in recognized and oid not in used:
-                recognized.add(transfer_id)
-                used.add(oid)
-        for transfer in [x for x in transfers if x['id'] in recognized]:
-            self._skip(self.tr("transfer is in the database already"), transfer['number'])
-            transfers.remove(transfer)
+        self._drop_stored_transfers(self._account_id)
 
     # The account is not matched but named - by the user, once, in the preferences. Everything else about the
     # import depends on it, so a setting that is missing or points at something else stops the import here.
@@ -447,7 +422,6 @@ class StatementTrading212(Statement):
         for row, decision in zip(self._card_rows, decisions):
             operation = operations[row['id']]
             if not decision['import']:
-                self._skip(self.tr("card purchase is in the database already"), row['merchant'])
                 self._data[JSF.INCOME_SPENDING].remove(operation)
                 continue
             operation['peer'] = decision['peer']

@@ -183,13 +183,23 @@
        </widget>
       </item>
       <item row="0" column="19">
+       <widget class="QPushButton" name="PaymentButton">
+        <property name="toolTip">
+         <string>Record a money leg as the spending or the income it is</string>
+        </property>
+        <property name="text">
+         <string>Payment...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="20">
        <widget class="QPushButton" name="SaveButton">
         <property name="text">
          <string>Save...</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="20">
+      <item row="0" column="21">
        <widget class="QToolButton" name="LegendButton">
         <property name="toolTip">
          <string>What the row colors mean</string>
@@ -287,6 +297,7 @@
   <tabstop>SwapButton</tabstop>
   <tabstop>BridgeButton</tabstop>
   <tabstop>DustButton</tabstop>
+  <tabstop>PaymentButton</tabstop>
   <tabstop>SaveButton</tabstop>
   <tabstop>LegendButton</tabstop>
   <tabstop>ReportTreeView</tabstop>

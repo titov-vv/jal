@@ -15,6 +15,7 @@ from jal.data_import.broker_statements.revolut import (StatementRevolut, REVOLUT
                                                        REVOLUT_DEPOSIT_ACCOUNT_SETTING)
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.db import JalDB
+from jal.db.ledger import Ledger
 from jal.db.operations import LedgerTransaction
 from jal.db.peer import JalPeer
 from jal.db.settings import JalSettings
@@ -84,13 +85,18 @@ def test_revolut_parsing(prepare_db_revolut):
     assert data[JSF.PERIOD] == [dt2t(2603021000), dt2t(2603130800)]
 
     # Money moved between the two accounts is ONE transfer, built from the two rows that describe it
-    assert len(data[JSF.TRANSFERS]) == 2
     current, savings = statement._account_ids[StatementRevolut.CURRENT], statement._account_ids[StatementRevolut.DEPOSIT]
     into_pocket = [x for x in data[JSF.TRANSFERS] if x['withdrawal'] == Decimal('400')][0]
     assert into_pocket['account'][:2] == [current, savings]
     assert into_pocket['timestamp'] == dt2t(2603061100)
     out_of_pocket = [x for x in data[JSF.TRANSFERS] if x['withdrawal'] == Decimal('50')][0]
     assert out_of_pocket['account'][:2] == [savings, current]
+    # ... and a movement whose other end the file doesn't name is a transfer with that end unknown
+    assert len(data[JSF.TRANSFERS]) == 4
+    top_up = [x for x in data[JSF.TRANSFERS] if x['withdrawal'] == Decimal('500')][0]
+    assert top_up['account'] == [0, current, 0] and top_up['timestamp'] == dt2t(2603021000)
+    to_peer = [x for x in data[JSF.TRANSFERS] if x['withdrawal'] == Decimal('20')][0]
+    assert to_peer['account'] == [current, 0, 0] and to_peer['description'] == 'Transferência para TEST PEER'
 
     # Interest: the gross Revolut credited and the tax it withheld beside it, as the deposits of this ledger do
     interest = [x for x in data[JSF.INCOME_SPENDING] if x['account'] == savings]
@@ -113,11 +119,9 @@ def test_revolut_parsing(prepare_db_revolut):
     # Revolut states no merchant category at all
     assert all(x['merchant_category'] == '' for x in statement._card_rows)
 
-    # Nothing is dropped silently: what the file states and this module doesn't place is counted and reported
-    skipped = statement.skipped()
-    assert sum(skipped.values()) == 4
-    assert [v for k, v in skipped.items() if 'not completed' in k] == [2]     # the reverted and the pending row
-    assert [v for k, v in skipped.items() if "other end" in k] == [2]         # the top-up and the transfer to a peer
+    # A reverted and a pending row moved nothing and are no record at all, and nothing else is left out
+    assert not statement.skipped()
+    assert 'Bolt' not in [x['merchant'] for x in statement._card_rows]
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -161,8 +165,12 @@ def test_revolut_review_and_import(prepare_db_revolut):
     statement.match_db_ids()
     statement.import_into_db()
 
-    # Two transfers, three interest operations and the single reward
-    assert JalDB._read("SELECT COUNT(*) FROM transfers") == 2
+    # Two transfers between the accounts and two pending legs, three interest operations and the single reward
+    assert JalDB._read("SELECT COUNT(*) FROM transfers") == 4
+    assert JalDB._read("SELECT COUNT(*) FROM transfers WHERE withdrawal_account IS NULL AND deposit_account=:account "
+                       "AND CAST(deposit AS REAL)=500", [(":account", current_id)]) == 1
+    assert JalDB._read("SELECT COUNT(*) FROM transfers WHERE deposit_account IS NULL AND withdrawal_account=:account "
+                       "AND CAST(withdrawal AS REAL)=20", [(":account", current_id)]) == 1
     assert JalDB._read("SELECT COUNT(*) FROM actions") == stored_actions + 4
     assert JalDB._read("SELECT COUNT(*) FROM action_details WHERE category_id=:tax",
                        [(":tax", PredefinedCategory.Taxes)]) == 2
@@ -191,10 +199,68 @@ def test_revolut_interest_is_not_stored_twice(prepare_db_revolut):
     again = load_statement()
     again._card_decisions_for_tests = [NOTHING] * len(again._card_rows)
     again.match_db_ids()
-    assert [v for k, v in again.skipped().items() if 'in the database already' in k and 'interest' in k] == [3]
+    assert not [x for x in again._data[JSF.INCOME_SPENDING]]       # all three days are stored with these amounts
     again.import_into_db()
     assert JalDB._read("SELECT COUNT(*) FROM actions") == 3
-    assert JalDB._read("SELECT COUNT(*) FROM transfers") == 2      # a transfer identifies itself
+    assert JalDB._read("SELECT COUNT(*) FROM transfers") == 4      # the pending legs included
+
+    # The same day stored with another gross amount is not the same payment
+    JalDB._exec("UPDATE action_details SET amount='0.04' WHERE amount='0.03' AND oid="
+                "(SELECT MIN(oid) FROM action_details WHERE amount='0.03')", commit=True)
+    changed = load_statement()
+    changed._card_decisions_for_tests = [NOTHING] * len(changed._card_rows)
+    with pytest.raises(Statement_ImportError, match="2026-03-07 0.04 vs 0.03"):
+        changed.match_db_ids()
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# A top-up typed in as a complete transfer is that transfer; a payment to a person typed in as a spending is shown
+# for review, and only a tick makes a pending leg of it.
+def test_revolut_stored_movements_are_not_stored_again(prepare_db_revolut):
+    current_id, savings_id = prepare_db_revolut
+    bank = JalAccountCreator(currency_id=EUR, number='BANK', name='Bank').commit().id()
+    LedgerTransaction.create_new(LedgerTransaction.Transfer, {
+        'withdrawal_timestamp': dt2t(2603020930), 'withdrawal_account': bank, 'withdrawal': Decimal('500'),
+        'deposit_timestamp': dt2t(2603020930), 'deposit_account': current_id, 'deposit': Decimal('500')})
+    store_operation(current_id, dt2t(2603081605), '-20.00', 'Test peer')
+
+    def import_statement(take_transfer: bool):
+        statement = load_statement()
+        statement._card_decisions_for_tests = [NOTHING] * len(statement._card_rows) \
+            + [{'import': take_transfer, 'peer': 0, 'category': 0, 'description': ''}]
+        statement.match_db_ids()
+        # The transfer to a peer follows the card rows; the ATM withdrawal of the same 20.00 is days away from it
+        assert [x['merchant'] for x in statement._reviewed_rows[len(statement._card_rows):]] \
+            == ['Transferência para TEST PEER']
+        statement.import_into_db()
+
+    import_statement(take_transfer=False)
+    assert JalDB._read("SELECT COUNT(*) FROM transfers") == 3      # the top-up and the two pocket movements
+    assert JalDB._read("SELECT COUNT(*) FROM transfers WHERE withdrawal_account IS NULL "
+                       "OR deposit_account IS NULL") == 0
+    import_statement(take_transfer=True)
+    assert JalDB._read("SELECT COUNT(*) FROM transfers WHERE deposit_account IS NULL AND withdrawal_account=:account "
+                       "AND CAST(withdrawal AS REAL)=20", [(":account", current_id)]) == 1
+    assert JalDB._read("SELECT COUNT(*) FROM transfers") == 4
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The fee of a transfer is money that left the current account on top of the amount
+def test_revolut_transfer_fee(tmp_path, prepare_db_revolut):
+    current_id, savings_id = prepare_db_revolut
+    path = str(tmp_path / "revolut.csv")
+    with open(path, 'w', encoding='utf-8') as f:
+        f.write('\n'.join([open(data_path_of(STATEMENT), encoding='utf-8').readline().strip(),
+                           'Carregamento,Atual,2026-03-02 10:00:00,2026-03-02 10:00:05,Top-up,500.00,0.00,EUR,'
+                           'CONCLUÍDA,500.00',
+                           'Transferência,Atual,2026-03-08 16:00:00,2026-03-08 16:00:00,To a peer,-20.00,0.50,EUR,'
+                           'CONCLUÍDA,479.50']))
+    statement = StatementRevolut()
+    statement.load(path)
+    statement.match_db_ids()
+    statement.import_into_db()
+    Ledger().rebuild(from_timestamp=0)
+    assert JalAccount(current_id).get_asset_amount(dt2t(2603090000), EUR) == Decimal('479.50')
 
 
 # ----------------------------------------------------------------------------------------------------------------------

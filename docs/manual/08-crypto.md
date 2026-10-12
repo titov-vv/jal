@@ -185,6 +185,7 @@ Right-click a row (or use the buttons) and tell JAL what it really was:
 * **Assign a staked position…** — the coins went into staking (see below);
 * **Match with another leg…** — pair it with the opposite leg already recorded;
 * **Convert into a swap…** / **Convert into a bridge…** — it was really one of those;
+* **Record as a spending or an income…** — money whose other end was a person, not an account;
 * **Write off as dust…** — an unsolicited crumb not worth recording.
 
 Working this list down to empty is the routine after a fetch. Until you do, JAL knows the coins left

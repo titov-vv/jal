@@ -216,8 +216,7 @@ def test_statement_t212_transfers(tmp_path, prepare_db_t212):
         return statement
 
     # The same amount on the same day is the stored transfer; one without such a transfer waits as a pending leg
-    statement = import_statement()
-    assert statement.skipped() == {"transfer is in the database already": 2}
+    import_statement()
     assert JalDB._read("SELECT COUNT(*) FROM transfers") == 4
     assert JalDB._read("SELECT COUNT(*) FROM transfers WHERE withdrawal_account IS NULL AND deposit_account=:account "
                        "AND number='DEP2'", [(":account", account_id)]) == 1
@@ -226,7 +225,7 @@ def test_statement_t212_transfers(tmp_path, prepare_db_t212):
     Ledger().rebuild(from_timestamp=0)
     assert JalAccount(account_id).get_asset_amount(dt2t(2603220000), EUR) == Decimal('8500')
     # A re-import recognizes all of them, the pending legs included
-    assert import_statement().skipped() == {"transfer is in the database already": 4}
+    import_statement()
     assert JalDB._read("SELECT COUNT(*) FROM transfers") == 4
 
 

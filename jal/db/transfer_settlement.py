@@ -1,7 +1,7 @@
 import logging
 from decimal import Decimal
 from PySide6.QtWidgets import QApplication
-from jal.constants import PredefinedAccountType
+from jal.constants import PredefinedAccountType, PredefinedCategory
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.cost_basis import carried_basis
@@ -9,7 +9,7 @@ from jal.db.db import JalDB
 from jal.db.ledger import Ledger
 from jal.db.helpers import remove_exponent
 from jal.db.address_match import impersonated_target
-from jal.db.operations import AssetIncome, LedgerTransaction
+from jal.db.operations import AssetIncome, LedgerTransaction, Transfer
 from jal.db.symbol import JalSymbol
 from jal.widgets.helpers import ts2dt
 
@@ -851,6 +851,49 @@ class TransferSettlement(JalDB):
         if Decimal(leg['withdrawal']) <= 0:
             return self.tr("nothing arrived to write off")
         return ''
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Replaces a pending money leg by what it was when its other end is a person and not an account: a spending for
+    # money that left, an income for money that arrived. The fee of the leg becomes a line of its own.
+    # Returns '' on success, or why it was refused.
+    def convert_to_income_spending(self, oid: int, peer_id: int, category_id: int) -> str:
+        refusal = self.refusal_to_convert_to_income_spending(oid)
+        if refusal:
+            return refusal
+        if not peer_id or not category_id:
+            return self.tr("a peer and a category are needed")
+        leg, sending = self._pending_record(oid)
+        account_id = int(leg['withdrawal_account'] if sending else leg['deposit_account'])
+        amount = -Decimal(leg['withdrawal']) if sending else Decimal(leg['deposit'])
+        lines = [{'category_id': category_id, 'amount': amount, 'note': ''}]
+        fee = self._money_fee_of(oid)
+        if fee:
+            lines.append({'category_id': PredefinedCategory.Fees, 'amount': -fee, 'note': ''})
+        LedgerTransaction.create_new(LedgerTransaction.IncomeSpending, {
+            'timestamp': int(leg['withdrawal_timestamp'] if sending else leg['deposit_timestamp']),
+            'account_id': account_id, 'peer_id': peer_id, 'note': leg['note'] if leg['note'] else '',
+            'lines': lines})
+        self._exec("DELETE FROM transfers WHERE oid=:oid", [(":oid", oid)], commit=True)
+        logging.info((self.tr("Transfer recorded as a spending: ") if sending
+                      else self.tr("Transfer recorded as an income: "))
+                     + f"{remove_exponent(abs(amount))} " + self._account_name(account_id))
+        return ''
+
+    # Why this leg can't become an income or a spending, or '' when it can
+    def refusal_to_convert_to_income_spending(self, oid: int) -> str:
+        leg, sending = self._pending_record(oid)
+        if leg is None:
+            return self.tr("the transfer is not waiting for its other end")
+        if leg['symbol_id']:
+            return self.tr("only money can be recorded as an income or a spending")
+        account_id = int(leg['withdrawal_account'] if sending else leg['deposit_account'])
+        fees = LedgerTransaction.get_operation(LedgerTransaction.Transfer, oid, Transfer.Outgoing).fees()
+        if any(x.is_asset_fee() or x.account_id() != account_id for x in fees):
+            return self.tr("its fee was not paid in the money of the same account")
+        return ''
+
+    def _money_fee_of(self, oid: int) -> Decimal:
+        return LedgerTransaction.get_operation(LedgerTransaction.Transfer, oid, Transfer.Outgoing).fee()
 
     # _read_record() gives '' for a SQL NULL, which no INTEGER column may be written back
     @staticmethod

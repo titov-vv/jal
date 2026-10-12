@@ -55,10 +55,9 @@ SettingsRegistry.register(SettingDescriptor(
 # file ("Transferência para ..." next to "From Flexible Cash Funds"), so a description is shown to the user and is
 # never read by the code.
 #
-# What the module does NOT import is money whose other end the file doesn't name: a top-up, a transfer to a person
-# or to a pocket that isn't one of the two accounts above. The file states the amount but never the account it came
-# from or went to, and this ledger records those against a specific account of its own - so they are counted and
-# reported as skipped, and stay the user's to enter. See _classify_current().
+# Money whose other end the file doesn't name - a top-up, a transfer to a person or to a pocket that isn't one of the
+# two accounts above - is stored as a transfer with that end unknown, to be completed in the unsettled transfers
+# list. See _add_pending_transfer().
 class StatementRevolut(Statement):
     # Revolut writes its timestamps on the wall clock of the account's country, not in UTC: matching four years of
     # this ledger against the file shows an offset of exactly zero from November to March and exactly one hour from
@@ -89,7 +88,7 @@ class StatementRevolut(Statement):
         'Balance': 'balance', 'Saldo': 'balance'
     }
     Products = {'Current': CURRENT, 'Atual': CURRENT, 'Deposit': DEPOSIT, 'Depósito': DEPOSIT}
-    # Only a completed row moved money - a reverted or a pending one carries no balance at all and is skipped.
+    # Only a completed row moved money - a reverted or a pending one carries no balance at all and is left out.
     COMPLETED = 'completed'
     States = {'COMPLETED': COMPLETED, 'CONCLUÍDA': COMPLETED,
               'REVERTED': 'reverted', 'REVERTIDA': 'reverted',
@@ -113,7 +112,7 @@ class StatementRevolut(Statement):
     # The kinds that become one spending or income each, reviewed by the user before anything is stored. They are
     # all money that left or reached the account without a second account of this ledger on the other end.
     ReviewedTypes = (CARD_PAYMENT, ATM, FEE, REFUND, CASHBACK)
-    # ... and the kinds that state an amount and nothing about the other end of the movement. See _classify_current().
+    # ... and the kinds that state an amount and nothing about the other end of the movement.
     UnplaceableTypes = (TOPUP, TRANSFER)
     DateTimeFormat = "%Y-%m-%d %H:%M:%S"
 
@@ -128,7 +127,9 @@ class StatementRevolut(Statement):
         self._currency = ''
         self._account_ids = {}      # product -> statement-local account id, for the products the file holds
         self._card_rows = []        # statement-local ids of the reviewed operations, in file order
+        self._transfer_rows = []    # the one-ended transfers, in the shape of a reviewed row
         self._interest_rows = []    # {'id', 'product', 'day'} of the interest operations, to drop the stored ones
+        self._reviewed_rows = []    # what CardImportDialog is shown: the card rows, then the transfers it resembles
 
     # ------------------------------------------------------------------------------------------------------------------
     def load(self, filename: str) -> None:
@@ -136,6 +137,7 @@ class StatementRevolut(Statement):
         self._data = {JSF.PERIOD: [None, None], JSF.ACCOUNTS: [], JSF.ASSETS: [],
                       JSF.TRANSFERS: [], JSF.INCOME_SPENDING: []}
         self._card_rows = []
+        self._transfer_rows = []
         self._interest_rows = []
         self._account_ids = {}
         rows = self._read_csv(filename)
@@ -239,13 +241,7 @@ class StatementRevolut(Statement):
             previous[row['product']] = balance
 
     def _completed_only(self, rows: list) -> list:
-        completed = []
-        for row in rows:
-            if row['state'] == self.COMPLETED:
-                completed.append(row)
-            else:
-                self._skip(self.tr("operations that were not completed"), row['description'])
-        return completed
+        return [row for row in rows if row['state'] == self.COMPLETED]
 
     # One account record per product the file holds. No 'number': the file names no account, so there is nothing to
     # match one by - _resolve_accounts() maps these records onto the accounts the user chose.
@@ -314,15 +310,34 @@ class StatementRevolut(Statement):
         elif row['type'] in self.ReviewedTypes:
             self._add_reviewed(row)
         elif row['type'] in self.UnplaceableTypes:
-            # A top-up, or a transfer to a person or to a pocket that is not the savings account of this import.
-            # The file states the amount and nothing about the other end, and this ledger books such a movement
-            # against a specific account of its own - so it is counted and reported instead of being invented.
-            self._skip(self.tr("movements whose other end the statement doesn't name"), row['description'])
+            self._add_pending_transfer(row)
         else:
             # A kind of row that 'Types' knows and this method was never taught to place. It is listed rather than
             # fallen through to a skip, so that adding a kind above without deciding what it is stops the import.
             raise Statement_ImportError(self.tr("Unplaced Revolut operation: ")
                                         + f"{row['started']} '{row['description']}' ({row['type']})")
+
+    # A top-up, or a transfer to a person or to a pocket that is not the savings account of this import: a transfer
+    # leg whose other end is unknown. The fee is money that left the current account on top of the amount.
+    def _add_pending_transfer(self, row: dict) -> None:
+        symbol = self._single_symbol_record_of(self.currency_id(self._currency))['id']
+        current = self._account_ids[self.CURRENT]
+        fee_account = current if row['fee'] else 0
+        transfer_id = self._next_id(JSF.TRANSFERS)
+        self._data[JSF.TRANSFERS].append({
+            "id": transfer_id,
+            "account": [0, current, fee_account] if row['amount'] > 0 else [current, 0, fee_account],
+            "symbol": [symbol, symbol],
+            "timestamp": row['timestamp'],
+            "withdrawal": abs(row['amount']),
+            "deposit": abs(row['amount']),
+            "fee": row['fee'],
+            "number": '',
+            "description": row['description']
+        })
+        self._transfer_rows.append({"id": transfer_id, "timestamp": row['timestamp'],
+                                    "amount": row['amount'] - row['fee'], "merchant": row['description'],
+                                    "merchant_category": self.tr("Transfer"), "transfer": True})
 
     # Interest is stored the way the deposits of this ledger already store it: the gross the bank credited, and the
     # tax it withheld beside it as a line of its own. The fee column carries that tax on an interest row (the
@@ -338,7 +353,7 @@ class StatementRevolut(Statement):
             "id": operation_id, "timestamp": row['timestamp'],
             "account": self._account_ids[row['product']], "peer": 0, "lines": lines})
         self._interest_rows.append({"id": operation_id, "product": row['product'],
-                                    "day": self._day_of(row['timestamp'])})
+                                    "day": self._day_of(row['timestamp']), "amount": row['amount']})
 
     # A purchase, a refund, a reward: money that moved without a second account of this ledger on the other end.
     # It carries no peer and no category of its own - the string Revolut prints is the merchant as the acquirer
@@ -369,6 +384,7 @@ class StatementRevolut(Statement):
         self._resolve_accounts()
         self._resolve_peer()
         self._drop_stored_interest()
+        self._drop_stored_pending_transfers()
         self._review_operations()
 
     # The accounts are not matched but named - by the user, once, in the preferences. Everything else about the
@@ -412,30 +428,49 @@ class StatementRevolut(Statement):
     # An interest payment carries nothing that identifies it, so a re-import would store it a second time - and
     # unlike a purchase it is never shown to the user for confirmation. Revolut pays it once a day per account, so
     # the day is what identifies it: a day that already has an interest operation on that account is left alone.
+    # A day stored with another amount is not the same payment and stops the import.
     def _drop_stored_interest(self) -> None:
         if not self._interest_rows:
             return
         operations = {x['id']: x for x in self._data[JSF.INCOME_SPENDING]}
         stored = {}
         for product, statement_id in self._account_ids.items():
-            stored[product] = self._stored_interest_days(self.mapped_id(JSF.ACCOUNTS, statement_id))
+            stored[product] = self._stored_interest(self.mapped_id(JSF.ACCOUNTS, statement_id))
         remaining = []
         for record in self._interest_rows:
             if record['day'] in stored[record['product']]:
-                self._skip(self.tr("interest payments that are in the database already"), record['day'])
+                amount = stored[record['product']][record['day']]
+                if amount != record['amount']:
+                    raise Statement_ImportError(
+                        self.tr("Interest stored for the day differs from the statement: ")
+                        + f"{record['day']} {amount} vs {record['amount']}")
                 self._data[JSF.INCOME_SPENDING].remove(operations[record['id']])
             else:
                 remaining.append(record)
         self._interest_rows = remaining
 
-    # The days that already carry an interest operation on the given account, within the period of the statement.
+    # The interest already stored on the given account, as {day: gross amount}. Summed here, as SQLite's SUM()
+    # reads a TEXT amount as a float.
     @staticmethod
-    def _stored_interest_days(account_id: int) -> set:
-        timestamps = JalDB._read_to_list("SELECT DISTINCT a.timestamp FROM actions AS a "
-                                         "LEFT JOIN action_details AS d ON d.pid=a.oid "
-                                         "WHERE a.account_id=:account_id AND d.category_id=:interest",
-                                         [(":account_id", account_id), (":interest", PredefinedCategory.Interest)])
-        return {StatementRevolut._day_of(int(x)) for x in timestamps}
+    def _stored_interest(account_id: int) -> dict:
+        stored = {}
+        query = JalDB._exec("SELECT a.timestamp, d.amount FROM actions AS a "
+                            "JOIN action_details AS d ON d.pid=a.oid "
+                            "WHERE a.account_id=:account_id AND d.category_id=:interest",
+                            [(":account_id", account_id), (":interest", PredefinedCategory.Interest)])
+        while query.next():
+            timestamp, amount = JalDB._read_record(query)
+            day = StatementRevolut._day_of(int(timestamp))
+            stored[day] = stored.get(day, Decimal('0')) + Decimal(amount)
+        return stored
+
+    # A top-up is usually typed in by hand as a complete transfer before the statement comes, and then it is not
+    # stored again.
+    def _drop_stored_pending_transfers(self) -> None:
+        if self.CURRENT not in self._account_ids:
+            return
+        recognized = self._drop_stored_transfers(self._account_ids[self.CURRENT])
+        self._transfer_rows = [x for x in self._transfer_rows if x['id'] not in recognized]
 
     # The base class asks for confirmation whenever the statement period starts before the last operation stored on
     # the account. Here that is every single import - purchases are typed in on the day they happen, so the last
@@ -463,23 +498,35 @@ class StatementRevolut(Statement):
     # imports what the user confirms. Everything else about this import is decided by the data; this is decided by
     # the user, because a hand-typed purchase and a statement row can only be recognized as one and the same
     # purchase by resemblance.
+    #
+    # A transfer leg that resembles a stored income or spending is reviewed with them: a payment to a person may be
+    # typed in as a spending. Left unticked it is that operation and is not stored; ticked, it is stored as a leg.
     def _review_operations(self) -> None:
-        if not self._card_rows:
+        if not self._card_rows and not self._transfer_rows:
             return
         account_id = self.mapped_id(JSF.ACCOUNTS, self._account_ids[self.CURRENT])
         begin, end = self.period()
         # 'incomes' as well as spendings: a refund and a reward are money that came in, and both are reviewed here.
         stored = CardMatcher.stored_operations(account_id, begin, end, incomes=True)
-        proposal = CardMatcher.propose(self._card_rows, stored)
-        decisions = self._card_decisions(proposal)
+        # One proposal over both kinds, so that a stored operation is paired once
+        rows = self._card_rows + self._transfer_rows
+        proposal = CardMatcher.propose(rows, stored)
+        reviewed = [(row, match) for row, match in zip(rows, proposal) if match is not None or 'transfer' not in row]
+        if not reviewed:
+            return
+        self._reviewed_rows = [x[0] for x in reviewed]
+        decisions = self._card_decisions([x[1] for x in reviewed])
         if decisions is None:
             raise Statement_ImportError(self.tr("Statement import was cancelled"))
         operations = {x['id']: x for x in self._data[JSF.INCOME_SPENDING]}
         imported = []
-        for row, decision in zip(self._card_rows, decisions):
+        for row, decision in zip(self._reviewed_rows, decisions):
+            if 'transfer' in row:
+                if not decision['import']:
+                    self._data[JSF.TRANSFERS] = [x for x in self._data[JSF.TRANSFERS] if x['id'] != row['id']]
+                continue
             operation = operations[row['id']]
             if not decision['import']:
-                self._skip(self.tr("operations that are in the database already"), row['merchant'])
                 self._data[JSF.INCOME_SPENDING].remove(operation)
                 continue
             operation['peer'] = decision['peer']
@@ -488,7 +535,7 @@ class StatementRevolut(Statement):
             imported.append(operation)
         logging.info(self.tr("Operations to import: ") + f"{len(imported)}/{len(self._card_rows)}")
 
-    # Returns one decision per reviewed row ({'import', 'peer', 'category', 'description'}), or None if the user
+    # Returns one decision per row of _reviewed_rows ({'import', 'peer', 'category', 'description'}), or None if the user
     # cancelled. A test says what the dialog would have said through _card_decisions_for_tests.
     def _card_decisions(self, proposal: list):
         if "pytest" in sys.modules:
@@ -496,6 +543,6 @@ class StatementRevolut(Statement):
         # Imported on use: every statement module is imported at start-up just to read its name, and the widget
         # layer is not needed for that.
         from jal.widgets.card_import_dialog import CardImportDialog
-        dialog = CardImportDialog(self._card_rows, proposal, QApplication.activeWindow(),
+        dialog = CardImportDialog(self._reviewed_rows, proposal, QApplication.activeWindow(),
                                   title=self.tr("Revolut operations"))
         return dialog.decisions() if dialog.exec() else None

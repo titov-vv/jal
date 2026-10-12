@@ -26,6 +26,7 @@ from jal.reports.unsettled_transfers import UnsettledTransfersReportWindow
 from jal.widgets.operations_widget import OperationsWidget
 from jal.widgets.transfer_assign_dialog import TransferAssignDialog
 from jal.widgets.transfer_match_dialog import TransferMatchDialog
+from jal.widgets.transfer_payment_dialog import TransferPaymentDialog
 from jal.widgets.helpers import ts2dt
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1599,3 +1600,88 @@ def test_the_dust_button_follows_the_selection(wallets):
     assert window.ui.DustButton.isEnabled() is False
     view.setCurrentIndex(view.model().index(1, 0, QModelIndex()))
     assert window.ui.DustButton.isEnabled() is True
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# A money leg whose other end is a person is a spending or an income, and never finds an account
+
+def _money_leg(sending: bool, amount, timestamp, fee=None, note='To a friend'):
+    data = {'withdrawal_timestamp': timestamp, 'withdrawal_account': WALLET_A if sending else None,
+            'withdrawal': Decimal(amount), 'deposit_timestamp': timestamp,
+            'deposit_account': None if sending else WALLET_A, 'deposit': Decimal(amount), 'note': note}
+    if fee is not None:
+        data.update(fee=Decimal(fee), fee_account=WALLET_A)
+    return LedgerTransaction.create_new(LedgerTransaction.Transfer, data).oid()
+
+
+def _balance_of_wallet_a(timestamp) -> Decimal:
+    Ledger().rebuild(from_timestamp=0)
+    return JalAccount(WALLET_A).get_asset_amount(timestamp, USD)
+
+
+def test_a_sent_money_leg_becomes_a_spending_of_the_same_money(wallets):
+    create_actions([(d2t(210101), WALLET_A, 1, [(PredefinedCategory.Income, 100.0)])])
+    oid = _money_leg(True, '20', d2t(210103), fee='0.5')
+    assert _balance_of_wallet_a(d2t(210110)) == Decimal('79.5')
+
+    assert TransferSettlement().convert_to_income_spending(oid, 1, PredefinedCategory.Spending) == ''
+
+    assert Transfer.pending_legs() == []
+    assert int(JalDB()._read("SELECT COUNT(*) FROM transfers")) == 0
+    action = JalDB()._read("SELECT oid, timestamp, account_id, peer_id, note FROM actions ORDER BY oid DESC LIMIT 1",
+                           named=True)
+    assert (int(action['timestamp']), int(action['account_id']), int(action['peer_id']), action['note']) \
+        == (d2t(210103), WALLET_A, 1, 'To a friend')
+    query = JalDB._exec("SELECT category_id, amount FROM action_details WHERE pid=:pid ORDER BY oid",
+                        [(":pid", int(action['oid']))])
+    lines = []
+    while query.next():
+        lines.append((int(query.value(0)), Decimal(query.value(1))))
+    assert lines == [(PredefinedCategory.Spending, Decimal('-20')), (PredefinedCategory.Fees, Decimal('-0.5'))]
+    assert _balance_of_wallet_a(d2t(210110)) == Decimal('79.5')       # the account holds what it held before
+
+
+def test_an_arrived_money_leg_becomes_an_income(wallets):
+    oid = _money_leg(False, '30', d2t(210103))
+    assert _balance_of_wallet_a(d2t(210110)) == Decimal('30')
+
+    assert TransferSettlement().convert_to_income_spending(oid, 1, PredefinedCategory.Income) == ''
+
+    assert Transfer.pending_legs() == []
+    assert Decimal(JalDB()._read("SELECT amount FROM action_details ORDER BY oid DESC LIMIT 1")) == Decimal('30')
+    assert _balance_of_wallet_a(d2t(210110)) == Decimal('30')
+
+
+def test_only_a_pending_money_leg_becomes_a_payment(wallets):
+    asset_leg = _transfer(WALLET_A, None, 400, d2t(210103)).oid()
+    settled = _transfer(WALLET_A, WALLET_B, 10, d2t(210104), asset_id=0).oid()
+    money_leg = _money_leg(True, '20', d2t(210105))
+    settlement = TransferSettlement()
+    assert 'only money' in settlement.convert_to_income_spending(asset_leg, 1, PredefinedCategory.Spending)
+    assert 'not waiting' in settlement.convert_to_income_spending(settled, 1, PredefinedCategory.Spending)
+    assert 'peer and a category' in settlement.convert_to_income_spending(money_leg, 0, PredefinedCategory.Spending)
+    assert int(JalDB()._read("SELECT COUNT(*) FROM transfers")) == 3
+    assert int(JalDB()._read("SELECT COUNT(*) FROM actions")) == 0
+
+
+def test_the_payment_button_and_dialog(wallets):
+    _transfer(WALLET_A, None, 400, d2t(210103))       # an asset - Payment doesn't apply
+    oid = _money_leg(True, '20', d2t(210105))         # money - it does
+    window = UnsettledTransfersReportWindow(Reports(None, None))
+    view = window.ui.ReportTreeView
+    assert window.ui.PaymentButton.isEnabled() is False
+    view.setCurrentIndex(view.model().index(0, 0, QModelIndex()))
+    assert window.ui.PaymentButton.isEnabled() is False
+    view.setCurrentIndex(view.model().index(1, 0, QModelIndex()))
+    assert window.ui.PaymentButton.isEnabled() is True
+
+    dialog = TransferPaymentDialog(oid, parent=window)
+    ok = dialog._buttons.button(QDialogButtonBox.Ok)
+    assert ok.isEnabled() is False                    # neither a peer nor a category yet
+    dialog._peer.selected_id = 1
+    dialog._category.selected_id = PredefinedCategory.Spending
+    dialog._category.changed.emit()                   # a selector reports what the user picked, not what is set
+    assert ok.isEnabled() is True
+    dialog.accept()
+    assert dialog.changed is True
+    assert Transfer.pending_legs()[0]['symbol'] is not None and len(Transfer.pending_legs()) == 1
