@@ -64,7 +64,9 @@ the asset, by the tag on the account it is held in, or by the
 folded group with its own total — open it to see what is inside.
 
 Right-click a position for its [price chart](06-investments.md#looking-at-prices), a
-[tax estimate](06-investments.md#what-a-sale-would-cost-in-tax), or to give the asset a tag.
+[tax estimate](06-investments.md#what-a-sale-would-cost-in-tax), or to give the asset a tag or a
+country. The same menu folds the groups: **Expand all**, **Collapse all**, and — when the report is
+grouped by more than one thing — **Expand to level N**, which opens the groups down to that level.
 
 > A position with no recent price is valued at the last price JAL has, however old. If a figure looks
 > stale, download quotes ([chapter 9](09-importing.md)).

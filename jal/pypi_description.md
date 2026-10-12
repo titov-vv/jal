@@ -24,7 +24,7 @@ the chain, staked positions are tracked separately and rewards that are earned b
     1. Daily history of account balance.
     2. Portfolio asset allocation for a given date.
     3. Monthly income/expenditure by category, peer or tag.
-    4. Investment profit/loss and history of payments for an assets.
+    4. Investment profit/loss and history of payments for an asset.
     5. Closed deals summary.
     6. Term deposits and staked positions.
 - quotes updates: stocks and ETFs from Yahoo (US, LSE, Frankfurt, Warsaw, Helsinki), Euronext, TMX TSX and MOEX;

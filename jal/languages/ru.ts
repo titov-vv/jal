@@ -8435,62 +8435,62 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
     <message>
         <location filename="../data_import/statement.py" line="713"/>
         <source>incomes/spendings</source>
-        <translation type="unfinished"></translation>
+        <translation>доходы/расходы</translation>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="713"/>
         <source>transfers</source>
-        <translation type="unfinished"></translation>
+        <translation>переводы</translation>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="714"/>
         <source>trades</source>
-        <translation type="unfinished"></translation>
+        <translation>сделки</translation>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="714"/>
         <source>swaps</source>
-        <translation type="unfinished"></translation>
+        <translation>обмены</translation>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="714"/>
         <source>bridges</source>
-        <translation type="unfinished"></translation>
+        <translation>бриджи</translation>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="715"/>
         <source>conversions</source>
-        <translation type="unfinished"></translation>
+        <translation>обёртки</translation>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="715"/>
         <source>asset payments</source>
-        <translation type="unfinished"></translation>
+        <translation>выплаты по ЦБ</translation>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="716"/>
         <source>asset incomes</source>
-        <translation type="unfinished"></translation>
+        <translation>доходы активом</translation>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="716"/>
         <source>corporate actions</source>
-        <translation type="unfinished"></translation>
+        <translation>корпоративные действия</translation>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="717"/>
         <source>chain actions</source>
-        <translation type="unfinished"></translation>
+        <translation>действия в блокчейне</translation>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="720"/>
         <source>Operations imported (new / already present): </source>
-        <translation type="unfinished"></translation>
+        <translation>Импортировано операций (новых / уже имеющихся): </translation>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="722"/>
         <source>Statement brought no operations</source>
-        <translation type="unfinished"></translation>
+        <translation>В отчёте нет операций</translation>
     </message>
     <message>
         <location filename="../data_import/statement.py" line="816"/>
@@ -9425,7 +9425,7 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
     <message>
         <location filename="../data_import/broker_statements/kucoin.py" line="137"/>
         <source>Can&apos;t read timestamp: </source>
-        <translation type="unfinished">Не удалось прочитать дату/время: </translation>
+        <translation>Не удалось прочитать дату/время: </translation>
     </message>
     <message>
         <location filename="../data_import/broker_statements/kucoin.py" line="167"/>

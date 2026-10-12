@@ -127,6 +127,12 @@ It is safe. Every operation carries the fields that identify it, and one that is
 database is skipped with a note in the log. Overlapping statements — say monthly ones that each
 include the last day of the month before — will not double anything.
 
+The log ends with a line that counts both, per kind of operation:
+
+```
+Operations imported (new / already present): transfers 3 / 12; trades 40 / 0
+```
+
 That is also why you should not "fix" an imported operation by re-importing after editing it by hand:
 change it and JAL may no longer recognise it as the same operation.
 
