@@ -370,7 +370,7 @@ class LedgerTransaction(JalDB):
     def asset(self) -> JalAsset:
         return self._asset
 
-    def asset_name(self):   # TODO think about replacement by call to asset.name() but self._asset may be None
+    def asset_name(self):
         if self._asset is None:
             return ''
         else:
@@ -640,10 +640,10 @@ class IncomeSpending(LedgerTransaction):
         "note": {"mandatory": False, "validation": False},
         "number": {"mandatory": False, "validation": False},
         "lines": {
-            "mandatory": True, "validation": False, "children": True,
+            "mandatory": True, "validation": False, "children": True, "non_empty": True,
             "child_table": "action_details", "child_pid": "pid",
             "child_fields": {
-                "pid": {"mandatory": True, "validation": False},    # TODO Check if mandatory requirement is true here and works as expected
+                "pid": {"mandatory": True, "validation": False},
                 "category_id": {"mandatory": True, "validation": False},
                 "tag_id": {"mandatory": False, "validation": False},
                 "amount": {"mandatory": True, "validation": False},
@@ -2335,7 +2335,7 @@ class CorporateAction(LedgerTransaction):
             "mandatory": True, "validation": False, "children": True,
             "child_table": "asset_action_results", "child_pid": "action_id",
             "child_fields": {
-                "action_id": {"mandatory": True, "validation": False},    # TODO Check if mandatory requirement is true here and works as expected
+                "action_id": {"mandatory": True, "validation": False},
                 "symbol_id": {"mandatory": True, "validation": False},
                 "qty": {"mandatory": True, "validation": False},
                 "value_share": {"mandatory": True, "validation": False}

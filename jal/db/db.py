@@ -528,6 +528,7 @@ class JalDB:
 
     # Verify that 'data' contains no more fields than described in 'fields'
     # Next it checks that 'data' has all fields described with 'mandatory'=True in 'fields'
+    # and that a list of children marked 'non_empty' holds at least one of them
     # TODO Add datatype validation
     def validate_operation_data(self, table_name, fields, data):
         if 'id' in data:
@@ -538,6 +539,8 @@ class JalDB:
         for field in fields:
             if fields[field]['mandatory'] and field not in data:
                 raise KeyError(f"Mandatory field '{field}' for table '{table_name}' is missing in {data}")
+            if fields[field].get('non_empty') and not data.get(field):
+                raise ValueError(f"Field '{field}' for table '{table_name}' is empty in {data}")
 
     # Returns oid if given operation is present in 'table_name' already and 0 if not
     # Check happens based on field values that marked with 'validation'=True in 'fields' dict

@@ -1,5 +1,7 @@
 from decimal import Decimal
 
+import pytest
+
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_ledger
 from tests.helpers import d2t
 from jal.constants import Setup, PredefinedCategory
@@ -42,3 +44,16 @@ def test_delta_adds_an_empty_number_to_existing_operations(prepare_db_ledger, pr
     assert JalDB._read("SELECT value FROM settings WHERE name='SchemaVersion'") == '79'
     assert JalDB._read("SELECT number FROM actions WHERE oid=:oid", [(":oid", oid)]) == ''
     assert IncomeSpending(oid).number() == ''
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# An income/spending is nothing but its lines, so one without any is refused before anything is written
+def test_an_operation_without_lines_is_refused(prepare_db_ledger):
+    data = {'timestamp': d2t(260814), 'account_id': 1, 'peer_id': 1, 'lines': []}
+
+    with pytest.raises(ValueError, match="'lines'"):
+        LedgerTransaction.create_new(LedgerTransaction.IncomeSpending, data)
+
+    assert JalDB._read("SELECT COUNT(*) FROM actions") == 0
+    assert JalDB._read("SELECT COUNT(*) FROM operations WHERE otype=:otype",
+                       [(":otype", LedgerTransaction.IncomeSpending)]) == 0
