@@ -328,6 +328,7 @@ class TransferSettlement(JalDB):
     def _refusal_to_supply(self, leg: dict, account_id: int, timestamp: int) -> str:
         if not leg['symbol_id']:
             return ''   # a money transfer takes credit instead of failing, exactly as any other withdrawal does
+        Ledger.refresh_sequence()   # the pass asking this has written transfers of its own, and no rebuild has run
         if not self._lots_are_calculated_at(timestamp):
             return ''   # nothing to check against - see below
         asset = JalSymbol(leg['symbol_id']).asset()
@@ -349,7 +350,6 @@ class TransferSettlement(JalDB):
     def _lots_are_calculated_at(self, timestamp: int) -> bool:
         frontier = self._read("SELECT ledger_frontier FROM frontier")
         frontier = int(frontier) if frontier else 0
-        Ledger.refresh_sequence()   # the pass asking this has written transfers of its own, and no rebuild has run
         unprocessed = self._read("SELECT COUNT(*) FROM ledger_sequence "
                                  "WHERE timestamp>:frontier AND timestamp<=:timestamp",
                                  [(":frontier", frontier), (":timestamp", timestamp)])
