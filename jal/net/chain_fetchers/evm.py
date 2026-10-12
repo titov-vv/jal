@@ -17,6 +17,7 @@ from jal.db.token_blacklist import normalize_address, is_evm_address
 from jal.net.chain_fetchers.fetcher import ChainFetcher
 from jal.net.chain_fetchers.protocols import protocol_category, protocol_name, ProtocolCategory
 from jal.net.web_request import WebRequest
+from jal.net import aave
 
 # This module has no JAL_FETCHER_CLASS on purpose: it is the shared base of the EVM chains, not a selectable chain
 # itself. Each concrete chain (Ethereum, Arbitrum, Avalanche, ...) is a thin subclass in its own module that only
@@ -39,6 +40,7 @@ _NO_TRANSACTIONS = "No transactions found"   # status=0 message that means "empt
 _MAX_BLOCK = 999999999999
 
 _ZERO_ADDRESS = '0x' + '0' * 40    # a token is minted from it and burnt to it
+_EXECUTION_REVERTED = 3            # JSON-RPC error code of an 'eth_call' the contract reverted
 _METHOD_APPROVE = '0x095ea7b3'    # approve(address,uint256) selector, the one gas-only call worth naming apart
 
 # What a transaction that moved NOTHING was, read from the method it called. Curated by hand like the protocol
@@ -106,6 +108,7 @@ class EVMFetcher(ChainFetcher):
         # everything the chain had.
         self._window_limit = None
         self._supplied = None    # {"<container>:<token>": principal held by a DEPOSIT protocol}, loaded by _fetch
+        self._aave_tokens = {}   # {contract: True if it is a new aToken}, see _is_new_aave_token()
 
     # ------------------------------------------------------------------------------------------------------------------
     def _api_key(self) -> str:
@@ -565,10 +568,12 @@ class EVMFetcher(ChainFetcher):
             if not minted or self._norm(record.get('to', '')) != self._address():
                 continue
             contract = self._norm(record.get('contractAddress', ''))
-            token = self._rebasing_token(contract)
-            if not token.id() or not self._moved_with_a_counterparty(tx, contract):
+            if not self._moved_with_a_counterparty(tx, contract):   # checked first: the next one may ask the chain
                 continue
-            # Not through the spam filter: the token is marked by hand, and a small mint from the zero address in
+            protocol = self._rebasing_protocol(contract)
+            if protocol is None:
+                continue
+            # Not through the spam filter: the token is marked, and a small mint from the zero address in
             # a claim somebody else sent is exactly what the filter would quarantine - blacklisting the token.
             amount = self._token_amount(record)
             tx['tokens'].remove(record)
@@ -576,7 +581,7 @@ class EVMFetcher(ChainFetcher):
                 asset_id = self._token_asset_id(record.get('tokenSymbol', ''), record.get('tokenName', ''),
                                                 address=contract)
                 interest[asset_id] += amount
-                protocols[asset_id] = token.asset().protocol()
+                protocols[asset_id] = protocol
         for asset_id, amount in sorted(interest.items()):
             # One second earlier: an outgoing movement surrenders the interest, so it has to be on the books by then
             self._add_payment(JSF.PAYMENT_LENDING_INTEREST, timestamp - 1, asset_id, amount, tx['hash'],
@@ -587,11 +592,58 @@ class EVMFetcher(ChainFetcher):
         return any(self._norm(record.get('contractAddress', '')) == contract
                    and self._norm(self._counterparty_of(record)) != _ZERO_ADDRESS for record in tx['tokens'])
 
-    # The stored listing of a token marked as rebasing (see AssetData.Rebasing), or an empty one - for a token JAL
-    # doesn't hold yet as well, since the mark is set by hand.
-    def _rebasing_token(self, contract: str) -> JalSymbol:
+    # The protocol name of a rebasing token ('' if it has none), None for a token that isn't rebasing. A stored token
+    # answers with the mark it has (see AssetData.Rebasing), one JAL doesn't hold yet is checked with the chain.
+    def _rebasing_protocol(self, contract: str):
         symbol = JalSymbol.find_by_identifier(AssetLocation.address_id_of(self.location_id), contract)
-        return symbol if symbol.id() and symbol.asset().rebasing() else JalSymbol(0)
+        if symbol.id():
+            return symbol.asset().protocol() if symbol.asset().rebasing() else None
+        return aave.V3_PROTOCOL if self._is_new_aave_token(contract) else None
+
+    # True for a token JAL doesn't hold yet that the Aave v3 Pool of this chain names as the aToken of the underlying
+    # the token reports - the Pool is asked and a name is never read. Asked once per contract in a fetch.
+    def _is_new_aave_token(self, contract: str) -> bool:
+        pool = aave.V3_POOLS.get(self.location_id)
+        if not pool or not is_evm_address(contract):
+            return False
+        if contract not in self._aave_tokens:
+            stored = JalSymbol.find_by_identifier(AssetLocation.address_id_of(self.location_id), contract).id()
+            self._aave_tokens[contract] = not stored and self._pool_names_token(pool, contract)
+        return self._aave_tokens[contract]
+
+    def _pool_names_token(self, pool: str, contract: str) -> bool:
+        underlying = aave.address_answer(self._eth_call(contract, aave.SELECTOR_UNDERLYING))
+        if not underlying:
+            return False
+        named = self._eth_call(pool, aave.call_data(aave.SELECTOR_RESERVE_ATOKEN, underlying))
+        return aave.address_answer(named) == contract
+
+    # One 'eth_call' on a contract: the hex it answered with, '' when the call reverted. Any other answer (a rate
+    # limit, a bad key) stops the fetch - read as "no" it would leave an aToken unmarked in silence.
+    def _eth_call(self, contract: str, data: str) -> str:
+        params = {"chainid": self.chain_id, "module": "proxy", "action": "eth_call", "to": contract, "data": data,
+                  "tag": "latest", "apikey": self._api_key()}
+        request = WebRequest(WebRequest.GET, self.api_root, params=params)
+        self._wait_for(request)
+        try:
+            answer = json.loads(request.data())
+        except (json.JSONDecodeError, TypeError):
+            answer = None
+        if isinstance(answer, dict):
+            result, error = answer.get('result'), answer.get('error')
+            if isinstance(result, str) and result.startswith('0x'):
+                return result
+            if isinstance(error, dict) and error.get('code') == _EXECUTION_REVERTED:
+                return ''
+        raise Statement_ImportError(self.tr("Blockchain API request failed: ") + f"{self.api_name}: {answer}")
+
+    # A token met for the first time is marked as rebasing when it is an aToken, so its first import is already right
+    def _token_asset_id(self, symbol: str, name: str, address: str = '') -> int:
+        asset_id = super()._token_asset_id(symbol, name, address=address)
+        if address and self._is_new_aave_token(address):
+            asset = next(x for x in self._data[JSF.ASSETS] if x['id'] == asset_id)
+            asset['rebasing'], asset['protocol'] = True, aave.V3_PROTOCOL
+        return asset_id
 
     # Pulls the native coin's entry out of 'deltas' and records it as a DustAttack payment instead, when it is
     # incoming, below the chain's threshold, and not from a wallet of the user's own - address-poisoning dust, the
@@ -848,7 +900,7 @@ class EVMFetcher(ChainFetcher):
             burnt_nothing = sender == self._address() and receiver == _ZERO_ADDRESS \
                 and not str(record.get('value', '')).strip('0')
             contract = self._norm(record.get('contractAddress', ''))
-            if (minted or burnt_nothing) and self._rebasing_token(contract).id():
+            if (minted or burnt_nothing) and self._rebasing_protocol(contract) is not None:
                 return self._token_asset_id(record.get('tokenSymbol', ''), record.get('tokenName', ''),
                                             address=contract)
         return None

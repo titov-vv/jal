@@ -752,7 +752,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 if not db_asset.id():
                     raise Statement_ImportError(self.tr("Can't create asset: ") + f"{asset}")
                 self.set_mapped_id(JSF.ASSETS, asset['id'], db_asset.id())
-                db_asset.update_data({k: asset[k] for k in ('expiry', 'principal') if k in asset})
+                db_asset.update_data({k: asset[k] for k in ('expiry', 'principal', 'rebasing', 'protocol')
+                                      if k in asset})
         symbols = [(asset, symbol) for asset in assets for symbol in asset[JSF.SYMBOLS]]
         for asset, symbol in sorted(symbols, key=lambda x: x[1]['id']):
             db_asset = JalAsset(self.mapped_id(JSF.ASSETS, asset['id']))

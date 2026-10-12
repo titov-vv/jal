@@ -48,7 +48,7 @@ Select one and press the **…** button to open it:
 | **Asset name** | The full name of the company or fund. |
 | **Type** | *Shares*, *Bonds*, *ETFs*, *Funds*, *Commodities*, *Derivatives*, *Forex*, *Crypto-currency*, *Money*. |
 | **Country** | Where the issuer is registered. Tax reports care about this. |
-| **Asset attributes** | Extra facts: a bond's *principal*, an *expiry* date, a *tag*, a CoinGecko id for a coin, the *protocol* a receipt token belongs to (see [chapter 8](08-crypto.md#wrapped-positions)). |
+| **Asset attributes** | Extra facts: a bond's *principal*, an *expiry* date, a *tag*, a CoinGecko id for a coin, the *protocol* a receipt token belongs to (see [chapter 8](08-crypto.md#wrapped-positions)), and *rebasing* for a receipt token whose quantity grows on its own. An Aave v3 aToken gets both when it is first imported; set *rebasing* on another such token yourself, and saving the asset then offers to book apart the interest left inside its earlier wrappings. |
 | **Symbols** | The listings: ticker, currency, exchange. **The exchange decides where prices are downloaded from.** |
 | **Identifiers** | ISIN, CUSIP, FIGI, contract addresses — how the asset is named in statements and on chains. |
 

@@ -509,7 +509,9 @@ class JalAsset(JalDB):
             'country': self._update_country,
             'expiry': self._update_expiration,
             'principal': self._update_principal,
-            'coin_id': self._update_coin_id
+            'coin_id': self._update_coin_id,
+            'rebasing': self._update_rebasing,
+            'protocol': self._update_protocol
         }
         unknown = [key for key in data if key not in updaters]
         if unknown:   # Nothing is written if any key is wrong
@@ -619,6 +621,21 @@ class JalAsset(JalDB):
                        "VALUES(:asset_id, :datatype, :coin_id)",
                        [(":asset_id", self._id), (":datatype", AssetData.CoinGeckoId), (":coin_id", coin_id)])
         self._coin_id = coin_id
+
+    # Marks the asset as a rebasing receipt token (see AssetData.Rebasing)
+    def _update_rebasing(self, _rebasing) -> None:
+        self._set_data(AssetData.Rebasing, '1')
+        self._rebasing = True
+
+    # Names the protocol whose receipt token the asset is (see AssetData.Protocol)
+    def _update_protocol(self, protocol: str) -> None:
+        self._set_data(AssetData.Protocol, protocol)
+        self._protocol = protocol
+
+    def _set_data(self, datatype: int, value: str) -> None:
+        _ = self._exec("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
+                       "VALUES(:asset_id, :datatype, :value)",
+                       [(":asset_id", self._id), (":datatype", datatype), (":value", value)])
 
     def _update_principal(self, principal: str) -> None:
         if self._type != PredefinedAsset.Bond:

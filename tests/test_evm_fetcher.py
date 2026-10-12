@@ -28,6 +28,19 @@ _FIXTURE = {"txlist": "eth_txlist.json", "tokentx": "eth_tokentx.json", "txlisti
 
 ARB_WALLET = "0x3333333333333333333333333333333333333333"
 
+# What the chain answers to an 'eth_call', {(contract, call data): hex}, and the calls that were made. Every driver
+# below serves these instead of the network; a call that isn't listed reverts.
+_chain_answers, _chain_calls = {}, []
+
+
+def _stub_chain(monkeypatch):
+    from jal.net.chain_fetchers.evm import EVMFetcher
+
+    def fake_call(self, contract, data):
+        _chain_calls.append((contract, data))
+        return _chain_answers.get((contract, data), '')
+    monkeypatch.setattr(EVMFetcher, "_eth_call", fake_call)
+
 
 @pytest.fixture
 def arb_wallet(prepare_db):
@@ -45,6 +58,7 @@ def _drive_arb(account, monkeypatch, pages):
     def fake_pages(self, action, start_block):
         return [r for r in pages.get(action, []) if int(r['blockNumber']) >= start_block]
     monkeypatch.setattr(ArbitrumFetcher, "_get_pages", fake_pages)
+    _stub_chain(monkeypatch)
     fetcher = ArbitrumFetcher()
     return fetcher, fetcher.fetch(account)
 
@@ -77,6 +91,7 @@ def fetcher(eth_wallet, data_path, monkeypatch):
         return [x for x in result if int(x.get('blockNumber', 0)) >= start_block]
 
     monkeypatch.setattr(EthereumFetcher, "_get_pages", fake_pages)
+    _stub_chain(monkeypatch)
     instance = EthereumFetcher()
     instance.calls = calls
     yield instance
@@ -134,6 +149,7 @@ def _drive(eth_wallet, monkeypatch, pages):
     def fake_pages(self, action, start_block):
         return [r for r in pages.get(action, []) if int(r['blockNumber']) >= start_block]
     monkeypatch.setattr(_EF, "_get_pages", fake_pages)
+    _stub_chain(monkeypatch)
     fetcher = _EF()
     data = fetcher.fetch(eth_wallet)
     return fetcher, data
@@ -1828,3 +1844,112 @@ def test_aave_v4_hub_paying_out_in_a_foreign_transaction_halts(eth_wallet, monke
 
     assert _transfers(data) == [] and fetcher._new_cursor == ''
     assert any("Aave v4 Core Hub reached through an unregistered contract" in reason for reason in fetcher.skipped())
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# A token JAL doesn't hold yet is marked as rebasing when the Aave v3 Pool names it as its aToken
+AAVE_POOL = "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2"
+_UNDERLYING, _RESERVE_ATOKEN = '0xb16a19de', '0xcff027d9'
+
+
+def _address_word(address: str) -> str:
+    return '0' * 24 + address[2:]
+
+
+# The chain as it answers for a real aToken: the token reports USDC as its underlying and the Pool names the token
+@pytest.fixture
+def pool_names_a_token():
+    _chain_answers[(A_TOKEN, _UNDERLYING)] = '0x' + _address_word(USDC_CONTRACT)
+    _chain_answers[(AAVE_POOL, _RESERVE_ATOKEN + _address_word(USDC_CONTRACT))] = '0x' + _address_word(A_TOKEN)
+    _chain_calls.clear()
+    yield
+    _chain_answers.clear()
+    _chain_calls.clear()
+
+
+def _supply_then_swap() -> dict:
+    router = "0x66a9893cc07d91d95644aedd05d03f95e1dba8af"     # registered as ProtocolCategory.SWAP
+    f1, f2 = "0xf1" + "0" * 62, "0xf2" + "0" * 62
+    return {
+        "txlist": [_tx(f1, 100, WALLET, AAVE_POOL, value=0, method='0x617ba037'),
+                   _tx(f2, 200, WALLET, router, value=0, method='0x3593564c')],
+        "tokentx": [_token_tx(f1, 100, WALLET, AAVE_POOL, 1000 * 10 ** 6),     # 1000 USDC supplied ...
+                    _a_token_tx(f1, ZERO, WALLET, 1000 * 10 ** 6),             # ... 1000 aToken minted
+                    {**_a_token_tx(f2, ZERO, WALLET, 5 * 10 ** 6), 'blockNumber': '200'},      # 5 accrued ...
+                    {**_a_token_tx(f2, WALLET, router, 1005 * 10 ** 6), 'blockNumber': '200'},  # ... all swapped
+                    {**_token_tx(f2, 200, router, WALLET, 1004 * 10 ** 6)}],
+        "txlistinternal": [],
+    }
+
+
+# The first fetch that meets an aToken already reads it as one: the asset is declared with both marks and the
+# interest minted beside a later swap is taken out of the swap
+def test_a_new_a_token_is_marked_by_the_pool(eth_wallet, monkeypatch, pool_names_a_token):
+    fetcher, data = _drive(eth_wallet, monkeypatch, _supply_then_swap())
+
+    a_token = [a for a in data[JSF.ASSETS] if a[JSF.SYMBOLS][0].get('address') == A_TOKEN]
+    assert [(a.get('rebasing'), a.get('protocol')) for a in a_token] == [(True, 'Aave v3')]
+    assert [a for a in data[JSF.ASSETS] if a.get('rebasing') and a not in a_token] == []
+    swaps = data.get(JSF.SWAPS, [])
+    assert len(swaps) == 1 and swaps[0]['out_qty'] == Decimal('1005') and swaps[0]['in_qty'] == Decimal('1004')
+    assert [(p['amount'], p['description']) for p in _interest(data)] == [(Decimal('5'), 'Aave v3')]
+    # each contract is asked once: the aToken and then the Pool about it, and USDC, which has no such view
+    assert sorted(_chain_calls) == sorted([(A_TOKEN, _UNDERLYING), (USDC_CONTRACT, _UNDERLYING),
+                                           (AAVE_POOL, _RESERVE_ATOKEN + _address_word(USDC_CONTRACT))])
+
+
+# The marks reach the stored asset, and from then on the token answers with them and the chain isn't asked again
+def test_the_marks_of_a_new_a_token_are_stored_with_the_asset(eth_wallet, monkeypatch, pool_names_a_token):
+    fetcher, data = _drive(eth_wallet, monkeypatch, _supply_then_swap())
+    fetcher.match_db_ids()
+    fetcher.import_into_db()
+
+    asset = JalSymbol.find_by_identifier(SymbolId.ETH_ADDRESS, A_TOKEN).asset()
+    assert asset.rebasing() and asset.protocol() == 'Aave v3'
+    usdc = JalSymbol.find_by_identifier(SymbolId.ETH_ADDRESS, USDC_CONTRACT).asset()
+    assert not usdc.rebasing() and usdc.protocol() == ''
+    _chain_calls.clear()
+    _drive(eth_wallet, monkeypatch, _supply_then_swap())
+    assert _chain_calls == []
+
+
+# A token that claims an underlying is not believed: the Pool names another token for it, so nothing is marked
+def test_a_token_the_pool_does_not_name_is_not_marked(eth_wallet, monkeypatch, pool_names_a_token):
+    other = "0x" + "ab" * 20
+    _chain_answers[(AAVE_POOL, _RESERVE_ATOKEN + _address_word(USDC_CONTRACT))] = '0x' + _address_word(other)
+    fetcher, data = _drive(eth_wallet, monkeypatch, _supply_then_swap())
+
+    assert [a for a in data[JSF.ASSETS] if a.get('rebasing') or a.get('protocol')] == []
+    assert _interest(data) == []
+
+
+# A stored token keeps the mark it has, set or not, and the chain isn't asked about it
+def test_a_stored_token_is_not_asked_about(eth_wallet, monkeypatch, pool_names_a_token):
+    _a_token(rebasing=False)
+    fetcher, data = _drive(eth_wallet, monkeypatch, _supply_then_swap())
+
+    assert [a for a in data[JSF.ASSETS] if a.get('rebasing')] == []
+    assert _interest(data) == []
+    assert (A_TOKEN, _UNDERLYING) not in _chain_calls
+
+
+# The call itself: an answer is returned, a revert is an empty answer, anything else stops the fetch
+def test_eth_call_tells_a_revert_from_a_failure(eth_wallet, monkeypatch):
+    from jal.data_import.statement import Statement_ImportError
+    fetcher = EthereumFetcher()
+    fetcher._account = eth_wallet
+    word = '0x' + _address_word(USDC_CONTRACT)
+
+    captured = _capture_query(monkeypatch, {"jsonrpc": "2.0", "id": 1, "result": word})
+    assert fetcher._eth_call(A_TOKEN, _UNDERLYING) == word
+    assert (captured[0]['module'], captured[0]['action'], captured[0]['to'], captured[0]['data']) == \
+        ('proxy', 'eth_call', A_TOKEN, _UNDERLYING)
+    _capture_query(monkeypatch, {"jsonrpc": "2.0", "id": 1, "error": {"code": 3, "message": "execution reverted"}})
+    assert fetcher._eth_call(USDC_CONTRACT, _UNDERLYING) == ''
+    _capture_query(monkeypatch, {"jsonrpc": "2.0", "id": 1, "result": "0x"})      # an address with no code
+    assert fetcher._eth_call(WALLET, _UNDERLYING) == '0x'
+    for failure in ({"status": "0", "message": "NOTOK", "result": "Max calls per sec rate limit reached (5/sec)"},
+                    {"jsonrpc": "2.0", "id": 1, "error": {"code": -32602, "message": "invalid argument"}}):
+        _capture_query(monkeypatch, failure)
+        with pytest.raises(Statement_ImportError):
+            fetcher._eth_call(A_TOKEN, _UNDERLYING)

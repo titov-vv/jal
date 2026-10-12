@@ -1,3 +1,5 @@
+from jal.constants import AssetLocation
+
 # ----------------------------------------------------------------------------------------------------------------------
 # What Aave's Safety module owes a staker, and nothing else - the module knows the protocol, not JAL's accounts.
 #
@@ -20,6 +22,16 @@ SAFETY_MODULES = (STAKED_AAVE, STAKED_GHO)
 # Call data of the module views - the function selector, followed by the argument for the one that takes it.
 SELECTOR_REWARD_TOKEN = '0x99248ea7'     # REWARD_TOKEN() -> address
 SELECTOR_TOTAL_REWARDS = '0x8dbefee2'    # getTotalRewardsBalance(address) -> uint256
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Aave v3. The Pool of a chain is the authority on its aTokens: a token is one when the Pool names it for the
+# underlying the token itself reports. The Pools are the ones registered in net/chain_fetchers/protocols.py.
+V3_PROTOCOL = 'Aave v3'    # AssetData.Protocol of an aToken
+V3_POOLS = {AssetLocation.ETH_BLOCKCHAIN: '0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2',
+            AssetLocation.ARB_BLOCKCHAIN: '0x794a61358d6845594f94dc1db02a252b5b4814ad'}
+
+SELECTOR_UNDERLYING = '0xb16a19de'        # aToken.UNDERLYING_ASSET_ADDRESS() -> address
+SELECTOR_RESERVE_ATOKEN = '0xcff027d9'    # Pool.getReserveAToken(address underlying) -> address
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Aave v4. A Hub holds the liquidity and a Spoke keeps the positions; nothing is tokenized, so what a wallet supplied

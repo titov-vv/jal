@@ -384,7 +384,8 @@ class AssetData(PredefinedList, QObject):
     # block). A fetcher can only book the movements a chain announces, so the ledger of such a token is structurally
     # short of its real balance, and only an out-of-band balance read can say by how much.
     # It is set BY HAND and never inferred from a ticker: an 'aEth...' prefix is a naming convention, not a property,
-    # and a wrongly flagged asset would have an invented quantity added to it. Share tokens (Fluid's fTokens,
+    # and a wrongly flagged asset would have an invented quantity added to it. The one exception asks the protocol
+    # itself: a new token the Aave v3 Pool names as its aToken is marked at import (see _is_new_aave_token()). Share tokens (Fluid's fTokens,
     # stkAAVE) must NOT carry it - their quantity is fixed and it is the price that accrues, which the quote source
     # already reports correctly. Stored as 0/1.
     Rebasing = 5
@@ -404,8 +405,8 @@ class AssetData(PredefinedList, QObject):
     # 'Aave Safety Module') - the same vocabulary AccountData.StakeProtocol uses for a staking container.
     # A wrapping reads its own row from it: whichever side carries the key is the protocol supplied to or
     # withdrawn from, so nothing has to be stored per operation and nothing has to be backfilled.
-    # It is set BY HAND, like Rebasing and for the same reason: an 'aEth.../f.../stk...' prefix is a naming
-    # convention, not a property, and the contract the operation went through is not kept.
+    # It is set BY HAND, like Rebasing (and with the same exception) and for the same reason: an 'aEth.../f.../stk...'
+    # prefix is a naming convention, not a property, and the contract the operation went through is not kept.
     Protocol = 7
 
     def __init__(self):

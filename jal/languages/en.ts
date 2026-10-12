@@ -111,77 +111,77 @@
 <context>
     <name>AccountData</name>
     <message>
-        <location filename="../constants.py" line="471"/>
+        <location filename="../constants.py" line="472"/>
         <source>Account #</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="472"/>
+        <location filename="../constants.py" line="473"/>
         <source>Credit limit</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="473"/>
+        <location filename="../constants.py" line="474"/>
         <source>Country</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="474"/>
+        <location filename="../constants.py" line="475"/>
         <source>Precision</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="475"/>
+        <location filename="../constants.py" line="476"/>
         <source>Address</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="476"/>
+        <location filename="../constants.py" line="477"/>
         <source>Blockchain</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="477"/>
+        <location filename="../constants.py" line="478"/>
         <source>Sync cursor</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="478"/>
+        <location filename="../constants.py" line="479"/>
         <source>Deposit end date</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="479"/>
+        <location filename="../constants.py" line="480"/>
         <source>Interest rate, %</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="480"/>
+        <location filename="../constants.py" line="481"/>
         <source>Staking state</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="481"/>
+        <location filename="../constants.py" line="482"/>
         <source>Staking protocol</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="482"/>
+        <location filename="../constants.py" line="483"/>
         <source>Tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="483"/>
+        <location filename="../constants.py" line="484"/>
         <source>Opened on</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="484"/>
+        <location filename="../constants.py" line="485"/>
         <source>Closed on</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="485"/>
+        <location filename="../constants.py" line="486"/>
         <source>Card (last 4 digits)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -618,37 +618,37 @@ Do you want to delete the account anyway?</source>
 <context>
     <name>AssetData</name>
     <message>
-        <location filename="../constants.py" line="415"/>
+        <location filename="../constants.py" line="416"/>
         <source>expiry</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="416"/>
+        <location filename="../constants.py" line="417"/>
         <source>principal</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="417"/>
+        <location filename="../constants.py" line="418"/>
         <source>CoinGecko id</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="418"/>
+        <location filename="../constants.py" line="419"/>
         <source>rebasing</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="419"/>
+        <location filename="../constants.py" line="420"/>
         <source>decimals</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="420"/>
+        <location filename="../constants.py" line="421"/>
         <source>protocol</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="414"/>
+        <location filename="../constants.py" line="415"/>
         <source>Tag</source>
         <translation></translation>
     </message>
@@ -816,142 +816,142 @@ Do you want to delete the account anyway?</source>
 <context>
     <name>AssetLocation</name>
     <message>
-        <location filename="../constants.py" line="638"/>
+        <location filename="../constants.py" line="639"/>
         <source>Unknown</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="639"/>
+        <location filename="../constants.py" line="640"/>
         <source>Cash</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="640"/>
+        <location filename="../constants.py" line="641"/>
         <source>Bank account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="641"/>
+        <location filename="../constants.py" line="642"/>
         <source>NYSE</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="642"/>
+        <location filename="../constants.py" line="643"/>
         <source>Nasdaq</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="643"/>
+        <location filename="../constants.py" line="644"/>
         <source>LSE</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="644"/>
+        <location filename="../constants.py" line="645"/>
         <source>Euronext</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="645"/>
+        <location filename="../constants.py" line="646"/>
         <source>Frankfurt Borse</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="646"/>
+        <location filename="../constants.py" line="647"/>
         <source>Borsa Italiana</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="647"/>
+        <location filename="../constants.py" line="648"/>
         <source>Warsaw Stock Exchange</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="648"/>
+        <location filename="../constants.py" line="649"/>
         <source>TMX TSX</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="649"/>
+        <location filename="../constants.py" line="650"/>
         <source>MOEX</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="650"/>
+        <location filename="../constants.py" line="651"/>
         <source>Crypto exchange</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="651"/>
+        <location filename="../constants.py" line="652"/>
         <source>Nasdaq Helsinki</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="652"/>
+        <location filename="../constants.py" line="653"/>
         <source>Ethereum</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="653"/>
+        <location filename="../constants.py" line="654"/>
         <source>Arbitrum</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="654"/>
+        <location filename="../constants.py" line="655"/>
         <source>Bitcoin</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="655"/>
+        <location filename="../constants.py" line="656"/>
         <source>Solana</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="656"/>
+        <location filename="../constants.py" line="657"/>
         <source>Tron</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="657"/>
+        <location filename="../constants.py" line="658"/>
         <source>Hyperliquid</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="658"/>
+        <location filename="../constants.py" line="659"/>
         <source>Avalanche</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="659"/>
+        <location filename="../constants.py" line="660"/>
         <source>NEAR</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="660"/>
+        <location filename="../constants.py" line="661"/>
         <source>Cardano</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="661"/>
+        <location filename="../constants.py" line="662"/>
         <source>Polkadot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="662"/>
+        <location filename="../constants.py" line="663"/>
         <source>Binance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="663"/>
+        <location filename="../constants.py" line="664"/>
         <source>KuCoin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="664"/>
+        <location filename="../constants.py" line="665"/>
         <source>Bitget</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="665"/>
+        <location filename="../constants.py" line="666"/>
         <source>Victoria Seguros</source>
         <translation></translation>
     </message>
@@ -3096,123 +3096,124 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>EVMFetcher</name>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="205"/>
+        <location filename="../net/chain_fetchers/evm.py" line="208"/>
         <source>Not a valid EVM address: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="233"/>
+        <location filename="../net/chain_fetchers/evm.py" line="236"/>
         <source>import stopped at an unsupported transaction (</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="234"/>
+        <location filename="../net/chain_fetchers/evm.py" line="237"/>
         <source>); it will be retried next time</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="333"/>
+        <location filename="../net/chain_fetchers/evm.py" line="336"/>
         <source>unrecognized reward-claim shape</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="354"/>
+        <location filename="../net/chain_fetchers/evm.py" line="357"/>
         <source>unrecognized swap shape</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="399"/>
+        <location filename="../net/chain_fetchers/evm.py" line="402"/>
         <source>asset exchange through an unregistered contract </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="401"/>
+        <location filename="../net/chain_fetchers/evm.py" line="404"/>
         <source>unrecognized multi-asset transaction</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="403"/>
+        <location filename="../net/chain_fetchers/evm.py" line="406"/>
         <source>incoming asset through an unregistered contract</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="793"/>
+        <location filename="../net/chain_fetchers/evm.py" line="845"/>
         <source>unrecognized cross-chain transaction shape</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="688"/>
+        <location filename="../net/chain_fetchers/evm.py" line="740"/>
         <source>token with a malformed contract address</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="115"/>
+        <location filename="../net/chain_fetchers/evm.py" line="118"/>
         <source>API key isn&apos;t set - fill it in Settings/Preferences/Blockchain: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="139"/>
+        <location filename="../net/chain_fetchers/evm.py" line="142"/>
         <source>Unexpected answer from the blockchain API: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="147"/>
+        <location filename="../net/chain_fetchers/evm.py" line="150"/>
+        <location filename="../net/chain_fetchers/evm.py" line="638"/>
         <source>Blockchain API request failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="171"/>
+        <location filename="../net/chain_fetchers/evm.py" line="174"/>
         <source>Too many pages returned, the rest is left for the next fetch: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="189"/>
+        <location filename="../net/chain_fetchers/evm.py" line="192"/>
         <source>beyond what one fetch can read - it will be fetched next time</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="310"/>
+        <location filename="../net/chain_fetchers/evm.py" line="313"/>
         <source> reached through an unregistered contract </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="326"/>
+        <location filename="../net/chain_fetchers/evm.py" line="329"/>
         <source>unrecognized lending/wrap shape</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="342"/>
-        <location filename="../net/chain_fetchers/evm.py" line="449"/>
+        <location filename="../net/chain_fetchers/evm.py" line="345"/>
+        <location filename="../net/chain_fetchers/evm.py" line="452"/>
         <source>unrecognized custody shape</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="457"/>
+        <location filename="../net/chain_fetchers/evm.py" line="460"/>
         <source>withdrawal whose deposit predates the sync cursor - interest not separated</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="490"/>
+        <location filename="../net/chain_fetchers/evm.py" line="493"/>
         <source>Unreadable staking state of account </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="632"/>
+        <location filename="../net/chain_fetchers/evm.py" line="684"/>
         <source>Address poisoning, imitating </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="717"/>
+        <location filename="../net/chain_fetchers/evm.py" line="769"/>
         <source>token transfer with an unreadable amount</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="720"/>
+        <location filename="../net/chain_fetchers/evm.py" line="772"/>
         <source>zero-amount token transfer</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="705"/>
+        <location filename="../net/chain_fetchers/evm.py" line="757"/>
         <source>token quarantined as dust/spam</source>
         <translation></translation>
     </message>
@@ -4493,37 +4494,37 @@ Application will be terminated now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="566"/>
+        <location filename="../db/asset.py" line="568"/>
         <source>Assets merged: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="575"/>
+        <location filename="../db/asset.py" line="577"/>
         <source>one of the assets doesn&apos;t exist</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="577"/>
+        <location filename="../db/asset.py" line="579"/>
         <source>an asset can&apos;t be merged into itself</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="580"/>
+        <location filename="../db/asset.py" line="582"/>
         <source>the asset to merge into doesn&apos;t exist</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="585"/>
+        <location filename="../db/asset.py" line="587"/>
         <source>a currency can&apos;t be merged</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="587"/>
+        <location filename="../db/asset.py" line="589"/>
         <source>the two are assets of different types</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="603"/>
+        <location filename="../db/asset.py" line="605"/>
         <source>Country updated for </source>
         <translation type="unfinished"></translation>
     </message>
@@ -6809,7 +6810,7 @@ One transaction moved this exact quantity as </source>
         <location filename="../db/settings_registry.py" line="175"/>
         <location filename="../net/chain_fetchers/avalanche.py" line="48"/>
         <location filename="../net/chain_fetchers/bitcoin.py" line="381"/>
-        <location filename="../net/chain_fetchers/evm.py" line="1027"/>
+        <location filename="../net/chain_fetchers/evm.py" line="1079"/>
         <location filename="../net/chain_fetchers/solana.py" line="515"/>
         <location filename="../net/chain_fetchers/tron.py" line="349"/>
         <source>Blockchain</source>
@@ -6886,12 +6887,12 @@ One transaction moved this exact quantity as </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="1028"/>
+        <location filename="../net/chain_fetchers/evm.py" line="1080"/>
         <source>ETH dust threshold</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="1029"/>
+        <location filename="../net/chain_fetchers/evm.py" line="1081"/>
         <source>An incoming ETH transfer below this amount, from an address you never dealt with, is recorded as a dust attack instead of an ordinary transfer. Applies to every EVM chain whose native coin is ETH (Ethereum, Arbitrum, ...); a chain with a coin of its own has a threshold of its own.</source>
         <translation></translation>
     </message>
@@ -8360,48 +8361,48 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="765"/>
+        <location filename="../data_import/statement.py" line="766"/>
         <source>Unmatched currency for symbol: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="831"/>
+        <location filename="../data_import/statement.py" line="832"/>
         <source>Invalid category for income/spending: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="858"/>
+        <location filename="../data_import/statement.py" line="859"/>
         <source>Unmatched symbol for transfer: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="878"/>
+        <location filename="../data_import/statement.py" line="879"/>
         <source>Both ends of a transfer are unknown: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="993"/>
+        <location filename="../data_import/statement.py" line="994"/>
         <source>Unmatched symbol for trade: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1082"/>
+        <location filename="../data_import/statement.py" line="1083"/>
         <source>Unmatched symbol for payment: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1171"/>
-        <location filename="../data_import/statement.py" line="1177"/>
+        <location filename="../data_import/statement.py" line="1172"/>
+        <location filename="../data_import/statement.py" line="1178"/>
         <source>Unmatched symbol for corporate action: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1392"/>
+        <location filename="../data_import/statement.py" line="1393"/>
         <source>Can&apos;t resolve an exact symbol for: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="796"/>
+        <location filename="../data_import/statement.py" line="797"/>
         <source>Unmatched currency for account: </source>
         <translation></translation>
     </message>
@@ -8466,160 +8467,160 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="815"/>
+        <location filename="../data_import/statement.py" line="816"/>
         <source>Can&apos;t create account: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="822"/>
+        <location filename="../data_import/statement.py" line="823"/>
         <source>Unmatched account for income/spending: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="852"/>
+        <location filename="../data_import/statement.py" line="853"/>
         <source>Unmatched account for transfer: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="863"/>
+        <location filename="../data_import/statement.py" line="864"/>
         <source>Impossible to convert asset type in transfer: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="891"/>
+        <location filename="../data_import/statement.py" line="892"/>
         <source>Unmatched fee symbol for transfer: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="976"/>
+        <location filename="../data_import/statement.py" line="977"/>
         <source>transfers that could not be settled with the leg already stored</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="978"/>
+        <location filename="../data_import/statement.py" line="979"/>
         <source>Transfer was not settled and was not stored, its leg stays pending: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="990"/>
+        <location filename="../data_import/statement.py" line="991"/>
         <source>Unmatched account for trade: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1009"/>
+        <location filename="../data_import/statement.py" line="1010"/>
         <source>Unmatched account for swap: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1013"/>
+        <location filename="../data_import/statement.py" line="1014"/>
         <source>Unmatched symbol for swap: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1031"/>
+        <location filename="../data_import/statement.py" line="1032"/>
         <source>Unmatched account for bridge: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1034"/>
+        <location filename="../data_import/statement.py" line="1035"/>
         <source>Unmatched symbol for bridge: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1057"/>
+        <location filename="../data_import/statement.py" line="1058"/>
         <source>Unmatched account for conversion: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1061"/>
+        <location filename="../data_import/statement.py" line="1062"/>
         <source>Unmatched symbol for conversion: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1078"/>
+        <location filename="../data_import/statement.py" line="1079"/>
         <source>Unmatched account for payment: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1089"/>
+        <location filename="../data_import/statement.py" line="1090"/>
         <source>Unmatched fee symbol for payment: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1094"/>
+        <location filename="../data_import/statement.py" line="1095"/>
         <source>Unmatched fee account for payment: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1137"/>
+        <location filename="../data_import/statement.py" line="1138"/>
         <source>Unsupported payment type: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1168"/>
+        <location filename="../data_import/statement.py" line="1169"/>
         <source>Unmatched account for corporate action: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1183"/>
+        <location filename="../data_import/statement.py" line="1184"/>
         <source>Unsupported corporate action: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1197"/>
+        <location filename="../data_import/statement.py" line="1198"/>
         <source>Multiple accounts found: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1220"/>
+        <location filename="../data_import/statement.py" line="1221"/>
         <source>Asset id not found</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1229"/>
-        <location filename="../data_import/statement.py" line="1237"/>
+        <location filename="../data_import/statement.py" line="1230"/>
+        <location filename="../data_import/statement.py" line="1238"/>
         <source>Symbol id not found: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1246"/>
-        <location filename="../data_import/statement.py" line="1263"/>
-        <location filename="../data_import/statement.py" line="1315"/>
+        <location filename="../data_import/statement.py" line="1247"/>
+        <location filename="../data_import/statement.py" line="1264"/>
+        <location filename="../data_import/statement.py" line="1316"/>
         <source>Multiple match for </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1275"/>
+        <location filename="../data_import/statement.py" line="1276"/>
         <source>Multiple currency match for </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1288"/>
+        <location filename="../data_import/statement.py" line="1289"/>
         <source>Can&apos;t find exact symbol for asset: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1327"/>
+        <location filename="../data_import/statement.py" line="1328"/>
         <source>Asset found in the database is listed under several tickers, it can&apos;t be matched by one: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1351"/>
+        <location filename="../data_import/statement.py" line="1352"/>
         <source>Can&apos;t find asset on moex.com: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1355"/>
+        <location filename="../data_import/statement.py" line="1356"/>
         <source>Unsupported asset type from moex.com: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1360"/>
+        <location filename="../data_import/statement.py" line="1361"/>
         <source>Unknown online search source: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/statement.py" line="1363"/>
+        <location filename="../data_import/statement.py" line="1364"/>
         <source>Can&apos;t locate asset in statement data: </source>
         <translation></translation>
     </message>
@@ -11243,37 +11244,37 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
 <context>
     <name>TokenList</name>
     <message>
-        <location filename="../constants.py" line="696"/>
+        <location filename="../constants.py" line="697"/>
         <source>Jupiter verified tokens</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="697"/>
+        <location filename="../constants.py" line="698"/>
         <source>Uniswap default list</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="698"/>
+        <location filename="../constants.py" line="699"/>
         <source>CoinGecko token list</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="699"/>
+        <location filename="../constants.py" line="700"/>
         <source>DappRadar tokens blacklist</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="700"/>
+        <location filename="../constants.py" line="701"/>
         <source>MyEtherWallet token list</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="701"/>
+        <location filename="../constants.py" line="702"/>
         <source>CoinGecko Tron token list</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="702"/>
+        <location filename="../constants.py" line="703"/>
         <source>CoinGecko Avalanche token list</source>
         <translation></translation>
     </message>
@@ -11281,12 +11282,12 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
 <context>
     <name>TokenListKind</name>
     <message>
-        <location filename="../constants.py" line="678"/>
+        <location filename="../constants.py" line="679"/>
         <source>Allow-list</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="679"/>
+        <location filename="../constants.py" line="680"/>
         <source>Block-list</source>
         <translation></translation>
     </message>

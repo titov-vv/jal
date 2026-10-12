@@ -531,8 +531,8 @@ class ChainBalanceReader(JalDB):
     # the entire accrued interest - 2.24% on the position this was measured against, and growing.
     #
     # Unlike a staking box, the trigger is the ASSET rather than the account: the flag says this token's quantity can
-    # grow on its own (AssetData.Rebasing), and it is set by hand per asset because inferring it from a ticker prefix
-    # would eventually add invented quantity to a position that never grows. Share tokens must never carry it -
+    # grow on its own (AssetData.Rebasing), and it is set per asset (see there) because inferring it from a ticker
+    # prefix would eventually add invented quantity to a position that never grows. Share tokens must never carry it -
     # Fluid's fTokens and stkAAVE hold a fixed quantity whose PRICE accrues, which the quote source already reports.
 
     # What one wallet really holds of one rebasing token, as {asset id: quantity}, or None when it could not be read.
