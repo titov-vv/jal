@@ -8,7 +8,7 @@ import logging
 import functools
 import importlib
 import sqlparse
-from configparser import ConfigParser
+from configparser import ConfigParser, Error as ConfigError
 from packaging.version import Version
 from PySide6.QtCore import QStandardPaths
 from PySide6.QtWidgets import QApplication, QMessageBox
@@ -133,6 +133,16 @@ class JalDB:
     def get_app_path() -> str:
         return os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + os.sep
 
+    # Returns the database folder that jal.ini names, raises ConfigError if the file doesn't name one
+    @staticmethod
+    def _ini_database_path(ini_file: str) -> str:
+        try:
+            config = ConfigParser()
+            config.read(ini_file)
+            return config.get("main", "database_path")
+        except ConfigError as e:
+            raise ConfigError(f"{ini_file}: {e.message}") from None
+
     @staticmethod
     def get_db_path() -> str:
         if "pytest" in sys.modules:
@@ -140,10 +150,8 @@ class JalDB:
         config_locations = QStandardPaths.standardLocations(QStandardPaths.ConfigLocation)
         if config_locations:
             ini_file = config_locations[0] + os.sep + Setup.INI_FILE
-            if os.path.isfile(ini_file):   # FIXME - probably it is better to merge somehow with Setup and JalSettings classes
-                config = ConfigParser()
-                config.read(ini_file)
-                return config.get("main", "database_path") + os.sep + Setup.DB_PATH
+            if os.path.isfile(ini_file):
+                return JalDB._ini_database_path(ini_file) + os.sep + Setup.DB_PATH
         return JalDB.get_app_path() + Setup.DB_PATH
 
     # -------------------------------------------------------------------------------------------------------------------
@@ -159,7 +167,10 @@ class JalDB:
         db = QSqlDatabase.addDatabase("QSQLITE", Setup.DB_CONNECTION)
         if not db.isValid():
             return JalDBError(JalDBError.DbDriverFailure)
-        db_file = db_file if db_file else self.get_db_path()
+        try:
+            db_file = db_file if db_file else self.get_db_path()
+        except ConfigError as e:
+            return JalDBError(JalDBError.DbInitFailure, details=str(e))
         db.setDatabaseName(db_file)
         db.setConnectOptions("QSQLITE_ENABLE_REGEXP=1")
         db.open()

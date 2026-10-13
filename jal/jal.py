@@ -69,12 +69,13 @@ def main():
     # QDialogButtonBox and QMessageBox create themselves ("Cancel", "Save", "Discard", ...), which never pass
     # through jal's .qm file. It may be absent from a given Qt installation - the buttons then stay English.
     qt_translator = QTranslator(app)
-    if qt_translator.load("qtbase_" + JalSettings().getLanguage(), QLibraryInfo.path(QLibraryInfo.TranslationsPath)):
-        app.installTranslator(qt_translator)
     translator = QTranslator(app)
-    if translator.load(JalSettings.path(JalDB.PATH_LANG_FILE)):
-        if app.installTranslator(translator):
-            translator_installed = True
+    if error.code in (JalDBError.NoError, JalDBError.OutdatedDbSchema):   # the language is a setting of an open database
+        if qt_translator.load("qtbase_" + JalSettings().getLanguage(), QLibraryInfo.path(QLibraryInfo.TranslationsPath)):
+            app.installTranslator(qt_translator)
+        if translator.load(JalSettings.path(JalDB.PATH_LANG_FILE)):
+            if app.installTranslator(translator):
+                translator_installed = True
     if error.code == JalDBError.OutdatedDbSchema:
         error = JalDB().update_db_schema()   # this call isn't a part of JalDB.init_db() intentionally - to provide translation of UI message
     if error.code != JalDBError.NoError:

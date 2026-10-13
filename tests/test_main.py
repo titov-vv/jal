@@ -1,6 +1,7 @@
 import os
 import pytest
 from shutil import copyfile
+from configparser import Error as ConfigError
 import sqlite3
 from decimal import Decimal
 from datetime import datetime, timezone
@@ -117,6 +118,26 @@ def test_db_creation(tmp_path, project_root):
     JalDB.connection().close()
     os.remove(target_path)  # Clean db init script
     os.remove(JalSettings.path(JalSettings.PATH_DB_FILE))  # Clean db file
+
+
+def test_ini_file(tmp_path, monkeypatch):
+    ini_file = str(tmp_path / Setup.INI_FILE)
+    with open(ini_file, 'w') as ini:
+        ini.write("[main]\ndatabase_path = /some/folder\n")
+    assert JalDB._ini_database_path(ini_file) == "/some/folder"
+
+    for content in ["[main]\n", "[other]\ndatabase_path = /some/folder\n", "database_path = /some/folder\n"]:
+        with open(ini_file, 'w') as ini:
+            ini.write(content)
+        with pytest.raises(ConfigError) as failure:
+            JalDB._ini_database_path(ini_file)
+        assert ini_file in str(failure.value)
+
+    # A broken jal.ini aborts the start-up with an error instead of an exception
+    monkeypatch.setattr(JalDB, 'get_db_path', staticmethod(lambda: JalDB._ini_database_path(ini_file)))
+    error = JalDB().init_db()
+    assert error.code == JalDBError.DbInitFailure
+    assert ini_file in error.details
 
 
 def test_invalid_backup(tmp_path, project_root):

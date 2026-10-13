@@ -17,7 +17,6 @@ class Setup:
     INIT_SCRIPT_PATH = 'jal_init.sql'
     UPDATES_PATH = 'updates'
     ICONS_PATH = "img"
-    NET_PATH = "net"
     IMPORT_PATH = "data_import"
     EXPORT_PATH = "data_export"
     NDFL3_TEMPLATE_PATH = "ru_ndfl3"
