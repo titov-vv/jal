@@ -518,6 +518,24 @@ def test_fns_file_goes_to_the_fns_download(owner, inbox, monkeypatch):
     assert not os.path.exists(path)
 
 
+def test_failed_fns_download_is_shown_and_clears_the_form(owner, inbox, monkeypatch):
+    make_jalr(inbox, "20240114-120000-00000001.jalr", codes=[LIDL])
+    path = make_jalr(inbox, "20240115-183000-00000003.jalr", codes=[FNS])
+    shown = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda box, parent, title, text, *args: shown.append(text))
+    monkeypatch.setattr(ReceiptRuFNS, "activate_session",
+                        lambda self: (self.slip_load_failed.emit("FNS API failed with: 408/"), False)[1])
+    dialog = _dialog(owner)
+    dialog.ui.InboxList.setCurrentCell(0, 0)
+    dialog.loadInboxReceipt()
+    assert dialog.slip_lines is not None
+    dialog.ui.InboxList.setCurrentCell(1, 0)
+    dialog.loadInboxReceipt()
+    assert shown == ["FNS API failed with: 408/"]
+    assert dialog.slip_lines is None and dialog.receipt_api is None and dialog._inbox_file == ''
+    assert os.path.isfile(path)
+
+
 def test_malformed_fns_code_loads_nothing(owner, inbox):
     path = make_jalr(inbox, "20240115-183000-00000004.jalr", codes=["t=yesterday&s=1&fn=1&i=1&fp=1&n=1"])
     dialog = _dialog(owner)

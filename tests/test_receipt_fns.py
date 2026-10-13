@@ -12,9 +12,9 @@ FNS_URL = "https://irkkt-mobile.nalog.ru:8888/v2/"
 
 
 class _Answer:
-    def __init__(self, data):
-        self.status_code = 200
-        self.text = json.dumps(data, ensure_ascii=False)
+    def __init__(self, data, status_code=200):
+        self.status_code = status_code
+        self.text = json.dumps(data, ensure_ascii=False) if status_code == 200 else ''
 
 
 # Answers of FNS recorded on 2026-10-13 for a real receipt (100.00 RUB paid to a mobile operator), with the buyer's
@@ -23,18 +23,19 @@ class _RecordedFNS:
     def __init__(self, recorded: dict):
         self.headers = {}
         self.posted = []
+        self.refused = ()       # what is answered with HTTP 408, as FNS does to an address outside Russia
         self._recorded = recorded
 
     def get(self, url):
         if url == FNS_URL + "tickets":      # the authorization check
-            return _Answer([])
+            return _Answer([], 408 if "check" in self.refused else 200)
         assert url == FNS_URL + "tickets/" + self._recorded['found']['id']
         return _Answer(self._recorded['loaded'])
 
     def post(self, url, data=None):
         assert url == FNS_URL + "ticket"
         self.posted.append(data)
-        return _Answer(self._recorded['found'])
+        return _Answer(self._recorded['found'], 408 if "lookup" in self.refused else 200)
 
 
 @pytest.fixture
@@ -64,3 +65,22 @@ def test_fns_receipt_is_read_as_the_paper_states_it(fns_receipt):
            [("Аванс за услуги связи 70000000000", Decimal('1'), Decimal('100'), Decimal('-100'))]
     assert all(type(x[key]) is Decimal for x in lines for key in ('quantity', 'unit_price', 'amount'))
     assert -sum(x['amount'] for x in lines) == fns_receipt.amount == Decimal('100.00')
+    assert fns_receipt.slip_lines() == lines      # asking again changes nothing
+
+
+def test_refused_fns_request_says_why(fns_receipt):
+    reasons = []
+    fns_receipt.slip_load_failed.connect(reasons.append)
+    fns_receipt.web_session.refused = ("check",)
+    assert not fns_receipt.activate_session()
+    fns_receipt.web_session.refused = ("lookup",)
+    assert fns_receipt.activate_session()
+    fns_receipt.query_slip()
+    assert len(reasons) == 2
+    assert reasons[0] == "FNS API failed with: 408/ (FNS may accept requests from Russian IP addresses only)"
+    assert reasons[1].startswith("Get ticket id failed: 408/ (FNS may accept requests from Russian IP addresses only)")
+
+
+def test_inn_padded_with_spaces_is_trimmed(fns_receipt):
+    fns_receipt.slip_json = {'userInn': "123  "}     # too short to be looked up, so no request is made
+    assert fns_receipt.shop_name() == "123"

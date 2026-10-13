@@ -7,7 +7,7 @@ from PySide6.QtWidgets import QApplication
 #-----------------------------------------------------------------------------------------------------------------------
 # Base parent class for various API used by JAL for downloading information about purchases (slips)
 class ReceiptAPI(QObject):
-    slip_load_failed = Signal()
+    slip_load_failed = Signal(str)     # the reason, as text for the user
     slip_load_ok = Signal()
 
     def __init__(self):

@@ -369,6 +369,7 @@ class ImportReceiptDialog(QDialog):
         self.receipt_api = receipt_api
         self._inbox_file = receipt.path
         self.receipt_api.slip_load_ok.connect(self.slip_loaded)
+        self.receipt_api.slip_load_failed.connect(self.slip_failed)
         self.downloadSlipJSON()
 
     # The account whose card the receipt prints; none without a match, so the last receipt's account isn't reused.
@@ -429,6 +430,13 @@ class ImportReceiptDialog(QDialog):
 
     def slip_loaded(self):
         self.parseJSON()
+
+    # The receipt loaded before isn't left on the form, where it would be added under the failed one's number
+    @Slot(str)
+    def slip_failed(self, reason: str):
+        self.clearSlipData()
+        self.receipt_api = None
+        QMessageBox().warning(self, self.tr("Receipt wasn't loaded"), reason, QMessageBox.Ok)
 
     def parseJSON(self):
         self.slip_lines = pd.DataFrame(self.receipt_api.slip_lines())

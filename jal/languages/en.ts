@@ -3815,98 +3815,103 @@ one for ParentCo and second for Subsidiary</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="388"/>
+        <location filename="../data_import/shop_receipt.py" line="389"/>
         <source>Select PDF receipts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="389"/>
+        <location filename="../data_import/shop_receipt.py" line="390"/>
         <source>PDF files (*.pdf)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="397"/>
+        <location filename="../data_import/shop_receipt.py" line="398"/>
         <source>File isn&apos;t a readable PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="402"/>
+        <location filename="../data_import/shop_receipt.py" line="403"/>
         <source>PDF receipt can&apos;t be put into the inbox</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="474"/>
+        <location filename="../data_import/shop_receipt.py" line="439"/>
+        <source>Receipt wasn&apos;t loaded</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/shop_receipt.py" line="482"/>
         <source>Reconciled automatically</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="475"/>
+        <location filename="../data_import/shop_receipt.py" line="483"/>
         <source>Not reconciled, check the lines</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="476"/>
+        <location filename="../data_import/shop_receipt.py" line="484"/>
         <source>No usable fiscal code, rescan recommended</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="509"/>
+        <location filename="../data_import/shop_receipt.py" line="517"/>
         <source>Lines</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="514"/>
+        <location filename="../data_import/shop_receipt.py" line="522"/>
         <source>Receipt total</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="515"/>
+        <location filename="../data_import/shop_receipt.py" line="523"/>
         <source>Difference</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="557"/>
+        <location filename="../data_import/shop_receipt.py" line="565"/>
         <source>Not possible to import receipt: it has no lines</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="560"/>
+        <location filename="../data_import/shop_receipt.py" line="568"/>
         <source>Not possible to import receipt: no account set for import</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="563"/>
+        <location filename="../data_import/shop_receipt.py" line="571"/>
         <source>Not possible to import receipt: can&apos;t import: no peer set for import</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="566"/>
+        <location filename="../data_import/shop_receipt.py" line="574"/>
         <source>Not possible to import receipt: some categories are not set</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="571"/>
+        <location filename="../data_import/shop_receipt.py" line="579"/>
         <source>Not possible to import receipt: it is imported already</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="578"/>
+        <location filename="../data_import/shop_receipt.py" line="586"/>
         <source>Lines don&apos;t add up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="579"/>
+        <location filename="../data_import/shop_receipt.py" line="587"/>
         <source>The lines differ from the receipt&apos;s total by</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="580"/>
+        <location filename="../data_import/shop_receipt.py" line="588"/>
         <source>Add the operation anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="420"/>
-        <location filename="../data_import/shop_receipt.py" line="613"/>
+        <location filename="../data_import/shop_receipt.py" line="421"/>
+        <location filename="../data_import/shop_receipt.py" line="621"/>
         <source>Receipt file can&apos;t be moved out of the inbox</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5329,41 +5334,41 @@ do you want to save them?</source>
 <context>
     <name>LoginFNS</name>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="242"/>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="243"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="253"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="254"/>
         <source>Login</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="261"/>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="274"/>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="293"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="272"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="285"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="304"/>
         <source>FNS login failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="263"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="274"/>
         <source>SMS was requested successfully</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="276"/>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="295"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="287"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="306"/>
         <source>FNS login successful: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="307"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="318"/>
         <source>Get ESIA URL failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="320"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="331"/>
         <source>ESIA login failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="322"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="333"/>
         <source>ESIA login successful: </source>
         <translation></translation>
     </message>
@@ -7478,12 +7483,12 @@ One transaction moved this exact quantity as </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="122"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="133"/>
         <source>Receipt was loaded: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="119"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="131"/>
         <source>Receipt load failed: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -7508,57 +7513,67 @@ One transaction moved this exact quantity as </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="74"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="80"/>
+        <source>FNS may accept requests from Russian IP addresses only</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="86"/>
         <source>Refreshing FNS session...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="81"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="93"/>
         <source>FNS session refreshed: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="91"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="105"/>
         <source>Can&apos;t refresh FNS session, response: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="107"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="119"/>
         <source>Get ticket id failed: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="109"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="121"/>
         <source>Receipt found: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="113"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="125"/>
         <source>Operation might be pending on server side. Trying again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="138"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="137"/>
+        <source>FNS didn&apos;t provide the receipt, its status: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="149"/>
         <source>Can&apos;t find &apos;receipt&apos; tag in json &apos;document&apos; from FNS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="141"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="152"/>
         <source>Can&apos;t find &apos;document&apos; tag in json &apos;ticket&apos; from FNS</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="158"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="169"/>
         <source>Incorrect length of INN. Can&apos;t get company name.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="182"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="193"/>
         <source>Can&apos;t get company name from: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="204"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="215"/>
         <source>Can&apos;t find &apos;operationType&apos; tag in json &apos;ticket&apos;</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7850,7 +7865,7 @@ One transaction moved this exact quantity as </source>
 <context>
     <name>RequestInterceptor</name>
     <message>
-        <location filename="../data_import/receipt_api/ru_fns.py" line="350"/>
+        <location filename="../data_import/receipt_api/ru_fns.py" line="361"/>
         <source>ESIA login completed</source>
         <translation></translation>
     </message>

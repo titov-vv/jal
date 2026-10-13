@@ -55,7 +55,7 @@ class ReceiptRuFNS(ReceiptAPI):
         if not self.session_id:
             self.__do_login()
         if not self.session_id:
-            logging.warning(ReceiptAPI.tr("No FNS SessionId available"))
+            self.__failed(ReceiptAPI.tr("No FNS SessionId available"))
             return False
         self.web_session.headers['sessionId'] = self.session_id
         response = self.web_session.get('https://irkkt-mobile.nalog.ru:8888/v2/tickets')  # Just to check authorization status
@@ -65,8 +65,20 @@ class ReceiptRuFNS(ReceiptAPI):
             logging.info(ReceiptAPI.tr("Unauthorized with reason: ") + f"{response.text}")
             return self.__refresh_session()
         else:
-            logging.error(ReceiptAPI.tr("FNS API failed with: ") + f"{response.status_code}/{response.text}")
+            self.__failed(ReceiptAPI.tr("FNS API failed with: ") + self.__answer(response))
             return False
+
+    # Logs why the receipt isn't loaded and tells it to whoever asked for the receipt
+    def __failed(self, reason: str):
+        logging.error(reason)
+        self.slip_load_failed.emit(reason)
+
+    # Status and text of a failed response
+    def __answer(self, response) -> str:
+        answer = f"{response.status_code}/{response.text}"
+        if response.status_code == 408:
+            answer += " (" + ReceiptAPI.tr("FNS may accept requests from Russian IP addresses only") + ")"
+        return answer
 
     def __refresh_session(self) -> bool:
         if not self.session_id:
@@ -88,9 +100,9 @@ class ReceiptRuFNS(ReceiptAPI):
             self.web_session.headers['sessionId'] = self.session_id
             return True
         else:
-            logging.error(ReceiptAPI.tr("Can't refresh FNS session, response: ") + f"{response.status_code}/{response.text}")
             JalSettings().setValue('RuTaxSessionId', '')
             self.session_id = ''
+            self.__failed(ReceiptAPI.tr("Can't refresh FNS session, response: ") + self.__answer(response))
             return False
 
     def __do_login(self):
@@ -104,7 +116,7 @@ class ReceiptRuFNS(ReceiptAPI):
         for i in range(self.MAX_ATTEMPTS):
             response = self.web_session.post('https://irkkt-mobile.nalog.ru:8888/v2/ticket', data=payload)
             if response.status_code != 200:
-                logging.error(ReceiptAPI.tr("Get ticket id failed: ") + f"{response.status_code}/{response.text} for {payload}")
+                self.__failed(ReceiptAPI.tr("Get ticket id failed: ") + f"{self.__answer(response)} for {payload}")
                 return
             logging.info(ReceiptAPI.tr("Receipt found: " + response.text))
             json_content = json.loads(response.text)
@@ -116,14 +128,13 @@ class ReceiptRuFNS(ReceiptAPI):
             url = "https://irkkt-mobile.nalog.ru:8888/v2/tickets/" + json_content['id']
             response = self.web_session.get(url)
             if response.status_code != 200:
-                logging.error(ReceiptAPI.tr("Receipt load failed: ") + f"{response}/{response.text}")
-                self.slip_load_failed.emit()
+                self.__failed(ReceiptAPI.tr("Receipt load failed: ") + self.__answer(response))
                 return
             logging.info(ReceiptAPI.tr("Receipt was loaded: " + response.text))
             self.slip_json = self.__slip_data(json.loads(response.text, parse_float=Decimal))
             self.slip_load_ok.emit()
         else:
-            self.slip_load_failed.emit()
+            self.__failed(ReceiptAPI.tr("FNS didn't provide the receipt, its status: ") + f"{json_content['status']}")
 
     # Slip data might be in a root element or in ticket/document/receipt
     # This method returns actual slip as result
@@ -151,7 +162,7 @@ class ReceiptRuFNS(ReceiptAPI):
         if 'user' in self.slip_json:
             return self.slip_json['user']
         if 'userInn' in self.slip_json:
-            inn = self.slip_json['userInn']
+            inn = self.slip_json['userInn'].strip()     # FNS pads it with spaces
         else:
             return ''
         if len(inn) != 10 and len(inn) != 12:
@@ -203,7 +214,7 @@ class ReceiptRuFNS(ReceiptAPI):
         else:
             logging.error(ReceiptAPI.tr("Can't find 'operationType' tag in json 'ticket'"))
             return []
-        lines = self.slip_json['items']
+        lines = [dict(x) for x in self.slip_json['items']]
         for line in lines:
             line['quantity'] = Decimal(line['quantity'])
             line['unit_price'] = Decimal(line.pop('price')) / 100   # FNS reports amounts in kopecks
