@@ -1,11 +1,13 @@
+import os
 import base64
 import logging
 import zipfile
 import pandas as pd
+from datetime import datetime
 from decimal import Decimal, InvalidOperation
 from PySide6.QtCore import Qt, Slot, QAbstractTableModel, QModelIndex, QRect, QT_TRANSLATE_NOOP
 from PySide6.QtGui import QPalette
-from PySide6.QtWidgets import QDialog, QDialogButtonBox, QHeaderView, QLineEdit, QMessageBox, QStyle, \
+from PySide6.QtWidgets import QDialog, QDialogButtonBox, QFileDialog, QHeaderView, QLineEdit, QMessageBox, QStyle, \
     QTableWidgetItem
 from jal.constants import Setup
 from jal.widgets.reference_selector import ReferenceSelectorWidget
@@ -28,8 +30,8 @@ from jal.ui.ui_receipt_import_dlg import Ui_ImportShopReceiptDlg
 from jal.data_import.receipt_api.offline_receipt import ReceiptOffline, paper_lines
 from jal.data_import.receipt_api.ru_fns import ReceiptRuFNS
 from jal.data_import.receipt import LineTrust, Verdict, parse_card
-from jal.data_import.receipt_pdf import layout_text, pdf_receipt
-from jal.data_import.receipt_inbox import JalrFile, Route, scan_inbox, move_done, route
+from jal.data_import.receipt_pdf import layout_text, pdf_codes, pdf_receipt
+from jal.data_import.receipt_inbox import JalrFile, Route, scan_inbox, move_done, route, wrap_pdf
 
 
 RECEIPT_INBOX_SETTING = "ReceiptInboxFolder"
@@ -239,6 +241,7 @@ class ImportReceiptDialog(QDialog):
         self.ui.InboxLoadBtn.clicked.connect(self.loadInboxReceipt)
         self.ui.InboxRefreshBtn.clicked.connect(self.refreshInbox)
         self.ui.InboxSkipBtn.clicked.connect(self.skipInboxReceipt)
+        self.ui.InboxAddPdfBtn.clicked.connect(self.addPdfReceipts)
         self.ui.InboxList.itemDoubleClicked.connect(self.loadInboxReceipt)
         self.ui.AddLineBtn.clicked.connect(self.addLine)
         self.ui.DeleteLineBtn.clicked.connect(self.deleteLine)
@@ -282,6 +285,7 @@ class ImportReceiptDialog(QDialog):
             self.ui.InboxList.setItem(row, 2, QTableWidgetItem(self._route_text(receipt_route)))
         self.ui.InboxLoadBtn.setEnabled(bool(self._inbox))
         self.ui.InboxSkipBtn.setEnabled(bool(self._inbox))
+        self.ui.InboxAddPdfBtn.setEnabled(os.path.isdir(folder))
 
     def _source_name(self, kind: str) -> str:
         names = {
@@ -376,6 +380,30 @@ class ImportReceiptDialog(QDialog):
             self.ui.AccountEdit.selected_id = 0
             return
         self.ui.AccountEdit.selected_id = JalAccount.find_by_card(digits, currency_id).id()
+
+    # PDF files of this computer join the inbox as the containers the phone would have made of them
+    @Slot()
+    def addPdfReceipts(self):
+        folder = JalSettings().getStr(RECEIPT_INBOX_SETTING)
+        names, _filter = QFileDialog.getOpenFileNames(self, self.tr("Select PDF receipts"), '',
+                                                      self.tr("PDF files (*.pdf)"))
+        added = ''
+        for name in names:
+            try:
+                with open(name, 'rb') as pdf_file:
+                    data = pdf_file.read()
+                codes, pages = pdf_codes(data)
+                if not pages:
+                    logging.warning(self.tr("File isn't a readable PDF") + f": {name}")
+                    continue
+                captured_at = datetime.fromtimestamp(os.path.getmtime(name)).astimezone()
+                added = wrap_pdf(folder, data, codes, pages, captured_at)
+            except OSError as e:
+                logging.warning(self.tr("PDF receipt can't be put into the inbox") + f" ({name}): {e}")
+        self.refreshInbox()
+        row = next((i for i, (receipt, _route) in enumerate(self._inbox) if receipt.path == added), -1)
+        if row >= 0:
+            self.ui.InboxList.setCurrentCell(row, 0)
 
     # A file that isn't to be imported leaves the inbox without an operation
     @Slot()

@@ -4,7 +4,9 @@ import logging
 from datetime import datetime, date, timedelta
 from decimal import Decimal
 from typing import Optional
-from PySide6.QtCore import QDateTime, QDate, QTime
+from PySide6.QtCore import Qt, QBuffer, QByteArray, QDateTime, QDate, QTime
+from PySide6.QtGui import QImage, QPainter
+from PySide6.QtPdf import QPdfDocument
 from jal.db.clock import local_zone
 from jal.widgets.helpers import dependency_present
 from jal.data_import.receipt import ReceiptItem, LineTrust, Verdict, parse_header, parse_total, shop_profile, \
@@ -12,14 +14,53 @@ from jal.data_import.receipt import ReceiptItem, LineTrust, Verdict, parse_heade
 from jal.data_import.receipt_api.receipt_api import ReceiptAPI
 from jal.data_import.receipt_api.offline_receipt import ReceiptOffline, voucher_lines, with_vat
 from jal.data_import.receipt_api.pt_at_qr import AtQr
+from jal.data_import.receipt_inbox import ReceiptCode
 try:
     from pypdf import PdfReader
     from pypdf.errors import PyPdfError
 except ImportError:
     pass  # PDF receipts can't be read without dependency
+try:
+    from pyzbar import pyzbar
+except ImportError:
+    pass  # QR codes of a PDF can't be read without dependency
 
 MONOSPACE_WIDTH = 0.6     # glyph width of a monospaced font, in units of its size
+QR_RENDER_SCALES = (2, 3, 4, 6)     # pixels per point a page is drawn at, tried in turn until a QR code is read
 NUMERIC_DATE_AGE = 7       # days before the capture that a date of digits only may be, which tells its day from its month
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Returns (codes, pages) of a PDF: the QR codes drawn on its pages as ReceiptCode and its page count, which is 0
+# for a file that isn't a readable PDF. Without pyzbar no code is read
+def pdf_codes(data: bytes) -> tuple:
+    buffer = QBuffer()
+    buffer.setData(QByteArray(data))
+    buffer.open(QBuffer.ReadOnly)
+    document = QPdfDocument()
+    document.load(buffer)
+    pages = document.pageCount()
+    if not pages:
+        return [], 0
+    if not dependency_present(['pyzbar']):
+        logging.warning(ReceiptAPI.tr("Package pyzbar not found for QR recognition."))
+        return [], pages
+    codes = []
+    for page in range(pages):
+        for scale in QR_RENDER_SCALES:
+            size = (document.pagePointSize(page) * scale).toSize()
+            image = QImage(size, QImage.Format_Grayscale8)
+            image.fill(Qt.white)     # a page is drawn on a transparent background
+            painter = QPainter(image)
+            painter.drawImage(0, 0, document.render(page, size))
+            painter.end()
+            pixels = (bytes(image.constBits()), image.bytesPerLine(), image.height())     # rows are padded
+            found = [x.data.decode('utf-8', errors='replace')
+                     for x in pyzbar.decode(pixels, symbols=[pyzbar.ZBarSymbol.QRCODE])]
+            if found:
+                codes += [ReceiptCode("QR_CODE", x, page + 1) for x in found if x not in [c.raw for c in codes]]
+                break
+    return codes, pages
 
 
 # ----------------------------------------------------------------------------------------------------------------------

@@ -6,7 +6,7 @@ from decimal import Decimal
 
 import pytest
 from PySide6.QtCore import Qt, QDateTime, QDate, QTime
-from PySide6.QtWidgets import QWidget, QHeaderView, QLineEdit, QMessageBox
+from PySide6.QtWidgets import QWidget, QFileDialog, QHeaderView, QLineEdit, QMessageBox
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_ledger
 from tests.test_at_qr import LIDL
@@ -326,6 +326,7 @@ def test_no_inbox_folder(owner):
     dialog = _dialog(owner)
     assert dialog.ui.InboxList.rowCount() == 0
     assert not dialog.ui.InboxLoadBtn.isEnabled()
+    assert not dialog.ui.InboxAddPdfBtn.isEnabled()
     assert "Preferences" in dialog.ui.InboxFolderLbl.text()
 
 
@@ -859,3 +860,23 @@ def test_window_size_and_line_columns_are_kept(owner, inbox):
     assert header.sectionSize(1) == 250
     assert header.sectionResizeMode(0) == QHeaderView.Stretch
     dialog.close()
+
+
+def test_pdf_of_the_computer_joins_the_inbox(owner, inbox, tmp_path, monkeypatch):
+    make_jalr(inbox, "20260814-184200-00000001.jalr", codes=[LIDL])
+    source = tmp_path / "receipt.pdf"
+    source.write_bytes(make_pdf(lidl_receipt(), form=True))
+    broken = tmp_path / "broken.pdf"
+    broken.write_bytes(b"not a pdf")
+    os.utime(source, (1786000000, 1786000000))     # 6 Aug 2026, before the file the inbox has
+    monkeypatch.setattr(QFileDialog, "getOpenFileNames", lambda *args, **kwargs: ([str(broken), str(source)], ''))
+    dialog = _dialog(owner)
+    assert dialog.ui.InboxAddPdfBtn.isEnabled()
+    dialog.addPdfReceipts()
+    assert dialog.ui.InboxList.rowCount() == 2 and dialog.ui.InboxList.currentRow() == 0
+    assert dialog.ui.InboxList.item(0, 1).text() == "PDF"
+    assert dialog.ui.InboxList.item(0, 2).text() == "PDF document"
+    assert source.exists()
+    dialog.loadInboxReceipt()
+    assert dialog.receipt_api.slip_lines()[0]["name"].startswith("TOMATE REDONDO")
+    assert dialog._inbox_file.startswith(str(inbox))

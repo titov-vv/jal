@@ -161,16 +161,22 @@ per item bought:
 
 ![The receipt import dialog](img/dlg_receipt.png)
 
-> **The phone app is not publicly available yet.** Receipts reach JAL only as files written by its
-> companion Android app, *ReceiptScan*, which scans paper receipts and takes in the PDFs and images
-> a shop sends. Until that app is published the list stays empty and this dialog has nothing to
-> import. Typing a receipt's codes in by hand, scanning a QR code with the computer's camera and
-> the *Lidl Plus* and *Pingo Doce* logins of earlier versions are gone.
+> **The phone app is not publicly available yet.** Paper receipts and images reach JAL only as
+> files written by its companion Android app, *ReceiptScan*. Until that app is published, the PDF
+> receipts a shop sends are what this dialog can import — see **Add PDF…** below. Typing a
+> receipt's codes in by hand, scanning a QR code with the computer's camera and the *Lidl Plus* and
+> *Pingo Doce* logins of earlier versions are gone.
 
 Receipts arrive from the phone app into the inbox folder set in
-[*Preferences*](12-settings-and-maintenance.md#import). The list shows each file with the time it
-was captured, what it is (*Paper scan*, *Image* or *PDF*) and how it will be imported; a file that
-cannot be imported says why. Select one and press **Load**:
+[*Preferences*](12-settings-and-maintenance.md#import). A PDF receipt that is on the computer
+already needs no phone: **Add PDF…** takes the files you choose and puts them into the same inbox
+folder, which therefore has to be set. Your own files stay where they are. Reading PDF receipts
+needs the `pypdf` package, and reading the QR code of one — which a Russian receipt cannot be
+imported without — needs `pyzbar`; neither is installed with JAL.
+
+The list shows each file with the time it was captured, what it is (*Paper scan*, *Image* or
+*PDF*) and how it will be imported; a file that cannot be imported says why. Select one and press
+**Load**:
 
 * a Portuguese receipt is checked against its fiscal QR code, and its lines come from the scan or
   from the shop's PDF;

@@ -1,5 +1,6 @@
 import os
 import json
+import uuid
 import logging
 import zipfile
 from dataclasses import dataclass
@@ -62,6 +63,7 @@ class JalrFile:
     GREEN = "green"
     RED = "red"
     NO_VALUE = "no_value"
+    UNCHECKED = "unchecked"
 
     def __init__(self, path: str, data: dict):
         self._path = path
@@ -186,6 +188,29 @@ def scan_inbox(folder: str) -> list:
     names = sorted(x for x in os.listdir(folder) if x.endswith(JalrFile.EXTENSION))
     files = [JalrFile.open(os.path.join(folder, x)) for x in names if os.path.isfile(os.path.join(folder, x))]
     return [x for x in files if x is not None]
+
+
+# Wraps a PDF into a '.jalr' container in 'folder' the way the phone does for a shared PDF and returns its path.
+# 'codes' are the ReceiptCode read from it, 'captured_at' carries a time zone
+def wrap_pdf(folder: str, data: bytes, codes: list, pages: int, captured_at: datetime) -> str:
+    receipt_id = str(uuid.uuid4())
+    content = {
+        "schema": f"{JalrFile.SCHEMA}/{JalrFile.SCHEMA_MAJOR}",
+        "id": receipt_id,
+        "captured_at": captured_at.isoformat(timespec='seconds'),
+        "device": {"model": "jal"},
+        "source": {"kind": JalrFile.PDF_IMPORT, "pages": pages},
+        "codes": [{"format": x.format, "raw": x.raw, "page": x.page} for x in codes],
+        "receipt": {"country": None, "total": None, "tax_lines": []},
+        "validation": {"status": JalrFile.UNCHECKED, "checks": []}
+    }
+    path = os.path.join(folder, f"{captured_at.strftime('%Y%m%d-%H%M%S')}-{receipt_id[:8]}{JalrFile.EXTENSION}")
+    unfinished = path + ".part"     # scan_inbox() lists a file only under its final name
+    with zipfile.ZipFile(unfinished, 'w', zipfile.ZIP_DEFLATED) as container:
+        container.writestr("receipt.json", json.dumps(content))
+        container.writestr(JalrFile.PDF_NAME, data)
+    os.replace(unfinished, path)
+    return path
 
 
 # Moves a processed file into 'done/' beside it and returns the new path

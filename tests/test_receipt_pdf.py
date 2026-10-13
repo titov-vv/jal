@@ -4,16 +4,19 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 from datetime import datetime, date, timedelta, timezone
 from decimal import Decimal
 
+import pytest
 from PySide6.QtCore import QDateTime, QDate, QTime
 
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.test_at_qr import LIDL
+from tests.test_receipt_inbox import FNS
 from jal.constants import PredefinedCategory
 from jal.db.clock import local_zone
 from jal.data_import.receipt import LineTrust, Verdict, parse_vat_table, parse_total, parse_card, parse_vouchers, \
     shop_profile
-from jal.data_import.receipt_pdf import layout_text, pdf_receipt, GenericReceipt, GenericTill, generic_receipt, \
-    parse_date, money
+from jal.data_import.receipt_pdf import layout_text, pdf_codes, pdf_receipt, GenericReceipt, GenericTill, \
+    generic_receipt, parse_date, money
+from jal.data_import.receipt_inbox import ReceiptCode
 from jal.data_import.receipt_api.pt_at_qr import AtQr
 from jal.data_import.shop_receipts.lidl import ReceiptLidl
 from jal.data_import.shop_receipts.pingo_doce import ReceiptPingoDoce
@@ -22,12 +25,18 @@ from jal.data_import.shop_receipts.continente import ReceiptContinente
 LISBON_SUMMER = timezone(timedelta(hours=1))
 CAPTURED = datetime(2026, 8, 20, 9, 5, tzinfo=LISBON_SUMMER)
 QR = LIDL.replace("O:11.94", "O:4.84")
+# Rows of the QR code (version 4-L) that holds the FNS code of tests.test_receipt_inbox, a bit per module
+FNS_QR_ROWS = ["1fc84227f", "105ba4541", "174e44a5d", "175abd15d", "17454265d", "105474d41", "1fd55557f", "124e00",
+               "1f7dbd1aa", "1a8846f67", "16cb785a0", "aae74d64", "17cb99098", "b54efef", "659e4014", "2b520ce5",
+               "1f41bd018", "1a3d5a7e7", "14ece09e4", "93d50ab6", "1a6cad31b", "1dbbd2fe7", "17e02490c", "1534108a4",
+               "1776ad1fa", "13c2f17", "1fdd3df5e", "104a77917", "1753bd1fa", "175e42e1c", "17552cdee", "105e30a2c",
+               "1fddbd14e"]
 
 
 # A one-page PDF in the standard Courier font with each piece of text where (x, y) puts it; 'form' draws the text
-# inside a form XObject, the way Lidl's PDFs do
-def make_pdf(fragments, form=False) -> bytes:
-    text = "".join(f"BT /F1 10 Tf {x} {y} Td ({t}) Tj ET\n" for x, y, t in fragments).encode()
+# inside a form XObject, the way Lidl's PDFs do; 'graphics' are drawing operators that follow the text
+def make_pdf(fragments, form=False, graphics=b"") -> bytes:
+    text = "".join(f"BT /F1 10 Tf {x} {y} Td ({t}) Tj ET\n" for x, y, t in fragments).encode() + graphics
     font = b"<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>"
     page = b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 291 841] /Contents 5 0 R /Resources << "
     if form:
@@ -48,6 +57,14 @@ def make_pdf(fragments, form=False) -> bytes:
     pdf += b"xref\n0 %d\n0000000000 65535 f \n" % (len(objects) + 1) + b"".join(b"%010d 00000 n \n" % x for x in offsets)
     pdf += b"trailer\n<< /Size %d /Root 1 0 R >>\nstartxref\n%d\n%%%%EOF\n" % (len(objects) + 1, xref)
     return pdf
+
+
+# Drawing operators of a QR code with its top left corner at (x, top): a black square per set bit of 'rows'
+def qr_graphics(rows, x=96, top=300, module=3) -> bytes:
+    size = len(rows)
+    squares = [f"{x + column * module} {top - (row + 1) * module} {module} {module} re"
+               for row, bits in enumerate(rows) for column in range(size) if int(bits, 16) >> (size - 1 - column) & 1]
+    return ("\n".join(squares) + "\nf\n").encode()
 
 
 # Fabricated after the layout of a real Lidl receipt: B = 1,41 - 0,41 + 1,99 = 2,99 and A = 1,70 + 0,15 = 1,85
@@ -589,3 +606,19 @@ def test_pdf_receipt_of_no_profile_that_does_not_add_up_keeps_its_lines_unproven
     assert [x['amount'] for x in lines] == [Decimal('-20.00'), Decimal('-15.00')]
     assert {x['trust'] for x in lines} == {LineTrust.READ}
     assert receipt.verdict() == Verdict.NOT_RECONCILED and receipt.total() == Decimal('-43.15')
+
+
+def test_pdf_codes_are_the_qr_codes_drawn_on_its_pages(prepare_db):
+    pytest.importorskip("pyzbar")
+    pdf = make_pdf(lidl_receipt(), graphics=qr_graphics(FNS_QR_ROWS))
+    assert pdf_codes(pdf) == ([ReceiptCode("QR_CODE", FNS, 1)], 1)
+    assert pdf_codes(make_pdf(lidl_receipt())) == ([], 1)
+
+
+def test_pdf_codes_of_a_file_that_is_not_a_pdf(prepare_db):
+    assert pdf_codes(b"not a pdf") == ([], 0)
+
+
+def test_pdf_codes_without_pyzbar_are_none(prepare_db, monkeypatch):
+    monkeypatch.setattr("jal.data_import.receipt_pdf.dependency_present", lambda modules: False)
+    assert pdf_codes(make_pdf(lidl_receipt(), graphics=qr_graphics(FNS_QR_ROWS))) == ([], 1)

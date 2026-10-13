@@ -6,7 +6,8 @@ from datetime import datetime, timedelta, timezone
 import pytest
 
 from decimal import Decimal
-from jal.data_import.receipt_inbox import JalrFile, PaperItem, scan_inbox, move_done, route, Route, is_fns_qr
+from jal.data_import.receipt_inbox import JalrFile, PaperItem, ReceiptCode, scan_inbox, move_done, route, Route, \
+    is_fns_qr, wrap_pdf
 from tests.test_at_qr import LIDL
 
 # Fabricated zero-value working document ('DC'), shaped like a fleet-card fuel delivery note
@@ -257,3 +258,24 @@ def test_route_red_scan_is_unverified(tmp_path):
     jalr = JalrFile.open(make_jalr(tmp_path, "f.jalr", codes=[LIDL.replace("E:N", "E:A")],
                                    extra=paper_scan(items, "red")))
     assert route(jalr).reason == Route.DOCUMENT_STATUS
+
+
+def test_wrapped_pdf_is_read_back_like_a_phone_file(tmp_path):
+    captured_at = datetime(2026, 10, 13, 9, 5, 7, tzinfo=timezone(timedelta(hours=1)))
+    path = wrap_pdf(str(tmp_path), b"%PDF-1.4 fake", [ReceiptCode("QR_CODE", LIDL, 1)], 2, captured_at)
+    assert os.listdir(tmp_path) == [os.path.basename(path)]
+    assert os.path.basename(path).startswith("20261013-090507-") and path.endswith(".jalr")
+    jalr = scan_inbox(str(tmp_path))[0]
+    assert (jalr.kind, jalr.pages, jalr.captured_at) == (JalrFile.PDF_IMPORT, 2, captured_at)
+    assert jalr.pdf_bytes() == b"%PDF-1.4 fake"
+    assert jalr.codes == [ReceiptCode("QR_CODE", LIDL, 1)]
+    result = route(jalr)
+    assert result.kind == Route.PDF and result.at_qr.total == Decimal('11.94')
+
+
+def test_wrapped_pdf_with_a_russian_code_goes_to_fns(tmp_path):
+    captured_at = datetime(2024, 1, 15, 18, 40, tzinfo=timezone.utc)
+    jalr = JalrFile.open(wrap_pdf(str(tmp_path), b"%PDF-1.4 fake", [ReceiptCode("QR_CODE", FNS, 1)], 1, captured_at))
+    result = route(jalr)
+    assert result.kind == Route.FNS and result.code == FNS
+    assert route(JalrFile.open(wrap_pdf(str(tmp_path), b"%PDF-1.4 fake", [], 1, captured_at))).kind == Route.PDF

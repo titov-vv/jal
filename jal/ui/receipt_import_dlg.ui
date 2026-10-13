@@ -26,7 +26,7 @@
       <string>Get receipt from phone inbox</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_3">
-      <item row="0" column="0" rowspan="4">
+      <item row="0" column="0" rowspan="5">
        <widget class="QTableWidget" name="InboxList">
         <property name="editTriggers">
          <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
@@ -91,6 +91,16 @@
        </widget>
       </item>
       <item row="3" column="1">
+       <widget class="QPushButton" name="InboxAddPdfBtn">
+        <property name="toolTip">
+         <string>Put PDF receipts of this computer into the inbox</string>
+        </property>
+        <property name="text">
+         <string>Add P&amp;DF...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
        <spacer name="inboxButtonsSpacer">
         <property name="orientation">
          <enum>Qt::Orientation::Vertical</enum>
@@ -103,7 +113,7 @@
         </property>
        </spacer>
       </item>
-      <item row="4" column="0" colspan="2">
+      <item row="5" column="0" colspan="2">
        <widget class="QLabel" name="InboxFolderLbl"/>
       </item>
      </layout>
@@ -319,6 +329,7 @@
   <tabstop>InboxLoadBtn</tabstop>
   <tabstop>InboxRefreshBtn</tabstop>
   <tabstop>InboxSkipBtn</tabstop>
+  <tabstop>InboxAddPdfBtn</tabstop>
   <tabstop>SlipDateTime</tabstop>
   <tabstop>PeerEdit</tabstop>
   <tabstop>SlipShopName</tabstop>

@@ -57,7 +57,7 @@ class Ui_ImportShopReceiptDlg(object):
         self.InboxList.verticalHeader().setVisible(False)
         self.InboxList.verticalHeader().setMinimumSectionSize(20)
 
-        self.gridLayout_3.addWidget(self.InboxList, 0, 0, 4, 1)
+        self.gridLayout_3.addWidget(self.InboxList, 0, 0, 5, 1)
 
         self.InboxLoadBtn = QPushButton(self.InboxGroup)
         self.InboxLoadBtn.setObjectName(u"InboxLoadBtn")
@@ -74,14 +74,19 @@ class Ui_ImportShopReceiptDlg(object):
 
         self.gridLayout_3.addWidget(self.InboxSkipBtn, 2, 1, 1, 1)
 
+        self.InboxAddPdfBtn = QPushButton(self.InboxGroup)
+        self.InboxAddPdfBtn.setObjectName(u"InboxAddPdfBtn")
+
+        self.gridLayout_3.addWidget(self.InboxAddPdfBtn, 3, 1, 1, 1)
+
         self.inboxButtonsSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
-        self.gridLayout_3.addItem(self.inboxButtonsSpacer, 3, 1, 1, 1)
+        self.gridLayout_3.addItem(self.inboxButtonsSpacer, 4, 1, 1, 1)
 
         self.InboxFolderLbl = QLabel(self.InboxGroup)
         self.InboxFolderLbl.setObjectName(u"InboxFolderLbl")
 
-        self.gridLayout_3.addWidget(self.InboxFolderLbl, 4, 0, 1, 2)
+        self.gridLayout_3.addWidget(self.InboxFolderLbl, 5, 0, 1, 2)
 
 
         self.verticalLayout.addWidget(self.InboxGroup)
@@ -226,7 +231,8 @@ class Ui_ImportShopReceiptDlg(object):
         QWidget.setTabOrder(self.InboxList, self.InboxLoadBtn)
         QWidget.setTabOrder(self.InboxLoadBtn, self.InboxRefreshBtn)
         QWidget.setTabOrder(self.InboxRefreshBtn, self.InboxSkipBtn)
-        QWidget.setTabOrder(self.InboxSkipBtn, self.SlipDateTime)
+        QWidget.setTabOrder(self.InboxSkipBtn, self.InboxAddPdfBtn)
+        QWidget.setTabOrder(self.InboxAddPdfBtn, self.SlipDateTime)
         QWidget.setTabOrder(self.SlipDateTime, self.PeerEdit)
         QWidget.setTabOrder(self.PeerEdit, self.SlipShopName)
         QWidget.setTabOrder(self.SlipShopName, self.AccountEdit)
@@ -258,6 +264,10 @@ class Ui_ImportShopReceiptDlg(object):
         self.InboxSkipBtn.setToolTip(QCoreApplication.translate("ImportShopReceiptDlg", u"Move the selected file into the 'done' folder without importing it", None))
 #endif // QT_CONFIG(tooltip)
         self.InboxSkipBtn.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"S&kip", None))
+#if QT_CONFIG(tooltip)
+        self.InboxAddPdfBtn.setToolTip(QCoreApplication.translate("ImportShopReceiptDlg", u"Put PDF receipts of this computer into the inbox", None))
+#endif // QT_CONFIG(tooltip)
+        self.InboxAddPdfBtn.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Add P&DF...", None))
         self.ReceiptGroup.setTitle(QCoreApplication.translate("ImportShopReceiptDlg", u"Operation data", None))
         self.SlipDateTime.setDisplayFormat(QCoreApplication.translate("ImportShopReceiptDlg", u"dd/MM/yyyy hh:mm:ss", None))
         self.DateTimeLbl.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Date / Time:", None))
