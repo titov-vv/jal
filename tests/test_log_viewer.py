@@ -1,5 +1,5 @@
 import logging
-
+from PySide6.QtWidgets import QApplication
 from tests.fixtures import project_root
 from jal.widgets.custom.log_viewer import LogViewer
 
@@ -30,3 +30,12 @@ def test_selection_keeps_message_colors(project_root):
     viewer.selectAll()
     viewer.displayMessage(logging.WARNING, "No quote for AAPL on 01/03/2021")
     assert _line_formats(viewer)[:2] == logged
+
+
+def test_copied_selection_keeps_its_line_breaks(project_root):
+    viewer = LogViewer()
+    viewer.displayMessage(logging.INFO, "Receipt found")
+    viewer.displayMessage(logging.INFO, "Receipt was loaded")
+    viewer.selectAll()
+    viewer._copy2clipboard()
+    assert QApplication.clipboard().text() == "Receipt found\nReceipt was loaded"

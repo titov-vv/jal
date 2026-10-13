@@ -1,0 +1,101 @@
+{
+ "qr": "t=20260824T1233&s=100.00&fn=7380440900000000&i=100001&fp=1234567890&n=1",
+ "found": {
+  "kind": "kkt",
+  "id": "000000000000000000000001",
+  "status": 2,
+  "statusReal": 2
+ },
+ "loaded": {
+  "status": 2,
+  "statusReal": 2,
+  "id": "000000000000000000000001",
+  "kind": "kkt",
+  "createdAt": "2026-10-13T12:28:37+03:00",
+  "statusDescription": {},
+  "qr": "t=20260824T1233&s=100.00&fn=7380440900000000&i=100001&fp=1234567890&n=1",
+  "operation": {
+   "date": "2026-08-24T12:33",
+   "type": 1,
+   "sum": 10000
+  },
+  "process": [
+   {
+    "time": "2026-08-24T11:25:04+00:00",
+    "result": 21
+   },
+   {
+    "time": "2026-08-24T11:25:05+00:00",
+    "result": 2
+   }
+  ],
+  "query": {
+   "operationType": 1,
+   "sum": 10000,
+   "documentId": 100001,
+   "fsId": "7380440900000000",
+   "fiscalSign": "1234567890",
+   "date": "2026-08-24T12:33"
+  },
+  "ticket": {
+   "document": {
+    "receipt": {
+     "dateTime": 1787563980,
+     "buyerPhoneOrAddress": "buyer@example.org",
+     "cashTotalSum": 0,
+     "code": 3,
+     "creditSum": 0,
+     "ecashTotalSum": 10000,
+     "fiscalDocumentFormatVer": 2,
+     "fiscalDocumentNumber": 100001,
+     "fiscalDriveNumber": "7380440900000000",
+     "fiscalSign": 1234567890,
+     "fnsUrl": "www.nalog.gov.ru",
+     "items": [
+      {
+       "name": "Аванс за услуги связи 70000000000",
+       "nds": 12,
+       "paymentType": 3,
+       "price": 10000,
+       "productType": 10,
+       "quantity": 1,
+       "sum": 10000
+      }
+     ],
+     "kktRegId": "0000000000000001    ",
+     "machineNumber": "0000001",
+     "nds0": 0,
+     "amountsReceiptNds": {
+      "amountsNds": [
+       {
+        "nds": 12,
+        "ndsSum": 1803
+       }
+      ]
+     },
+     "operationType": 1,
+     "prepaidSum": 0,
+     "provisionSum": 0,
+     "requestNumber": 664,
+     "retailPlace": "https://www.t2.ru",
+     "retailPlaceAddress": "127410, Москва г, Алтуфьевское ш, дом № 33Г",
+     "sellerAddress": "example@example.org",
+     "shiftNumber": 77,
+     "taxationType": 1,
+     "appliedTaxationType": 1,
+     "totalSum": 10000,
+     "user": "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ \"Т2 МОБАЙЛ\"",
+     "userInn": "7743895280  "
+    }
+   }
+  },
+  "organization": {
+   "name": "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ \"Т2 МОБАЙЛ\"",
+   "inn": "7743895280"
+  },
+  "seller": {
+   "name": "ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ \"Т2 МОБАЙЛ\"",
+   "inn": "7743895280"
+  }
+ }
+}
