@@ -298,7 +298,7 @@ class TransferAssignDialog(QDialog):
         self._paid_label.setText(self.tr("The other end of this transfer states ")
                                  + f"{remove_exponent(self._leg['qty'])} {JalAsset(known.currency()).symbol()}")
         rate_timestamp, rate = JalAsset(known.currency()).quote(timestamp, chosen.currency())
-        self._show_rate(known.currency(), chosen.currency(), rate, rate_timestamp, timestamp)
+        show_rate(self._rate_label, known.currency(), chosen.currency(), rate, rate_timestamp, timestamp)
         self._offer(self._leg['qty'] * rate, bool(rate_timestamp))
 
     # What the asset cost the account that sends it, restated in the currency of the account that receives it.
@@ -308,7 +308,17 @@ class TransferAssignDialog(QDialog):
         source, destination = self._ends(account_id)
         departure = self._leg['timestamp'] if self._sending() else timestamp
         self._amount_currency.setText(JalAsset(destination.currency()).symbol())
-        basis = carried_basis(source, self._leg['asset'], self._leg['qty'], departure, destination.currency())
+        if self._sending():
+            # The send has already taken its lots out of the account, so what remains there is not what it cost
+            basis = self._settlement.sent_basis(self._oid, destination.currency())
+            if basis is None:
+                self._paid_label.setText(self.tr("The ledger hasn't reached this send yet, so what it cost isn't "
+                                                 "known."))
+                self._rate_label.setText('')
+                self._offer(Decimal('0'), False)
+                return
+        else:
+            basis = carried_basis(source, self._leg['asset'], self._leg['qty'], departure, destination.currency())
         paid = localize_decimal(basis['basis'], precision=2) + ' ' + JalAsset(basis['currency']).symbol()
         if basis['short'] > Decimal('0'):
             # The refusal above already says this account can't have sent it; here is what is actually there
@@ -317,32 +327,9 @@ class TransferAssignDialog(QDialog):
         else:
             self._paid_label.setText(self.tr("{} paid {} for it, over {} lot(s).").format(
                 source.name(), paid, basis['lots']))
-        self._show_rate(basis['currency'], destination.currency(), basis['rate'], basis['rate_timestamp'], departure)
+        show_rate(self._rate_label, basis['currency'], destination.currency(), basis['rate'], basis['rate_timestamp'],
+                  departure)
         self._offer(basis['value'], basis['complete'] and basis['short'] == Decimal('0'))
-
-    # The rate the restatement rests on, always with the day it is FROM. JalAsset.quote() answers with the newest
-    # rate at or before the date asked about and says nothing about how old it is, so a rate from a series that ended
-    # years ago looks exactly like today's unless its own date is shown - which is the whole reason this line exists.
-    def _show_rate(self, source_currency: int, target_currency: int, rate: Decimal, rate_timestamp: int,
-                   timestamp: int) -> None:
-        if source_currency == target_currency:
-            self._rate_label.setText('')
-            return
-        pair = f"{JalAsset(source_currency).symbol()} -> {JalAsset(target_currency).symbol()}"
-        if not rate_timestamp:
-            doubtful = True
-            text = self.tr("No {} rate is stored for that date, so the value has to be entered by hand "
-                           "(rates are loaded from the Data menu).").format(pair)
-        else:
-            doubtful = (timestamp - rate_timestamp) > STALE_RATE_LIMIT
-            text = self.tr("Rate {}: {}, as of {}").format(pair, localize_decimal(rate), ts2d(rate_timestamp))
-            if doubtful:
-                text += self.tr(" - the newest one stored, and it is not of that date")
-        palette = QPalette(QApplication.palette(self._rate_label))
-        if doubtful:
-            palette.setColor(QPalette.WindowText, Theme.text(Meaning.NEGATIVE, palette.window().color()))
-        self._rate_label.setPalette(palette)
-        self._rate_label.setText(text)
 
     # Puts the computed value in front of the user, unless they have entered one of their own - what they typed is
     # their statement about the transfer and nothing here overrules it.
@@ -370,3 +357,31 @@ class TransferAssignDialog(QDialog):
             return
         self.changed = True
         super().accept()
+
+
+# The rate the restatement rests on, always with the day it is FROM. JalAsset.quote() answers with the newest rate at or
+# before the date asked about and says nothing about how old it is, so a rate from a series that ended years ago looks
+# exactly like today's unless its own date is shown - which is the whole reason this line exists. Shared with
+# TransferMatchDialog, hence the context spelled out.
+def show_rate(label: QLabel, source_currency: int, target_currency: int, rate: Decimal, rate_timestamp: int,
+              timestamp: int) -> None:
+    if source_currency == target_currency:
+        label.setText('')
+        return
+    pair = f"{JalAsset(source_currency).symbol()} -> {JalAsset(target_currency).symbol()}"
+    if not rate_timestamp:
+        doubtful = True
+        text = QApplication.translate("TransferAssignDialog", "No {} rate is stored for that date, so the value has "
+                                      "to be entered by hand (rates are loaded from the Data menu).").format(pair)
+    else:
+        doubtful = (timestamp - rate_timestamp) > STALE_RATE_LIMIT
+        text = QApplication.translate("TransferAssignDialog", "Rate {}: {}, as of {}").format(
+            pair, localize_decimal(rate), ts2d(rate_timestamp))
+        if doubtful:
+            text += QApplication.translate("TransferAssignDialog",
+                                           " - the newest one stored, and it is not of that date")
+    palette = QPalette(QApplication.palette(label))
+    if doubtful:
+        palette.setColor(QPalette.WindowText, Theme.text(Meaning.NEGATIVE, palette.window().color()))
+    label.setPalette(palette)
+    label.setText(text)

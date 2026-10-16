@@ -24,7 +24,8 @@ PALETTES = {
     'sepia': _palette(QColor(244, 236, 216), QColor(60, 45, 30)),
     'contrast': _palette(QColor(0, 0, 0), QColor(255, 255, 255))
 }
-ROW_KINDS = [Meaning.SENT, Meaning.ARRIVED, Meaning.BRIDGE, Meaning.BASIS, Meaning.POISONING, Meaning.AIRDROP]
+ROW_KINDS = [Meaning.SENT, Meaning.ARRIVED, Meaning.BRIDGE, Meaning.BASIS, Meaning.HELD, Meaning.POISONING,
+             Meaning.AIRDROP]
 
 
 @pytest.fixture(params=list(PALETTES), ids=list(PALETTES))
@@ -68,7 +69,7 @@ def test_hue_carries_the_meaning(themed_app):
                 assert min(limit) - 1 <= value <= max(limit) + 1
 
 
-# The pending-transfers report tells six kinds of unfinished leg apart by tint alone, so two of them landing on
+# The pending-transfers report tells seven kinds of unfinished leg apart by tint alone, so two of them landing on
 # the same colour would lose information rather than just look wrong.
 def test_row_tints_stay_distinguishable(themed_app):
     tints = [Theme.tint(kind) for kind in ROW_KINDS]

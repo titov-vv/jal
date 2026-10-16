@@ -3,7 +3,7 @@ from decimal import Decimal
 import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db
-from tests.helpers import d2t, create_assets, create_actions, create_trades, symbol_id_for
+from tests.helpers import d2t, create_assets, create_actions, create_trades, create_quotes, symbol_id_for
 from jal.constants import BookAccount, PredefinedAsset, PredefinedCategory, PredefinedAccountType, AssetLocation
 from jal.data_import.statement import Statement, JSF
 from jal.db.account import JalAccount, JalAccountCreator
@@ -391,18 +391,44 @@ def test_settlement_carries_the_cost_basis_and_empties_the_transfers_book(funded
 
 
 # Nothing in the pair states a cost basis in the currency of the destination account, and none is invented: the
-# arrived asset opens at zero, which is visible in every holdings and deals report. See the FIXME in
-# TransferSettlement._merge().
-def test_a_cross_currency_pair_is_settled_with_no_cost_basis(funded):
-    _transfer(WALLET_A, None, 400, d2t(210103))
-    _transfer(None, WALLET_C, 400, d2t(210103))      # WALLET_C is kept in EUR, WALLET_A in USD
+# hash pass holds the pair back, both legs stay pending, and an automatic caller of settle_linked() is refused.
+def test_a_cross_currency_pair_is_held_back_for_its_cost_basis(funded):
+    sent = _transfer(WALLET_A, None, 400, d2t(210103))
+    arrived = _transfer(None, WALLET_C, 400, d2t(210103))      # WALLET_C is kept in EUR, WALLET_A in USD
 
-    assert TransferSettlement().settle_all() == 1
+    assert TransferSettlement().settle_all() == 0
+    assert len(_stored()) == 2                                  # both legs still stored, neither merged
+    assert TransferSettlement().held_for_basis() == {sent.id(), arrived.id()}
+    assert TransferSettlement().basis_needed_for(sent.id(), arrived.id()) is True
+    assert TransferSettlement().settle_linked(sent.id(), arrived.id()) != ''
+    assert TransferSettlement().refusal_for_assignment(sent.id(), WALLET_B, d2t(210103)) != ''
+
+
+# Stated by the user, the basis is what the arrived lots open at: 400 USDT for 200 EUR is 0.5 a coin
+def test_a_cross_currency_pair_opens_at_the_basis_stated(funded):
+    sent = _transfer(WALLET_A, None, 400, d2t(210103))
+    arrived = _transfer(None, WALLET_C, 400, d2t(210103))
+
+    assert TransferSettlement().settle_linked(sent.id(), arrived.id(), basis=Decimal('200')) == ''
     Ledger().rebuild(from_timestamp=0)
 
     assert JalAccount(WALLET_C).get_asset_amount(d2t(210201), USDT) == Decimal('400')
     lots = JalAccount(WALLET_C).open_trades_list(JalAsset(USDT))
-    assert len(lots) == 1 and lots[0].open_price(adjusted=True) == Decimal('0')
+    assert len(lots) == 1 and lots[0].open_price(adjusted=True) == Decimal('0.5')
+    assert TransferSettlement().held_for_basis() == set()
+
+
+# A pending send has already taken its lots out of the account, so what it cost is read from what it parked in the
+# Transfers book: the 1000 USDT at 1.0 it took, not the later lot at 3.0 that is left
+def test_the_basis_of_a_send_is_the_lots_it_took(funded):
+    create_trades(WALLET_A, [(d2t(210102) + 60, d2t(210102) + 60, USDT, 1000.0, 3.0, 0.0)])
+    create_quotes(USD, EUR, [(d2t(210103), 0.5)])
+    sent = _transfer(WALLET_A, None, 1000, d2t(210103))
+    Ledger().rebuild(from_timestamp=0)
+
+    basis = TransferSettlement().sent_basis(sent.id(), EUR)
+    assert basis['basis'] == Decimal('1000') and basis['currency'] == USD and basis['lots'] == 1
+    assert basis['value'] == Decimal('500') and basis['complete'] is True
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -453,6 +479,45 @@ def test_a_record_of_both_ends_completes_a_leg_stored_earlier(wallets, monkeypat
     rows = _stored()
     assert len(rows) == 1
     assert (int(rows[0]['withdrawal_account']), int(rows[0]['deposit_account'])) == (WALLET_A, WALLET_B)
+
+
+# An importer puts the quantity into 'deposit', and across currencies that field is the cost basis the asset opens
+# at - so a transfer to the EUR wallet is stored at zero, where the unsettled transfers report lists it
+def _import_across(monkeypatch, records: list, unique=True):
+    statement = _statement(monkeypatch)
+    monkeypatch.setattr(type(statement), "_transfers_are_unique_per_transaction", unique)
+    statement.set_mapped_id(JSF.ACCOUNTS, 3, WALLET_C)
+    statement._data[JSF.ACCOUNTS].append({"id": 3, "number": '', "currency": STATEMENT_ASSET})
+    for index, record in enumerate(records):
+        record['id'] = index + 1
+    statement._import_transfers(records)
+
+
+def test_an_imported_transfer_across_currencies_is_stored_at_zero_basis(wallets, monkeypatch):
+    _import_across(monkeypatch, [_record([1, 3, 1]) | {"deposit": Decimal('1000')}])
+
+    rows = _stored()
+    assert len(rows) == 1 and int(rows[0]['deposit_account']) == WALLET_C
+    assert Decimal(rows[0]['deposit']) == Decimal('0')
+
+
+def test_completing_a_leg_across_currencies_takes_no_basis(wallets, monkeypatch):
+    _import(monkeypatch, [_record([1, 0, 1]) | {"deposit": Decimal('1000')}])
+    _import_across(monkeypatch, [_record([1, 3, 1]) | {"deposit": Decimal('1000')}])
+
+    rows = _stored()
+    assert len(rows) == 1 and int(rows[0]['deposit_account']) == WALLET_C
+    assert Decimal(rows[0]['deposit']) == Decimal('0')
+
+
+# A transfer imported before, with the quantity stored as its basis, is still the same movement when the statement
+# comes again: 'deposit' is no part of an asset transfer's identity, so the re-import adds nothing
+def test_a_transfer_stored_with_the_quantity_as_basis_is_not_imported_again(wallets, monkeypatch):
+    _transfer(WALLET_A, WALLET_C, Decimal('1E+3'), d2t(210103), deposit=Decimal('1E+3'), number='')   # as imported
+    _import_across(monkeypatch, [_record([1, 3, 1], number='') | {"deposit": Decimal('1000')}], unique=False)
+
+    rows = _stored()
+    assert len(rows) == 1 and Decimal(rows[0]['deposit']) == Decimal('1000')
 
 
 # ... but completing it can be refused, and then the movement must not be stored a second time instead. The leg was

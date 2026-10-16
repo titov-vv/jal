@@ -10,12 +10,13 @@ class Meaning(Enum):      # Semantic - what the value IS
     WARNING = auto()      # worth a second look, but nothing is wrong yet
     INFO = auto()         # marked, reconciled, plotted - noticeable without being a verdict
     MUTED = auto()        # present but secondary: a zero, a debug line, a marker's border
-    # Categorical - the six kinds of row in the pending-transfers report. These are told apart from each other
+    # Categorical - the seven kinds of row in the pending-transfers report. These are told apart from each other
     # rather than judged, so they are hues rather than verdicts, except the last two which are also warnings.
     SENT = auto()
     ARRIVED = auto()
     BRIDGE = auto()
     BASIS = auto()
+    HELD = auto()
     POISONING = auto()
     AIRDROP = auto()
 
@@ -32,6 +33,7 @@ _ANCHOR = {
     Meaning.ARRIVED:   (210, 100),
     Meaning.BRIDGE:    (120, 100),
     Meaning.BASIS:     (265, 100),
+    Meaning.HELD:      (175, 100),
     Meaning.POISONING: (0, 100),
     Meaning.AIRDROP:   (30, 100)
 }
