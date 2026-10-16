@@ -96,6 +96,8 @@ class PendingLegTreeItem(AbstractTreeItem):
 #   BASIS    not pending at all: a settled cross-currency transfer whose destination lots opened at zero because
 #            nothing ever stated their cost basis. Shown only on request (see updateView), because a zero may be
 #            correct and only the user can tell - what matters is that it is possible to look.
+#   HELD     a leg whose other record the transaction hash has found, held back because the two accounts are kept
+#            in different currencies and what the asset cost has to be stated - Match asks for it.
 #   POISONING an arrival from an address minted to be mistaken for one of the user's own - an address-poisoning
 #            attack, waiting to be copied out of the history in place of the real address. It is not a leg awaiting
 #            its other end at all: nobody sent it, so nothing will ever settle it.
@@ -107,10 +109,11 @@ class PendingTransfersModel(ReportTreeModel):
     ARRIVED = 'arrived'
     BRIDGE = 'bridge'
     BASIS = 'basis'
+    HELD = 'held'
     POISONING = 'poisoning'
     AIRDROP = 'airdrop'
     _BACKGROUND = {SENT: Meaning.SENT, ARRIVED: Meaning.ARRIVED, BRIDGE: Meaning.BRIDGE,
-                   BASIS: Meaning.BASIS, POISONING: Meaning.POISONING, AIRDROP: Meaning.AIRDROP}
+                   BASIS: Meaning.BASIS, HELD: Meaning.HELD, POISONING: Meaning.POISONING, AIRDROP: Meaning.AIRDROP}
     # The kinds an arriving leg may turn out to be instead of a plain arrival - what the report colours differently
     UNSOLICITED = {TransferSettlement.POISONING: POISONING, TransferSettlement.AIRDROP: AIRDROP}
 
@@ -137,6 +140,7 @@ class PendingTransfersModel(ReportTreeModel):
         # built and kept, because the footer asks for it on every repaint - see footerData().
         self._arrived_count = 0
         self._basis_count = 0
+        self._held = set()          # legs the hash pairs but that wait for a cost basis - see _leg_record()
         self._protocol_names = None
         self._locations = None
         # What the list may be filed under. None of these is a column: a heading answers a question the columns
@@ -373,6 +377,7 @@ class PendingTransfersModel(ReportTreeModel):
             self.ARRIVED: self.tr("Arrived - already counted, source not yet known"),
             self.BRIDGE: self.tr("Bridge - crossed chains, arrival not yet matched"),
             self.BASIS: self.tr("Settled, but opened at a cost basis of zero"),
+            self.HELD: self.tr("Paired, but crosses currencies - Match to state the cost basis"),
             self.POISONING: self.tr("Address poisoning - write off as dust"),
             self.AIRDROP: self.tr("Suspected airdrop - unsolicited arrival"),
         }
@@ -397,9 +402,11 @@ class PendingTransfersModel(ReportTreeModel):
             value = Decimal('0')
             tooltip = self.tr("Arrived, but the account it was sent from isn't known yet. It is already counted in ") \
                       + leg['account'].name() + self.tr(", at a cost basis of zero until the transfer is settled.")
+        # A held leg already has its other record, so assigning an account beside it would book the movement twice
+        held = leg['oid'] in self._held
         # An address only resolves for the legs a chain fetched, and resolving it walks every account, so it is
         # asked about the legs that state one at all
-        suggested = self._settlement.address_suggestion(leg['oid']) if leg['address'] else 0
+        suggested = self._settlement.address_suggestion(leg['oid']) if leg['address'] and not held else 0
         if suggested:
             tooltip += self.tr("\nThe address it names belongs to ") + JalAccount(suggested).name() \
                        + self.tr(" - assign that account to settle the transfer.")
@@ -418,6 +425,10 @@ class PendingTransfersModel(ReportTreeModel):
         if unsolicited:
             kind = self.UNSOLICITED[unsolicited['kind']]
             tooltip = self._unsolicited_tooltip(unsolicited, leg)
+        elif held:
+            kind = self.HELD
+            tooltip += self.tr("\nIts other record is found by the transaction, but the two accounts are kept in "
+                               "different currencies - Match the two legs and state what the asset cost.")
         return {
             'oid': leg['oid'],
             'kind': kind,
@@ -440,6 +451,7 @@ class PendingTransfersModel(ReportTreeModel):
             'number': leg['number'],
             'note': leg['note'],
             'font': 'normal' if outgoing else 'italic',
+            'incoming': not outgoing,
             'tooltip': tooltip
         }
 
@@ -496,6 +508,8 @@ class PendingTransfersModel(ReportTreeModel):
     def _leg_action(self, kind: str, suggested: int, duplicate) -> str:
         if kind in (self.POISONING, self.AIRDROP):
             return self.tr("Dust")
+        if kind == self.HELD:
+            return self.tr("Match...")
         if suggested:
             return self.tr("Assign...")
         if duplicate:
@@ -591,6 +605,7 @@ class PendingTransfersModel(ReportTreeModel):
 
     def prepareData(self):
         if self._records is None:
+            self._held = self._settlement.held_for_basis()
             self._records = [self._leg_record(leg) for leg in Transfer.pending_legs(self._date)]
             self._records += [self._bridge_record(half) for half in Bridge.pending_halves(self._date)]
             if self._with_basis_gaps:
@@ -601,7 +616,7 @@ class PendingTransfersModel(ReportTreeModel):
         # in transit among the rows that are shown, which is the question a filtered list is asking. Each heading
         # accumulates the same way, out of the rows filed under it.
         shown = self._shown()
-        self._arrived_count = sum(1 for r in shown if r['kind'] in (self.ARRIVED, self.POISONING, self.AIRDROP))
+        self._arrived_count = sum(1 for r in shown if r.get('incoming'))
         self._basis_count = sum(1 for r in shown if r['kind'] == self.BASIS)
         for record in shown:
             leaf = PendingLegTreeItem(record)

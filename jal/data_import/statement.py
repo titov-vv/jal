@@ -883,6 +883,12 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 operation.pop('counterparty_address', None)
             if asset_types[0] != PredefinedAsset.Money:
                 operation['symbol_id'] = symbols[0]
+            # Across currencies an asset transfer's 'deposit' is the cost basis it opens at, and no statement states
+            # it (importers put the quantity there) - it is stored as zero, which the unsettled transfers report lists
+            no_basis = asset_types[0] != PredefinedAsset.Money and accounts[0] is not None \
+                and accounts[1] is not None and JalAccount(accounts[0]).currency() != JalAccount(accounts[1]).currency()
+            if no_basis:
+                operation['deposit'] = Decimal('0')
             operation.pop('symbol')
             # A fee paid in an asset rather than in the money of the fee account - on-chain gas, which is burned
             # in the native coin of the chain and may differ from the asset being transferred.
@@ -910,7 +916,12 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if Transfer.find_money_leg(operation, duplicate_before):
                 JalDB.log_duplicate("transfers", operation)
                 continue
-            LedgerTransaction.create_new(LedgerTransaction.Transfer, operation, duplicate_before=duplicate_before)
+            newest = Transfer.last_oid()
+            stored = LedgerTransaction.create_new(LedgerTransaction.Transfer, operation,
+                                                  duplicate_before=duplicate_before)
+            if no_basis and stored.oid() > newest:    # a duplicate answers with the transfer stored before
+                logging.warning(self.tr("Transfer crosses currencies and is stored at zero cost basis, state it in "
+                                        "the transfer: ") + f"{transfer}")
 
     # True if this incoming movement is already booked as the ARRIVING LEG of a cross-chain operation - a bridge or a
     # cross-chain swap that was completed from what the routing aggregator reported, possibly long before the chain it

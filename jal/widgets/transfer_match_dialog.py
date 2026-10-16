@@ -1,12 +1,13 @@
 from decimal import Decimal
-from PySide6.QtCore import Qt, QSignalBlocker
-from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QLabel, QTreeWidget, QTreeWidgetItem,
-                               QDialogButtonBox, QMessageBox)
+from PySide6.QtCore import Qt, QSignalBlocker, QEvent
+from PySide6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QLineEdit, QGroupBox,
+                               QTreeWidget, QTreeWidgetItem, QDialogButtonBox, QMessageBox)
 from jal.db.asset import JalAsset
-from jal.db.helpers import localize_decimal, remove_exponent
+from jal.db.helpers import localize_decimal, delocalize_decimal, remove_exponent
 from jal.db.operations import Transfer
 from jal.db.transfer_settlement import TransferSettlement
 from jal.widgets.helpers import ts2dt
+from jal.widgets.transfer_assign_dialog import show_rate
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -47,6 +48,27 @@ class TransferMatchDialog(QDialog):
         self._sent_panel = self._panel(panels, self.tr("Sent — where it arrived isn't known"))
         self._arrived_panel = self._panel(panels, self.tr("Arrived — where it came from isn't known"))
         layout.addLayout(panels)
+        # What the asset cost, asked for only when the two accounts are kept in different currencies (see
+        # _update_basis) - built like the one of TransferAssignDialog
+        self._basis_box = QGroupBox(self.tr("Cost basis"), self)
+        basis = QGridLayout(self._basis_box)
+        self._paid_label = QLabel()
+        basis.addWidget(self._paid_label, 0, 0, 1, 3)
+        self._rate_label = QLabel()
+        self._rate_label.setWordWrap(True)
+        basis.addWidget(self._rate_label, 1, 0, 1, 3)
+        basis.addWidget(QLabel(self.tr("Cost basis to record:")), 2, 0)
+        self._basis = QLineEdit(self)
+        self._basis.textEdited.connect(self._basis_typed)
+        basis.addWidget(self._basis, 2, 1)
+        self._basis_currency = QLabel()
+        basis.addWidget(self._basis_currency, 2, 2)
+        basis.setColumnStretch(1, 1)
+        layout.addWidget(self._basis_box)
+        self._basis_shown = False   # kept here: a widget of a dialog not shown yet reports itself invisible
+        self._basis_pair = None     # the pair the field was filled for
+        self._user_typed = False    # a number the user has entered is theirs and is never recomputed over
+        self._pair_allowed = False
         self._status = QLabel()
         self._status.setWordWrap(True)
         layout.addWidget(self._status)
@@ -214,7 +236,52 @@ class TransferMatchDialog(QDialog):
                                  + self._pair_text(sent, arrived))
         else:
             self._status.setText(self.tr("Matching makes these one transfer: ") + self._pair_text(sent, arrived))
-        self._buttons.button(QDialogButtonBox.Ok).setEnabled(bool(sent and arrived and not refusal))
+        self._pair_allowed = bool(sent and arrived and not refusal)
+        self._update_basis(sent, arrived)
+        self._update_ok_button()
+
+    def _update_ok_button(self) -> None:
+        missing = self._basis_shown and not self._basis.text().strip()
+        self._buttons.button(QDialogButtonBox.Ok).setEnabled(self._pair_allowed and not missing)
+
+    # What the asset cost the sending account, restated in the currency of the receiving one - offered for a pair
+    # across currencies and left editable, as TransferAssignDialog does
+    def _update_basis(self, sent: int, arrived: int) -> None:
+        if (sent, arrived) != self._basis_pair:
+            self._basis_pair = (sent, arrived)
+            self._user_typed = False    # a number typed for one pair says nothing about another
+        self._basis_shown = self._pair_allowed and self._settlement.basis_needed_for(sent, arrived)
+        self._basis_box.setVisible(self._basis_shown)
+        if not self._basis_shown:
+            return
+        source, destination = self._legs[sent]['account'], self._legs[arrived]['account']
+        self._basis_currency.setText(JalAsset(destination.currency()).symbol())
+        basis = self._settlement.sent_basis(sent, destination.currency())
+        if basis is None:
+            self._paid_label.setText(self.tr("The ledger hasn't reached this send yet, so what it cost isn't known."))
+            self._rate_label.setText('')
+            self._offer(Decimal('0'), False)
+            return
+        paid = localize_decimal(basis['basis'], precision=2) + ' ' + JalAsset(basis['currency']).symbol()
+        self._paid_label.setText(self.tr("{} paid {} for it, over {} lot(s).").format(source.name(), paid,
+                                                                                      basis['lots']))
+        show_rate(self._rate_label, basis['currency'], destination.currency(), basis['rate'],
+                  basis['rate_timestamp'], self._legs[sent]['timestamp'])
+        self._offer(basis['value'], basis['complete'])
+
+    def _offer(self, value: Decimal, usable: bool) -> None:
+        if not self._user_typed:
+            self._basis.setText(localize_decimal(value, precision=2) if usable else '')
+
+    def _basis_typed(self, _text: str) -> None:
+        self._user_typed = True
+        self._update_ok_button()
+
+    # The rate line paints itself with a color derived from the palette, so a theme switch has to redo that
+    def changeEvent(self, event):
+        if event.type() == QEvent.ApplicationPaletteChange and self._basis_shown:
+            self._update_basis(*self._basis_pair)
+        super().changeEvent(event)
 
     def _pair_text(self, sending_oid: int, arriving_oid: int) -> str:
         sent, arrived = self._legs[sending_oid], self._legs[arriving_oid]
@@ -236,7 +303,14 @@ class TransferMatchDialog(QDialog):
                         "movement happened.\n\nMatch them anyway and stamp both ends with ") + ts2dt(moment) + "?",
                 QMessageBox.Yes | QMessageBox.No, QMessageBox.No) != QMessageBox.Yes:
             return
-        refusal = self._settlement.settle_linked(sending_oid, arriving_oid, override=True)
+        basis = delocalize_decimal(self._basis.text()) if self._basis_shown else None
+        if basis == Decimal('0') and QMessageBox().warning(
+                self, self.tr("No value is stated"),
+                self.tr("The asset will open at a cost basis of zero, and everything it is sold for later will count "
+                        "as gain. Match them anyway?"),
+                QMessageBox.Yes | QMessageBox.No, QMessageBox.No) != QMessageBox.Yes:
+            return
+        refusal = self._settlement.settle_linked(sending_oid, arriving_oid, override=True, basis=basis)
         if refusal:
             QMessageBox().warning(self, self.tr("Legs are not matched"), refusal)
             self._load()

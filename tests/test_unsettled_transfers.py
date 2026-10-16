@@ -389,6 +389,24 @@ def test_each_kind_of_row_says_which_it_is(wallets):
     assert _background(model, 0) != _background(model, 1)
 
 
+# Two records of one transaction across currencies are paired but held back until a cost basis is stated, and the
+# row says so in a colour of its own and points at Match - never at Assign, which would book the movement twice.
+def test_a_pair_held_for_its_cost_basis_is_a_kind_of_its_own(wallets):
+    eur_wallet = _eur_wallet()
+    tx_hash = '0x' + 'a' * 64
+    _transfer(WALLET_A, None, 400, d2t(210103), number=tx_hash, address=EUR_ADDRESS)
+    _transfer(None, eur_wallet.id(), 400, d2t(210103), number=tx_hash)
+    _transfer(None, WALLET_B, 150, d2t(210104))
+
+    model = _model()
+
+    kinds = [model.transfer_kind(model.index(row, 0, QModelIndex())) for row in range(_rows(model))]
+    assert kinds == [PendingTransfersModel.HELD, PendingTransfersModel.HELD, PendingTransfersModel.ARRIVED]
+    assert _row(model, 0, 'action') == "Match..." and _row(model, 0, 'suggestion') == ''
+    assert _background(model, 0) != _background(model, 2)
+    assert _background(model, 0) in [color for color, _caption in model.legend()]
+
+
 # The address of the end that has no account is the only exact thing known about it, and what an assignment is made
 # against - so it is in the row rather than only in a tooltip.
 def test_the_address_a_leg_names_is_shown(wallets):

@@ -86,6 +86,20 @@ def test_the_cost_basis_of_a_crossing_is_computed_and_offered(funded):
     assert _ok(dialog) is True
 
 
+# A send has already taken its lots out of the account it left, so the value offered is what those lots cost - the
+# 1000 USDT at 1.0 - and not the later lot at 3.0 that is all the account holds by then
+def test_the_cost_basis_of_a_send_is_the_lots_it_took(funded):
+    create_trades(WALLET_A, [(d2t(210102) + 60, d2t(210102) + 60, USDT, 1000.0, 3.0, 0.0)])
+    create_quotes(USD, EUR, [(d2t(210103), 0.5)])
+    transfer = _transfer(WALLET_A, None, 1000, d2t(210103))
+    Ledger().rebuild(from_timestamp=0)
+
+    dialog = TransferAssignDialog(transfer.id())
+    dialog._account.selection_done(WALLET_EUR)
+
+    assert dialog._amount.text() == '500.00'
+
+
 # Nothing is offered that isn't known: without a rate the field is left empty for the user to fill, and the dialog
 # will not be completed until they do.
 def test_no_value_is_offered_when_there_is_no_rate(funded):

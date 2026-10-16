@@ -4,12 +4,14 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 from decimal import Decimal
 
 import pytest
+from PySide6.QtTest import QTest
 
 from tests.fixtures import project_root, data_path, prepare_db
-from tests.helpers import d2t, create_assets, create_quotes, symbol_id_for
-from jal.constants import PredefinedAsset, PredefinedAccountType, AssetLocation
+from tests.helpers import d2t, create_assets, create_actions, create_quotes, create_trades, symbol_id_for
+from jal.constants import PredefinedAsset, PredefinedAccountType, PredefinedCategory, AssetLocation
 from jal.db.asset import JalAsset
-from jal.db.account import JalAccountCreator
+from jal.db.account import JalAccount, JalAccountCreator
+from jal.db.ledger import Ledger
 from jal.db.operations import LedgerTransaction, Transfer
 from jal.widgets.transfer_match_dialog import TransferMatchDialog
 
@@ -187,3 +189,44 @@ def test_the_value_of_a_leg_is_read_from_the_quote_of_its_own_date(wallets):
 
     assert dialog._legs[sent]['value'] == Decimal('400')
     assert dialog._legs[later]['value'] == Decimal('800')
+
+
+# A pair across currencies has its cost restated in the currency it arrives in: the dialog offers what the send took
+# out of the sending account at the rate of the day, keeps what the user types instead, and the lots open at that.
+def test_a_pair_across_currencies_is_matched_at_the_cost_basis_stated(wallets):
+    create_actions([(d2t(210101), WALLET_A, 1, [(PredefinedCategory.StartingBalance, 10000.0)])])
+    create_trades(WALLET_A, [(d2t(210102), d2t(210102), USDT, 1000.0, 1.0, 0.0)])   # 1000 USDT at 1.0 USD
+    create_quotes(USD, EUR, [(d2t(210103), 0.5)])
+    sent = _leg(WALLET_A, None, 400, d2t(210103))
+    arrived = _leg(None, WALLET_EUR, 400, d2t(210104))
+    Ledger().rebuild(from_timestamp=0)
+
+    dialog = TransferMatchDialog()
+    _select(dialog._sent_panel, sent)
+    _select(dialog._arrived_panel, arrived)
+    assert dialog._basis_shown is True
+    assert dialog._basis.text() == '200.00'         # 400 that cost 400 USD, at 0.5 EUR to the dollar
+    dialog._basis.clear()
+    QTest.keyClicks(dialog._basis, '   ')
+    assert _match_enabled(dialog) is False          # nothing is matched across currencies without a basis
+    dialog._basis.clear()
+    QTest.keyClicks(dialog._basis, '180')
+    assert _match_enabled(dialog) is True
+    dialog.accept()
+    Ledger().rebuild(from_timestamp=0)
+
+    lots = JalAccount(WALLET_EUR).open_trades_list(JalAsset(USDT))
+    assert len(lots) == 1 and lots[0].open_price(adjusted=True) == Decimal('0.45')
+
+
+# One currency at both ends: the basis travels with the lots and nothing is asked for
+def test_a_pair_in_one_currency_asks_for_no_cost_basis(wallets):
+    sent = _leg(WALLET_A, None, 400, d2t(210103))
+    arrived = _leg(None, WALLET_B, 400, d2t(210104))
+
+    dialog = TransferMatchDialog()
+    _select(dialog._sent_panel, sent)
+    _select(dialog._arrived_panel, arrived)
+
+    assert dialog._basis_shown is False
+    assert _match_enabled(dialog) is True

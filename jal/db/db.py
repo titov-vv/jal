@@ -577,6 +577,8 @@ class JalDB:
                     data[field] = fields[field]['default']   # set to default value
                 else:
                     raise KeyError(f"Mandatory field '{field}' for table '{table_name}' is missing in {data} and have no default value")
+            if fields[field].get('ignored_with') and data.get(fields[field]['ignored_with']) is not None:
+                continue   # not part of the identity of a row that holds a value in the field it names
             if data[field] is None:
                 query_text += f"{field} IS NULL AND "
             elif fields[field].get('matches_empty') and data[field] != '':

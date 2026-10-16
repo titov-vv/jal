@@ -94,7 +94,13 @@ def carried_basis(account, asset, qty: Decimal, timestamp: int, target_currency:
             lots += 1
             if matched >= qty:
                 break
-    currency = account.currency()
+    return restated_basis(basis, account.currency(), timestamp, target_currency, matched, qty - matched, lots)
+
+
+# A known 'basis' in 'currency' restated in 'target_currency' as of 'timestamp' - the dict carried_basis() returns,
+# for a caller that has the basis from elsewhere (see TransferSettlement.sent_basis)
+def restated_basis(basis: Decimal, currency: int, timestamp: int, target_currency: int, qty: Decimal, short: Decimal,
+                   lots: int) -> dict:
     rate_timestamp, rate = JalAsset(currency).quote(timestamp, target_currency)
     rate_timestamp = _rate_age(currency, target_currency, timestamp, rate_timestamp)
     # A rate of zero is not a rate. JalAsset.quote() reports "nothing found" in two different shapes: (0, 0) when it
@@ -106,8 +112,8 @@ def carried_basis(account, asset, qty: Decimal, timestamp: int, target_currency:
         rate_timestamp = 0
     stale = bool(rate_timestamp) and (timestamp - rate_timestamp) > STALE_RATE_LIMIT
     return {
-        'qty': matched,
-        'short': qty - matched,
+        'qty': qty,
+        'short': short,
         'lots': lots,
         'basis': basis,
         'currency': currency,
@@ -115,5 +121,5 @@ def carried_basis(account, asset, qty: Decimal, timestamp: int, target_currency:
         'rate_timestamp': rate_timestamp,
         'stale': stale,
         'value': basis * rate,
-        'complete': matched >= qty and bool(rate_timestamp) and not stale
+        'complete': short <= Decimal('0') and bool(rate_timestamp) and not stale
     }

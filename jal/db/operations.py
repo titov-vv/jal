@@ -1715,7 +1715,8 @@ class Transfer(FeeCarrier, LedgerTransaction):
         "withdrawal": {"mandatory": True, "validation": True,},
         "deposit_timestamp": {"mandatory": True, "validation": True},
         "deposit_account": {"mandatory": False, "validation": True, "default": None},
-        "deposit": {"mandatory": True, "validation": True},
+        # An asset transfer's 'deposit' is a cost basis, not a part of the movement, so it is no duplicate key there
+        "deposit": {"mandatory": True, "validation": True, "ignored_with": "symbol_id"},
         "number": {"mandatory": False, "validation": True, "default": ''},
         # The address of the end that has no account. It is descriptive, not part of the identity of the movement:
         # the two sightings of one transfer name each other's addresses, so making it a validation field would make
@@ -2011,6 +2012,9 @@ class Transfer(FeeCarrier, LedgerTransaction):
         # 'deposit' of an asset transfer is a cost basis rather than an amount, and is left as it is unless the stored
         # leg has none at all - see TransferSettlement._merge() on what a missing one means
         deposit = self._deposit if self._deposit else Decimal(data['deposit'])
+        # Across currencies it is read, and no statement states it - importers put the quantity there
+        if self._asset.id() and self._crosses_currencies(data):
+            deposit = Decimal('0')
         if self._has_out:
             account, timestamp = int(data['deposit_account']), int(data['deposit_timestamp'])
             if account == self._withdrawal_account.id():
@@ -2039,6 +2043,12 @@ class Transfer(FeeCarrier, LedgerTransaction):
             self.update_fee(data['fee'], data.get('fee_account', 0), data.get('fee_symbol_id'))
         logging.info(LedgerTransaction.tr("Transfer settled by transaction hash: ") + f"{self._number}")
         return True
+
+    # Whether the end 'data' fills in is kept in another currency than the end this pending transfer knows
+    def _crosses_currencies(self, data: dict) -> bool:
+        known = self._withdrawal_account if self._has_out else self._deposit_account
+        other = int(data['deposit_account'] if self._has_out else data['withdrawal_account'])
+        return known.currency() != jal.db.account.JalAccount(other).currency()
 
     # The ticker to show for a leg of pending_legs(): the text of the very listing the leg names.
     #

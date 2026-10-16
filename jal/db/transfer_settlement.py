@@ -1,10 +1,10 @@
 import logging
 from decimal import Decimal
 from PySide6.QtWidgets import QApplication
-from jal.constants import PredefinedAccountType, PredefinedCategory
+from jal.constants import BookAccount, PredefinedAccountType, PredefinedCategory
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
-from jal.db.cost_basis import carried_basis
+from jal.db.cost_basis import carried_basis, restated_basis
 from jal.db.db import JalDB
 from jal.db.ledger import Ledger
 from jal.db.helpers import remove_exponent
@@ -60,9 +60,22 @@ class TransferSettlement(JalDB):
             pair = self._pairable(records)
             if pair is None:
                 continue
+            if self._basis_needed(*pair):
+                logging.info(self.tr("Transfer crosses currencies, match it by hand to state its cost basis: ")
+                             + f"{pair[0]['number']}")
+                continue
             self._merge(*pair)
             settled += 1
         return settled + self.settle_by_address()
+
+    # Oids of the pending legs the hash pass pairs but holds back because the pair needs a cost basis stated
+    def held_for_basis(self) -> set:
+        held = set()
+        for records in self._movements_with_a_pending_leg():
+            pair = self._pairable(records)
+            if pair is not None and self._basis_needed(*pair):
+                held.update(int(leg['oid']) for leg in pair)
+        return held
 
     # Records of movements at least one of whose legs is pending, grouped by the transaction and the asset they moved:
     # one transaction may deliver several assets at once (a token plus a gas top-up) and each of those is a movement of
@@ -142,6 +155,8 @@ class TransferSettlement(JalDB):
         counterparts = self._pending_counterparts_on(leg, counterparty.id(), sending)
         if len(counterparts) == 1:
             pair = (leg['oid'], counterparts[0]) if sending else (counterparts[0], leg['oid'])
+            if self.basis_needed_for(*pair):
+                return False   # listed in the unsettled transfers report, where Match asks for the basis
             refusal = self.settle_linked(*pair)
             if refusal:
                 logging.info(self.tr("Legs named by an address are not a transfer, settle them by hand: ") + refusal)
@@ -155,9 +170,8 @@ class TransferSettlement(JalDB):
             return False
         # A counterparty kept in another currency is not settled HERE, exactly as ChainFetcher._counterparty_account
         # leaves it: an asset transfer between two currencies takes its destination cost basis from a 'deposit' no
-        # fetcher can know, so settling it silently would open the arrived lots at zero - which is what the hash pass
-        # is left doing when both records of a movement exist (see the FIXME in _merge), and what puts a wrong basis
-        # into the ledger where nothing points at it again.
+        # fetcher can know, so settling it silently would open the arrived lots at zero and put a wrong basis into the
+        # ledger where nothing points at it again. The hash pass holds such a pair back for the same reason.
         #
         # It is no longer a dead end, though: address_suggestion() offers the very same account in the unsettled
         # transfers report, where the user confirms it together with the cost basis. What stays true is that nothing
@@ -310,6 +324,8 @@ class TransferSettlement(JalDB):
         known_account = int(leg['withdrawal_account'] if sending else leg['deposit_account'])
         if account_id == known_account:
             return self.tr("both legs are on the same account")
+        if oid in self.held_for_basis():
+            return self.tr("the other record of this transfer is imported already - match the two legs instead")
         departure = int(leg['withdrawal_timestamp']) if sending else timestamp
         arrival = timestamp if sending else int(leg['deposit_timestamp'])
         if departure > arrival:
@@ -484,14 +500,19 @@ class TransferSettlement(JalDB):
     #
     # 'override' is the user's word that the two are one movement despite their moments being in the wrong order (the
     # only refusal that can be overruled - see _refusal), and only a caller that showed them what it means may pass it.
-    def settle_linked(self, sending_oid: int, arriving_oid: int, override: bool = False) -> str:
+    # 'basis' is the cost basis a pair across currencies opens at, in the receiving account's currency (see
+    # basis_needed_for); without it such a pair is refused.
+    def settle_linked(self, sending_oid: int, arriving_oid: int, override: bool = False, basis=None) -> str:
         sent, arrived = self._pending_pair(sending_oid, arriving_oid)
         if sent is None:
             return self.tr("one of the legs is no longer pending")
         refusal = self._refusal(sent, arrived, override)
         if refusal:
             return refusal
-        self._merge(sent, arrived)
+        if basis is None and self._basis_needed(sent, arrived):
+            return self.tr("the two accounts are kept in different currencies, so what the asset cost has to be "
+                           "stated - match the legs by hand")
+        self._merge(sent, arrived, basis)
         return ''
 
     # Why these two pending legs cannot be settled into one transfer, or '' when they can - the same answer
@@ -503,6 +524,36 @@ class TransferSettlement(JalDB):
         if sent is None:
             return self.tr("one of the legs is no longer pending")
         return self._refusal(sent, arrived, override)
+
+    # Whether settling these two pending legs needs a cost basis stated - what a chooser asks before offering a pair
+    def basis_needed_for(self, sending_oid: int, arriving_oid: int) -> bool:
+        sent, arrived = self._pending_pair(sending_oid, arriving_oid)
+        return sent is not None and self._basis_needed(sent, arrived)
+
+    # What a pending send cost the account it left, restated in 'target_currency' as of the moment it left - a dict of
+    # carried_basis() shape, or None while the ledger hasn't reached the send. It is the value the send parked in the
+    # Transfers book (see Transfer.processAssetTransfer): the lots it took are gone from the account by then.
+    def sent_basis(self, sending_oid: int, target_currency: int):
+        leg = self._pending_leg(sending_oid, 'deposit_account')
+        if leg is None or not leg['symbol_id']:
+            return None
+        value = self._read("SELECT value FROM ledger WHERE book_account=:transfers AND otype=:otype AND oid=:oid",
+                           [(":transfers", BookAccount.Transfers), (":otype", LedgerTransaction.Transfer),
+                            (":oid", sending_oid)], check_unique=True)
+        if value is None or value == '':
+            return None
+        lots = self._read("SELECT COUNT(*) FROM trades_closed WHERE close_otype=:otype AND close_oid=:oid",
+                          [(":otype", LedgerTransaction.Transfer), (":oid", sending_oid)])
+        return restated_basis(Decimal(value), self._currency_of(int(leg['withdrawal_account'])),
+                              int(leg['withdrawal_timestamp']), target_currency, Decimal(leg['withdrawal']),
+                              Decimal('0'), int(lots))
+
+    # An asset moving between accounts kept in two currencies opens at the 'deposit' cost basis (see
+    # Transfer.processAssetTransfer). A leg's own 'deposit' is no such statement - importers put the quantity there.
+    def _basis_needed(self, sent: dict, arrived: dict) -> bool:
+        if not sent['symbol_id']:
+            return False
+        return self._currency_of(int(sent['withdrawal_account'])) != self._currency_of(int(arrived['deposit_account']))
 
     # The moment both legs would be stamped with if they were settled, or 0 when they keep their own - what a chooser
     # shows before asking the user to confirm a pair whose two moments are in the wrong order.
@@ -531,14 +582,10 @@ class TransferSettlement(JalDB):
     # ------------------------------------------------------------------------------------------------------------------
     # Folds the arriving record into the sending one, which is the record to keep: the gas of an on-chain movement is
     # paid by the sender, so that is the side that carries the fee and the earlier of the two timestamps.
-    def _merge(self, sent: dict, arrived: dict) -> None:
+    def _merge(self, sent: dict, arrived: dict, basis=None) -> None:
         # 'deposit' of an asset transfer is a cost basis, not an amount, and only a cross-currency pair reads it (see
-        # Transfer.processAssetTransfer). Neither leg of a fetched movement states one, so it stays 0 - and a
-        # cross-currency pair then opens its destination lots at ZERO cost basis, which is visible in every holdings
-        # and deals report rather than being a quietly converted guess.
-        # FIXME Deriving the basis from the quote of the moved asset at the moment of the transfer would settle such a
-        #  pair properly; revisit together with the cost-basis handling of the tax reports.
-        deposit = Decimal(sent['deposit']) or Decimal(arrived['deposit'])
+        # Transfer.processAssetTransfer) - such a pair comes here with the basis the user stated (see settle_linked)
+        deposit = basis if basis is not None else (Decimal(sent['deposit']) or Decimal(arrived['deposit']))
         # Each side normally keeps the moment its own source stated - the two are readings of one movement by two
         # clocks and the difference between them is what the movement took. When they are in the wrong order they are
         # not a duration at all but a disagreement, and a transfer that arrives before it left can't be processed, so
@@ -569,9 +616,6 @@ class TransferSettlement(JalDB):
                      + f"{remove_exponent(Decimal(sent['withdrawal']))} "
                      + self._account_name(int(sent['withdrawal_account'])) + " -> "
                      + self._account_name(int(arrived['deposit_account'])))
-        if self._currency_of(int(sent['withdrawal_account'])) != self._currency_of(int(arrived['deposit_account'])):
-            logging.warning(self.tr("Settled transfer crosses currencies, so it has no cost basis and the arrived "
-                                    "asset opens at zero: ") + f"{sent['number']}")
 
     # The one moment two records that disagree about when their movement happened are both stamped with.
     #
