@@ -250,6 +250,11 @@ Some rewards are not paid into the wallet at all until you claim them — a
 that has not arrived, so JAL lists them in the same report, one row per wallet, asset and
 distributor, with the amount in the **Accrued** column and no position behind it.
 
+A reward is listed and valued in the token you will actually receive. Some Merkl campaigns pay in a
+"(wrapped)" token that turns into an ordinary one when claimed,  JAL shows such a reward as that 
+ordinary token. Its price is downloaded with the other quotes even if the wallet has never held any 
+of it.
+
 They are read from the chain together with the balances, by **Import → Download quotes…** with the
 chains ticked. Right-click such a row for **Show claim history** — how the owed amount has grown
 since JAL started watching it. Nothing is booked: when you finally claim, the coins arrive in the

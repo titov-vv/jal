@@ -2042,7 +2042,7 @@ Do you want to delete the category anyway?</source>
     </message>
     <message>
         <location filename="../net/chain_balances.py" line="341"/>
-        <location filename="../net/chain_balances.py" line="896"/>
+        <location filename="../net/chain_balances.py" line="924"/>
         <source>Implausible decimals of token </source>
         <translation></translation>
     </message>
@@ -2127,32 +2127,42 @@ Do you want to delete the category anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="843"/>
+        <location filename="../net/chain_balances.py" line="814"/>
         <source>Unreadable claimable reward for account </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="848"/>
+        <location filename="../net/chain_balances.py" line="859"/>
+        <source>Could not read the token a claimable reward pays out: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_balances.py" line="869"/>
         <source>Claimable reward didn&apos;t match the published root: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="854"/>
+        <location filename="../net/chain_balances.py" line="875"/>
         <source>Could not read what has already been claimed of </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="915"/>
+        <location filename="../net/chain_balances.py" line="896"/>
+        <source>A claimable reward pays out a token of other decimals: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_balances.py" line="943"/>
         <source>Couldn&apos;t read the ticker of a claimable reward token: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="921"/>
+        <location filename="../net/chain_balances.py" line="949"/>
         <source>New asset created for a claimable reward: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="924"/>
+        <location filename="../net/chain_balances.py" line="952"/>
         <source>Couldn&apos;t create an asset for a claimable reward: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -4514,7 +4524,7 @@ Application will be terminated now</source>
     </message>
     <message>
         <location filename="../db/asset.py" line="243"/>
-        <location filename="../db/symbol.py" line="179"/>
+        <location filename="../db/symbol.py" line="197"/>
         <source>Unexpected attempt to update identifier for </source>
         <translation type="unfinished"></translation>
     </message>
@@ -4564,7 +4574,7 @@ Application will be terminated now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/symbol.py" line="167"/>
+        <location filename="../db/symbol.py" line="185"/>
         <source>Can&apos;t add an identifier to an empty symbol: </source>
         <translation type="unfinished"></translation>
     </message>
