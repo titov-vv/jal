@@ -33,6 +33,7 @@ API_URL = "https://api.merkl.xyz/v4/users/{address}/rewards"
 # Call data of the Distributor views - the function selector, followed by the arguments for the one that takes them.
 SELECTOR_MERKLE_ROOT = '0x49590657'  # getMerkleRoot() - the root a proof has to walk to
 SELECTOR_CLAIMED = '0x0c9cbf0e'      # claimed(address,address) -> (uint208 amount, uint48 timestamp, bytes32 root)
+SELECTOR_TOKEN = '0xfc0c546a'        # token() of a Merkl wrapper -> the token a claim pays out
 
 # 'claimed' answers with three words and only the first is a quantity; the other two say when the last claim happened
 # and under which root, neither of which is needed here.
@@ -132,8 +133,9 @@ def chain_rewards(answer, chain_id: int):
     return []
 
 
-# One reward line reduced to what JAL needs, as {'address', 'symbol', 'decimals', 'amount', 'pending', 'proofs'},
-# or None when the line isn't shaped like a reward. Every numeric field of the API is a decimal STRING.
+# One reward line reduced to what JAL needs, as {'address', 'symbol', 'decimals', 'amount', 'pending', 'proofs',
+# 'wrapped'}, or None when the line isn't shaped like a reward. Every numeric field of the API is a decimal STRING.
+# 'wrapped' marks a Merkl "(wrapped)" token (one with 'underlyingTokenId'): a claim of it pays out its token() 1:1.
 def reward_entry(reward):
     if not isinstance(reward, dict) or not isinstance(reward.get('token'), dict):
         return None
@@ -141,7 +143,7 @@ def reward_entry(reward):
     try:
         return {'address': str(token['address']), 'symbol': str(token['symbol']), 'decimals': int(token['decimals']),
                 'amount': int(reward['amount']), 'pending': int(reward.get('pending', 0)),
-                'proofs': reward.get('proofs', [])}
+                'proofs': reward.get('proofs', []), 'wrapped': bool(token.get('underlyingTokenId'))}
     except (KeyError, TypeError, ValueError):
         return None
 

@@ -30,6 +30,11 @@ GHO_CONTRACT = '0x40d16fc0246ad3160ccc09b8d0d3a2cd28ae6c2f'
 ARB_CONTRACT = '0x912ce59144191c1204e64559fe8253a0e49e6548'
 OTHER_DISTRIBUTOR = '0x7060fe0dd3e31be01efac6b28c8d38018fd163b0'   # a FluidMerkleDistributor, paying the same token
 AAVE_CONTRACT = '0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9'          # what both Aave Safety modules pay
+USDG_CONTRACT = '0xe343167631d89b6ffc58b88d6b7fb0228795491d'
+USDG_WRAPPER = '0xdf464440fc5e93b44998c0a7444e5211efdf2b1e'           # Merkl's "Global Dollar (wrapped)"
+AUSDG_CONTRACT = '0x7c0477d085ecb607cf8429f3ec91ae5e1e460f4f'         # aEthUSDG, itself an Aave receipt token
+AUSDG_WRAPPER = '0xb0217f23552b6f3057a451b4c24ee838387d2b53'          # Merkl's "Aave Ethereum USDG (wrapped)"
+WRAPPERS = {USDG_WRAPPER: USDG_CONTRACT, AUSDG_WRAPPER: AUSDG_CONTRACT}
 NOW = d2t(260805)
 LATER = d2t(260806)
 ROOT = '0x' + 'ab' * 32
@@ -63,8 +68,11 @@ def eth_wallet(prepare_db):
 
 
 def _reward(address, symbol='GHO', decimals=18, amount='1000000000000000000', pending='0'):
+    token = {'address': address, 'symbol': symbol, 'decimals': decimals}
+    if address in WRAPPERS:
+        token['underlyingTokenId'] = '1'
     return {'root': ROOT, 'amount': amount, 'claimed': '0', 'pending': pending, 'proofs': ['0x' + '11' * 32],
-            'token': {'address': address, 'symbol': symbol, 'decimals': decimals}}
+            'token': token}
 
 
 # Replaces everything that leaves the machine, for BOTH sources at once: they share one _eth_call and one reading
@@ -74,9 +82,11 @@ def _reward(address, symbol='GHO', decimals=18, amount='1000000000000000000', pe
 # claimed stream can be set up, and the proof walk is stubbed to accept, because what it does with a REAL proof is
 # tested in tests/test_merkl.py and cannot be reproduced with invented vectors here. Aave's side is 'modules',
 # {contract: (reward token, what it owes in raw units)}, defaulting to both modules owing nothing.
+# 'wrappers' is {wrapper: token its token() names}, defaulting to the two live Merkl wrappers of USDG.
 def _fake_chain(monkeypatch, rewards=None, claimed=None, root=ROOT, answer=None, chain_id=1, name=None,
-                modules=None, ticker='', decimals=18):
+                modules=None, ticker='', decimals=18, wrappers=None):
     rewards, claimed = rewards or [], claimed or {}
+    wrappers = WRAPPERS if wrappers is None else wrappers
     modules = NO_REWARD if modules is None else modules
     asked = {'api': [], 'calls': []}
 
@@ -101,6 +111,9 @@ def _fake_chain(monkeypatch, rewards=None, claimed=None, root=ROOT, answer=None,
             return '0x' + '00' * 12 + token.removeprefix('0x') if token else ''
         if data.startswith(aave.SELECTOR_TOTAL_REWARDS):
             return '0x' + format(modules.get(contract, ('', 0))[1], '064x')
+        if data == merkl.SELECTOR_TOKEN:  # what a Merkl wrapper pays out
+            paid_out = wrappers.get(contract.lower(), '')
+            return '0x' + '00' * 12 + paid_out.removeprefix('0x') if paid_out else ''
         if data == ERC20_DECIMALS:        # asked when a token JAL knows carries no scale of its own yet
             return '0x' + format(decimals, '064x')
         if data == ERC20_SYMBOL:          # asked only where the source itself reports no ticker
@@ -290,6 +303,105 @@ def test_amounts_keep_every_decimal(eth_wallet, monkeypatch):
     ChainBalanceReader().read_receivables(NOW)
     assert JalReceivable().latest(WALLET, GHO, merkl.DISTRIBUTOR, NOW)['amount'] \
         == Decimal('91.868751770182036697')
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# MERKL WRAPPERS: a reward line in a "(wrapped)" token is claimed under the wrapper's address but pays out its token()
+# 1:1, so the claim is owed in that token. Amounts below are the live answer of 2026-10-18 for the USDG campaign.
+
+def _token_asset(name, ticker, contract, decimals) -> int:
+    creator = JalAssetCreator(PredefinedAsset.Crypto, name)
+    symbol_id = creator.add_symbol(ticker, USD, AssetLocation.ETH_BLOCKCHAIN)
+    creator.add_identifier(symbol_id, SymbolId.ETH_ADDRESS, contract)
+    asset = creator.commit()
+    asset.set_decimals(decimals)
+    return asset.id()
+
+
+def test_a_wrapper_is_owed_in_the_token_it_pays_out(eth_wallet, monkeypatch):
+    usdg = _token_asset("Global Dollar", 'USDG', USDG_CONTRACT, 6)
+    asked = _fake_chain(monkeypatch, [_reward(USDG_WRAPPER, symbol='USDG', decimals=6, amount='4734757',
+                                              pending='115326')], claimed={USDG_WRAPPER: 4221545})
+
+    assert ChainBalanceReader().read_receivables(NOW) == 1
+    owed = JalReceivable().latest(WALLET, usdg, merkl.DISTRIBUTOR, NOW)
+    assert owed['amount'] == Decimal('0.513212')
+    assert owed['pending'] == Decimal('0.115326')
+    assert (merkl.DISTRIBUTOR, merkl.claimed_call(WALLET_ADDRESS, USDG_WRAPPER)) in asked['calls']
+    assert JalSymbol.find_by_identifier(SymbolId.ETH_ADDRESS, USDG_WRAPPER).id() == 0
+
+
+def test_an_unknown_paid_out_token_is_created_from_its_own_contract(eth_wallet, monkeypatch):
+    _fake_chain(monkeypatch, [_reward(USDG_WRAPPER, symbol='USDG', decimals=6, amount='4734757')],
+                ticker='USDG', name='Global Dollar', decimals=6)
+
+    assert ChainBalanceReader().read_receivables(NOW) == 1
+    asset = JalSymbol.find_by_identifier(SymbolId.ETH_ADDRESS, USDG_CONTRACT).asset()
+    assert asset.name() == 'Global Dollar'
+    assert asset.decimals() == 6
+    assert JalReceivable().latest(WALLET, asset.id(), merkl.DISTRIBUTOR, NOW)['amount'] == Decimal('4.734757')
+    assert JalSymbol.find_by_identifier(SymbolId.ETH_ADDRESS, USDG_WRAPPER).id() == 0
+
+
+def test_a_paid_out_receipt_token_is_not_unwrapped_further(eth_wallet, monkeypatch):
+    ausdg = _token_asset("Aave Ethereum USDG", 'aEthUSDG', AUSDG_CONTRACT, 6)
+    asked = _fake_chain(monkeypatch, [_reward(AUSDG_WRAPPER, symbol='aEthUSDG', decimals=6, amount='3268257')])
+
+    ChainBalanceReader().read_receivables(NOW)
+    assert JalReceivable().latest(WALLET, ausdg, merkl.DISTRIBUTOR, NOW)['amount'] == Decimal('3.268257')
+    assert [x[0] for x in asked['calls'] if x[1] == merkl.SELECTOR_TOKEN] == [AUSDG_WRAPPER]
+
+
+def test_a_plain_token_is_not_asked_what_it_pays_out(eth_wallet, monkeypatch):
+    asked = _fake_chain(monkeypatch, [_reward(GHO_CONTRACT)])
+
+    ChainBalanceReader().read_receivables(NOW)
+    assert [x for x in asked['calls'] if x[1] == merkl.SELECTOR_TOKEN] == []
+
+
+# A wrapper that won't name its token leaves its asset unknown, so no earlier reading may be written down as unreported
+def test_a_wrapper_that_will_not_say_what_it_pays_stores_and_forgets_nothing(eth_wallet, monkeypatch):
+    usdg = _token_asset("Global Dollar", 'USDG', USDG_CONTRACT, 6)
+    _fake_chain(monkeypatch, [_reward(USDG_WRAPPER, symbol='USDG', decimals=6, amount='1000000'),
+                              _reward(GHO_CONTRACT)])
+    ChainBalanceReader().read_receivables(NOW)
+
+    _fake_chain(monkeypatch, [_reward(USDG_WRAPPER, symbol='USDG', decimals=6, amount='2000000')], wrappers={})
+    assert ChainBalanceReader().read_receivables(LATER) == 0
+    assert JalReceivable().latest(WALLET, usdg, merkl.DISTRIBUTOR, LATER)['amount'] == Decimal('1')
+    assert JalReceivable().latest(WALLET, GHO, merkl.DISTRIBUTOR, LATER)['amount'] == Decimal('1')
+
+
+def test_a_wrapper_of_other_decimals_than_its_token_stores_nothing(eth_wallet, monkeypatch):
+    usdg = _token_asset("Global Dollar", 'USDG', USDG_CONTRACT, 6)
+    _fake_chain(monkeypatch, [_reward(USDG_WRAPPER, symbol='USDG', decimals=18)])
+
+    assert ChainBalanceReader().read_receivables(NOW) == 0
+    assert JalReceivable().latest(WALLET, usdg, merkl.DISTRIBUTOR, NOW) is None
+
+
+def test_a_wrapper_that_disappears_writes_its_token_down_and_nothing_else(eth_wallet, monkeypatch):
+    usdg = _token_asset("Global Dollar", 'USDG', USDG_CONTRACT, 6)
+    _fake_chain(monkeypatch, [_reward(USDG_WRAPPER, symbol='USDG', decimals=6, amount='1000000'),
+                              _reward(GHO_CONTRACT)])
+    ChainBalanceReader().read_receivables(NOW)
+
+    _fake_chain(monkeypatch, [_reward(GHO_CONTRACT)])
+    ChainBalanceReader().read_receivables(LATER)
+    assert JalReceivable().latest(WALLET, usdg, merkl.DISTRIBUTOR, LATER)['amount'] == Decimal('0')
+    assert JalReceivable().latest(WALLET, GHO, merkl.DISTRIBUTOR, LATER)['amount'] == Decimal('1')
+
+
+# store() keeps one row per second, so two lines owed in one token have to be added up rather than overwrite each other
+def test_a_wrapper_and_its_plain_token_are_one_claim(eth_wallet, monkeypatch):
+    usdg = _token_asset("Global Dollar", 'USDG', USDG_CONTRACT, 6)
+    _fake_chain(monkeypatch, [_reward(USDG_WRAPPER, symbol='USDG', decimals=6, amount='1000000', pending='100'),
+                              _reward(USDG_CONTRACT, symbol='USDG', decimals=6, amount='2000000', pending='20')])
+
+    assert ChainBalanceReader().read_receivables(NOW) == 1
+    owed = JalReceivable().latest(WALLET, usdg, merkl.DISTRIBUTOR, NOW)
+    assert owed['amount'] == Decimal('3')
+    assert owed['pending'] == Decimal('0.00012')
 
 
 # ----------------------------------------------------------------------------------------------------------------------

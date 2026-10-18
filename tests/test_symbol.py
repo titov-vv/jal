@@ -9,6 +9,7 @@ from jal.db.db import JalDB
 from jal.db.account import JalAccountCreator
 from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.symbol import JalSymbol
+from jal.db.receivable import JalReceivable
 from jal.db.ledger import Ledger
 from jal.db.operations import LedgerTransaction, AssetPayment, LedgerError, AssetIncome
 from jal.db.asset_models import SymbolsListModel
@@ -125,6 +126,42 @@ def test_get_active_symbols_beyond_incomplete_ledger(prepare_db):
 
     # Only the operations of the requested interval are reported - one that happens later needs no quote yet
     assert [x for x in JalSymbol.get_active_symbols(0, d2t(220201)) if x['symbol'].asset().id() == 4] == []
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# A reward token an account is only OWED has no ledger row and no operation, yet its claim is valued with its quote.
+def test_get_active_symbols_lists_what_is_owed(prepare_db):
+    JalAccountCreator(currency_id=2, number='W1', name='Wallet', investing=1, organization=1).commit()
+    create_assets([('ARB', 'Arbitrum', '', 2, PredefinedAsset.Crypto, 0)])  # asset id 4, held nowhere
+    JalReceivable().store(d2t(220301), 1, 4, '0xdistributor', Decimal('2.5'))
+
+    entries = [x for x in JalSymbol.get_active_symbols(0, d2t(221231)) if x['symbol'].asset().id() == 4]
+    assert len(entries) == 1
+    assert entries[0]['symbol'].symbol() == 'ARB'
+    assert entries[0]['currency'] == 2
+    # A reading taken after the requested interval is not listed
+    assert [x for x in JalSymbol.get_active_symbols(0, d2t(220201)) if x['symbol'].asset().id() == 4] == []
+
+
+def test_a_claim_paid_off_is_not_listed(prepare_db):
+    JalAccountCreator(currency_id=2, number='W1', name='Wallet', investing=1, organization=1).commit()
+    create_assets([('ARB', 'Arbitrum', '', 2, PredefinedAsset.Crypto, 0)])
+    JalReceivable().store(d2t(220301), 1, 4, '0xdistributor', Decimal('2.5'))
+    JalReceivable().store(d2t(220401), 1, 4, '0xdistributor', Decimal('0'))
+
+    assert [x for x in JalSymbol.get_active_symbols(0, d2t(221231)) if x['symbol'].asset().id() == 4] == []
+
+
+def test_an_owed_asset_also_in_the_ledger_is_listed_once(prepare_db):
+    JalAccountCreator(currency_id=2, number='W1', name='Wallet', investing=1, organization=1).commit()
+    create_assets([('ARB', 'Arbitrum', '', 2, PredefinedAsset.Crypto, 0)])
+    create_actions([(d2t(220101), 1, 1, [(4, 1000.0)])])  # cash for the trade
+    create_trades(1, [(d2t(220201), d2t(220201), 4, 10.0, 1.0, 0.0)])
+    Ledger().rebuild(from_timestamp=0)
+    assert JalDB._read("SELECT COUNT(*) FROM ledger WHERE asset_id=4 AND book_account=4") > 0
+    JalReceivable().store(d2t(220301), 1, 4, '0xdistributor', Decimal('2.5'))
+
+    assert len([x for x in JalSymbol.get_active_symbols(0, d2t(221231)) if x['symbol'].asset().id() == 4]) == 1
 
 
 # SymbolsListModel.setFilter() has to produce valid SQL when nothing is filtered. An unfiltered list is the normal

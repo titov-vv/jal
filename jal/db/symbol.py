@@ -2,6 +2,7 @@ import logging
 from jal.constants import SymbolId, BookAccount
 from jal.db.db import JalDB
 from jal.db.asset import JalAsset
+from jal.db.receivable import JalReceivable
 from jal.universal_cache import UniversalCache
 
 
@@ -37,11 +38,12 @@ class JalSymbol(JalDB):
 
     # Returns a list of {"symbol": JalSymbol, "currency": currency_id} that describes symbols involved into ledger
     # operations between begin and end timestamps or that have non-zero value in ledger, together with the symbols of
-    # the operations that the ledger doesn't cover yet (see _symbols_beyond_ledger). The 'symbol' is the active
-    # listing for its currency, so its text, identifiers and location resolve against that exact listing. If an asset
-    # has ledger activity but no active listing for the account currency the symbol is empty (JalSymbol(0)) - such
-    # rows have no downloadable location and are skipped by the quote downloader.
-    # A (symbol, currency) pair is reported once - the same pair may come from several accounts and from both
+    # the operations that the ledger doesn't cover yet (see _symbols_beyond_ledger) and of what accounts are owed
+    # (see _symbols_of_receivables). The 'symbol' is the active listing for its currency, so its text, identifiers
+    # and location resolve against that exact listing. If an asset has ledger activity but no active listing for the
+    # account currency the symbol is empty (JalSymbol(0)) - such rows have no downloadable location and are skipped
+    # by the quote downloader.
+    # A (symbol, currency) pair is reported once - the same pair may come from several accounts and from several
     # sources, while its consumers (a quote download, an icon fetch) have nothing to do with it a second time.
     @classmethod
     def get_active_symbols(cls, begin: int, end: int) -> list:
@@ -67,12 +69,28 @@ class JalSymbol(JalDB):
                 continue
             listed.add((symbol_id, currency_id))
             symbols.append({"symbol": cls(symbol_id), "currency": currency_id})
-        for symbol_id, currency_id in cls._symbols_beyond_ledger(end):
+        for symbol_id, currency_id in cls._symbols_beyond_ledger(end) + cls._symbols_of_receivables(end):
             if (symbol_id, currency_id) in listed:
                 continue
             listed.add((symbol_id, currency_id))
             symbols.append({"symbol": cls(symbol_id), "currency": currency_id})
         return symbols
+
+    # (symbol_id, currency_id) pairs of the assets an account is owed at 'end' (see JalReceivable.claims) - a reward
+    # token nobody holds yet has no ledger row or operation, yet its claim is valued with its quote.
+    @classmethod
+    def _symbols_of_receivables(cls, end: int) -> list:
+        pairs = []
+        receivables = JalReceivable()
+        for account_id in receivables.accounts_with_claims(end):
+            for claim in receivables.claims(account_id, end):
+                query = cls._exec("SELECT s.id, a.currency_id FROM accounts a "
+                                  "JOIN asset_symbol s ON s.asset_id=:asset_id AND s.currency_id=a.currency_id AND s.active=1 "
+                                  "WHERE a.id=:account_id",
+                                  [(":asset_id", claim['asset_id']), (":account_id", account_id)])
+                if query.next():
+                    pairs.append(tuple(cls._read_record(query, cast=[int, int])))
+        return pairs
 
     # (symbol_id, currency_id) pairs of the operations that the ledger hasn't accounted for - those at or after its
     # frontier and no later than 'end'.

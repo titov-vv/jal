@@ -116,7 +116,16 @@ def test_a_reward_line_is_reduced_to_what_is_needed():
     entry = merkl.reward_entry({'amount': '100', 'pending': '7', 'proofs': ['0xaa'],
                                 'token': {'address': TOKEN, 'symbol': 'GHO', 'decimals': 18}})
     assert entry == {'address': TOKEN, 'symbol': 'GHO', 'decimals': 18,
-                     'amount': 100, 'pending': 7, 'proofs': ['0xaa']}
+                     'amount': 100, 'pending': 7, 'proofs': ['0xaa'], 'wrapped': False}
+
+
+# The token object of a live answer (2026-10-18) for Merkl's "Global Dollar (wrapped)", which pays out USDG
+def test_a_token_with_an_underlying_is_a_wrapper():
+    entry = merkl.reward_entry({'amount': '4734757', 'pending': '115326', 'proofs': [],
+                                'token': {'chainId': 1, 'address': '0xDF464440FC5E93B44998C0A7444e5211eFdf2B1E',
+                                          'decimals': 6, 'symbol': 'USDG', 'price': 1.0000755946516031,
+                                          'underlyingTokenId': '11498004806624627810'}})
+    assert entry['wrapped'] is True
 
 
 def test_a_line_that_is_not_a_reward_is_refused():

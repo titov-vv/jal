@@ -807,41 +807,62 @@ class ChainBalanceReader(JalDB):
         if len(root) != 32:
             logging.warning(self.tr("Could not read the Merkl distribution root on ") + chain.api_name)
             return None
-        count = 0
+        entries, complete = [], True
         for reward in rewards:
-            claim = self._merkl_claim(chain, account, source, reward, root, api_key)
+            entry = merkl.reward_entry(reward)
+            if entry is None:
+                logging.warning(self.tr("Unreadable claimable reward for account ") + account.name())
+                continue
+            entry['payout'] = self._merkl_payout(chain, entry, api_key)
+            if not entry['payout']:
+                complete = False      # its asset is unknown, so nothing may be written down as no longer reported
+                continue
+            entries.append(entry)
+        # Lines paying out one asset (a wrapper and the plain token, or two wrappers of it) are one claim: store()
+        # keeps a single row per second, so storing them one by one would keep only the last.
+        claims = {}
+        for entry in entries:
+            claim = self._merkl_claim(chain, account, source, entry, root, api_key)
             if claim is None:
                 continue
             asset_id, amount, pending = claim
+            owed, accruing = claims.get(asset_id, (Decimal('0'), Decimal('0')))
+            claims[asset_id] = (owed + amount, accruing + pending)
+        for asset_id, (amount, pending) in claims.items():
             self._receivables.store(timestamp, account.id(), asset_id, source, amount, pending)
-            count += 1
         # Everything Merkl has stopped reporting is written down as zero - see _forget_unreported(). What decides it
         # is what the ANSWER still mentions, not what was successfully stored above.
-        self._forget_unreported(timestamp, account, source, self._reported_assets(account, rewards))
-        return count
+        if complete:
+            self._forget_unreported(timestamp, account, source, self._reported_assets(account, entries))
+        return len(claims)
 
     # The assets the source named in this answer, whether or not each of them could be read. Only assets JAL already
     # knows are looked up: a token it has never seen cannot be one of the claims it recorded before.
-    def _reported_assets(self, account: JalAccount, rewards: list) -> set:
+    def _reported_assets(self, account: JalAccount, entries: list) -> set:
         id_type = AssetLocation.address_id_of(account.chain())
         if id_type is None:
             return set()
         reported = set()
-        for reward in rewards:
-            entry = merkl.reward_entry(reward)
-            if entry is None:
-                continue
-            symbol = JalSymbol.find_by_identifier(id_type, normalize_address(account.chain(), entry['address']))
+        for entry in entries:
+            symbol = JalSymbol.find_by_identifier(id_type, normalize_address(account.chain(), entry['payout']))
             if symbol.id():
                 reported.add(symbol.asset().id())
         return reported
 
+    # The token a claim of this line delivers, or '' when a wrapper won't say: a wrapper pays out its token() 1:1,
+    # which may itself be a receipt token (aEthUSDG) and is never unwrapped further.
+    def _merkl_payout(self, chain, entry: dict, api_key: str) -> str:
+        if not entry['wrapped']:
+            return entry['address']
+        token = aave.address_answer(self._eth_call(chain, entry['address'], merkl.SELECTOR_TOKEN, api_key))
+        if not token or not int(token, 16):
+            logging.warning(self.tr("Could not read the token a claimable reward pays out: ")
+                            + f"{entry['symbol']} ({entry['address']})")
+            return ''
+        return token
+
     # One reward line as (asset_id, claimable, pending), or None when it can't be read or can't be trusted.
-    def _merkl_claim(self, chain, account: JalAccount, source: str, reward, root: bytes, api_key: str):
-        entry = merkl.reward_entry(reward)
-        if entry is None:
-            logging.warning(self.tr("Unreadable claimable reward for account ") + account.name())
-            return None
+    def _merkl_claim(self, chain, account: JalAccount, source: str, entry: dict, root: bytes, api_key: str):
         # The proof is walked before anything else is done with the line. An amount that doesn't reach the published
         # root is not a small discrepancy to log and carry on with - it is a number the distributor would not honour.
         if merkl.verified_amount(account.address(), entry['address'], entry['amount'], entry['proofs'], root) is None:
@@ -863,11 +884,18 @@ class ChainBalanceReader(JalDB):
         # long as they existed - and creating a quote-less asset for each of them would fill the asset list with
         # tokens the account has never held and never will. A stream JAL already knows still gets its zero written,
         # because that zero is what stops a stale figure from lingering on screen.
-        resolved = self._reward_asset(chain, account, entry['address'], api_key, symbol=entry['symbol'],
-                                     decimals=entry['decimals'], create=unclaimed > 0)
+        if entry['wrapped']:      # a wrapper's ticker and scale are its own, so the paid-out token is asked for both
+            resolved = self._reward_asset(chain, account, entry['payout'], api_key, create=unclaimed > 0)
+        else:
+            resolved = self._reward_asset(chain, account, entry['address'], api_key, symbol=entry['symbol'],
+                                         decimals=entry['decimals'], create=unclaimed > 0)
         if resolved is None:
             return None
         asset, decimals = resolved
+        if decimals != entry['decimals']:      # a 1:1 payout at another scale is not 1:1
+            logging.warning(self.tr("A claimable reward pays out a token of other decimals: ")
+                            + f"{entry['symbol']} ({entry['address']})")
+            return None
         return asset.id(), merkl.quantity(unclaimed, decimals), merkl.quantity(entry['pending'], decimals)
 
     # The asset a reward is paid in and the scale of its amounts, as (asset, decimals) - created if JAL has never
