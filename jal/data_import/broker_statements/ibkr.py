@@ -937,8 +937,7 @@ class StatementIBKR(StatementXML):
             self._data[JSF.ASSET_PAYMENTS].append(bond_interest)
             cnt += 1
 
-        for tax in self.aggregate_taxes(taxes):
-            cnt += self.apply_tax_withheld(tax)
+        cnt += self.apply_taxes_withheld(self.aggregate_taxes(taxes))
 
         transfer_base = self._next_id(JSF.TRANSFERS)
         for i, transfer in enumerate(transfers):
@@ -1148,30 +1147,51 @@ class StatementIBKR(StatementXML):
     # from it and every later correction of that tax one and the same 'actionID', and keeps it stable across annual
     # statements.
     #
-    # A negative amount is tax being taken, a positive one is tax being given back. Both are applied the same way:
-    # the tax the payment carries is moved by what this statement says about it, so that several records of one
-    # action (a full reversal followed by a smaller re-charge, which is how a tax for ETF holding government paper is
-    # corrected next year) arrive at the right figure whatever order they are read in.
-    def apply_tax_withheld(self, tax) -> int:
+    # A negative amount is tax being taken, a positive one is tax being given back. IBKR doesn't adjust a tax: it
+    # gives back the whole tax the payment carries and charges the new one, so a positive record is a check as well.
+    # Returns the number of records applied.
+    def apply_taxes_withheld(self, taxes: list) -> int:
         TaxFullPattern = r"^(?P<description>.*) - (?P<country>\w\w) TAX$"
 
-        parts = re.match(TaxFullPattern, tax['description'], re.IGNORECASE)
-        if parts:   # a description without a country leaves the country of the asset as it is
-            self.set_asset_country(tax['symbol'], parts.groupdict()['country'].lower())
+        corrections = {}    # payment id -> (payment, its tax records)
+        for tax in taxes:
+            parts = re.match(TaxFullPattern, tax['description'], re.IGNORECASE)
+            if parts:   # a description without a country leaves the country of the asset as it is
+                self.set_asset_country(tax['symbol'], parts.groupdict()['country'].lower())
+            dividend = self.find_dividend4tax(tax)      # refuses the whole statement if it finds no single payment
+            corrections.setdefault(dividend['id'], (dividend, []))[1].append(tax)
+        return sum(self._apply_taxes_to_payment(dividend, records) for dividend, records in corrections.values())
 
-        dividend = self.find_dividend4tax(tax)      # refuses the whole statement if it finds no single payment
-        new_tax = dividend.get('tax', Decimal('0')) - tax['amount']
+    # Records are read by report date with give-backs first. The tax they start from is the first give-back; a payment
+    # that already holds the tax they end with was corrected before (a statement imported again) and is left as it is.
+    def _apply_taxes_to_payment(self, dividend, records: list) -> int:
+        records = sorted(records, key=lambda x: (x['reported'], x['amount'] < 0))
+        stored = dividend.get('tax', Decimal('0'))
+        returns = [i for i, x in enumerate(records) if x['amount'] > 0]
+        start = records[returns[0]]['amount'] + sum(x['amount'] for x in records[:returns[0]]) if returns else stored
+        new_tax = start
+        for record in records:
+            if record['amount'] > 0 and record['amount'] != new_tax:
+                self._refuse_unmatched_tax(record, [dividend], self.tr("it gives back another tax than charged before"))
+            new_tax -= record['amount']
+        if stored != start:
+            if stored != new_tax:
+                self._refuse_unmatched_tax(records[returns[0]], [dividend],
+                                           self.tr("it gives back another tax than the payment carries"))
+            self._skip(self.tr("tax corrections that were applied already"),
+                       f"{ts2dt(dividend['timestamp'])} {dividend['description']}")
+            return 0
         if self.mapped_id(JSF.ASSET_PAYMENTS, dividend['id']):
             # Notification is required if we adjust data for dividend that is already in Jal DB
             logging.info(self.tr("Tax adjustment for dividend: ") +
-                         f"{remove_exponent(dividend.get('tax', Decimal('0')))} -> {remove_exponent(new_tax)}"
+                         f"{remove_exponent(stored)} -> {remove_exponent(new_tax)}"
                          f" ({ts2dt(dividend['timestamp'])} {dividend['description']})")
         dividend["tax"] = new_tax
         # append new dividend if it came from DB and haven't been loaded in self._data yet
         if len([1 for x in self._data[JSF.ASSET_PAYMENTS] if x['id'] == dividend['id']]) == 0:
             dividend['type'] = JSF.PAYMENT_DIVIDEND
             self._data[JSF.ASSET_PAYMENTS].append(dividend)
-        return 1
+        return len(records)
 
     # The dividend a withholding tax belongs to. There is no answer of "none": a tax that cannot be placed stops the
     # import, because the alternative is a statement that looks imported while a payment silently keeps a tax that

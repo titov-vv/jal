@@ -302,9 +302,45 @@ def test_ibkr_tax_without_a_country_is_applied_to_its_dividend():
     ibkr._map_db_asset_by_symbol = lambda _: 0
     tax = {'account': 1, 'symbol': 95, 'timestamp': d2t(250214), 'reported': d2t(250214), 'amount': Decimal('-2.06'),
            'action_id': '777', 'description': 'O(US7561091049) CASH DIVIDEND USD 0.264 PER SHARE'}
-    assert ibkr.apply_tax_withheld(tax) == 1
+    assert ibkr.apply_taxes_withheld([tax]) == 1
     assert ibkr._data[JSF.ASSET_PAYMENTS][0]['tax'] == Decimal('2.06')
     assert 'country' not in ibkr._data[JSF.ASSETS][0]
+
+# A statement with a tax charged and given back under one report date, the charge listed first
+def ibkr_with_corrected_payment(stored_tax: str):
+    ibkr = StatementIBKR()
+    ibkr._data = {
+        JSF.ASSET_PAYMENTS: [{'id': 1, 'type': JSF.PAYMENT_DIVIDEND, 'account': 1, 'symbol': 95, 'number': '777',
+                              'timestamp': d2t(240705), 'amount': Decimal('50'), 'tax': Decimal(stored_tax),
+                              'description': 'O CASH DIVIDEND'}],
+        JSF.ASSETS: [{'id': 1, JSF.SYMBOLS: [{'id': 95, 'symbol': 'O', 'isin': 'US7561091049'}]}]
+    }
+    ibkr._map_db_account = lambda _: 0
+    ibkr._map_db_asset_by_symbol = lambda _: 0
+    tax = lambda amount: {'account': 1, 'symbol': 95, 'timestamp': d2t(240705), 'reported': d2t(250214),
+                          'amount': Decimal(amount), 'action_id': '777', 'description': 'O CASH DIVIDEND - US TAX'}
+    return ibkr, [tax('-0.25'), tax('5')]
+
+
+# A tax is given back whole before the new one is charged, whatever order the statement lists them in
+def test_ibkr_tax_give_back_is_applied_before_the_new_charge():
+    ibkr, taxes = ibkr_with_corrected_payment('5')
+    assert ibkr.apply_taxes_withheld(taxes) == 2
+    assert ibkr._data[JSF.ASSET_PAYMENTS][0]['tax'] == Decimal('0.25')
+
+
+# A payment that already holds the corrected tax is left as it is; one that holds any other tax stops the import
+def test_ibkr_tax_give_back_must_match_the_tax_of_the_payment(monkeypatch):
+    ibkr, taxes = ibkr_with_corrected_payment('0.25')
+    assert ibkr.apply_taxes_withheld(taxes) == 0
+    assert ibkr._data[JSF.ASSET_PAYMENTS][0]['tax'] == Decimal('0.25')
+    assert ibkr.skipped() == {'tax corrections that were applied already': 1}
+
+    monkeypatch.setattr(Statement, 'save_debug_info', lambda self, **kwargs: None)
+    ibkr, taxes = ibkr_with_corrected_payment('4')
+    with pytest.raises(Statement_ImportError):
+        ibkr.apply_taxes_withheld(taxes)
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 def test_ibkr_corp_actions(tmp_path, project_root, data_path, prepare_db_taxes):
@@ -705,6 +741,22 @@ def test_ibkr_tax_correction_of_a_later_year_finds_its_payment_by_action_id(tmp_
     assert len(payments) == 1
     assert payments[0].tax() == Decimal('0.25')
     assert payments[0].amount() == Decimal('50')
+
+
+# Importing the statement with the correction again leaves the corrected tax as it is
+def test_ibkr_tax_correction_imported_twice_is_applied_once(tmp_path, project_root, data_path, prepare_db_taxes,
+                                                            monkeypatch):
+    monkeypatch.setattr(QMessageBox, 'warning', lambda *args, **kwargs: QMessageBox.Yes)
+    for statement_file in ['ibkr_dividends_year1.xml', 'ibkr_dividends_year2.xml', 'ibkr_dividends_year2.xml']:
+        statement = StatementIBKR()
+        statement.load(data_path + statement_file)
+        statement.match_db_ids()
+        statement.import_into_db()
+    assert statement.skipped() == {'tax corrections that were applied already': 1}
+    imported = [x for x in JalAccount.get_all_accounts() if x.number() == 'U7654321F'][0]
+    payments = AssetPayment.get_list(imported.id())
+    assert len(payments) == 1
+    assert payments[0].tax() == Decimal('0.25')
 
 
 # A tax that names an action nothing carries stops the import outright. Booking the payment without its correction
