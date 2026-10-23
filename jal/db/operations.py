@@ -2462,15 +2462,7 @@ class CorporateAction(LedgerTransaction):
     def get_results(self) -> list:
         return self._results
 
-    # Returns qty and value_share for result of corporate action that corresponds to given asset
-    def get_result_for_asset(self, asset) -> tuple:
-        out = [x for x in self._results if x['asset_id'] == asset.id()]
-        if len(out) == 1:
-            return Decimal(out[0]['qty']), Decimal(out[0]['value_share'])
-        else:
-            return Decimal('0'), Decimal('0')
-
-    # Sets value_share for the result of corporate action that corresponds to given asset
+    # Sets value_share for the result of corporate action that corresponds to given asset (used by tests only)
     def set_result_share(self, asset, share: Decimal) -> None:
         out = [x for x in self._results if x['asset_id'] == asset.id()]
         if len(out) == 1:
