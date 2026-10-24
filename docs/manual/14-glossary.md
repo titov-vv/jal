@@ -37,7 +37,7 @@ minus this.
 **Dust** — a crumb of a coin, usually sent to your address unsolicited to get your attention. JAL
 does not import arrivals below the dust threshold.
 
-**FIFO** — *first in, first out*: when you sell, the oldest lots you hold are the ones sold. This is
+**FIFO** — *first in, first out*: when you sell, the lots you acquired first are the ones sold. This is
 how JAL computes the profit of a deal.
 
 **Gas fee** — what a blockchain charges to process a transaction. Recorded as a fee row under the

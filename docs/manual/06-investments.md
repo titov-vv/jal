@@ -83,7 +83,8 @@ lot cost.
 
 ### How profit is calculated
 
-When you sell, JAL matches the sale against your earlier purchases **oldest first** (FIFO). The
+When you sell, JAL matches the sale against your earlier purchases **oldest first** (FIFO), by the
+date each lot was acquired (see [Corporate actions](#corporate-actions) for shares you received). The
 difference between what those lots cost and what you got for them — minus the fees on both sides —
 is the profit of a **closed deal**, and it appears in the
 [Deals by account](10-reports.md#deals-by-account) report. Positions you still hold are not counted
@@ -137,16 +138,25 @@ holding changes without you trading. Record it with **+ → Corporate Action**:
 
 * **Type** — *Split*, *Symbol change*, *Spin-off*, *Merger*, *Delisting*.
 * **Asset** and **Qty** — what went in.
-* The table on the right — what came out: each resulting asset, its quantity, and its **Share, %**
-  of the original cost.
+* The table on the right — what came out: each resulting asset, its quantity, its **Share, %**
+  of the original cost, and whether it **Keeps date**.
 
 The shares must add up to **100 %**: the money you originally paid has to end up somewhere. For a
 split or a symbol change there is one result line with 100 %. For a spin-off, the company publishes
 the split of cost basis (in the United States, on *Form 8937*) — use its figures. If the shares do
 not add up, JAL refuses to build the ledger past that point and says so in the log.
 
+**Keeps date** says from when you hold each resulting asset. Checked, it keeps the date of your
+original purchase: the same shares under a new name or count — a split, a symbol change, the parent
+company in a spin-off. Unchecked, it counts as acquired on the date of the corporate action: a new
+company you received, such as the spun-off one or the shares of the company you merged into. JAL
+fills it in by this rule when you choose the asset, and you can change it — tax rules differ from
+case to case, for instance when depositary receipts are exchanged for the issuer's shares. The date
+decides which lots a later sale takes first and the acquisition date tax reports show; the cost
+always stays that of the original purchase.
+
 > Corporate actions usually arrive with a broker statement import, already filled in — but the
-> percentages are yours to check.
+> percentages and the **Keeps date** flags are yours to check.
 
 ## Moving assets between your accounts
 

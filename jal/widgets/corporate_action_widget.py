@@ -267,8 +267,8 @@ class ResultsModel(JalViewModel):
     def configureView(self):
         self._view.setColumnHidden(0, True)
         self._view.setColumnHidden(1, True)
-        self._view.setColumnWidth(3, 100)
-        self._view.setColumnWidth(4, 100)
-        self._view.setColumnWidth(5, 100)
+        self._view.setColumnWidth(3, 80)
+        self._view.setColumnWidth(4, 80)
+        self._view.setColumnWidth(5, 80)
         self._view.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
         restore_columns(self._view, Setup.COLUMNS_STATE_PREFIX)
