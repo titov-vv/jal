@@ -14,6 +14,7 @@ from jal.db.symbol import JalSymbol
 from jal.constants import AssetLocation, PredefinedAsset, SymbolId
 from jal.net.downloader import QuoteDownloader, llama_coin_key, llama_coin_keys, parse_llama_chart
 import jal.net.moex
+import jal.net.downloader
 from jal.net.moex import MOEX
 from jal.data_import.receipt_api.ru_fns import ReceiptRuFNS
 
@@ -568,3 +569,37 @@ def test_crypto_quotes_are_stored_as_usd(prepare_db, monkeypatch):
     # ... and the quote is stored as USD even though one of the accounts is in EUR
     assert JalAsset(asset_id).quotes(d2t(240701), d2t(240701), usd) == [(d2t(240701), Decimal('0.99'))]
     assert JalAsset(asset_id).quotes(d2t(240701), d2t(240701), eur) == []
+
+
+# Yahoo's '/chart' close is adjusted for every later split, and it counts GE's spin-offs as splits; the reader stores
+# the price as traded. Answer recorded 2026-10-24; expected prices are GE's unadjusted closes stored in a real ledger.
+def test_Yahoo_restores_prices_as_traded(prepare_db, monkeypatch):
+    days = [1547562600, 1554730200, 1655299800, 1686835800, 1712064600, 1725543000]
+    closes = ["41.83797836303711", "47.2994384765625", "43.05046463012695", "84.1260986328125",
+              "136.47000122070312", "163.85000610351562"]
+    splits = {str(d): {'date': d, 'numerator': n, 'denominator': m, 'splitRatio': f"{n}:{m}"}
+              for d, n, m in [(1551191400, 104.0, 100.0), (1627911000, 1.0, 8.0),
+                              (1672842600, 1281.0, 1000.0), (1712064600, 1253.0, 1000.0)]}
+    answer = '{"chart": {"error": null, "result": [{"meta": {"currency": "USD", "symbol": "GE"}, "timestamp": ' \
+             + json.dumps(days) + ', "events": {"splits": ' + json.dumps(splits) + '}, ' \
+             + '"indicators": {"quote": [{"close": [' + ', '.join(closes) + ']}]}}]}}'
+
+    sent = {}
+
+    class RecordedRequest:
+        GET = 1
+
+        def __init__(self, _operation, _url, params=None):
+            sent.update(params)
+
+        def wait(self, _deadline=None):
+            return True
+
+        def data(self):
+            return answer
+
+    monkeypatch.setattr(jal.net.downloader, "WebRequest", RecordedRequest)
+    create_stocks([('GE', '')], currency_id=2)   # id = 4
+    quotes = QuoteDownloader().Yahoo_Downloader(JalSymbol(symbol_id_for(4, 2)), 2, d2t(190101), d2t(241231))
+    assert list(quotes['Close']) == [Decimal(x) for x in ('8.73', '9.49', '69.1', '105.41', '136.47', '163.85')]
+    assert sent['events'] == 'split'   # Yahoo sends no split events unless asked

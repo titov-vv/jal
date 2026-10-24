@@ -1,4 +1,5 @@
 import logging
+import math
 import xml.etree.ElementTree as xml_tree
 from datetime import datetime, timedelta, timezone
 from jal.widgets.helpers import timestamp_range, dependency_present, set_date_formats
@@ -16,7 +17,7 @@ from PySide6.QtWidgets import QApplication, QDialog, QListWidgetItem
 from jal.ui.ui_quotes_update_dlg import Ui_UpdateQuotesDlg
 from jal.constants import AssetLocation, IconOwner, IconSource, PredefinedAsset, SymbolId
 from jal.db.asset import JalAsset
-from jal.db.helpers import day_begin, now_ts
+from jal.db.helpers import day_begin, now_ts, remove_exponent
 from jal.db.icon import JalIcons
 from jal.db.symbol import JalSymbol
 from jal.net.asset_icons import icon_url, coingecko_icons_urls, parse_coingecko_icons
@@ -615,13 +616,24 @@ class QuoteDownloader(QObject):
                 return Decimal(shortest)
         return value
 
+    # Yahoo's 'close' is adjusted for every later split (spin-offs come as splits too); the traded price is restored
+    # from the split events. 6 significant digits: the adjusted value is a 32-bit float.
+    @staticmethod
+    def _yahoo_traded_price(price: Decimal, timestamp: int, splits: list) -> Decimal:
+        factor = math.prod(Decimal(str(x['numerator'])) / Decimal(str(x['denominator']))
+                           for x in splits if x['date'] > timestamp)
+        if factor == 1 or price.is_nan():
+            return price
+        return remove_exponent(Decimal(f"{price * factor:.6g}"))
+
     # noinspection PyMethodMayBeStatic
     def Yahoo_Downloader(self, symbol, currency_id, start_timestamp, end_timestamp, suffix=''):
         url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol.symbol()+suffix}"
         params = {
             'period1': start_timestamp,
             'period2': end_timestamp,
-            'interval': '1d'
+            'interval': '1d',
+            'events': 'split'
         }
         self._request = WebRequest(WebRequest.GET, url, params=params)
         self._wait_for_event()
@@ -633,8 +645,11 @@ class QuoteDownloader(QObject):
         if len(web_data['result']) != 1:
             logging.error(self.tr("Yahoo returned more then one result: ") + web_data['result'])
             return []
-        timestamps = [datetime.fromtimestamp(x, tz=timezone.utc) for x in web_data['result'][0]['timestamp']]
-        closes = [self._yahoo_price(x) for x in web_data['result'][0]['indicators']['quote'][0]['close']]
+        result = web_data['result'][0]
+        splits = list(result.get('events', {}).get('splits', {}).values())
+        timestamps = [datetime.fromtimestamp(x, tz=timezone.utc) for x in result['timestamp']]
+        closes = [self._yahoo_traded_price(self._yahoo_price(x), t, splits)
+                  for x, t in zip(result['indicators']['quote'][0]['close'], result['timestamp'])]
         try:
             data = pd.DataFrame({'Date': timestamps, 'Close': closes})
         except ParserError:
