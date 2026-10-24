@@ -13,6 +13,7 @@ from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.symbol import JalSymbol
 from jal.db.icon import JalIcons
 from jal.db.account import JalAccountCreator
+from jal.db.ledger import Ledger
 from jal.db.operations import LedgerTransaction
 from jal.widgets.symbol_dialog import SymbolDialog
 from jal.data_import.statement import Statement, JSF
@@ -313,3 +314,20 @@ def test_new_listing_takes_the_asset_icon(prepare_db):
     JalDB().invalidate_cache()
     new = JalAsset(asset).add_symbol('NEWT', USD, AssetLocation.NYSE_EXCHANGE)
     assert JalIcons.image(IconOwner.Symbol, new) == b'logo' and JalIcons.source(IconOwner.Symbol, new) == IconSource.User
+
+
+# A security held in an account whose currency it isn't listed in is downloaded as the series of its live listing;
+# a superseded listing never feeds a series
+def test_active_symbols_of_an_unlisted_currency(prepare_db):
+    JalAccountCreator(currency_id=EUR, number='', name='EUR broker', investing=1, organization=1).commit()
+    stock = JalAssetCreator(PredefinedAsset.Stock, 'Some Company').commit().id()
+    old = _listing(stock, 'SC', USD, AssetLocation.NYSE_EXCHANGE, active=0)
+    live = _listing(stock, 'SC', USD, AssetLocation.NYSE_EXCHANGE)
+    JalDB().invalidate_cache()
+    LedgerTransaction.create_new(LedgerTransaction.Trade, {
+        'timestamp': d2t(240101), 'settlement': d2t(240101), 'account_id': 1, 'symbol_id': old, 'qty': 10,
+        'price': 1, 'fee': 0, 'number': ''})
+    Ledger().rebuild(from_timestamp=0)
+    active = [(x['symbol'].id(), x['currency']) for x in JalSymbol.get_active_symbols(0, d2t(241231))
+              if x['symbol'].asset().id() == stock]
+    assert active == [(live, USD)]

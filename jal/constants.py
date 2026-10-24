@@ -715,6 +715,14 @@ class TokenVerdict:
 
 # What a per-element icon belongs to - the 'entity' column of the 'icons' table (see jal.db.icon).
 # These values are written into the delete triggers of jal_init.sql, so a value is fixed once used and never reused.
+class CorporateActionType:   # values of asset_actions.type
+    Merger = 1
+    SpinOff = 2
+    SymbolChange = 3
+    Split = 4
+    Delisting = 5
+
+
 class IconOwner:
     Account = 1
     Symbol = 2       # one listing of an asset, i.e. a row of 'asset_symbol' and not the asset itself

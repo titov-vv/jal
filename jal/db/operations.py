@@ -2,7 +2,8 @@ import logging
 from decimal import Decimal
 from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QIcon
-from jal.constants import Setup, BookAccount, PredefinedCategory, PredefinedAsset, PredefinedAccountType
+from jal.constants import Setup, BookAccount, PredefinedCategory, PredefinedAsset, PredefinedAccountType, \
+    CorporateActionType
 from jal.db.helpers import format_decimal, remove_exponent
 from jal.db.db import JalDB
 import jal.db.account
@@ -2329,11 +2330,11 @@ class Transfer(FeeCarrier, LedgerTransaction):
 
 # ----------------------------------------------------------------------------------------------------------------------
 class CorporateAction(LedgerTransaction):
-    Merger = 1
-    SpinOff = 2
-    SymbolChange = 3
-    Split = 4
-    Delisting = 5
+    Merger = CorporateActionType.Merger
+    SpinOff = CorporateActionType.SpinOff
+    SymbolChange = CorporateActionType.SymbolChange
+    Split = CorporateActionType.Split
+    Delisting = CorporateActionType.Delisting
     _db_table = "asset_actions"
     _otype = LedgerTransaction.CorporateAction
     LedgerRank = 3

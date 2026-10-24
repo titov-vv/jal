@@ -480,18 +480,23 @@ def test_quote_series_selection(prepare_db):
     downloader = QuoteDownloader()
     usd, eur = 2, 3
 
-    # All listings of a crypto asset share one USD series: same asset on two chains and in two account
-    # currencies has to be downloaded once and stored as USD
+    # All listings of a crypto asset share one USD series - they are kept in USD (see get_active_symbols), so the same
+    # asset on two chains is downloaded once
     asset_id, arb_symbol = create_crypto('USD Coin', 'USDC', usd, AssetLocation.ARB_BLOCKCHAIN,
                                          '0xaf88d065e77c8cC2239327C5EDb3A432268e5831', SymbolId.ARB_ADDRESS)
     eth_symbol = JalAsset(asset_id).add_symbol('USDC', usd, location_id=AssetLocation.ETH_BLOCKCHAIN)
     JalAsset(asset_id).add_identifier(eth_symbol, SymbolId.ETH_ADDRESS,
                                       '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48')
-    series = downloader._quote_series([(JalSymbol(arb_symbol), usd), (JalSymbol(eth_symbol), usd),
-                                       (JalSymbol(arb_symbol), eur), (JalSymbol(eth_symbol), eur)])
-    assert len(series) == 1
-    assert series[0][0].id() == arb_symbol   # the first listing of the series is the one that is downloaded
-    assert series[0][1] == usd               # ... and it is stored as a USD series despite the EUR accounts
+    series = downloader._quote_series([(JalSymbol(arb_symbol), usd), (JalSymbol(eth_symbol), usd)])
+    assert len(series) == 1 and series[0][1] == usd
+
+    # Two venues in one currency are one series, downloaded from the source of higher priority only
+    nokia = JalAssetCreator(PredefinedAsset.Stock, 'Nokia')
+    fra = nokia.add_symbol('NOKIA', eur, location_id=AssetLocation.FRA_EXCHANGE)
+    hel = nokia.add_symbol('NOKIA', eur, location_id=AssetLocation.HEL_EXCHANGE)
+    nokia.commit()
+    series = downloader._quote_series([(JalSymbol(fra), eur), (JalSymbol(hel), eur)])
+    assert [(x[0].id(), x[1]) for x in series] == [(hel, eur)]
 
     # Listings of a non-crypto asset in different currencies are different series and all of them are kept
     stock = JalAssetCreator(PredefinedAsset.Stock, 'Some Company')
@@ -551,9 +556,9 @@ def test_crypto_quotes_are_stored_as_usd(prepare_db, monkeypatch):
     eth_symbol = JalAsset(asset_id).add_symbol('USDC', eur, location_id=AssetLocation.ETH_BLOCKCHAIN)
     JalAsset(asset_id).add_identifier(eth_symbol, SymbolId.ETH_ADDRESS,
                                       '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48')
-    monkeypatch.setattr(JalSymbol, 'get_active_symbols',
+    monkeypatch.setattr(JalSymbol, 'get_active_symbols',   # an EUR wallet's crypto is reported in its listing's USD
                         classmethod(lambda cls, begin, end: [{"symbol": JalSymbol(arb_symbol), "currency": usd},
-                                                             {"symbol": JalSymbol(eth_symbol), "currency": eur}]))
+                                                             {"symbol": JalSymbol(eth_symbol), "currency": usd}]))
     downloaded = []
     quotes = pd.DataFrame({'Close': [Decimal('0.99')], 'Date': [d2dt(240701)]}).set_index('Date')
     def fake_download(symbol, currency_id, start_timestamp, end_timestamp):
@@ -564,8 +569,8 @@ def test_crypto_quotes_are_stored_as_usd(prepare_db, monkeypatch):
     downloader.download_asset_prices(d2t(240701), d2t(240701),
                                      [AssetLocation.ARB_BLOCKCHAIN, AssetLocation.ETH_BLOCKCHAIN])
 
-    # Both listings share one series, so a single download is made and it is requested in USD
-    assert downloaded == [(arb_symbol, usd)]
+    # Both listings share one series, so a single download is made, through the chain of higher priority, in USD
+    assert downloaded == [(eth_symbol, usd)]
     # ... and the quote is stored as USD even though one of the accounts is in EUR
     assert JalAsset(asset_id).quotes(d2t(240701), d2t(240701), usd) == [(d2t(240701), Decimal('0.99'))]
     assert JalAsset(asset_id).quotes(d2t(240701), d2t(240701), eur) == []

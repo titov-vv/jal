@@ -460,26 +460,22 @@ class QuoteDownloader(QObject):
 
     # Takes a list of (symbol, account currency) pairs and returns a list of (symbol, quote currency) pairs that
     # describe the quote series to download - one pair per series.
-    # Quotes are stored per (asset, currency) while an asset may have several listings, so listings that share a
-    # series have to be collapsed into one download. Blockchain sources are quoted in USD only, which means that
-    # all listings of a crypto asset share a single USD series regardless of the currency of the account holding
-    # it; for other sources listings in different currencies are separate series and are all kept.
+    # Venues by the priority of their quote source, highest first: a series is downloaded from one source only, the
+    # top one of the listings it has (a secondary venue such as Frankfurt after the home exchanges)
+    SOURCE_PRIORITY = [AssetLocation.MOEX_EXCHANGE, AssetLocation.NYSE_EXCHANGE, AssetLocation.NASDAQ_EXCHANGE,
+                       AssetLocation.TMX_EXCHANGE, AssetLocation.LSE_EXCHANGE, AssetLocation.HEL_EXCHANGE,
+                       AssetLocation.MILAN_EXCHANGE, AssetLocation.WSE_EXCHANGE, AssetLocation.FRA_EXCHANGE,
+                       AssetLocation.SMA_VICTORIA] + LLAMA_LOCATIONS
+
+    # Quotes are stored per (asset, currency) while an asset may have several listings, so the listings of one series
+    # are collapsed into one download from the top-priority source. Listings in different currencies are different
+    # series; a crypto listing is kept in its venue's quote currency, so all of an asset's chains share one series.
     def _quote_series(self, symbols: list) -> list:
-        usd = [x.id() for x in JalAsset.get_currencies() if x.symbol() == 'USD']
-        series = []
-        stored = set()
-        for symbol, currency in symbols:
-            if symbol.location() in LLAMA_LOCATIONS:
-                if not usd:
-                    logging.warning(self.tr("Can't store crypto quotes as there is no USD currency in the ledger: ")
-                                    + f"{symbol.symbol()}")
-                    continue
-                currency = usd[0]
-            if (symbol.asset().id(), currency) in stored:
-                continue
-            stored.add((symbol.asset().id(), currency))
-            series.append((symbol, currency))
-        return series
+        rank = lambda x: self.SOURCE_PRIORITY.index(x) if x in self.SOURCE_PRIORITY else len(self.SOURCE_PRIORITY)
+        series = {}
+        for symbol, currency in sorted(symbols, key=lambda x: rank(x[0].location())):
+            series.setdefault((symbol.asset().id(), currency), (symbol, currency))
+        return list(series.values())
 
     def PrepareRussianCBReader(self):
         rows = []

@@ -40,9 +40,8 @@ class JalSymbol(JalDB):
     # operations between begin and end timestamps or that have non-zero value in ledger, together with the symbols of
     # the operations that the ledger doesn't cover yet (see _symbols_beyond_ledger) and of what accounts are owed
     # (see _symbols_of_receivables). The 'symbol' is the active listing for its currency, so its text, identifiers
-    # and location resolve against that exact listing. If an asset has ledger activity but no active listing for the
-    # account currency the symbol is empty (JalSymbol(0)) - such rows have no downloadable location and are skipped
-    # by the quote downloader.
+    # and location resolve against that exact listing. An asset with ledger activity but no active listing in the
+    # account currency is reported by its live listings in their own currencies - the series its sources have.
     # A (symbol, currency) pair is reported once - the same pair may come from several accounts and from several
     # sources, while its consumers (a quote download, an icon fetch) have nothing to do with it a second time.
     # An account 'a' holds an asset through its listing 's' in the account's currency, or through a crypto listing,
@@ -62,19 +61,28 @@ class JalSymbol(JalDB):
                           "GROUP BY l.asset_id, a.currency_id, l.account_id, s.id "
                           "HAVING l.id = MAX(l.id) AND (l.amount_acc!='0' OR l.value_acc!='0' OR (l.timestamp>=:begin AND l.timestamp<=:end))",
                           [(":assets", BookAccount.Assets), (":begin", begin), (":end", end)])
+        unlisted = set()
         while query.next():
             try:
                 # symbol_id may legitimately be NULL (no active asset_symbol row for this currency) - the QSQLITE
                 # driver reports such a NULL from this LEFT JOIN as '' rather than None, so both are treated as
                 # "no symbol" (default to 0) rather than as a malformed asset_id/currency_id
-                _asset_id, currency_id, symbol_id = cls._read_record(
+                asset_id, currency_id, symbol_id = cls._read_record(
                     query, cast=[int, int, lambda x: int(x) if x not in (None, '') else 0])
             except TypeError:  # Skip if None is returned (i.e. there are no assets)
+                continue
+            if not symbol_id:
+                unlisted.add(asset_id)
                 continue
             if (symbol_id, currency_id) in listed:
                 continue
             listed.add((symbol_id, currency_id))
             symbols.append({"symbol": cls(symbol_id), "currency": currency_id})
+        for asset_id in unlisted:   # not listed in the account's currency: the asset's own series of its live listings
+            for listing in [x for x in JalAsset(asset_id).dump().get('symbols', []) if x['active']]:
+                if (listing['id'], listing['currency_id']) not in listed:
+                    listed.add((listing['id'], listing['currency_id']))
+                    symbols.append({"symbol": cls(listing['id']), "currency": listing['currency_id']})
         for symbol_id, currency_id in cls._symbols_beyond_ledger(end) + cls._symbols_of_receivables(end):
             if (symbol_id, currency_id) in listed:
                 continue

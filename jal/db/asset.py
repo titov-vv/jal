@@ -1,7 +1,7 @@
 import logging
 import math
 from decimal import Decimal, InvalidOperation
-from jal.constants import AssetLocation, AssetData, BookAccount, PredefinedAsset, SymbolId, IconOwner
+from jal.constants import AssetLocation, AssetData, BookAccount, PredefinedAsset, SymbolId, IconOwner, CorporateActionType
 from jal.db.db import JalDB
 from jal.db.clock import local_moment, local_reading
 from jal.db.helpers import format_decimal, day_begin, now_ts
@@ -370,7 +370,7 @@ class JalAsset(JalDB):
                                "FROM asset_actions AS a LEFT JOIN asset_action_results AS r ON a.oid=r.action_id "
                                "LEFT JOIN asset_symbol AS s ON a.symbol_id=s.id "
                                "WHERE s.asset_id=:asset_id AND a.type=:split ORDER BY a.timestamp",
-                               [(":asset_id", self._id), (":split", 4)])  #FIXME 4->CorporateAction.Split
+                               [(":asset_id", self._id), (":split", CorporateActionType.Split)])
             while query.next():
                 timestamp, x, y = self._read_record(query, cast=[int, Decimal, Decimal])
                 splits[timestamp] = x / y
