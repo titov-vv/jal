@@ -804,9 +804,12 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     # Symbols are added in statement id order (i.e. in the order the producer discovered them,
     # across all assets) so that db ids of new asset_symbol rows don't depend on asset grouping.
     def _import_assets(self, assets):
+        offered = set(self._new_names)   # stored assets whose name was asked about already
+        stored = set()
         for asset in assets:
             db_id = self.mapped_id(JSF.ASSETS, asset['id'])
             if db_id:
+                stored.add(asset['id'])
                 db_asset = JalAsset(db_id)
                 db_asset.update_data({k: asset[k] for k in ('name', 'country', 'expiry', 'principal') if k in asset})
                 if asset['id'] in self._new_names:
@@ -844,9 +847,18 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                     raise Statement_ImportError(self.tr("The ledger has no currency this venue is quoted in: ")
                                                 + f"{symbol['symbol']} ({AssetLocation().get_name(location)})")
             period = {self._identifier_types[k]: symbol.get(k) for k in ('isin', 'reg_number', 'cusip', 'conid')}
+            known = {x['id'] for x in db_asset.dump().get('symbols', [])}
             symbol_id = db_asset.add_symbol(symbol['symbol'], currency, location_id=location,
                                             active=symbol.get('active', True), identifiers=period)
             self.set_mapped_id(JSF.SYMBOLS, symbol['id'], symbol_id)
+            # A new listing of a stored security is a moment its name may have changed - asked once per asset
+            if asset['id'] in stored and asset['id'] not in offered and symbol_id not in known \
+                    and asset['type'] != JSF.ASSET_MONEY and location not in AssetLocation.CRYPTO_LOCATIONS \
+                    and asset.get('name') \
+                    and asset['name'] != db_asset.name():
+                offered.add(asset['id'])
+                if self.confirm_rename(db_asset.name(), asset['name']):
+                    db_asset.rename(asset['name'])
             for key in self.ID_KEYS:
                 if symbol.get(key):
                     db_asset.update_identifier(symbol_id, self._identifier_types[key], symbol[key])

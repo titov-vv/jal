@@ -14,6 +14,7 @@ from jal.db.symbol import JalSymbol
 from jal.db.icon import JalIcons
 from jal.db.account import JalAccountCreator
 from jal.db.ledger import Ledger
+from jal.db.receivable import JalReceivable
 from jal.db.operations import LedgerTransaction
 from jal.widgets.symbol_dialog import SymbolDialog
 from jal.data_import.statement import Statement, JSF
@@ -331,3 +332,44 @@ def test_active_symbols_of_an_unlisted_currency(prepare_db):
     active = [(x['symbol'].id(), x['currency']) for x in JalSymbol.get_active_symbols(0, d2t(241231))
               if x['symbol'].asset().id() == stock]
     assert active == [(live, USD)]
+
+
+# The operations beyond the ledger and the claims an account is owed follow the same rule: an asset not listed in the
+# account's currency is downloaded as its own series
+def test_own_series_beyond_the_ledger_and_for_claims(prepare_db):
+    JalAccountCreator(currency_id=EUR, number='', name='EUR broker', investing=1, organization=1).commit()
+    traded = JalAssetCreator(PredefinedAsset.Stock, 'Traded Company').commit().id()
+    traded_listing = _listing(traded, 'TC', USD, AssetLocation.NYSE_EXCHANGE)
+    owed = JalAssetCreator(PredefinedAsset.Stock, 'Owed Company').commit().id()
+    owed_listing = _listing(owed, 'OC', USD, AssetLocation.NYSE_EXCHANGE)
+    JalDB().invalidate_cache()
+    LedgerTransaction.create_new(LedgerTransaction.Trade, {   # no rebuild: the operation lies beyond the ledger
+        'timestamp': d2t(240101), 'settlement': d2t(240101), 'account_id': 1, 'symbol_id': traded_listing, 'qty': 10,
+        'price': 1, 'fee': 0, 'number': ''})
+    JalReceivable().store(d2t(240101), 1, owed, 'test', Decimal('5'))
+    active = {(x['symbol'].id(), x['currency']) for x in JalSymbol.get_active_symbols(0, d2t(241231))}
+    assert {(traded_listing, USD), (owed_listing, USD)} <= active
+
+
+# A stored security that gets a new listing - a new ticker, here - is offered the name the statement gives it
+@pytest.mark.parametrize("agree", [False, True])
+def test_new_listing_of_a_stored_security_offers_its_name(prepare_db_fifo, tmp_path, agree):
+    stored = JalAssetCreator(PredefinedAsset.Stock, 'Old Name Corp').commit().id()
+    JalDB._exec("INSERT INTO symbol_ids (symbol_id, id_type, id_value) VALUES (:s, :t, 'US0000000011')",
+                [(":s", _listing(stored, 'OLDT', USD, AssetLocation.UNDEFINED)), (":t", SymbolId.ISIN)], commit=True)
+    JalDB().invalidate_cache()
+    data = {'period': [d2t(240101), d2t(241231)],
+            'accounts': [{'id': 1, 'number': 'U7654321', 'currency': 2, 'precision': 10}],
+            'assets': [{'id': 2, 'type': 'money', 'name': 'USD', 'symbols': [{'id': 2, 'symbol': 'USD'}]},
+                       {'id': 3, 'type': 'stock', 'name': 'New Name Corp',
+                        'symbols': [{'id': 3, 'symbol': 'NEWT', 'currency': 2, 'isin': 'US0000000011'}]}],
+            'trades': [{'id': 1, 'account': 1, 'symbol': 3, 'timestamp': d2t(240301), 'settlement': d2t(240301),
+                        'number': 'B1', 'quantity': 10, 'price': 1, 'fee': 0}]}
+    path = tmp_path / 'new_listing.json'
+    path.write_text(json.dumps(data))
+    statement = Statement()
+    statement.load(str(path))
+    statement.validate_format()
+    statement._rename_for_tests = agree
+    assert _import(statement) == [stored]
+    assert JalAsset(stored).name() == ('New Name Corp' if agree else 'Old Name Corp')

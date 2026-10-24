@@ -78,17 +78,19 @@ class JalSymbol(JalDB):
                 continue
             listed.add((symbol_id, currency_id))
             symbols.append({"symbol": cls(symbol_id), "currency": currency_id})
-        for asset_id in unlisted:   # not listed in the account's currency: the asset's own series of its live listings
-            for listing in [x for x in JalAsset(asset_id).dump().get('symbols', []) if x['active']]:
-                if (listing['id'], listing['currency_id']) not in listed:
-                    listed.add((listing['id'], listing['currency_id']))
-                    symbols.append({"symbol": cls(listing['id']), "currency": listing['currency_id']})
-        for symbol_id, currency_id in cls._symbols_beyond_ledger(end) + cls._symbols_of_receivables(end):
+        own = [pair for asset_id in unlisted for pair in cls._own_series(asset_id)]
+        for symbol_id, currency_id in own + cls._symbols_beyond_ledger(end) + cls._symbols_of_receivables(end):
             if (symbol_id, currency_id) in listed:
                 continue
             listed.add((symbol_id, currency_id))
             symbols.append({"symbol": cls(symbol_id), "currency": currency_id})
         return symbols
+
+    # (symbol_id, currency_id) pairs of an asset that isn't listed in its account's currency: its live listings, each
+    # in its own currency - the series its sources have
+    @classmethod
+    def _own_series(cls, asset_id: int) -> list:
+        return [(x['id'], x['currency_id']) for x in JalAsset(asset_id).dump().get('symbols', []) if x['active']]
 
     # (symbol_id, currency_id) pairs of the assets an account is owed at 'end' (see JalReceivable.claims) - a reward
     # token nobody holds yet has no ledger row or operation, yet its claim is valued with its quote.
@@ -104,6 +106,8 @@ class JalSymbol(JalDB):
                                   [(":asset_id", claim['asset_id']), (":account_id", account_id)])
                 if query.next():
                     pairs.append(tuple(cls._read_record(query, cast=[int, int])))
+                else:
+                    pairs += cls._own_series(claim['asset_id'])
         return pairs
 
     # (symbol_id, currency_id) pairs of the operations that the ledger hasn't accounted for - those at or after its
@@ -122,16 +126,20 @@ class JalSymbol(JalDB):
         frontier = cls._read("SELECT ledger_frontier FROM frontier")   # '' when the ledger is empty
         frontier = 0 if frontier in ('', None) else int(frontier)
         pairs = []
-        query = cls._exec("SELECT DISTINCT s.id, " + cls._SERIES_CURRENCY + " FROM (" + cls._OPERATION_SYMBOLS + ") AS o "
+        query = cls._exec("SELECT DISTINCT os.asset_id, s.id, " + cls._SERIES_CURRENCY + " FROM (" + cls._OPERATION_SYMBOLS + ") AS o "
                           "LEFT JOIN asset_symbol os ON os.id=o.symbol_id "
                           "LEFT JOIN accounts a ON a.id=o.account_id "
                           "LEFT JOIN asset_symbol s ON s.asset_id=os.asset_id AND " + cls._LISTING_CURRENCY + " AND s.active=1 "
-                          "WHERE o.timestamp>=:frontier AND o.timestamp<=:end AND NOT s.id IS NULL",
+                          "WHERE o.timestamp>=:frontier AND o.timestamp<=:end AND NOT os.asset_id IS NULL",
                           [(":frontier", frontier), (":end", end)])
         while query.next():
             try:
-                symbol_id, currency_id = cls._read_record(query, cast=[int, int])
+                asset_id, symbol_id, currency_id = cls._read_record(
+                    query, cast=[int, lambda x: int(x) if x not in (None, '') else 0, int])
             except TypeError:
+                continue
+            if not symbol_id:   # not listed in the account's currency
+                pairs += cls._own_series(asset_id)
                 continue
             pairs.append((symbol_id, currency_id))
         return pairs
