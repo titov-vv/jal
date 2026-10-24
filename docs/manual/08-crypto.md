@@ -265,6 +265,10 @@ wallet and are recorded as the income they are, with the claim's gas as its fee.
 Crypto prices come from DeFiLlama and need no key. They are downloaded with everything else through
 **Import → Download quotes…**; tick the chains and *Crypto exchange* among the sources.
 
+DeFiLlama quotes in US dollars, so a crypto listing is kept in dollars whatever the currency of the
+account that holds it, and a coin on several chains has one price series. A ledger needs the US
+dollar among its currencies to import crypto at all.
+
 A coin that lives on no chain JAL supports (or that you hold on an exchange) is priced through its
 **CoinGecko id**, which you put in the asset's attributes — see [chapter 6](06-investments.md).
 

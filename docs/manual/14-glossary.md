@@ -52,7 +52,8 @@ see it unless an import fails and leaves a dump behind.
 incomes. Never edited by hand; rebuilt whenever operations change.
 
 **Listing** (called *symbol* in the interface) — one way an asset is traded: a ticker, in a currency,
-on an exchange. One asset may have several.
+on an exchange, for one period of the asset (until a split changes the ISIN, say). One asset may
+have several.
 
 **Lot** — one purchase of an asset, with its own date and its own cost, kept separately so that FIFO
 can match sales against it.

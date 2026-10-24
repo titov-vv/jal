@@ -32,6 +32,11 @@ An **asset** is the thing itself — *Acme Industries Inc.* A **listing** (JAL c
 one way that thing is traded: a ticker, in a currency, on an exchange. One asset can have several
 listings; the same share may trade in New York in dollars and in Frankfurt in euros.
 
+A listing also belongs to one period of the asset. When a split changes the ISIN or a company is
+renamed, the asset keeps its history and gets a new listing; the old one stays, with *Act.*
+unticked, so that the operations recorded under it keep their ticker and ISIN. Two active listings
+of one asset can't share a ticker, a currency and an exchange.
+
 Open **Data → Assets** to see everything JAL knows about:
 
 ![The list of assets](img/dlg_assets.png)
@@ -155,6 +160,12 @@ case to case, for instance when depositary receipts are exchanged for the issuer
 decides which lots a later sale takes first and the acquisition date tax reports show; the cost
 always stays that of the original purchase.
 
+When a split changes the ISIN or the company changes its ticker or name, it is still the same thing
+you hold, and an import keeps it as **one asset** with a new listing. Where the statement can't
+prove that — a symbol change without FIGI codes — JAL asks whether it is the same security under a
+new name, and it may offer to rename the asset. Different FIGI codes on the two sides mean a
+different security, a merger for instance, and JAL keeps two assets.
+
 > Corporate actions usually arrive with a broker statement import, already filled in — but the
 > percentages and the **Keeps date** flags are yours to check.
 
@@ -176,7 +187,9 @@ Pick a date range, tick the sources you want, press **OK**. JAL then fetches:
   Central Bank of Russia;
 * **prices of every asset you held during the period**, each from the source that matches its
   listing's exchange: Moscow Exchange for MOEX, Yahoo Finance for New York, London, Frankfurt,
-  Helsinki, Warsaw, Euronext Milan for Milan, TMX for Toronto, DeFiLlama for crypto;
+  Helsinki, Warsaw, Euronext Milan for Milan, TMX for Toronto, DeFiLlama for crypto. An asset
+  listed on two exchanges in one currency is priced from one of them only, the home exchange
+  rather than Frankfurt, for instance;
 * **logos** for the assets, where they are available — purely cosmetic.
 
 Nothing about you is sent: JAL asks public services for public prices.

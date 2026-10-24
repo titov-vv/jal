@@ -111,7 +111,9 @@ the day.
 1. **Reads** the file and checks it is what it claims to be.
 2. **Matches** everything it mentions against what you already have — currencies, then assets (by
    ISIN, registration number or CUSIP first, by ticker only as a last resort), then accounts (by
-   number and currency). Whatever is missing is created.
+   number and currency). Whatever is missing is created. When the statement doesn't name the
+   exchange and you hold the asset on two, JAL asks which one; when it names an exchange for a
+   listing that has none, JAL asks whether that is its exchange, once.
 3. **Writes** the operations, inside one database transaction: either the whole statement lands, or
    nothing does.
 4. **Rebuilds** the ledger and compares the statement's closing balance with its own figure.
