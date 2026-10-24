@@ -8,6 +8,7 @@ from jal.data_import.statement import Statement, JSF
 from jal.db.account import JalAccountCreator, JalAccount
 from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.symbol import JalSymbol
+from jal.db.db import JalDB
 from jal.db.token_blacklist import JalTokenBlacklist
 from jal.net.chain_fetchers.hyperliquid import HyperliquidFetcher
 from jal.net.chain_fetchers.tron import TronFetcher
@@ -226,3 +227,104 @@ def test_cross_chain_merge_targets_are_flagged(known_usdt):
     both = [{'symbol': 'USDT', 'location': AssetLocation.TRX_BLOCKCHAIN, 'address': TRX_USDT},
             {'symbol': 'USDT', 'location': AssetLocation.ETH_BLOCKCHAIN, 'address': ETH_USDT}]
     assert statement._cross_chain_merge_targets(both, [known_usdt.id()]) == set()
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# A token renamed on its own contract (Arbitrum USDT -> USD₮0): the new ticker becomes a new live listing, the old one
+# is superseded and keeps its address, and the next fetch still finds the asset by address (ASSET_MODEL (8)).
+def _fetch_tron_token(ticker):
+    statement = TronFetcher()
+    statement._account = JalAccount(1)
+    statement._data = {JSF.ACCOUNTS: [], JSF.ASSETS: [], JSF.TRANSFERS: []}
+    token = statement._token_asset_id(ticker, 'Tether USD', address=TRX_USDT)
+    statement._token_action_for_tests = (Statement.TOKEN_CREATE_NEW, 0)   # reaching the prompt at all is the bug
+    statement.match_db_ids()
+    return statement, token
+
+
+def _tron_wallet(currency_id):
+    JalAccountCreator(currency_id=currency_id, number='', name='Tron wallet', investing=1, organization=1,
+                      account_type=PredefinedAccountType.Wallet, address='TMuA6YqfCeX8EhbfYEg5y7S4DqzSJireY9',
+                      chain=AssetLocation.TRX_BLOCKCHAIN).commit()
+
+
+def test_a_token_renamed_on_its_contract_stays_one_asset(prepare_db):
+    creator = JalAssetCreator(PredefinedAsset.Crypto, 'Tether USD')
+    old = creator.add_symbol('USDT', USD, location_id=AssetLocation.TRX_BLOCKCHAIN)
+    creator.add_identifier(old, SymbolId.TRX_ADDRESS, TRX_USDT)
+    usdt = creator.commit()
+    _tron_wallet(USD)
+
+    for _ in range(2):   # the second fetch is the one that used to find nothing
+        statement, token = _fetch_tron_token('USD₮0')
+        assert statement.mapped_id(JSF.ASSETS, token) == usdt.id()
+        statement.import_into_db()
+
+    listing = JalSymbol.find_by_identifier(SymbolId.TRX_ADDRESS, TRX_USDT)
+    assert (listing.asset().id(), listing.symbol(), listing.active()) == (usdt.id(), 'USD₮0', True)
+    assert not JalSymbol(old).active() and JalSymbol(old).identifier(SymbolId.TRX_ADDRESS) == TRX_USDT
+    assert JalAsset(usdt.id()).active_symbol_ids() == [listing.id()]
+
+
+# The same ticker in another currency (USDT's RUB/USD/EUR rows) is not a rename: the address stays on the row that
+# carries it and both rows stay live.
+def test_a_currency_twin_does_not_take_the_address(prepare_db):
+    EUR = 3
+    creator = JalAssetCreator(PredefinedAsset.Crypto, 'Tether USD')
+    usd_row = creator.add_symbol('USDT', USD, location_id=AssetLocation.TRX_BLOCKCHAIN)
+    creator.add_identifier(usd_row, SymbolId.TRX_ADDRESS, TRX_USDT)
+    eur_row = creator.add_symbol('USDT', EUR, location_id=AssetLocation.TRX_BLOCKCHAIN)
+    usdt = creator.commit()
+    _tron_wallet(EUR)
+
+    for _ in range(2):
+        statement, token = _fetch_tron_token('USDT')
+        assert statement.mapped_id(JSF.ASSETS, token) == usdt.id()
+        statement.import_into_db()
+
+    assert JalSymbol.find_by_identifier(SymbolId.TRX_ADDRESS, TRX_USDT).id() == usd_row
+    assert JalSymbol(eur_row).identifier(SymbolId.TRX_ADDRESS) == ''
+    assert sorted(JalAsset(usdt.id()).active_symbol_ids()) == sorted([usd_row, eur_row])
+
+
+# A rename seen from a wallet in another currency: the old row lives in that other currency, which the import's own
+# deactivation doesn't reach, so the address guard supersedes it.
+def test_a_rename_in_another_currency_supersedes_the_old_row(prepare_db):
+    EUR = 3
+    creator = JalAssetCreator(PredefinedAsset.Crypto, 'Tether USD')
+    old = creator.add_symbol('USDT', USD, location_id=AssetLocation.TRX_BLOCKCHAIN)
+    creator.add_identifier(old, SymbolId.TRX_ADDRESS, TRX_USDT)
+    usdt = creator.commit()
+    _tron_wallet(EUR)
+
+    for _ in range(2):
+        statement, token = _fetch_tron_token('USD₮0')
+        assert statement.mapped_id(JSF.ASSETS, token) == usdt.id()
+        statement.import_into_db()
+
+    listing = JalSymbol.find_by_identifier(SymbolId.TRX_ADDRESS, TRX_USDT)
+    assert (listing.symbol(), listing.currency(), listing.active()) == ('USD₮0', EUR, True)
+    assert not JalSymbol(old).active()
+    assert JalAsset(usdt.id()).active_symbol_ids() == [listing.id()]
+
+
+# Several rows with one address: the live one, else the latest; rows of two different assets are no answer at all.
+def test_find_by_identifier_prefers_the_live_row(prepare_db):
+    creator = JalAssetCreator(PredefinedAsset.Crypto, 'Tether USD')
+    first = creator.add_symbol('USDT', USD, location_id=AssetLocation.TRX_BLOCKCHAIN)
+    second = creator.add_symbol('USD₮0', USD, location_id=AssetLocation.TRX_BLOCKCHAIN)
+    for row in (first, second):
+        creator.add_identifier(row, SymbolId.TRX_ADDRESS, TRX_USDT)
+    asset = creator.commit()
+    JalDB._exec("UPDATE asset_symbol SET active=0 WHERE id=:id", [(":id", second)])
+    JalDB().invalidate_cache()
+    assert JalSymbol.find_by_identifier(SymbolId.TRX_ADDRESS, TRX_USDT).id() == first
+    JalDB._exec("UPDATE asset_symbol SET active=0 WHERE asset_id=:id", [(":id", asset.id())])
+    JalDB().invalidate_cache()
+    assert JalSymbol.find_by_identifier(SymbolId.TRX_ADDRESS, TRX_USDT).id() == second
+
+    other = JalAssetCreator(PredefinedAsset.Crypto, 'Fake Tether')
+    other.add_identifier(other.add_symbol('USDT', USD, location_id=AssetLocation.TRX_BLOCKCHAIN),
+                         SymbolId.TRX_ADDRESS, TRX_USDT)
+    other.commit()
+    assert JalSymbol.find_by_identifier(SymbolId.TRX_ADDRESS, TRX_USDT).id() == 0

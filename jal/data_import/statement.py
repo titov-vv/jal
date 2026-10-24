@@ -779,8 +779,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if symbol.get('address'):
                 address_id = AssetLocation.address_id_of(location)
                 if address_id is not None:
-                    db_asset.update_identifier(symbol_id, address_id,
-                                               normalize_address(location, symbol['address']))
+                    self._link_address(db_asset, symbol_id, address_id, normalize_address(location, symbol['address']))
             # A Hyperliquid token may additionally be deployed on HyperEVM and then carries a contract address
             # there as well. That address is not the token's identity - it is optional and belongs to another
             # chain - but it is the key the quote source indexes most Hyperliquid tokens by, so it is kept
@@ -788,6 +787,20 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if symbol.get('evm_address'):
                 db_asset.update_identifier(symbol_id, SymbolId.HL_EVM_ADDRESS,
                                            normalize_address(location, symbol['evm_address']))
+
+    # An address names at most one live listing of the asset: a live row with the same ticker in another currency keeps
+    # it, while a live row under another ticker is a rename on the same contract and is superseded
+    @staticmethod
+    def _link_address(db_asset, symbol_id: int, id_type: int, address: str) -> None:
+        listing = JalSymbol(symbol_id)
+        twins = [x for x in JalSymbol.listings_by_identifier(id_type, address)
+                 if x.id() != symbol_id and x.active() and x.asset().id() == db_asset.id()]
+        if listing.active():
+            if any(x.symbol() == listing.symbol() for x in twins):
+                return
+            for twin in twins:
+                db_asset.add_symbol(twin.symbol(), twin.currency(), twin.location(), active=False)
+        db_asset.update_identifier(symbol_id, id_type, address)
 
     def _import_accounts(self, accounts):
         for account in accounts:
