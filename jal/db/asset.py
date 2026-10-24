@@ -139,7 +139,8 @@ class JalAsset(JalDB):
     # of one and the same ticker - a token held on three chains - from being run together into 'USDCUSDCUSDC', a
     # ticker that exists nowhere and reads as if it did. Several DIFFERENT tickers of a security is a real ambiguity
     # and stays visible as the comma-separated list the no-currency answer above has always been: the caller that
-    # needs one listing has to say which. A crypto asset that no chain narrows down is named by its first live listing.
+    # needs one listing has to say which. A crypto asset that no chain narrows down is named by its listing on its
+    # native chain, or else by its first live listing.
     #
     # This never raises. Several active listings is a state add_symbol() creates on purpose, and this is asked from
     # logging, from tax report builders and from inside Qt model data() - places where an exception costs a download,
@@ -176,7 +177,8 @@ class JalAsset(JalDB):
         if currency is not None and location and [x for x in listings if x['location_id'] == location]:
             listings = [x for x in listings if x['location_id'] == location]
         if currency is not None and all(x['location_id'] in AssetLocation.CRYPTO_LOCATIONS for x in listings):
-            listings = listings[:1]
+            native = [x for x in listings if AssetLocation.is_native_coin(x['location_id'], x['symbol'])]
+            listings = (native or listings)[:1]   # a coin is named by its own chain's listing, not by a wrapper's
         return listings
 
     # Id of the listing that names this asset for the given currency and location - the very row whose ticker
@@ -298,7 +300,8 @@ class JalAsset(JalDB):
     # Returns (timestamp, 1) if quotation is requested relative to itself
     # Returned timestamp might be less than given.
     # Returns (0, 0) if no quotation information present in db. Return value (timestamp, 0) is a valid quote
-    def quote(self, timestamp: int, currency_id: int) -> tuple:
+    # report_missing=False is for a caller to whom a missing quote is an answer, not a miss (dust)
+    def quote(self, timestamp: int, currency_id: int, report_missing: bool = True) -> tuple:
         if self._id == currency_id:
             return timestamp, Decimal('1')
         quote = self._read("SELECT timestamp, quote FROM quotes WHERE asset_id=:asset_id "
@@ -316,7 +319,8 @@ class JalAsset(JalDB):
                 cross_quote = self._cross_currency_quote(timestamp, currency_id)
                 if cross_quote is not None:
                     return cross_quote
-            self._report_missing_quote(timestamp, currency_id)
+            if report_missing:
+                self._report_missing_quote(timestamp, currency_id)
             return 0, Decimal('0')
         return local_moment(int(quote[0])), Decimal(quote[1])
 

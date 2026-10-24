@@ -117,6 +117,17 @@ def test_unquoted_dust_is_valued_at_zero_and_reported_as_no_miss(wallet, caplog)
     assert caplog.records == []
 
 
+# A rebuild values unquoted dust at zero without logging the missing quote, as a report does
+def test_unquoted_dust_logs_no_missing_quote_on_rebuild(wallet, caplog):
+    JalAccount(WALLET).set_data(AccountData.Precision, 6)
+    _payment(AssetIncome.DustAttack, d2t(210202), '0.000001')
+
+    with caplog.at_level(logging.WARNING):
+        Ledger().rebuild(from_timestamp=0)
+        nth_operation(LedgerTransaction.AssetIncome, 1).amount(currency_id=2)
+    assert [x.getMessage() for x in caplog.records if 'no quote' in x.getMessage()] == []
+
+
 def test_an_unquoted_staking_reward_is_still_reported(wallet, caplog):
     # ... while the same miss on any other asset-denominated payment IS worth saying: those coins are the chain's
     # own, they are quoted everywhere, and a value of zero there means the books understate what was received

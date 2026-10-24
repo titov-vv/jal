@@ -1160,7 +1160,8 @@ class AssetIncome(AssetPaymentBase):
                                           "and rebuild the ledger.").format(
                                           self._asset.symbol(self._account.currency()), ts2d(self._timestamp)))
             return self._price
-        quote_timestamp, price = self._asset.quote(self._timestamp, self._account.currency())
+        quote_timestamp, price = self._asset.quote(self._timestamp, self._account.currency(),
+                                                   report_missing=self._subtype != AssetIncome.DustAttack)
         if self._subtype == AssetIncome.DustAttack:
             # Unlike a staking reward, a zero basis here is not a mis-statement to guard against - it is the
             # correct one: the coins were unsolicited and cost nothing, so their whole proceeds are rightly a gain
@@ -1201,7 +1202,8 @@ class AssetIncome(AssetPaymentBase):
         else:
             # A crypto quote is daily, so it never falls on the exact block timestamp the way an exchange quote
             # does for a stock dividend - the last known price is the best available and is not an error.
-            timestamp, price = self._asset.quote(self._timestamp, self._account.currency())
+            timestamp, price = self._asset.quote(self._timestamp, self._account.currency(),
+                                                 report_missing=self._subtype != AssetIncome.DustAttack)
             if not timestamp and self._subtype != AssetIncome.DustAttack:
                 # Dust is the one of these with nothing to report: the coins arrived unsolicited and a token
                 # nobody trades has no quote to be found anywhere, so zero is the right value and not a miss -

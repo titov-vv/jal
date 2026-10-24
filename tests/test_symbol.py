@@ -296,3 +296,13 @@ def test_crypto_asset_is_named_by_its_first_live_listing(prepare_db):
     assert JalAsset(token.id()).symbol(currency=3) == 'USDT'
     assert JalAsset(token.id()).tickers(currency=3) == ['USDT']
     assert JalAsset(token.id()).symbol(currency=3, location=AssetLocation.ARB_BLOCKCHAIN) == 'USD₮0'
+
+
+# A native coin first listed as another chain's wrapper is still named by its own chain's listing
+def test_native_coin_is_named_by_its_own_chain_listing(prepare_db):
+    coin = JalAssetCreator(type_id=PredefinedAsset.Crypto, name='Solana')
+    coin.add_symbol('USOL', 2, AssetLocation.HL_BLOCKCHAIN)
+    JalAsset(coin.id()).add_symbol('SOL', 2, AssetLocation.SOL_BLOCKCHAIN)
+    assert JalAsset(coin.id()).symbol(currency=3) == 'SOL'
+    assert JalAsset(coin.id()).listing_id(currency=3) == JalAsset(coin.id()).listing_id(currency=3, location=AssetLocation.SOL_BLOCKCHAIN)
+    assert JalAsset(coin.id()).symbol(currency=3, location=AssetLocation.HL_BLOCKCHAIN) == 'USOL'
