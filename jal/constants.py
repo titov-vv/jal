@@ -9,7 +9,7 @@ class Setup:
     INI_FILE = "jal.ini"
     DB_PATH = "jal.sqlite"
     DB_CONNECTION = "JAL.DB"
-    DB_REQUIRED_VERSION = 81
+    DB_REQUIRED_VERSION = 82
     SQLITE_MIN_VERSION = "3.35"
     MAIN_WND_NAME = "JAL_MainWindow"
     SPLITTER_STATE_PREFIX = "SplitterState_"
@@ -550,6 +550,8 @@ class AssetLocation(PredefinedList, QObject):
     CEXES = [CEX, CEX_BINANCE, CEX_KUCOIN, CEX_BITGET]
     # Locations where a crypto asset has a listing of its own (see JalAsset.add_symbol)
     CRYPTO_LOCATIONS = BLOCKCHAINS + CEXES
+    # ISO 4217 code of the currency each crypto venue's price source quotes in - what a listing there is kept in
+    QUOTE_CURRENCIES = {x: '840' for x in CRYPTO_LOCATIONS}
 
     # Glyph of each blockchain, as the name of the file that carries it in jal/img (with CHAIN_PREFIX in front of
     # it - see JalIcon.module_icon). The fetcher of each chain names the same file, but a chain is drawn wherever an

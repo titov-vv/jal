@@ -308,7 +308,7 @@ class TaxesRussia(TaxReport):
             spending_rub += round(o_fee * o_rate, 2) + round(c_fee * c_rate, 2)
             line = {
                 'report_template': "trade",
-                'symbol': trade.asset().symbol(self.account_currency.id()),
+                'symbol': trade.close_operation().symbol().symbol(),
                 'qty': trade.qty(),
                 'country_iso': country.iso_code(),
                 'o_type': "Покупка" if trade.qty() >= Decimal('0') else "Продажа",

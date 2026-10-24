@@ -340,8 +340,31 @@ class SymbolDialog(QDialog):
             self._data_model.submitAll()
             self._data_model.select()
 
+    # Ticker of a second active symbol that repeats another one's ticker, currency and location ('' if none)
+    def _active_twin(self) -> str:
+        model = self._symbols_model
+        seen = set()
+        for row in range(model.rowCount()):
+            if model.row_is_deleted(row):
+                continue
+            record = model.record(row)   # read by position: the currency column is renamed by its relation
+            symbol, currency, location, active = [record.value(model.fieldIndex(x))
+                                                  for x in ('symbol', 'currency_id', 'location_id', 'active')]
+            if not active:
+                continue
+            if (symbol.upper(), currency, location) in seen:
+                return symbol
+            seen.add((symbol.upper(), currency, location))
+        return ''
+
     def accept(self) -> None:
         self._mapper.submit()  # AutoSubmit normally fires on focus-out; force it in case OK was reached otherwise
+        twin = self._active_twin()
+        if twin:
+            QMessageBox().warning(self, self.tr("Wrong data"),
+                                  self.tr("Two active symbols can't share a ticker, currency and location: ") + twin,
+                                  QMessageBox.Ok)
+            return
         # Grid models are OnManualSubmit - pending cell edits must be written out explicitly here.
         # On failure the dialog stays open with the transaction alive, so the user may correct the
         # data or cancel (which rolls everything back).

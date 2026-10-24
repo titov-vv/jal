@@ -947,11 +947,15 @@ class ChainBalanceReader(JalDB):
         # alone would be impossible to tell from the one already in the database.
         name = self._token_name(chain, address, api_key) or symbol
         logging.info(self.tr("New asset created for a claimable reward: ") + f"{name} ({address})")
+        currency_id = JalAsset.listing_currency(account.currency(), location)
+        if not currency_id:
+            logging.warning(self.tr("The ledger has no currency this venue is quoted in: ") + symbol)
+            return None
         creator = JalAssetCreator(PredefinedAsset.Crypto, name)
         if not creator.id():
             logging.warning(self.tr("Couldn't create an asset for a claimable reward: ") + symbol)
             return None
-        symbol_id = creator.add_symbol(symbol, account.currency(), location_id=location)
+        symbol_id = creator.add_symbol(symbol, currency_id, location_id=location)
         creator.add_identifier(symbol_id, id_type, address)
         asset = creator.commit()
         asset.set_decimals(decimals)

@@ -137,10 +137,9 @@ class JalAsset(JalDB):
     #
     # Whatever is left is answered by its TICKERS rather than by its listings, which is what keeps several listings
     # of one and the same ticker - a token held on three chains - from being run together into 'USDCUSDCUSDC', a
-    # ticker that exists nowhere and reads as if it did. Several DIFFERENT tickers is a real ambiguity (one asset
-    # renamed on one chain only, a security quoted under two names) and stays visible as the comma-separated list the
-    # no-currency answer above has always been: the caller that needs one listing has to say which, and there is
-    # nothing here that could pick for it.
+    # ticker that exists nowhere and reads as if it did. Several DIFFERENT tickers of a security is a real ambiguity
+    # and stays visible as the comma-separated list the no-currency answer above has always been: the caller that
+    # needs one listing has to say which. A crypto asset that no chain narrows down is named by its first live listing.
     #
     # This never raises. Several active listings is a state add_symbol() creates on purpose, and this is asked from
     # logging, from tax report builders and from inside Qt model data() - places where an exception costs a download,
@@ -169,12 +168,15 @@ class JalAsset(JalDB):
             return []
         currency = None if self._type == PredefinedAsset.Money else currency  # Money have one unique symbol
         listings = self._data['symbols']
-        if currency is not None:
-            listings = [x for x in listings if x['currency_id'] == currency]
+        if currency is not None:   # a crypto listing is kept in its venue's currency whatever the account's is
+            listings = [x for x in listings
+                        if x['currency_id'] == currency or x['location_id'] in AssetLocation.CRYPTO_LOCATIONS]
         active = [x for x in listings if x['active'] == 1]
         listings = active if active else listings[-1:]   # symbols are loaded in id order
         if currency is not None and location and [x for x in listings if x['location_id'] == location]:
             listings = [x for x in listings if x['location_id'] == location]
+        if currency is not None and all(x['location_id'] in AssetLocation.CRYPTO_LOCATIONS for x in listings):
+            listings = listings[:1]
         return listings
 
     # Id of the listing that names this asset for the given currency and location - the very row whose ticker
@@ -195,10 +197,25 @@ class JalAsset(JalDB):
         JalDB().invalidate_cache()
         self._data = self.db_cache.get_data(self._load_asset_data, (self._id,))
 
+    # The currency a listing at 'location_id' is kept in: a crypto venue's quote currency (0 if the ledger has no such
+    # currency), 'currency_id' anywhere else
+    @classmethod
+    def listing_currency(cls, currency_id: int, location_id: int) -> int:
+        iso_code = AssetLocation.QUOTE_CURRENCIES.get(location_id)
+        if iso_code is None:
+            return currency_id
+        found = cls._read("SELECT s.asset_id FROM symbol_ids i JOIN asset_symbol s ON s.id=i.symbol_id "
+                          "WHERE i.id_type=:iso_type AND i.id_value=:iso_code",
+                          [(":iso_type", SymbolId.ISO4217_CODE), (":iso_code", iso_code)])
+        return int(found) if found else 0
+
     # Adds a new symbol to the asset (or returns the existing one's id if it already exists).
     # Returns the id of the resulting asset_symbol row.
     # active=False stores a superseded listing: the row is made or marked inactive and its siblings are left as they are.
     def add_symbol(self, symbol: str, currency_id, location_id: int, active: bool = True) -> int:
+        currency_id = self.listing_currency(currency_id, location_id)
+        if not currency_id or JalAsset(currency_id).type() != PredefinedAsset.Money:
+            raise ValueError(f"A listing has to be kept in a currency: {symbol} {currency_id}")
         # A traditional security is a single listing no matter which venue a statement happens to name (the exchange
         # is informational), so it is matched by (asset, symbol, currency) with the location ignored and the
         # first-seen location kept. A crypto asset is a genuinely separate listing per chain and per exchange, so
@@ -210,12 +227,12 @@ class JalAsset(JalDB):
         if scoped:
             scope.append((":location_id", location_id))
         existing = self._read("SELECT id FROM asset_symbol "
-                              "WHERE asset_id=:asset_id AND symbol=:symbol AND currency_id IS :currency" + location_clause,
-                              scope + [(":symbol", symbol)], named=True)
+                              "WHERE asset_id=:asset_id AND symbol=:symbol AND currency_id=:currency" + location_clause +
+                              " ORDER BY active DESC, id DESC LIMIT 1", scope + [(":symbol", symbol)], named=True)
         if existing is None:  # Deactivate the superseded symbol(s) and create a new one
             if active:
                 _ = self._exec("UPDATE asset_symbol SET active=0 "
-                               "WHERE asset_id=:asset_id AND currency_id IS :currency" + location_clause, scope)
+                               "WHERE asset_id=:asset_id AND currency_id=:currency" + location_clause, scope)
             query = self._exec(
                 "INSERT INTO asset_symbol (asset_id, symbol, currency_id, location_id, active) "
                 "VALUES (:asset_id, :symbol, :currency, :location_id, :active)",

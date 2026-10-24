@@ -131,6 +131,7 @@ CREATE TABLE IF NOT EXISTS symbol_ids (
     id_type   INTEGER NOT NULL,
     id_value  TEXT NOT NULL
 );
+CREATE UNIQUE INDEX uniq_symbol_ids ON symbol_ids (symbol_id, id_type);
 
 -- Table to keep asset symbols
 DROP TABLE IF EXISTS asset_symbol;
@@ -146,7 +147,7 @@ CREATE TABLE asset_symbol (
 -- more than one venue at once - a token that exists on several blockchains (e.g. USDT on Ethereum and on Tron)
 -- is a single asset with a per-chain listing, each keyed by its own contract address.
 DROP INDEX IF EXISTS uniq_symbols;
-CREATE UNIQUE INDEX uniq_symbols ON asset_symbol (asset_id, symbol COLLATE NOCASE, currency_id, location_id);
+CREATE UNIQUE INDEX uniq_symbols ON asset_symbol (asset_id, symbol COLLATE NOCASE, currency_id, location_id) WHERE active=1;
 
 -- Table to keep extra asset data
 DROP TABLE IF EXISTS asset_data;
@@ -1052,7 +1053,7 @@ BEGIN
 END;
 ------------------------------------------------------------------------------------------------------------------------
 -- Initialize default values for settings
-INSERT INTO settings(name, value) VALUES('SchemaVersion', 81);
+INSERT INTO settings(name, value) VALUES('SchemaVersion', 82);
 INSERT INTO settings(name, value) VALUES('Language', 1);
 INSERT INTO settings(name, value) VALUES('RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
 INSERT INTO settings(name, value) VALUES('RuTaxSessionId', '');

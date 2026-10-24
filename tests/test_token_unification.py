@@ -4,7 +4,7 @@ import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db
 from jal.constants import PredefinedAsset, PredefinedAccountType, AssetLocation, SymbolId
-from jal.data_import.statement import Statement, JSF
+from jal.data_import.statement import Statement, JSF, Statement_ImportError
 from jal.db.account import JalAccountCreator, JalAccount
 from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.symbol import JalSymbol
@@ -287,8 +287,8 @@ def test_a_currency_twin_does_not_take_the_address(prepare_db):
     assert sorted(JalAsset(usdt.id()).active_symbol_ids()) == sorted([usd_row, eur_row])
 
 
-# A rename seen from a wallet in another currency: the old row lives in that other currency, which the import's own
-# deactivation doesn't reach, so the address guard supersedes it.
+# A rename seen from a wallet in another currency: the new listing is kept in the venue's currency like the old one,
+# which it supersedes.
 def test_a_rename_in_another_currency_supersedes_the_old_row(prepare_db):
     EUR = 3
     creator = JalAssetCreator(PredefinedAsset.Crypto, 'Tether USD')
@@ -303,7 +303,7 @@ def test_a_rename_in_another_currency_supersedes_the_old_row(prepare_db):
         statement.import_into_db()
 
     listing = JalSymbol.find_by_identifier(SymbolId.TRX_ADDRESS, TRX_USDT)
-    assert (listing.symbol(), listing.currency(), listing.active()) == ('USD₮0', EUR, True)
+    assert (listing.symbol(), listing.currency(), listing.active()) == ('USD₮0', USD, True)
     assert not JalSymbol(old).active()
     assert JalAsset(usdt.id()).active_symbol_ids() == [listing.id()]
 
@@ -330,11 +330,21 @@ def test_find_by_identifier_prefers_the_live_row(prepare_db):
     assert JalSymbol.find_by_identifier(SymbolId.TRX_ADDRESS, TRX_USDT).id() == 0
 
 
-# A token fetched into a wallet kept in EUR is listed in EUR: today a crypto listing takes the account's currency
-def test_a_new_token_is_listed_in_the_wallet_currency(prepare_db):
+# A token fetched into a wallet kept in EUR is listed in USD, the currency its venue is quoted in
+def test_a_new_token_is_listed_in_its_venue_currency(prepare_db):
     EUR = 3
     _tron_wallet(EUR)
     statement, token = _fetch_tron_token('USDT')
     statement.import_into_db()
     listing = JalSymbol.find_by_identifier(SymbolId.TRX_ADDRESS, TRX_USDT)
-    assert (listing.symbol(), listing.currency(), listing.location()) == ('USDT', EUR, AssetLocation.TRX_BLOCKCHAIN)
+    assert (listing.symbol(), listing.currency(), listing.location()) == ('USDT', USD, AssetLocation.TRX_BLOCKCHAIN)
+
+
+# A token can't be imported into a ledger that has no currency its venue is quoted in
+def test_a_token_needs_its_venue_currency_in_the_ledger(prepare_db):
+    _tron_wallet(3)
+    JalDB._exec("DELETE FROM symbol_ids WHERE id_type=:iso AND id_value='840'", [(":iso", SymbolId.ISO4217_CODE)],
+                commit=True)
+    statement, token = _fetch_tron_token('USDT')
+    with pytest.raises(Statement_ImportError, match="The ledger has no currency this venue is quoted in"):
+        statement.import_into_db()

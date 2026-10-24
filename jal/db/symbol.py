@@ -1,5 +1,5 @@
 import logging
-from jal.constants import SymbolId, BookAccount
+from jal.constants import SymbolId, BookAccount, AssetLocation
 from jal.db.db import JalDB
 from jal.db.asset import JalAsset
 from jal.db.receivable import JalReceivable
@@ -45,13 +45,19 @@ class JalSymbol(JalDB):
     # by the quote downloader.
     # A (symbol, currency) pair is reported once - the same pair may come from several accounts and from several
     # sources, while its consumers (a quote download, an icon fetch) have nothing to do with it a second time.
+    # An account 'a' holds an asset through its listing 's' in the account's currency, or through a crypto listing,
+    # which is kept in its venue's currency - and that currency is then the one of the quote series
+    _CRYPTO_LIST = ','.join(str(x) for x in AssetLocation.CRYPTO_LOCATIONS)
+    _LISTING_CURRENCY = f"(s.currency_id=a.currency_id OR s.location_id IN ({_CRYPTO_LIST}))"
+    _SERIES_CURRENCY = f"CASE WHEN s.location_id IN ({_CRYPTO_LIST}) THEN s.currency_id ELSE a.currency_id END"
+
     @classmethod
     def get_active_symbols(cls, begin: int, end: int) -> list:
         symbols = []
         listed = set()
-        query = cls._exec("SELECT DISTINCT l.asset_id, a.currency_id, s.id "
+        query = cls._exec("SELECT DISTINCT l.asset_id, " + cls._SERIES_CURRENCY + ", s.id "
                           "FROM ledger l LEFT JOIN accounts a ON a.id=l.account_id "
-                          "LEFT JOIN asset_symbol s ON s.asset_id=l.asset_id AND s.currency_id=a.currency_id AND s.active=1 "
+                          "LEFT JOIN asset_symbol s ON s.asset_id=l.asset_id AND " + cls._LISTING_CURRENCY + " AND s.active=1 "
                           "WHERE l.book_account=:assets "
                           "GROUP BY l.asset_id, a.currency_id, l.account_id, s.id "
                           "HAVING l.id = MAX(l.id) AND (l.amount_acc!='0' OR l.value_acc!='0' OR (l.timestamp>=:begin AND l.timestamp<=:end))",
@@ -84,8 +90,8 @@ class JalSymbol(JalDB):
         receivables = JalReceivable()
         for account_id in receivables.accounts_with_claims(end):
             for claim in receivables.claims(account_id, end):
-                query = cls._exec("SELECT s.id, a.currency_id FROM accounts a "
-                                  "JOIN asset_symbol s ON s.asset_id=:asset_id AND s.currency_id=a.currency_id AND s.active=1 "
+                query = cls._exec("SELECT s.id, " + cls._SERIES_CURRENCY + " FROM accounts a "
+                                  "JOIN asset_symbol s ON s.asset_id=:asset_id AND " + cls._LISTING_CURRENCY + " AND s.active=1 "
                                   "WHERE a.id=:account_id",
                                   [(":asset_id", claim['asset_id']), (":account_id", account_id)])
                 if query.next():
@@ -108,10 +114,10 @@ class JalSymbol(JalDB):
         frontier = cls._read("SELECT ledger_frontier FROM frontier")   # '' when the ledger is empty
         frontier = 0 if frontier in ('', None) else int(frontier)
         pairs = []
-        query = cls._exec("SELECT DISTINCT s.id, a.currency_id FROM (" + cls._OPERATION_SYMBOLS + ") AS o "
+        query = cls._exec("SELECT DISTINCT s.id, " + cls._SERIES_CURRENCY + " FROM (" + cls._OPERATION_SYMBOLS + ") AS o "
                           "LEFT JOIN asset_symbol os ON os.id=o.symbol_id "
                           "LEFT JOIN accounts a ON a.id=o.account_id "
-                          "LEFT JOIN asset_symbol s ON s.asset_id=os.asset_id AND s.currency_id=a.currency_id AND s.active=1 "
+                          "LEFT JOIN asset_symbol s ON s.asset_id=os.asset_id AND " + cls._LISTING_CURRENCY + " AND s.active=1 "
                           "WHERE o.timestamp>=:frontier AND o.timestamp<=:end AND NOT s.id IS NULL",
                           [(":frontier", frontier), (":end", end)])
         while query.next():

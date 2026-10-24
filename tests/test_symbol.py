@@ -236,28 +236,30 @@ def test_a_location_the_asset_is_not_listed_on_is_ignored(prepare_db):
     assert JalAsset(asset.id()).symbol(currency=2, location=0) == 'USDT'
 
 
-# Several DIFFERENT tickers for one asset in one currency is a real ambiguity, not a duplicate: a token renamed on
-# one chain only, or a security quoted under two names. Nothing here can pick one of them, so the answer names them
-# both - visibly not a ticker - instead of choosing silently or refusing to answer at all.
+# Several DIFFERENT tickers of a security in one currency is a real ambiguity, not a duplicate: nothing here can pick
+# one of them, so the answer names them both - visibly not a ticker - instead of choosing silently or refusing.
 def test_two_different_tickers_of_one_asset_are_both_named(prepare_db):
-    asset = JalAssetCreator(type_id=PredefinedAsset.Crypto, name='Tether USD')
-    asset.add_symbol('USDT', 2, AssetLocation.ETH_BLOCKCHAIN)
-    JalAsset(asset.id()).add_symbol('USD0', 2, AssetLocation.ARB_BLOCKCHAIN)   # renamed on that chain only
+    asset = JalAssetCreator(type_id=PredefinedAsset.Stock, name='Some Company')
+    asset.add_symbol('SC', 2, AssetLocation.NYSE_EXCHANGE)
+    asset.add_symbol('SCO', 2, AssetLocation.NASDAQ_EXCHANGE)
 
-    assert JalAsset(asset.id()).symbol(currency=2) == 'USDT,USD0'
-    assert JalAsset(asset.id()).tickers(currency=2) == ['USDT', 'USD0']
-    # ... and naming the chain resolves it, which is what a caller that needs one listing has to do
-    assert JalAsset(asset.id()).symbol(currency=2, location=AssetLocation.ARB_BLOCKCHAIN) == 'USD0'
+    assert JalAsset(asset.id()).symbol(currency=2) == 'SC,SCO'
+    assert JalAsset(asset.id()).tickers(currency=2) == ['SC', 'SCO']
+    # ... and naming the venue resolves it, which is what a caller that needs one listing has to do
+    assert JalAsset(asset.id()).symbol(currency=2, location=AssetLocation.NASDAQ_EXCHANGE) == 'SCO'
 
 
-# An asset with nothing listed in that currency has no ticker there, and says so rather than falling back to one it
-# has somewhere else
+# A security with nothing listed in that currency has no ticker there, and says so rather than falling back to one it
+# has somewhere else. A crypto listing is kept in its venue's currency and answers in any currency.
 def test_an_asset_not_listed_in_that_currency_has_no_ticker(prepare_db):
-    asset = JalAssetCreator(type_id=PredefinedAsset.Crypto, name='Tether USD')
-    asset.add_symbol('USDT', 2, AssetLocation.ETH_BLOCKCHAIN)
+    stock = JalAssetCreator(type_id=PredefinedAsset.Stock, name='Some Company')
+    stock.add_symbol('SC', 2, AssetLocation.NYSE_EXCHANGE)
+    assert JalAsset(stock.id()).symbol(currency=3) == ''
+    assert JalAsset(stock.id()).tickers(currency=3) == []
 
-    assert JalAsset(asset.id()).symbol(currency=3) == ''
-    assert JalAsset(asset.id()).tickers(currency=3) == []
+    token = JalAssetCreator(type_id=PredefinedAsset.Crypto, name='Tether USD')
+    token.add_symbol('USDT', 2, AssetLocation.ETH_BLOCKCHAIN)
+    assert JalAsset(token.id()).symbol(currency=3) == 'USDT'
 
 
 # A currency is one symbol whatever is asked about it - the currency argument is what a ticker is being asked IN, and
@@ -283,3 +285,14 @@ def test_update_data_refuses_an_unknown_key(prepare_db):
     JalSymbol(symbol_id_for(4)).update_data({'isin': 'US1234567890', 'principal': '1000', 'expiry': 0})
     assert JalSymbol(symbol_id_for(4)).identifier(SymbolId.ISIN) == 'US1234567890'
     assert JalAsset(4).principal() == Decimal('1000')
+
+
+# A crypto asset asked about in a currency, with no chain that narrows it down, is named by its first live listing;
+# a chain it is listed on picks that chain's own one
+def test_crypto_asset_is_named_by_its_first_live_listing(prepare_db):
+    token = JalAssetCreator(type_id=PredefinedAsset.Crypto, name='Tether USD')
+    token.add_symbol('USDT', 2, AssetLocation.ETH_BLOCKCHAIN)
+    token.add_symbol('USD₮0', 2, AssetLocation.ARB_BLOCKCHAIN)   # renamed on that chain only
+    assert JalAsset(token.id()).symbol(currency=3) == 'USDT'
+    assert JalAsset(token.id()).tickers(currency=3) == ['USDT']
+    assert JalAsset(token.id()).symbol(currency=3, location=AssetLocation.ARB_BLOCKCHAIN) == 'USD₮0'

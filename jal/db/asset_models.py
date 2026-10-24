@@ -10,7 +10,7 @@ from jal.db.icon import JalIcons
 from jal.db.symbol import JalSymbol
 from jal.db.tag import JalTag
 from jal.widgets.helpers import DateFormat
-from jal.constants import CmColumn, CmWidth, AssetData, IconOwner, SymbolId
+from jal.constants import CmColumn, CmWidth, AssetData, IconOwner, SymbolId, AssetLocation
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -90,8 +90,9 @@ class SymbolsListModel(QSqlQueryModel, JalDB):
         self._filter_params = []
         if asset_type is not None:
             filter_clauses.append(f"a.type_id={asset_type}")
-        if currency_id is not None:
-            filter_clauses.append(f"s.currency_id={currency_id}")
+        if currency_id is not None:   # a crypto listing is kept in its venue's currency whatever the account's is
+            crypto = ','.join(str(x) for x in AssetLocation.CRYPTO_LOCATIONS)
+            filter_clauses.append(f"(s.currency_id={currency_id} OR s.location_id IN ({crypto}))")
         if location_id is not None:
             filter_clauses.append(f"s.location_id={location_id}")
         if text:
