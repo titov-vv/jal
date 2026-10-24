@@ -33,9 +33,9 @@ class TaxesPortugal(TaxReport):
             line = {
                 'report_template': "dividend",
                 'payment_date': self._moment(dividend.timestamp(), dividend.timestamp_is_day()),
-                'symbol': dividend.asset().symbol(self.account_currency.id()),
+                'symbol': dividend.symbol().symbol(),
                 'full_name': dividend.asset().name(),
-                'isin': dividend.asset().symbol_id(SymbolId.ISIN),
+                'isin': dividend.symbol().identifier(SymbolId.ISIN),
                 'amount': dividend.amount(self.account_currency.id()),
                 'tax': dividend.tax(),
                 'rate': self.account_currency.quote(dividend.timestamp(), self._currency_id)[1],
@@ -72,8 +72,8 @@ class TaxesPortugal(TaxReport):
                 note = note + modifier.description() + "\n"
             line = {
                 'report_template': "trade",
-                'symbol': trade.asset().symbol(self.account_currency.id()),
-                'isin': trade.close_operation().asset().symbol_id(SymbolId.ISIN),
+                'symbol': trade.close_operation().symbol().symbol(),
+                'isin': trade.close_operation().symbol().identifier(SymbolId.ISIN),
                 'qty': trade.qty(),
                 'o_type': "Aquisição" if trade.qty() >= Decimal('0') else "Venda",
                 'o_number': trade.open_operation().number(),

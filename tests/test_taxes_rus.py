@@ -6,13 +6,14 @@ from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from jal.data_import.broker_statements.ibkr import StatementIBKR
 from tests.helpers import d2t, create_assets, create_quotes, create_dividends, create_coupons, create_trades, \
     create_actions, create_corporate_actions, create_stock_dividends, json_decimal2float, save_test_xls_report, \
-    nth_operation
-from jal.constants import PredefinedAsset, PredefinedCategory
+    nth_operation, symbol_id_for
+from jal.constants import PredefinedAsset, PredefinedCategory, AssetLocation, SymbolId
 from jal.db.ledger import Ledger
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
 from jal.db.operations import LedgerTransaction, CorporateAction, AssetPayment, AssetIncome
 from jal.data_export.tax_reports.russia import TaxesRussia
+from jal.data_export.tax_reports.portugal import TaxesPortugal
 from jal.data_export.taxes_flow import TaxesFlowRus
 
 
@@ -457,3 +458,37 @@ def test_bond_without_face_value_is_reported_with_a_warning(prepare_db_taxes, ca
     # The bond is named once, not once per trade
     assert [x.message for x in caplog.records if x.levelno == logging.WARNING] == \
            ["Bond has no face value, trade prices are left empty in the report: SU26216RMFS0"]
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# One asset with two listings: bought as OLDT, renamed inside the asset, then paid and sold as NEWT. Each report row
+# prints the ticker and ISIN of its own operation's listing, not the asset's first ISIN and current ticker.
+def test_reports_print_the_listing_of_each_operation(prepare_db_taxes):
+    create_assets([("OLDT", "Old Name Corp", "US0000000011", 2, PredefinedAsset.Stock, 'us')])   # ID 4
+    old_listing = symbol_id_for(4)
+    new_listing = JalAsset(4).add_symbol("NEWT", 2, AssetLocation.UNDEFINED)
+    JalAsset(4).add_identifier(new_listing, SymbolId.ISIN, "US0000000029")
+    create_trades(1, [(d2t(240304), d2t(240306), 4, 10.0, 100.0, 1.0, "B1")])   # on the old listing
+    LedgerTransaction.create_new(LedgerTransaction.CorporateAction, {
+        'timestamp': d2t(240603), 'account_id': 1, 'type': CorporateAction.SymbolChange, 'symbol_id': old_listing,
+        'qty': 10.0, 'note': 'OLDT -> NEWT', 'outcome': [{'symbol_id': new_listing, 'qty': 10.0, 'value_share': 1.0}]})
+    LedgerTransaction.create_new(LedgerTransaction.AssetPayment, {
+        'timestamp': d2t(240902), 'type': AssetPayment.Dividend, 'account_id': 1, 'symbol_id': new_listing,
+        'amount': 5.0, 'tax': 0.5, 'note': 'NEWT CASH DIVIDEND'})
+    LedgerTransaction.create_new(LedgerTransaction.Trade, {
+        'timestamp': d2t(241104), 'settlement': d2t(241106), 'account_id': 1, 'symbol_id': new_listing,
+        'qty': -10.0, 'price': 120.0, 'fee': 1.0, 'number': 'S1'})
+    dates = [d2t(x) for x in (240304, 240306, 240603, 240902, 241104, 241106)]
+    create_quotes(2, 1, [(x, 90.0) for x in dates])
+    create_quotes(2, 3, [(x, 0.9) for x in dates])
+    Ledger().rebuild(from_timestamp=0)
+
+    ru = TaxesRussia().prepare_tax_report(2024, 1)
+    deal = ru['Акции'][0]
+    assert (deal['o_symbol'], deal['o_isin']) == ("OLDT", "US0000000011")
+    assert (deal['c_symbol'], deal['c_isin']) == ("NEWT", "US0000000029")
+    assert (ru['Дивиденды'][0]['symbol'], ru['Дивиденды'][0]['isin']) == ("NEWT", "US0000000029")
+
+    pt = TaxesPortugal().prepare_tax_report(2024, 1)
+    assert (pt['Shares'][0]['symbol'], pt['Shares'][0]['isin']) == ("NEWT", "US0000000029")
+    assert (pt['Dividends'][0]['symbol'], pt['Dividends'][0]['isin']) == ("NEWT", "US0000000029")

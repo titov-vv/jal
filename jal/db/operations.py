@@ -77,6 +77,7 @@ class LedgerTransaction(JalDB):
         self._account = None
         self._account_name = ''
         self._account_currency = ''
+        self._symbol = None
         self._asset = None
         self._peer_id = 0
         self._number = ''
@@ -365,6 +366,10 @@ class LedgerTransaction(JalDB):
 
     def account_id(self):
         return self._account.id()
+
+    # Returns the listing the operation was recorded under (an empty JalSymbol if it has none)
+    def symbol(self) -> JalSymbol:
+        return self._symbol if self._symbol is not None else JalSymbol()
 
     # Returns asset object related to the operation
     def asset(self) -> JalAsset:

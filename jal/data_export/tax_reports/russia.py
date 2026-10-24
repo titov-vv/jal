@@ -57,9 +57,9 @@ class TaxesRussia(TaxReport):
             line = {
                 'report_template': "dividend",
                 'payment_date': self._moment(dividend.timestamp(), dividend.timestamp_is_day()),
-                'symbol': dividend.asset().symbol(self.account_currency.id()),
+                'symbol': dividend.symbol().symbol(),
                 'full_name': dividend.asset().name(),
-                'isin': dividend.asset().symbol_id(SymbolId.ISIN),
+                'isin': dividend.symbol().identifier(SymbolId.ISIN),
                 'amount': dividend.amount(self.account_currency.id()),
                 'tax': dividend.tax(),
                 'rate': self.account_currency.quote(dividend.timestamp(), self._currency_id)[1],
@@ -117,11 +117,11 @@ class TaxesRussia(TaxReport):
                 note = note + modifier.description() + "\n"
             line = {
                 'report_template': report_template,
-                'c_symbol': trade.asset().symbol(self.account_currency.id()),
-                'c_isin': trade.close_operation().asset().symbol_id(SymbolId.ISIN),  # May be not used in template (for derivatives as example)
+                'c_symbol': trade.close_operation().symbol().symbol(),
+                'c_isin': trade.close_operation().symbol().identifier(SymbolId.ISIN),  # May be not used in template (for derivatives as example)
                 'c_qty': trade.qty(),
-                'o_symbol': trade.open_operation().asset().symbol(),
-                'o_isin': trade.open_operation().asset().symbol_id(SymbolId.ISIN),
+                'o_symbol': trade.open_operation().symbol().symbol(),
+                'o_isin': trade.open_operation().symbol().identifier(SymbolId.ISIN),
                 'o_qty': trade.open_qty(),
                 'country_iso': self.account.country().iso_code(),  # this field is required for DLSG
                 'o_type': "Покупка" if trade.qty() >= Decimal('0') else "Продажа",
@@ -202,11 +202,11 @@ class TaxesRussia(TaxReport):
                 spending_rub = round(trade.close_amount(self._currency_id, no_settlement=ns), 2) + round(trade.fee(self._currency_id), 2) - round(trade.close_operation().accrued_interest(self._currency_id), 2)
             line = {
                 'report_template': "bond_trade",
-                'c_symbol': trade.asset().symbol(self.account_currency.id()),
-                'c_isin': trade.close_operation().asset().symbol_id(SymbolId.ISIN),  # May be not used in template (for derivatives as example)
+                'c_symbol': trade.close_operation().symbol().symbol(),
+                'c_isin': trade.close_operation().symbol().identifier(SymbolId.ISIN),  # May be not used in template (for derivatives as example)
                 'c_qty': trade.qty(),
-                'o_symbol': trade.open_operation().asset().symbol(),
-                'o_isin': trade.open_operation().asset().symbol_id(SymbolId.ISIN),
+                'o_symbol': trade.open_operation().symbol().symbol(),
+                'o_isin': trade.open_operation().symbol().identifier(SymbolId.ISIN),
                 'o_qty': trade.open_qty(),
                 'principal': principal,
                 'country_iso': country.iso_code(),
@@ -257,8 +257,8 @@ class TaxesRussia(TaxReport):
                 'type': "Купон",
                 'empty': '',  # to keep cell borders drawn
                 'o_date': self._moment(interest.timestamp(), interest.timestamp_is_day()),
-                'symbol': interest.asset().symbol(currency.id()),
-                'isin': interest.asset().symbol_id(SymbolId.ISIN),
+                'symbol': interest.symbol().symbol(),
+                'isin': interest.symbol().identifier(SymbolId.ISIN),
                 'number': interest.number(),
                 'interest': amount,
                 'rate': rate,
