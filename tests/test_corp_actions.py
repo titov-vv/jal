@@ -3,7 +3,8 @@ from decimal import Decimal
 import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo
-from jal.constants import BookAccount
+from jal.constants import BookAccount, Setup
+from jal.db.db import JalDB, JalDBError
 from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount
 from jal.db.operations import CorporateAction, LedgerError
@@ -204,3 +205,26 @@ def test_unsupported_action_on_short_position_halts_the_ledger(prepare_db_fifo, 
     create_corporate_actions(1, [(d2t(210601),) + action])
     with pytest.raises(LedgerError):
         Ledger().rebuild(from_timestamp=0)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Delta 81 backfills which results keep the original purchase date (TAX_PATH §2.12), replayed from the shipped file on
+# a database taken back to version 80 by hand
+def test_delta_81_backfills_which_results_keep_the_date(prepare_db_fifo, project_root):
+    create_stocks([('A', 'A'), ('B', 'B'), ('C', 'C'), ('D', 'D')], currency_id=2)   # id = 4..7
+    create_corporate_actions(1, [
+        (d2t(210101), CorporateAction.Split, 4, 10.0, 'split', [(4, 20.0, 1.0)]),
+        (d2t(210201), CorporateAction.SymbolChange, 4, 20.0, 'redomiciliation', [(5, 20.0, 1.0)]),
+        (d2t(210301), CorporateAction.SpinOff, 5, 20.0, 'spin-off', [(5, 20.0, 0.9), (6, 2.0, 0.1)]),
+        (d2t(210401), CorporateAction.Merger, 6, 2.0, 'merger', [(7, 1.0, 1.0)])])
+    assert JalDB._exec("ALTER TABLE asset_action_results DROP COLUMN keep_date", commit=True) is not None
+    assert JalDB._exec("ALTER TABLE trades_opened DROP COLUMN acquired", commit=True) is not None
+    JalDB._exec("UPDATE settings SET value=80 WHERE name='SchemaVersion'", commit=True)
+
+    assert JalDB().run_sql_script(project_root + f"/jal/updates/{Setup.UPDATE_PREFIX}81.sql").code == JalDBError.NoError
+    assert JalDB._read("SELECT value FROM settings WHERE name='SchemaVersion'") == '81'
+    flags = JalDB._read_to_list("SELECT a.note, s.asset_id, r.keep_date FROM asset_action_results r "
+                                "JOIN asset_actions a ON a.oid=r.action_id JOIN asset_symbol s ON s.id=r.symbol_id "
+                                "ORDER BY a.timestamp, s.asset_id")
+    assert [tuple(x) for x in flags] == [('split', 4, 1), ('redomiciliation', 5, 1),
+                                         ('spin-off', 5, 1), ('spin-off', 6, 0), ('merger', 7, 0)]

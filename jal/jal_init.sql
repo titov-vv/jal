@@ -349,9 +349,10 @@ CREATE TABLE trades_opened (
     c_price       TEXT    NOT NULL DEFAULT ('1'),  -- Coefficient that was used to adjust price of initial operation (price = c_price * original_price)
     c_qty         TEXT    NOT NULL DEFAULT ('1'),   -- Relates 'remaining_qty' to the quantity of the operation that opened the
                                        -- lot (qty = c_qty * original_qty). REPORTING ONLY - no quantity is scaled by it.
-    slice_id      INTEGER             -- Stable identity of the held slice/lot: assigned when a slice is opened or carried
+    slice_id      INTEGER,            -- Stable identity of the held slice/lot: assigned when a slice is opened or carried
                                       -- over and preserved through every later state change; open_trades_list() groups by it.
                                       -- A NULL on insert means "new slice" and is auto-filled with the row's own id by a trigger.
+    acquired      INTEGER NOT NULL DEFAULT (0)   -- Acquisition date of the lot, which FIFO and the holding period follow
 );
 
 DROP INDEX IF EXISTS open_trades_by_time;
@@ -530,7 +531,8 @@ CREATE TABLE asset_action_results (
     action_id   INTEGER NOT NULL REFERENCES asset_actions (oid) ON DELETE CASCADE ON UPDATE CASCADE,  -- Reference to corporate action operation
     symbol_id   INTEGER REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,    -- which asset appears after the action
     qty         TEXT    NOT NULL,                                -- Quantity of the asset the appears after the action
-    value_share TEXT    NOT NULL                                 -- Which share of total 100% this asset takes in the action results
+    value_share TEXT    NOT NULL,                                -- Which share of total 100% this asset takes in the action results
+    keep_date   INTEGER NOT NULL DEFAULT (0)                     -- 1: the lot keeps its original purchase date, 0: it takes the action's date
 );
 
 -- Table 'trade' records all buy/sell operations with assets
@@ -1050,7 +1052,7 @@ BEGIN
 END;
 ------------------------------------------------------------------------------------------------------------------------
 -- Initialize default values for settings
-INSERT INTO settings(name, value) VALUES('SchemaVersion', 80);
+INSERT INTO settings(name, value) VALUES('SchemaVersion', 81);
 INSERT INTO settings(name, value) VALUES('Language', 1);
 INSERT INTO settings(name, value) VALUES('RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
 INSERT INTO settings(name, value) VALUES('RuTaxSessionId', '');

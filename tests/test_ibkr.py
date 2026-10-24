@@ -217,9 +217,9 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
     # validate corp actions
     test_asset_actions = [
         [15, 5, 1588969500, 1, '12693114547', 1, 4, 8, '1.5E+2', 'ACB(CA05156X1087) SPLIT 1 FOR 12 (ACB, AURORA CANNABIS INC, CA05156X8843)',
-         [1, 15, 14, '12.5', '1']],
+         [1, 15, 14, '12.5', '1', 1]],
         [16, 5, 1610569500, 1, '14909999818', 1, 3, 4, '1.4E+2', 'PEIX(US69423U3059) CUSIP/ISIN CHANGE TO (US0215131063) (PEIX, ALTO INGREDIENTS INC, US0215131063)',
-         [2, 16, 21, '1.4E+2', '1']]
+         [2, 16, 21, '1.4E+2', '1', 1]]
     ]
     actions = JalAccount(1).dump_corporate_actions()
     assert len(actions) == len(test_asset_actions)

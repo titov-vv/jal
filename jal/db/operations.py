@@ -2353,12 +2353,16 @@ class CorporateAction(LedgerTransaction):
                 "action_id": {"mandatory": True, "validation": False},
                 "symbol_id": {"mandatory": True, "validation": False},
                 "qty": {"mandatory": True, "validation": False},
-                "value_share": {"mandatory": True, "validation": False}
+                "value_share": {"mandatory": True, "validation": False},
+                "keep_date": {"mandatory": False, "validation": False}
             }
         }
     }
 
     def __init__(self, oid=None):
+        if type(oid) == dict:   # a result without an explicit choice gets the rule's default
+            for result in oid.get('outcome', []):
+                result.setdefault('keep_date', int(self.keeps_date(oid['type'], oid['symbol_id'], result['symbol_id'])))
         icons = {
             CorporateAction.NA: JalIcon.NONE,
             CorporateAction.Merger: JalIcon.MERGER,
@@ -2406,6 +2410,14 @@ class CorporateAction(LedgerTransaction):
         self._number = self._data['number']
         self._note = self._data['note']
         self._broker = self._account.organization()
+
+    # A result keeps the original purchase date for a split, a symbol change and the action's own
+    # asset; a spun-off company or a merger result is acquired at the action's date
+    @staticmethod
+    def keeps_date(action_type: int, symbol_id: int, result_symbol_id: int) -> bool:
+        if action_type in (CorporateAction.Split, CorporateAction.SymbolChange):
+            return True
+        return JalSymbol(result_symbol_id).asset().id() == JalSymbol(symbol_id).asset().id()
 
     # Settlement returns timestamp as corporate action happens immediately in Jal
     def settlement(self) -> int:

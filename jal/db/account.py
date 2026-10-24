@@ -555,16 +555,16 @@ class JalAccount(JalDB):
         # the trades_opened_set_slice trigger assigns the new row's own id as its slice identity.
         _ = self._exec(
             "INSERT INTO trades_opened(timestamp, otype, oid, m_otype, m_oid, account_id, asset_id, "
-            "price, remaining_qty, c_price, c_qty, slice_id) "
+            "price, remaining_qty, c_price, c_qty, slice_id, acquired) "
             "VALUES(:timestamp, :otype, :oid, :m_otype, :m_oid, :account_id, :asset_id, :price, "
-            ":remaining_qty, :c_price, :c_qty, :slice_id)",
+            ":remaining_qty, :c_price, :c_qty, :slice_id, :acquired)",
             [(":timestamp", modified_by.timestamp()), (":otype", operation.type()), (":oid", operation.id()),
              (":m_otype", modified_by.type()), (":m_oid", modified_by.id()), (":account_id", self._id),
              (":asset_id", asset.id()), (":price", format_decimal(trade.open_price())),
              (":remaining_qty", format_decimal(remaining_qty)),
              (":c_price", format_decimal(trade.p_adjustment() * price_adjustment)),
              (":c_qty", format_decimal(q_adjustment)),
-             (":slice_id", trade.slice_id())])
+             (":slice_id", trade.slice_id()), (":acquired", operation.timestamp())])
 
     # Returns a list of JalOpenTrades that represents all trades that were opened for given asset at given timestamp
     # LedgerTransaction might be Trade, AssetPayment, CorporateAction or Transfer
