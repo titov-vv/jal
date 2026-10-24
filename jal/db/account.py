@@ -540,8 +540,10 @@ class JalAccount(JalDB):
     # qty - the quantity the stored lot holds - it can be explicitly adjusted by some conversion operation.
     #       None keeps what 'trade' holds, which is what an open position being re-written after partial consumption.
     # price_adjustment - coefficient applied to the price of the original operation (a resulf of FX rate, size change)
-    def open_trade(self, trade, asset, modified_by=None, qty=None, price_adjustment=Decimal('1')):
+    # 'acquired' gives the lot a new acquisition date (a corporate action's new stock); None keeps the trade's own
+    def open_trade(self, trade, asset, modified_by=None, qty=None, price_adjustment=Decimal('1'), acquired=None):
         operation = trade.open_operation()
+        acquired = trade.acquired() if acquired is None else acquired
         modified_by = operation if modified_by is None else modified_by
         if qty is None:
             remaining_qty, q_adjustment = trade.open_qty(), trade.q_adjustment()
@@ -564,7 +566,7 @@ class JalAccount(JalDB):
              (":remaining_qty", format_decimal(remaining_qty)),
              (":c_price", format_decimal(trade.p_adjustment() * price_adjustment)),
              (":c_qty", format_decimal(q_adjustment)),
-             (":slice_id", trade.slice_id()), (":acquired", operation.timestamp())])
+             (":slice_id", trade.slice_id()), (":acquired", acquired)])
 
     # Returns a list of JalOpenTrades that represents all trades that were opened for given asset at given timestamp
     # LedgerTransaction might be Trade, AssetPayment, CorporateAction or Transfer
@@ -578,21 +580,22 @@ class JalAccount(JalDB):
         # original operation into one bucket and drop all but the newest, silently losing quantity and understating
         # realized P&L. (otype, oid) is still selected, but only to rebuild the opening operation and its cost basis.
         query = self._exec("WITH open_trades_numbered AS "
-                           "(SELECT timestamp, otype, oid, price, remaining_qty, c_price, c_qty, slice_id, "
+                           "(SELECT timestamp, otype, oid, price, remaining_qty, c_price, c_qty, slice_id, acquired, "
                            "ROW_NUMBER() OVER (PARTITION BY slice_id ORDER BY timestamp DESC, id DESC) AS row_no "
                            "FROM trades_opened WHERE account_id=:account AND asset_id=:asset AND timestamp<=:timestamp) "
-                           "SELECT otype, oid, price, remaining_qty, c_price, c_qty, slice_id "
+                           "SELECT otype, oid, price, remaining_qty, c_price, c_qty, slice_id, acquired "
                            "FROM open_trades_numbered WHERE row_no=1 AND remaining_qty!=:zero ",
                            [(":account", self._id), (":asset", asset.id()),
                             (":timestamp", timestamp), (":zero", format_decimal(Decimal('0')))])
         while query.next():
-            otype, oid, price, qty, p, q, slice_id = self._read_record(query, cast=[int, int, Decimal, Decimal, Decimal, Decimal, int])
+            otype, oid, price, qty, p, q, slice_id, acquired = self._read_record(query, cast=[int, int, Decimal, Decimal, Decimal, Decimal, int, int])
             operation = jal.db.operations.LedgerTransaction().get_operation(otype, oid, jal.db.operations.Transfer.Incoming)
-            trades.append(jal.db.closed_trade.JalOpenTrade(operation, price, qty, adjustments=(p, q), slice_id=slice_id))
-        # For correct FIFO we take slices in order of their original operation, not last modification. slice_id breaks
-        # ties deterministically: slices are assigned ids in replay (chronological) order, so among slices sharing an
-        # original operation (a lot split by several carry-overs) the earliest-arrived one is consumed first.
-        trades = sorted(trades, key=lambda op: (op.open_operation().timestamp(), op.slice_id()))
+            trades.append(jal.db.closed_trade.JalOpenTrade(operation, price, qty, adjustments=(p, q), slice_id=slice_id,
+                                                           acquired=acquired))
+        # FIFO takes slices by acquisition date, then by original operation, not last modification.
+        # slice_id breaks the remaining ties: slices are assigned ids in replay (chronological) order, so among slices
+        # sharing an original operation (a lot split by several carry-overs) the earliest-arrived one is consumed first.
+        trades = sorted(trades, key=lambda op: (op.acquired(), op.open_operation().timestamp(), op.slice_id()))
         return trades
 
     # Returns amount that was paid for an asset that was hold on the account during time between start_ts and end_ts

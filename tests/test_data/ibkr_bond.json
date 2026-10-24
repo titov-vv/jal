@@ -135,7 +135,8 @@
     {
      "symbol": 3,
      "quantity": 2.0,
-     "share": 0.0
+     "share": 0.0,
+     "keep_date": 1
     }
    ],
    "description": "X 6 1/4 03/15/26(US912909AN84) TENDERED TO US912CALAN84 1 FOR 1 (X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26, US912CALAN84)"

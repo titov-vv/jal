@@ -1,6 +1,6 @@
 from decimal import Decimal
 from jal.db.db import JalDB
-from jal.db.helpers import format_decimal
+from jal.db.helpers import format_decimal, is_day_marker
 import jal.db.account
 import jal.db.operations
 from jal.db.asset import JalAsset
@@ -24,9 +24,11 @@ def allocate_qty(lots: list, total: Decimal) -> list:
 # ----------------------------------------------------------------------------------------------------------------------
 # Class that represents open trade and provides some methods equal to JalClosedTrades to make compatible calls
 class JalOpenTrade(JalDB):
-    def __init__(self, operation, price, qty, adjustments=(Decimal('1'), Decimal('1')), slice_id=None) -> None:
+    def __init__(self, operation, price, qty, adjustments=(Decimal('1'), Decimal('1')), slice_id=None,
+                 acquired=None) -> None:
         super().__init__()
         self._op = operation
+        self._acquired = operation.timestamp() if acquired is None else acquired   # the lot's acquisition date
         self._price = price
         self._qty = qty                    # The EFFECTIVE quantity the lot holds (trades_opened.remaining_qty)
         self._adj_price = adjustments[0]   # Historical adjustments of price and quantity that happened
@@ -35,6 +37,9 @@ class JalOpenTrade(JalDB):
 
     def open_operation(self):
         return self._op
+
+    def acquired(self) -> int:
+        return self._acquired
 
     # Identity of the held slice this trade represents (see trades_opened.slice_id). None means "not yet stored":
     # a freshly opened or carried-over slice that JalAccount.open_trade() will let the DB assign a new id to.
@@ -87,10 +92,12 @@ class JalClosedTrade(JalDB):
             self._qty = Decimal(self._data['close_qty'])
             self._adj_price = Decimal(self._data['c_price'])
             self._adj_qty = Decimal(self._data['c_qty'])
+            self._acquired = self._data['open_timestamp']
         else:
             self._account = self._asset = self._open_op = self._close_op = None
             self._open_price = self._open_qty = self._close_price = self._qty = Decimal('0')
             self._adj_price = self._adj_qty = Decimal('1')
+            self._acquired = 0
 
     @classmethod
     # Creates a record in 'trades_closed' table based on given data:
@@ -108,7 +115,7 @@ class JalClosedTrade(JalDB):
             ":close_otype, :close_oid, :close_timestamp, :close_price, :close_qty, :c_price, :c_qty)",
             [(":account_id", c_operation.account().id()), (":asset_id", c_operation.asset().id()),
              (":open_otype", o_operation.type()), (":open_oid", o_operation.id()),
-             (":open_timestamp", o_operation.timestamp()), (":open_price", format_decimal(o_trade.open_price())),
+             (":open_timestamp", o_trade.acquired()), (":open_price", format_decimal(o_trade.open_price())),
              (":open_qty", format_decimal(o_qty)), (":close_otype", c_operation.type()),
              (":close_oid", c_operation.id()), (":close_timestamp", c_operation.timestamp()),
              (":close_price", format_decimal(c_price)), (":close_qty", format_decimal(qty)),
@@ -158,6 +165,16 @@ class JalClosedTrade(JalDB):
 
     def open_timestamp(self) -> int:
         return self._open_op.timestamp()
+
+    # The acquisition date: the purchase, or a corporate action that gave a new stock its own date
+    def acquired(self) -> int:
+        return self._acquired
+
+    # True if the acquisition date is a day only: the purchase's own flag, or a day-marker stamp of an action
+    def acquired_is_day(self) -> bool:
+        if self._acquired == self._open_op.timestamp():
+            return self._open_op.timestamp_is_day()
+        return is_day_marker(self._acquired)
 
     def close_timestamp(self) -> int:
         return self._close_op.timestamp()

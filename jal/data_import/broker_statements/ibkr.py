@@ -214,7 +214,8 @@ class StatementIBKR(StatementXML):
                                             ('figi', 'figi', str, ''),
                                             ('value', 'value', Decimal, None),
                                             ('proceeds', 'proceeds', Decimal, None),
-                                            ('code', 'code', str, '')],
+                                            ('code', 'code', str, ''),
+                                            ('type', 'raw_type', str, '')],
                                  'loader': self.load_corporate_actions},
             'CashTransactions': {'tag': 'CashTransaction',
                                  'level': 'DETAIL',
@@ -763,7 +764,7 @@ class StatementIBKR(StatementXML):
     # Stores a corporate action record that was already given its 'symbol', 'quantity' and 'outcome'
     def _store_corp_action(self, action) -> None:
         action['id'] = self._next_id(JSF.CORP_ACTIONS)
-        self.drop_extra_fields(action, ["value", "proceeds", "code", "asset_type", "action_id", "currency", "figi"])
+        self.drop_extra_fields(action, ["value", "proceeds", "code", "raw_type", "asset_type", "action_id", "currency", "figi"])
         self._data[JSF.CORP_ACTIONS].append(action)
 
     # Stores an asset that was withdrawn for money as a sell trade, at the price that its proceeds give
@@ -774,7 +775,7 @@ class StatementIBKR(StatementXML):
         record['price'] = self._derived_price(record['proceeds'], record['quantity'])
         record['note'] = record.pop('description')
         record['fee'] = Decimal('0')
-        self.drop_extra_fields(record, ["type", "value", "proceeds", "code", "asset_type", "action_id", "currency",
+        self.drop_extra_fields(record, ["type", "value", "proceeds", "code", "raw_type", "asset_type", "action_id", "currency",
                                         "timestamp_day_only", "figi"])
         self._data[JSF.TRADES].append(record)
 
@@ -788,6 +789,9 @@ class StatementIBKR(StatementXML):
         action = received[0]
         action['outcome'] = [{'symbol': x['symbol'], 'quantity': self._corp_action_qty(x), 'share': Decimal('0')}
                              for x in received]
+        if old.get('raw_type') == 'TO':   # a tender is still the same security, so its lots keep their purchase date
+            for result in action['outcome']:
+                result['keep_date'] = 1
         if old['proceeds']:  # Cash payment is a part of corporate action
             if 'CASH' not in old['description'].upper():
                 self._refuse_corp_action(withdrawn + received,
@@ -842,7 +846,7 @@ class StatementIBKR(StatementXML):
         action['amount'] = action['quantity']
         action['price'] = self._derived_price(action['value'], action['quantity'])
         action['tax'] = Decimal('0')
-        self.drop_extra_fields(action, ["quantity", "value", "proceeds", "code", "asset_type", "action_id", "currency",
+        self.drop_extra_fields(action, ["quantity", "value", "proceeds", "code", "raw_type", "asset_type", "action_id", "currency",
                                         "figi"])
         self._data[JSF.ASSET_PAYMENTS].append(action)
         return 1

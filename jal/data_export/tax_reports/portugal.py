@@ -77,7 +77,7 @@ class TaxesPortugal(TaxReport):
                 'qty': trade.qty(),
                 'o_type': "Aquisição" if trade.qty() >= Decimal('0') else "Venda",
                 'o_number': trade.open_operation().number(),
-                'o_date': self._moment(trade.open_operation().timestamp(), trade.open_operation().timestamp_is_day()),
+                'o_date': self._moment(trade.acquired(), trade.acquired_is_day()),
                 'o_rate': self.account_currency.quote(trade.close_operation().timestamp() if self.one_currency_rate else trade.open_operation().timestamp(), self._currency_id)[1],
                 'o_price': trade.open_price(),
                 'o_fee': trade.open_fee(),

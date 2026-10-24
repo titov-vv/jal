@@ -2386,12 +2386,13 @@ class CorporateAction(LedgerTransaction):
                                 [(":oid", self._oid)], named=True)
         if self._data is None:
             raise IndexError(LedgerTransaction.NoOpException)
-        results_query = self._exec("SELECT s.asset_id, r.symbol_id, r.qty, r.value_share FROM asset_action_results AS r "
+        results_query = self._exec("SELECT s.asset_id, r.symbol_id, r.qty, r.value_share, r.keep_date "
+                                   "FROM asset_action_results AS r "
                                    "LEFT JOIN asset_symbol AS s ON r.symbol_id=s.id WHERE action_id=:oid",
                                    [(":oid", self._oid)])
         self._results = []
         while results_query.next():
-            self._results.append(self._read_record(results_query, named=True, cast=[int, int, Decimal, Decimal]))
+            self._results.append(self._read_record(results_query, named=True, cast=[int, int, Decimal, Decimal, int]))
         self._view_rows = len(self._results) + 1
         self._subtype = self._data['type']
         self._oname = self.names[self._subtype]
@@ -2557,9 +2558,10 @@ class CorporateAction(LedgerTransaction):
             else:
                 # The quantity the action produced is allocated over the lots it carries over, so they add up to it
                 # exactly; their price keeps the coefficient that preserves the value of each lot.
+                acquired = None if result['keep_date'] else self._timestamp   # a new stock is acquired by the action
                 for trade, lot_qty in zip(closed_trades, allocate_qty(closed_trades, abs(qty))):
                     self._account.open_trade(trade, asset, modified_by=self, qty=lot_qty,
-                                             price_adjustment=share * self._qty / qty)
+                                             price_adjustment=share * self._qty / qty, acquired=acquired)
                 ledger.appendTransaction(self, BookAccount.Assets, qty, asset_id=asset.id(), value=sign * value)
 
 # ----------------------------------------------------------------------------------------------------------------------

@@ -266,7 +266,7 @@ class HoldingsModel(ReportTreeModel):
         if len(trades) == 0:
             logging.warning(self.tr("Open position was expected but not found for (account-asset-date): ") + f"'{account.name()}' - {asset.symbol()} - {ts2d(end_ts)}")
             return end_ts, Decimal('0')
-        since = min([x.open_operation().timestamp() for x in trades])
+        since = min([x.acquired() for x in trades])
         amount = account.asset_payments_amount(asset, since, end_ts)
         for trade in trades:
             operation = trade.open_operation()

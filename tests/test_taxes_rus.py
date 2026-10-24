@@ -495,8 +495,8 @@ def test_reports_print_the_listing_of_each_operation(prepare_db_taxes):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# A spin-off whose child was also bought on the market before it (TAX_PATH §2.12, checkpoint 1): pins today's behaviour
-# - the spun-off lot carries the parent's purchase date and goes first in FIFO. Figures computed by hand:
+# A spin-off whose child was also bought on the market before it: the spun-off lot is acquired at the
+# spin-off, so the market lot goes first in FIFO. Figures computed by hand:
 # A 100 @ 10 -> spin-off 80% A + 50 B at 20% (basis 200, 4 per share); B 10 @ 30 bought between; sold 20 @ 35, 40 @ 40.
 def test_spinoff_child_bought_before_the_spinoff(prepare_db_taxes):
     create_assets([("AAA", "Parent Corp", "US0000000101", 2, PredefinedAsset.Stock, 'us'),      # ID 4
@@ -514,19 +514,19 @@ def test_spinoff_child_bought_before_the_spinoff(prepare_db_taxes):
     fields = ('o_number', 'o_date', 'c_number', 'c_qty', 'spending_rub', 'profit', 'profit_rub')
     deals = [{k: x[k] for k in fields} for x in TaxesRussia().prepare_tax_report(2024, 1)['Акции'][:-1]]
     assert deals == [
-        {'o_number': 'B1', 'o_date': d2t(240110), 'c_number': 'S1', 'c_qty': Decimal('20'),
-         'spending_rub': Decimal('8000.00'), 'profit': Decimal('620.00'), 'profit_rub': Decimal('62000.00')},
-        {'o_number': 'B1', 'o_date': d2t(240110), 'c_number': 'S2', 'c_qty': Decimal('30'),
-         'spending_rub': Decimal('12000.00'), 'profit': Decimal('1080.00'), 'profit_rub': Decimal('108000.00')},
-        {'o_number': 'B2', 'o_date': d2t(240210), 'c_number': 'S2', 'c_qty': Decimal('10'),
-         'spending_rub': Decimal('30000.00'), 'profit': Decimal('100.00'), 'profit_rub': Decimal('10000.00')}]
+        {'o_number': 'B2', 'o_date': d2t(240210), 'c_number': 'S1', 'c_qty': Decimal('10'),
+         'spending_rub': Decimal('30000.00'), 'profit': Decimal('50.00'), 'profit_rub': Decimal('5000.00')},
+        {'o_number': 'B1', 'o_date': d2t(240301), 'c_number': 'S1', 'c_qty': Decimal('10'),
+         'spending_rub': Decimal('4000.00'), 'profit': Decimal('310.00'), 'profit_rub': Decimal('31000.00')},
+        {'o_number': 'B1', 'o_date': d2t(240301), 'c_number': 'S2', 'c_qty': Decimal('40'),
+         'spending_rub': Decimal('16000.00'), 'profit': Decimal('1440.00'), 'profit_rub': Decimal('144000.00')}]
 
     fields = ('o_number', 'o_date', 'c_number', 'qty', 'o_amount_eur', 'profit_eur')
     deals = [{k: x[k] for k in fields} for x in TaxesPortugal().prepare_tax_report(2024, 1)['Shares'][:-1]]
     assert deals == [
-        {'o_number': 'B1', 'o_date': d2t(240110), 'c_number': 'S1', 'qty': Decimal('20'),
-         'o_amount_eur': Decimal('40.00'), 'profit_eur': Decimal('310.00')},
-        {'o_number': 'B1', 'o_date': d2t(240110), 'c_number': 'S2', 'qty': Decimal('30'),
-         'o_amount_eur': Decimal('60.00'), 'profit_eur': Decimal('540.00')},
-        {'o_number': 'B2', 'o_date': d2t(240210), 'c_number': 'S2', 'qty': Decimal('10'),
-         'o_amount_eur': Decimal('150.00'), 'profit_eur': Decimal('50.00')}]
+        {'o_number': 'B2', 'o_date': d2t(240210), 'c_number': 'S1', 'qty': Decimal('10'),
+         'o_amount_eur': Decimal('150.00'), 'profit_eur': Decimal('25.00')},
+        {'o_number': 'B1', 'o_date': d2t(240301), 'c_number': 'S1', 'qty': Decimal('10'),
+         'o_amount_eur': Decimal('20.00'), 'profit_eur': Decimal('155.00')},
+        {'o_number': 'B1', 'o_date': d2t(240301), 'c_number': 'S2', 'qty': Decimal('40'),
+         'o_amount_eur': Decimal('80.00'), 'profit_eur': Decimal('720.00')}]

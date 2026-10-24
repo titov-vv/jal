@@ -249,7 +249,7 @@ class StakingListModel(QAbstractTableModel):
     # the same date in its own 'Since' column). Nothing open leaves the cell blank.
     def _opened_at(self, account: JalAccount, asset: JalAsset) -> int:
         trades = account.open_trades_list(asset, self._timestamp)
-        return min([x.open_operation().timestamp() for x in trades]) if trades else 0
+        return min([x.acquired() for x in trades]) if trades else 0
 
     # What the distributors owe, one row per (wallet, asset, distributor).
     #
