@@ -57,16 +57,16 @@ def test_add_symbol_adds_a_listing_per_chain(prepare_db):
     assert set(asset.active_symbol_ids()) == {eth, trx}
 
 
-def test_add_symbol_keeps_one_listing_for_a_security(prepare_db):
-    # A traditional security seen first without a venue and then on an exchange is still a single listing - the
-    # exchange is informational and must not split the security into two symbols.
+def test_add_symbol_lists_a_security_per_venue(prepare_db):
+    # The venue is part of a security's listing too: which venue a record means is decided by the importer before
+    # add_symbol() (Statement._listing_venue), so here an exchange next to the unknown venue is a listing of its own
     creator = JalAssetCreator(PredefinedAsset.Stock, 'Some Corp')
     creator.commit()
     asset = JalAsset(creator.id())
     first = asset.add_symbol('ABC', USD, location_id=AssetLocation.UNDEFINED)
     second = asset.add_symbol('ABC', USD, location_id=AssetLocation.NYSE_EXCHANGE)
-    assert first == second
-    assert asset.active_symbol_ids() == [first]
+    assert first != second
+    assert sorted(asset.active_symbol_ids()) == [first, second]
 
 
 # ----------------------------------------------------------------------------------------------------------------------

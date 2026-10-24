@@ -7,12 +7,14 @@ USD = 2
 EUR = 3
 
 
-def test_security_listing_ignores_the_venue(prepare_db):
+# A security is listed per venue, as a token is per chain: two exchanges in one currency are two live listings
+def test_security_is_listed_per_venue(prepare_db):
     stock = JalAssetCreator(PredefinedAsset.Stock, 'Some Company', '').commit()
-    first = stock.add_symbol('SC', USD, location_id=AssetLocation.NYSE_EXCHANGE)
-    assert stock.add_symbol('SC', USD, location_id=AssetLocation.NASDAQ_EXCHANGE) == first
-    assert JalSymbol(first).location() == AssetLocation.NYSE_EXCHANGE     # the first-seen venue is kept
-    assert stock.active_symbol_ids() == [first]
+    hel = stock.add_symbol('NOKIA', EUR, location_id=AssetLocation.HEL_EXCHANGE)
+    fra = stock.add_symbol('NOKIA', EUR, location_id=AssetLocation.FRA_EXCHANGE)
+    assert hel != fra
+    assert stock.add_symbol('NOKIA', EUR, location_id=AssetLocation.HEL_EXCHANGE) == hel
+    assert sorted(stock.active_symbol_ids()) == [hel, fra]
 
 
 def test_token_is_listed_per_chain(prepare_db):

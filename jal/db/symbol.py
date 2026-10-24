@@ -204,6 +204,12 @@ class JalSymbol(JalDB):
                        [(":symbol_id", self._id), (":id_type", id_type), (":id_value", id_value)])
         self._reload()  # Identifiers are part of JalAsset's cache too - refresh both
 
+    # Moves this listing to another venue
+    def set_location(self, location_id: int) -> None:
+        _ = self._exec("UPDATE asset_symbol SET location_id=:location WHERE id=:id",
+                       [(":location", location_id), (":id", self._id)], commit=True)
+        self._reload()
+
     # Adds identifier of given type to this symbol unless one is already present. An existing identifier is never
     # overwritten - a mismatching new value is only reported as an error.
     def update_identifier(self, id_type: int, id_value: str) -> None:

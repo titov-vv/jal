@@ -1,3 +1,4 @@
+import logging
 from decimal import Decimal
 
 import pytest
@@ -14,6 +15,7 @@ from jal.db.account import JalAccountCreator
 from jal.db.operations import LedgerTransaction
 from jal.widgets.symbol_dialog import SymbolDialog
 from jal.data_import.statement import Statement, JSF
+from jal.data_import.broker_statements.ibkr import StatementIBKR
 
 RUB, USD, EUR = 1, 2, 3
 ADDRESS = "0xdac17f958d2ee523a2206206994597c13d831ec7"
@@ -170,3 +172,56 @@ def test_add_symbol_picks_the_period_by_identifiers(prepare_db):
     assert add({}) == new
     third = add({SymbolId.ISIN: 'US0000000003'})
     assert third not in (old, new) and JalSymbol(third).active() and not JalSymbol(new).active()
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Which venue a record means: its own when a live listing is there; with none named, the one live venue it can only
+# mean, else a question, else the unknown venue; a venue written onto a listing that has none only when confirmed
+def test_listing_venue_of_a_record(prepare_db):
+    statement = Statement()
+    asset = JalAssetCreator(PredefinedAsset.Stock, 'Nokia').commit().id()
+    venue = lambda record, location: statement._listing_venue(JalAsset(asset), record, EUR, location)
+
+    assert venue({'symbol': 'NOKIA'}, AssetLocation.UNDEFINED) == AssetLocation.UNDEFINED       # nothing live yet
+    hel = _listing(asset, 'NOKIA', EUR, AssetLocation.HEL_EXCHANGE)
+    JalDB().invalidate_cache()
+    assert venue({'symbol': 'NOKIA'}, AssetLocation.UNDEFINED) == AssetLocation.HEL_EXCHANGE    # the one it can mean
+    assert venue({'symbol': 'NOKIA'}, AssetLocation.FRA_EXCHANGE) == AssetLocation.FRA_EXCHANGE  # another venue
+    _listing(asset, 'NOKIA', EUR, AssetLocation.FRA_EXCHANGE)
+    JalDB().invalidate_cache()
+    assert venue({'symbol': 'NOKIA'}, AssetLocation.UNDEFINED) == AssetLocation.UNDEFINED       # asked, default: new
+    statement._venue_choice_for_tests = AssetLocation.FRA_EXCHANGE
+    assert venue({'symbol': 'NOKIA'}, AssetLocation.UNDEFINED) == AssetLocation.FRA_EXCHANGE
+    assert JalSymbol(hel).location() == AssetLocation.HEL_EXCHANGE
+
+
+def test_venue_is_written_onto_a_listing_only_when_confirmed(prepare_db):
+    statement = Statement()
+    asset = JalAssetCreator(PredefinedAsset.Stock, 'Some Company').commit().id()
+    unnamed = _listing(asset, 'SC', USD, AssetLocation.UNDEFINED)
+    JalDB._exec("INSERT INTO symbol_ids (symbol_id, id_type, id_value) VALUES (:s, :t, '100')",
+                [(":s", unnamed), (":t", SymbolId.CONID)], commit=True)
+    JalDB().invalidate_cache()
+    venue = lambda record: statement._listing_venue(JalAsset(asset), record, USD, AssetLocation.NYSE_EXCHANGE)
+
+    assert venue({'symbol': 'SC', 'conid': '100'}) == AssetLocation.NYSE_EXCHANGE       # not confirmed: left as it is
+    assert JalSymbol(unnamed).location() == AssetLocation.UNDEFINED
+    statement._venue_fill_for_tests = True
+    assert venue({'symbol': 'SC', 'conid': '200'}) == AssetLocation.NYSE_EXCHANGE       # another conid: not asked
+    assert JalSymbol(unnamed).location() == AssetLocation.UNDEFINED
+    assert venue({'symbol': 'SC', 'conid': '100'}) == AssetLocation.NYSE_EXCHANGE       # confirmed: written on it
+    assert JalSymbol(unnamed).location() == AssetLocation.NYSE_EXCHANGE
+
+
+# A venue name JAL doesn't know is logged once per statement, and its listings are kept without a venue
+def test_unknown_venue_name_is_logged_once(data_path, prepare_db_fifo, caplog):
+    statement = StatementIBKR()                             # BRTX trades on PINK, a venue missing from the known ones
+    statement.load(data_path + 'ibkr_ticker_drift_brtx.xml')
+    statement.validate_format()
+    statement.match_db_ids()
+    with caplog.at_level(logging.INFO):
+        statement.import_into_db()
+    assert [x.message for x in caplog.records if 'venue' in x.message] == \
+           ["Trading venue isn't known to JAL, its listings are kept without one: PINK"]
+    assert {JalSymbol(x).location() for x in JalDB._read_to_list("SELECT id FROM asset_symbol WHERE symbol LIKE 'BRTX%'")} \
+           == {AssetLocation.UNDEFINED}

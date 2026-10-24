@@ -14,6 +14,7 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
     statement.load(data_path + 'ibkr.json')
     statement.validate_format()
     statement.match_db_ids()
+    statement._venue_fill_for_tests = True   # the listings stored without a venue are the ones the statement names
 
     # Only pre-existing db elements are matched: RUB/USD/EUR currencies, VUG (by symbol),
     # EDV (by cusip), ZROZ (by isin), the USD account and the two dividends listed in the
@@ -39,13 +40,13 @@ def test_ibkr_json_import(tmp_path, project_root, data_path, prepare_db_ibkr):
          'symbols': [{'id': 3, 'symbol': 'EUR', 'currency_id': 3, 'location_id': AssetLocation.BANK_ACCOUNT, 'active': 1}],
          'ID': {(3, SymbolId.ISO4217_CODE): '978'}},
         {'id': 4, 'type_id': PredefinedAsset.ETF, 'full_name': 'Growth ETF', 'country_id': 2,
-         'symbols': [{'id': 4, 'symbol': 'VUG', 'currency_id': 2, 'location_id': AssetLocation.UNDEFINED, 'active': 1}],
+         'symbols': [{'id': 4, 'symbol': 'VUG', 'currency_id': 2, 'location_id': AssetLocation.NYSE_EXCHANGE, 'active': 1}],
          'ID': {(4, SymbolId.ISIN): 'US9229087369', (4, SymbolId.CUSIP): '922908736'}},
         {'id': 5, 'type_id': PredefinedAsset.ETF, 'full_name': 'VANGUARD EXTENDED DUR TREAS', 'country_id': 2,
-         'symbols': [{'id': 5, 'symbol': 'EDV', 'currency_id': 2, 'location_id': AssetLocation.UNDEFINED, 'active': 1}],
+         'symbols': [{'id': 5, 'symbol': 'EDV', 'currency_id': 2, 'location_id': AssetLocation.NYSE_EXCHANGE, 'active': 1}],
          'ID': {(5, SymbolId.CUSIP): '921910709'}},
         {'id': 6, 'type_id': PredefinedAsset.ETF, 'full_name': 'PIMCO 25+ YR ZERO CPN US TIF', 'country_id': 2,
-         'symbols': [{'id': 6, 'symbol': 'ZROZ', 'currency_id': 2, 'location_id': AssetLocation.UNDEFINED, 'active': 1}],
+         'symbols': [{'id': 6, 'symbol': 'ZROZ', 'currency_id': 2, 'location_id': AssetLocation.NYSE_EXCHANGE, 'active': 1}],
          'ID': {(6, SymbolId.ISIN): 'US72201R8824', (6, SymbolId.CUSIP): '72201R882'}},
         {'id': 7, 'type_id': PredefinedAsset.Money, 'full_name': 'CAD', 'country_id': 0,
          'symbols': [{'id': 7, 'symbol': 'CAD', 'currency_id': 7, 'location_id': AssetLocation.BANK_ACCOUNT, 'active': 1}],

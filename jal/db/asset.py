@@ -217,16 +217,11 @@ class JalAsset(JalDB):
         currency_id = self.listing_currency(currency_id, location_id)
         if not currency_id or JalAsset(currency_id).type() != PredefinedAsset.Money:
             raise ValueError(f"A listing has to be kept in a currency: {symbol} {currency_id}")
-        # A traditional security is a single listing no matter which venue a statement happens to name (the exchange
-        # is informational), so it is matched by (asset, symbol, currency) with the location ignored and the
-        # first-seen location kept. A crypto asset is a genuinely separate listing per chain and per exchange, so
-        # there the match and the deactivation are scoped by location too, and a new location adds a second active
-        # symbol rather than replacing the existing one.
-        scoped = location_id in AssetLocation.CRYPTO_LOCATIONS
-        scope = [(":asset_id", self._id), (":currency", currency_id)]
-        location_clause = " AND location_id=:location_id" if scoped else ""
-        if scoped:
-            scope.append((":location_id", location_id))
+        # A listing is one venue's - a chain, an exchange, or the unknown venue 0 - so the match and the deactivation
+        # are scoped by location, and a new venue adds a second active symbol. The importer decides which venue a
+        # record means (Statement._listing_venue) before it gets here.
+        scope = [(":asset_id", self._id), (":currency", currency_id), (":location_id", location_id)]
+        location_clause = " AND location_id=:location_id"
         rows = self._read_to_list("SELECT id FROM asset_symbol "
                                   "WHERE asset_id=:asset_id AND symbol=:symbol AND currency_id=:currency" + location_clause +
                                   " ORDER BY active DESC, id DESC", scope + [(":symbol", symbol)])

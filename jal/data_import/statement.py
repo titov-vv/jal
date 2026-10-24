@@ -9,7 +9,7 @@ from copy import deepcopy
 from collections import defaultdict
 
 from PySide6.QtCore import QObject
-from PySide6.QtWidgets import QDialog, QMessageBox
+from PySide6.QtWidgets import QDialog, QMessageBox, QInputDialog
 from jal.constants import Setup, AssetLocation, PredefinedAccountType, PredefinedAsset, PredefinedAgents, SymbolId
 from jal.db.db import JalDB
 from jal.db.clock import local_time, ZONE_SPAN
@@ -194,6 +194,11 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         # The interactive cross-chain token prompt can't run under pytest; tests set the desired outcome here as a
         # (action, target_asset_id) tuple. The default never merges or discards silently - it creates a new asset.
         self._token_action_for_tests = (Statement.TOKEN_CREATE_NEW, 0)
+        # The same for the venue prompts: which venue a record without one means (0 - a new listing at the unknown
+        # venue), and whether to write a record's venue onto a listing that has none
+        self._venue_choice_for_tests = AssetLocation.UNDEFINED
+        self._venue_fill_for_tests = False
+        self._unknown_venues = set()   # venue names a statement used that aren't in _sources, logged once each
         self._skipped = {}           # {reason: count} of records that were recognized but not imported
         self._section_loaders = {
             JSF.PERIOD: self._check_period,
@@ -767,6 +772,13 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 # is looked up in the table of known sources.
                 location = symbol['location'] if symbol.get('location') else \
                     self._sources.get(symbol.get('note', ''), AssetLocation.UNDEFINED)
+                venue_name = symbol.get('note', '') if not symbol.get('location') else ''
+                if venue_name and venue_name not in self._sources and venue_name not in self._unknown_venues:
+                    self._unknown_venues.add(venue_name)
+                    logging.info(self.tr("Trading venue isn't known to JAL, its listings are kept without one: ")
+                                 + venue_name)
+                if location not in AssetLocation.CRYPTO_LOCATIONS:
+                    location = self._listing_venue(db_asset, symbol, currency, location)
                 if not JalAsset.listing_currency(currency, location):
                     raise Statement_ImportError(self.tr("The ledger has no currency this venue is quoted in: ")
                                                 + f"{symbol['symbol']} ({AssetLocation().get_name(location)})")
@@ -804,6 +816,44 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             for twin in twins:
                 db_asset.add_symbol(twin.symbol(), twin.currency(), twin.location(), active=False)
         db_asset.update_identifier(symbol_id, id_type, address)
+
+    # The venue of a security's listing: the record's own, or - when it names none - the venue of the one live listing
+    # with its ticker and currency. Asks when that is unclear: several venues, or a venue to write onto a listing that
+    # has none (a different conid means a different listing, so that is not asked about).
+    def _listing_venue(self, db_asset, symbol: dict, currency: int, location: int) -> int:
+        live = [x for x in db_asset.dump().get('symbols', []) if x['active'] and x['currency_id'] == currency
+                and x['symbol'].upper() == symbol['symbol'].upper()]
+        if any(x['location_id'] == location for x in live):
+            return location
+        if location == AssetLocation.UNDEFINED:
+            venues = sorted({x['location_id'] for x in live})
+            if len(venues) == 1:
+                return venues[0]
+            return self.select_venue(symbol['symbol'], venues) if venues else location
+        conid = symbol.get('conid', '')
+        unnamed = [x for x in live if x['location_id'] == AssetLocation.UNDEFINED
+                   and JalSymbol(x['id']).identifier(SymbolId.CONID) in ('', conid)]
+        if len(unnamed) == 1 and self.confirm_venue(symbol['symbol'], location):
+            JalSymbol(unnamed[0]['id']).set_location(location)
+        return location
+
+    # Asks which of the asset's venues a record without one means; 0 makes a new listing at the unknown venue
+    def select_venue(self, ticker: str, venues: list) -> int:
+        if "pytest" in sys.modules:
+            return self._venue_choice_for_tests
+        names = [AssetLocation().get_name(x) for x in venues] + [self.tr("New listing, venue unknown")]
+        name, accepted = QInputDialog.getItem(None, self.tr("Trading venue"),
+                                              self.tr("The statement doesn't say where this was traded: ") + ticker,
+                                              names, 0, False)
+        return venues[names.index(name)] if accepted and name in names[:-1] else AssetLocation.UNDEFINED
+
+    # Asks whether the venue a record names is the one of the asset's listing that has none
+    def confirm_venue(self, ticker: str, location: int) -> bool:
+        if "pytest" in sys.modules:
+            return self._venue_fill_for_tests
+        return QMessageBox().question(None, self.tr("Trading venue"),
+                                      self.tr("Is this listing traded on ") + AssetLocation().get_name(location) + "? "
+                                      + ticker, QMessageBox.Yes, QMessageBox.No) == QMessageBox.Yes
 
     def _import_accounts(self, accounts):
         for account in accounts:
