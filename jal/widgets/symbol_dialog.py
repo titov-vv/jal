@@ -9,7 +9,7 @@ from jal.db.db import JalDB
 from jal.db.asset import JalAsset
 from jal.db.symbol import JalSymbol
 from jal.db.ledger import Ledger
-from jal.db.helpers import localize_decimal, db_row2dict
+from jal.db.helpers import localize_decimal
 from jal.db.lending_interest import stored_welded_interest, book_welded_interest
 from jal.db.asset_models import AssetRecordModel, AssetSymbolsModel, SymbolIdentifiersModel, AssetDataModel
 from jal.db.common_models import TagTreeModel
@@ -340,23 +340,8 @@ class SymbolDialog(QDialog):
             self._data_model.submitAll()
             self._data_model.select()
 
-    def validated(self):
-        active_count = 0
-        for row in range(self._symbols_model.rowCount()):
-            if self._symbols_model.row_is_deleted(row):
-                continue
-            fields = db_row2dict(self._symbols_model, row)
-            active_count += fields['active']
-        if not active_count:
-            QMessageBox().warning(self, self.tr("Incomplete data"),
-                                  self.tr("Can't save asset without active symbols"), QMessageBox.Ok)
-            return False
-        return True
-
     def accept(self) -> None:
         self._mapper.submit()  # AutoSubmit normally fires on focus-out; force it in case OK was reached otherwise
-        if not self.validated():
-            return
         # Grid models are OnManualSubmit - pending cell edits must be written out explicitly here.
         # On failure the dialog stays open with the transaction alive, so the user may correct the
         # data or cancel (which rolls everything back).

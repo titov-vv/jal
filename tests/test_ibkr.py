@@ -123,7 +123,7 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
          'symbols': [{'id': 3, 'symbol': 'EUR', 'currency_id': 3, 'location_id': AssetLocation.BANK_ACCOUNT, 'active': 1}],
          'ID': {(3, SymbolId.ISO4217_CODE): '978'}},
         {'id': 4, 'type_id': PredefinedAsset.Stock, 'full_name': 'PACIFIC ETHANOL INC', 'country_id': 0,
-         'symbols': [{'id': 4, 'symbol': 'PEIX', 'currency_id': 2, 'location_id': AssetLocation.NASDAQ_EXCHANGE, 'active': 1}],
+         'symbols': [{'id': 4, 'symbol': 'PEIX', 'currency_id': 2, 'location_id': AssetLocation.NASDAQ_EXCHANGE, 'active': 0}],
          'ID': {(4, SymbolId.ISIN): 'US69423U3059', (4, SymbolId.CUSIP): '69423U305'}},
         {'id': 5, 'type_id': PredefinedAsset.Derivative, 'full_name': 'FANG 21JAN22 40.0 C', 'country_id': 0,
          'symbols': [{'id': 5, 'symbol': 'FANG  220121C00040000', 'currency_id': 2, 'location_id': AssetLocation.UNDEFINED, 'active': 1}],
@@ -137,7 +137,7 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
          'ID': {},
          'data': {AssetData.ExpiryDate: '1642723200'}},
         {'id': 8, 'type_id': PredefinedAsset.Stock, 'full_name': 'AURORA CANNABIS INC', 'country_id': 0,
-         'symbols': [{'id': 8, 'symbol': 'ACB', 'currency_id': 2, 'location_id': AssetLocation.NYSE_EXCHANGE, 'active': 1}],
+         'symbols': [{'id': 8, 'symbol': 'ACB', 'currency_id': 2, 'location_id': AssetLocation.NYSE_EXCHANGE, 'active': 0}],
          'ID': {(8, SymbolId.ISIN): 'CA05156X1087', (8, SymbolId.CUSIP): '05156X108'}},
         {'id': 9, 'type_id': PredefinedAsset.Stock, 'full_name': 'TWO HARBORS INVESTMENT CORP', 'country_id': 2,
          'symbols': [{'id': 9, 'symbol': 'TWO', 'currency_id': 2, 'location_id': AssetLocation.NYSE_EXCHANGE, 'active': 1}],
@@ -153,8 +153,8 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
          'symbols': [{'id': 12, 'symbol': 'VERB', 'currency_id': 2, 'location_id': AssetLocation.NASDAQ_EXCHANGE, 'active': 1}],
          'ID': {(12, SymbolId.ISIN): 'US92337U1043', (12, SymbolId.CUSIP): '92337U104'}},
         {'id': 13, 'type_id': PredefinedAsset.Stock, 'full_name': 'ALTO INGREDIENTS INC', 'country_id': 0,
-         'symbols': [{'id': 13, 'symbol': 'ALTO', 'currency_id': 2, 'location_id': AssetLocation.NASDAQ_EXCHANGE, 'active': 0},
-                     {'id': 21, 'symbol': 'PEIX', 'currency_id': 2, 'location_id': AssetLocation.NASDAQ_EXCHANGE, 'active': 1}],
+         'symbols': [{'id': 13, 'symbol': 'ALTO', 'currency_id': 2, 'location_id': AssetLocation.NASDAQ_EXCHANGE, 'active': 1},
+                     {'id': 21, 'symbol': 'PEIX', 'currency_id': 2, 'location_id': AssetLocation.NASDAQ_EXCHANGE, 'active': 0}],
          'ID': {(13, SymbolId.ISIN): 'US0215131063', (13, SymbolId.CUSIP): '021513106', (21, SymbolId.ISIN): 'US0215131063', (21, SymbolId.CUSIP): '021513106'}},
         {'id': 14, 'type_id': PredefinedAsset.Stock, 'full_name': 'AURORA CANNABIS INC', 'country_id': 0,
          'symbols': [{'id': 14, 'symbol': 'ACB', 'currency_id': 2, 'location_id': AssetLocation.NYSE_EXCHANGE, 'active': 1}],
@@ -1005,3 +1005,43 @@ def test_ibkr_option_action_without_figi_halts_the_import(tmp_path, project_root
     assert 'XLE 251226C00046750' in str(refusal.value)
     assert dumps == []                          # nothing to report - it is the query that has to be fixed
 
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# One listing traded under two tickers with no corporate action between them (ROADMAP D24). SecurityInfo names the
+# ticker at the end of the period, so that listing stays live whatever order the records come in.
+def _import_ibkr(path):
+    statement = StatementIBKR()
+    statement.load(path)
+    statement.validate_format()
+    statement.match_db_ids()
+    statement.import_into_db()
+    Ledger().rebuild(from_timestamp=0)
+
+
+def _listings_by_isin(isin) -> tuple:
+    asset_id = JalDB._read("SELECT s.asset_id FROM asset_symbol s JOIN symbol_ids i ON i.symbol_id=s.id "
+                           "WHERE i.id_type=:isin AND i.id_value=:value", [(":isin", SymbolId.ISIN), (":value", isin)])
+    listings = JalDB._read_to_list("SELECT symbol, active FROM asset_symbol WHERE asset_id=:id ORDER BY id",
+                                   [(":id", asset_id)])
+    return asset_id, [tuple(x) for x in listings]
+
+
+def test_ibkr_ticker_drift_keeps_the_end_of_period_ticker_live(data_path, prepare_db_taxes):
+    _import_ibkr(data_path + 'ibkr_ticker_drift_brtx.xml')     # bought as BRTX, sold as BRTXQ
+    asset_id, listings = _listings_by_isin('US0906554086')
+    assert sorted(listings) == [('BRTX', 0), ('BRTXQ', 1)]
+    assert JalAsset(asset_id).symbol(2) == 'BRTXQ'
+    assert JalAccount(1).get_asset_amount(d2t(201231), asset_id) == Decimal('0')
+
+
+def test_ibkr_temporary_ticker_after_a_reverse_split(data_path, prepare_db_taxes):
+    _import_ibkr(data_path + 'ibkr_temp_ticker_ewll.xml')      # EWLL.OLD 1:50 -> EWLLD, then traded as EWLL
+    old_id, old_listings = _listings_by_isin('US30051D1063')
+    new_id, new_listings = _listings_by_isin('US30051D2053')
+    assert old_listings == [('EWLL', 0)]                       # .OLD: superseded, still named by its ticker
+    assert JalAsset(old_id).symbol(2) == 'EWLL'
+    assert sorted(new_listings) == [('EWLL', 1), ('EWLLD', 0)]
+    assert JalAsset(new_id).symbol(2) == 'EWLL'
+    assert JalAccount(1).get_asset_amount(d2t(201231), old_id) == Decimal('0')
+    assert JalAccount(1).get_asset_amount(d2t(201231), new_id) == Decimal('170000')

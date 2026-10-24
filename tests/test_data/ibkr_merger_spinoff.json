@@ -191,7 +191,8 @@
       "currency": 1,
       "note": "PINK",
       "isin": "US87167T2015",
-      "cusip": "87167T201"
+      "cusip": "87167T201",
+      "active": false
      }
     ]
    },
@@ -206,7 +207,8 @@
       "currency": 1,
       "note": "PINK",
       "isin": "US87167T1025",
-      "cusip": "87167T102"
+      "cusip": "87167T102",
+      "active": false
      }
     ]
    },
@@ -236,7 +238,8 @@
       "currency": 1,
       "note": "NASDAQ",
       "isin": "US71678J1007",
-      "cusip": "71678J100"
+      "cusip": "71678J100",
+      "active": false
      }
     ]
    }

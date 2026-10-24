@@ -380,6 +380,7 @@ class StatementIBKR(StatementXML):
         elif xml_element.tag == 'Transfer' and asset_category == JSF.ASSET_MONEY:
             symbol_id = self.currency_symbol_id(xml_element.attrib['currency'])
         else:
+            replaced = xml_element.attrib[attr_name].endswith(self.ReplacedSuffix)
             symbol = xml_element.attrib[attr_name].removesuffix(self.ReplacedSuffix)
             if asset_category == IBKR_AssetType.NotSupported:
                 raise Statement_ImportError(self.tr("Asset type isn't supported: ") + f"'{asset_category}' ({symbol})")
@@ -399,6 +400,8 @@ class StatementIBKR(StatementXML):
             if xml_element.tag == 'CashTransaction' and 'isin' not in asset_data and 'cusip' not in asset_data:
                 asset_data.update(self._ids_by_action(xml_element))
             symbol_id = self.symbol_id(asset_data)
+            if replaced:
+                self._listed.setdefault(symbol_id, False)
         return symbol_id
 
     # 'VALUE' and an empty name aren't stored as an exchange of a symbol
@@ -479,6 +482,10 @@ class StatementIBKR(StatementXML):
         raise Statement_ImportError(self.tr("Can't find account for a given masked account: ") +
                                     f"'{masked_account}'. " + self.tr("Please create one."))
 
+    def _init_data(self):
+        super()._init_data()
+        self._listed = {}   # statement symbol id -> True if SecurityInfo names it, False if marked '.OLD'
+
     def load_header(self, header):
         self._data[JSF.PERIOD][0] = header['period_start']
         self._data[JSF.PERIOD][1] = day_end(header['period_end'])
@@ -498,6 +505,7 @@ class StatementIBKR(StatementXML):
         for asset in assets:
             if asset['type'] == IBKR_AssetType.NotSupported:   # Skip not supported type of asset
                 continue
+            replaced = asset['symbol'].endswith(self.ReplacedSuffix)
             asset['symbol'] = asset['symbol'].removesuffix(self.ReplacedSuffix)
             if self._is_exchange(asset['exchange']):
                 asset['note'] = asset['exchange']
@@ -508,7 +516,8 @@ class StatementIBKR(StatementXML):
             if asset['type'] == JSF.ASSET_BOND:
                 asset['principal'] = int(asset['principal']) * IBKR_Asset.BondPrincipal if asset['principal'] else IBKR_Asset.BondPrincipal
             self.drop_extra_fields(asset,['maturity', 'exchange'])
-            self.asset_id(asset)
+            symbol_id = self.symbol_id(asset)
+            self._listed[symbol_id] = self._listed.get(symbol_id, False) or not replaced
             asset_count += 1
         logging.info(self.tr("Securities loaded: ") + f"{asset_count} ({len(assets)})")
 
@@ -1295,6 +1304,17 @@ class StatementIBKR(StatementXML):
         rights_id = [x['id'] for x in self._data[JSF.ASSETS] if x['type'] == JSF.ASSET_RIGHTS]
         for asset_id in rights_id:
             self.remove_asset(asset_id)
+        self._flag_superseded_symbols()
+
+    # SecurityInfo names the end-of-period ticker: a '.OLD' symbol, or one that only records name while SecurityInfo
+    # names another ticker in its currency, is imported as a superseded listing
+    def _flag_superseded_symbols(self):
+        for asset in self._data[JSF.ASSETS]:
+            live = {x.get('currency') for x in asset[JSF.SYMBOLS] if self._listed.get(x['id'], False)}
+            for symbol in asset[JSF.SYMBOLS]:
+                listed = self._listed.get(symbol['id'])
+                if listed is False or (listed is None and symbol.get('currency') in live):
+                    symbol['active'] = False
 
     # -----------------------------------------------------------------------------------------------------------------------
     @staticmethod

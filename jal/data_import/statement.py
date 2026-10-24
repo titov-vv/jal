@@ -768,7 +768,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 # is looked up in the table of known sources.
                 location = symbol['location'] if symbol.get('location') else \
                     self._sources.get(symbol.get('note', ''), AssetLocation.UNDEFINED)
-            symbol_id = db_asset.add_symbol(symbol['symbol'], currency, location_id=location)
+            symbol_id = db_asset.add_symbol(symbol['symbol'], currency, location_id=location,
+                                            active=symbol.get('active', True))
             self.set_mapped_id(JSF.SYMBOLS, symbol['id'], symbol_id)
             for key in self.ID_KEYS:
                 if symbol.get(key):

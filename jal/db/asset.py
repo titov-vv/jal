@@ -163,16 +163,18 @@ class JalAsset(JalDB):
 
     # The active listings of this asset, narrowed by currency and location as symbol() describes above. It is the
     # one place that narrowing is written, so everything that shows a listing - its ticker, its icon - shows the
-    # same one.
+    # same one. With no active listing in the currency the latest one there names the asset.
     def _active_listings(self, currency: int = None, location: int = None) -> list:
         if not self._data:
             return []
         currency = None if self._type == PredefinedAsset.Money else currency  # Money have one unique symbol
-        listings = [x for x in self._data['symbols'] if x['active'] == 1]
+        listings = self._data['symbols']
         if currency is not None:
             listings = [x for x in listings if x['currency_id'] == currency]
-            if location and [x for x in listings if x['location_id'] == location]:
-                listings = [x for x in listings if x['location_id'] == location]
+        active = [x for x in listings if x['active'] == 1]
+        listings = active if active else listings[-1:]   # symbols are loaded in id order
+        if currency is not None and location and [x for x in listings if x['location_id'] == location]:
+            listings = [x for x in listings if x['location_id'] == location]
         return listings
 
     # Id of the listing that names this asset for the given currency and location - the very row whose ticker
@@ -195,7 +197,8 @@ class JalAsset(JalDB):
 
     # Adds a new symbol to the asset (or returns the existing one's id if it already exists).
     # Returns the id of the resulting asset_symbol row.
-    def add_symbol(self, symbol: str, currency_id, location_id: int) -> int:
+    # active=False stores a superseded listing: the row is made or marked inactive and its siblings are left as they are.
+    def add_symbol(self, symbol: str, currency_id, location_id: int, active: bool = True) -> int:
         # A traditional security is a single listing no matter which venue a statement happens to name (the exchange
         # is informational), so it is matched by (asset, symbol, currency) with the location ignored and the
         # first-seen location kept. A crypto asset is a genuinely separate listing per chain and per exchange, so
@@ -210,16 +213,19 @@ class JalAsset(JalDB):
                               "WHERE asset_id=:asset_id AND symbol=:symbol AND currency_id IS :currency" + location_clause,
                               scope + [(":symbol", symbol)], named=True)
         if existing is None:  # Deactivate the superseded symbol(s) and create a new one
-            _ = self._exec("UPDATE asset_symbol SET active=0 "
-                           "WHERE asset_id=:asset_id AND currency_id IS :currency" + location_clause, scope)
+            if active:
+                _ = self._exec("UPDATE asset_symbol SET active=0 "
+                               "WHERE asset_id=:asset_id AND currency_id IS :currency" + location_clause, scope)
             query = self._exec(
-                "INSERT INTO asset_symbol (asset_id, symbol, currency_id, location_id) "
-                "VALUES (:asset_id, :symbol, :currency, :location_id)",
+                "INSERT INTO asset_symbol (asset_id, symbol, currency_id, location_id, active) "
+                "VALUES (:asset_id, :symbol, :currency, :location_id, :active)",
                 [(":asset_id", self._id), (":symbol", symbol), (":currency", currency_id),
-                 (":location_id", location_id)])
+                 (":location_id", location_id), (":active", int(active))])
             new_id = query.lastInsertId() if query is not None else 0
         else:
             new_id = existing['id']
+            if not active:
+                _ = self._exec("UPDATE asset_symbol SET active=0 WHERE id=:id", [(":id", new_id)])
         self._refresh_after_symbol_write()  # add_symbol may deactivate sibling symbols - refresh JalSymbol cache too
         return new_id
 
