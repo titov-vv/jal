@@ -39,7 +39,7 @@ def _open_basis(account_id, asset=ETH) -> Decimal:
     return sum((lot.open_qty() * lot.open_price(adjusted=True) for lot in lots), Decimal('0'))
 
 
-# The matching path (#47): a bridge arrival can't be recognized by the fetcher, so it lands as a plain incoming
+# The matching path: a bridge arrival can't be recognized by the fetcher, so it lands as a plain incoming
 # transfer; the user adopts it as the pending sending half's receiving leg, and the transfer is consumed.
 def test_adopt_incoming_transfer_as_receive_leg(accounts):
     create_trades(ACC1, [(d2t(210102), d2t(210102), ETH, 3.0, 1000.0, 0.0)])
@@ -70,7 +70,7 @@ def test_adopt_transfer_rejects_mismatch(accounts):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# An asset-changing pair is not a bridge but an exchange (#44): matching it creates a cross-chain Swap instead, which
+# An asset-changing pair is not a bridge but an exchange: matching it creates a cross-chain Swap instead, which
 # realizes the disposal of what was sent and opens what arrived on the destination account at those proceeds.
 
 # The usual shape: a recognized sending half plus the arriving asset, which the fetcher imported as a plain transfer.

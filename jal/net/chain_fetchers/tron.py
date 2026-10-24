@@ -17,7 +17,7 @@ from jal.net.web_request import WebRequest
 JAL_FETCHER_CLASS = "TronFetcher"
 
 # TronGrid is the reference public API of the Tron network. A personal key is required: keyless access was measured
-# at 2 requests before a sustained 429, while the free key allows 15 requests per second (CRYPTO_PATH decision #37).
+# at 2 requests before a sustained 429, while the free key allows 15 requests per second.
 _API_ROOT = "https://api.trongrid.io"
 _PAGE_SIZE = 200                  # Maximum the API accepts
 _MAX_PAGES = 100                  # Stops a runaway paging loop on an address with a very long history
@@ -163,7 +163,7 @@ class TronFetcher(ChainFetcher):
             self._skip(self.tr("token transfer with an unreadable amount"), tx_hash)
             return
         # The spam policy runs before anything is created: a rejected token becomes no asset, no symbol and no
-        # operation, so attacker-chosen names never reach the database (CRYPTO_PATH section 2.4).
+        # operation, so attacker-chosen names never reach the database.
         # Both hints below matter for a real token: without them an incoming transfer of an asset JAL can't price
         # is dust by definition, which would quarantine the very first USDT a wallet ever receives.
         counterparty = record.get('from', '') if incoming else record.get('to', '')

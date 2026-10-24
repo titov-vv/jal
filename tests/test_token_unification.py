@@ -231,7 +231,7 @@ def test_cross_chain_merge_targets_are_flagged(known_usdt):
 
 # ----------------------------------------------------------------------------------------------------------------------
 # A token renamed on its own contract (Arbitrum USDT -> USD₮0): the new ticker becomes a new live listing, the old one
-# is superseded and keeps its address, and the next fetch still finds the asset by address (ASSET_MODEL (8)).
+# is superseded and keeps its address, and the next fetch still finds the asset by address.
 def _fetch_tron_token(ticker):
     statement = TronFetcher()
     statement._account = JalAccount(1)

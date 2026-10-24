@@ -6,7 +6,7 @@ from bip_utils import Base58ChecksumError, Base58Decoder, Base58Encoder, Bip32Sl
 #
 # A modern wallet is not an address but a key tree: every payment received lands on a fresh address and every payment
 # sent returns the change to yet another one, so tracking a single address stops being right the moment the wallet is
-# used (CRYPTO_PATH note, the 'xpub' companion). What the user exports from the device is the ACCOUNT-LEVEL EXTENDED
+# used. What the user exports from the device is the ACCOUNT-LEVEL EXTENDED
 # PUBLIC KEY (m/purpose'/0'/account'), from which all of the account's addresses - and nothing else - can be computed
 # locally. No private material is involved: an extended PUBLIC key can derive addresses but can not spend from them.
 #
@@ -52,7 +52,7 @@ def is_extended_key(key: str) -> bool:
 # Exporters disagree on this: a wallet may hand out an 'xpub'-prefixed key for an account that is really BIP84, and
 # then the prefix says legacy '1...' while every address of the account is 'bc1q...'. Deriving the wrong form yields
 # perfectly valid addresses that simply belong to nobody, and the wallet looks empty rather than broken. The fetcher
-# therefore confirms the type against the chain and keeps this only as the order in which to try (decision #74).
+# therefore confirms the type against the chain and keeps this only as the order in which to try.
 def preferred_script_type(key: str) -> str:
     return _SLIP132_SCRIPT_TYPES.get(key[:4].lower(), ScriptType.P2WPKH)
 

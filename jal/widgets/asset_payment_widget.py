@@ -81,6 +81,7 @@ class AssetPaymentWidget(AbstractOperationDetails):
     def prepareNew(self, account_id):
         new_record = super().prepareNew(account_id)
         new_record.setValue("timestamp", now_ts())
+        new_record.setValue("timestamp_day_only", 0)
         new_record.setValue("ex_date", 0)
         new_record.setValue("type", 0)
         new_record.setValue("number", '')

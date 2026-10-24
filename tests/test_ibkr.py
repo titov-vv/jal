@@ -1008,7 +1008,7 @@ def test_ibkr_option_action_without_figi_halts_the_import(tmp_path, project_root
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# One listing traded under two tickers with no corporate action between them (ROADMAP D24). SecurityInfo names the
+# One listing traded under two tickers with no corporate action between them. SecurityInfo names the
 # ticker at the end of the period, so that listing stays live whatever order the records come in.
 def _import_ibkr(path):
     statement = StatementIBKR()

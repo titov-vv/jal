@@ -7,7 +7,7 @@ from jal.db.asset import JalAsset
 
 # ----------------------------------------------------------------------------------------------------------------------
 # A staking box is an account of the hidden PredefinedAccountType.Staking type - the container an asset was staked
-# into, kept as an account of its own. It is the deposit box (see jal/db/deposit.py, CRYPTO_PATH decisions #49-#51)
+# into, kept as an account of its own. It is the deposit box (see jal/db/deposit.py)
 # applied to the case the custody classification produces: a validator's stake account, a venue's staking balance or
 # a protocol contract that issues no receipt token holds coins that are still the user's, so what moved is a transfer
 # and the box is the end it moved to.

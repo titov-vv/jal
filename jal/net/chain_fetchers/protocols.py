@@ -87,7 +87,7 @@ _REGISTRY = {
 }
 
 # Why stake.link's PriorityPool is CUSTODY and not LENDING or REWARD (verified on-chain, 2026-07-22; it is the first
-# real sighting of the "container that issues no receipt token" case CRYPTO_PATH #56 deferred):
+# real sighting of the "container that issues no receipt token" case):
 #   0xddc796a6... is an ERC1967Proxy over `PriorityPool`. It takes LINK into a queue for Chainlink's native staking
 #   pool, which is usually full. When the queued LINK is finally staked, the pool does NOT send a receipt token back:
 #   it credits the account a number of SHARES through a merkle tree published to IPFS (`merkleRoot()` / `ipfsHash()`),

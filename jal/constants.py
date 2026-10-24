@@ -234,7 +234,7 @@ class PredefinedAccountType(PredefinedList, QObject):
     CEX = 8        # Centralized crypto exchange: assets are held by the exchange, not on a chain the user controls
     Staking = 9    # A staking "box": an ASSET held for the wallet by a container it was staked into - a validator's
                    # stake account, a venue's staking balance, a custody contract that issues no receipt token. The
-                   # same "a box is an account" pattern as Deposit (CRYPTO_PATH #49-#51), one step further: what it
+                   # same "a box is an account" pattern as Deposit, one step further: what it
                    # holds is an asset rather than money, so nothing here is denominated in the account's currency.
 
     # Types the user never picks and never creates by hand - the application writes such accounts itself (a deposit

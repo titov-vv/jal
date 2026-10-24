@@ -57,7 +57,7 @@ class _HaltImport(Exception):
 #
 #     delta = SUM(outputs paying an address of the wallet) - SUM(inputs spending one)
 #
-# and the shapes follow from it (decision #75):
+# and the shapes follow from it:
 #   - the wallet spent nothing (no input of its own)  ->  incoming transfer of the delta; the sender paid the fee
 #   - the wallet funded the transaction               ->  outgoing transfer of (-delta - fee), the fee being its own
 #   - ... and that amount comes out zero              ->  a move between the wallet's own addresses: only the miner
@@ -85,7 +85,7 @@ class BitcoinFetcher(ChainFetcher):
         self._state = {}       # the sync cursor, parsed: see _load_state()
 
     # ------------------------------------------------------------------------------------------------------------------
-    # The state carried between fetches, kept as JSON in the single SyncCursor slot (decision #12 - an HD wallet's
+    # The state carried between fetches, kept as JSON in the single SyncCursor slot (an HD wallet's
     # position is not one value):
     #   'script'    - the script type that was confirmed against the chain, so it is established only once
     #   'addresses' - {address: txid} of the NEWEST transaction imported for each address of the wallet that has any.
@@ -180,7 +180,7 @@ class BitcoinFetcher(ChainFetcher):
         return json.dumps(self._state)
 
     # The script type the extended key's addresses are in, confirmed against the chain rather than taken from the
-    # key's own prefix (decision #74).
+    # key's own prefix.
     #
     # SLIP-132 lets an exporter say the script type in the four version bytes of the key (xpub/ypub/zpub), but
     # exporters disagree: a BIP84 account is commonly handed out as a plain 'xpub', whose prefix then claims legacy

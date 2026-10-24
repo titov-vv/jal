@@ -2318,7 +2318,7 @@ class Transfer(FeeCarrier, LedgerTransaction):
     #
     # Zero is deliberately not a guess: it keeps the whole of a later disposal as profit rather than understating it,
     # and it is corrected the moment the transfer is settled and its source leg supplies the real basis. The negative
-    # Transfers entry is what makes the arrival visible as in-transit value of its own (see CRYPTO_PATH, the transfer
+    # Transfers entry is what makes the arrival visible as in-transit value of its own (the transfer
     # settlement invariant: positive = sent but not arrived, negative = arrived from an unknown source), so a settled
     # pair cancels exactly.
     def processPendingArrival(self, ledger, transfer_amount):
@@ -2577,7 +2577,7 @@ class CorporateAction(LedgerTransaction):
 # the other though they are economically identical, so a conversion recognizes nothing: the yield rides along as an
 # unrealized gain in the position and realizes only when the underlying is finally disposed of. Rewards that arrive
 # as a separate inflow with no counterpart (Merkl claims, staking payouts) are a different thing and stay
-# StakingReward payments. See CRYPTO_PATH decisions #52-#54.
+# StakingReward payments.
 class Conversion(FeeCarrier, LedgerTransaction):
     Whole = 0   # The conversion itself: the position leaves one asset and enters another at the same instant
     Fee = 2     # The gas paid for it - a row of its own, as it is for a transfer, a swap and a bridge
@@ -2751,7 +2751,7 @@ class Conversion(FeeCarrier, LedgerTransaction):
 #     currency). An in-kind fee (in_qty < out_qty) is disposed to Costs at basis.
 #   * send only (in_* NULL) -> a "pending half-bridge": the value is parked in the Transfers book and stays in transit
 #     until the arrival is matched in.
-# Gas and in-kind fees are disposed at cost basis (like the Swap gas fee) - realizing market P&L on them (#18) is a
+# Gas and in-kind fees are disposed at cost basis (like the Swap gas fee) - realizing market P&L on them is a
 # crypto-tax refinement deferred until crypto tax treatment is designed. Same-account bridges are forbidden.
 class Bridge(FeeCarrier, LedgerTransaction):
     Fee = 0

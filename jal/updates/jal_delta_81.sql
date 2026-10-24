@@ -2,7 +2,7 @@ BEGIN TRANSACTION;
 --------------------------------------------------------------------------------
 -- A LOT CARRIED THROUGH A CORPORATE ACTION KNOWS ITS ACQUISITION DATE
 --------------------------------------------------------------------------------
--- Per result: 1 keeps the original purchase date, 0 takes the action's date (TAX_PATH §2.12). Backfilled by the rule:
+-- Per result: 1 keeps the original purchase date, 0 takes the action's date. Backfilled by the rule:
 -- a split, a symbol change and a result on the action's own asset keep it; a spun-off company or a merger result don't
 ALTER TABLE asset_action_results ADD COLUMN keep_date INTEGER NOT NULL DEFAULT (0);
 UPDATE asset_action_results SET keep_date=1 WHERE EXISTS (

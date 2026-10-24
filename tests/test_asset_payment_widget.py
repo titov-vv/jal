@@ -44,3 +44,14 @@ def test_the_editor_stores_the_fee_of_a_payment(account):
     assert JalDB._read_to_list("SELECT account_id, symbol_id, amount FROM fees WHERE operation_id=:oid",
                                [(":oid", oid)]) == [[ACCOUNT, '', '0.75']]
     assert nth_operation(LedgerTransaction.AssetPayment, 1).fee() == Decimal('0.75')
+
+
+# A payment typed in from scratch is saved - the new record states every NOT NULL column, its day-only flag too
+def test_a_new_payment_is_saved(account):
+    parent = QWidget()          # a parentless dialog is collected in a way that aborts the process
+    widget = AssetPaymentWidget(parent=parent)
+    widget.createNew(account_id=ACCOUNT)
+    for field, value in (('type', 1), ('symbol_id', AAPL), ('amount', '10')):
+        widget.model.setData(widget.model.index(0, widget.model.fieldIndex(field)), value)
+    widget._save()
+    assert JalDB._read("SELECT count(*) FROM asset_payments WHERE timestamp_day_only=0") == 1

@@ -41,7 +41,7 @@ def test_swap_realizes_pnl_and_opens_new_lot(prepare_db_fifo):
 
 
 # Swap-realized deals show up in the Deals report but must stay out of the (Trade-only) tax reports until crypto
-# tax treatment is designed - decision #26.
+# tax treatment is designed.
 def test_swap_deals_are_in_deals_report_not_in_tax(prepare_db_fifo):
     create_stocks([('A', 'Asset A'), ('B', 'Asset B')], currency_id=2)
     t_buy, t_swap = d2t(220101), d2t(220201)
@@ -223,7 +223,7 @@ def test_cross_chain_swap_gas_is_paid_on_the_source(chains):
 
 
 # Accounts kept in different currencies: the proceeds are converted with the FX rate of the arrival date (as a bridge
-# converts a carried cost basis - decision #27)
+# converts a carried cost basis)
 def test_cross_chain_swap_converts_proceeds_between_currencies(chains):
     t_buy, t_out, t_in = d2t(220101), d2t(220201), d2t(220203)
     create_quotes(A, 2, [(t_out, 150.0)])

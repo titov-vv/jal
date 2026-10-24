@@ -61,3 +61,14 @@ def test_stock_dividend_price_is_validated(account, monkeypatch):
     assert not widget._validated()
 
 
+
+
+# An income typed in from scratch is saved - the new record states every NOT NULL column, its day-only flag too
+def test_a_new_income_is_saved(account):
+    parent = QWidget()          # a parentless dialog is collected in a way that aborts the process
+    widget = AssetIncomeWidget(parent=parent)
+    widget.createNew(account_id=ACCOUNT)
+    for field, value in (('type', AssetIncome.StockDividend), ('symbol_id', AAPL), ('amount', '10'), ('price', '100')):
+        widget.model.setData(widget.model.index(0, widget.model.fieldIndex(field)), value)
+    widget._save()
+    assert JalDB._read("SELECT count(*) FROM asset_incomes WHERE timestamp_day_only=0") == 1

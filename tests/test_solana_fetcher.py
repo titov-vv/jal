@@ -137,7 +137,7 @@ def test_transactions_that_dont_touch_the_wallet_are_skipped(fetcher, sol_wallet
 
 
 # An arriving asset is imported as an ordinary incoming transfer even when it is the far leg of a cross-chain move:
-# a fetcher cannot tell one from any other receipt, so the user pairs it with its sending half afterwards (#47).
+# a fetcher cannot tell one from any other receipt, so the user pairs it with its sending half afterwards.
 def test_bridge_arrival_is_a_plain_incoming_transfer(fetcher, sol_wallet):
     data = fetcher.fetch(sol_wallet)
     assert not data.get(JSF.BRIDGES)          # nothing is guessed to be a bridge leg
@@ -160,7 +160,7 @@ def test_gas_is_charged_only_when_the_wallet_paid_it(fetcher, sol_wallet):
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Native staking: a stake account holds the wallet's lamports while they earn, so both directions are plain
-# transfers to an account JAL doesn't know (the container pattern, CRYPTO_PATH #50/#61).
+# transfers to an account JAL doesn't know (the container pattern).
 def test_staking_deposit_is_an_outgoing_transfer(fetcher, sol_wallet):
     data = fetcher.fetch(sol_wallet)
     staked = [tx for tx in _recorded(fetcher) if tx['type'] == 'STAKE_SOL']

@@ -57,7 +57,7 @@ def test_branches_are_disjoint(seed):
 
 
 # A key re-serialized with different version bytes is the same key: SLIP-132 prefixes say what the exporter thought
-# the script type was, and JAL normalizes them away because they can't be trusted (decision #74). The addresses must
+# the script type was, and JAL normalizes them away because they can't be trusted. The addresses must
 # not depend on which of them the key arrived with.
 def test_slip132_prefix_does_not_change_the_addresses(seed):
     zpub = account_key(seed, Bip84, Bip84Coins.BITCOIN)
@@ -110,7 +110,7 @@ def test_addresses_match_the_published_standard(branch, index, expected):
 
 
 # The account key a real exporter hands over may carry 'xpub' version bytes although the account is BIP84. That it
-# still derives the standard's own addresses is what a hardware wallet's display confirms by hand (decision #74).
+# still derives the standard's own addresses is what a hardware wallet's display confirms by hand.
 def test_published_addresses_survive_a_mislabelled_prefix():
     as_xpub = Base58Encoder.CheckEncode(XPUB_VERSION + Base58Decoder.CheckDecode(BIP84_ACCOUNT_KEY)[4:])
     assert as_xpub[:4] == 'xpub'

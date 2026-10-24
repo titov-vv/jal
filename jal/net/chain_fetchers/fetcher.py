@@ -17,7 +17,7 @@ from jal.db.token_blacklist import normalize_address
 # ----------------------------------------------------------------------------------------------------------------------
 # Tags that mark a transfer which stands in for an operation the fetcher could record only in part, so that the ledger
 # itself says what is still to be done with it. Several classifications end in "the user finishes this by hand"
-# (CRYPTO_PATH #47/#48/#56/#61) and a plain transfer is exactly what they all look like, so without a mark nothing but
+# and a plain transfer is exactly what they all look like, so without a mark nothing but
 # a bare counterparty address distinguished them from an ordinary payment.
 #
 # The tag is deliberately NOT translated, while the sentence that follows it is: it has to stay the same string in
@@ -34,7 +34,7 @@ class TransferMark:
 # A fetcher is a Statement that is filled from an HTTP API instead of a file: it builds the very same JSF structure
 # and hands it to match_db_ids() + import_into_db(), so it inherits id matching, asset/symbol creation, the
 # interactive "which account did this come from" dialog and the transactional import. Everything a fetcher adds is
-# HTTP access and the classification of raw chain data - see CRYPTO_PATH note, section 3.2.
+# HTTP access and the classification of raw chain data.
 #
 # A fetcher is NOT registered in Statements (that registry is file-dialog driven and asks for a filename); it is
 # listed in FETCHERS below and reached through Import -> Blockchain.
@@ -189,8 +189,7 @@ class ChainFetcher(Statement):
     #
     # Judged on the RAW COIN AMOUNT against a threshold picked per chain, not on the transfer's fiat value: a value
     # comparison depends on a locally cached price history that a freshly added wallet never has, which used to make
-    # the check inert exactly when it mattered most (see the discussion that replaced it - CRYPTO_PATH). A dust
-    # verdict no longer drops the transfer either: real native coin can never be a scam contract the way a token can,
+    # the check inert exactly when it mattered most. A dust verdict no longer drops the transfer either: real native coin can never be a scam contract the way a token can,
     # so it is always imported as an AssetIncome(DustAttack) instead of an ordinary Transfer - see the fetchers that
     # call this.
     def _is_native_dust(self, amount: Decimal, known_counterparty: bool = False) -> bool:
@@ -242,7 +241,7 @@ class ChainFetcher(Statement):
         # two currencies takes its destination cost basis from 'deposit', which a fetcher cannot know and leaves at
         # 0 - and a 0 there rescales every transferred lot to a zero basis (Transfer.processAssetTransfer). That is
         # a pre-existing hazard of a fetched transfer, reachable today by picking such an account in the dialog; it
-        # is not made silent here until the basis can actually be computed (see LONG_TERM_IMPROVEMENTS).
+        # is not made silent here until the basis can actually be computed.
         if wallet.currency() != self._account.currency():
             return 0
         if wallet.id() in self._counterparty_accounts:
@@ -333,15 +332,15 @@ class ChainFetcher(Statement):
         far_side = self._counterparty_account(counterparty)
         accounts = [far_side, 1, 1] if incoming else [1, far_side, 1]
         # The tx hash goes into 'number' because that is the column a Transfer has. Operations designed later for
-        # crypto carry a field named 'tx_hash' instead (CRYPTO_PATH decision #31); a Transfer predates that.
+        # crypto carry a field named 'tx_hash' instead; a Transfer predates that.
         #
         # 'deposit' is left at 0, not set to the transferred amount. For an asset transfer 'withdrawal' carries the
         # quantity for both legs; 'deposit' is the cost basis in the destination account's currency and is read only
         # when the two accounts differ in currency (see Transfer.processAssetTransfer). A fetcher cannot know that
         # basis - the destination account is filled in by the user during import - so it leaves it 0 for the user to
         # complete, matching the pre-crypto behaviour. Setting it to the quantity put a TRX/token count where a
-        # currency amount belongs and showed a nonsensical "cost basis" in the widget. See LONG_TERM_IMPROVEMENTS
-        # for the open question of computing it automatically where a quote exists.
+        # currency amount belongs and showed a nonsensical "cost basis" in the widget. Computing it
+        # automatically where a quote exists is still an open question.
         transfer = {"id": self._next_id(JSF.TRANSFERS), "account": accounts, "symbol": [symbol_id, symbol_id],
                     "timestamp": timestamp, "withdrawal": amount, "deposit": Decimal('0'),
                     "fee": fee, "number": tx_hash, "description": note}

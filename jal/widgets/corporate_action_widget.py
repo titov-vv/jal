@@ -1,7 +1,7 @@
 import logging
 from decimal import Decimal
 
-from PySide6.QtCore import Qt, Slot, QStringListModel, QByteArray
+from PySide6.QtCore import Qt, Slot, QStringListModel, QByteArray, QPersistentModelIndex
 from PySide6.QtWidgets import QMessageBox, QHeaderView
 from PySide6.QtSql import QSqlTableModel
 from PySide6.QtGui import QFont
@@ -10,7 +10,7 @@ from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.constants import Setup
 from jal.widgets.helpers import restore_columns
 from jal.widgets.icons import JalIcon
-from jal.widgets.delegates import WidgetMapperDelegateBase, LookupSelectorDelegate, FloatDelegate
+from jal.widgets.delegates import WidgetMapperDelegateBase, LookupSelectorDelegate, FloatDelegate, BoolDelegate
 from jal.db.view_model import JalViewModel
 from jal.db.helpers import localize_decimal, db_row2dict, now_ts
 from jal.db.operations import LedgerTransaction, CorporateAction
@@ -41,6 +41,7 @@ class CorporateActionWidget(AbstractOperationDetails):
         self.symbol_delegate = LookupSelectorDelegate(self, SymbolsListModel, SymbolListDialog, self)
         self.float_delegate = FloatDelegate(2)
         self.percent_delegate = FloatDelegate(2, percent=True)
+        self.bool_delegate = BoolDelegate(self.ui.results_table)
 
         self.ui.add_button.setIcon(JalIcon[JalIcon.ADD])
         self.ui.del_button.setIcon(JalIcon[JalIcon.REMOVE])
@@ -60,7 +61,7 @@ class CorporateActionWidget(AbstractOperationDetails):
 
         self.mapper.setItemDelegate(CorporateActionWidgetDelegate(self.mapper))
 
-        self.results_model = ResultsModel(self.ui.results_table, "asset_action_results")
+        self.results_model = ResultsModel(self.ui.results_table, "asset_action_results", self._keeps_date)
         self.results_model.setEditStrategy(QSqlTableModel.OnManualSubmit)
         self.ui.results_table.setModel(self.results_model)
 
@@ -79,6 +80,7 @@ class CorporateActionWidget(AbstractOperationDetails):
         self.ui.results_table.setItemDelegateForColumn(2, self.symbol_delegate)
         self.ui.results_table.setItemDelegateForColumn(3, self.float_delegate)
         self.ui.results_table.setItemDelegateForColumn(4, self.percent_delegate)
+        self.ui.results_table.setItemDelegateForColumn(5, self.bool_delegate)
 
         self.model.select()
         self.results_model.select()
@@ -91,11 +93,18 @@ class CorporateActionWidget(AbstractOperationDetails):
     @Slot()
     def addResult(self):
         new_record = self.results_model.record()
+        new_record.setGenerated("id", False)   # left to the database, or a second new row repeats the first's id
         new_record.setValue("qty", 0)
         new_record.setValue("value_share", 0)
+        new_record.setValue("keep_date", 0)
         if not self.results_model.insertRecord(-1, new_record):
             logging.fatal(self.tr("Failed to add new record: ") + self.results_model.lastError().text())
             return
+
+    # The default of the 'Keeps date' flag for a result on the given symbol, by the action as it is edited now
+    def _keeps_date(self, result_symbol_id) -> bool:
+        fields = db_row2dict(self.model, 0)
+        return CorporateAction.keeps_date(fields['type'], fields['symbol_id'], result_symbol_id)
 
     @Slot()
     def delResult(self):
@@ -167,6 +176,7 @@ class CorporateActionWidget(AbstractOperationDetails):
     def prepareNew(self, account_id):
         new_record = super().prepareNew(account_id)
         new_record.setValue("timestamp", now_ts())
+        new_record.setValue("timestamp_day_only", 0)
         new_record.setValue("number", '')
         new_record.setValue("account_id", account_id)
         new_record.setValue("type", 0)
@@ -182,7 +192,7 @@ class CorporateActionWidget(AbstractOperationDetails):
             child_records.append(self.results_model.record(row))
         self.results_model.setFilter(f"asset_action_results.action_id = 0")
         for record in reversed(child_records):
-            record.setNull("id")
+            record.setGenerated("id", False)
             record.setNull("action_id")
             assert self.results_model.insertRows(0, 1)
             self.results_model.setRecord(0, record)
@@ -197,9 +207,38 @@ class CorporateActionWidget(AbstractOperationDetails):
 
 # ----------------------------------------------------------------------------------------------------------------------
 class ResultsModel(JalViewModel):
-    def __init__(self, parent_view, table_name):
+    def __init__(self, parent_view, table_name, keeps_date):
         super().__init__(parent_view, table_name)
-        self._columns = ["id", "action_id", self.tr("Asset"), self.tr("Qty"), self.tr("Share, %")]
+        self._columns = ["id", "action_id", self.tr("Asset"), self.tr("Qty"), self.tr("Share, %"), self.tr("Keeps date")]
+        self._keeps_date = keeps_date   # the rule's default for a result symbol
+        self._set_by_hand = set()       # flags of new rows that the user has toggled
+        self._inserting = False
+
+    def insertRecord(self, row, record):
+        self._inserting = True   # the fields of a new record are written through setData() too
+        try:
+            return super().insertRecord(row, record)
+        finally:
+            self._inserting = False
+
+    def headerData(self, section, orientation, role=Qt.DisplayRole):
+        if orientation == Qt.Horizontal and role == Qt.ToolTipRole and section == self.fieldIndex("keep_date"):
+            return self.tr("Checked: the received asset keeps the original purchase date.\n"
+                           "Unchecked: it is acquired on the date of this corporate action.")
+        return super().headerData(section, orientation, role)
+
+    # A new row takes the default of 'Keeps date' when its asset is chosen, unless the flag was set by hand
+    def setData(self, index, value, role=Qt.EditRole):
+        if not super().setData(index, value, role):
+            return False
+        if role == Qt.EditRole and not self.record(index.row()).value(self._key_field):
+            flag = self.index(index.row(), self.fieldIndex("keep_date"))
+            if index.column() == flag.column():
+                if not self._inserting:
+                    self._set_by_hand.add(QPersistentModelIndex(flag))
+            elif index.column() == self.fieldIndex("symbol_id") and QPersistentModelIndex(flag) not in self._set_by_hand:
+                super().setData(flag, int(self._keeps_date(value)))
+        return True
 
     def footerData(self, section, role=Qt.DisplayRole):
         if role == Qt.DisplayRole:
@@ -230,5 +269,6 @@ class ResultsModel(JalViewModel):
         self._view.setColumnHidden(1, True)
         self._view.setColumnWidth(3, 100)
         self._view.setColumnWidth(4, 100)
+        self._view.setColumnWidth(5, 100)
         self._view.horizontalHeader().setSectionResizeMode(2, QHeaderView.Stretch)
         restore_columns(self._view, Setup.COLUMNS_STATE_PREFIX)

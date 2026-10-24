@@ -67,7 +67,7 @@ def test_taxes_pt(tmp_path, data_path, prepare_db_taxes):
     create_pt_scenario()
 
     # Hand check: amount_eur = round(amount * rate, 2); profit_eur = c_amount_eur - (o_amount_eur + round(fees_eur, 2))
-    # Frozen as is: Shares totals sum 'income_eur'/'spending_eur' that no row has (TAX_PATH P1); SPLT's o_price is the
+    # Frozen as is: Shares totals sum 'income_eur'/'spending_eur' that no row has; SPLT's o_price is the
     # pre-split 200 beside qty 20; T05 is dropped by its 2025 settlement though portugal.py cites CIRS a.44 for trade date
     tax_report = TaxesPortugal().prepare_tax_report(2024, 1)
     json_decimal2float(tax_report)

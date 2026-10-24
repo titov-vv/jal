@@ -296,7 +296,7 @@ END;
 -- The whole ledger cache (including trades_opened) must be rebuilt so slice ids are assigned to every open trade.
 INSERT OR REPLACE INTO settings(name, value) VALUES ('RebuildDB', 1);
 --------------------------------------------------------------------------------
--- TERM DEPOSITS BECOME ACCOUNTS ("a box is an account", CRYPTO_PATH decisions #49-#51).
+-- TERM DEPOSITS BECOME ACCOUNTS ("a box is an account").
 --
 -- The 'TermDeposit' operation is retired: a deposit is a container that holds a balance over time, has an owner and
 -- takes money in and out in any order - i.e. an account with extra steps. Every term deposit becomes an 'accounts'
@@ -439,7 +439,7 @@ DROP TABLE IF EXISTS term_deposits;
 
 --------------------------------------------------------------------------------
 -- New operation: conversions - a same-account exchange of one asset into another that PRESERVES COST BASIS and
--- recognizes no income (CRYPTO_PATH decisions #52-#54). It covers wrapping (ETH -> WETH), supplying to and
+-- recognizes no income. It covers wrapping (ETH -> WETH), supplying to and
 -- withdrawing from a lending protocol (USDG -> aEthUSDG) and liquid staking - all cases where the wallet keeps the
 -- same economic position, only in the shape of a receipt token. Unlike a Swap nothing is disposed of at market
 -- value: the quantity may change (a rebasing receipt token folds accrued yield into it) while the basis does not,

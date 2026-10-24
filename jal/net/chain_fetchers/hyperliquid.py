@@ -41,14 +41,14 @@ class _HaltImport(Exception):
 # ----------------------------------------------------------------------------------------------------------------------
 # Fetches the history of a Hyperliquid account from the HyperCore 'info' API and turns it into JSF.
 #
-# Hyperliquid is treated as an ordinary blockchain wallet (CRYPTO_PATH decision #66): HyperCore is its own L1, an
+# Hyperliquid is treated as an ordinary blockchain wallet: HyperCore is its own L1, an
 # account is addressed by a normal 20-byte key, and ChainFetcher asks for nothing more than a Statement filled over
 # HTTP and found by an account attribute. What made this the right model rather than an exchange account is that a
 # Trade settles in the *account currency* and an account currency must be a Money asset - so an "HL account
 # denominated in USDC" would make USDC money globally, and since a transfer carries one symbol for the whole
 # operation, the account's commonest movement (USDC arriving from an Arbitrum wallet that holds it as a crypto
 # asset) could not be expressed at all. Spot fills are therefore Swaps, not Trades, which also keeps them out of
-# the tax reports until the crypto tax track is designed (#26).
+# the tax reports until the crypto tax track is designed.
 #
 # Two things differ from a real chain and simplify this fetcher:
 #  - there is no gas. A spot fill pays a fee in a token that varies (and is not necessarily one of the two being
@@ -60,7 +60,7 @@ class _HaltImport(Exception):
 # registry - names every token that has ever been listed, worthless airdrops included, so it identifies a token but
 # does NOT vouch for it. The real account received a listed token worth $0 blasted at it by a stranger, so the spam
 # filter judges an incoming token by the USD value the venue itself reports for the transfer, not by registry
-# membership. See CRYPTO_PATH decision #67.
+# membership.
 #
 # The account handled here is spot-only. Perpetuals would need an operation JAL doesn't have (positions, funding,
 # margin), so every record that belongs to them halts the import instead of being approximated.
@@ -262,8 +262,7 @@ class HyperliquidFetcher(ChainFetcher):
     # driven by the value the venue itself reports for the transfer: an incoming token worth less than the dust
     # threshold, from a stranger, is quarantined exactly as on any chain. 'usd_value' is that figure, in USD (the
     # currency the venue and every crypto quote in JAL are denominated in); a fill's acquired token needs none
-    # because a swap the user made is never dust (from_swap). A manual blacklist is still honoured. See CRYPTO_PATH
-    # decision #67.
+    # because a swap the user made is never dust (from_swap). A manual blacklist is still honoured.
     def _accept_token(self, token: dict, amount: Decimal, incoming: bool, from_swap: bool, usd_value=None) -> bool:
         candidate = TokenCandidate(location_id=self.location_id, address=token['tokenId'],
                                    symbol=token.get('name', ''), name=token.get('fullName') or '',
@@ -339,7 +338,7 @@ class HyperliquidFetcher(ChainFetcher):
 
     # USDC arriving over the Arbitrum bridge. It is imported as a plain incoming transfer whose counterparty JAL
     # doesn't know, so the import asks which account it came from - and that is what finally closes the pending
-    # bridge half the Arbitrum wallet produced when it sent the money (CRYPTO_PATH #47/#48).
+    # bridge half the Arbitrum wallet produced when it sent the money.
     def _process_bridge_deposit(self, delta: dict, timestamp: int, tx_hash: str) -> None:
         amount = self._amount(delta.get('usdc'), self.tr("deposit amount"))
         token = self._token_of('USDC')
@@ -437,7 +436,7 @@ class HyperliquidFetcher(ChainFetcher):
 
     # ------------------------------------------------------------------------------------------------------------------
     # Staking. HYPE moved into the staking balance keeps belonging to the user and is neither sold nor converted -
-    # it simply sits somewhere else while it earns. That is the container pattern (CRYPTO_PATH #50/#61/#63), so both
+    # it simply sits somewhere else while it earns. That is the container pattern, so both
     # directions are plain transfers whose counterparty JAL doesn't know and the import asks which account the
     # staking balance is.
     #
@@ -445,7 +444,7 @@ class HyperliquidFetcher(ChainFetcher):
     # split into the principal - a transfer back out of the box - and a staking reward for the excess. When the
     # deposit predates the sync cursor there is nothing to measure against and the whole amount is booked as
     # returned principal, never as income: inventing income out of a returned deposit is the one error that must
-    # not happen here (#61).
+    # not happen here.
     def _process_staking(self, delta: dict, timestamp: int, tx_hash: str) -> None:
         token = self._token_of(delta.get('token', 'HYPE'))
         amount = self._amount(delta.get('amount'), self.tr("staking amount"))
@@ -484,7 +483,7 @@ class HyperliquidFetcher(ChainFetcher):
         self._add_payment(JSF.PAYMENT_STAKING_REWARD, timestamp, self._token_asset(token), amount, tx_hash,
                           note=self.tr("Reward"))
 
-    # The staking state survives between fetches in the account's own data, as one JSON row (the pattern of #12).
+    # The staking state survives between fetches in the account's own data, as one JSON row, as Bitcoin's HD state is.
     # Amounts are stored as strings so that a Decimal never passes through a float.
     def _load_staked(self) -> dict:
         stored = self._account.get_data(AccountData.StakeAccounts) or ''

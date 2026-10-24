@@ -8,7 +8,9 @@ from jal.db.db import JalDB, JalDBError
 from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount
 from jal.db.operations import CorporateAction, LedgerError
-from tests.helpers import d2t, dt2t, create_stocks, create_quotes, create_trades, create_corporate_actions
+from tests.helpers import d2t, dt2t, create_stocks, create_quotes, create_trades, create_corporate_actions, symbol_id_for
+from PySide6.QtWidgets import QWidget
+from jal.widgets.corporate_action_widget import CorporateActionWidget
 
 
 def test_spin_off(prepare_db_fifo):
@@ -208,7 +210,7 @@ def test_unsupported_action_on_short_position_halts_the_ledger(prepare_db_fifo, 
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Delta 81 backfills which results keep the original purchase date (TAX_PATH §2.12), replayed from the shipped file on
+# Delta 81 backfills which results keep the original purchase date, replayed from the shipped file on
 # a database taken back to version 80 by hand
 def test_delta_81_backfills_which_results_keep_the_date(prepare_db_fifo, project_root):
     create_stocks([('A', 'A'), ('B', 'B'), ('C', 'C'), ('D', 'D')], currency_id=2)   # id = 4..7
@@ -228,3 +230,52 @@ def test_delta_81_backfills_which_results_keep_the_date(prepare_db_fifo, project
                                 "ORDER BY a.timestamp, s.asset_id")
     assert [tuple(x) for x in flags] == [('split', 4, 1), ('redomiciliation', 5, 1),
                                          ('spin-off', 5, 1), ('spin-off', 6, 0), ('merger', 7, 0)]
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The editor: a new result takes the rule's 'Keeps date' when its asset is chosen, a flag toggled by hand stays as set,
+# and a stored result is never recomputed
+def test_editor_defaults_keeps_date_of_a_new_result(prepare_db_fifo):
+    create_stocks([('A', 'A SHARE'), ('B', 'B SHARE'), ('C', 'C SHARE')], currency_id=2)  # id = 4, 5, 6
+    parent = QWidget()
+    widget = CorporateActionWidget(parent)
+    widget.createNew(account_id=1)
+    widget.model.setData(widget.model.index(0, widget.model.fieldIndex("type")), CorporateAction.SpinOff)
+    widget.model.setData(widget.model.index(0, widget.model.fieldIndex("symbol_id")), symbol_id_for(4))
+    results = widget.results_model
+    symbol, flag = results.fieldIndex("symbol_id"), results.fieldIndex("keep_date")
+    widget.addResult()
+    widget.addResult()
+    results.setData(results.index(0, symbol), symbol_id_for(4))   # the parent keeps its date
+    results.setData(results.index(1, symbol), symbol_id_for(5))   # the spun-off company doesn't
+    assert [results.data(results.index(x, flag)) for x in (0, 1)] == [1, 0]
+
+    results.setData(results.index(1, flag), 1)                    # set by hand ...
+    results.setData(results.index(1, symbol), symbol_id_for(6))   # ... survives another asset
+    assert results.data(results.index(1, flag)) == 1
+
+    for row, share in ((0, 0.9), (1, 0.1)):
+        results.setData(results.index(row, results.fieldIndex("qty")), 10)
+        results.setData(results.index(row, results.fieldIndex("value_share")), share)
+    widget._save()
+    assert JalDB._read_to_list("SELECT symbol_id, keep_date FROM asset_action_results ORDER BY id") == \
+           [[symbol_id_for(4), 1], [symbol_id_for(6), 1]]
+
+    widget.set_id(JalDB._read("SELECT oid FROM asset_actions"))
+    results.setData(results.index(1, symbol), symbol_id_for(5))   # a stored result keeps what it has
+    assert results.data(results.index(1, flag)) == 1
+
+
+# A copy of an action with two results is saved as a new action with two new results
+def test_editor_copies_an_action_with_two_results(prepare_db_fifo):
+    create_stocks([('A', 'A SHARE'), ('B', 'B SHARE')], currency_id=2)  # id = 4, 5
+    create_corporate_actions(1, [(d2t(210601), CorporateAction.SpinOff, 4, 100.0, 'Spin-off',
+                                  [(4, 100.0, 0.9), (5, 5.0, 0.1)])])
+    parent = QWidget()
+    widget = CorporateActionWidget(parent)
+    widget.set_id(JalDB._read("SELECT oid FROM asset_actions"))
+    widget.copyNew()
+    widget._save()
+    assert JalDB._read("SELECT count(*) FROM asset_actions") == 2
+    assert JalDB._read_to_list("SELECT symbol_id, keep_date FROM asset_action_results ORDER BY id") == \
+           [[symbol_id_for(4), 1], [symbol_id_for(5), 0]] * 2

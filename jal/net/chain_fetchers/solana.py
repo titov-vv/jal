@@ -27,7 +27,7 @@ _MAX_PAGES = 100                   # Stops a runaway paging loop on an address w
 _LAMPORTS = Decimal('10') ** 9     # 1 SOL = 10^9 lamports, the unit every native amount is returned in
 
 # The native staking program. Its address is quoted from this project's own fetched history rather than from memory,
-# the way every registry address is (CRYPTO_PATH decision #58).
+# the way every registry address is.
 _STAKE_PROGRAM = 'Stake11111111111111111111111111111111111111'
 
 # Helius' semantic labels for what the stake program did. They are used ONLY inside a transaction already proven to
@@ -200,7 +200,7 @@ class SolanaFetcher(ChainFetcher):
         # What is left is a plain transfer: assets sent out, or received from the outside world. An arriving asset is
         # deliberately imported as an ordinary incoming transfer even when it is the far leg of a cross-chain move
         # (this wallet's Mayan bridge deliveries are exactly that) - a fetcher cannot tell one from an ordinary
-        # receipt, so the user pairs it with its sending half in the matcher instead (CRYPTO_PATH decision #47).
+        # receipt, so the user pairs it with its sending half in the matcher instead.
         self._emit_transfers(timestamp, deltas, signature, gas, own)
 
     # Emits the wallet's movements as plain transfers, one per asset. The gas rides one of them the way a broker's
@@ -221,7 +221,7 @@ class SolanaFetcher(ChainFetcher):
     # ------------------------------------------------------------------------------------------------------------------
     # Native staking. A stake account is an address of its own that holds the wallet's lamports while they earn: the
     # wallet keeps the withdraw authority throughout, so nothing is bought, sold or converted - the coins simply sit
-    # somewhere else for a while. That is the container pattern (CRYPTO_PATH #50/#61), so both directions are plain
+    # somewhere else for a while. That is the container pattern, so both directions are plain
     # transfers whose counterparty JAL doesn't know, and the import asks which account the stake account stands for.
     #
     # A withdrawal returns MORE than was staked, the difference being the yield earned inside the container. The
@@ -259,7 +259,7 @@ class SolanaFetcher(ChainFetcher):
             if staked is None:
                 # The deposit into this stake account happened before JAL started following the wallet, so there is
                 # nothing to measure the yield against. The whole amount is booked as a return of principal, never as
-                # income: inventing income out of a returned deposit is the one error that must not happen here (#61).
+                # income: inventing income out of a returned deposit is the one error that must not happen here.
                 principal, reward = withdrawn, Decimal('0')
                 self._skip(self.tr("stake withdrawal whose deposit predates the sync cursor - yield not separated"),
                            signature)
@@ -294,8 +294,8 @@ class SolanaFetcher(ChainFetcher):
                 return entry.get('account', '')
         raise _HaltImport(self.tr("staking transaction with no matching stake account"))
 
-    # The staking state survives between fetches in the account's own data, as one JSON row (the way decision #12
-    # keeps Bitcoin's HD state). Amounts are stored as strings so that a Decimal never passes through a float.
+    # The staking state survives between fetches in the account's own data, as one JSON row (the way
+    # Bitcoin's HD state is kept). Amounts are stored as strings so that a Decimal never passes through a float.
     def _load_stakes(self) -> dict:
         stored = self._account.get_data(AccountData.StakeAccounts) or ''
         if not stored:

@@ -456,7 +456,7 @@ class EVMFetcher(ChainFetcher):
                 continue
             supplied = self._supplied.get(key)
             if supplied is None:
-                # Never income out of a returned deposit (CRYPTO_PATH #61)
+                # Never income out of a returned deposit
                 self._skip(self.tr("withdrawal whose deposit predates the sync cursor - interest not separated"),
                            tx_hash)
                 continue

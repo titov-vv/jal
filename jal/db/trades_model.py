@@ -177,7 +177,7 @@ class ClosedTradesModel(ReportTreeModel):
 
     def prepareData(self):
         self.beginResetModel()
-        # The Deals report shows swap-realized deals too; tax reports keep the Trade-only default (decision #26)
+        # The Deals report shows swap-realized deals too; tax reports keep the Trade-only default
         self._trades = JalAccount(self._account_id).closed_trades_list(
             close_otypes=(LedgerTransaction.Trade, LedgerTransaction.Swap))
         self._trades = [x for x in self._trades if self._begin <= x.close_operation().timestamp() <= self._end]

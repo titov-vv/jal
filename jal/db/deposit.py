@@ -6,7 +6,7 @@ from jal.db.asset import JalAsset
 
 
 # A term deposit is an account of the hidden PredefinedAccountType.Deposit type - a "box" the bank keeps the money in
-# for a term (CRYPTO_PATH decision #49). Money is put in and taken out with ordinary transfers and the interest is an
+# for a term. Money is put in and taken out with ordinary transfers and the interest is an
 # ordinary income operation, so there is no deposit-specific operation and nothing here touches the ledger: this class
 # only reads a box's figures back and creates/closes boxes for the Deposits window.
 #
