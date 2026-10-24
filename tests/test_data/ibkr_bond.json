@@ -38,7 +38,8 @@
      "symbol": "X 6 1/4 03/15/26",
      "currency": 1,
      "isin": "US912909AN84",
-     "cusip": "912909AN8"
+     "cusip": "912909AN8",
+     "conid": "310454529"
     }
    ]
   },
@@ -54,7 +55,8 @@
      "symbol": "X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26",
      "currency": 1,
      "isin": "US912CALAN84",
-     "cusip": "912CALAN8"
+     "cusip": "912CALAN8",
+     "conid": "511991171"
     }
    ]
   },
@@ -69,7 +71,8 @@
      "currency": 1,
      "note": "NASDAQ",
      "isin": "US0378331005",
-     "cusip": "037833100"
+     "cusip": "037833100",
+     "conid": "265598"
     }
    ]
   }

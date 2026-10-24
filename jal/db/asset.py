@@ -212,7 +212,8 @@ class JalAsset(JalDB):
     # Adds a new symbol to the asset (or returns the existing one's id if it already exists).
     # Returns the id of the resulting asset_symbol row.
     # active=False stores a superseded listing: the row is made or marked inactive and its siblings are left as they are.
-    def add_symbol(self, symbol: str, currency_id, location_id: int, active: bool = True) -> int:
+    # 'identifiers' {SymbolId: value} pick among rows of one ticker: a row whose identifiers all differ is another period.
+    def add_symbol(self, symbol: str, currency_id, location_id: int, active: bool = True, identifiers=None) -> int:
         currency_id = self.listing_currency(currency_id, location_id)
         if not currency_id or JalAsset(currency_id).type() != PredefinedAsset.Money:
             raise ValueError(f"A listing has to be kept in a currency: {symbol} {currency_id}")
@@ -226,9 +227,10 @@ class JalAsset(JalDB):
         location_clause = " AND location_id=:location_id" if scoped else ""
         if scoped:
             scope.append((":location_id", location_id))
-        existing = self._read("SELECT id FROM asset_symbol "
-                              "WHERE asset_id=:asset_id AND symbol=:symbol AND currency_id=:currency" + location_clause +
-                              " ORDER BY active DESC, id DESC LIMIT 1", scope + [(":symbol", symbol)], named=True)
+        rows = self._read_to_list("SELECT id FROM asset_symbol "
+                                  "WHERE asset_id=:asset_id AND symbol=:symbol AND currency_id=:currency" + location_clause +
+                                  " ORDER BY active DESC, id DESC", scope + [(":symbol", symbol)])
+        existing = self._same_period(rows, {k: v for k, v in (identifiers or {}).items() if v})
         if existing is None:  # Deactivate the superseded symbol(s) and create a new one
             if active:
                 _ = self._exec("UPDATE asset_symbol SET active=0 "
@@ -240,11 +242,28 @@ class JalAsset(JalDB):
                  (":location_id", location_id), (":active", int(active))])
             new_id = query.lastInsertId() if query is not None else 0
         else:
-            new_id = existing['id']
+            new_id = existing
             if not active:
                 _ = self._exec("UPDATE asset_symbol SET active=0 WHERE id=:id", [(":id", new_id)])
         self._refresh_after_symbol_write()  # add_symbol may deactivate sibling symbols - refresh JalSymbol cache too
         return new_id
+
+    # The first of 'rows' (listing ids, the preferred first) whose identifiers agree with 'identifiers' - one of them
+    # equal and none different - else the first that has none of them, else None
+    def _same_period(self, rows: list, identifiers: dict):
+        compatible = []
+        for row in rows:
+            stored = {(k[1]): v for k, v in self._data['ID'].items() if k[0] == row and k[1] in identifiers}
+            if any(stored[k] != identifiers[k] for k in stored):
+                continue
+            if stored:
+                return row
+            compatible.append(row)
+        return compatible[0] if compatible else None
+
+    # Values of the given identifier type on any listing of this asset, live or superseded
+    def identifiers_of(self, id_type: int) -> list:
+        return self._get_id(id_type)
 
     # Attaches an identifier of given type (see SymbolId) to a specific, caller-supplied symbol id.
     # Never guesses which symbol an identifier belongs to - the caller must know it already.
@@ -696,16 +715,13 @@ class JalAsset(JalDB):
                 return aid
             # Unknown ISIN - fall through to the remaining criteria (callers like _match_asset_symbol
             # guard against ISIN conflicts themselves after the match)
-        if data['reg_number']:
-            aid = cls._read("SELECT s.asset_id FROM symbol_ids i LEFT JOIN asset_symbol s ON s.id=i.symbol_id WHERE id_type=:datatype AND id_value=:reg_code",
-                            [(":datatype", SymbolId.REG_CODE), (":reg_code", data['reg_number'])], check_unique=True)
-            if aid is not None:
-                return aid
-        if data['cusip']:
-            aid = cls._read("SELECT s.asset_id FROM symbol_ids i LEFT JOIN asset_symbol s ON s.id=i.symbol_id WHERE id_type=:datatype AND id_value=:cusip",
-                            [(":datatype", SymbolId.CUSIP), (":cusip", data['cusip'])], check_unique=True)
-            if aid is not None:
-                return aid
+        for key, id_type in (('reg_number', SymbolId.REG_CODE), ('cusip', SymbolId.CUSIP)):
+            if data[key]:   # several listings of one asset may carry it - it names an asset only while one carries it
+                assets = cls._read_to_list("SELECT DISTINCT s.asset_id FROM symbol_ids i LEFT JOIN asset_symbol s "
+                                           "ON s.id=i.symbol_id WHERE id_type=:datatype AND id_value=:value",
+                                           [(":datatype", id_type), (":value", data[key])])
+                if len(assets) == 1:
+                    return assets[0]
         if data['figi']:   # A FIGI outlives a change of ISIN, so it names an asset only while one asset carries it
             assets = cls._read_to_list("SELECT DISTINCT s.asset_id FROM symbol_ids i LEFT JOIN asset_symbol s ON s.id=i.symbol_id WHERE id_type=:datatype AND id_value=:figi",
                                        [(":datatype", SymbolId.FIGI), (":figi", data['figi'])])

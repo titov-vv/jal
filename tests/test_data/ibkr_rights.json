@@ -56,7 +56,8 @@
      "currency": 1,
      "symbol": "698",
      "note": "SEHK",
-     "isin": "KYG8917X1218"
+     "isin": "KYG8917X1218",
+     "conid": "42452779"
     }
    ]
   },
@@ -71,7 +72,8 @@
      "symbol": "IBKR",
      "note": "NASDAQ",
      "isin": "US45841N1072",
-     "cusip": "45841N107"
+     "cusip": "45841N107",
+     "conid": "43645865"
     }
    ]
   },
@@ -84,7 +86,8 @@
      "currency": 1,
      "symbol": "2965",
      "note": "CORPACT",
-     "isin": "KYG8917X1RTS"
+     "isin": "KYG8917X1RTS",
+     "conid": "507759265"
     }
    ]
   }

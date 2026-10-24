@@ -163,6 +163,7 @@ class StatementIBKR(StatementXML):
                                           ('description', 'name', str, None),
                                           ('isin', 'isin', str, ''),
                                           ('figi', 'figi', str, ''),
+                                          ('conid', 'conid', str, ''),
                                           ('cusip', 'cusip', str, ''),
                                           ('expiry', 'expiry', datetime, 0),
                                           ('maturity', 'maturity', datetime, 0),
@@ -396,6 +397,8 @@ class StatementIBKR(StatementXML):
                 asset_data['cusip'] = xml_element.attrib['cusip']
             if xml_element.attrib.get('figi', ''):
                 asset_data['figi'] = xml_element.attrib['figi']
+            if xml_element.attrib.get('conid', ''):
+                asset_data['conid'] = xml_element.attrib['conid']
             if self._is_exchange(xml_element.attrib.get('listingExchange', '')):
                 asset_data['note'] = xml_element.attrib['listingExchange']
             if xml_element.tag == 'CashTransaction' and 'isin' not in asset_data and 'cusip' not in asset_data:

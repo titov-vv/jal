@@ -35,7 +35,8 @@
     {
      "id": 2,
      "currency": 1,
-     "symbol": "TSLAn"
+     "symbol": "TSLAn",
+     "conid": "131067756"
     }
    ]
   },
@@ -48,7 +49,8 @@
     {
      "id": 3,
      "currency": 1,
-     "symbol": "MUn"
+     "symbol": "MUn",
+     "conid": "120549262"
     }
    ]
   }

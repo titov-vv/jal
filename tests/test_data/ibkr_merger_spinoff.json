@@ -38,7 +38,8 @@
       "currency": 1,
       "note": "NASDAQ",
       "isin": "US64129T2078",
-      "cusip": "64129T207"
+      "cusip": "64129T207",
+      "conid": "262067284"
      }
     ]
    },
@@ -53,7 +54,8 @@
       "currency": 1,
       "note": "NASDAQ",
       "isin": "US71678J1007",
-      "cusip": "71678J100"
+      "cusip": "71678J100",
+      "conid": "458378565"
      }
     ]
    },
@@ -68,7 +70,8 @@
       "currency": 1,
       "note": "PINK",
       "isin": "US87167T1025",
-      "cusip": "87167T102"
+      "cusip": "87167T102",
+      "conid": "459432739"
      }
     ]
    }
@@ -183,7 +186,8 @@
       "currency": 1,
       "note": "NASDAQ",
       "isin": "US87167T2015",
-      "cusip": "87167T201"
+      "cusip": "87167T201",
+      "conid": "491895737"
      },
      {
       "id": 6,
@@ -192,7 +196,8 @@
       "note": "PINK",
       "isin": "US87167T2015",
       "cusip": "87167T201",
-      "active": false
+      "active": false,
+      "conid": "491895737"
      }
     ]
    },
@@ -208,7 +213,8 @@
       "note": "PINK",
       "isin": "US87167T1025",
       "cusip": "87167T102",
-      "active": false
+      "active": false,
+      "conid": "459432739"
      }
     ]
    },
@@ -223,7 +229,8 @@
       "currency": 1,
       "note": "NASDAQ",
       "isin": "US71678J2096",
-      "cusip": "71678J209"
+      "cusip": "71678J209",
+      "conid": "600801571"
      }
     ]
    },
@@ -239,7 +246,8 @@
       "note": "NASDAQ",
       "isin": "US71678J1007",
       "cusip": "71678J100",
-      "active": false
+      "active": false,
+      "conid": "458378565"
      }
     ]
    }

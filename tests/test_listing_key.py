@@ -13,6 +13,7 @@ from jal.db.icon import JalIcons
 from jal.db.account import JalAccountCreator
 from jal.db.operations import LedgerTransaction
 from jal.widgets.symbol_dialog import SymbolDialog
+from jal.data_import.statement import Statement, JSF
 
 RUB, USD, EUR = 1, 2, 3
 ADDRESS = "0xdac17f958d2ee523a2206206994597c13d831ec7"
@@ -125,3 +126,47 @@ def test_symbol_editor_refuses_two_active_twins(prepare_db, monkeypatch):
     dialog.accept()
     assert len(warnings) == 1 and warnings[0].endswith(': RSC')
     assert JalSymbol(superseded).active() is False
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# A record's identifiers belong to its own listing; a FIGI also reaches the listings of the same ISIN (one period)
+def test_identifiers_stay_with_their_listing(prepare_db):
+    statement = Statement()
+    statement._data = {JSF.ASSETS: [{'id': 1, 'type': JSF.ASSET_STOCK, JSF.SYMBOLS: [
+        {'id': 1, 'symbol': 'OLD', 'currency': 2, 'isin': 'US0000000001'}]}]}
+    statement.update_asset_data(1, {'symbol': 'NEW', 'currency': 2, 'isin': 'US0000000002', 'conid': '2'})
+    statement.update_asset_data(1, {'symbol': 'ALT', 'currency': 2, 'isin': 'US0000000001', 'figi': 'BBG000000001'})
+    symbols = {x['symbol']: x for x in statement._data[JSF.ASSETS][0][JSF.SYMBOLS]}
+    assert symbols['OLD'] == {'id': 1, 'symbol': 'OLD', 'currency': 2, 'isin': 'US0000000001', 'figi': 'BBG000000001'}
+    assert symbols['NEW'] == {'id': 2, 'symbol': 'NEW', 'currency': 2, 'isin': 'US0000000002', 'conid': '2'}
+    assert symbols['ALT']['figi'] == 'BBG000000001' and 'conid' not in symbols['ALT']
+
+
+# A registration code on two listings of one asset still names that asset
+def test_reg_code_on_two_listings_finds_the_asset(prepare_db):
+    asset = JalAssetCreator(PredefinedAsset.Stock, 'Some Company').commit().id()
+    for currency in (RUB, USD):
+        JalDB._exec("INSERT INTO symbol_ids (symbol_id, id_type, id_value) VALUES (:s, :t, '1-01-00001-A')",
+                    [(":s", _listing(asset, 'SC', currency, AssetLocation.MOEX_EXCHANGE)), (":t", SymbolId.REG_CODE)],
+                    commit=True)
+    JalDB().invalidate_cache()
+    assert JalAsset.find({'reg_number': '1-01-00001-A'}).id() == asset
+
+
+# Listings of one ticker are told apart by their identifiers: a record finds its own period, live or superseded, and an
+# ISIN no listing carries is a new period
+def test_add_symbol_picks_the_period_by_identifiers(prepare_db):
+    asset = JalAssetCreator(PredefinedAsset.Stock, 'Reverse Split Corp').commit().id()
+    old = _listing(asset, 'RSC', USD, AssetLocation.UNDEFINED, active=0)
+    new = _listing(asset, 'RSC', USD, AssetLocation.UNDEFINED, active=1)
+    for listing, isin, conid in ((old, 'US0000000001', '100'), (new, 'US0000000002', '200')):
+        for id_type, value in ((SymbolId.ISIN, isin), (SymbolId.CONID, conid)):
+            JalDB._exec("INSERT INTO symbol_ids (symbol_id, id_type, id_value) VALUES (:s, :t, :v)",
+                        [(":s", listing), (":t", id_type), (":v", value)], commit=True)
+    JalDB().invalidate_cache()
+    add = lambda identifiers: JalAsset(asset).add_symbol('RSC', USD, AssetLocation.UNDEFINED, identifiers=identifiers)
+    assert add({SymbolId.ISIN: 'US0000000001'}) == old
+    assert add({SymbolId.CONID: '200'}) == new
+    assert add({}) == new
+    third = add({SymbolId.ISIN: 'US0000000003'})
+    assert third not in (old, new) and JalSymbol(third).active() and not JalSymbol(new).active()

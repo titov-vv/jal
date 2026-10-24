@@ -37,7 +37,8 @@
      "currency": 1,
      "symbol": "DNA WS",
      "note": "NYSE",
-     "isin": "US37611X1182"
+     "isin": "US37611X1182",
+     "conid": "515416407"
     }
    ]
   },
@@ -52,7 +53,8 @@
      "symbol": "DNA",
      "note": "NYSE",
      "isin": "US37611X1000",
-     "cusip": "37611X100"
+     "cusip": "37611X100",
+     "conid": "514485024"
     }
    ]
   },
@@ -65,7 +67,8 @@
      "id": 4,
      "currency": 1,
      "symbol": "SRNGU",
-     "isin": "KYG8354H1002"
+     "isin": "KYG8354H1002",
+     "conid": "473315580"
     }
    ]
   }

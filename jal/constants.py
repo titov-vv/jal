@@ -349,6 +349,7 @@ class SymbolId(PredefinedList, QObject):
     # chain. It is kept because DeFiLlama indexes most Hyperliquid tokens by it - see llama_coin_key().
     HL_EVM_ADDRESS = 12
     AVAX_ADDRESS = 13  # Avalanche C-chain contract address
+    CONID = 14  # Interactive Brokers contract id - it names one listing, not the security
 
     def __init__(self):
         super().__init__()
@@ -366,7 +367,8 @@ class SymbolId(PredefinedList, QObject):
             self.TRX_ADDRESS: self.tr("TRX address"),
             self.HL_ADDRESS: self.tr("HL token id"),
             self.HL_EVM_ADDRESS: self.tr("HyperEVM address"),
-            self.AVAX_ADDRESS: self.tr("AVAX address")
+            self.AVAX_ADDRESS: self.tr("AVAX address"),
+            self.CONID: self.tr("IBKR conid")
         }
 
 

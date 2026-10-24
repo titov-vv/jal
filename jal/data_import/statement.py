@@ -142,11 +142,11 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     # Outcomes of the cross-chain token prompt (see _resolve_cross_chain_token): merge into an existing asset,
     # create a brand-new asset, or discard (blacklist) the token.
     TOKEN_MERGE, TOKEN_CREATE_NEW, TOKEN_DISCARD = 1, 2, 3
-    ID_KEYS = ['isin', 'reg_number', 'cusip', 'figi']   # security identifiers that symbol records may carry
+    ID_KEYS = ['isin', 'reg_number', 'cusip', 'figi', 'conid']   # identifiers that symbol records may carry
     # FIGI is stored for any asset, but an asset is found by it only when the record has no other identifier
     MATCH_KEYS = ['isin', 'reg_number', 'cusip']
     _identifier_types = {'isin': SymbolId.ISIN, 'reg_number': SymbolId.REG_CODE, 'cusip': SymbolId.CUSIP,
-                         'figi': SymbolId.FIGI}
+                         'figi': SymbolId.FIGI, 'conid': SymbolId.CONID}
     _asset_types = {
         JSF.ASSET_MONEY: PredefinedAsset.Money,
         JSF.ASSET_STOCK: PredefinedAsset.Stock,
@@ -492,12 +492,11 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 db_asset = JalAsset.find(search_data)
                 db_id = db_asset.id()
                 if db_id:
-                    if db_asset.symbol_id(SymbolId.ISIN) and isin and db_asset.symbol_id(SymbolId.ISIN) != isin:
-                        continue  # verify that we don't have ISIN mismatch
-                    if db_asset.symbol_id(SymbolId.REG_CODE) and reg_number and db_asset.symbol_id(SymbolId.REG_CODE) != reg_number:
-                        continue  # verify that we don't have reg.number mismatch
-                    if db_asset.symbol_id(SymbolId.CUSIP) and cusip and db_asset.symbol_id(SymbolId.CUSIP) != cusip:
-                        continue  # verify that we don't have CUSIP mismatch
+                    # an identifier the asset has on none of its listings means another security
+                    if any(value and db_asset.identifiers_of(id_type) and value not in db_asset.identifiers_of(id_type)
+                           for id_type, value in ((SymbolId.ISIN, isin), (SymbolId.REG_CODE, reg_number),
+                                                  (SymbolId.CUSIP, cusip))):
+                        continue
                     self.set_mapped_id(JSF.ASSETS, asset['id'], db_id)
                     break
 
@@ -771,8 +770,9 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 if not JalAsset.listing_currency(currency, location):
                     raise Statement_ImportError(self.tr("The ledger has no currency this venue is quoted in: ")
                                                 + f"{symbol['symbol']} ({AssetLocation().get_name(location)})")
+            period = {self._identifier_types[k]: symbol.get(k) for k in ('isin', 'reg_number', 'cusip', 'conid')}
             symbol_id = db_asset.add_symbol(symbol['symbol'], currency, location_id=location,
-                                            active=symbol.get('active', True))
+                                            active=symbol.get('active', True), identifiers=period)
             self.set_mapped_id(JSF.SYMBOLS, symbol['id'], symbol_id)
             for key in self.ID_KEYS:
                 if symbol.get(key):
@@ -1357,8 +1357,10 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                                                         "it can't be matched by one: ") + f"{db_asset.name()}: {tickers}")
                 symbol = {'id': self._next_symbol_id(), 'symbol': tickers[0] if tickers else '',
                           'currency': asset_info['currency']}
-                if db_asset.symbol_id(SymbolId.ISIN):
-                    symbol['isin'] = db_asset.symbol_id(SymbolId.ISIN)
+                listing_isin = JalSymbol(db_asset.listing_id(self._db_currency_id(asset_info['currency']))).identifier(
+                    SymbolId.ISIN)
+                if listing_isin:
+                    symbol['isin'] = listing_isin
                 self._uppend_keys_from(symbol, asset_info, ['reg_number', 'cusip'])
                 asset = {'id': self._next_id(JSF.ASSETS), 'type': JSF.convert_predefined_asset_type(db_asset.type()),
                          'name': db_asset.name(), JSF.SYMBOLS: [symbol]}
@@ -1430,24 +1432,24 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     def update_asset_data(self, asset_id, asset_info):
         asset = self._find_in_list(self._data[JSF.ASSETS], "id", asset_id)
         self._uppend_keys_from(asset, asset_info, ['name', 'country', 'expiry', 'principal'])
-        # Identifiers describe the security, not the listing - every symbol of the asset carries
-        # them (existing values are never overwritten)
-        for symbol in asset[JSF.SYMBOLS]:
-            self._uppend_keys_from(symbol, asset_info, self.ID_KEYS)
-        # Add new asset symbol if information provided
-        if 'symbol' in asset_info:
-            symbol_exists = False
+        if 'symbol' not in asset_info:   # no listing named - the identifiers go to every symbol of the asset
             for symbol in asset[JSF.SYMBOLS]:
-                if symbol['symbol'] == asset_info['symbol'] and (
-                        'currency' not in asset_info or symbol.get('currency') == asset_info['currency']):
-                    symbol_exists = True
-            if not symbol_exists:
-                new_symbol = {"id": self._next_symbol_id()}
-                self._uppend_keys_from(new_symbol, asset_info,
-                                       ['symbol', 'currency', 'note', 'alt_symbol', 'location'] + self.ID_KEYS)
-                for sibling in asset[JSF.SYMBOLS]:   # inherit security identifiers already known for the asset
-                    self._uppend_keys_from(new_symbol, sibling, self.ID_KEYS)
-                asset[JSF.SYMBOLS].append(new_symbol)
+                self._uppend_keys_from(symbol, asset_info, self.ID_KEYS)
+            return
+        own = [x for x in asset[JSF.SYMBOLS] if x['symbol'] == asset_info['symbol'] and (
+            'currency' not in asset_info or x.get('currency') == asset_info['currency'])]
+        if own:
+            own = own[0]
+        else:
+            own = {"id": self._next_symbol_id()}
+            self._uppend_keys_from(own, asset_info, ['symbol', 'currency', 'note', 'alt_symbol', 'location'])
+            asset[JSF.SYMBOLS].append(own)
+        # A record's identifiers belong to its own listing (existing values are never overwritten); a FIGI also to
+        # the listings of the same ISIN, as they are one period of the security
+        self._uppend_keys_from(own, asset_info, self.ID_KEYS)
+        for symbol in asset[JSF.SYMBOLS]:
+            if symbol is not own and own.get('isin') and symbol.get('isin') == own['isin']:
+                self._uppend_keys_from(symbol, asset_info, ['figi'])
 
     # Removes asset and all links to it from self._data (operations link assets via symbol records)
     def remove_asset(self, asset_id):

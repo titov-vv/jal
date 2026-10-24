@@ -111,7 +111,8 @@
      "currency": 2,
      "note": "PINK",
      "isin": "US30051D2053",
-     "cusip": "30051D205"
+     "cusip": "30051D205",
+     "conid": "403540222"
     }
    ]
   },
@@ -126,7 +127,8 @@
      "currency": 2,
      "note": "NASDAQ",
      "isin": "US0231351067",
-     "cusip": "023135106"
+     "cusip": "023135106",
+     "conid": "3691937"
     }
    ]
   }

@@ -37,7 +37,8 @@
      "currency": 1,
      "note": "PINK",
      "isin": "US90187E5015",
-     "cusip": "90187E501"
+     "cusip": "90187E501",
+     "conid": "657142858"
     }
    ]
   },
@@ -53,7 +54,8 @@
      "note": "PINK",
      "isin": "US90187E4026",
      "cusip": "90187E402",
-     "active": false
+     "active": false,
+     "conid": "558667700"
     }
    ]
   },
@@ -69,7 +71,8 @@
      "symbol": "912796ZY8",
      "currency": 1,
      "isin": "US912796ZY88",
-     "cusip": "912796ZY8"
+     "cusip": "912796ZY8",
+     "conid": "610571310"
     }
    ]
   }

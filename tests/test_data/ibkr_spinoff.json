@@ -37,7 +37,8 @@
      "symbol": "GE",
      "note": "NYSE",
      "isin": "US3696041033",
-     "cusip": "369604103"
+     "cusip": "369604103",
+     "conid": "7516"
     }
    ]
   },
@@ -51,7 +52,8 @@
      "currency": 1,
      "symbol": "WAB",
      "note": "NYSE",
-     "cusip": "929740108"
+     "cusip": "929740108",
+     "conid": "661633"
     }
    ]
   }
