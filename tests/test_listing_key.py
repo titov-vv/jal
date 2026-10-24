@@ -1,3 +1,4 @@
+import json
 import logging
 from decimal import Decimal
 
@@ -225,3 +226,90 @@ def test_unknown_venue_name_is_logged_once(data_path, prepare_db_fifo, caplog):
            ["Trading venue isn't known to JAL, its listings are kept without one: PINK"]
     assert {JalSymbol(x).location() for x in JalDB._read_to_list("SELECT id FROM asset_symbol WHERE symbol LIKE 'BRTX%'")} \
            == {AssetLocation.UNDEFINED}
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# A corporate action that only renames what is held keeps one asset; the importer reads it from a statement like this
+def _rename_statement(tmp_path, action_type, figis=('', ''), names=('Old Name Corp', 'New Name Corp')) -> Statement:
+    symbols = []
+    for n, (ticker, isin, figi) in enumerate((('OLDT', 'US0000000011', figis[0]), ('NEWT', 'US0000000029', figis[1]))):
+        symbol = {'id': 3 + n, 'symbol': ticker, 'currency': 2, 'isin': isin}
+        if figi:
+            symbol['figi'] = figi
+        symbols.append(symbol)
+    data = {'period': [d2t(240101), d2t(241231)],
+            'accounts': [{'id': 1, 'number': 'U7654321', 'currency': 2, 'precision': 10}],
+            'assets': [{'id': 2, 'type': 'money', 'name': 'USD', 'symbols': [{'id': 2, 'symbol': 'USD'}]},
+                       {'id': 3, 'type': 'stock', 'name': names[0], 'symbols': [symbols[0]]},
+                       {'id': 4, 'type': 'stock', 'name': names[1], 'symbols': [symbols[1]]}],
+            'trades': [{'id': 1, 'account': 1, 'symbol': 3, 'timestamp': d2t(240301), 'settlement': d2t(240301),
+                        'number': 'B1', 'quantity': 10, 'price': 1, 'fee': 0}],
+            'corporate_actions': [{'id': 1, 'type': action_type, 'account': 1, 'timestamp': d2t(240601), 'number': 'C1',
+                                   'symbol': 3, 'quantity': 10, 'outcome': [{'symbol': 4, 'quantity': 10, 'share': 1}],
+                                   'description': 'OLDT -> NEWT'}]}
+    path = tmp_path / 'rename.json'
+    path.write_text(json.dumps(data))
+    statement = Statement()
+    statement.load(str(path))
+    statement.validate_format()
+    return statement
+
+
+def _import(statement: Statement) -> list:
+    statement.match_db_ids()
+    statement.import_into_db()
+    return [x for x in JalDB._read_to_list("SELECT DISTINCT asset_id FROM asset_symbol WHERE symbol IN ('OLDT', 'NEWT')")]
+
+
+@pytest.mark.parametrize("action_type, figis, same_security, assets", [
+    ('split', ('', ''), False, 1),                                        # a split is never a merger
+    ('symbol_change', ('BBG000000001', 'BBG000000001'), False, 1),        # equal FIGIs: a rename, not asked
+    ('symbol_change', ('', ''), True, 1),                                 # no FIGIs: the user says it is a rename
+    ('symbol_change', ('', ''), False, 2),                                # ... or that it isn't
+    ('split', ('BBG000000001', 'BBG000000002'), True, 2)])                # different FIGIs: two assets, whatever
+def test_rename_keeps_one_asset(prepare_db_fifo, tmp_path, action_type, figis, same_security, assets):
+    statement = _rename_statement(tmp_path, action_type, figis)
+    statement._identity_for_tests = same_security
+    assert len(_import(statement)) == assets
+
+
+# An asset the ledger keeps already stays apart: a stored pair isn't merged by the next import of the same action
+def test_stored_pair_is_not_merged(prepare_db_fifo, tmp_path):
+    statement = _rename_statement(tmp_path, 'symbol_change')
+    assert len(_import(statement)) == 2
+    statement = _rename_statement(tmp_path, 'symbol_change')
+    statement._identity_for_tests = True
+    assert len(_import(statement)) == 2
+
+
+# A stored asset is renamed at a rename only when the user agrees; a new asset takes the newer name
+@pytest.mark.parametrize("agree", [False, True])
+def test_rename_offers_the_new_name(prepare_db_fifo, tmp_path, agree):
+    stored = JalAssetCreator(PredefinedAsset.Stock, 'Old Name Corp').commit().id()
+    JalDB._exec("INSERT INTO symbol_ids (symbol_id, id_type, id_value) VALUES (:s, :t, 'US0000000011')",
+                [(":s", _listing(stored, 'OLDT', USD, AssetLocation.UNDEFINED)), (":t", SymbolId.ISIN)], commit=True)
+    JalDB().invalidate_cache()
+    statement = _rename_statement(tmp_path, 'split')
+    statement._rename_for_tests = agree
+    assert _import(statement) == [stored]
+    assert JalAsset(stored).name() == ('New Name Corp' if agree else 'Old Name Corp')
+
+    fresh = _rename_statement(tmp_path, 'split', names=('Old Fresh', 'New Fresh'))
+    fresh._data['assets'][1]['symbols'][0]['isin'] = 'US0000000037'      # a security the ledger doesn't have yet
+    fresh._data['assets'][2]['symbols'][0]['isin'] = 'US0000000045'
+    for asset in fresh._data['assets'][1:]:
+        asset['symbols'][0]['symbol'] += 'X'
+    fresh.match_db_ids()
+    fresh.import_into_db()
+    assert JalDB._read("SELECT full_name FROM assets WHERE id=(SELECT asset_id FROM asset_symbol WHERE symbol='NEWTX')") \
+           == 'New Fresh'
+
+
+# A new listing of an asset shows the icon the asset already has
+def test_new_listing_takes_the_asset_icon(prepare_db):
+    asset = JalAssetCreator(PredefinedAsset.Stock, 'Some Company').commit().id()
+    old = _listing(asset, 'OLDT', USD, AssetLocation.NYSE_EXCHANGE)
+    JalIcons.store(IconOwner.Symbol, old, b'logo', IconSource.User)
+    JalDB().invalidate_cache()
+    new = JalAsset(asset).add_symbol('NEWT', USD, AssetLocation.NYSE_EXCHANGE)
+    assert JalIcons.image(IconOwner.Symbol, new) == b'logo' and JalIcons.source(IconOwner.Symbol, new) == IconSource.User

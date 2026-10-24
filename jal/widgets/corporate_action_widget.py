@@ -14,6 +14,7 @@ from jal.widgets.delegates import WidgetMapperDelegateBase, LookupSelectorDelega
 from jal.db.view_model import JalViewModel
 from jal.db.helpers import localize_decimal, db_row2dict, now_ts
 from jal.db.operations import LedgerTransaction, CorporateAction
+from jal.db.symbol import JalSymbol
 from jal.db.common_models import AccountListModel
 from jal.db.asset_models import SymbolsListModel
 from jal.widgets.reference_dialogs import AccountListDialog
@@ -130,8 +131,9 @@ class CorporateActionWidget(AbstractOperationDetails):
             QMessageBox().warning(self, self.tr("Wrong data"), constraints[fields['type']][1], QMessageBox.Ok)
             return False
         # Split should have the same asset before and after the operation
-        if fields['type'] == CorporateAction.Split and fields['symbol_id'] != results[0]['symbol_id']:
-            QMessageBox().warning(self, self.tr("Wrong data"), self.tr("You can't change asset during Split"), QMessageBox.Ok)   # FIXME this condition doesn't work for split in options -> to be implemented via asset_id
+        if fields['type'] == CorporateAction.Split and \
+                JalSymbol(fields['symbol_id']).asset().id() != JalSymbol(results[0]['symbol_id']).asset().id():
+            QMessageBox().warning(self, self.tr("Wrong data"), self.tr("You can't change asset during Split"), QMessageBox.Ok)
             return False
         # Everything after corporate action should add up to 100% of initial asset value
         total_share = sum([Decimal(x['value_share']) for x in results])

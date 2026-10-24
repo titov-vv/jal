@@ -3,13 +3,14 @@ from decimal import Decimal
 import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo
-from jal.constants import BookAccount, Setup
+from jal.constants import BookAccount, Setup, AssetLocation
 from jal.db.db import JalDB, JalDBError
 from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount
 from jal.db.operations import CorporateAction, LedgerError
 from tests.helpers import d2t, dt2t, create_stocks, create_quotes, create_trades, create_corporate_actions, symbol_id_for
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QWidget, QMessageBox
+from jal.db.asset import JalAsset
 from jal.widgets.corporate_action_widget import CorporateActionWidget
 
 
@@ -279,3 +280,23 @@ def test_editor_copies_an_action_with_two_results(prepare_db_fifo):
     assert JalDB._read("SELECT count(*) FROM asset_actions") == 2
     assert JalDB._read_to_list("SELECT symbol_id, keep_date FROM asset_action_results ORDER BY id") == \
            [[symbol_id_for(4), 1], [symbol_id_for(5), 0]] * 2
+
+
+# The editor accepts a split whose result is another listing of the same asset, and refuses one onto another asset
+def test_editor_split_stays_inside_one_asset(prepare_db_fifo, monkeypatch):
+    warnings = []
+    monkeypatch.setattr(QMessageBox, 'warning', lambda *args: warnings.append(args[3]) or QMessageBox.Ok)
+    create_stocks([('A', 'A SHARE'), ('B', 'B SHARE')], currency_id=2)  # id = 4, 5
+    new_listing = JalAsset(4).add_symbol('A2', 2, AssetLocation.NASDAQ_EXCHANGE)
+    parent = QWidget()
+    widget = CorporateActionWidget(parent)
+    widget.createNew(account_id=1)
+    widget.model.setData(widget.model.index(0, widget.model.fieldIndex("type")), CorporateAction.Split)
+    widget.model.setData(widget.model.index(0, widget.model.fieldIndex("symbol_id")), symbol_id_for(4))
+    widget.addResult()
+    results = widget.results_model
+    for field, value in (('symbol_id', new_listing), ('qty', 10), ('value_share', 1)):
+        results.setData(results.index(0, results.fieldIndex(field)), value)
+    assert widget._validated() and warnings == []
+    results.setData(results.index(0, results.fieldIndex('symbol_id')), symbol_id_for(5))
+    assert not widget._validated() and warnings == ["You can't change asset during Split"]

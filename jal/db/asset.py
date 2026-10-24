@@ -1,7 +1,7 @@
 import logging
 import math
 from decimal import Decimal, InvalidOperation
-from jal.constants import AssetLocation, AssetData, BookAccount, PredefinedAsset, SymbolId
+from jal.constants import AssetLocation, AssetData, BookAccount, PredefinedAsset, SymbolId, IconOwner
 from jal.db.db import JalDB
 from jal.db.clock import local_moment, local_reading
 from jal.db.helpers import format_decimal, day_begin, now_ts
@@ -236,6 +236,11 @@ class JalAsset(JalDB):
                 [(":asset_id", self._id), (":symbol", symbol), (":currency", currency_id),
                  (":location_id", location_id), (":active", int(active))])
             new_id = query.lastInsertId() if query is not None else 0
+            _ = self._exec("INSERT INTO icons (entity, item_id, image, source) SELECT entity, :new, image, source "
+                           "FROM icons WHERE entity=:owner AND length(image)>0 AND item_id IN "
+                           "(SELECT id FROM asset_symbol WHERE asset_id=:asset_id AND id<>:new) "
+                           "ORDER BY item_id DESC LIMIT 1",
+                           [(":new", new_id), (":owner", IconOwner.Symbol), (":asset_id", self._id)])  # the asset's icon
         else:
             new_id = existing
             if not active:
@@ -625,6 +630,10 @@ class JalAsset(JalDB):
         if self._type != target.type():
             return JalDB.tr("the two are assets of different types")
         return ''
+
+    def rename(self, new_name: str) -> None:
+        _ = self._exec("UPDATE assets SET full_name=:new_name WHERE id=:id", [(":new_name", new_name), (":id", self._id)])
+        self._name = new_name
 
     def _update_name(self, new_name: str) -> None:
         if not self._name:

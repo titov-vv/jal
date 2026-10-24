@@ -137,8 +137,9 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
          'ID': {(7, SymbolId.CONID): '386346364'},
          'data': {AssetData.ExpiryDate: '1642723200'}},
         {'id': 8, 'type_id': PredefinedAsset.Stock, 'full_name': 'AURORA CANNABIS INC', 'country_id': 0,
-         'symbols': [{'id': 8, 'symbol': 'ACB', 'currency_id': 2, 'location_id': AssetLocation.NYSE_EXCHANGE, 'active': 0}],
-         'ID': {(8, SymbolId.ISIN): 'CA05156X1087', (8, SymbolId.CUSIP): '05156X108', (8, SymbolId.CONID): '202351244'}},
+         'symbols': [{'id': 8, 'symbol': 'ACB', 'currency_id': 2, 'location_id': AssetLocation.NYSE_EXCHANGE, 'active': 0},
+                     {'id': 14, 'symbol': 'ACB', 'currency_id': 2, 'location_id': AssetLocation.NYSE_EXCHANGE, 'active': 1}],
+         'ID': {(8, SymbolId.ISIN): 'CA05156X1087', (8, SymbolId.CUSIP): '05156X108', (8, SymbolId.CONID): '202351244', (14, SymbolId.ISIN): 'CA05156X8843', (14, SymbolId.CUSIP): '05156X884', (14, SymbolId.CONID): '420446448'}},
         {'id': 9, 'type_id': PredefinedAsset.Stock, 'full_name': 'TWO HARBORS INVESTMENT CORP', 'country_id': 2,
          'symbols': [{'id': 9, 'symbol': 'TWO', 'currency_id': 2, 'location_id': AssetLocation.NYSE_EXCHANGE, 'active': 1}],
          'ID': {(9, SymbolId.ISIN): 'US90187B4086', (9, SymbolId.CUSIP): '90187B408', (9, SymbolId.CONID): '290404682'}},
@@ -156,22 +157,19 @@ def test_statement_ibkr(tmp_path, project_root, data_path, prepare_db_taxes):
          'symbols': [{'id': 13, 'symbol': 'ALTO', 'currency_id': 2, 'location_id': AssetLocation.NASDAQ_EXCHANGE, 'active': 1},
                      {'id': 21, 'symbol': 'PEIX', 'currency_id': 2, 'location_id': AssetLocation.NASDAQ_EXCHANGE, 'active': 0}],
          'ID': {(13, SymbolId.ISIN): 'US0215131063', (13, SymbolId.CUSIP): '021513106', (21, SymbolId.ISIN): 'US0215131063', (21, SymbolId.CUSIP): '021513106', (13, SymbolId.CONID): '465324096', (21, SymbolId.CONID): '465324096'}},
-        {'id': 14, 'type_id': PredefinedAsset.Stock, 'full_name': 'AURORA CANNABIS INC', 'country_id': 0,
-         'symbols': [{'id': 14, 'symbol': 'ACB', 'currency_id': 2, 'location_id': AssetLocation.NYSE_EXCHANGE, 'active': 1}],
-         'ID': {(14, SymbolId.ISIN): 'CA05156X8843', (14, SymbolId.CUSIP): '05156X884', (14, SymbolId.CONID): '420446448'}},
-        {'id': 15, 'type_id': PredefinedAsset.Stock, 'full_name': 'VERB TECHNOLOGY CO INC', 'country_id': 0,
+        {'id': 14, 'type_id': PredefinedAsset.Stock, 'full_name': 'VERB TECHNOLOGY CO INC', 'country_id': 0,
          'symbols': [{'id': 16, 'symbol': 'VERB', 'currency_id': 2, 'location_id': AssetLocation.NASDAQ_EXCHANGE, 'active': 1}],
          'ID': {(16, SymbolId.FIGI): 'BBG004DZSW71', (16, SymbolId.ISIN): 'US92337U2033', (16, SymbolId.CUSIP): '92337U203', (16, SymbolId.CONID): '626259997'}},
-        {'id': 16, 'type_id': PredefinedAsset.Stock, 'full_name': 'VERB TECHNOLOGY CO INC', 'country_id': 0,
+        {'id': 15, 'type_id': PredefinedAsset.Stock, 'full_name': 'VERB TECHNOLOGY CO INC', 'country_id': 0,
          'symbols': [{'id': 17, 'symbol': 'VERB', 'currency_id': 2, 'location_id': AssetLocation.NASDAQ_EXCHANGE, 'active': 1}],
          'ID': {(17, SymbolId.FIGI): 'BBG004DZSW71', (17, SymbolId.ISIN): 'US92337U3023', (17, SymbolId.CUSIP): '92337U302', (17, SymbolId.CONID): '733975609'}},
-        {'id': 17, 'type_id': PredefinedAsset.Stock, 'full_name': 'VOLCON INC', 'country_id': 0,
+        {'id': 16, 'type_id': PredefinedAsset.Stock, 'full_name': 'VOLCON INC', 'country_id': 0,
          'symbols': [{'id': 18, 'symbol': 'VLCN', 'currency_id': 2, 'location_id': AssetLocation.NASDAQ_EXCHANGE, 'active': 1}],
          'ID': {(18, SymbolId.FIGI): 'BBG012GNY0K6', (18, SymbolId.ISIN): 'US92864V4005', (18, SymbolId.CUSIP): '92864V400', (18, SymbolId.CONID): '708058624'}},
-        {'id': 18, 'type_id': PredefinedAsset.Stock, 'full_name': 'VOLCON INC', 'country_id': 0,
+        {'id': 17, 'type_id': PredefinedAsset.Stock, 'full_name': 'VOLCON INC', 'country_id': 0,
          'symbols': [{'id': 19, 'symbol': 'VLCN', 'currency_id': 2, 'location_id': AssetLocation.NASDAQ_EXCHANGE, 'active': 1}],
          'ID': {(19, SymbolId.FIGI): 'BBG012GNY0K6', (19, SymbolId.ISIN): 'US92864V2025', (19, SymbolId.CUSIP): '92864V202', (19, SymbolId.CONID): '659764507'}},
-        {'id': 19, 'type_id': PredefinedAsset.Stock, 'full_name': 'VOLCON INC', 'country_id': 0,
+        {'id': 18, 'type_id': PredefinedAsset.Stock, 'full_name': 'VOLCON INC', 'country_id': 0,
          'symbols': [{'id': 20, 'symbol': 'VLCN', 'currency_id': 2, 'location_id': AssetLocation.NASDAQ_EXCHANGE, 'active': 1}],
          'ID': {(20, SymbolId.FIGI): 'BBG012GNY0K6', (20, SymbolId.ISIN): 'US92864V3015', (20, SymbolId.CUSIP): '92864V301', (20, SymbolId.CONID): '681889698'}}
     ]
@@ -1037,19 +1035,19 @@ def test_ibkr_ticker_drift_keeps_the_end_of_period_ticker_live(data_path, prepar
 
 def test_ibkr_temporary_ticker_after_a_reverse_split(data_path, prepare_db_taxes):
     _import_ibkr(data_path + 'ibkr_temp_ticker_ewll.xml')      # EWLL.OLD 1:50 -> EWLLD, then traded as EWLL
-    old_id, old_listings = _listings_by_isin('US30051D1063')
-    new_id, new_listings = _listings_by_isin('US30051D2053')
-    assert old_listings == [('EWLL', 0)]                       # .OLD: superseded, still named by its ticker
-    assert JalAsset(old_id).symbol(2) == 'EWLL'
-    assert sorted(new_listings) == [('EWLL', 1), ('EWLLD', 0)]
+    old_id, listings = _listings_by_isin('US30051D1063')
+    new_id, _ = _listings_by_isin('US30051D2053')
+    assert old_id == new_id                                    # the split keeps one asset, with a listing per period
+    assert sorted(listings) == [('EWLL', 0), ('EWLL', 1), ('EWLLD', 0)]
     assert JalAsset(new_id).symbol(2) == 'EWLL'
-    assert JalAccount(1).get_asset_amount(d2t(201231), old_id) == Decimal('0')
+    assert _action_links() == [(CorporateAction.Split, new_id, new_id, '1', 1)]
     assert JalAccount(1).get_asset_amount(d2t(201231), new_id) == Decimal('170000')
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Corporate actions that change an ISIN, as today's importer stores them: one asset per ISIN, the old listing superseded
-# and the two assets linked by the action. Cut from real 2020 statements; the actions carry SYNT-EXAMPLE ids.
+# Corporate actions that change an ISIN. A split and a confirmed rename keep one asset with a listing per period; a
+# change that can't be confirmed keeps two assets linked by the action. Cut from real 2020 statements; the actions
+# carry SYNT-EXAMPLE ids.
 def _action_links() -> list:
     return [tuple(x) for x in JalDB._read_to_list(
         "SELECT a.type, w.asset_id, r_s.asset_id, r.value_share, r.keep_date FROM asset_actions a "
@@ -1059,16 +1057,15 @@ def _action_links() -> list:
 
 def test_ibkr_reverse_split_keeping_the_ticker(data_path, prepare_db_taxes):
     _import_ibkr(data_path + 'ibkr_rs_same_ticker.xml')     # USO 1:8, SOXS 1:12, HEXO 1:4 - each with a new ISIN
-    pairs = []
+    assets = []
     for old_isin, new_isin, ticker in (('US91232N1081', 'US91232N2071', 'USO'), ('US25460E1828', 'US25460G6908', 'SOXS'),
                                        ('CA4283041099', 'CA4283043079', 'HEXO')):
-        old_id, old_listings = _listings_by_isin(old_isin)
-        new_id, new_listings = _listings_by_isin(new_isin)
-        assert old_id != new_id and old_listings == [(ticker, 0)] and new_listings == [(ticker, 1)]
-        pairs.append((old_id, new_id))
-    assert _action_links() == [(CorporateAction.Split, old, new, '1', 1) for old, new in pairs]
-    holdings = [JalAccount(1).get_asset_amount(d2t(201231), x) for pair in pairs for x in pair]
-    assert holdings == [Decimal('0'), Decimal('0'), Decimal('0'), Decimal('0'), Decimal('0'), Decimal('25')]
+        old_id, listings = _listings_by_isin(old_isin)
+        assert _listings_by_isin(new_isin)[0] == old_id and sorted(listings) == [(ticker, 0), (ticker, 1)]
+        assets.append(old_id)
+    assert _action_links() == [(CorporateAction.Split, x, x, '1', 1) for x in assets]
+    holdings = [JalAccount(1).get_asset_amount(d2t(201231), x) for x in assets]
+    assert holdings == [Decimal('0'), Decimal('0'), Decimal('25')]
     assert JalDB._read("SELECT count(*) FROM trades_closed") == 11
 
 
@@ -1081,10 +1078,20 @@ def test_ibkr_isin_change_that_is_a_reverse_merger(data_path, prepare_db_taxes):
     assert JalAccount(1).get_asset_amount(d2t(201231), new_id) == Decimal('75')
 
 
-def test_ibkr_isin_change_with_corrective_legs_is_refused(data_path, prepare_db_taxes, monkeypatch):
-    dumps = []
-    monkeypatch.setattr(Statement, 'save_debug_info', lambda self, **kwargs: dumps.append(kwargs['debug_info']))
-    statement = StatementIBKR()                            # GHHC -> VITX in four legs, two of them correcting the others
-    with pytest.raises(Statement_ImportError, match="Expected: an action has one record per asset"):
-        statement.load(data_path + 'ibkr_ic_four_legs.xml')
-    assert len(dumps) == 1
+# GHHC -> VITX in four legs, two of them correcting the others: they net to 10000 shares. An ISIN change without FIGIs
+# is a rename only if the user says so - otherwise two assets linked by the action.
+@pytest.mark.parametrize("same_security", [False, True])
+def test_ibkr_isin_change_with_corrective_legs(data_path, prepare_db_taxes, same_security):
+    statement = StatementIBKR()
+    statement.load(data_path + 'ibkr_ic_four_legs.xml')
+    statement.validate_format()
+    statement._identity_for_tests = same_security
+    statement.match_db_ids()
+    statement.import_into_db()
+    Ledger().rebuild(from_timestamp=0)
+    old_id, _ = _listings_by_isin('US36252P1030')
+    new_id, listings = _listings_by_isin('US92850X1054')
+    assert (old_id == new_id) == same_security
+    assert _action_links() == [(CorporateAction.SymbolChange, old_id, new_id, '1', 1)]
+    assert JalDB._read("SELECT qty FROM asset_actions") == '1E+4'
+    assert JalAccount(1).get_asset_amount(d2t(201231), new_id) == Decimal('10000')

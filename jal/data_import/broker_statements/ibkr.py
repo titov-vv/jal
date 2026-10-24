@@ -665,8 +665,18 @@ class StatementIBKR(StatementXML):
         for action in sorted(actions, key=key_func):
             if action['quantity'] != 0:   # There might be 0 quantity value - it should be ignored
                 groups.setdefault((action['action_id'], option_of(action)), []).append(action)
-        legs = [([x for x in group if x['quantity'] < 0], [x for x in group if x['quantity'] > 0])
-                for group in groups.values()]
+        legs = []
+        for group in groups.values():
+            netted = {}   # corrective records of one symbol inside an action add up to one net record
+            for record in group:
+                if record['symbol'] in netted:
+                    for field in ('quantity', 'value', 'proceeds'):
+                        netted[record['symbol']][field] += record[field]
+                else:
+                    netted[record['symbol']] = record
+            records = [x for x in netted.values() if x['quantity'] != 0]
+            if records:
+                legs.append(([x for x in records if x['quantity'] < 0], [x for x in records if x['quantity'] > 0]))
         # Actions that give an asset go first, the ones that only take it away are after them
         return sorted(legs, key=lambda x: (not x[1], key_func((x[1] + x[0])[0])))
 

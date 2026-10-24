@@ -199,6 +199,11 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         self._venue_choice_for_tests = AssetLocation.UNDEFINED
         self._venue_fill_for_tests = False
         self._unknown_venues = set()   # venue names a statement used that aren't in _sources, logged once each
+        # The same for the identity prompts: is a symbol change without FIGIs a rename, and does a renamed asset take
+        # the new name. The defaults keep two assets and the stored name.
+        self._identity_for_tests = False
+        self._rename_for_tests = False
+        self._new_names = {}           # statement asset id -> the name it is renamed to on import
         self._skipped = {}           # {reason: count} of records that were recognized but not imported
         self._section_loaders = {
             JSF.PERIOD: self._check_period,
@@ -387,7 +392,61 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     def match_db_ids(self):
         self._match_currencies()
         self._match_assets()
+        self._attach_identity_listings()
         self._match_accounts()
+
+    # A split that changes the ISIN and a symbol change only rename what is held: the received listing joins the asset of
+    # the withdrawn one. Not when their FIGIs differ, not when the database keeps the two as separate assets already,
+    # and for a symbol change without both FIGIs only if the user says it is the same security.
+    def _attach_identity_listings(self):
+        for action in self._data.get(JSF.CORP_ACTIONS, []):
+            if action['type'] not in (JSF.ACTION_SPLIT, JSF.ACTION_SYMBOL_CHANGE) or len(action['outcome']) != 1:
+                continue
+            withdrawn = self._symbol_asset(action['symbol'])
+            received = self._symbol_asset(action['outcome'][0]['symbol'])
+            if withdrawn is received:
+                continue
+            stored = self.mapped_id(JSF.ASSETS, received['id'])
+            if stored and stored != self.mapped_id(JSF.ASSETS, withdrawn['id']):
+                continue
+            figis = {self._symbol(action['symbol']).get('figi', ''),
+                     self._symbol(action['outcome'][0]['symbol']).get('figi', '')}
+            if len(figis - {''}) == 2:
+                logging.info(self.tr("Kept as two assets, as their FIGIs differ: ") + action.get('description', ''))
+                continue
+            if '' in figis and action['type'] == JSF.ACTION_SYMBOL_CHANGE and not self.confirm_same_security(action):
+                continue
+            self._merge_assets(withdrawn, received)
+
+    # Moves the symbols of 'source' into 'target' and drops 'source': operations name symbols, so nothing else moves.
+    # A new asset takes the newer name; a stored one only when the user agrees.
+    def _merge_assets(self, target: dict, source: dict) -> None:
+        name = source.get('name', '')
+        if name and name != target.get('name', ''):
+            if not self.mapped_id(JSF.ASSETS, target['id']):
+                target['name'] = name
+            elif self.confirm_rename(target.get('name', ''), name):
+                self._new_names[target['id']] = name
+        target[JSF.SYMBOLS].extend(source[JSF.SYMBOLS])
+        self._data[JSF.ASSETS].remove(source)
+        self._id_map[JSF.ASSETS].pop(source['id'], None)
+
+    # Asks whether a symbol change that can't be checked by FIGI is the same security under a new name
+    def confirm_same_security(self, action: dict) -> bool:
+        if "pytest" in sys.modules:
+            return self._identity_for_tests
+        return QMessageBox().question(None, self.tr("Symbol change"),
+                                      action.get('description', '') + "\n" +
+                                      self.tr("Is this the same security under a new name? 'No' keeps two assets."),
+                                      QMessageBox.Yes, QMessageBox.No) == QMessageBox.Yes
+
+    # Asks whether a stored asset takes the name it got at a rename
+    def confirm_rename(self, old_name: str, new_name: str) -> bool:
+        if "pytest" in sys.modules:
+            return self._rename_for_tests
+        return QMessageBox().question(None, self.tr("Asset name"),
+                                      self.tr("Rename the asset?") + f"\n{old_name} -> {new_name}",
+                                      QMessageBox.Yes, QMessageBox.No) == QMessageBox.Yes
 
     def _match_currencies(self):
         for asset in self._data[JSF.ASSETS]:
@@ -750,6 +809,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             if db_id:
                 db_asset = JalAsset(db_id)
                 db_asset.update_data({k: asset[k] for k in ('name', 'country', 'expiry', 'principal') if k in asset})
+                if asset['id'] in self._new_names:
+                    db_asset.rename(self._new_names[asset['id']])
             else:
                 asset_type = self._asset_types[asset['type']]
                 db_asset = JalAssetCreator(asset_type, asset.get('name', ''), asset.get('country', '')).commit()
