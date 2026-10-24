@@ -328,3 +328,13 @@ def test_find_by_identifier_prefers_the_live_row(prepare_db):
                          SymbolId.TRX_ADDRESS, TRX_USDT)
     other.commit()
     assert JalSymbol.find_by_identifier(SymbolId.TRX_ADDRESS, TRX_USDT).id() == 0
+
+
+# A token fetched into a wallet kept in EUR is listed in EUR: today a crypto listing takes the account's currency
+def test_a_new_token_is_listed_in_the_wallet_currency(prepare_db):
+    EUR = 3
+    _tron_wallet(EUR)
+    statement, token = _fetch_tron_token('USDT')
+    statement.import_into_db()
+    listing = JalSymbol.find_by_identifier(SymbolId.TRX_ADDRESS, TRX_USDT)
+    assert (listing.symbol(), listing.currency(), listing.location()) == ('USDT', EUR, AssetLocation.TRX_BLOCKCHAIN)

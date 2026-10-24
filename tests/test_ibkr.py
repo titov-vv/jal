@@ -14,7 +14,7 @@ from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset, AssetData
 from jal.db.db import JalDB
-from jal.db.operations import AssetPayment, AssetIncome
+from jal.db.operations import AssetPayment, AssetIncome, CorporateAction
 from jal.constants import PredefinedAsset, PredefinedCategory, BookAccount, SymbolId, AssetLocation
 
 
@@ -1045,3 +1045,46 @@ def test_ibkr_temporary_ticker_after_a_reverse_split(data_path, prepare_db_taxes
     assert JalAsset(new_id).symbol(2) == 'EWLL'
     assert JalAccount(1).get_asset_amount(d2t(201231), old_id) == Decimal('0')
     assert JalAccount(1).get_asset_amount(d2t(201231), new_id) == Decimal('170000')
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Corporate actions that change an ISIN, as today's importer stores them: one asset per ISIN, the old listing superseded
+# and the two assets linked by the action. Cut from real 2020 statements; the actions carry SYNT-EXAMPLE ids.
+def _action_links() -> list:
+    return [tuple(x) for x in JalDB._read_to_list(
+        "SELECT a.type, w.asset_id, r_s.asset_id, r.value_share, r.keep_date FROM asset_actions a "
+        "JOIN asset_symbol w ON w.id=a.symbol_id JOIN asset_action_results r ON r.action_id=a.oid "
+        "JOIN asset_symbol r_s ON r_s.id=r.symbol_id ORDER BY a.timestamp")]
+
+
+def test_ibkr_reverse_split_keeping_the_ticker(data_path, prepare_db_taxes):
+    _import_ibkr(data_path + 'ibkr_rs_same_ticker.xml')     # USO 1:8, SOXS 1:12, HEXO 1:4 - each with a new ISIN
+    pairs = []
+    for old_isin, new_isin, ticker in (('US91232N1081', 'US91232N2071', 'USO'), ('US25460E1828', 'US25460G6908', 'SOXS'),
+                                       ('CA4283041099', 'CA4283043079', 'HEXO')):
+        old_id, old_listings = _listings_by_isin(old_isin)
+        new_id, new_listings = _listings_by_isin(new_isin)
+        assert old_id != new_id and old_listings == [(ticker, 0)] and new_listings == [(ticker, 1)]
+        pairs.append((old_id, new_id))
+    assert _action_links() == [(CorporateAction.Split, old, new, '1', 1) for old, new in pairs]
+    holdings = [JalAccount(1).get_asset_amount(d2t(201231), x) for pair in pairs for x in pair]
+    assert holdings == [Decimal('0'), Decimal('0'), Decimal('0'), Decimal('0'), Decimal('0'), Decimal('25')]
+    assert JalDB._read("SELECT count(*) FROM trades_closed") == 11
+
+
+def test_ibkr_isin_change_that_is_a_reverse_merger(data_path, prepare_db_taxes):
+    _import_ibkr(data_path + 'ibkr_ic_reverse_merger.xml')  # MNLO -> VYNE, reported as a plain ISIN change
+    old_id, old_listings = _listings_by_isin('US5868581027')
+    new_id, new_listings = _listings_by_isin('US92941V1008')
+    assert old_listings == [('MNLO', 0)] and new_listings == [('VYNE', 1)]
+    assert _action_links() == [(CorporateAction.SymbolChange, old_id, new_id, '1', 1)]
+    assert JalAccount(1).get_asset_amount(d2t(201231), new_id) == Decimal('75')
+
+
+def test_ibkr_isin_change_with_corrective_legs_is_refused(data_path, prepare_db_taxes, monkeypatch):
+    dumps = []
+    monkeypatch.setattr(Statement, 'save_debug_info', lambda self, **kwargs: dumps.append(kwargs['debug_info']))
+    statement = StatementIBKR()                            # GHHC -> VITX in four legs, two of them correcting the others
+    with pytest.raises(Statement_ImportError, match="Expected: an action has one record per asset"):
+        statement.load(data_path + 'ibkr_ic_four_legs.xml')
+    assert len(dumps) == 1
