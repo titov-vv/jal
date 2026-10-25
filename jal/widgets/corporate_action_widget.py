@@ -57,7 +57,8 @@ class CorporateActionWidget(AbstractOperationDetails):
                                              self.tr("Spin-Off"),
                                              self.tr("Symbol change"),
                                              self.tr("Split"),
-                                             self.tr("Delisting")])
+                                             self.tr("Delisting"),
+                                             self.tr("Write-off")])
         self.ui.type.setModel(self.combo_model)
 
         self.mapper.setItemDelegate(CorporateActionWidgetDelegate(self.mapper))
@@ -117,6 +118,7 @@ class CorporateActionWidget(AbstractOperationDetails):
     def _validated(self):
         constraints = {  # number of mandatory records in results_model for given action type
             CorporateAction.Delisting:    (0, self.tr("There can't be results of Delisting")),
+            CorporateAction.WriteOff:     (0, self.tr("There can't be results of Write-off")),
             CorporateAction.SpinOff:      (2, self.tr("Spin-off should have exactly 2 result rows:\none for ParentCo and second for Subsidiary")),
             CorporateAction.Split:        (1, self.tr("Split should have only 1 result row")),
             CorporateAction.SymbolChange: (1, self.tr("Symbol change should have only 1 result row"))
@@ -124,8 +126,8 @@ class CorporateActionWidget(AbstractOperationDetails):
         fields = db_row2dict(self.model, 0)
         results = [db_row2dict(self.results_model, x) for x in range(self.results_model.rowCount()) if not self.results_model.row_is_deleted(x)]
         # Validate that number of result records is correct for a given action type
-        if len(results) == 0 and fields['type'] != CorporateAction.Delisting:
-            QMessageBox().warning(self, self.tr("Wrong data"), self.tr("You can't have zero results unless it is Delisting"), QMessageBox.Ok)
+        if len(results) == 0 and fields['type'] not in CorporateAction.NoResults:
+            QMessageBox().warning(self, self.tr("Wrong data"), self.tr("You can't have zero results unless it is Delisting or Write-off"), QMessageBox.Ok)
             return False
         if fields['type'] in constraints and constraints[fields['type']][0] != len(results):
             QMessageBox().warning(self, self.tr("Wrong data"), constraints[fields['type']][1], QMessageBox.Ok)
@@ -137,7 +139,7 @@ class CorporateActionWidget(AbstractOperationDetails):
             return False
         # Everything after corporate action should add up to 100% of initial asset value
         total_share = sum([Decimal(x['value_share']) for x in results])
-        if total_share != Decimal('1'):
+        if fields['type'] not in CorporateAction.NoResults and total_share != Decimal('1'):
             QMessageBox().warning(self, self.tr("Incomplete data"), self.tr("Total results share doesn't sum up to 100%"), QMessageBox.Ok)
             return False
         return True

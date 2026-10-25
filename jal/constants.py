@@ -723,6 +723,7 @@ class CorporateActionType:   # values of asset_actions.type
     SymbolChange = 3
     Split = 4
     Delisting = 5
+    WriteOff = 6     # the holder loses the position, e.g. to an account closed by force
 
 
 class IconOwner:

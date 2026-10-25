@@ -2337,6 +2337,8 @@ class CorporateAction(LedgerTransaction):
     SymbolChange = CorporateActionType.SymbolChange
     Split = CorporateActionType.Split
     Delisting = CorporateActionType.Delisting
+    WriteOff = CorporateActionType.WriteOff
+    NoResults = (Delisting, WriteOff)   # the position vanishes, its cost becomes a loss
     _db_table = "asset_actions"
     _otype = LedgerTransaction.CorporateAction
     LedgerRank = 3
@@ -2372,7 +2374,8 @@ class CorporateAction(LedgerTransaction):
             CorporateAction.SpinOff: JalIcon.SPINOFF,
             CorporateAction.Split: JalIcon.SPLIT,
             CorporateAction.SymbolChange:  JalIcon.SYMBOL_CHANGE,
-            CorporateAction.Delisting: JalIcon.DELISTING
+            CorporateAction.Delisting: JalIcon.DELISTING,
+            CorporateAction.WriteOff: JalIcon.DELISTING
         }
         self.names = {
             CorporateAction.NA: LedgerTransaction.tr("UNDEFINED"),
@@ -2380,7 +2383,8 @@ class CorporateAction(LedgerTransaction):
             CorporateAction.Split: LedgerTransaction.tr("Split"),
             CorporateAction.SpinOff: LedgerTransaction.tr("Spin-off"),
             CorporateAction.Merger: LedgerTransaction.tr("Merger"),
-            CorporateAction.Delisting: LedgerTransaction.tr("Delisting")
+            CorporateAction.Delisting: LedgerTransaction.tr("Delisting"),
+            CorporateAction.WriteOff: LedgerTransaction.tr("Write-off")
         }
         super().__init__(oid)
         self._data = self._read("SELECT a.type, a.timestamp, a.timestamp_day_only, a.number, a.account_id, "
@@ -2537,7 +2541,7 @@ class CorporateAction(LedgerTransaction):
                               + f"Asset amount: {asset_amount}, Operation: {self.dump()}")
         # Calculate total asset allocation after corporate action and verify it equals 100%
         allocation = Decimal('0') + sum([x['value_share'] for x in self._results])
-        if self._subtype != CorporateAction.Delisting and allocation != Decimal('1.0'):
+        if self._subtype not in CorporateAction.NoResults and allocation != Decimal('1.0'):
             raise LedgerError(LedgerTransaction.tr("Results value of corporate action doesn't match 100% of initial asset value. ")
                               + f"Date: {ts2dt(self._timestamp)}, Asset amount: {asset_amount}, "
                               + f"Distributed: {100.0 * float(allocation)}%, Operation: {self.dump()}")
@@ -2545,8 +2549,9 @@ class CorporateAction(LedgerTransaction):
         # Withdraw value with old quantity of old asset
         ledger.appendTransaction(self, BookAccount.Assets, -sign * processed_qty, asset_id=self._asset.id(),
                                  value=-sign * processed_value)
-        if self._subtype == CorporateAction.Delisting:  # Map value to costs and exit - nothing more for delisting
-            ledger.appendTransaction(self, BookAccount.Costs, processed_value, category=PredefinedCategory.Profit, peer=self._broker, tag=self._asset.tag().id())
+        if self._subtype in CorporateAction.NoResults:  # Map value to costs and exit - nothing more to process
+            category = PredefinedCategory.Losses if self._subtype == CorporateAction.WriteOff else PredefinedCategory.Profit
+            ledger.appendTransaction(self, BookAccount.Costs, processed_value, category=category, peer=self._broker, tag=self._asset.tag().id())
             return
         # Process assets after corporate action
         closed_trades = self._deals_closed_by_operation()

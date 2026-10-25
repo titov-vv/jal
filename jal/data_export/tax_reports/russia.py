@@ -17,7 +17,8 @@ class TaxesRussia(TaxReport):
         CorporateAction.Split: "Сплит {old} {before} в {after} {new}",
         CorporateAction.SpinOff: "Выделение компании {new} из {old}; доля выделяемого актива {share:.2f}%",
         CorporateAction.Merger: "Реорганизация компании, конвертация {share:.2f}% стоимости {before} {old} в {after} {new}",
-        CorporateAction.Delisting: "Делистинг"
+        CorporateAction.Delisting: "Делистинг",
+        CorporateAction.WriteOff: "Списание"
     }
 
     def __init__(self):

@@ -3,11 +3,11 @@ from decimal import Decimal
 import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo
-from jal.constants import BookAccount, Setup, AssetLocation
+from jal.constants import BookAccount, Setup, AssetLocation, PredefinedCategory
 from jal.db.db import JalDB, JalDBError
 from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount
-from jal.db.operations import CorporateAction, LedgerError
+from jal.db.operations import LedgerTransaction, CorporateAction, LedgerError
 from tests.helpers import d2t, dt2t, create_stocks, create_quotes, create_trades, create_corporate_actions, symbol_id_for
 from PySide6.QtWidgets import QWidget, QMessageBox
 from jal.db.asset import JalAsset
@@ -122,6 +122,36 @@ def test_delisting(prepare_db_fifo):
     assert values[(BookAccount.Assets, 1, 4)] == Decimal('0')
 
 
+# A delisting or a write-off closes every lot at no proceeds and books their cost to its own category
+@pytest.mark.parametrize("action, category", [(CorporateAction.Delisting, PredefinedCategory.Profit),
+                                              (CorporateAction.WriteOff, PredefinedCategory.Losses)])
+def test_position_vanishes_at_its_cost(prepare_db_fifo, action, category):
+    create_stocks([('A', 'A SHARE')], currency_id=2)  # ID = 4
+    create_trades(1, [(d2t(210501), d2t(210501), 4, 100.0, 10.0, 0.0), (d2t(210601), d2t(210601), 4, 50.0, 12.0, 0.0)])
+    create_corporate_actions(1, [(d2t(210801), action, 4, 150.0, 'Gone', [])])
+    Ledger().rebuild(from_timestamp=0)
+
+    costs = JalDB._read_to_list("SELECT category_id, amount FROM ledger WHERE book_account=:costs",
+                                [(":costs", BookAccount.Costs)])
+    assert [[x[0], Decimal(x[1])] for x in costs] == [[category, Decimal('1600')]]
+    amounts = LedgerAmounts("amount_acc")
+    assert amounts[(BookAccount.Money, 1, 2)] == Decimal('8400')
+    assert amounts[(BookAccount.Assets, 1, 4)] == Decimal('0')
+    assert LedgerAmounts("value_acc")[(BookAccount.Assets, 1, 4)] == Decimal('0')
+    deals = JalAccount(1).closed_trades_list(close_otypes=(LedgerTransaction.CorporateAction,))
+    assert sorted(x.qty() for x in deals) == [Decimal('50'), Decimal('100')]
+    assert JalAccount(1).closed_trades_list() == []
+
+
+# A write-off takes the whole position or nothing
+def test_write_off_of_a_part_halts_the_ledger(prepare_db_fifo):
+    create_stocks([('A', 'A SHARE')], currency_id=2)  # ID = 4
+    create_trades(1, [(d2t(210501), d2t(210501), 4, 100.0, 10.0, 0.0)])
+    create_corporate_actions(1, [(d2t(210801), CorporateAction.WriteOff, 4, 60.0, 'Part', [])])
+    with pytest.raises(LedgerError):
+        Ledger().rebuild(from_timestamp=0)
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 # A split of a short position: its lots stay short, each with twice the quantity at half the price
 def test_split_of_short_position(prepare_db_fifo):
@@ -199,6 +229,7 @@ def test_symbol_change_of_short_position(prepare_db_fifo):
     (CorporateAction.SpinOff, 4, -100.0, 'Spin-off', [(4, -100.0, 0.9), (5, -5.0, 0.1)]),
     (CorporateAction.Merger, 4, -100.0, 'Merger', [(5, -50.0, 1.0)]),
     (CorporateAction.Delisting, 4, -100.0, 'Delisting', []),
+    (CorporateAction.WriteOff, 4, -100.0, 'Write-off', []),
     (CorporateAction.Split, 4, -100.0, 'Split that turns the position long', [(4, 200.0, 1.0)]),
     (CorporateAction.Split, 4, 100.0, 'Split of a long position that is short', [(4, 200.0, 1.0)])
 ])
@@ -300,3 +331,19 @@ def test_editor_split_stays_inside_one_asset(prepare_db_fifo, monkeypatch):
     assert widget._validated() and warnings == []
     results.setData(results.index(0, results.fieldIndex('symbol_id')), symbol_id_for(5))
     assert not widget._validated() and warnings == ["You can't change asset during Split"]
+
+
+# The editor saves a delisting and a write-off without results
+@pytest.mark.parametrize("action", [CorporateAction.Delisting, CorporateAction.WriteOff])
+def test_editor_accepts_an_action_without_results(prepare_db_fifo, monkeypatch, action):
+    warnings = []
+    monkeypatch.setattr(QMessageBox, 'warning', lambda *args: warnings.append(args[3]) or QMessageBox.Ok)
+    create_stocks([('A', 'A SHARE')], currency_id=2)  # id = 4
+    parent = QWidget()
+    widget = CorporateActionWidget(parent)
+    widget.createNew(account_id=1)
+    widget.model.setData(widget.model.index(0, widget.model.fieldIndex("type")), action)
+    widget.model.setData(widget.model.index(0, widget.model.fieldIndex("symbol_id")), symbol_id_for(4))
+    assert widget._validated() and warnings == []
+    widget.addResult()
+    assert not widget._validated() and len(warnings) == 1

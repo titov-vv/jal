@@ -1,5 +1,6 @@
 import json
 import logging
+import pytest
 from decimal import Decimal
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
@@ -530,3 +531,26 @@ def test_spinoff_child_bought_before_the_spinoff(prepare_db_taxes):
          'o_amount_eur': Decimal('20.00'), 'profit_eur': Decimal('155.00')},
         {'o_number': 'B1', 'o_date': d2t(240301), 'c_number': 'S2', 'qty': Decimal('40'),
          'o_amount_eur': Decimal('80.00'), 'profit_eur': Decimal('720.00')}]
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# A position that vanished without proceeds is reported nowhere, while a sale next to it is
+@pytest.mark.parametrize("action", [CorporateAction.Delisting, CorporateAction.WriteOff])
+def test_lost_position_stays_out_of_tax_reports(prepare_db_taxes, action):
+    create_assets([("STK", "Lost stock", "US0000000001", 2, PredefinedAsset.Stock, 'us'),     # ID 4
+                   ("LOST", "Lost coin", "", 2, PredefinedAsset.Crypto, 0),                   # ID 5
+                   ("SOLD", "Sold coin", "", 2, PredefinedAsset.Crypto, 0)])                  # ID 6
+    rates = [(1607731200, 73.1195), (1607990400, 72.9272), (1608076800, 73.4453), (1608163200, 73.4201)]
+    create_quotes(2, 1, rates)
+    create_quotes(2, 3, [(x[0], 0.82) for x in rates])
+    create_trades(1, [(1607871600, 1608044400, 4, 10, 11, 0.5, "stk-buy"),
+                      (1607871600, 1608044400, 5, 2, 30, 0, "lost-buy"),
+                      (1607871600, 1608044400, 6, 3, 40, 0, "sold-buy"),
+                      (1608044400, 1608163200, 6, -3, 45, 0, "sold-sell")])
+    create_corporate_actions(1, [(1608217200, action, 4, 10, "Gone", []), (1608217200, action, 5, 2, "Gone", [])])
+    Ledger().rebuild(from_timestamp=0)
+
+    reports = json.dumps([TaxesRussia().prepare_tax_report(2020, 1), TaxesPortugal().prepare_tax_report(2020, 1)],
+                         default=str)
+    assert "SOLD" in reports
+    assert "STK" not in reports and "LOST" not in reports
