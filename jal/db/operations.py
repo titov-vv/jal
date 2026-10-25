@@ -2375,7 +2375,7 @@ class CorporateAction(LedgerTransaction):
             CorporateAction.Split: JalIcon.SPLIT,
             CorporateAction.SymbolChange:  JalIcon.SYMBOL_CHANGE,
             CorporateAction.Delisting: JalIcon.DELISTING,
-            CorporateAction.WriteOff: JalIcon.DELISTING
+            CorporateAction.WriteOff: JalIcon.WRITE_OFF
         }
         self.names = {
             CorporateAction.NA: LedgerTransaction.tr("UNDEFINED"),

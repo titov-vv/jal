@@ -127,6 +127,7 @@ class JalIcon(UserDict):
     TRANSFER_ASSET_IN = auto()
     TRANSFER_ASSET_OUT = auto()
     WITH_CREDIT = auto()
+    WRITE_OFF = auto()
 
     FLAG_PT = auto()
     FLAG_RU = auto()
@@ -180,7 +181,8 @@ class JalIcon(UserDict):
         TRANSFER_OUT: "transfer_out.ico",
         TRANSFER_ASSET_IN: "transfer_asset_in.ico",
         TRANSFER_ASSET_OUT: "transfer_asset_out.ico",
-        WITH_CREDIT: "with_credit.ico"
+        WITH_CREDIT: "with_credit.ico",
+        WRITE_OFF: "write_off.ico"
     }
     _icons = {}
     _flag_files = {
