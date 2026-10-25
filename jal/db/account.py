@@ -7,12 +7,13 @@ import jal.db.operations
 import jal.db.closed_trade
 import jal.db.chain_balance
 import jal.db.receivable
-from jal.constants import Setup, BookAccount, PredefinedAsset, PredefinedAgents, PredefinedAccountType, AccountStatus, AccountData, AssetLocation
+from jal.constants import Setup, BookAccount, PredefinedAsset, PredefinedAgents, PredefinedAccountType, AccountStatus, AccountData, AssetLocation, \
+    PredefinedCategory
 from jal.db.clock import ZONE_SPAN
 from jal.db.country import JalCountry
 from jal.db.tag import JalTag
 from jal.db.token_blacklist import normalize_address, is_valid_address
-from jal.db.helpers import format_decimal, now_ts
+from jal.db.helpers import format_decimal, localize_amount, now_ts
 from jal.universal_cache import UniversalCache
 
 
@@ -654,6 +655,84 @@ class JalAccount(JalDB):
         money = self.get_asset_amount(timestamp, self.currency())
         value += money
         return value
+
+    # What closing the account at 'timestamp' writes off: the cash as a Spending and every asset as a Write-off, both
+    # to the Losses category. Returns (refusals, records): why it can't be closed, and the [(otype, data)] to create.
+    def closure_plan(self, timestamp: int, note: str = '') -> tuple:
+        refusals = []
+        if not self.is_active():
+            refusals.append(JalDB.tr("The account is closed already"))
+        last_operation = self._last_operation_timestamp()
+        if last_operation >= timestamp:
+            refusals.append(JalDB.tr("The account has operations at or after the closure date"))
+        if self._read("SELECT ledger_frontier FROM frontier") < last_operation:
+            refusals.append(JalDB.tr("The ledger isn't up to date, rebuild it first"))
+        records = []
+        for asset_id, amount in self._book_amounts(BookAccount.Liabilities, timestamp):
+            refusals.append(JalDB.tr("The account has a debt: ") + f"{localize_amount(-amount)} {JalAsset(asset_id).symbol()}")
+        for asset_id, amount in self._book_amounts(BookAccount.Money, timestamp):
+            symbol = JalAsset(asset_id).symbol()
+            if asset_id != self._currency_id:
+                refusals.append(JalDB.tr("The account holds money in another currency: ") + f"{localize_amount(amount)} {symbol}")
+            elif amount < Decimal('0'):
+                refusals.append(JalDB.tr("The account has a negative balance: ") + f"{localize_amount(amount)} {symbol}")
+            else:
+                records.append((jal.db.operations.LedgerTransaction.IncomeSpending, {
+                    'timestamp': timestamp, 'account_id': self._id, 'peer_id': self._organization_id, 'note': note,
+                    'lines': [{'category_id': PredefinedCategory.Losses, 'amount': -amount, 'note': note}]}))
+        for position in self.assets_list(timestamp):
+            asset, amount = position['asset'], position['amount']
+            if amount < Decimal('0'):
+                refusals.append(JalDB.tr("The account has a short position: ") + f"{localize_amount(amount)} {asset.symbol()}")
+                continue
+            symbol_id = asset.listing_id(self._currency_id) or asset.active_symbol_ids()[0]
+            records.append((jal.db.operations.LedgerTransaction.CorporateAction, {
+                'timestamp': timestamp, 'account_id': self._id, 'type': jal.db.operations.CorporateAction.WriteOff,
+                'symbol_id': symbol_id, 'qty': amount, 'note': note, 'outcome': []}))
+        for claim in jal.db.receivable.JalReceivable().claims(self._id, timestamp):
+            refusals.append(JalDB.tr("The account is still owed: ")
+                            + f"{localize_amount(claim['amount'])} {JalAsset(claim['asset_id']).symbol()} ({claim['source']})")
+        return refusals, records
+
+    # Closes the account as closure_plan() describes and sets it Closed; the ledger is to be rebuilt from 'timestamp'
+    # by the caller. Returns the refusals, nothing is written when there are any.
+    def close(self, timestamp: int, note: str = '') -> list:
+        refusals, records = self.closure_plan(timestamp, note)
+        if refusals:
+            return refusals
+        self.start_transaction()
+        try:
+            for otype, data in records:
+                jal.db.operations.LedgerTransaction.create_new(otype, data)
+            self.set_status(AccountStatus.Closed)
+        except Exception:
+            self.rollback_transaction()
+            raise
+        self.commit_transaction()
+        return []
+
+    # The latest moment an operation touches the account, read from the operation tables themselves:
+    # 'ledger_sequence' is refreshed by a rebuild only and misses whatever was written since
+    def _last_operation_timestamp(self) -> int:
+        parts = " UNION ALL ".join(f"SELECT timestamp, account_id FROM ({x.sequence_parts()})"
+                                   for x in jal.db.operations.LedgerTransaction.operation_classes())
+        last = self._read(f"SELECT MAX(timestamp) FROM ({parts}) WHERE account_id=:account_id",
+                          [(":account_id", self._id)])
+        return 0 if last in ('', None) else int(last)
+
+    # Non-zero amounts that the given book holds for the account at 'timestamp', as [(asset_id, amount)]
+    def _book_amounts(self, book: int, timestamp: int) -> list:
+        query = self._exec("WITH _last_ids AS (SELECT MAX(id) AS id FROM ledger "
+                           "WHERE account_id=:account_id AND timestamp<=:timestamp AND book_account=:book "
+                           "GROUP BY asset_id) "
+                           "SELECT l.asset_id, l.amount_acc FROM ledger l JOIN _last_ids d ON l.id=d.id",
+                           [(":account_id", self._id), (":timestamp", timestamp), (":book", book)])
+        amounts = []
+        while query.next():
+            asset_id, amount = self._read_record(query, cast=[int, Decimal])
+            if amount != Decimal('0'):
+                amounts.append((asset_id, amount))
+        return amounts
 
 
 class JalAccountCreator(JalDB):
