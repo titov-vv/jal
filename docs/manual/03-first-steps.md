@@ -86,9 +86,10 @@ Open **Data → Categories**:
 Ten or fifteen categories are plenty: *Groceries*, *Rent*, *Utilities*, *Transport*, *Eating out*,
 *Health*, *Leisure*, *Salary*. You can add more at any time.
 
-> Ten categories are built in — *Income*, *Spending*, *Profits*, *Starting balance*, *Fees*,
-> *Taxes*, *Dividends*, *Interest*, *Results of investments* and *Discounts*. JAL writes into them itself
-> when it books a fee or a dividend, or a discount off a whole shop receipt, so they cannot be deleted. You may rename them, and you may put your own
+> Eleven categories are built in — *Income*, *Spending*, *Profits*, *Starting balance*, *Fees*,
+> *Taxes*, *Dividends*, *Interest*, *Results of investments*, *Discounts* and *Losses*. JAL writes into them itself
+> when it books a fee or a dividend, a discount off a whole shop receipt, or what an
+> [account closed by its provider](05-everyday-money.md#when-the-provider-closes-the-account) took with it, so they cannot be deleted. You may rename them, and you may put your own
 > categories underneath them.
 
 ## Step 4 — Record something

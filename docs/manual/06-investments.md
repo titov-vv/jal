@@ -141,12 +141,17 @@ holding changes without you trading. Record it with **+ → Corporate Action**:
 
 ![The corporate action editor](img/op_corporate_action.png)
 
-* **Type** — *Split*, *Symbol change*, *Spin-off*, *Merger*, *Delisting*.
+* **Type** — *Split*, *Symbol change*, *Spin-off*, *Merger*, *Delisting*, *Write-off*.
 * **Asset** and **Qty** — what went in.
 * The table on the right — what came out: each resulting asset, its quantity, its **Share, %**
   of the original cost, and whether it **Keeps date**.
 
-The shares must add up to **100 %**: the money you originally paid has to end up somewhere. For a
+*Delisting* and *Write-off* have no results: the holding is simply gone, and what you paid for it becomes
+a loss — under *Results of investments* for a delisting, under *Losses* for a write-off, which is
+what [closing an account](05-everyday-money.md#when-the-provider-closes-the-account) records. Neither is
+a sale, so neither appears in a tax report.
+
+For every other type the shares must add up to **100 %**: the money you originally paid has to end up somewhere. For a
 split or a symbol change there is one result line with 100 %. For a spin-off, the company publishes
 the split of cost basis (in the United States, on *Form 8937*) — use its figures. If the shares do
 not add up, JAL refuses to build the ledger past that point and says so in the log.

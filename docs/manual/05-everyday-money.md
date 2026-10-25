@@ -160,6 +160,22 @@ An account you still hold but no longer watch does not have to be closed: give i
 *Background* instead and it keeps counting in full, folded away into
 [one group](04-main-window.md#background-accounts) at the bottom of the panel.
 
+### When the provider closes the account
+
+Sometimes an account is closed for you — an exchange shuts it down — and whatever was left on it is
+lost. Right-click the account in **Data → Accounts** and choose **Close account…**. Pick the date it
+was closed; JAL lists what it will write off and records it all as losses, under the built-in
+category *Losses*:
+
+* the money left on the account, as a spending;
+* every asset left on it, as a *Write-off* [corporate action](06-investments.md#corporate-actions) —
+  its whole quantity, at the price you paid for it.
+
+Then it sets the account's status to *Closed*. Such a loss is not a sale: it appears in no tax report.
+
+JAL refuses, and says why, when something on the account can't simply be written off — a debt, a
+short position, a reward still owed to it, or operations dated on or after the closing date.
+
 ---
 
 [← The main window](04-main-window.md) | [Contents](README.md) | [Next: Investments →](06-investments.md)

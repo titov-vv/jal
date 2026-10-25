@@ -19,6 +19,7 @@ from jal.widgets.icons import JalIcon
 from jal.db.settings import JalSettings
 from jal.widgets.assets_dialogs import SymbolListDialog
 from jal.widgets.account_dialog import AccountDialog
+from jal.widgets.account_close_dialog import AccountCloseDialog
 from jal.widgets.helpers import set_grids_metrics
 from jal.widgets.icon_picker import IconPicker
 
@@ -465,6 +466,7 @@ class AccountListDialog(ReferenceDataDialog):
         for type_id, type_name in sorted(JalAccount.get_all_types().items(), key=lambda x: x[1]):
             self.ui.GroupCombo.addItem(JalIcon[JalAccount.get_type_icon(type_id)], type_name, type_id)
         self.group_id = self.ui.GroupCombo.itemData(0)
+        self.custom_context_menu = True
         super().setup_ui()
         # Accounts (and their account_data attributes) are edited in the modal AccountDialog.
         self.ui.EditBtn.setVisible(True)
@@ -510,6 +512,19 @@ class AccountListDialog(ReferenceDataDialog):
     def _reload(self):
         self.model.invalidate_cache()
         self.setFilter()
+
+    # Closing writes operations, so it is offered where accounts are managed, not where one is picked
+    def customizeContextMenu(self, menu: QMenu, index):
+        if self.selection_enabled or not index.isValid():
+            return
+        account_id = self.model.getId(index)
+        action = menu.addAction(self.tr("Close account…"))
+        action.setEnabled(JalAccount(account_id).is_active())
+        action.triggered.connect(lambda: self.closeAccount(account_id))
+
+    def closeAccount(self, account_id: int):
+        if AccountCloseDialog(account_id, parent=self).exec() == QDialog.Accepted:
+            self._reload()
 
 
 # ----------------------------------------------------------------------------------------------------------------------

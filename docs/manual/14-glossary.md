@@ -29,7 +29,7 @@ spending reports total by them.
 by account* report.
 
 **Corporate action** — a company changing your holding without a trade: a split, a merger, a
-spin-off, a symbol change, a delisting.
+spin-off, a symbol change, a delisting, or a write-off of what you lost.
 
 **Cost basis** — what you actually paid for what you hold, fees included. Profit is what you sell for
 minus this.

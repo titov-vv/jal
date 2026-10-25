@@ -1,6 +1,10 @@
+import os
+os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 from decimal import Decimal
 
 import pytest
+from PySide6.QtCore import QDateTime
+from PySide6.QtWidgets import QWidget, QMenu, QDialogButtonBox
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo
 from tests.helpers import d2t, create_stocks, create_trades, create_actions
@@ -11,6 +15,8 @@ from jal.db.account import JalAccount
 from jal.db.operations import LedgerTransaction, CorporateAction
 from jal.db.receivable import JalReceivable
 from jal.db.helpers import localize_amount
+from jal.widgets.account_close_dialog import AccountCloseDialog
+from jal.widgets.reference_dialogs import AccountListDialog
 
 
 def _operations_count() -> int:
@@ -93,3 +99,44 @@ def test_close_needs_a_current_ledger(prepare_db_fifo):
     Ledger().rebuild(from_timestamp=0)
     create_actions([(d2t(210501), 1, 1, [(PredefinedCategory.Fees, -1.0)])])
     assert JalAccount(1).closure_plan(d2t(211001))[0] == ["The ledger isn't up to date, rebuild it first"]
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The dialog shows the plan, refuses a date before the last operation, and closes the account on Ok
+def test_close_dialog(prepare_db_fifo):
+    create_stocks([('A', 'A SHARE')], currency_id=2)  # id = 4
+    create_trades(1, [(d2t(210501), d2t(210501), 4, 10.0, 100.0, 0.0)])
+    parent = QWidget()
+    dialog = AccountCloseDialog(1, parent=parent)
+    ok = dialog._buttons.button(QDialogButtonBox.Ok)
+
+    dialog._closed.setDateTime(QDateTime.fromSecsSinceEpoch(d2t(210401)))
+    assert dialog._plan.toPlainText().startswith("The account can't be closed:") and not ok.isEnabled()
+    dialog._closed.setDateTime(QDateTime.fromSecsSinceEpoch(d2t(211001)))
+    assert dialog._plan.toPlainText() == "Cash to Losses: " + localize_amount(Decimal('9000')) + " USD\n" + \
+                                         "Asset to Losses: " + localize_amount(Decimal('10')) + " A"
+    assert ok.isEnabled()
+    dialog._note.setText('Gone')
+    dialog.accept()
+    assert JalAccount(1).status() == AccountStatus.Closed
+    assert JalDB._read("SELECT note FROM asset_actions") == 'Gone'
+    assert LedgerAmounts("amount_acc")[(BookAccount.Money, 1, 2)] == Decimal('0')
+
+
+# The menu item is there where accounts are managed, disabled for a closed one, and absent where one is picked
+def test_close_menu_item(prepare_db_fifo):
+    parent = QWidget()
+    dialog = AccountListDialog(parent)
+    dialog.model.select()
+    index = dialog.model.index(0, 0)
+
+    def items():
+        menu = QMenu(dialog)
+        dialog.customizeContextMenu(menu, index)
+        return [(x.text(), x.isEnabled()) for x in menu.actions()]
+
+    assert items() == [("Close account…", True)]
+    JalAccount(1).set_status(AccountStatus.Closed)
+    assert items() == [("Close account…", False)]
+    dialog.selection_enabled = True
+    assert items() == []
