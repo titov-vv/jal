@@ -9,7 +9,7 @@ class Setup:
     INI_FILE = "jal.ini"
     DB_PATH = "jal.sqlite"
     DB_CONNECTION = "JAL.DB"
-    DB_REQUIRED_VERSION = 82
+    DB_REQUIRED_VERSION = 83
     SQLITE_MIN_VERSION = "3.35"
     MAIN_WND_NAME = "JAL_MainWindow"
     SPLITTER_STATE_PREFIX = "SplitterState_"
@@ -189,6 +189,7 @@ class PredefinedCategory(PredefinedList, QObject):  # These constants are linked
     Interest = 8
     Profit = 9
     Discounts = 10
+    Losses = 11
 
     def __init__(self):
         super().__init__()
@@ -202,7 +203,8 @@ class PredefinedCategory(PredefinedList, QObject):  # These constants are linked
             self.Dividends: self.tr("Dividends"),
             self.Interest: self.tr("Interest"),
             self.Profit: self.tr("Results of investments"),
-            self.Discounts: self.tr("Discounts")
+            self.Discounts: self.tr("Discounts"),
+            self.Losses: self.tr("Losses")
         }
 
 class PredefinedTags(PredefinedList, QObject):   # Legacy 'Account type' tag seed rows (2-5); superseded by PredefinedAccountType. Kept only to document the still-seeded tag rows; no longer referenced in code.

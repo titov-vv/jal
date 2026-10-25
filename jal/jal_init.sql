@@ -1053,7 +1053,7 @@ BEGIN
 END;
 ------------------------------------------------------------------------------------------------------------------------
 -- Initialize default values for settings
-INSERT INTO settings(name, value) VALUES('SchemaVersion', 82);
+INSERT INTO settings(name, value) VALUES('SchemaVersion', 83);
 INSERT INTO settings(name, value) VALUES('Language', 1);
 INSERT INTO settings(name, value) VALUES('RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
 INSERT INTO settings(name, value) VALUES('RuTaxSessionId', '');
@@ -1104,6 +1104,7 @@ INSERT INTO categories (id, pid, name) VALUES (7, 3, 'Dividends');
 INSERT INTO categories (id, pid, name) VALUES (8, 3, 'Interest');
 INSERT INTO categories (id, pid, name) VALUES (9, 3, 'Results of investments');
 INSERT INTO categories (id, pid, name) VALUES (10, 2, 'Discounts');
+INSERT INTO categories (id, pid, name) VALUES (11, 2, 'Losses');
 
 -- Initialize predefined tags
 INSERT INTO tags (id, pid, tag) VALUES (0, 0, '');

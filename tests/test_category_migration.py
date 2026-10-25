@@ -10,14 +10,13 @@ from jal.db.db import JalDB
 from jal.db.ledger import Ledger
 from jal.db.operations import LedgerTransaction
 
-_MIGRATION_FROM = "-- PREDEFINED CATEGORY 'DISCOUNTS' TAKES ID 10"
 _MIGRATION_TO = "-- Set new DB schema version"
 
 
-def _run_migration(project_root):
-    with open(project_root + "/jal/updates/jal_delta_79.sql", encoding='utf-8') as delta:
+def _run_migration(project_root, version, migration_from):
+    with open(project_root + f"/jal/updates/jal_delta_{version}.sql", encoding='utf-8') as delta:
         text = delta.read()
-    for statement in sqlparse.split(text[text.index(_MIGRATION_FROM):text.index(_MIGRATION_TO)]):
+    for statement in sqlparse.split(text[text.index(migration_from):text.index(_MIGRATION_TO)]):
         if not sqlparse.format(statement, strip_comments=True).strip():
             continue
         assert JalDB._exec(statement.strip(), commit=True) is not None, f"Migration statement failed: {statement}"
@@ -42,7 +41,7 @@ def _category_of_details() -> list:
 # A database of before the category: the user's own categories start at id 10, one of them named 'Discounts'
 @pytest.mark.parametrize("foreign_keys", ["OFF", "ON"])
 def test_user_category_10_steps_aside_for_discounts(prepare_db, project_root, foreign_keys):
-    JalDB._exec("DELETE FROM categories WHERE id=10", commit=True)
+    JalDB._exec("DELETE FROM categories WHERE id>=10", commit=True)
     for row in [(10, 2, 'Home'), (11, 10, 'Paint'), (12, 1, 'Discounts')]:
         JalDB._exec("INSERT INTO categories (id, pid, name) VALUES (:id, :pid, :name)",
                     [(":id", row[0]), (":pid", row[1]), (":name", row[2])], commit=True)
@@ -57,7 +56,7 @@ def test_user_category_10_steps_aside_for_discounts(prepare_db, project_root, fo
 
     JalDB._exec(f"PRAGMA foreign_keys = {foreign_keys}")
     assert JalDB._read("PRAGMA foreign_keys") == (1 if foreign_keys == "ON" else 0)
-    _run_migration(project_root)
+    _run_migration(project_root, 79, "-- PREDEFINED CATEGORY 'DISCOUNTS' TAKES ID 10")
     JalDB._exec("PRAGMA foreign_keys = ON")
 
     assert _categories() == {10: (2, 'Discounts'), 11: (13, 'Paint'), 12: (1, 'Discounts (user)'),
@@ -67,5 +66,34 @@ def test_user_category_10_steps_aside_for_discounts(prepare_db, project_root, fo
     assert 10 in PredefinedCategory()
 
 
-def test_fresh_database_has_discounts(prepare_db):
-    assert _categories() == {10: (PredefinedCategory.Spending, 'Discounts')}
+# A database of before the category: the user's own categories start at id 11, one of them named 'Losses'
+@pytest.mark.parametrize("foreign_keys", ["OFF", "ON"])
+def test_user_category_11_steps_aside_for_losses(prepare_db, project_root, foreign_keys):
+    JalDB._exec("DELETE FROM categories WHERE id>=11", commit=True)
+    for row in [(11, 2, 'Car'), (12, 11, 'Fuel'), (13, 1, 'Losses')]:
+        JalDB._exec("INSERT INTO categories (id, pid, name) VALUES (:id, :pid, :name)",
+                    [(":id", row[0]), (":pid", row[1]), (":name", row[2])], commit=True)
+    account = JalAccountCreator(currency_id=2, number='U1', name='Wallet', organization=1,
+                                account_type=PredefinedAccountType.Cash).commit().id()
+    LedgerTransaction.create_new(LedgerTransaction.IncomeSpending, {
+        'timestamp': 1_700_000_000, 'account_id': account, 'peer_id': 1,
+        'lines': [{'category_id': 11, 'amount': Decimal('-5')}, {'category_id': 12, 'amount': Decimal('-2')},
+                  {'category_id': 13, 'amount': Decimal('1')}]})
+    Ledger().rebuild(from_timestamp=0)
+    assert JalDB._read("SELECT COUNT(*) FROM ledger WHERE category_id=11") > 0
+
+    JalDB._exec(f"PRAGMA foreign_keys = {foreign_keys}")
+    assert JalDB._read("PRAGMA foreign_keys") == (1 if foreign_keys == "ON" else 0)
+    _run_migration(project_root, 83, "-- PREDEFINED CATEGORY 'LOSSES' TAKES ID 11")
+    JalDB._exec("PRAGMA foreign_keys = ON")
+
+    assert _categories() == {10: (2, 'Discounts'), 11: (2, 'Losses'), 12: (14, 'Fuel'), 13: (1, 'Losses (user)'),
+                             14: (2, 'Car')}
+    assert _category_of_details() == [14, 12, 13]
+    assert JalDB._read("SELECT COUNT(*) FROM ledger WHERE category_id=11") == 0
+    assert 11 in PredefinedCategory()
+
+
+def test_fresh_database_has_predefined_categories(prepare_db):
+    assert _categories() == {10: (PredefinedCategory.Spending, 'Discounts'),
+                             11: (PredefinedCategory.Spending, 'Losses')}
