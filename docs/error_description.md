@@ -20,7 +20,8 @@ It indicates a problem that JAL was not able to cope with. You need to check and
 1. *Results value of corporate action doesn't match 100% of initial asset value. Date: ...*
 If security undergo a corporate action then its cost basis should be fully distributed across results of corporate action according to Company's financial statement (e.g. Form 8937 for US securities). 
 I.e. if stock *A* is converted into stocks *B* and *C* as result of corporate action then we need to declare X% of *A's* cost basis is allocated to *B* and Y% is allocated to *C*. While having X + Y equal to 100%. 
-In order to make it you should locate corporate action in a list of operations and set shares of assets in results table. 
+In order to make it you should locate corporate action in a list of operations and set shares of assets in results table.  
+These shares are not a formality to silence the message: they define the cost of every resulting asset, and with it each later profit, the tax year it falls in and every report figure. JAL accepts any shares that total 100% and can't tell right ones from wrong ones, so take them from the company's published figures. 
 
 2. *Corporate action isn't what JAL expects it to be. Expected: ... Found: ...*  
 Interactive Brokers statement. Records of one corporate action are grouped by their `actionID`, and the group has to look the way JAL knows that type of action: the *Expected* line says which rule was broken, the *Found* lines list the records as they are in the statement. Nothing is imported.  

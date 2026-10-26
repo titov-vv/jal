@@ -61,7 +61,10 @@ A split, merger or spin-off does not say where all of the original cost went. JA
 ledger past it.
 
 **Fix:** find that corporate action in the operations list and set the **Share, %** of each resulting
-asset so that they total 100. For a US spin-off, the company publishes the split in a *Form 8937*.
+asset to the figures the company published — for a US spin-off, its *Form 8937*. The message goes away
+as soon as the shares total 100, right or wrong, but the shares are what every later profit of these
+assets is computed from: numbers typed only to make it go away give wrong results that nothing will
+point out. See [Corporate actions](06-investments.md#corporate-actions).
 
 ### “Asset amount is not enough …” / “Open position was expected but not found”
 

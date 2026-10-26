@@ -73,7 +73,9 @@ with **+**, name the output file, press OK.
 * **Check that the account reconciles.** If JAL's closing balance matches your broker's, the
   underlying data is probably complete.
 * **Check the corporate actions.** JAL refuses to build the ledger past a corporate action whose
-  cost shares do not add up to 100 %, and a wrong split of cost quietly produces a wrong profit —
+  cost shares do not add up to 100 %, but it cannot tell whether shares that do are right: a wrong
+  split of cost quietly produces a wrong profit, and can move it into another tax year. Compare each
+  spin-off and merger with the figures the company published —
   see [chapter 6](06-investments.md#corporate-actions).
 * **Read the log** after producing the report.
 

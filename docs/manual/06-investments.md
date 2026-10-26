@@ -152,9 +152,18 @@ what [closing an account](05-everyday-money.md#when-the-provider-closes-the-acco
 a sale, so neither appears in a tax report.
 
 For every other type the shares must add up to **100 %**: the money you originally paid has to end up somewhere. For a
-split or a symbol change there is one result line with 100 %. For a spin-off, the company publishes
-the split of cost basis (in the United States, on *Form 8937*) — use its figures. If the shares do
-not add up, JAL refuses to build the ledger past that point and says so in the log.
+split or a symbol change there is one result line with 100 %. If the shares do not add up, JAL
+refuses to build the ledger past that point and says so in the log.
+
+For a spin-off, or a merger that leaves you with more than one asset, the shares decide **what each
+resulting asset cost you** — and from there its profit when you sell it, the tax year that profit falls
+in, and every figure the holdings and tax reports show for it. Take them from the company: it
+publishes how the cost basis is divided (in the United States on *Form 8937*; in Russia it follows from
+the separation balance sheet), usually on its investor-relations site or through your broker's notice.
+JAL cannot check these figures: any numbers that add up to 100 % are accepted, and wrong ones give
+wrong results without a single warning. Swapped shares, for example, move most of the cost to the
+asset that got the smaller part — one sale then shows a large loss and the other a large profit, often
+in different years, and only the total over both is still right.
 
 **Keeps date** says from when you hold each resulting asset. Checked, it keeps the date of your
 original purchase: the same shares under a new name or count — a split, a symbol change, the parent
@@ -172,7 +181,9 @@ new name, and it may offer to rename the asset. Different FIGI codes on the two 
 different security, a merger for instance, and JAL keeps two assets.
 
 > Corporate actions usually arrive with a broker statement import, already filled in — but the
-> percentages and the **Keeps date** flags are yours to check.
+> percentages and the **Keeps date** flags are yours to check. An Interactive Brokers statement doesn't
+> say how the cost is divided, so a spin-off or merger imported from it arrives with every share at 0 %
+> and stops the ledger until you enter the company's figures.
 
 ## Moving assets between your accounts
 
