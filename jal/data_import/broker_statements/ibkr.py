@@ -118,6 +118,7 @@ class StatementIBKR(StatementXML):
     ReversalSuffix = " - REVERSAL"
     CancelPrefix = "CANCEL "
     ReplacedSuffix = '.OLD'     # IB may add it to a symbol of an asset that is being replaced
+    StatusSuffixes = 'DQ'       # OTC fifth letter: D - new issue after a reverse split, Q - bankruptcy
     NoAsset = -1
     NoActionID = '<missing>'    # stands for 'actionID' of a corporate action that has no such attribute at all
     FormerCorpActionsTag = 'ibkr-corp-actions-by-description'
@@ -1324,13 +1325,23 @@ class StatementIBKR(StatementXML):
         self._flag_superseded_symbols()
 
     # SecurityInfo names the end-of-period ticker: a '.OLD' symbol, or one that only records name while SecurityInfo
-    # names another ticker in its currency, is imported as a superseded listing
+    # names another ticker in its currency, is imported as a superseded listing. A ticker with a status suffix
+    # (UPZSD, BRTXQ) is never live while the asset has its base ticker, which takes its place
     def _flag_superseded_symbols(self):
         for asset in self._data[JSF.ASSETS]:
-            live = {x.get('currency') for x in asset[JSF.SYMBOLS] if self._listed.get(x['id'], False)}
+            listed = {x['id']: self._listed.get(x['id']) for x in asset[JSF.SYMBOLS]}
+            tickers = {(x['symbol'], x.get('currency')): x['id'] for x in asset[JSF.SYMBOLS]}
             for symbol in asset[JSF.SYMBOLS]:
-                listed = self._listed.get(symbol['id'])
-                if listed is False or (listed is None and symbol.get('currency') in live):
+                ticker = symbol['symbol']
+                base = tickers.get((ticker[:-1], symbol.get('currency'))) \
+                    if len(ticker) == 5 and ticker[-1] in self.StatusSuffixes else None
+                if base is not None:
+                    if listed[symbol['id']] and listed[base] is not False:
+                        listed[base] = True
+                    listed[symbol['id']] = False
+            live = {x.get('currency') for x in asset[JSF.SYMBOLS] if listed[x['id']]}
+            for symbol in asset[JSF.SYMBOLS]:
+                if listed[symbol['id']] is False or (listed[symbol['id']] is None and symbol.get('currency') in live):
                     symbol['active'] = False
 
     # -----------------------------------------------------------------------------------------------------------------------

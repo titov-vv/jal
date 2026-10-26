@@ -1025,11 +1025,11 @@ def _listings_by_isin(isin) -> tuple:
     return asset_id, [tuple(x) for x in listings]
 
 
-def test_ibkr_ticker_drift_keeps_the_end_of_period_ticker_live(data_path, prepare_db_taxes):
-    _import_ibkr(data_path + 'ibkr_ticker_drift_brtx.xml')     # bought as BRTX, sold as BRTXQ
+def test_ibkr_ticker_drift_keeps_the_base_ticker_live(data_path, prepare_db_taxes):
+    _import_ibkr(data_path + 'ibkr_ticker_drift_brtx.xml')     # bought as BRTX, sold as BRTXQ (Q - bankruptcy)
     asset_id, listings = _listings_by_isin('US0906554086')
-    assert sorted(listings) == [('BRTX', 0), ('BRTXQ', 1)]
-    assert JalAsset(asset_id).symbol(2) == 'BRTXQ'
+    assert sorted(listings) == [('BRTX', 1), ('BRTXQ', 0)]
+    assert JalAsset(asset_id).symbol(2) == 'BRTX'
     assert JalAccount(1).get_asset_amount(d2t(201231), asset_id) == Decimal('0')
 
 
@@ -1095,3 +1095,43 @@ def test_ibkr_isin_change_with_corrective_legs(data_path, prepare_db_taxes, same
     assert _action_links() == [(CorporateAction.SymbolChange, old_id, new_id, '1', 1)]
     assert JalDB._read("SELECT qty FROM asset_actions") == '1E+4'
     assert JalAccount(1).get_asset_amount(d2t(201231), new_id) == Decimal('10000')
+
+
+# A reverse split that also renames: ValueSetters (VSTR) 1:2000 becomes Netcapital, traded as VSTRD, then NCPL.
+# A split keeps one asset whatever the name, with the end-of-period ticker live.
+def test_ibkr_reverse_split_with_a_rename(data_path, prepare_db_taxes):
+    _import_ibkr(data_path + 'ibkr_rs_rename_vstr.xml')
+    old_id, listings = _listings_by_isin('US92046U1060')
+    new_id, _ = _listings_by_isin('US64113L1035')
+    assert old_id == new_id
+    assert sorted(listings) == [('NCPL', 1), ('VSTR', 0), ('VSTRD', 0)]
+    assert JalAsset(new_id).symbol(2) == 'NCPL'
+    assert JalAsset(new_id).name() == 'NETCAPITAL INC'
+    assert _action_links() == [(CorporateAction.Split, new_id, new_id, '1', 1)]
+    assert JalAccount(1).get_asset_amount(d2t(201231), new_id) == Decimal('3')     # 3.5 less 0.5 paid in cash
+
+
+# UPZS 1:250 (traded as UPZSD, a status suffix, then UPZS again), then an ISIN change into GMPR: three ISINs and four
+# tickers. Confirmed as one security it is one asset with GMPR live; otherwise two assets linked by the change.
+@pytest.mark.parametrize("same_security", [False, True])
+def test_ibkr_reverse_split_then_isin_change(data_path, prepare_db_taxes, same_security):
+    statement = StatementIBKR()
+    statement.load(data_path + 'ibkr_chain_upzs_gmpr.xml')
+    statement.validate_format()
+    statement._identity_for_tests = same_security
+    statement.match_db_ids()
+    statement.import_into_db()
+    Ledger().rebuild(from_timestamp=0)
+    first_id, listings = _listings_by_isin('US90916J4094')
+    split_id, _ = _listings_by_isin('US90916J5083')
+    last_id, last_listings = _listings_by_isin('US38356C1036')
+    assert first_id == split_id and (split_id == last_id) == same_security
+    if same_security:
+        assert sorted(listings) == [('GMPR', 1), ('UPZS', 0), ('UPZS', 0), ('UPZSD', 0)]
+    else:
+        assert sorted(listings) == [('UPZS', 0), ('UPZS', 0), ('UPZSD', 0)] and last_listings == [('GMPR', 1)]
+    assert JalAsset(last_id).symbol(2) == 'GMPR'
+    assert _action_links() == [(CorporateAction.Split, first_id, first_id, '1', 1),
+                               (CorporateAction.SymbolChange, split_id, last_id, '1', 1)]
+    assert JalAccount(1).get_asset_amount(d2t(201231), split_id) == (Decimal('9228') if same_security else Decimal('0'))
+    assert JalAccount(1).get_asset_amount(d2t(201231), last_id) == Decimal('9228')   # 4228 converted + 5000 bought
