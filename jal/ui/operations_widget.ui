@@ -262,6 +262,9 @@
           <property name="orientation">
            <enum>Qt::Orientation::Vertical</enum>
           </property>
+          <property name="childrenCollapsible">
+           <bool>false</bool>
+          </property>
           <widget class="QWidget" name="PositionsPane">
            <property name="visible">
             <bool>false</bool>
@@ -399,9 +402,6 @@
             </item>
             <item>
              <widget class="QFrame" name="OperationsPaneButtons">
-              <property name="visible">
-               <bool>false</bool>
-              </property>
               <property name="sizePolicy">
                <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
                 <horstretch>0</horstretch>

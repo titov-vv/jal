@@ -2,8 +2,8 @@ from __future__ import annotations
 import logging
 from decimal import Decimal
 
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QFont
+from PySide6.QtCore import Qt, QModelIndex
+from PySide6.QtGui import QBrush, QFont
 from PySide6.QtWidgets import QHeaderView
 from jal.constants import IconOwner, AccountStatus, PredefinedAccountType
 from jal.db.clock import day_finish, local_reading, today_finish
@@ -20,6 +20,7 @@ from jal.db.staking import JalStakingBox
 from jal.net.chain_fetchers.protocols import protocol_name
 from jal.widgets.delegates import GridLinesDelegate, FloatDelegate, TimestampDelegate, TaggedIconDelegate, TAG_ICON_ROLE
 from jal.widgets.helpers import ts2d
+from jal.widgets.theme import Theme, Meaning
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -453,6 +454,8 @@ class AccountHoldingsModel(HoldingsModel):
 
     # A P/L exists for a position only, and a group or a total row shows nothing but its own figures
     def data(self, index, role=Qt.DisplayRole):
+        if role == Qt.BackgroundRole and index.isValid() and index.internalPointer().details().get('kind') == self.STAKED:
+            return QBrush(Theme.tint(Meaning.INFO))
         if role == Qt.DisplayRole and index.isValid():
             details = index.internalPointer().details()
             field = self._columns[index.column()]['field']
@@ -460,10 +463,19 @@ class AccountHoldingsModel(HoldingsModel):
                 return None
             if field != 'header' and index.internalPointer().getGroup() is not None:
                 return None
+            if field == 'asset_name' and details.get('mark') and details.get('kind') != self.STAKED:
+                return f"{details['asset_name']} · {details['mark']}"   # a staked row names its protocol already
         return super().data(index, role)
 
     def _row_header(self, record: dict) -> str:
         return record['asset']
+
+    # A heading runs across the row, so its length doesn't set the width of the first column
+    def prepareData(self):
+        super().prepareData()
+        for row in range(self._root.childrenCount()):
+            if self._root.getChild(row).getGroup() is not None:
+                self._view.setFirstColumnSpanned(row, QModelIndex(), True)
 
     # A row valued by a quote alone. 'asset_is_currency' is what leaves it without a P/L, as money is: what a claim or
     # a stake cost isn't part of what this list says about them.

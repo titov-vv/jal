@@ -307,7 +307,8 @@ class FloatDelegate(GridLinesDelegate):
     def initStyleOption(self, option, index):
         super().initStyleOption(option, index)
         option.displayAlignment = Qt.AlignRight | Qt.AlignVCenter
-        if self._colors and self._color is not None:
+        # Qt asks no text of an empty cell, so _color still holds the one of the row drawn before it
+        if self._colors and self._color is not None and index.data() is not None:
             option.backgroundBrush = QBrush(self._color)
 
 

@@ -1,21 +1,22 @@
 from functools import partial
 
-from PySide6.QtCore import Qt, Slot, Signal, QSortFilterProxyModel
-from PySide6.QtGui import QAction, QActionGroup, QKeySequence
+from PySide6.QtCore import Qt, Slot, Signal, QSortFilterProxyModel, QTimer
+from PySide6.QtGui import QAction, QActionGroup, QKeySequence, QShortcut
 from PySide6.QtWidgets import QMenu, QMessageBox, QDialog, QStyle
 from jal.constants import Setup, AccountStatus
 from jal.ui.ui_operations_widget import Ui_OperationsWidget
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.selection_dialog import SelectReferenceDialog
 from jal.widgets.reference_dialogs import TagsListDialog
-from jal.widgets.helpers import (ManipulateDate, TableSelectionRestorer, set_grids_metrics,
+from jal.widgets.helpers import (ManipulateDate, TableSelectionRestorer, set_grids_metrics, ts2d,
                                 restore_splitters, save_splitters, assign_shortcut)
 from jal.widgets.icons import JalIcon
 from jal.db.settings import JalSettings
 from jal.db.account import JalAccount
-from jal.db.clock import now_dt
+from jal.db.clock import day_finish, now_dt
 from jal.db.asset import JalAsset
 from jal.db.balances_model import BalancesModel
+from jal.db.holdings_model import AccountHoldingsModel
 from jal.db.operations_model import OperationsModel
 from jal.db.common_models import TagTreeModel
 from jal.db.operations import LedgerTransaction
@@ -31,6 +32,7 @@ from jal.widgets.transfer_payment_dialog import TransferPaymentDialog
 # ----------------------------------------------------------------------------------------------------------------------
 class OperationsWidget(MdiWidget):
     dbUpdated = Signal()
+    SHOW_BOTH, SHOW_OPERATIONS, SHOW_POSITIONS = range(3)   # what the positions and operations panes show
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -50,8 +52,19 @@ class OperationsWidget(MdiWidget):
         self.ui.OperationsCollapseBtn.setIcon(self.style().standardIcon(QStyle.SP_ArrowDown))
         self.ui.DetailsToggleBtn.setIcon(JalIcon[JalIcon.DETAILS])
 
-        assign_shortcut(self.ui.NewOperationBtn, QKeySequence.New, self)
-        assign_shortcut(self.ui.CopyOperationBtn, QKeySequence("Ctrl+D"), self)
+        self._panes = JalSettings().getValue("OperationPanes", self.SHOW_BOTH)
+        self.ui.DetailsToggleBtn.setChecked(bool(JalSettings().getValue("OperationDetailsVisible", True)))
+
+        # Both keys work with the editor closed, when their buttons are hidden, so they open it first
+        for button, key, slot in ((self.ui.NewOperationBtn, QKeySequence.New, self.new_operation_by_key),
+                                  (self.ui.CopyOperationBtn, QKeySequence("Ctrl+D"), self.copy_operation)):
+            shortcut = assign_shortcut(button, key, self)
+            shortcut.activated.disconnect()
+            shortcut.activated.connect(slot)
+        for key in (Qt.Key_Return, Qt.Key_Enter):
+            shortcut = QShortcut(QKeySequence(key), self.ui.OperationsTableView)
+            shortcut.setContext(Qt.WidgetShortcut)
+            shortcut.activated.connect(self.open_details)
         assign_shortcut(self.ui.DeleteOperationBtn, QKeySequence.Delete, self.ui.OperationsTableView,
                         Qt.WidgetShortcut)
 
@@ -68,6 +81,10 @@ class OperationsWidget(MdiWidget):
         self.operations_model.configureView()
         self.ui.OperationsTableView.setContextMenuPolicy(Qt.CustomContextMenu)
         self._selection_restorer = TableSelectionRestorer(self.ui.OperationsTableView)
+
+        self.positions_model = AccountHoldingsModel(self.ui.PositionsTreeView)
+        self.ui.PositionsTreeView.setModel(self.positions_model)
+        self._apply_panes()
 
         self.connect_signals_and_slots()
 
@@ -94,6 +111,13 @@ class OperationsWidget(MdiWidget):
     def connect_signals_and_slots(self):
         self.ui.BalanceDate.dateChanged.connect(self.ui.BalancesTreeView.model().setDate)
         self.ui.BalancesCurrencyCombo.changed.connect(self.ui.BalancesTreeView.model().setCurrency)
+        self.ui.BalanceDate.dateChanged.connect(self.update_positions)
+        self.ui.BalancesCurrencyCombo.changed.connect(self.update_positions)
+        self.ui.ChooseAccountBtn.changed.connect(self.update_positions)
+        self.ui.PositionsCollapseBtn.clicked.connect(self.move_panes_up)
+        self.ui.OperationsCollapseBtn.clicked.connect(self.move_panes_down)
+        self.ui.DetailsToggleBtn.clicked.connect(self.toggle_details)
+        self.ui.OperationsTableView.doubleClicked.connect(self.open_details)
         self.ui.BalancesTreeView.doubleClicked.connect(self.balance_double_click)
         self.ui.BalancesTreeView.customContextMenuRequested.connect(self.balances_context_menu)
         self.ui.BalancesTreeView.expanded.connect(partial(self.balances_model.setGroupExpanded, expanded=True))
@@ -106,6 +130,94 @@ class OperationsWidget(MdiWidget):
         self.ui.OperationsTableView.customContextMenuRequested.connect(self.operation_context_menu)
         self.ui.DeleteOperationBtn.clicked.connect(self.delete_operation)
         self.ui.CopyOperationBtn.clicked.connect(self.ui.OperationsTabs.copy_operation)
+
+    # What the account selector's account holds at the date and in the currency of the Balances panel
+    def update_positions(self, *_args):
+        currency_id = self.ui.BalancesCurrencyCombo.selected_id
+        if not currency_id:
+            return
+        account_id = self.ui.ChooseAccountBtn.account_id
+        date = self.ui.BalanceDate.date()
+        self.positions_model.showAccount(account_id, currency_id, date)
+        if self.positions_model.hasPositions():
+            title = self.tr("Positions of {} as of {}").format(JalAccount(account_id).name(), ts2d(day_finish(date)))
+            wallets = self.positions_model.stakedFrom()
+            if wallets:
+                title += ", " + self.tr("staked from {}").format(", ".join(wallets))
+            self.ui.PositionsTitle.setText(title)
+        self._apply_panes()
+
+    # Shows the panes the current state asks for. Without positions to show only the operations are there to look at.
+    def _apply_panes(self):
+        panes = self._panes if self.positions_model.hasPositions() else None
+        operations_on = panes != self.SHOW_POSITIONS
+        self.ui.PositionsPane.setVisible(panes in (self.SHOW_BOTH, self.SHOW_POSITIONS))
+        self.ui.OperationsPane.setVisible(operations_on)
+        self.ui.OperationsCollapseBtn.setVisible(panes is not None)
+        self.ui.PositionsCollapseBtn.setToolTip(self.tr("Show operations") if panes == self.SHOW_POSITIONS
+                                                else self.tr("Hide positions"))
+        self.ui.OperationsCollapseBtn.setToolTip(self.tr("Show positions") if panes == self.SHOW_OPERATIONS
+                                                 else self.tr("Hide operations"))
+        details_were_hidden = self.ui.OperationDetails.isHidden()
+        self.ui.OperationDetails.setVisible(operations_on and self.ui.DetailsToggleBtn.isChecked())
+        if details_were_hidden and not self.ui.OperationDetails.isHidden():
+            self._load_selected_operation()
+
+    # The editor isn't filled while it is closed, so it catches up with the selection when it opens
+    def _load_selected_operation(self):
+        otype, oid = LedgerTransaction.NA, 0
+        rows = self.ui.OperationsTableView.selectionModel().selectedRows()
+        if len(rows) == 1:
+            otype, oid = self._operation_at(rows[0])
+        self.ui.OperationsTabs.show_operation(otype, oid)
+
+    # False if the editor has to stay because the user chose to keep its unsaved changes
+    def _can_close_details(self) -> bool:
+        return self.ui.OperationDetails.isHidden() or self.ui.OperationsTabs.show_operation(LedgerTransaction.NA, 0)
+
+    def _set_panes(self, panes: int):
+        if panes == self.SHOW_POSITIONS and not self._can_close_details():
+            return
+        self._panes = panes
+        JalSettings().setValue("OperationPanes", panes)
+        self._apply_panes()
+
+    @Slot()
+    def move_panes_up(self):
+        self._set_panes(self.SHOW_BOTH if self._panes == self.SHOW_POSITIONS else self.SHOW_OPERATIONS)
+
+    @Slot()
+    def move_panes_down(self):
+        self._set_panes(self.SHOW_BOTH if self._panes == self.SHOW_OPERATIONS else self.SHOW_POSITIONS)
+
+    @Slot(bool)
+    def toggle_details(self, checked: bool):
+        if not checked and not self._can_close_details():
+            self.ui.DetailsToggleBtn.setChecked(True)
+            return
+        JalSettings().setValue("OperationDetailsVisible", checked)
+        self._apply_panes()
+
+    # Makes sure the operations and the editor are on screen
+    @Slot()
+    def open_details(self):
+        if self._panes == self.SHOW_POSITIONS:
+            self._panes = self.SHOW_BOTH
+            JalSettings().setValue("OperationPanes", self._panes)
+        self.ui.DetailsToggleBtn.setChecked(True)
+        JalSettings().setValue("OperationDetailsVisible", True)
+        self._apply_panes()
+
+    # Delayed because the button's menu opens at the button, which gets its place only after the editor is laid out
+    @Slot()
+    def new_operation_by_key(self):
+        self.open_details()
+        QTimer.singleShot(0, self.ui.NewOperationBtn.click)
+
+    @Slot()
+    def copy_operation(self):
+        self.open_details()
+        self.ui.OperationsTabs.copy_operation()
 
     @Slot()
     def delete_operation(self):
@@ -134,7 +246,7 @@ class OperationsWidget(MdiWidget):
 
     @Slot()
     def operation_selection_change(self, selected, deselected):
-        if self._selection_restorer.busy():
+        if self._selection_restorer.busy() or self.ui.OperationDetails.isHidden():
             return
         otype = LedgerTransaction.NA
         oid = 0
@@ -154,7 +266,7 @@ class OperationsWidget(MdiWidget):
         actionTag = QAction(JalIcon[JalIcon.TAG], self.tr("Assign tag"), self)
         actionTag.triggered.connect(self.assign_tag)
         actionCopy = QAction(JalIcon[JalIcon.COPY], self.tr("Copy"), self)
-        actionCopy.triggered.connect(self.ui.OperationsTabs.copy_operation)
+        actionCopy.triggered.connect(self.copy_operation)
         actionDelete = QAction(JalIcon[JalIcon.REMOVE], self.tr("Delete"), self)
         actionDelete.triggered.connect(self.delete_operation)
         actionMatchBridge = QAction(JalIcon[JalIcon.TRANSFER_ASSET_IN], self.tr("Match cross-chain legs…"), self)
@@ -315,6 +427,7 @@ class OperationsWidget(MdiWidget):
 
     def refresh(self):
         self.balances_model.update()
+        self.update_positions()
 
     @Slot()
     def assign_tag(self):

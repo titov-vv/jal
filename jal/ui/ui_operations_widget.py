@@ -152,6 +152,7 @@ class Ui_OperationsWidget(object):
         sizePolicy3.setHeightForWidth(self.PositionsOperationsSplitter.sizePolicy().hasHeightForWidth())
         self.PositionsOperationsSplitter.setSizePolicy(sizePolicy3)
         self.PositionsOperationsSplitter.setOrientation(Qt.Orientation.Vertical)
+        self.PositionsOperationsSplitter.setChildrenCollapsible(False)
         self.PositionsPane = QWidget(self.PositionsOperationsSplitter)
         self.PositionsPane.setObjectName(u"PositionsPane")
         self.PositionsPane.setVisible(False)
@@ -231,7 +232,6 @@ class Ui_OperationsWidget(object):
 
         self.OperationsPaneButtons = QFrame(self.OperationsPane)
         self.OperationsPaneButtons.setObjectName(u"OperationsPaneButtons")
-        self.OperationsPaneButtons.setVisible(False)
         sizePolicy5.setHeightForWidth(self.OperationsPaneButtons.sizePolicy().hasHeightForWidth())
         self.OperationsPaneButtons.setSizePolicy(sizePolicy5)
         self.operationsPaneButtonsLayout = QVBoxLayout(self.OperationsPaneButtons)
