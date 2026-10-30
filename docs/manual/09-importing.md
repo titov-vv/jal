@@ -103,7 +103,7 @@ what is already stored, and an interest payment is recognised by its day, so it 
 If the interest stored for a day differs from what the statement says, the import stops and names
 the day.
 
-> Revolut writes the export in the language its app is set to. English and Portuguese are recognised;
+> Revolut writes the export in the language you choose for it. English and Portuguese are recognised;
 > a file in another language stops the import, naming the word it did not know.
 
 ### What an import actually does

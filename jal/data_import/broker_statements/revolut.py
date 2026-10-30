@@ -49,8 +49,8 @@ SettingsRegistry.register(SettingDescriptor(
 # accounts - the 'Product' column tells the current account from the savings pocket - and both ends of a movement
 # between them are in it, which is what lets such a movement be stored as one transfer.
 #
-# The file is written in the language the Revolut app is set to, and there is no way to ask it for another one. Only
-# three things are localized: the header, the 'Type' and the 'State'; everything the module decides is decided from
+# The file is written in the language chosen for the export. Only the header, the 'Product', the 'Type' and the 'State'
+# are localized; everything the module decides is decided from
 # those, never from a description. Revolut writes descriptions in a mixture of languages within one and the same
 # file ("Transferência para ..." next to "From Flexible Cash Funds"), so a description is shown to the user and is
 # never read by the code.
@@ -98,16 +98,16 @@ class StatementRevolut(Statement):
     CARD_PAYMENT, TRANSFER, TOPUP, INTEREST = 'card_payment', 'transfer', 'topup', 'interest'
     ATM, FEE, REFUND, CASHBACK = 'atm', 'fee', 'refund', 'cashback'
     Types = {
-        'CARD_PAYMENT': CARD_PAYMENT, 'Pagamento com cartão': CARD_PAYMENT,
-        'TRANSFER': TRANSFER, 'Transferência': TRANSFER,
-        'TOPUP': TOPUP, 'Carregamento': TOPUP,
-        'INTEREST': INTEREST, 'Juros': INTEREST,
+        'CARD_PAYMENT': CARD_PAYMENT, 'Card Payment': CARD_PAYMENT, 'Pagamento com cartão': CARD_PAYMENT,
+        'TRANSFER': TRANSFER, 'Transfer': TRANSFER, 'Transferência': TRANSFER,
+        'TOPUP': TOPUP, 'Deposit': TOPUP, 'Carregamento': TOPUP,     # 'Deposit' here is a top-up, not the product
+        'INTEREST': INTEREST, 'Interest': INTEREST, 'Juros': INTEREST,
         'ATM': ATM,
-        'FEE': FEE, 'Taxa': FEE,
-        'CARD_REFUND': REFUND, 'Devolução do cartão de débito': REFUND,
-        'CARD_CHARGEBACK': REFUND, 'Estorno de pagamento com cartão': REFUND,
-        'CASHBACK': CASHBACK, 'Recompensa': CASHBACK,
-        'REVOLUT_PAYMENT': CARD_PAYMENT, 'Pagamento Revolut': CARD_PAYMENT
+        'FEE': FEE, 'Fee': FEE, 'Taxa': FEE,
+        'CARD_REFUND': REFUND, 'Card Refund': REFUND, 'Devolução do cartão de débito': REFUND,
+        'CARD_CHARGEBACK': REFUND, 'Card Chargeback': REFUND, 'Estorno de pagamento com cartão': REFUND,
+        'CASHBACK': CASHBACK, 'Reward': CASHBACK, 'Recompensa': CASHBACK,
+        'REVOLUT_PAYMENT': CARD_PAYMENT, 'Rev Payment': CARD_PAYMENT, 'Pagamento Revolut': CARD_PAYMENT
     }
     # The kinds that become one spending or income each, reviewed by the user before anything is stored. They are
     # all money that left or reached the account without a second account of this ledger on the other end.

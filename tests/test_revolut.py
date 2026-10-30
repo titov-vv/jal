@@ -125,6 +125,42 @@ def test_revolut_parsing(prepare_db_revolut):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# The English labels of the export. A 'Deposit' type is a top-up, while a 'Deposit' product is the savings pocket.
+def test_revolut_english_labels(tmp_path, prepare_db_revolut):
+    path = str(tmp_path / "revolut_en.csv")
+    with open(path, 'w', encoding='utf-8') as f:
+        f.write('\n'.join([
+            'Type,Product,Started Date,Completed Date,Description,Amount,Fee,Currency,State,Balance',
+            'Deposit,Current,2026-03-02 10:00:00,2026-03-02 10:00:05,Payment from TEST USER,500.00,0.00,EUR,COMPLETED,'
+            '500.00',
+            'Card Payment,Current,2026-03-03 12:15:30,2026-03-04 10:00:00,Green grocer,-18.40,0.00,EUR,COMPLETED,481.60',
+            'Card Payment,Current,2026-03-03 13:00:00,,Coffee house,-7.30,0.00,EUR,REVERTED,',
+            'Card Refund,Current,2026-03-04 09:00:00,2026-03-04 09:00:05,Green grocer,18.40,0.00,EUR,COMPLETED,500.00',
+            'ATM,Current,2026-03-05 09:00:00,2026-03-05 09:00:05,Cash withdrawal,-20.00,0.00,EUR,COMPLETED,480.00',
+            'Fee,Current,2026-03-05 10:00:00,2026-03-05 10:00:05,Plan fee,-1.00,0.00,EUR,COMPLETED,479.00',
+            'Reward,Current,2026-03-05 11:00:00,2026-03-05 11:00:05,Referral,2.00,0.00,EUR,COMPLETED,481.00',
+            'Rev Payment,Current,2026-03-05 12:00:00,2026-03-05 12:00:05,To a user,-3.00,0.00,EUR,COMPLETED,478.00',
+            'Card Chargeback,Current,2026-03-05 13:00:00,2026-03-05 13:00:05,A shop,4.00,0.00,EUR,COMPLETED,482.00',
+            'Transfer,Current,2026-03-06 11:00:00,2026-03-06 11:00:00,To EUR Boosted account,-400.00,0.00,EUR,COMPLETED,'
+            '82.00',
+            'Transfer,Deposit,2026-03-06 11:00:00,2026-03-06 11:00:00,From EUR Personal,400.00,0.00,EUR,COMPLETED,400.00',
+            'Interest,Deposit,2026-03-07 01:20:00,2026-03-07 01:20:00,Net interest paid,0.03,0.01,EUR,COMPLETED,400.02']))
+    statement = StatementRevolut()
+    statement.load(path)
+    data = statement._data
+    current, savings = statement._account_ids[StatementRevolut.CURRENT], statement._account_ids[StatementRevolut.DEPOSIT]
+    top_up = [x for x in data[JSF.TRANSFERS] if x['withdrawal'] == Decimal('500')][0]
+    assert top_up['account'] == [0, current, 0]
+    into_pocket = [x for x in data[JSF.TRANSFERS] if x['withdrawal'] == Decimal('400')][0]
+    assert into_pocket['account'][:2] == [current, savings]
+    assert sorted(x['amount'] for x in statement._card_rows) == [
+        Decimal(x) for x in ('-20.00', '-18.40', '-3.00', '-1.00', '2.00', '4.00', '18.40')]
+    interest = [x for x in data[JSF.INCOME_SPENDING] if x['account'] == savings]
+    assert [(l['amount'], l['category']) for l in interest[0]['lines']] == [
+        (Decimal('0.03'), PredefinedCategory.Interest), (Decimal('-0.01'), PredefinedCategory.Taxes)]
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 # Revolut writes its timestamps on the wall clock of the account's country. March keeps UTC in Lisbon, July doesn't.
 def test_revolut_timezone(prepare_db_revolut):
     statement = StatementRevolut()
