@@ -98,6 +98,10 @@ def capture_main_window(window, operations):
     select_operation(operations, lambda otype, oid: otype == LedgerTransaction.IncomeSpending)
     save(window, "main_window")
     save(operations.ui.BalanceBox, "balances_panel")
+    operations.ui.ChooseAccountBtn.account_id = 6          # 'Cold Wallet'
+    QApplication.processEvents()
+    save(window, "main_window_positions")
+    operations.ui.ChooseAccountBtn.account_id = 2
 
 
 # The wallet is where an operation stops being a single line: a swap shows what it gave and what it got, and its

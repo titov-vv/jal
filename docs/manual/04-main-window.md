@@ -13,6 +13,9 @@ The window has four areas:
 * **Operations** on the right — what happened;
 * the **editor** underneath the operations — the details of whatever is selected.
 
+Choose an account that holds assets and a fifth area appears above the operations: its
+[**positions**](#the-positions-list).
+
 At the very bottom is a **logs** button that opens JAL's message panel.
 
 ## Tabs
@@ -35,7 +38,8 @@ A list of your accounts, grouped by type, showing what each one holds.
 * **Balance** is the amount in the account's own currency; the last column is that amount converted.
   The **Total** at the bottom adds up the converted column.
 
-Double-click an account and the operations list to the right jumps to it.
+Double-click an account and the operations list to the right jumps to it, with the
+[positions](#the-positions-list) it holds above. Double-click a group row to go back to all accounts.
 
 ### The colours
 
@@ -90,6 +94,53 @@ a tag with no picture marks nothing.
   report for the account under the cursor.
 * **Expand all / Collapse all** — the account-type groups.
 
+## The positions list
+
+An account's operations don't always tell you what is in it: a wallet can hold no money for months and
+plenty of tokens all the while. So when the account chosen on the right holds assets, the list above
+the operations shows them.
+
+![Positions of a wallet above its operations](img/main_window_positions.png)
+
+It follows the **date** and **currency** of the Balances panel, so it always matches the balance you
+clicked, and it ignores the date range of the operations. An account that holds only money has
+nothing to add to its balance, so the list stays hidden for it, and for *ANY* account.
+
+From top to bottom it shows:
+
+* what the account **holds** — each asset with its quantity, opening date, average price, last price,
+  profit and value, as in the [portfolio report](10-reports.md#asset-portfolio) — and its money. A receipt
+  token names its protocol beside the asset's name;
+* **Claimable** — rewards earned and not yet paid, with who owes them;
+* **On this account** — the total, equal to the account's balance without any credit limit;
+* **Staked from this account** — what the account has put into [staking](08-crypto.md). A staked position
+  is an account of its own, so it is not part of this account's balance. It has a tinted row, and
+  **Including staked** gives the total with it.
+
+Double-click a staking position in the Balances panel and the list shows its holdings, with the wallet
+it was staked from named in the title.
+
+### Right-click on a position
+
+* **Show Price Chart** and, for a position whose balance is read from a blockchain, **Show Accrual Chart**.
+* **Estimate tax** — [what a sale would cost](06-investments.md#what-a-sale-would-cost-in-tax), with the Balances date set to today.
+* **Set asset tag**, **Set asset country**.
+
+A claimable reward offers **Show claim history** instead. Money and the total rows have no menu.
+
+## Making room
+
+Each area has its own buttons on the right, and they move with it.
+
+| Button | Where | Does |
+|---|---|---|
+| **▲** | positions | Hides the positions, leaving the operations. In the positions-only view it brings the operations back. |
+| **▼** | operations | Hides the operations and the editor, leaving the positions. In the operations-only view it brings the positions back. |
+| **details** | operations | Shows or hides the editor. |
+
+JAL remembers your choices. Drag the bar between two areas to change their sizes: returning from a
+hidden area restores the split you had.
+
 ## The Operations list
 
 Every operation, oldest first — with a running **Balance** column so you can follow the account from
@@ -125,7 +176,9 @@ An amount too small to be seen at two decimals is not shown as `0.00` but compac
 wallets write it: `0.0₂21` is 0.0021, `0.0₃80` is 0.0008 — the small figure counts the zeros that
 follow the decimal point, and two significant digits follow them.
 
-### The buttons on the right
+### The buttons of the editor
+
+These sit to the right of the editor. With the editor hidden, the shortcuts open it first.
 
 | Button | Does | Shortcut |
 |---|---|---|
@@ -149,14 +202,16 @@ of its two ends. Both are explained in [chapter 8](08-crypto.md).
 
 ## The editor
 
-Select an operation and its details appear below the list. Each kind of operation has its own
-editor; they all work the same way:
+Select an operation and its details appear below the list. If you have hidden the editor, double-click
+the operation or press `Enter` on it to bring it back. Each kind of operation has its own editor; they
+all work the same way:
 
 * Change whatever you like — the **✓** and **✗** buttons at the top right wake up as soon as
   something is different.
 * **✓** (`Ctrl+S`) saves. **✗** (`Esc`) puts everything back as it was.
 * A field JAL cannot do without is painted **red** until you fill it in.
-* If you move to another operation with unsaved changes, JAL asks whether to save, discard or stay.
+* If you move to another operation or hide the editor with unsaved changes, JAL asks whether to save,
+  discard or stay.
 
 Every editor is described in [chapter 5](05-everyday-money.md) and [chapter 6](06-investments.md).
 

@@ -1,14 +1,16 @@
 import os
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+import pathlib
 from decimal import Decimal
 
 import pytest
-from PySide6.QtCore import QDate, QPoint, Qt
+from PySide6.QtCore import QDate, QPoint, Qt, QTranslator
 from PySide6.QtWidgets import QApplication, QDialog, QMenu, QMessageBox, QStyleOptionViewItem, QWidget
 
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import d2t, create_actions, create_trades
 from tests.test_account_holdings import wallet, _stake, _claim, WALLET, LINK, EUR, USD
+import jal
 from jal.constants import PredefinedAccountType
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
@@ -372,3 +374,20 @@ def test_the_tag_set_from_the_list_reaches_the_asset(wallet, owner, monkeypatch)
     window = _window(owner, WALLET)
     _offers(window, window.positions_model.index(0, 0), monkeypatch)['Set asset tag'].trigger()
     assert JalAsset(LINK).tag().id() == tag_id
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Translations are found by the class that asks for them, which here may be the base class of the one that is running
+def test_the_list_and_its_menu_are_translated(wallet, owner, monkeypatch):
+    translator = QTranslator()
+    assert translator.load(str(pathlib.Path(jal.__file__).parent / "languages" / "ru.qm"))
+    QApplication.installTranslator(translator)
+    try:
+        window = _window(owner, WALLET)
+        model = window.positions_model
+        assert [x['name'] for x in model._columns][:3] == ['Актив', 'Ценная бумага', 'Кол-во']
+        assert model._root.getChild(2).details()['header'] == 'На этом счёте (равно балансу)'
+        assert window.ui.PositionsTitle.text() == 'Позиции ETH wallet на 01/03/2021'
+        assert 'Показать график цены' in _offers(window, model.index(0, 0), monkeypatch)
+    finally:
+        QApplication.removeTranslator(translator)
