@@ -8721,6 +8721,11 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation>Импортировано операций (новых / уже имеющихся): </translation>
     </message>
     <message>
+        <location filename="../data_import/statement.py" line="766"/>
+        <source>Operation times corrected from the statement: </source>
+        <translation>Время операций исправлено по отчёту: </translation>
+    </message>
+    <message>
         <location filename="../data_import/statement.py" line="785"/>
         <source>Statement brought no operations</source>
         <translation>В отчёте нет операций</translation>

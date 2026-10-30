@@ -697,6 +697,10 @@ class IncomeSpending(LedgerTransaction):
             self._currency_name = JalAsset(self._currency).symbol()
         self._amount_alt = sum(Decimal(line['amount_alt']) for line in self._details) if self._details else Decimal('0')
 
+    def update_timestamp(self, timestamp: int) -> None:
+        self._exec("UPDATE actions SET timestamp=:timestamp WHERE oid=:oid",
+                   [(":oid", self._oid), (":timestamp", timestamp)])
+
     def description(self, part_only=False) -> str:
         if part_only and self._opart is not None:
             return n[0] if (n := [x['note'] for x in self._details if x['id'] == self._opart]) else ''

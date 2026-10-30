@@ -186,6 +186,19 @@ def test_revolut_review_and_import(prepare_db_revolut):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# A row left unticked is the stored operation it was paired with, and the statement's time replaces the typed one
+def test_revolut_corrects_stored_time(prepare_db_revolut):
+    current_id, _savings_id = prepare_db_revolut
+    grocer = store_operation(current_id, dt2t(2603031216), '-18.40', 'Green grocer').id()
+    statement = load_statement()
+    statement._card_decisions_for_tests = [NOTHING] * len(statement._card_rows)
+    statement.match_db_ids()
+    statement.import_into_db()
+    assert JalDB._read("SELECT timestamp FROM actions WHERE oid=:oid", [(":oid", grocer)]) == dt2t(2603031215) + 30
+    assert JalDB._read("SELECT amount FROM action_details WHERE pid=:oid", [(":oid", grocer)]) == '-18.4'
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 # An interest payment carries nothing that identifies it and is never shown to the user, so the day it was paid on
 # is what keeps a second import from storing it twice.
 def test_revolut_interest_is_not_stored_twice(prepare_db_revolut):

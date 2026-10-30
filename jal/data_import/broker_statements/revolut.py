@@ -520,7 +520,7 @@ class StatementRevolut(Statement):
             raise Statement_ImportError(self.tr("Statement import was cancelled"))
         operations = {x['id']: x for x in self._data[JSF.INCOME_SPENDING]}
         imported = []
-        for row, decision in zip(self._reviewed_rows, decisions):
+        for (row, match), decision in zip(reviewed, decisions):
             if 'transfer' in row:
                 if not decision['import']:
                     self._data[JSF.TRANSFERS] = [x for x in self._data[JSF.TRANSFERS] if x['id'] != row['id']]
@@ -528,6 +528,8 @@ class StatementRevolut(Statement):
             operation = operations[row['id']]
             if not decision['import']:
                 self._data[JSF.INCOME_SPENDING].remove(operation)
+                if match is not None:
+                    self._keep_stored_time(match, row['timestamp'])
                 continue
             operation['peer'] = decision['peer']
             operation['description'] = decision['description']

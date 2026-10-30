@@ -188,6 +188,65 @@ def test_statement_t212_import(prepare_db_t212):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+def card_decisions(statement, imported=()):
+    bought = JalPeer(data={'name': 'Book corner'}, search=True, create=True).id()
+    return [{'import': x['timestamp'] in imported, 'peer': bought, 'category': PredefinedCategory.Spending,
+             'description': 'New'} for x in statement._card_rows]
+
+
+def stored_row(oid):
+    return JalDB._read("SELECT a.account_id, a.peer_id, a.note, a.number, d.category_id, d.amount, d.note "
+                       "FROM actions AS a JOIN action_details AS d ON d.pid=a.oid WHERE a.oid=:oid", [(":oid", oid)])
+
+
+# A row left unticked is the stored purchase it was paired with, and the statement's time replaces the typed one
+def test_statement_t212_corrects_stored_time(prepare_db_t212):
+    account_id = prepare_db_t212
+    store_card_operation(account_id, dt2t(2603041216), '-18.40', 'Green grocer')          # paired, unticked
+    store_card_operation(account_id, dt2t(2603091905) + 12, '-7.25', 'Coffee house')      # the statement's own time
+    store_card_operation(account_id, dt2t(2603121045), '-42.00', 'Hardware depot')        # paired, but ticked
+    grocer, coffee, hardware = [JalDB._read("SELECT pid FROM action_details WHERE amount=:amount", [(":amount", x)])
+                                for x in ('-18.4', '-7.25', '-42')]
+    before = stored_row(grocer)
+
+    statement = load_first()
+    statement._card_decisions_for_tests = card_decisions(statement, imported=(dt2t(2603121030),))
+    statement.match_db_ids()
+    assert JalDB._read("SELECT timestamp FROM actions WHERE oid=:oid", [(":oid", grocer)]) == dt2t(2603041216)
+    statement.import_into_db()
+    assert JalDB._read("SELECT timestamp FROM actions WHERE oid=:oid", [(":oid", grocer)]) == dt2t(2603041215) + 30
+    assert stored_row(grocer) == before
+    assert JalDB._read("SELECT timestamp FROM actions WHERE oid=:oid", [(":oid", hardware)]) == dt2t(2603121045)
+    assert JalDB._read("SELECT timestamp FROM actions WHERE oid=:oid", [(":oid", coffee)]) == dt2t(2603091905) + 12
+    assert statement._stored_times == {grocer: dt2t(2603041215) + 30}
+
+    Ledger().rebuild(from_timestamp=0)
+    assert JalDB._read("SELECT timestamp FROM ledger WHERE otype=:otype AND oid=:oid LIMIT 1",
+                       [(":otype", LedgerTransaction.IncomeSpending), (":oid", grocer)]) == dt2t(2603041215) + 30
+
+    # Once corrected, the next import of the statement has nothing to change
+    again = load_first()
+    again._card_decisions_for_tests = card_decisions(again, imported=(dt2t(2603121030),))
+    again.match_db_ids()
+    assert again._stored_times == {}
+
+
+def test_statement_t212_failed_import_keeps_stored_time(prepare_db_t212):
+    account_id = prepare_db_t212
+    store_card_operation(account_id, dt2t(2603041216), '-18.40', 'Green grocer')
+    statement = load_first()
+    statement._card_decisions_for_tests = card_decisions(statement)
+    statement.match_db_ids()
+
+    def failure(_data):
+        raise ValueError("Failed section")
+    statement._section_loaders = {JSF.TRADES: failure}
+    with pytest.raises(ValueError):
+        statement.import_into_db()
+    assert JalDB._read("SELECT timestamp FROM actions") == dt2t(2603041216)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 def test_statement_t212_transfers(tmp_path, prepare_db_t212):
     account_id = prepare_db_t212
     bank = JalAccountCreator(currency_id=EUR, number='BANK', name='Bank', precision=2,

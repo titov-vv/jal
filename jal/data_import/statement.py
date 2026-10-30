@@ -20,7 +20,7 @@ from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.symbol import JalSymbol
 from jal.db.token_blacklist import normalize_address, JalTokenBlacklist
 from jal.db.operations import LedgerTransaction, AssetPayment, AssetIncome, ChainAction, CorporateAction, \
-    Trade, Transfer, Bridge, FeeKind
+    IncomeSpending, Trade, Transfer, Bridge, FeeKind
 from jal.db.bridge_matcher import BridgeMatcher
 from jal.db.lending_interest import split_welded_interest
 from jal.db.transfer_settlement import TransferSettlement
@@ -191,6 +191,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         # shows exactly what the producer built.
         self._id_map = {}
         self._reset_id_map()
+        self._stored_times = {}   # {oid: timestamp} of stored incomes/spendings the statement states another time for
         # The interactive cross-chain token prompt can't run under pytest; tests set the desired outcome here as a
         # (action, target_asset_id) tuple. The default never merges or discards silently - it creates a new asset.
         self._token_action_for_tests = (Statement.TOKEN_CREATE_NEW, 0)
@@ -743,6 +744,7 @@ class Statement(QObject):   # derived from QObject to have proper string transla
         db.start_transaction()
         JalDB._operation_tally = tally = {}
         try:
+            self._correct_stored_times()
             for section in self._section_loaders:
                 if section in self._data:
                     self._section_loaders[section](self._data[section])
@@ -762,6 +764,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             JalDB._operation_tally = None
         db.commit_transaction()
         self._log_summary(tally)
+        if self._stored_times:
+            logging.info(self.tr("Operation times corrected from the statement: ") + f"{len(self._stored_times)}")
 
         totals = defaultdict(dict)
         for account in self._data[JSF.ACCOUNTS]:
@@ -770,6 +774,15 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 currency_id = self.mapped_id(JSF.ASSETS, account['currency'])
                 totals[account_id][currency_id] = account['cash_end']
         return totals
+
+    # Remembers the time of a row the user confirmed to be the given stored income/spending
+    def _keep_stored_time(self, operation: dict, timestamp: int) -> None:
+        if operation['timestamp'] != timestamp:
+            self._stored_times[operation['oid']] = timestamp
+
+    def _correct_stored_times(self) -> None:
+        for oid, timestamp in self._stored_times.items():
+            IncomeSpending(oid).update_timestamp(timestamp)
 
     # One line saying how many operations of each kind the import stored and how many it found already present
     def _log_summary(self, tally: dict) -> None:

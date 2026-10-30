@@ -419,10 +419,12 @@ class StatementTrading212(Statement):
             raise Statement_ImportError(self.tr("Statement import was cancelled"))
         operations = {x['id']: x for x in self._data[JSF.INCOME_SPENDING]}
         imported = []
-        for row, decision in zip(self._card_rows, decisions):
+        for row, match, decision in zip(self._card_rows, proposal, decisions):
             operation = operations[row['id']]
             if not decision['import']:
                 self._data[JSF.INCOME_SPENDING].remove(operation)
+                if match is not None:
+                    self._keep_stored_time(match, row['timestamp'])
                 continue
             operation['peer'] = decision['peer']
             operation['description'] = decision['description']

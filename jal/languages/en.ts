@@ -8693,6 +8693,11 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../data_import/statement.py" line="766"/>
+        <source>Operation times corrected from the statement: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../data_import/statement.py" line="785"/>
         <source>Statement brought no operations</source>
         <translation type="unfinished"></translation>
