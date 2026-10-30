@@ -2,7 +2,7 @@ from functools import partial
 
 from PySide6.QtCore import Qt, Slot, Signal, QSortFilterProxyModel
 from PySide6.QtGui import QAction, QActionGroup, QKeySequence
-from PySide6.QtWidgets import QMenu, QMessageBox, QDialog
+from PySide6.QtWidgets import QMenu, QMessageBox, QDialog, QStyle
 from jal.constants import Setup, AccountStatus
 from jal.ui.ui_operations_widget import Ui_OperationsWidget
 from jal.widgets.mdi import MdiWidget
@@ -46,6 +46,9 @@ class OperationsWidget(MdiWidget):
         self.ui.NewOperationBtn.setIcon(JalIcon[JalIcon.ADD])
         self.ui.CopyOperationBtn.setIcon(JalIcon[JalIcon.COPY])
         self.ui.DeleteOperationBtn.setIcon(JalIcon[JalIcon.REMOVE])
+        self.ui.PositionsCollapseBtn.setIcon(self.style().standardIcon(QStyle.SP_ArrowUp))
+        self.ui.OperationsCollapseBtn.setIcon(self.style().standardIcon(QStyle.SP_ArrowDown))
+        self.ui.DetailsToggleBtn.setIcon(JalIcon[JalIcon.DETAILS])
 
         assign_shortcut(self.ui.NewOperationBtn, QKeySequence.New, self)
         assign_shortcut(self.ui.CopyOperationBtn, QKeySequence("Ctrl+D"), self)

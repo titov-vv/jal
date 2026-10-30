@@ -1,4 +1,5 @@
 import os
+import base64
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 import pytest
@@ -83,3 +84,33 @@ def test_operations_window_remembers_its_splits(parent):
     reopened.show()
     QApplication.processEvents()
     assert reopened.ui.BalanceOperationsSplitter.sizes() == saved
+
+
+# The split between the table and the editor was saved when the operations table sat directly in this splitter. The
+# positions pane is nested one level down, so a state saved before it existed still means the same two panes.
+def test_operations_window_keeps_a_split_saved_before_the_positions_pane(parent):
+    from jal.widgets.operations_widget import OperationsWidget
+
+    parent.resize(1100, 620)
+    parent.show()
+    two_panes = QSplitter(Qt.Vertical, parent)
+    two_panes.addWidget(QLabel("table", two_panes))
+    two_panes.addWidget(QLabel("editor", two_panes))
+    two_panes.resize(100, 600)
+    two_panes.show()
+    two_panes.setSizes([450, 150])
+    QApplication.processEvents()
+    JalSettings().setValue(Setup.SPLITTER_STATE_PREFIX + "OperationsDetailsSplitter",
+                           base64.encodebytes(two_panes.saveState().data()).decode('utf-8'))
+    two_panes.hide()
+
+    window = OperationsWidget(parent)
+    window.resize(1100, 620)
+    window.show()
+    QApplication.processEvents()
+    table, editor = window.ui.OperationsDetailsSplitter.sizes()
+    assert window.ui.OperationsDetailsSplitter.widget(0) is window.ui.PositionsOperationsSplitter
+    assert window.ui.OperationDetails.isVisible()
+    assert table > editor > 0
+    assert window.ui.OperationsPane.isVisible()
+    window.close()
