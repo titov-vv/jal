@@ -86,7 +86,7 @@ def test_the_report_sets_the_country_and_regroups(prepare_db, monkeypatch):
         offered.update(label=label, current=items[current])
         return us.name(), True
     monkeypatch.setattr(QInputDialog, "getItem", pick)
-    window.setCountry(position)
+    window.holdings_menu.setCountry(position)
     assert 'AAPL' in offered['label']
     assert offered['current'] == JalCountry(0).name()   # the dialog opens on the country the asset has
     assert _stored_country(asset_id) == us.id()
@@ -98,7 +98,7 @@ def test_a_cancelled_dialog_changes_nothing(prepare_db, monkeypatch):
     window = _report_with_a_position(asset_id)
     model = window.holdings_model
     monkeypatch.setattr(QInputDialog, "getItem", lambda *args: (JalCountry(1).name(), False))
-    window.setCountry(model.index(0, 0, model.index(0, 0)))
+    window.holdings_menu.setCountry(model.index(0, 0, model.index(0, 0)))
     assert _stored_country(asset_id) == 0
 
 
@@ -136,7 +136,7 @@ def test_the_report_sets_the_tag_and_regroups(prepare_db, monkeypatch):
         dialog.selected_id = tag_id
         return QDialog.Accepted
     monkeypatch.setattr(SelectReferenceDialog, "exec", pick)
-    window.setTag(position)
+    window.holdings_menu.setTag(position)
     assert JalAsset(asset_id).tag().id() == tag_id
     groups = [model._root.getChild(row) for row in range(model._root.childrenCount())]
     held = {group.details()['tag']: [group.getChild(row).details()['asset_id'] for row in range(group.childrenCount())]

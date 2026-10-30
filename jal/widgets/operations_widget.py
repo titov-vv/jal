@@ -5,6 +5,7 @@ from PySide6.QtGui import QAction, QActionGroup, QKeySequence, QShortcut
 from PySide6.QtWidgets import QMenu, QMessageBox, QDialog, QStyle
 from jal.constants import Setup, AccountStatus
 from jal.ui.ui_operations_widget import Ui_OperationsWidget
+from jal.widgets.holdings_menu import HoldingsMenu
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.selection_dialog import SelectReferenceDialog
 from jal.widgets.reference_dialogs import TagsListDialog
@@ -84,6 +85,8 @@ class OperationsWidget(MdiWidget):
 
         self.positions_model = AccountHoldingsModel(self.ui.PositionsTreeView)
         self.ui.PositionsTreeView.setModel(self.positions_model)
+        self.ui.PositionsTreeView.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.positions_menu = HoldingsMenu(self.ui.PositionsTreeView, self.ui.BalanceDate.date, self._add_window)
         self._apply_panes()
 
         self.connect_signals_and_slots()
@@ -114,6 +117,7 @@ class OperationsWidget(MdiWidget):
         self.ui.BalanceDate.dateChanged.connect(self.update_positions)
         self.ui.BalancesCurrencyCombo.changed.connect(self.update_positions)
         self.ui.ChooseAccountBtn.changed.connect(self.update_positions)
+        self.ui.PositionsTreeView.customContextMenuRequested.connect(self.positions_context_menu)
         self.ui.PositionsCollapseBtn.clicked.connect(self.move_panes_up)
         self.ui.OperationsCollapseBtn.clicked.connect(self.move_panes_down)
         self.ui.DetailsToggleBtn.clicked.connect(self.toggle_details)
@@ -146,6 +150,19 @@ class OperationsWidget(MdiWidget):
                 title += ", " + self.tr("staked from {}").format(", ".join(wallets))
             self.ui.PositionsTitle.setText(title)
         self._apply_panes()
+
+    def _add_window(self, *args, **kwargs):
+        return self._parent.reports.mdi_area().addWindow(*args, **kwargs)
+
+    @Slot()
+    def positions_context_menu(self, pos):
+        index = self.ui.PositionsTreeView.indexAt(pos)
+        if not index.isValid():
+            return
+        menu = QMenu(self.ui.PositionsTreeView)
+        self.positions_menu.add_actions(menu, index)
+        if menu.actions():
+            menu.popup(self.ui.PositionsTreeView.viewport().mapToGlobal(pos))
 
     # Shows the panes the current state asks for. Without positions to show only the operations are there to look at.
     def _apply_panes(self):

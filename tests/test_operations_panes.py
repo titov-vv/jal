@@ -3,19 +3,23 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 from decimal import Decimal
 
 import pytest
-from PySide6.QtCore import QDate, Qt
-from PySide6.QtWidgets import QApplication, QMessageBox, QStyleOptionViewItem, QWidget
+from PySide6.QtCore import QDate, QPoint, Qt
+from PySide6.QtWidgets import QApplication, QDialog, QMenu, QMessageBox, QStyleOptionViewItem, QWidget
 
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import d2t, create_actions, create_trades
 from tests.test_account_holdings import wallet, _stake, _claim, WALLET, LINK, EUR, USD
 from jal.constants import PredefinedAccountType
 from jal.db.account import JalAccount, JalAccountCreator
+from jal.db.asset import JalAsset
+from jal.db.chain_balance import JalChainBalance
+from jal.db.db import JalDB
 from jal.db.ledger import Ledger
 from jal.db.operations import LedgerTransaction
 from jal.db.settings import JalSettings
 from jal.widgets.icons import JalIcon
 from jal.widgets.operations_widget import OperationsWidget
+from jal.widgets.selection_dialog import SelectReferenceDialog
 
 
 @pytest.fixture
@@ -252,3 +256,119 @@ def test_shown_rows_mark_a_claim_with_who_owes_it(wallet, owner):
     model = _window(owner, WALLET).positions_model
     claims = model.index(2, 0)
     assert model.data(model.index(0, model.fieldIndex('asset_name'), claims)) == 'Arbitrum · FluidMerkleDistributor'
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The context menu of the positions list
+class _Area:
+    def __init__(self):
+        self.windows = []
+
+    def addWindow(self, widget, floating=False, size=None):
+        widget.setParent(None)
+        self.windows.append(widget)
+        return widget
+
+
+class _Reports:
+    def __init__(self):
+        self.area = _Area()
+
+    def mdi_area(self):
+        return self.area
+
+
+class _MainWindow:
+    def __init__(self):
+        self.reports = _Reports()
+
+
+# Returns what the menu offers on a row, and leaves the actions callable by their text
+def _offers(window, index, monkeypatch) -> dict:
+    view = window.ui.PositionsTreeView
+    monkeypatch.setattr(view, "indexAt", lambda pos: index)
+    popped = []
+    monkeypatch.setattr(QMenu, "popup", lambda menu, pos: popped.append(menu))
+    window.positions_context_menu(QPoint(0, 0))
+    if not popped:
+        return {}
+    actions = {}
+    for action in popped[0].actions():
+        if action.menu() is not None:
+            actions.update({x.text(): x for x in action.menu().actions()})
+        elif action.text():
+            actions[action.text()] = action
+    return actions
+
+
+def test_a_position_and_a_stake_offer_the_position_actions(wallet, owner, monkeypatch):
+    box = _stake()
+    JalChainBalance().store(d2t(210201), box.id(), LINK, Decimal('60'))
+    JalChainBalance().store(d2t(210301), box.id(), LINK, Decimal('60.5'))
+    window = _window(owner, WALLET)
+    model = window.positions_model
+    offered = list(_offers(window, model.index(0, 0), monkeypatch))
+    assert offered == ['Show Price Chart', 'Portugal', 'Russia', 'Set asset tag', 'Set asset country']
+    staked = model.index(0, 0, model.index(3, 0))
+    assert list(_offers(window, staked, monkeypatch)) == ['Show Price Chart', 'Show Accrual Chart', 'Portugal', 'Russia',
+                                                          'Set asset tag', 'Set asset country']
+
+
+def test_money_headings_and_totals_offer_nothing(wallet, owner, monkeypatch):
+    _claim('4')
+    _stake()
+    window = _window(owner, WALLET)
+    model = window.positions_model
+    for row in (1, 2, 3, 4, 5):    # money, the claims heading, the total, the stake heading, the second total
+        assert _offers(window, model.index(row, 0), monkeypatch) == {}
+
+
+def test_a_claim_offers_its_history_only_and_shows_it(wallet, owner, monkeypatch):
+    _claim('4')
+    window = _window(owner, WALLET)
+    window._parent = _MainWindow()
+    model = window.positions_model
+    offered = _offers(window, model.index(0, 0, model.index(2, 0)), monkeypatch)
+    assert list(offered) == ['Show claim history']
+    offered['Show claim history'].trigger()
+    assert [type(x).__name__ for x in window._parent.reports.area.windows] == ['ReceivableChartWindow']
+    window._parent.reports.area.windows[0].deleteLater()
+
+
+def test_the_price_chart_opens_from_the_list(wallet, owner, monkeypatch):
+    window = _window(owner, WALLET)
+    window._parent = _MainWindow()
+    _offers(window, window.positions_model.index(0, 0), monkeypatch)['Show Price Chart'].trigger()
+    assert [type(x).__name__ for x in window._parent.reports.area.windows] == ['ChartWindow']
+    window._parent.reports.area.windows[0].deleteLater()
+
+
+def test_tax_is_estimated_for_today_only_and_for_the_box_of_a_stake(wallet, owner, monkeypatch):
+    box = _stake()
+    JalChainBalance().store(d2t(210301), box.id(), LINK, Decimal('60.5'))
+    warned, estimated = [], []
+    monkeypatch.setattr(QMessageBox, "warning", lambda *args, **kwargs: warned.append(args) or QMessageBox.Ok)
+    window = _window(owner, WALLET)
+    window._parent = _MainWindow()
+    monkeypatch.setattr("jal.widgets.holdings_menu.TaxEstimator",
+                        lambda country, account, asset, qty: estimated.append((country, account, asset, qty)) or QWidget())
+    model = window.positions_model
+    _offers(window, model.index(0, 0, model.index(3, 0)), monkeypatch)['Portugal'].trigger()
+    assert len(warned) == 1 and estimated == []
+
+    window.ui.BalanceDate.setDate(QDate.currentDate())
+    _offers(window, model.index(0, 0, model.index(3, 0)), monkeypatch)['Portugal'].trigger()
+    assert estimated == [('pt', box.id(), LINK, Decimal('60.5'))]
+    window._parent.reports.area.windows[0].deleteLater()
+
+
+def test_the_tag_set_from_the_list_reaches_the_asset(wallet, owner, monkeypatch):
+    tag_id = JalDB._read("SELECT id FROM tags WHERE tag='Cash'")
+
+    def pick(dialog):
+        dialog.selected_id = tag_id
+        return QDialog.Accepted
+    monkeypatch.setattr(SelectReferenceDialog, "exec", pick)
+    window = _window(owner, WALLET)
+    _offers(window, window.positions_model.index(0, 0), monkeypatch)['Set asset tag'].trigger()
+    assert JalAsset(LINK).tag().id() == tag_id

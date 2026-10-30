@@ -252,6 +252,14 @@ class HoldingsModel(ReportTreeModel):
         if self.setGrouping(grouping) or update:
             self.prepareData()
 
+    # True when the context menu may offer the actions on a position for this row
+    def is_position(self, index) -> bool:
+        return True
+
+    # Who owes what this row shows, '' unless it is a claim
+    def claim_source(self, index) -> str:
+        return ''
+
     def get_data_for_tax(self, index):
         if not index.isValid():
             return None
@@ -452,6 +460,12 @@ class AccountHoldingsModel(HoldingsModel):
             return []
         return [x.name() for x in JalStakingBox(self._account_id).source_accounts()]
 
+    def is_position(self, index) -> bool:
+        return index.internalPointer().details().get('kind') in (self.HELD, self.STAKED)
+
+    def claim_source(self, index) -> str:
+        return index.internalPointer().details().get('source', '')
+
     # A P/L exists for a position only, and a group or a total row shows nothing but its own figures
     def data(self, index, role=Qt.DisplayRole):
         if role == Qt.BackgroundRole and index.isValid() and index.internalPointer().details().get('kind') == self.STAKED:
@@ -503,6 +517,7 @@ class AccountHoldingsModel(HoldingsModel):
             asset = JalAsset(claim['asset_id'])
             payer = protocol_name(account.chain(), claim['source']) or claim['source']
             records.append(self._valued_record(self.CLAIM, account, asset, asset.name(), claim['amount'], 0, payer))
+            records[-1]['source'] = claim['source']
         return records
 
     # A box belongs to every wallet it was filled from, so it may be listed under more than one of them
