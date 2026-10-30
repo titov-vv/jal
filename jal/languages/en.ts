@@ -12117,6 +12117,11 @@ Match them anyway and stamp both ends with </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../widgets/transfer_payment_dialog.py" line="39"/>
+        <source>Note:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../widgets/transfer_payment_dialog.py" line="51"/>
         <source>This transfer is not waiting for its other end any more.</source>
         <translation type="unfinished"></translation>

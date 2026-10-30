@@ -899,8 +899,9 @@ class TransferSettlement(JalDB):
     # ------------------------------------------------------------------------------------------------------------------
     # Replaces a pending money leg by what it was when its other end is a person and not an account: a spending for
     # money that left, an income for money that arrived. The fee of the leg becomes a line of its own.
+    # The note of the leg stays the note of the operation, 'note' goes to the line with the category.
     # Returns '' on success, or why it was refused.
-    def convert_to_income_spending(self, oid: int, peer_id: int, category_id: int) -> str:
+    def convert_to_income_spending(self, oid: int, peer_id: int, category_id: int, note: str = '') -> str:
         refusal = self.refusal_to_convert_to_income_spending(oid)
         if refusal:
             return refusal
@@ -909,7 +910,7 @@ class TransferSettlement(JalDB):
         leg, sending = self._pending_record(oid)
         account_id = int(leg['withdrawal_account'] if sending else leg['deposit_account'])
         amount = -Decimal(leg['withdrawal']) if sending else Decimal(leg['deposit'])
-        lines = [{'category_id': category_id, 'amount': amount, 'note': ''}]
+        lines = [{'category_id': category_id, 'amount': amount, 'note': note}]
         fee = self._money_fee_of(oid)
         if fee:
             lines.append({'category_id': PredefinedCategory.Fees, 'amount': -fee, 'note': ''})

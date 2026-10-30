@@ -12147,6 +12147,11 @@ Match them anyway and stamp both ends with </source>
         <translation>Категория:</translation>
     </message>
     <message>
+        <location filename="../widgets/transfer_payment_dialog.py" line="39"/>
+        <source>Note:</source>
+        <translation>Примечание:</translation>
+    </message>
+    <message>
         <location filename="../widgets/transfer_payment_dialog.py" line="51"/>
         <source>This transfer is not waiting for its other end any more.</source>
         <translation>Этот перевод больше не ожидает второй стороны.</translation>

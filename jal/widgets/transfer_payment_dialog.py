@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QDialog, QVBoxLayout, QGridLayout, QLabel, QDialogButtonBox, QMessageBox
+from PySide6.QtWidgets import QDialog, QVBoxLayout, QGridLayout, QLabel, QLineEdit, QDialogButtonBox, QMessageBox
 from jal.db.common_models import PeerTreeModel, CategoryTreeModel
 from jal.db.helpers import remove_exponent
 from jal.db.operations import Transfer
@@ -36,6 +36,9 @@ class TransferPaymentDialog(QDialog):
         self._category = ReferenceSelectorWidget(self)
         self._category.setup_selector(CategoryTreeModel, CategoryListDialog, self)
         form.addWidget(self._category, 1, 1)
+        form.addWidget(QLabel(self.tr("Note:")), 2, 0)
+        self._note = QLineEdit(self)
+        form.addWidget(self._note, 2, 1)
         form.setColumnStretch(1, 1)
         layout.addLayout(form)
         self._buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self)
@@ -63,7 +66,7 @@ class TransferPaymentDialog(QDialog):
 
     def accept(self):
         refusal = self._settlement.convert_to_income_spending(self._oid, self._peer.selected_id,
-                                                              self._category.selected_id)
+                                                              self._category.selected_id, self._note.text())
         if refusal:
             QMessageBox().warning(self, self.tr("The leg is not converted"), refusal)
             return

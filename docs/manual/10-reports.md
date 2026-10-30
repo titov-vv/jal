@@ -139,9 +139,9 @@ really was: an account of yours, a staked position, the other leg of a movement 
 swap, a bridge, or dust to be written off. See [chapter 8](08-crypto.md#transfers-with-one-end-missing).
 
 Money sent to or received from a person never finds a second account. **Payment…** (or *Record as a
-spending or an income…* in the menu) asks for a peer and a category and replaces the leg by a spending
-when the money left and by an income when it arrived, a fee of the transfer becoming a *Fees* line of
-the same operation.
+  spending or an income…* in the menu) asks for a peer, a category and a note for that category and
+replaces the leg by a spending when the money left and by an income when it arrived. The description of
+the transfer becomes the note of the operation, and a fee of the transfer becomes a *Fees* line of it.
 
 Keeping this list empty is what keeps your balances honest.
 

@@ -1649,7 +1649,7 @@ def test_a_sent_money_leg_becomes_a_spending_of_the_same_money(wallets):
     oid = _money_leg(True, '20', d2t(210103), fee='0.5')
     assert _balance_of_wallet_a(d2t(210110)) == Decimal('79.5')
 
-    assert TransferSettlement().convert_to_income_spending(oid, 1, PredefinedCategory.Spending) == ''
+    assert TransferSettlement().convert_to_income_spending(oid, 1, PredefinedCategory.Spending, 'Lunch') == ''
 
     assert Transfer.pending_legs() == []
     assert int(JalDB()._read("SELECT COUNT(*) FROM transfers")) == 0
@@ -1657,12 +1657,12 @@ def test_a_sent_money_leg_becomes_a_spending_of_the_same_money(wallets):
                            named=True)
     assert (int(action['timestamp']), int(action['account_id']), int(action['peer_id']), action['note']) \
         == (d2t(210103), WALLET_A, 1, 'To a friend')
-    query = JalDB._exec("SELECT category_id, amount FROM action_details WHERE pid=:pid ORDER BY oid",
+    query = JalDB._exec("SELECT category_id, amount, note FROM action_details WHERE pid=:pid ORDER BY oid",
                         [(":pid", int(action['oid']))])
     lines = []
     while query.next():
-        lines.append((int(query.value(0)), Decimal(query.value(1))))
-    assert lines == [(PredefinedCategory.Spending, Decimal('-20')), (PredefinedCategory.Fees, Decimal('-0.5'))]
+        lines.append((int(query.value(0)), Decimal(query.value(1)), query.value(2)))
+    assert lines == [(PredefinedCategory.Spending, Decimal('-20'), 'Lunch'), (PredefinedCategory.Fees, Decimal('-0.5'), '')]
     assert _balance_of_wallet_a(d2t(210110)) == Decimal('79.5')       # the account holds what it held before
 
 
@@ -1707,6 +1707,11 @@ def test_the_payment_button_and_dialog(wallets):
     dialog._category.selected_id = PredefinedCategory.Spending
     dialog._category.changed.emit()                   # a selector reports what the user picked, not what is set
     assert ok.isEnabled() is True
+    dialog._note.setText('Birthday present')
     dialog.accept()
     assert dialog.changed is True
     assert Transfer.pending_legs()[0]['symbol'] is not None and len(Transfer.pending_legs()) == 1
+    action = JalDB()._read("SELECT oid, note FROM actions ORDER BY oid DESC LIMIT 1", named=True)
+    assert action['note'] == 'To a friend'            # the description of the transfer
+    assert JalDB()._read("SELECT note FROM action_details WHERE pid=:pid",
+                         [(":pid", int(action['oid']))]) == 'Birthday present'
