@@ -9,12 +9,12 @@ from jal.widgets.holdings_menu import HoldingsMenu
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.selection_dialog import SelectReferenceDialog
 from jal.widgets.reference_dialogs import TagsListDialog
-from jal.widgets.helpers import (ManipulateDate, TableSelectionRestorer, set_grids_metrics, ts2d,
+from jal.widgets.helpers import (ManipulateDate, TableSelectionRestorer, set_grids_metrics,
                                 restore_splitters, save_splitters, assign_shortcut)
 from jal.widgets.icons import JalIcon
 from jal.db.settings import JalSettings
 from jal.db.account import JalAccount
-from jal.db.clock import day_finish, now_dt
+from jal.db.clock import now_dt
 from jal.db.asset import JalAsset
 from jal.db.balances_model import BalancesModel
 from jal.db.holdings_model import AccountHoldingsModel
@@ -143,12 +143,6 @@ class OperationsWidget(MdiWidget):
         account_id = self.ui.ChooseAccountBtn.account_id
         date = self.ui.BalanceDate.date()
         self.positions_model.showAccount(account_id, currency_id, date)
-        if self.positions_model.hasPositions():
-            title = self.tr("Positions of {} as of {}").format(JalAccount(account_id).name(), ts2d(day_finish(date)))
-            wallets = self.positions_model.stakedFrom()
-            if wallets:
-                title += ", " + self.tr("staked from {}").format(", ".join(wallets))
-            self.ui.PositionsTitle.setText(title)
         self._apply_panes()
 
     def _add_window(self, *args, **kwargs):

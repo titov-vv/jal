@@ -67,7 +67,6 @@ def test_positions_appear_with_an_account_that_holds_them(wallet, owner):
     window.ui.ChooseAccountBtn.account_id = WALLET
     assert _shown(window) == (True, True, True)
     assert window.positions_model.rowCount(window.positions_model.index(-1, -1)) == 3
-    assert window.ui.PositionsTitle.text() == "Positions of ETH wallet as of 01/03/2021"
 
 
 def test_a_double_click_on_a_group_goes_back_to_all_accounts_without_positions(wallet, owner):
@@ -82,12 +81,6 @@ def test_a_money_only_account_has_no_positions_and_no_collapse_button(wallet, ow
     window = _window(owner, bank)
     assert _shown(window) == (False, True, True)
     assert window.ui.OperationsCollapseBtn.isHidden()
-
-
-def test_a_box_names_the_wallet_in_its_title(wallet, owner):
-    box = _stake()
-    window = _window(owner, box.id())
-    assert window.ui.PositionsTitle.text() == "Positions of LINK pool as of 01/03/2021, staked from ETH wallet"
 
 
 def test_the_list_follows_the_balances_date_and_currency(wallet, owner):
@@ -387,7 +380,6 @@ def test_the_list_and_its_menu_are_translated(wallet, owner, monkeypatch):
         model = window.positions_model
         assert [x['name'] for x in model._columns][:3] == ['Актив', 'Ценная бумага', 'Кол-во']
         assert model._root.getChild(2).details()['header'] == 'На этом счёте (равно балансу)'
-        assert window.ui.PositionsTitle.text() == 'Позиции ETH wallet на 01/03/2021'
         assert 'Показать график цены' in _offers(window, model.index(0, 0), monkeypatch)
     finally:
         QApplication.removeTranslator(translator)

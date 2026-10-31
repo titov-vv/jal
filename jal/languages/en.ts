@@ -378,28 +378,28 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="506"/>
-        <location filename="../db/holdings_model.py" line="508"/>
+        <location filename="../db/holdings_model.py" line="500"/>
+        <location filename="../db/holdings_model.py" line="502"/>
         <source>N/A</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="570"/>
+        <location filename="../db/holdings_model.py" line="564"/>
         <source>Claimable (earned, not yet paid)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="573"/>
+        <location filename="../db/holdings_model.py" line="567"/>
         <source>On this account (equals Balance)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="576"/>
+        <location filename="../db/holdings_model.py" line="570"/>
         <source>Staked from this account (separate accounts, not in Balance)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="580"/>
+        <location filename="../db/holdings_model.py" line="574"/>
         <source>Including staked</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6074,122 +6074,112 @@ This looks like the quantity a rebasing position gained without reporting it, wh
 <context>
     <name>OperationsWidget</name>
     <message>
-        <location filename="../widgets/operations_widget.py" line="281"/>
+        <location filename="../widgets/operations_widget.py" line="275"/>
         <source>Reconcile</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="283"/>
+        <location filename="../widgets/operations_widget.py" line="277"/>
         <source>Assign tag</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="285"/>
+        <location filename="../widgets/operations_widget.py" line="279"/>
         <source>Copy</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="287"/>
+        <location filename="../widgets/operations_widget.py" line="281"/>
         <source>Delete</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="241"/>
+        <location filename="../widgets/operations_widget.py" line="235"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="147"/>
-        <source>Positions of {} as of {}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../widgets/operations_widget.py" line="150"/>
-        <source>staked from {}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../widgets/operations_widget.py" line="174"/>
+        <location filename="../widgets/operations_widget.py" line="168"/>
         <source>Show operations</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="176"/>
+        <location filename="../widgets/operations_widget.py" line="170"/>
         <source>Show positions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="242"/>
+        <location filename="../widgets/operations_widget.py" line="236"/>
         <source>Are you sure to delete selected transaction(s)?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="289"/>
+        <location filename="../widgets/operations_widget.py" line="283"/>
         <source>Match cross-chain legs…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="320"/>
+        <location filename="../widgets/operations_widget.py" line="314"/>
         <source>Assign an account…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="321"/>
+        <location filename="../widgets/operations_widget.py" line="315"/>
         <source>Match with another leg…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="322"/>
+        <location filename="../widgets/operations_widget.py" line="316"/>
         <source>Convert into a swap…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="323"/>
+        <location filename="../widgets/operations_widget.py" line="317"/>
         <source>Convert into a bridge…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="325"/>
+        <location filename="../widgets/operations_widget.py" line="319"/>
         <source>Record as a spending or an income…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="400"/>
+        <location filename="../widgets/operations_widget.py" line="394"/>
         <source>Show accounts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="410"/>
+        <location filename="../widgets/operations_widget.py" line="404"/>
         <source>Use credit limits</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="415"/>
+        <location filename="../widgets/operations_widget.py" line="409"/>
         <source>Group by tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="421"/>
+        <location filename="../widgets/operations_widget.py" line="415"/>
         <source>Balance history chart</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="429"/>
+        <location filename="../widgets/operations_widget.py" line="423"/>
         <source>Expand all</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="432"/>
+        <location filename="../widgets/operations_widget.py" line="426"/>
         <source>Collapse all</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="454"/>
+        <location filename="../widgets/operations_widget.py" line="448"/>
         <source>Please select tag</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="455"/>
+        <location filename="../widgets/operations_widget.py" line="449"/>
         <source>Choose tag to be assigned to selected operations:</source>
         <translation></translation>
     </message>
@@ -6224,34 +6214,34 @@ This looks like the quantity a rebasing position gained without reporting it, wh
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="330"/>
-        <location filename="../widgets/operations_widget.py" line="175"/>
+        <location filename="../ui/operations_widget.ui" line="319"/>
+        <location filename="../widgets/operations_widget.py" line="169"/>
         <source>Hide positions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="421"/>
-        <location filename="../widgets/operations_widget.py" line="177"/>
+        <location filename="../ui/operations_widget.ui" line="410"/>
+        <location filename="../widgets/operations_widget.py" line="171"/>
         <source>Hide operations</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="450"/>
+        <location filename="../ui/operations_widget.ui" line="439"/>
         <source>Show or hide operation details</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="508"/>
+        <location filename="../ui/operations_widget.ui" line="497"/>
         <source>New operation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="518"/>
+        <location filename="../ui/operations_widget.ui" line="507"/>
         <source>Copy operation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="528"/>
+        <location filename="../ui/operations_widget.ui" line="517"/>
         <source>Delete operation</source>
         <translation></translation>
     </message>

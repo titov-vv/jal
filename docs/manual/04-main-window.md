@@ -117,8 +117,7 @@ From top to bottom it shows:
   is an account of its own, so it is not part of this account's balance. It has a tinted row, and
   **Including staked** gives the total with it.
 
-Double-click a staking position in the Balances panel and the list shows its holdings, with the wallet
-it was staked from named in the title.
+Double-click a staking position in the Balances panel and the list shows its holdings.
 
 ### Right-click on a position
 

@@ -176,10 +176,9 @@ def test_a_stake_stays_out_of_the_balance_total_and_gets_a_total_of_its_own(wall
     assert model.hasPositions()
 
 
-def test_a_box_lists_its_own_holding_and_names_the_wallet(wallet):
+def test_a_box_lists_its_own_holding(wallet):
     box = _stake()
     model = _account_view(box.id())
-    assert model.stakedFrom() == ['ETH wallet']
     assert _total(model, ON_ACCOUNT) == (Decimal('720'), Decimal('360'))
     assert JalAccount(box.id()).balance(NOW + 86399) == Decimal('720')
     position = _children(model._root)[0].details()
@@ -194,7 +193,6 @@ def test_only_the_wallet_a_box_was_filled_from_lists_it(wallet):
     _stake()
     model = _account_view(other.id())
     assert INCLUDING not in [x.details()['header'] for x in _children(model._root)]
-    assert model.stakedFrom() == []
 
 
 def test_money_alone_is_not_a_position_list(wallet):

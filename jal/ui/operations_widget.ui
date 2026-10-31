@@ -289,25 +289,14 @@
              <number>0</number>
             </property>
             <item>
-             <layout class="QVBoxLayout" name="positionsListLayout">
-              <item>
-               <widget class="QLabel" name="PositionsTitle">
-                <property name="text">
-                 <string/>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QTreeView" name="PositionsTreeView">
-                <property name="alternatingRowColors">
-                 <bool>true</bool>
-                </property>
-                <property name="allColumnsShowFocus">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-             </layout>
+             <widget class="QTreeView" name="PositionsTreeView">
+              <property name="alternatingRowColors">
+               <bool>true</bool>
+              </property>
+              <property name="allColumnsShowFocus">
+               <bool>true</bool>
+              </property>
+             </widget>
             </item>
             <item>
              <widget class="QFrame" name="PositionsButtons">

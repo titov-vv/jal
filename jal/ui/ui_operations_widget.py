@@ -164,22 +164,12 @@ class Ui_OperationsWidget(object):
         self.positionsPaneLayout = QHBoxLayout(self.PositionsPane)
         self.positionsPaneLayout.setObjectName(u"positionsPaneLayout")
         self.positionsPaneLayout.setContentsMargins(0, 0, 10, 0)
-        self.positionsListLayout = QVBoxLayout()
-        self.positionsListLayout.setObjectName(u"positionsListLayout")
-        self.PositionsTitle = QLabel(self.PositionsPane)
-        self.PositionsTitle.setObjectName(u"PositionsTitle")
-
-        self.positionsListLayout.addWidget(self.PositionsTitle)
-
         self.PositionsTreeView = QTreeView(self.PositionsPane)
         self.PositionsTreeView.setObjectName(u"PositionsTreeView")
         self.PositionsTreeView.setAlternatingRowColors(True)
         self.PositionsTreeView.setAllColumnsShowFocus(True)
 
-        self.positionsListLayout.addWidget(self.PositionsTreeView)
-
-
-        self.positionsPaneLayout.addLayout(self.positionsListLayout)
+        self.positionsPaneLayout.addWidget(self.PositionsTreeView)
 
         self.PositionsButtons = QFrame(self.PositionsPane)
         self.PositionsButtons.setObjectName(u"PositionsButtons")
@@ -347,7 +337,6 @@ class Ui_OperationsWidget(object):
         self.OperationsBox.setTitle(QCoreApplication.translate("OperationsWidget", u"Operations", None))
         self.AccountLbl.setText(QCoreApplication.translate("OperationsWidget", u"&Account:", None))
         self.SearchLbl.setText(QCoreApplication.translate("OperationsWidget", u"S&earch:", None))
-        self.PositionsTitle.setText("")
 #if QT_CONFIG(tooltip)
         self.PositionsCollapseBtn.setToolTip(QCoreApplication.translate("OperationsWidget", u"Hide positions", None))
 #endif // QT_CONFIG(tooltip)

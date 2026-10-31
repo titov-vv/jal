@@ -5,7 +5,7 @@ from decimal import Decimal
 from PySide6.QtCore import Qt, QModelIndex
 from PySide6.QtGui import QBrush, QFont
 from PySide6.QtWidgets import QHeaderView
-from jal.constants import IconOwner, AccountStatus, PredefinedAccountType
+from jal.constants import IconOwner, AccountStatus
 from jal.db.clock import day_finish, local_reading, today_finish
 from jal.db.helpers import now_ts
 from jal.db.tree_model import AbstractTreeItem, ReportTreeModel
@@ -453,12 +453,6 @@ class AccountHoldingsModel(HoldingsModel):
     # False when there is nothing beyond money, so the list would only repeat the balance
     def hasPositions(self) -> bool:
         return self._has_positions
-
-    # Names of the wallets the shown account holds a stake for - empty unless it is a staking box
-    def stakedFrom(self) -> list:
-        if not self._account_id or JalAccount(self._account_id).account_type() != PredefinedAccountType.Staking:
-            return []
-        return [x.name() for x in JalStakingBox(self._account_id).source_accounts()]
 
     def is_position(self, index) -> bool:
         return index.internalPointer().details().get('kind') in (self.HELD, self.STAKED)
