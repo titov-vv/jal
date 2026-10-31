@@ -1368,37 +1368,37 @@ Do you want to delete the account anyway?</source>
 <context>
     <name>BalancesModel</name>
     <message>
-        <location filename="../db/balances_model.py" line="110"/>
+        <location filename="../db/balances_model.py" line="111"/>
         <source>Account</source>
         <translation>Счет</translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="111"/>
+        <location filename="../db/balances_model.py" line="112"/>
         <source>Balance</source>
         <translation>Баланс</translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="112"/>
+        <location filename="../db/balances_model.py" line="113"/>
         <source> </source>
         <translation> </translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="113"/>
+        <location filename="../db/balances_model.py" line="114"/>
         <source>Balance, </source>
         <translation>Баланс, </translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="151"/>
+        <location filename="../db/balances_model.py" line="156"/>
         <source>Credit limit: </source>
         <translation>Кредитный лимит: </translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="161"/>
+        <location filename="../db/balances_model.py" line="166"/>
         <source>Total:</source>
         <translation>Итого:</translation>
     </message>
     <message>
-        <location filename="../db/balances_model.py" line="269"/>
+        <location filename="../db/balances_model.py" line="279"/>
         <source>Background</source>
         <translation>Фоновые счета</translation>
     </message>
@@ -6088,112 +6088,117 @@ This looks like the quantity a rebasing position gained without reporting it, wh
 <context>
     <name>OperationsWidget</name>
     <message>
-        <location filename="../widgets/operations_widget.py" line="275"/>
+        <location filename="../widgets/operations_widget.py" line="290"/>
         <source>Reconcile</source>
         <translation>Сверить</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="277"/>
+        <location filename="../widgets/operations_widget.py" line="292"/>
         <source>Assign tag</source>
         <translation>Присвоить метку</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="279"/>
+        <location filename="../widgets/operations_widget.py" line="294"/>
         <source>Copy</source>
         <translation>Копировать</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="281"/>
+        <location filename="../widgets/operations_widget.py" line="296"/>
         <source>Delete</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="235"/>
+        <location filename="../widgets/operations_widget.py" line="250"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="168"/>
+        <location filename="../widgets/operations_widget.py" line="183"/>
         <source>Show operations</source>
         <translation>Показать операции</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="170"/>
+        <location filename="../widgets/operations_widget.py" line="185"/>
         <source>Show positions</source>
         <translation>Показать позиции</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="236"/>
+        <location filename="../widgets/operations_widget.py" line="251"/>
         <source>Are you sure to delete selected transaction(s)?</source>
         <translation>Вы уверены что хотите удалить выбранную транзакцию(-ии),</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="283"/>
+        <location filename="../widgets/operations_widget.py" line="298"/>
         <source>Match cross-chain legs…</source>
         <translation>Сопоставить межсетевые плечи…</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="314"/>
+        <location filename="../widgets/operations_widget.py" line="329"/>
         <source>Assign an account…</source>
         <translation>Назначить счёт…</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="315"/>
+        <location filename="../widgets/operations_widget.py" line="330"/>
         <source>Match with another leg…</source>
         <translation>Сопоставить с другим плечом…</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="316"/>
+        <location filename="../widgets/operations_widget.py" line="331"/>
         <source>Convert into a swap…</source>
         <translation>Преобразовать в обмен…</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="317"/>
+        <location filename="../widgets/operations_widget.py" line="332"/>
         <source>Convert into a bridge…</source>
         <translation>Преобразовать в бридж…</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="319"/>
+        <location filename="../widgets/operations_widget.py" line="334"/>
         <source>Record as a spending or an income…</source>
         <translation>Записать как расход или приход…</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="394"/>
+        <location filename="../widgets/operations_widget.py" line="406"/>
+        <source>Choose account...</source>
+        <translation>Выбрать счёт...</translation>
+    </message>
+    <message>
+        <location filename="../widgets/operations_widget.py" line="411"/>
         <source>Show accounts</source>
         <translation>Показывать счета</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="404"/>
+        <location filename="../widgets/operations_widget.py" line="421"/>
         <source>Use credit limits</source>
         <translation>Использовать кредитные лимиты</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="409"/>
+        <location filename="../widgets/operations_widget.py" line="426"/>
         <source>Group by tag</source>
         <translation>Сгруппировать по метке</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="415"/>
+        <location filename="../widgets/operations_widget.py" line="432"/>
         <source>Balance history chart</source>
         <translation>График истории баланса</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="423"/>
+        <location filename="../widgets/operations_widget.py" line="440"/>
         <source>Expand all</source>
         <translation>Развернуть все</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="426"/>
+        <location filename="../widgets/operations_widget.py" line="443"/>
         <source>Collapse all</source>
         <translation>Свернуть все</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="448"/>
+        <location filename="../widgets/operations_widget.py" line="465"/>
         <source>Please select tag</source>
         <translation>Выберите метку</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="449"/>
+        <location filename="../widgets/operations_widget.py" line="466"/>
         <source>Choose tag to be assigned to selected operations:</source>
         <translation>Выберите метку для присвоения выбранным операциям:</translation>
     </message>
@@ -6218,44 +6223,44 @@ This looks like the quantity a rebasing position gained without reporting it, wh
         <translation>Операции</translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="195"/>
-        <source>&amp;Account:</source>
-        <translation>&amp;Счет:</translation>
-    </message>
-    <message>
-        <location filename="../ui/operations_widget.ui" line="224"/>
+        <location filename="../ui/operations_widget.ui" line="311"/>
         <source>S&amp;earch:</source>
         <translation>&amp;Поиск:</translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="319"/>
-        <location filename="../widgets/operations_widget.py" line="169"/>
+        <location filename="../ui/operations_widget.ui" line="220"/>
+        <location filename="../widgets/operations_widget.py" line="184"/>
         <source>Hide positions</source>
         <translation>Скрыть позиции</translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="410"/>
-        <location filename="../widgets/operations_widget.py" line="171"/>
+        <location filename="../ui/operations_widget.ui" line="340"/>
+        <source>Show all accounts</source>
+        <translation>Показать все счета</translation>
+    </message>
+    <message>
+        <location filename="../ui/operations_widget.ui" line="395"/>
+        <location filename="../widgets/operations_widget.py" line="186"/>
         <source>Hide operations</source>
         <translation>Скрыть операции</translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="439"/>
+        <location filename="../ui/operations_widget.ui" line="424"/>
         <source>Show or hide operation details</source>
         <translation>Показать или скрыть детали операции</translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="497"/>
+        <location filename="../ui/operations_widget.ui" line="482"/>
         <source>New operation</source>
         <translation>Новая операция</translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="507"/>
+        <location filename="../ui/operations_widget.ui" line="492"/>
         <source>Copy operation</source>
         <translation>Копировать операцию</translation>
     </message>
     <message>
-        <location filename="../ui/operations_widget.ui" line="517"/>
+        <location filename="../ui/operations_widget.ui" line="502"/>
         <source>Delete operation</source>
         <translation>Удалить операцию</translation>
     </message>

@@ -64,7 +64,8 @@ Click **OK**. Repeat for every account you have, then **Close**.
 JAL computes balances from operations, so a brand-new account starts at zero. Tell it where you are
 starting from by recording one operation per account:
 
-1. In the main window pick the account (the **Account:** box above the operations list).
+1. In the main window right-click the **Balances** panel, choose **Choose account...** and pick the account.
+   An account at zero isn't listed in Balances yet, so this is the way to it.
 2. Press the **+** button at the right and choose **Income / Spending**.
 3. Set the date to the day you are starting from.
 4. In the table at the bottom press **+** to add a line, set its **Category** to *Starting balance*

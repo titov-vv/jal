@@ -8,7 +8,7 @@ from jal.ui.ui_operations_widget import Ui_OperationsWidget
 from jal.widgets.holdings_menu import HoldingsMenu
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.selection_dialog import SelectReferenceDialog
-from jal.widgets.reference_dialogs import TagsListDialog
+from jal.widgets.reference_dialogs import AccountListDialog, TagsListDialog
 from jal.widgets.helpers import (ManipulateDate, TableSelectionRestorer, set_grids_metrics,
                                 restore_splitters, save_splitters, assign_shortcut)
 from jal.widgets.icons import JalIcon
@@ -44,6 +44,7 @@ class OperationsWidget(MdiWidget):
         self._parent = parent  # Main window
 
         self.current_index = None  # this is used in onOperationContextMenu() to track item for menu
+        self._account_dialog = None  # built on the first 'Choose account...'
 
         # Set icons
         self.ui.NewOperationBtn.setIcon(JalIcon[JalIcon.ADD])
@@ -116,7 +117,6 @@ class OperationsWidget(MdiWidget):
         self.ui.BalancesCurrencyCombo.changed.connect(self.ui.BalancesTreeView.model().setCurrency)
         self.ui.BalanceDate.dateChanged.connect(self.update_positions)
         self.ui.BalancesCurrencyCombo.changed.connect(self.update_positions)
-        self.ui.ChooseAccountBtn.changed.connect(self.update_positions)
         self.ui.PositionsTreeView.customContextMenuRequested.connect(self.positions_context_menu)
         self.ui.PositionsCollapseBtn.clicked.connect(self.move_panes_up)
         self.ui.OperationsCollapseBtn.clicked.connect(self.move_panes_down)
@@ -127,7 +127,7 @@ class OperationsWidget(MdiWidget):
         self.ui.BalancesTreeView.expanded.connect(partial(self.balances_model.setGroupExpanded, expanded=True))
         self.ui.BalancesTreeView.collapsed.connect(partial(self.balances_model.setGroupExpanded, expanded=False))
         self.ui.DateRange.changed.connect(self.operations_model.setDateRange)
-        self.ui.ChooseAccountBtn.changed.connect(self.operations_model.setAccount)
+        self.ui.ResetAccountBtn.clicked.connect(partial(self.set_account, 0))
         self.ui.SearchString.editingFinished.connect(self.update_operations_filter)
         self.ui.OperationsTableView.selectionModel().selectionChanged.connect(self.operation_selection_change)
         self.operations_model.modelReset.connect(partial(self.operation_selection_change, None, None))  # Use the same slot with NULL-parameters to clean operation view
@@ -135,14 +135,29 @@ class OperationsWidget(MdiWidget):
         self.ui.DeleteOperationBtn.clicked.connect(self.delete_operation)
         self.ui.CopyOperationBtn.clicked.connect(self.ui.OperationsTabs.copy_operation)
 
-    # What the account selector's account holds at the date and in the currency of the Balances panel
+    # Shows operations and positions of the account, or operations of all accounts for 0
+    def set_account(self, account_id):
+        self.operations_model.setAccount(account_id)
+        self.balances_model.setShownAccount(account_id)
+        self.ui.ResetAccountBtn.setText(f"{JalAccount(account_id).name()} ✕" if account_id else "")
+        self.ui.ResetAccountBtn.setVisible(bool(account_id))
+        self.update_positions()
+
+    # Reaches the accounts that the Balances panel doesn't list: those with nothing on them
+    @Slot()
+    def choose_account(self):
+        if self._account_dialog is None:
+            self._account_dialog = AccountListDialog(self)
+        self._account_dialog.setFilter()
+        if self._account_dialog.exec(enable_selection=True):
+            self.set_account(self._account_dialog.selected_id)
+
+    # What the shown account holds at the date and in the currency of the Balances panel
     def update_positions(self, *_args):
         currency_id = self.ui.BalancesCurrencyCombo.selected_id
         if not currency_id:
             return
-        account_id = self.ui.ChooseAccountBtn.account_id
-        date = self.ui.BalanceDate.date()
-        self.positions_model.showAccount(account_id, currency_id, date)
+        self.positions_model.showAccount(self.operations_model.getAccount(), currency_id, self.ui.BalanceDate.date())
         self._apply_panes()
 
     def _add_window(self, *args, **kwargs):
@@ -253,7 +268,7 @@ class OperationsWidget(MdiWidget):
 
     @Slot()
     def balance_double_click(self, index):
-        self.ui.ChooseAccountBtn.account_id = index.model().getAccountId(index)
+        self.set_account(index.model().getAccountId(index))
 
     @Slot()
     def operation_selection_change(self, selected, deselected):
@@ -388,6 +403,8 @@ class OperationsWidget(MdiWidget):
         index = self.ui.BalancesTreeView.indexAt(pos)
         account_id = self.balances_model.data(index, BalancesModel.ACCOUNT_ROLE) if index.isValid() else 0
         contextMenu = QMenu(self.ui.BalancesTreeView)
+        contextMenu.addAction(self.tr("Choose account..."), self.choose_account)
+        contextMenu.addSeparator()
         # Which accounts the view reaches down to. The three views nest, so they are one exclusive choice and
         # not three independent switches: each shows a status and everything above it (see AccountStatus).
         shown_status = self.balances_model.minStatus()

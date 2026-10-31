@@ -39,7 +39,8 @@ A list of your accounts, grouped by type, showing what each one holds.
   The **Total** at the bottom adds up the converted column.
 
 Double-click an account and the operations list to the right jumps to it, with the
-[positions](#the-positions-list) it holds above. Double-click a group row to go back to all accounts.
+[positions](#the-positions-list) it holds above, and its row turns bold. To go back to all accounts,
+double-click a group row or press the button with the account's name above the operations list.
 
 ### The colours
 
@@ -85,6 +86,8 @@ a tag with no picture marks nothing.
 
 ![The balances context menu](img/balances_context_menu.png)
 
+* **Choose account...** — pick from the full list of accounts. Balances leaves out accounts with nothing
+  on them, so this is the way to an empty or closed one.
 * **Show accounts** — how deep the panel reaches: *Active accounts only*, *With background accounts*
   or *With closed accounts*. Each choice includes the ones above it.
 * **Use credit limits** — whether card limits are added to balances, as described above.
@@ -97,14 +100,14 @@ a tag with no picture marks nothing.
 ## The positions list
 
 An account's operations don't always tell you what is in it: a wallet can hold no money for months and
-plenty of tokens all the while. So when the account chosen on the right holds assets, the list above
+plenty of tokens all the while. So when the account you chose holds assets, the list above
 the operations shows them.
 
 ![Positions of a wallet above its operations](img/main_window_positions.png)
 
 It follows the **date** and **currency** of the Balances panel, so it always matches the balance you
 clicked, and it ignores the date range of the operations. An account that holds only money has
-nothing to add to its balance, so the list stays hidden for it, and for *ANY* account.
+nothing to add to its balance, so the list stays hidden for it, and while all accounts are shown.
 
 From top to bottom it shows:
 
@@ -158,12 +161,14 @@ its fee, a reward claim that paid out several coins — each reads as one bracke
 how the rows look: every row is still there, in the same order, and still opens its own operation.
 Rows hidden by the search box break the group, so a line never points at something you cannot see.
 
-Three controls above the list decide what is shown:
+Two controls above the list decide what is shown:
 
 * **Period** — a preset (*Week*, *Month*, *Quarter*, *Year*, *All dates*) plus a **From** and **To**
   date you can set by hand. The presets count backwards from today; the dates are yours to override.
-* **Account** — one account, or *ANY* for all of them at once.
 * **Search** — free text; only the operations whose text matches stay on screen.
+
+The list covers all accounts until you [choose one in Balances](#the-balances-panel); the button with its name at the
+right of these controls goes back to all of them.
 
 ### How the amounts are shown
 

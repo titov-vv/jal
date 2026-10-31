@@ -21,6 +21,7 @@ from jal.db.operations import LedgerTransaction
 from jal.db.settings import JalSettings
 from jal.widgets.icons import JalIcon
 from jal.widgets.operations_widget import OperationsWidget
+from jal.widgets.reference_dialogs import AccountListDialog
 from jal.widgets.selection_dialog import SelectReferenceDialog
 
 
@@ -40,7 +41,7 @@ def _window(owner, account_id=0) -> OperationsWidget:
     window.resize(1200, 800)
     window.ui.BalanceDate.setDate(QDate(2021, 3, 1))
     window.ui.BalancesCurrencyCombo.setIndex(EUR)
-    window.ui.ChooseAccountBtn.account_id = account_id
+    window.set_account(account_id)
     window.show()
     QApplication.processEvents()
     return window
@@ -64,14 +65,14 @@ def _bank(balance='250') -> int:
 def test_positions_appear_with_an_account_that_holds_them(wallet, owner):
     window = _window(owner)
     assert _shown(window) == (False, True, True)     # all accounts: nothing to list
-    window.ui.ChooseAccountBtn.account_id = WALLET
+    window.set_account(WALLET)
     assert _shown(window) == (True, True, True)
     assert window.positions_model.rowCount(window.positions_model.index(-1, -1)) == 3
 
 
 def test_a_double_click_on_a_group_goes_back_to_all_accounts_without_positions(wallet, owner):
     window = _window(owner, WALLET)
-    window.ui.ChooseAccountBtn.account_id = 0
+    window.set_account(0)
     assert _shown(window) == (False, True, True)
     assert window.ui.OperationsCollapseBtn.isHidden()
 
@@ -81,6 +82,55 @@ def test_a_money_only_account_has_no_positions_and_no_collapse_button(wallet, ow
     window = _window(owner, bank)
     assert _shown(window) == (False, True, True)
     assert window.ui.OperationsCollapseBtn.isHidden()
+
+
+def test_the_reset_button_names_the_account_and_shows_all_of_them(wallet, owner):
+    window = _window(owner)
+    assert window.ui.ResetAccountBtn.isHidden()
+    window.set_account(WALLET)
+    assert not window.ui.ResetAccountBtn.isHidden()
+    assert window.ui.ResetAccountBtn.text() == "ETH wallet ✕"
+    window.ui.ResetAccountBtn.click()
+    assert window.ui.ResetAccountBtn.isHidden()
+    assert window.operations_model.getAccount() == 0
+    assert _shown(window) == (False, True, True)
+
+
+def test_the_shown_account_is_bold_in_balances(wallet, owner):
+    window = _window(owner)
+    model = window.balances_model
+    group = model.index(0, 0, model.index(-1, -1))
+    row = model.index(0, 0, group)
+    account_id = model.getAccountId(row)
+    assert account_id
+    assert not model.data(row, Qt.FontRole)
+    window.set_account(account_id)
+    assert model.data(row, Qt.FontRole).bold()
+    window.ui.BalanceDate.setDate(QDate(2021, 3, 2))    # the model is rebuilt
+    row = model.index(0, 0, model.index(0, 0, model.index(-1, -1)))
+    assert model.data(row, Qt.FontRole).bold()
+    window.set_account(0)
+    assert not model.data(row, Qt.FontRole)
+
+
+def test_an_account_without_balance_is_reached_through_the_dialog(wallet, owner, monkeypatch):
+    empty = JalAccountCreator(currency_id=USD, number='', name='Empty', investing=0, organization=1,
+                              account_type=PredefinedAccountType.Bank).commit()
+    def pick(dialog, enable_selection=False):
+        dialog.selected_id = empty.id()
+        return QDialog.Accepted
+    monkeypatch.setattr(AccountListDialog, "exec", pick)
+    window = _window(owner)
+    window.choose_account()
+    assert window.operations_model.getAccount() == empty.id()
+    assert window.ui.ResetAccountBtn.text() == "Empty ✕"
+
+
+def test_a_cancelled_dialog_keeps_the_account(wallet, owner, monkeypatch):
+    monkeypatch.setattr(AccountListDialog, "exec", lambda dialog, enable_selection=False: QDialog.Rejected)
+    window = _window(owner, WALLET)
+    window.choose_account()
+    assert window.operations_model.getAccount() == WALLET
 
 
 def test_the_list_follows_the_balances_date_and_currency(wallet, owner):
@@ -139,7 +189,7 @@ def test_another_account_keeps_the_view(wallet, owner):
     Ledger().rebuild(from_timestamp=0)
     window = _window(owner, WALLET)
     window.ui.PositionsCollapseBtn.click()
-    window.ui.ChooseAccountBtn.account_id = other.id()
+    window.set_account(other.id())
     assert _shown(window) == (False, True, True)
 
 

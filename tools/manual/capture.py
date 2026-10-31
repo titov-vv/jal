@@ -92,16 +92,16 @@ def set_range(selector, first: str, last: str) -> None:
 # ----------------------------------------------------------------------------------------------------------------------
 def capture_main_window(window, operations):
     from jal.db.operations import LedgerTransaction
-    operations.ui.ChooseAccountBtn.account_id = 2          # 'Isarbank Current'
+    operations.set_account(2)          # 'Isarbank Current'
     set_range(operations.ui.DateRange, "2026-06-01", "2026-08-31")
     QApplication.processEvents()
     select_operation(operations, lambda otype, oid: otype == LedgerTransaction.IncomeSpending)
     save(window, "main_window")
     save(operations.ui.BalanceBox, "balances_panel")
-    operations.ui.ChooseAccountBtn.account_id = 6          # 'Cold Wallet'
+    operations.set_account(6)          # 'Cold Wallet'
     QApplication.processEvents()
     save(window, "main_window_positions")
-    operations.ui.ChooseAccountBtn.account_id = 2
+    operations.set_account(2)
 
 
 # The wallet is where an operation stops being a single line: a swap shows what it gave and what it got, and its
@@ -109,7 +109,7 @@ def capture_main_window(window, operations):
 # the picture is about the rows and not about the window they sit in.
 def capture_crypto_operations(operations):
     view = operations.ui.OperationsTableView
-    operations.ui.ChooseAccountBtn.account_id = 6          # 'Cold Wallet'
+    operations.set_account(6)          # 'Cold Wallet'
     set_range(operations.ui.DateRange, "2025-09-01", "2026-12-31")
     limits = (view.minimumHeight(), view.maximumHeight())
     rows = view.verticalHeader().length()   # the rows as they are drawn, of uneven height and with their grid lines
@@ -154,7 +154,7 @@ def capture_operation_editors(window, operations):
          lambda otype, oid: otype == LedgerTransaction.ChainAction, "op_chain_action"),
     ]
     for account_id, first, last, predicate, name in editors:
-        operations.ui.ChooseAccountBtn.account_id = account_id
+        operations.set_account(account_id)
         set_range(operations.ui.DateRange, first, last)
         if select_operation(operations, predicate):
             save_editor(operations.ui.OperationsTabs.currentWidget(), name)
@@ -190,7 +190,7 @@ def capture_blank_editors(window, operations):
     from jal.db.operations import LedgerTransaction
     blanks = [(LedgerTransaction.CorporateAction, "op_corporate_action"),
               (LedgerTransaction.Bridge, "op_bridge")]
-    operations.ui.ChooseAccountBtn.account_id = 4
+    operations.set_account(4)
     for operation_type, name in blanks:
         operations.ui.OperationsTabs.new_operation(operation_type, 4)
         QApplication.processEvents()
@@ -421,7 +421,7 @@ def capture_readme(window, operations):
     from jal.widgets.account_dialog import AccountDialog
     from jal.widgets.assets_dialogs import SymbolListDialog
 
-    operations.ui.ChooseAccountBtn.account_id = 3          # 'Everyday Card'
+    operations.set_account(3)          # 'Everyday Card'
     set_range(operations.ui.DateRange, "2026-06-01", "2026-08-31")
     operations.ui.OperationsTableView.selectRow(0)
     account = AccountDialog(window)
@@ -431,7 +431,7 @@ def capture_readme(window, operations):
     save_over(window, account, "one_account_view", README_IMG_DIR)
     account.reject()
 
-    operations.ui.ChooseAccountBtn.account_id = 4          # 'Northgate Trading'
+    operations.set_account(4)          # 'Northgate Trading'
     set_range(operations.ui.DateRange, "2025-01-01", "2026-08-31")
     operations.ui.OperationsTableView.selectRow(0)
     assets = SymbolListDialog(window)
@@ -465,7 +465,7 @@ def main():
     capture_crypto_operations(operations)
     capture_operation_editors(window, operations)
     capture_menus(window)
-    operations.ui.ChooseAccountBtn.account_id = 2
+    operations.set_account(2)
     set_range(operations.ui.DateRange, "2026-06-01", "2026-08-31")
     operations.ui.OperationsTableView.selectRow(0)
     QApplication.processEvents()

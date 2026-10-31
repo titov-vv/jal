@@ -21,7 +21,7 @@ from PySide6.QtWidgets import (QAbstractItemView, QApplication, QDateEdit, QFram
     QSplitter, QTableView, QTreeView, QVBoxLayout,
     QWidget)
 
-from jal.widgets.account_select import (AccountButton, CurrencyComboBox)
+from jal.widgets.account_select import CurrencyComboBox
 from jal.widgets.custom.date_range_selector import DateRangeSelector
 from jal.widgets.custom.treeview_with_footer import TreeViewWithFooter
 from jal.widgets.operations_tabs import JalOperationsTabs
@@ -94,53 +94,6 @@ class Ui_OperationsWidget(object):
         self.verticalLayout_2 = QVBoxLayout(self.OperationsBox)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
-        self.OperationConfigFrame = QWidget(self.OperationsBox)
-        self.OperationConfigFrame.setObjectName(u"OperationConfigFrame")
-        self.OperationConfigFrame.setEnabled(True)
-        self.horizontalLayout_3 = QHBoxLayout(self.OperationConfigFrame)
-        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
-        self.horizontalLayout_3.setContentsMargins(6, 6, 6, 6)
-        self.DateRange = DateRangeSelector(self.OperationConfigFrame)
-        self.DateRange.setObjectName(u"DateRange")
-        self.DateRange.setProperty(u"ItemsList", u"week;month;quarter;year;all")
-
-        self.horizontalLayout_3.addWidget(self.DateRange)
-
-        self.accountGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_3.addItem(self.accountGroupSpacer)
-
-        self.AccountLbl = QLabel(self.OperationConfigFrame)
-        self.AccountLbl.setObjectName(u"AccountLbl")
-
-        self.horizontalLayout_3.addWidget(self.AccountLbl)
-
-        self.ChooseAccountBtn = AccountButton(self.OperationConfigFrame)
-        self.ChooseAccountBtn.setObjectName(u"ChooseAccountBtn")
-
-        self.horizontalLayout_3.addWidget(self.ChooseAccountBtn)
-
-        self.searchGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_3.addItem(self.searchGroupSpacer)
-
-        self.SearchLbl = QLabel(self.OperationConfigFrame)
-        self.SearchLbl.setObjectName(u"SearchLbl")
-
-        self.horizontalLayout_3.addWidget(self.SearchLbl)
-
-        self.SearchString = QLineEdit(self.OperationConfigFrame)
-        self.SearchString.setObjectName(u"SearchString")
-
-        self.horizontalLayout_3.addWidget(self.SearchString)
-
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_3.addItem(self.horizontalSpacer)
-
-
-        self.verticalLayout_2.addWidget(self.OperationConfigFrame)
-
         self.OperationsDetailsSplitter = QSplitter(self.OperationsBox)
         self.OperationsDetailsSplitter.setObjectName(u"OperationsDetailsSplitter")
         self.OperationsDetailsSplitter.setOrientation(Qt.Orientation.Vertical)
@@ -204,6 +157,47 @@ class Ui_OperationsWidget(object):
         self.operationsPaneLayout = QHBoxLayout(self.OperationsPane)
         self.operationsPaneLayout.setObjectName(u"operationsPaneLayout")
         self.operationsPaneLayout.setContentsMargins(0, 0, 10, 0)
+        self.operationsListLayout = QVBoxLayout()
+        self.operationsListLayout.setObjectName(u"operationsListLayout")
+        self.OperationConfigFrame = QWidget(self.OperationsPane)
+        self.OperationConfigFrame.setObjectName(u"OperationConfigFrame")
+        self.OperationConfigFrame.setEnabled(True)
+        self.horizontalLayout_3 = QHBoxLayout(self.OperationConfigFrame)
+        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
+        self.horizontalLayout_3.setContentsMargins(0, 6, 0, 6)
+        self.DateRange = DateRangeSelector(self.OperationConfigFrame)
+        self.DateRange.setObjectName(u"DateRange")
+        self.DateRange.setProperty(u"ItemsList", u"week;month;quarter;year;all")
+
+        self.horizontalLayout_3.addWidget(self.DateRange)
+
+        self.searchGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_3.addItem(self.searchGroupSpacer)
+
+        self.SearchLbl = QLabel(self.OperationConfigFrame)
+        self.SearchLbl.setObjectName(u"SearchLbl")
+
+        self.horizontalLayout_3.addWidget(self.SearchLbl)
+
+        self.SearchString = QLineEdit(self.OperationConfigFrame)
+        self.SearchString.setObjectName(u"SearchString")
+
+        self.horizontalLayout_3.addWidget(self.SearchString)
+
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_3.addItem(self.horizontalSpacer)
+
+        self.ResetAccountBtn = QPushButton(self.OperationConfigFrame)
+        self.ResetAccountBtn.setObjectName(u"ResetAccountBtn")
+        self.ResetAccountBtn.setVisible(False)
+
+        self.horizontalLayout_3.addWidget(self.ResetAccountBtn)
+
+
+        self.operationsListLayout.addWidget(self.OperationConfigFrame)
+
         self.OperationsTableView = QTableView(self.OperationsPane)
         self.OperationsTableView.setObjectName(u"OperationsTableView")
         sizePolicy7 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
@@ -218,7 +212,10 @@ class Ui_OperationsWidget(object):
         self.OperationsTableView.verticalHeader().setVisible(False)
         self.OperationsTableView.verticalHeader().setMinimumSectionSize(20)
 
-        self.operationsPaneLayout.addWidget(self.OperationsTableView)
+        self.operationsListLayout.addWidget(self.OperationsTableView)
+
+
+        self.operationsPaneLayout.addLayout(self.operationsListLayout)
 
         self.OperationsPaneButtons = QFrame(self.OperationsPane)
         self.OperationsPaneButtons.setObjectName(u"OperationsPaneButtons")
@@ -307,17 +304,16 @@ class Ui_OperationsWidget(object):
         self.verticalLayout_4.addWidget(self.BalanceOperationsSplitter)
 
 #if QT_CONFIG(shortcut)
-        self.AccountLbl.setBuddy(self.ChooseAccountBtn)
         self.SearchLbl.setBuddy(self.SearchString)
 #endif // QT_CONFIG(shortcut)
         QWidget.setTabOrder(self.BalanceDate, self.BalancesCurrencyCombo)
         QWidget.setTabOrder(self.BalancesCurrencyCombo, self.BalancesTreeView)
-        QWidget.setTabOrder(self.BalancesTreeView, self.DateRange)
-        QWidget.setTabOrder(self.DateRange, self.ChooseAccountBtn)
-        QWidget.setTabOrder(self.ChooseAccountBtn, self.SearchString)
-        QWidget.setTabOrder(self.SearchString, self.PositionsTreeView)
+        QWidget.setTabOrder(self.BalancesTreeView, self.PositionsTreeView)
         QWidget.setTabOrder(self.PositionsTreeView, self.PositionsCollapseBtn)
-        QWidget.setTabOrder(self.PositionsCollapseBtn, self.OperationsTableView)
+        QWidget.setTabOrder(self.PositionsCollapseBtn, self.DateRange)
+        QWidget.setTabOrder(self.DateRange, self.SearchString)
+        QWidget.setTabOrder(self.SearchString, self.ResetAccountBtn)
+        QWidget.setTabOrder(self.ResetAccountBtn, self.OperationsTableView)
         QWidget.setTabOrder(self.OperationsTableView, self.OperationsCollapseBtn)
         QWidget.setTabOrder(self.OperationsCollapseBtn, self.DetailsToggleBtn)
         QWidget.setTabOrder(self.DetailsToggleBtn, self.OperationsTabs)
@@ -335,12 +331,14 @@ class Ui_OperationsWidget(object):
         self.BalanceBox.setTitle(QCoreApplication.translate("OperationsWidget", u"Balances", None))
         self.BalanceDate.setDisplayFormat(QCoreApplication.translate("OperationsWidget", u"dd/MM/yyyy", None))
         self.OperationsBox.setTitle(QCoreApplication.translate("OperationsWidget", u"Operations", None))
-        self.AccountLbl.setText(QCoreApplication.translate("OperationsWidget", u"&Account:", None))
-        self.SearchLbl.setText(QCoreApplication.translate("OperationsWidget", u"S&earch:", None))
 #if QT_CONFIG(tooltip)
         self.PositionsCollapseBtn.setToolTip(QCoreApplication.translate("OperationsWidget", u"Hide positions", None))
 #endif // QT_CONFIG(tooltip)
         self.PositionsCollapseBtn.setText("")
+        self.SearchLbl.setText(QCoreApplication.translate("OperationsWidget", u"S&earch:", None))
+#if QT_CONFIG(tooltip)
+        self.ResetAccountBtn.setToolTip(QCoreApplication.translate("OperationsWidget", u"Show all accounts", None))
+#endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(tooltip)
         self.OperationsCollapseBtn.setToolTip(QCoreApplication.translate("OperationsWidget", u"Hide operations", None))
 #endif // QT_CONFIG(tooltip)

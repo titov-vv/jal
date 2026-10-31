@@ -101,6 +101,7 @@ class BalancesModel(ReportTreeModel):
         self._use_credit = JalSettings().getValue("UseAccountCreditLimit", True)
         self._group_by_tag = JalSettings().getValue("GroupBalancesByTag", False)
         self._date = today_finish()
+        self._shown_account = 0
         self.bold_font = QFont()
         self.bold_font.setBold(True)
         self.italic_font = QFont()
@@ -128,7 +129,11 @@ class BalancesModel(ReportTreeModel):
             if role == Qt.DisplayRole:
                 return item.details().get(self._columns[index.column()]['field'], None)
             if role == Qt.FontRole:
-                return self._fonts.get(item.details()['font'], None)
+                font = self._fonts.get(item.details()['font'], None)
+                if not item.isGroup() and item.details().get('account', 0) == self._shown_account:
+                    font = QFont(font) if font else QFont()
+                    font.setBold(True)
+                return font
             if role == Qt.BackgroundRole and index.column() == self.fieldIndex('value'):
                 return self.data_background(item.details().get('unreconciled', 0), self._view.isEnabled())
             if role == Qt.DecorationRole and index.column() == self.fieldIndex('account_name'):
@@ -242,6 +247,11 @@ class BalancesModel(ReportTreeModel):
         if self._group_by_tag:
             return balance['folded'], balance['group'], balance['subgroup'], balance['tag_name'], balance['account_name']
         return balance['folded'], balance['group'], balance['subgroup'], balance['account_name']
+
+    # The account that gets a bold row as its operations are on display
+    def setShownAccount(self, account_id: int):
+        self._shown_account = account_id
+        self._view.viewport().update()
 
     def getAccountId(self, index):
         if not index.isValid():
