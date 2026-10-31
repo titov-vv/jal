@@ -54,18 +54,20 @@ class StakingListModel(QAbstractTableModel):
     def __init__(self, parent_view):
         super().__init__(parent_view)
         self._columns = [self.tr("Name"), self.tr("Protocol"), self.tr("Blockchain"), self.tr("Asset"),
-                         self.tr("Quantity"), self.tr("Accrued"), self.tr("Value"), self.tr("Staked since"),
-                         self.tr("Address")]
+                         self.tr("Quantity"), self.tr("Accrued"), self.tr("Value, "), self.tr("Accrued value, "),
+                         self.tr("Staked since"), self.tr("Address")]
         self._timestamp = 0
         self._currency_id = 0
+        self._currency_name = ''
         self._show_closed = False
         self._view = parent_view
         self._data = []
         self._float_delegate = None
         self._qty_delegate = None
         self._timestamp_delegate = None
-        self._accrued_delegate = None
+        self._accrued_value_delegate = None
         self._value_total = Decimal('0')
+        self._accrued_value_total = Decimal('0')
 
     def rowCount(self, parent=None):
         return len(self._data)
@@ -75,7 +77,7 @@ class StakingListModel(QAbstractTableModel):
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
-            return self._columns[section]
+            return self._columns[section] + (self._currency_name if section in (6, 7) else '')
         return None
 
     def headerWidth(self, section):
@@ -132,8 +134,10 @@ class StakingListModel(QAbstractTableModel):
         if column == 6:
             return record['value']
         if column == 7:
-            return record['since']
+            return record['accrued_value']
         if column == 8:
+            return record['since']
+        if column == 9:
             return record['address']
         return ''
 
@@ -143,12 +147,14 @@ class StakingListModel(QAbstractTableModel):
                 return self.tr("Total")
             if section == 6:
                 return localize_decimal(self._value_total, precision=2)
+            if section == 7:
+                return localize_decimal(self._accrued_value_total, precision=2)
         elif role == Qt.FontRole:
             font = QFont()
             font.setBold(True)
             return font
         elif role == Qt.TextAlignmentRole:
-            return Qt.AlignRight | Qt.AlignVCenter if section in (4, 5, 6) else Qt.AlignLeft | Qt.AlignVCenter
+            return Qt.AlignRight | Qt.AlignVCenter if section in (4, 5, 6, 7) else Qt.AlignLeft | Qt.AlignVCenter
         return None
 
     # The box shown in a given row, or None if the row doesn't point at one
@@ -174,6 +180,7 @@ class StakingListModel(QAbstractTableModel):
             self._timestamp = timestamp
         if currency_id is not None:
             self._currency_id = currency_id
+            self._currency_name = JalAsset(currency_id).symbol()
         if show_closed is not None:
             self._show_closed = show_closed
         self.prepareData()
@@ -188,7 +195,7 @@ class StakingListModel(QAbstractTableModel):
             if not holdings:
                 # Only reachable with closed positions shown - a box that holds nothing is what a finished stake
                 # leaves behind, and it is listed so that what WAS staked can still be found
-                self._data.append(self._box_row(box, None, Decimal('0'), Decimal('0'), Decimal('0')))
+                self._data.append(self._box_row(box, None, Decimal('0'), Decimal('0'), Decimal('0'), Decimal('0')))
                 continue
             for holding in holdings:
                 rate = holding['asset'].quote(self._timestamp, self._currency_id)[1]
@@ -198,20 +205,22 @@ class StakingListModel(QAbstractTableModel):
                 accrued = JalChainBalance().accrual(box.id(), holding['asset'].id(), holding['amount'],
                                                     self._timestamp)['delta']
                 self._data.append(self._box_row(box, holding['asset'], holding['amount'], accrued,
-                                                (holding['amount'] + accrued) * rate))
+                                                (holding['amount'] + accrued) * rate, accrued * rate))
         self._data += self._wrapped_rows()
         self._data += self._claim_rows()
         self._value_total = sum([x['value'] for x in self._data], Decimal('0'))
+        self._accrued_value_total = sum([x['accrued_value'] for x in self._data], Decimal('0'))
         self.endResetModel()
 
     # One row of a staked position. Everything the columns need is taken off the box HERE rather than when the row is
     # drawn, so that a claimable-reward row - which has no box - can fill the same fields from somewhere else.
     @staticmethod
-    def _box_row(box: JalStakingBox, asset, amount: Decimal, accrued: Decimal, value: Decimal) -> dict:
+    def _box_row(box: JalStakingBox, asset, amount: Decimal, accrued: Decimal, value: Decimal,
+                 accrued_value: Decimal) -> dict:
         return {'kind': ROW_BOX, 'box': box, 'name': box.name(), 'protocol': box.protocol(), 'chain': box.chain(),
                 'currency_id': box.currency().id(), 'address': box.address(), 'since': box.opened_at(),
                 'active': box.is_active(), 'asset': asset, 'amount': amount, 'accrued': accrued, 'value': value,
-                'source': '', 'account_id': box.id()}
+                'accrued_value': accrued_value, 'source': '', 'account_id': box.id()}
 
     # A wrapped position: a receipt token of some protocol (AssetData.Protocol) held on the wallet itself rather
     # than in a container. It belongs beside a staked one because it answers the same question - where the value is
@@ -241,7 +250,8 @@ class StakingListModel(QAbstractTableModel):
                              'chain': account.chain(), 'currency_id': account.currency(),
                              'address': account.address(), 'since': self._opened_at(account, asset),
                              'active': True, 'asset': asset, 'amount': holding['amount'], 'accrued': accrued,
-                             'value': (holding['amount'] + accrued) * rate, 'source': '', 'account_id': account.id()})
+                             'value': (holding['amount'] + accrued) * rate, 'accrued_value': accrued * rate,
+                             'source': '', 'account_id': account.id()})
         return rows
 
     # When the oldest lot still held was acquired - the FIFO open date of the position. A wrapped position has no
@@ -274,24 +284,21 @@ class StakingListModel(QAbstractTableModel):
                              'chain': account.chain(),
                              'currency_id': account.currency(), 'address': claim['source'], 'since': 0,
                              'active': True, 'asset': asset, 'amount': Decimal('0'), 'accrued': claim['amount'],
-                             'value': claim['amount'] * rate, 'source': claim['source'], 'account_id': account_id})
+                             'value': claim['amount'] * rate, 'accrued_value': claim['amount'] * rate,
+                             'source': claim['source'], 'account_id': account_id})
         return rows
 
     def configureView(self):
-        # A staked quantity keeps its tail: coins are held to 18 decimals and rounding one to two would show a
-        # position of 0.00 for anything small enough. 'empty_zero' is what leaves the column blank on a
-        # claimable-reward row instead: a reward has no staked principal at all, and a literal 0.00 there would read
-        # as a position that has been emptied.
-        self._qty_delegate = FloatDelegate(2, allow_tail=True, empty_zero=True)
-        self._accrued_delegate = FloatDelegate(2, allow_tail=True)
+        # 'empty_zero' blanks a claim's absent principal and an accrual that isn't measured.
+        self._qty_delegate = FloatDelegate(6, allow_tail=False, empty_zero=True)
         self._float_delegate = FloatDelegate(2, allow_tail=False)
+        self._accrued_value_delegate = FloatDelegate(2, allow_tail=False, empty_zero=True)
         self._timestamp_delegate = TimestampDelegate(date_only=True)
         self._view.setItemDelegateForColumn(4, self._qty_delegate)
-        # The accrual keeps its tail for the same reason the quantity does, and more so: it is a small fraction of
-        # the position (0.07 HYPE on 11.9, 0.15 SOL on 5.9), so two decimals would round most of it out of sight.
-        self._view.setItemDelegateForColumn(5, self._accrued_delegate)
+        self._view.setItemDelegateForColumn(5, self._qty_delegate)
         self._view.setItemDelegateForColumn(6, self._float_delegate)
-        self._view.setItemDelegateForColumn(7, self._timestamp_delegate)
+        self._view.setItemDelegateForColumn(7, self._accrued_value_delegate)
+        self._view.setItemDelegateForColumn(8, self._timestamp_delegate)
         self._view.setColumnWidth(0, 200)
         self._view.setColumnWidth(1, 160)
         self._view.setColumnWidth(2, 100)
@@ -299,8 +306,9 @@ class StakingListModel(QAbstractTableModel):
         self._view.setColumnWidth(4, 140)
         self._view.setColumnWidth(5, 140)
         self._view.setColumnWidth(6, 120)
-        self._view.setColumnWidth(7, self._view.fontMetrics().horizontalAdvance("00/00/0000") * 1.1)
-        self._view.setColumnWidth(8, 300)
+        self._view.setColumnWidth(7, 150)
+        self._view.setColumnWidth(8, self._view.fontMetrics().horizontalAdvance("00/00/0000") * 1.1)
+        self._view.setColumnWidth(9, 300)
         restore_columns(self._view, Setup.COLUMNS_STATE_PREFIX)
 
 

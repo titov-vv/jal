@@ -58,7 +58,7 @@
 <context>
     <name>AccountBalanceHistoryReport</name>
     <message>
-        <location filename="../reports/account_balance.py" line="70"/>
+        <location filename="../reports/account_balance.py" line="71"/>
         <source>&amp;Account balance history</source>
         <translation type="unfinished"></translation>
     </message>
@@ -84,7 +84,7 @@
 <context>
     <name>AccountBalanceHistoryReportWindow</name>
     <message>
-        <location filename="../reports/account_balance.py" line="81"/>
+        <location filename="../reports/account_balance.py" line="82"/>
         <source>Account balance history</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8405,27 +8405,27 @@ Merge anyway?</source>
 <context>
     <name>StakingDetailsModel</name>
     <message>
-        <location filename="../reports/staking.py" line="312"/>
+        <location filename="../reports/staking.py" line="320"/>
         <source>Date/Time</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/staking.py" line="312"/>
+        <location filename="../reports/staking.py" line="320"/>
         <source>Operation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/staking.py" line="312"/>
+        <location filename="../reports/staking.py" line="320"/>
         <source>Asset</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/staking.py" line="312"/>
+        <location filename="../reports/staking.py" line="320"/>
         <source>Quantity</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/staking.py" line="313"/>
+        <location filename="../reports/staking.py" line="321"/>
         <source>Balance</source>
         <translation></translation>
     </message>
@@ -8464,11 +8464,16 @@ Merge anyway?</source>
     </message>
     <message>
         <location filename="../reports/staking.py" line="57"/>
-        <source>Value</source>
-        <translation></translation>
+        <source>Value, </source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../reports/staking.py" line="57"/>
+        <source>Accrued value, </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/staking.py" line="58"/>
         <source>Staked since</source>
         <translation></translation>
     </message>
@@ -8478,7 +8483,7 @@ Merge anyway?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/staking.py" line="143"/>
+        <location filename="../reports/staking.py" line="147"/>
         <source>Total</source>
         <translation></translation>
     </message>
@@ -8486,7 +8491,7 @@ Merge anyway?</source>
 <context>
     <name>StakingReport</name>
     <message>
-        <location filename="../reports/staking.py" line="392"/>
+        <location filename="../reports/staking.py" line="400"/>
         <source>&amp;Staked positions</source>
         <translation type="unfinished"></translation>
     </message>
@@ -8532,42 +8537,42 @@ Merge anyway?</source>
 <context>
     <name>StakingReportWindow</name>
     <message>
-        <location filename="../reports/staking.py" line="417"/>
+        <location filename="../reports/staking.py" line="425"/>
         <source>Staked positions</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/staking.py" line="480"/>
+        <location filename="../reports/staking.py" line="488"/>
         <source>Show claim history</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/staking.py" line="487"/>
+        <location filename="../reports/staking.py" line="495"/>
         <source>Show accrual chart</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/staking.py" line="491"/>
+        <location filename="../reports/staking.py" line="499"/>
         <source>Rename position...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/staking.py" line="505"/>
+        <location filename="../reports/staking.py" line="513"/>
         <source>Staked position</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/staking.py" line="535"/>
+        <location filename="../reports/staking.py" line="543"/>
         <source>This position still holds </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/staking.py" line="536"/>
+        <location filename="../reports/staking.py" line="544"/>
         <source>. It can only be closed once what is in it has been unstaked and the transfer back has been settled.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/staking.py" line="540"/>
+        <location filename="../reports/staking.py" line="548"/>
         <source>Close this position?
 
 Everything it recorded stays in place - it simply stops being listed as staked.</source>

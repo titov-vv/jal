@@ -569,9 +569,10 @@ def test_a_module_claim_is_named_by_the_protocol_registry(aave_staker):
     model = _staking_rows()
 
     assert model.data_text(model._data[0], 1) == 'Staked Aave (stkAAVE)'
-    assert model.data_text(model._data[0], 8) == aave.STAKED_AAVE
+    assert model.data_text(model._data[0], 9) == aave.STAKED_AAVE
     assert model._data[0]['accrued'] == Decimal('0.5')
     assert model._data[0]['value'] == Decimal('125')
+    assert model._data[0]['accrued_value'] == Decimal('125')
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -654,7 +655,9 @@ def test_the_staking_report_lists_a_claim_in_the_accrued_column(eth_wallet):
     assert row['accrued'] == Decimal('12.5')
     assert row['amount'] == Decimal('0')          # no staked principal - a reward was never deposited anywhere
     assert row['value'] == Decimal('12.5')        # GHO is quoted at 1
+    assert row['accrued_value'] == Decimal('12.5')   # a claim is all accrual
     assert model._value_total == Decimal('12.5')
+    assert model._accrued_value_total == Decimal('12.5')
 
 
 def test_a_claim_row_names_the_wallet_and_the_distributor(eth_wallet):
@@ -665,8 +668,8 @@ def test_a_claim_row_names_the_wallet_and_the_distributor(eth_wallet):
     assert model.data_text(row, 0) == 'ETH wallet'
     assert model.data_text(row, 1) == 'Merkl Distributor'      # from the protocol registry, not stored
     assert model.data_text(row, 3) == 'GHO'
-    assert model.data_text(row, 7) == 0                        # no 'staked since' - it was never staked
-    assert model.data_text(row, 8) == merkl.DISTRIBUTOR
+    assert model.data_text(row, 8) == 0                        # no 'staked since' - it was never staked
+    assert model.data_text(row, 9) == merkl.DISTRIBUTOR
 
 
 # An unregistered distributor still has to say who owes the money, and an address is something one can look up.

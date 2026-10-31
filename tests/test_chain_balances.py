@@ -517,6 +517,7 @@ def test_the_balances_tree_values_the_accrued_quantity(hl_wallet):
 def test_the_staking_report_shows_the_accrual_beside_the_principal(hl_wallet):
     from jal.reports.staking import StakingListModel
     from tests.helpers import create_quotes
+    from PySide6.QtCore import Qt
     from PySide6.QtWidgets import QTableView
     box = _staked_box()
     create_quotes(HYPE, USD, [(NOW, Decimal('30'))])
@@ -530,6 +531,16 @@ def test_the_staking_report_shows_the_accrual_beside_the_principal(hl_wallet):
     assert rows[0]['amount'] == Decimal('11.92275902')      # the principal, as booked
     assert rows[0]['accrued'] == Decimal('0.07186580')      # measured, not guessed
     assert rows[0]['value'] == Decimal('11.99462482') * Decimal('30')   # worth of both together
+    assert rows[0]['accrued_value'] == Decimal('2.155974')              # 0.0718658 HYPE at 30
+    assert model.footerData(7) == '2.16'
+    assert model.headerData(6, Qt.Horizontal) == 'Value, USD'
+    assert model.headerData(7, Qt.Horizontal) == 'Accrued value, USD'
+
+    # Both coin columns are cut to one precision, so their decimal points line up
+    index = model.index(model._data.index(rows[0]), 4)
+    assert model._view.itemDelegateForColumn(4).displayText(model.data(index), None) == '11.922759'
+    assert model._view.itemDelegateForColumn(5).displayText(model.data(index.siblingAtColumn(5)), None) == '0.071866'
+    assert model._view.itemDelegateForColumn(5).displayText(Decimal('0'), None) == ''
 
 
 # ----------------------------------------------------------------------------------------------------------------------
