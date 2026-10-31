@@ -78,12 +78,12 @@
          <string>&amp;Account:</string>
         </property>
         <property name="buddy">
-         <cstring>ReportAccountButton</cstring>
+         <cstring>ReportAccountEdit</cstring>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="AccountButton" name="ReportAccountButton"/>
+       <widget class="ReferenceSelectorWidget" name="ReportAccountEdit"/>
       </item>
       <item>
        <spacer name="ReportFrameSpacer">
@@ -126,7 +126,7 @@
  <tabstops>
   <tabstop>ReportRange</tabstop>
   <tabstop>GroupCombo</tabstop>
-  <tabstop>ReportAccountButton</tabstop>
+  <tabstop>ReportAccountEdit</tabstop>
   <tabstop>SaveButton</tabstop>
   <tabstop>ReportTreeView</tabstop>
  </tabstops>
@@ -143,9 +143,10 @@
    <header>jal/widgets/custom/treeview_with_footer.h</header>
   </customwidget>
   <customwidget>
-   <class>AccountButton</class>
-   <extends>QPushButton</extends>
-   <header>jal/widgets/account_select.h</header>
+   <class>ReferenceSelectorWidget</class>
+   <extends>QWidget</extends>
+   <header>jal/widgets/reference_selector.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

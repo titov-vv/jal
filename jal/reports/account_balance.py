@@ -5,9 +5,11 @@ from PySide6.QtCharts import QChartView, QLineSeries, QDateTimeAxis, QValueAxis
 from jal.reports.reports import Reports
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
+from jal.db.common_models import AccountListModel
 from jal.ui.reports.ui_account_balance_report import Ui_AccountBalanceHistoryReportWidget
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.helpers import timestamp_range, DateFormat, ts2axis
+from jal.widgets.reference_dialogs import AccountListDialog
 
 JAL_REPORT_CLASS = "AccountBalanceHistoryReport"
 
@@ -25,16 +27,17 @@ class BalanceChartWidget(QWidget):
         self.axisX = None
         self.axisY = None
 
+    def clear(self):
+        self.chartView.chart().removeAllSeries()
+        for axis in self.chartView.chart().axes():
+            self.chartView.chart().removeAxis(axis)
+
     def updateView(self, balances, currency_name):
         self.balances_series = QLineSeries()
         for point in balances:            # Conversion to 'float' in order not to get 'int' overflow on some platforms
             self.balances_series.append(float(ts2axis(point['timestamp']) * 1000), point['balance'])
 
-        # Cleanup if anything already drawn in the chart
-        self.chartView.chart().removeAllSeries()
-        axes = self.chartView.chart().axes()
-        for axis in axes:
-            self.chartView.chart().removeAxis(axis)
+        self.clear()   # Cleanup if anything already drawn in the chart
 
         # Create new X-axis
         self.axisX = QDateTimeAxis()
@@ -74,6 +77,7 @@ class AccountBalanceHistoryReportWindow(MdiWidget):
         super().__init__(parent.mdi_area())
         self.ui = Ui_AccountBalanceHistoryReportWidget()
         self.ui.setupUi(self)
+        self.ui.ReportAccountEdit.setup_selector(AccountListModel, AccountListDialog, self)
         self._parent = parent
         self.name = self.tr("Account balance history")
 
@@ -82,20 +86,21 @@ class AccountBalanceHistoryReportWindow(MdiWidget):
 
         if settings is not None:
             self.ui.ReportRange.setRange(settings['begin_ts'], settings['end_ts'])
-            self.ui.ReportAccountButton.account_id = settings['account_id']
+            self.ui.ReportAccountEdit.selected_id = settings['account_id']
         self.connect_signals_and_slots()
         self.updateReport()
 
     def connect_signals_and_slots(self):
         self.ui.ReportRange.changed.connect(self.updateReport)
-        self.ui.ReportAccountButton.changed.connect(self.updateReport)
+        self.ui.ReportAccountEdit.changed.connect(self.updateReport)
         self.ui.SaveButton.pressed.connect(partial(self._parent.save_chart, self.chart.chartView))
 
     @Slot()
     def updateReport(self):
-        if self.ui.ReportAccountButton.account_id == 0:
+        if self.ui.ReportAccountEdit.selected_id == 0:
+            self.chart.clear()
             return
-        account = JalAccount(self.ui.ReportAccountButton.account_id)
+        account = JalAccount(self.ui.ReportAccountEdit.selected_id)
         balances = []
         date_range = self.ui.ReportRange.getRange()
         for ts in timestamp_range(date_range[0], date_range[1]):

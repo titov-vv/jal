@@ -9,7 +9,6 @@ from designer_plugins.plugin_reference_selector import ReferenceSelectorWidgetPl
 from designer_plugins.plugin_currency_combobox import CurrencyComboBoxPlugin
 from designer_plugins.plugin_optional_currency_combobox import OptionalCurrencyComboBoxPlugin
 from designer_plugins.plugin_account_currency_label import AccountCurrencyLabelPlugin
-from designer_plugins.plugin_account_button import AccountButtonPlugin
 from designer_plugins.plugin_jal_operations_tabs import JalOperationsTabsPlugin
 from designer_plugins.plugin_tabbed_window_area import TabbedWindowAreaPlugin
 from designer_plugins.plugin_account_type_combobox import AccountTypeComboBoxPlugin
@@ -28,7 +27,6 @@ if __name__ == '__main__':
     QPyDesignerCustomWidgetCollection.addCustomWidget(CurrencyComboBoxPlugin())
     QPyDesignerCustomWidgetCollection.addCustomWidget(OptionalCurrencyComboBoxPlugin())
     QPyDesignerCustomWidgetCollection.addCustomWidget(AccountCurrencyLabelPlugin())
-    QPyDesignerCustomWidgetCollection.addCustomWidget(AccountButtonPlugin())
     QPyDesignerCustomWidgetCollection.addCustomWidget(JalOperationsTabsPlugin())
     QPyDesignerCustomWidgetCollection.addCustomWidget(TabbedWindowAreaPlugin())
     QPyDesignerCustomWidgetCollection.addCustomWidget(AccountTypeComboBoxPlugin())

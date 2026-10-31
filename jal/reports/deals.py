@@ -5,6 +5,8 @@ from jal.ui.reports.ui_deals_report import Ui_DealsReportWidget
 from jal.reports.reports import Reports
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.helpers import set_grids_metrics
+from jal.widgets.reference_dialogs import AccountListDialog
+from jal.db.common_models import AccountListModel
 from jal.db.trades_model import ClosedTradesModel
 
 JAL_REPORT_CLASS = "DealsReport"
@@ -25,6 +27,7 @@ class DealsReportWindow(MdiWidget):
         self.ui = Ui_DealsReportWidget()
         self.ui.setupUi(self)
         set_grids_metrics(self)
+        self.ui.ReportAccountEdit.setup_selector(AccountListModel, AccountListDialog, self)
         self._parent = parent
         self.name = self.tr("Deals by account")
 
@@ -42,13 +45,13 @@ class DealsReportWindow(MdiWidget):
         self.connect_signals_and_slots()
 
     def connect_signals_and_slots(self):
-        self.ui.ReportAccountButton.changed.connect(self.updateReport)
+        self.ui.ReportAccountEdit.changed.connect(self.updateReport)
         self.ui.ReportRange.changed.connect(self.updateReport)
         self.ui.GroupCombo.currentIndexChanged.connect(self.updateReport)
         self.ui.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.ui.ReportTreeView.model()))
 
     @Slot()
     def updateReport(self):
-        self.ui.ReportTreeView.model().updateView(account_id=self.ui.ReportAccountButton.account_id,
+        self.ui.ReportTreeView.model().updateView(account_id=self.ui.ReportAccountEdit.selected_id,
                                                   dates=self.ui.ReportRange.getRange(),
                                                   grouping=self.ui.GroupCombo.currentData())

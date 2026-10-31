@@ -7,10 +7,12 @@ from jal.constants import Setup
 from jal.reports.reports import Reports
 from jal.db.operations import AssetPayment, AssetIncome
 from jal.db.helpers import localize_decimal
+from jal.db.common_models import AccountListModel
 from jal.ui.reports.ui_assets_payments_report import Ui_AssetsPaymentsReportWidget
 from jal.widgets.delegates import FloatDelegate
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.helpers import ts2dt, set_grids_metrics, restore_columns
+from jal.widgets.reference_dialogs import AccountListDialog
 
 JAL_REPORT_CLASS = "AssetsPaymentsReport"
 
@@ -132,6 +134,7 @@ class AssetsPaymentsReportWindow(MdiWidget):
         self.ui = Ui_AssetsPaymentsReportWidget()
         self.ui.setupUi(self)
         set_grids_metrics(self)
+        self.ui.ReportAccountEdit.setup_selector(AccountListModel, AccountListDialog, self)
         self._parent = parent
         self.name = self.tr("Assets' payments")
 
@@ -141,11 +144,11 @@ class AssetsPaymentsReportWindow(MdiWidget):
         self.connect_signals_and_slots()
 
     def connect_signals_and_slots(self):
-        self.ui.ReportAccountButton.changed.connect(self.updateReport)
+        self.ui.ReportAccountEdit.changed.connect(self.updateReport)
         self.ui.ReportRange.changed.connect(self.updateReport)
         self.ui.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.ui.ReportTableView.model()))
 
     @Slot()
     def updateReport(self):
-        self.ui.ReportTableView.model().updateView(account_id=self.ui.ReportAccountButton.account_id,
+        self.ui.ReportTableView.model().updateView(account_id=self.ui.ReportAccountEdit.selected_id,
                                                    dates=self.ui.ReportRange.getRange())

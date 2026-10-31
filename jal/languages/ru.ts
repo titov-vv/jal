@@ -58,7 +58,7 @@
 <context>
     <name>AccountBalanceHistoryReport</name>
     <message>
-        <location filename="../reports/account_balance.py" line="68"/>
+        <location filename="../reports/account_balance.py" line="70"/>
         <source>&amp;Account balance history</source>
         <translation>&amp;История баланса счёта</translation>
     </message>
@@ -76,7 +76,7 @@
         <translation>&amp;Счет:</translation>
     </message>
     <message>
-        <location filename="../ui/reports/account_balance_report.ui" line="79"/>
+        <location filename="../ui/reports/account_balance_report.ui" line="75"/>
         <source>Save...</source>
         <translation>Сохранить...</translation>
     </message>
@@ -84,28 +84,9 @@
 <context>
     <name>AccountBalanceHistoryReportWindow</name>
     <message>
-        <location filename="../reports/account_balance.py" line="78"/>
+        <location filename="../reports/account_balance.py" line="81"/>
         <source>Account balance history</source>
         <translation>История баланса счёта</translation>
-    </message>
-</context>
-<context>
-    <name>AccountButton</name>
-    <message>
-        <location filename="../widgets/account_select.py" line="20"/>
-        <source>Choose account</source>
-        <translation>Выбрать счет</translation>
-    </message>
-    <message>
-        <location filename="../widgets/account_select.py" line="21"/>
-        <source>Any account</source>
-        <translation>Любой счет</translation>
-    </message>
-    <message>
-        <location filename="../widgets/account_select.py" line="25"/>
-        <location filename="../widgets/account_select.py" line="35"/>
-        <source>ANY</source>
-        <translation>Любой</translation>
     </message>
 </context>
 <context>
@@ -1275,37 +1256,37 @@ Do you want to delete the account anyway?</source>
 <context>
     <name>AssetsPaymentsModel</name>
     <message>
-        <location filename="../reports/assets_payments.py" line="21"/>
+        <location filename="../reports/assets_payments.py" line="23"/>
         <source>Date</source>
         <translation>Дата</translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="21"/>
+        <location filename="../reports/assets_payments.py" line="23"/>
         <source>Symbol</source>
         <translation>Символ</translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="21"/>
+        <location filename="../reports/assets_payments.py" line="23"/>
         <source>Asset</source>
         <translation>Актив</translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="21"/>
+        <location filename="../reports/assets_payments.py" line="23"/>
         <source>Type</source>
         <translation>Тип</translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="22"/>
+        <location filename="../reports/assets_payments.py" line="24"/>
         <source>Amount</source>
         <translation>Сумма</translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="22"/>
+        <location filename="../reports/assets_payments.py" line="24"/>
         <source>Tax</source>
         <translation>Налог</translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="22"/>
+        <location filename="../reports/assets_payments.py" line="24"/>
         <source>Note</source>
         <translation>Описание</translation>
     </message>
@@ -1313,7 +1294,7 @@ Do you want to delete the account anyway?</source>
 <context>
     <name>AssetsPaymentsReport</name>
     <message>
-        <location filename="../reports/assets_payments.py" line="125"/>
+        <location filename="../reports/assets_payments.py" line="127"/>
         <source>Assets&apos; pay&amp;ments</source>
         <translation>П&amp;латежи по активам</translation>
     </message>
@@ -1331,7 +1312,7 @@ Do you want to delete the account anyway?</source>
         <translation>&amp;Счет:</translation>
     </message>
     <message>
-        <location filename="../ui/reports/assets_payments_report.ui" line="79"/>
+        <location filename="../ui/reports/assets_payments_report.ui" line="75"/>
         <source>Save...</source>
         <translation>Сохранить...</translation>
     </message>
@@ -1339,7 +1320,7 @@ Do you want to delete the account anyway?</source>
 <context>
     <name>AssetsPaymentsReportWindow</name>
     <message>
-        <location filename="../reports/assets_payments.py" line="136"/>
+        <location filename="../reports/assets_payments.py" line="139"/>
         <source>Assets&apos; payments</source>
         <translation>Платежи по активам</translation>
     </message>
@@ -2884,7 +2865,7 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>DealsReport</name>
     <message>
-        <location filename="../reports/deals.py" line="17"/>
+        <location filename="../reports/deals.py" line="19"/>
         <source>&amp;Deals by account</source>
         <translation>&amp;Сделки по счёту</translation>
     </message>
@@ -2915,37 +2896,37 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>DealsReportWindow</name>
     <message>
-        <location filename="../reports/deals.py" line="32"/>
+        <location filename="../reports/deals.py" line="35"/>
         <source>&lt;None&gt;</source>
         <translation>&lt;Пусто&gt;</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="29"/>
+        <location filename="../reports/deals.py" line="32"/>
         <source>Deals by account</source>
         <translation>Сделки по счёту</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="33"/>
+        <location filename="../reports/deals.py" line="36"/>
         <source>Asset</source>
         <translation>Актив</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="34"/>
+        <location filename="../reports/deals.py" line="37"/>
         <source>Close</source>
         <translation>Закрытие</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="35"/>
+        <location filename="../reports/deals.py" line="38"/>
         <source>Asset - Open - Close</source>
         <translation>ЦБ - Открытие - Закрытие</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="36"/>
+        <location filename="../reports/deals.py" line="39"/>
         <source>Open - Close</source>
         <translation>Открытие - Закрытие</translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="37"/>
+        <location filename="../reports/deals.py" line="40"/>
         <source>Close - Open</source>
         <translation>Закрытие - Открытие</translation>
     </message>
@@ -6268,7 +6249,7 @@ This looks like the quantity a rebasing position gained without reporting it, wh
 <context>
     <name>OptionalCurrencyComboBox</name>
     <message>
-        <location filename="../widgets/account_select.py" line="140"/>
+        <location filename="../widgets/account_select.py" line="87"/>
         <source>Currency</source>
         <translation>Валюта</translation>
     </message>

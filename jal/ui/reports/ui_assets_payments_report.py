@@ -19,9 +19,9 @@ from PySide6.QtWidgets import (QAbstractItemView, QApplication, QFrame, QGridLay
     QHeaderView, QLabel, QPushButton, QSizePolicy,
     QSpacerItem, QVBoxLayout, QWidget)
 
-from jal.widgets.account_select import AccountButton
 from jal.widgets.custom.date_range_selector import DateRangeSelector
 from jal.widgets.custom.tableview_with_footer import TableViewWithFooter
+from jal.widgets.reference_selector import ReferenceSelectorWidget
 
 class Ui_AssetsPaymentsReportWidget(object):
     def setupUi(self, AssetsPaymentsReportWidget):
@@ -54,10 +54,10 @@ class Ui_AssetsPaymentsReportWidget(object):
 
         self.gridLayout.addWidget(self.ReportAccountLbl, 0, 2, 1, 1)
 
-        self.ReportAccountButton = AccountButton(self.ReportParamsFrame)
-        self.ReportAccountButton.setObjectName(u"ReportAccountButton")
+        self.ReportAccountEdit = ReferenceSelectorWidget(self.ReportParamsFrame)
+        self.ReportAccountEdit.setObjectName(u"ReportAccountEdit")
 
-        self.gridLayout.addWidget(self.ReportAccountButton, 0, 3, 1, 1)
+        self.gridLayout.addWidget(self.ReportAccountEdit, 0, 3, 1, 1)
 
         self.SaveButton = QPushButton(self.ReportParamsFrame)
         self.SaveButton.setObjectName(u"SaveButton")
@@ -84,10 +84,10 @@ class Ui_AssetsPaymentsReportWidget(object):
         self.verticalLayout.addWidget(self.ReportTableView)
 
 #if QT_CONFIG(shortcut)
-        self.ReportAccountLbl.setBuddy(self.ReportAccountButton)
+        self.ReportAccountLbl.setBuddy(self.ReportAccountEdit)
 #endif // QT_CONFIG(shortcut)
-        QWidget.setTabOrder(self.ReportRange, self.ReportAccountButton)
-        QWidget.setTabOrder(self.ReportAccountButton, self.SaveButton)
+        QWidget.setTabOrder(self.ReportRange, self.ReportAccountEdit)
+        QWidget.setTabOrder(self.ReportAccountEdit, self.SaveButton)
         QWidget.setTabOrder(self.SaveButton, self.ReportTableView)
 
         self.retranslateUi(AssetsPaymentsReportWidget)
@@ -98,7 +98,6 @@ class Ui_AssetsPaymentsReportWidget(object):
     def retranslateUi(self, AssetsPaymentsReportWidget):
         AssetsPaymentsReportWidget.setWindowTitle(QCoreApplication.translate("AssetsPaymentsReportWidget", u"Assets' payments", None))
         self.ReportAccountLbl.setText(QCoreApplication.translate("AssetsPaymentsReportWidget", u"&Account:", None))
-        self.ReportAccountButton.setText("")
         self.SaveButton.setText(QCoreApplication.translate("AssetsPaymentsReportWidget", u"Save...", None))
     # retranslateUi
 

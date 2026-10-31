@@ -1,61 +1,8 @@
 from PySide6.QtCore import Signal, Slot, Property
-from PySide6.QtWidgets import QWidget, QPushButton, QComboBox, QMenu, QHBoxLayout, QCheckBox, QLabel
+from PySide6.QtWidgets import QWidget, QComboBox, QHBoxLayout, QCheckBox, QLabel
 from jal.db.db import JalModel
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
-from jal.widgets.reference_dialogs import AccountListDialog
-
-
-########################################################################################################################
-#  UI Button to choose accounts
-########################################################################################################################
-class AccountButton(QPushButton):
-    changed = Signal(int)
-
-    def __init__(self, parent):
-        super().__init__(parent=parent)
-        self.p_account_id = 0
-
-        self.Menu = QMenu(self)
-        self.Menu.addAction(self.tr("Choose account"), self.ChooseAccount)
-        self.Menu.addAction(self.tr("Any account"), self.ClearAccount)
-        self.setMenu(self.Menu)
-
-        self._dialog = None            # built on the first 'Choose account', see dialog()
-        self.setText(self.tr("ANY"))   # what an AccountListDialog with nothing selected reports as its name
-
-    def get_id(self):
-        return self.p_account_id
-
-    def set_id(self, account_id):
-        self.p_account_id = account_id
-        if self.p_account_id:
-            self.setText(JalAccount(account_id).name())
-        else:
-            self.setText(self.tr("ANY"))
-        self.changed.emit(self.p_account_id)
-
-    account_id = Property(int, get_id, set_id, notify=changed)
-
-    # The account chooser, built on first use and kept afterwards.
-    # Lazy call as a report window holds one of these buttons but the user may never open it
-    # (while the dialog behind it is a fully populated account list that eats resources)
-    def dialog(self):
-        if self._dialog is None:
-            self._dialog = AccountListDialog(self)
-        return self._dialog
-
-    def ChooseAccount(self):
-        dialog = self.dialog()
-        ref_point = self.mapToGlobal(self.geometry().bottomLeft())
-        dialog.setGeometry(ref_point.x(), ref_point.y(), dialog.width(), dialog.height())
-        dialog.setFilter()
-        res = dialog.exec(enable_selection=True)
-        if res:
-            self.account_id = dialog.selected_id
-
-    def ClearAccount(self):
-        self.account_id = 0
 
 
 #-----------------------------------------------------------------------------------------------------------------------

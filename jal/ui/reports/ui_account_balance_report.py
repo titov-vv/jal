@@ -19,8 +19,8 @@ from PySide6.QtWidgets import (QApplication, QFrame, QGridLayout, QLabel,
     QPushButton, QSizePolicy, QSpacerItem, QVBoxLayout,
     QWidget)
 
-from jal.widgets.account_select import AccountButton
 from jal.widgets.custom.date_range_selector import DateRangeSelector
+from jal.widgets.reference_selector import ReferenceSelectorWidget
 
 class Ui_AccountBalanceHistoryReportWidget(object):
     def setupUi(self, AccountBalanceHistoryReportWidget):
@@ -53,10 +53,10 @@ class Ui_AccountBalanceHistoryReportWidget(object):
 
         self.gridLayout.addWidget(self.ReportAccountLbl, 0, 2, 1, 1)
 
-        self.ReportAccountButton = AccountButton(self.ReportParamsFrame)
-        self.ReportAccountButton.setObjectName(u"ReportAccountButton")
+        self.ReportAccountEdit = ReferenceSelectorWidget(self.ReportParamsFrame)
+        self.ReportAccountEdit.setObjectName(u"ReportAccountEdit")
 
-        self.gridLayout.addWidget(self.ReportAccountButton, 0, 3, 1, 1)
+        self.gridLayout.addWidget(self.ReportAccountEdit, 0, 3, 1, 1)
 
         self.SaveButton = QPushButton(self.ReportParamsFrame)
         self.SaveButton.setObjectName(u"SaveButton")
@@ -67,10 +67,10 @@ class Ui_AccountBalanceHistoryReportWidget(object):
         self.reportLayout.addWidget(self.ReportParamsFrame)
 
 #if QT_CONFIG(shortcut)
-        self.ReportAccountLbl.setBuddy(self.ReportAccountButton)
+        self.ReportAccountLbl.setBuddy(self.ReportAccountEdit)
 #endif // QT_CONFIG(shortcut)
-        QWidget.setTabOrder(self.ReportRange, self.ReportAccountButton)
-        QWidget.setTabOrder(self.ReportAccountButton, self.SaveButton)
+        QWidget.setTabOrder(self.ReportRange, self.ReportAccountEdit)
+        QWidget.setTabOrder(self.ReportAccountEdit, self.SaveButton)
 
         self.retranslateUi(AccountBalanceHistoryReportWidget)
 
@@ -80,7 +80,6 @@ class Ui_AccountBalanceHistoryReportWidget(object):
     def retranslateUi(self, AccountBalanceHistoryReportWidget):
         AccountBalanceHistoryReportWidget.setWindowTitle(QCoreApplication.translate("AccountBalanceHistoryReportWidget", u"Account balance history", None))
         self.ReportAccountLbl.setText(QCoreApplication.translate("AccountBalanceHistoryReportWidget", u"&Account:", None))
-        self.ReportAccountButton.setText("")
         self.SaveButton.setText(QCoreApplication.translate("AccountBalanceHistoryReportWidget", u"Save...", None))
     # retranslateUi
 

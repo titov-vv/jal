@@ -261,11 +261,9 @@ def capture_reports(window):
                 editor.selected_id = JalDB._read(query)
                 report.updateReport()
         if account_id is not None:
-            if hasattr(report.ui, "ReportAccountButton"):
-                report.ui.ReportAccountButton.account_id = account_id
-            elif hasattr(report.ui, "ReportAccountEdit"):
+            if hasattr(report.ui, "ReportAccountEdit"):
                 report.ui.ReportAccountEdit.selected_id = account_id
-                report.onAccountChange()
+                report.ui.ReportAccountEdit.changed.emit()
         for range_name in ("ReportRange", "DateRange"):
             if hasattr(report.ui, range_name):
                 set_range(getattr(report.ui, range_name), "2025-01-01", "2026-08-31")

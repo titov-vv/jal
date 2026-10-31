@@ -62,16 +62,12 @@
          <string>&amp;Account:</string>
         </property>
         <property name="buddy">
-         <cstring>ReportAccountButton</cstring>
+         <cstring>ReportAccountEdit</cstring>
         </property>
        </widget>
       </item>
       <item row="0" column="3">
-       <widget class="AccountButton" name="ReportAccountButton">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
+       <widget class="ReferenceSelectorWidget" name="ReportAccountEdit"/>
       </item>
       <item row="0" column="5">
        <widget class="QPushButton" name="SaveButton">
@@ -87,7 +83,7 @@
  </widget>
  <tabstops>
   <tabstop>ReportRange</tabstop>
-  <tabstop>ReportAccountButton</tabstop>
+  <tabstop>ReportAccountEdit</tabstop>
   <tabstop>SaveButton</tabstop>
  </tabstops>
  <customwidgets>
@@ -98,9 +94,10 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>AccountButton</class>
-   <extends>QPushButton</extends>
-   <header>jal/widgets/account_select.h</header>
+   <class>ReferenceSelectorWidget</class>
+   <extends>QWidget</extends>
+   <header>jal/widgets/reference_selector.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

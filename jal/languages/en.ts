@@ -58,7 +58,7 @@
 <context>
     <name>AccountBalanceHistoryReport</name>
     <message>
-        <location filename="../reports/account_balance.py" line="68"/>
+        <location filename="../reports/account_balance.py" line="70"/>
         <source>&amp;Account balance history</source>
         <translation type="unfinished"></translation>
     </message>
@@ -76,7 +76,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/reports/account_balance_report.ui" line="79"/>
+        <location filename="../ui/reports/account_balance_report.ui" line="75"/>
         <source>Save...</source>
         <translation></translation>
     </message>
@@ -84,28 +84,9 @@
 <context>
     <name>AccountBalanceHistoryReportWindow</name>
     <message>
-        <location filename="../reports/account_balance.py" line="78"/>
+        <location filename="../reports/account_balance.py" line="81"/>
         <source>Account balance history</source>
         <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>AccountButton</name>
-    <message>
-        <location filename="../widgets/account_select.py" line="20"/>
-        <source>Choose account</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../widgets/account_select.py" line="21"/>
-        <source>Any account</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../widgets/account_select.py" line="25"/>
-        <location filename="../widgets/account_select.py" line="35"/>
-        <source>ANY</source>
-        <translation></translation>
     </message>
 </context>
 <context>
@@ -1274,37 +1255,37 @@ Do you want to delete the account anyway?</source>
 <context>
     <name>AssetsPaymentsModel</name>
     <message>
-        <location filename="../reports/assets_payments.py" line="21"/>
+        <location filename="../reports/assets_payments.py" line="23"/>
         <source>Date</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="21"/>
+        <location filename="../reports/assets_payments.py" line="23"/>
         <source>Symbol</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="21"/>
+        <location filename="../reports/assets_payments.py" line="23"/>
         <source>Asset</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="21"/>
+        <location filename="../reports/assets_payments.py" line="23"/>
         <source>Type</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="22"/>
+        <location filename="../reports/assets_payments.py" line="24"/>
         <source>Amount</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="22"/>
+        <location filename="../reports/assets_payments.py" line="24"/>
         <source>Tax</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="22"/>
+        <location filename="../reports/assets_payments.py" line="24"/>
         <source>Note</source>
         <translation></translation>
     </message>
@@ -1312,7 +1293,7 @@ Do you want to delete the account anyway?</source>
 <context>
     <name>AssetsPaymentsReport</name>
     <message>
-        <location filename="../reports/assets_payments.py" line="125"/>
+        <location filename="../reports/assets_payments.py" line="127"/>
         <source>Assets&apos; pay&amp;ments</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1330,7 +1311,7 @@ Do you want to delete the account anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/reports/assets_payments_report.ui" line="79"/>
+        <location filename="../ui/reports/assets_payments_report.ui" line="75"/>
         <source>Save...</source>
         <translation></translation>
     </message>
@@ -1338,7 +1319,7 @@ Do you want to delete the account anyway?</source>
 <context>
     <name>AssetsPaymentsReportWindow</name>
     <message>
-        <location filename="../reports/assets_payments.py" line="136"/>
+        <location filename="../reports/assets_payments.py" line="139"/>
         <source>Assets&apos; payments</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2880,7 +2861,7 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>DealsReport</name>
     <message>
-        <location filename="../reports/deals.py" line="17"/>
+        <location filename="../reports/deals.py" line="19"/>
         <source>&amp;Deals by account</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2911,37 +2892,37 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>DealsReportWindow</name>
     <message>
-        <location filename="../reports/deals.py" line="32"/>
+        <location filename="../reports/deals.py" line="35"/>
         <source>&lt;None&gt;</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="29"/>
+        <location filename="../reports/deals.py" line="32"/>
         <source>Deals by account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="33"/>
+        <location filename="../reports/deals.py" line="36"/>
         <source>Asset</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="34"/>
+        <location filename="../reports/deals.py" line="37"/>
         <source>Close</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="35"/>
+        <location filename="../reports/deals.py" line="38"/>
         <source>Asset - Open - Close</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="36"/>
+        <location filename="../reports/deals.py" line="39"/>
         <source>Open - Close</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="37"/>
+        <location filename="../reports/deals.py" line="40"/>
         <source>Close - Open</source>
         <translation></translation>
     </message>
@@ -6254,7 +6235,7 @@ This looks like the quantity a rebasing position gained without reporting it, wh
 <context>
     <name>OptionalCurrencyComboBox</name>
     <message>
-        <location filename="../widgets/account_select.py" line="140"/>
+        <location filename="../widgets/account_select.py" line="87"/>
         <source>Currency</source>
         <translation></translation>
     </message>

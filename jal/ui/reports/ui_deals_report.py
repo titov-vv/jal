@@ -19,9 +19,9 @@ from PySide6.QtWidgets import (QAbstractItemView, QApplication, QComboBox, QFram
     QHBoxLayout, QHeaderView, QLabel, QPushButton,
     QSizePolicy, QSpacerItem, QVBoxLayout, QWidget)
 
-from jal.widgets.account_select import AccountButton
 from jal.widgets.custom.date_range_selector import DateRangeSelector
 from jal.widgets.custom.treeview_with_footer import TreeViewWithFooter
+from jal.widgets.reference_selector import ReferenceSelectorWidget
 
 class Ui_DealsReportWidget(object):
     def setupUi(self, DealsReportWidget):
@@ -64,10 +64,10 @@ class Ui_DealsReportWidget(object):
 
         self.horizontalLayout.addWidget(self.ReportAccountLbl)
 
-        self.ReportAccountButton = AccountButton(self.ReportParamsFrame)
-        self.ReportAccountButton.setObjectName(u"ReportAccountButton")
+        self.ReportAccountEdit = ReferenceSelectorWidget(self.ReportParamsFrame)
+        self.ReportAccountEdit.setObjectName(u"ReportAccountEdit")
 
-        self.horizontalLayout.addWidget(self.ReportAccountButton)
+        self.horizontalLayout.addWidget(self.ReportAccountEdit)
 
         self.ReportFrameSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
@@ -91,11 +91,11 @@ class Ui_DealsReportWidget(object):
 
 #if QT_CONFIG(shortcut)
         self.GroupLbl.setBuddy(self.GroupCombo)
-        self.ReportAccountLbl.setBuddy(self.ReportAccountButton)
+        self.ReportAccountLbl.setBuddy(self.ReportAccountEdit)
 #endif // QT_CONFIG(shortcut)
         QWidget.setTabOrder(self.ReportRange, self.GroupCombo)
-        QWidget.setTabOrder(self.GroupCombo, self.ReportAccountButton)
-        QWidget.setTabOrder(self.ReportAccountButton, self.SaveButton)
+        QWidget.setTabOrder(self.GroupCombo, self.ReportAccountEdit)
+        QWidget.setTabOrder(self.ReportAccountEdit, self.SaveButton)
         QWidget.setTabOrder(self.SaveButton, self.ReportTreeView)
 
         self.retranslateUi(DealsReportWidget)
