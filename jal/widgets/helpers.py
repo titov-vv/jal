@@ -114,6 +114,12 @@ def grid_row_height(view, lines: int = 1) -> int:
 def grid_icon_size(view) -> int:
     return view.fontMetrics().height()
 
+# Keeps header text from turning bold with the selection (on by default in a table, off in a tree).
+def plain_headers(view):
+    for accessor in ('header', 'horizontalHeader', 'verticalHeader'):
+        if hasattr(view, accessor):
+            getattr(view, accessor)().setHighlightSections(False)
+
 # Gives every grid inside the given widget (a form as a rule) the same row height and the same icon size.
 # A table takes the height from its vertical header, but a tree has none - there it comes from the sizeHint() of
 # the delegate that paints the row, so a tree is given GridLinesDelegate as its default delegate for the columns
@@ -131,10 +137,12 @@ def set_grids_metrics(widget):
         table.setIconSize(QSize(grid_icon_size(table), grid_icon_size(table)))
         if type(table.itemDelegate()) is QStyledItemDelegate:   # Qt's default closes a cell editor on a layout switch
             table.setItemDelegate(KbSafeItemDelegate(table))          # So we need to replace it
+        plain_headers(table)
     for tree in widget.findChildren(QTreeView):
         if not isinstance(tree.itemDelegate(), GridLinesDelegate):
             tree.setItemDelegate(GridLinesDelegate(tree))
         tree.setIconSize(QSize(grid_icon_size(tree), grid_icon_size(tree)))
+        plain_headers(tree)
 
 # -----------------------------------------------------------------------------------------------------------------------
 # QMainWindow.saveState() covers toolbars and dock widgets, but not a QSplitter inside the central widget, so here are
@@ -209,6 +217,7 @@ def restore_columns(view, prefix: str):
         state = base64.decodebytes(stored.encode('utf-8')) if stored else None
     if state is not None:
         header.restoreState(state)
+        plain_headers(view)                         # a stored layout carries the flag and switches it back on
         if hasattr(view, 'footer'):
             view.footer().sync_sections()           # restoreState() is silent, so the footer has to be told about it
     if header.property(_COLUMNS_TRACKED) is None:   # from now on the table reports what the user does to it
