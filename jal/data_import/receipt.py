@@ -206,7 +206,7 @@ def line_name(item: ReceiptItem) -> str:
 # A Portuguese shop receipt read from its text. A shop profile subclasses it and declares its line grammar;
 # the VAT table, the total and the reconciliation are the same for every shop.
 class ShopReceipt:
-    NIF = ''                      # issuer's tax number, the key a profile is found by
+    NIFS = ()                     # issuers' tax numbers, the keys a profile is found by
     name = ''
     discounts_netted = True       # False where an item's discount is already in its price or is a loyalty credit
     # Line patterns, tried in this order: a line is taken by the first one that matches
@@ -346,5 +346,5 @@ def _load_profiles() -> dict:
         if profile is None:
             logging.error(f"Receipt profile class can't be loaded: {class_name}")
             continue
-        profiles[profile.NIF] = profile
+        profiles.update({nif: profile for nif in profile.NIFS})
     return profiles

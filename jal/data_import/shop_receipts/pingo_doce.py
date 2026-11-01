@@ -7,7 +7,7 @@ JAL_RECEIPT_CLASS = "ReceiptPingoDoce"
 # Pingo Doce: ' C NAME   0,180 X 3,39   0,61' with the VAT code first, grouped under printed departments;
 # a '(0,93)' saving reduces what the item above it cost, one under 'Descontos Extra' the whole receipt
 class ReceiptPingoDoce(ShopReceipt):
-    NIF = "500829993"
+    NIFS = ("500829993",)
     name = "Pingo Doce"
     discounts_netted = True
     DepartmentPattern = r'^(?P<dept>[A-ZÀ-Ý][A-ZÀ-Ý0-9./ &,+-]{3,40})$'

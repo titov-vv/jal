@@ -21,7 +21,6 @@ from jal.data_import.receipt_api.pt_at_qr import AtQr
 from jal.data_import.shop_receipts.lidl import ReceiptLidl
 from jal.data_import.shop_receipts.pingo_doce import ReceiptPingoDoce
 from jal.data_import.shop_receipts.continente import ReceiptContinente
-from jal.data_import.shop_receipts.note import ReceiptNote
 
 LISBON_SUMMER = timezone(timedelta(hours=1))
 CAPTURED = datetime(2026, 8, 20, 9, 5, tzinfo=LISBON_SUMMER)
@@ -369,7 +368,7 @@ NOTE_RECEIPT = [" NIF:      PT517309505|C.S:721.530,00|EUR SIRPEEE:-",
 
 
 def test_note_loyalty_credit_is_not_an_item():
-    receipt = ReceiptNote(NOTE_RECEIPT)
+    receipt = ReceiptContinente(NOTE_RECEIPT)
     assert receipt.problems() == []
     assert [(x.department, x.name, x.vat, receipt.paid(x)) for x in receipt.items] == [
         ("Cultura", "GIZ TESTE", "C", Decimal('1.99')), ("Presentes e Servicos", "POSTAL TESTE", "C", Decimal('1.95'))]
@@ -377,9 +376,9 @@ def test_note_loyalty_credit_is_not_an_item():
 
 
 def test_time_of_a_card_slip_wins_and_the_document_time_is_the_fallback():
-    assert ReceiptNote(NOTE_RECEIPT).timestamp == datetime(2026, 8, 14, 18, 18, 42)
+    assert ReceiptContinente(NOTE_RECEIPT).timestamp == datetime(2026, 8, 14, 18, 18, 42)
     paid_in_cash = [x for x in NOTE_RECEIPT if "Per021" not in x]
-    assert ReceiptNote(paid_in_cash).timestamp == datetime(2026, 8, 14, 18, 18)
+    assert ReceiptContinente(paid_in_cash).timestamp == datetime(2026, 8, 14, 18, 18)
 
 
 def test_pdf_receipt_of_note_has_no_loyalty_lines_and_keeps_its_time(prepare_db):
@@ -396,7 +395,7 @@ def test_profiles_are_found_by_nif():
     assert shop_profile("503340855") is ReceiptLidl
     assert shop_profile("500829993") is ReceiptPingoDoce
     assert shop_profile("502011475") is ReceiptContinente
-    assert shop_profile("517309505") is ReceiptNote
+    assert shop_profile("517309505") is ReceiptContinente
     assert shop_profile("999999990") is None
 
 
@@ -534,6 +533,31 @@ def test_date_of_digits_is_the_reading_within_a_week_of_the_capture():
     assert parse_date("03/08/2026", date(2026, 3, 9)) == datetime(2026, 3, 8)
 
 
+def test_date_with_a_two_digit_year_first_is_the_last_reading():
+    assert parse_date("26-11-01", date(2026, 11, 1)) == datetime(2026, 11, 1)
+    assert parse_date("01-11-26", date(2026, 11, 1)) == datetime(2026, 11, 1)
+    assert parse_date("26-11-01", date(2026, 12, 1)) is None
+
+
+def test_till_receipt_time_is_read_next_to_its_date():
+    today = date(2026, 8, 14)
+    assert GenericTill(["14/08/2026 18:18", "x 26-08-14  18:18:42  Per021"], today).timestamp == \
+        datetime(2026, 8, 14, 18, 18, 42)                                                         # seconds are preferred
+    assert GenericTill(["Nro:FS 1 14/08/2026 18:18"], today).timestamp == datetime(2026, 8, 14, 18, 18)
+    assert GenericTill(["14.08.26      18:53"], today).timestamp == datetime(2026, 8, 14, 18, 53)
+    assert GenericTill(["2026-08-14 19:32 0770"], today).timestamp == datetime(2026, 8, 14, 19, 32)
+    assert GenericTill(["14/08/2026", "18:18"], today).timestamp is None                          # not next to a date
+    assert GenericTill(["14/08/2026 25:18"], today).timestamp is None
+    assert GenericTill(["01/01/2020 18:18"], today).timestamp is None                             # not this purchase
+
+
+def test_pdf_receipt_of_an_unknown_shop_keeps_the_printed_time(prepare_db):
+    at_qr = AtQr.parse(QR.replace("A:503340855", "A:509999999"))
+    late = CAPTURED + timedelta(days=60)     # the age of a date is counted from the QR's date
+    assert pdf_receipt(make_pdf(lidl_receipt(nif="509999999")), at_qr, late).datetime() == \
+        QDateTime(QDate(2026, 8, 14), QTime(18, 53), local_zone())
+
+
 def test_generic_receipt_adds_the_tax_to_items_priced_net_of_it():
     receipt = GenericReceipt(invoice(), date(2026, 8, 20))
     assert [x.name for x in receipt.items] == ["Team plan Aug 18-Sep 18, 2026", "Extra storage"]
@@ -593,7 +617,7 @@ def till(hose="12.40", total="18.09"):
 
 
 def test_till_receipt_names_an_item_by_the_line_above_its_codes():
-    receipt = GenericTill(till())
+    receipt = GenericTill(till(), date(2026, 10, 6))
     assert [(x.name, x.amount) for x in receipt.items] == [("DESENTUPIDOR 3M D.6MM", Decimal('5.69')),
                                                            ("MANGUEIRA 15M", Decimal('12.40'))]
     assert receipt.total == Decimal('18.09') and receipt.currency == "EUR"
@@ -601,8 +625,8 @@ def test_till_receipt_names_an_item_by_the_line_above_its_codes():
 
 
 def test_till_receipt_that_does_not_add_up_is_caught():
-    assert GenericTill(till(hose="12.90")).problems() == ["total: items 18.59, receipt 18.09"]
-    assert GenericTill(till()[:10]).problems() == ["no items found", "total: items 0, receipt None"]
+    assert GenericTill(till(hose="12.90"), date(2026, 10, 6)).problems() == ["total: items 18.59, receipt 18.09"]
+    assert GenericTill(till()[:10], date(2026, 10, 6)).problems() == ["no items found", "total: items 0, receipt None"]
 
 
 # Fabricated after the layout of a real furniture shop receipt: the amount is on a line of its own, before a VAT code
@@ -618,7 +642,7 @@ def test_till_receipt_reads_an_amount_followed_by_a_numeric_vat_code():
                            " Total                      18,49",
                            " Total de artigos     2",
                            "  Cod.   Taxa       Liquido     IVA",
-                           "   0  23,00 % de     15,03     3,46"])
+                           "   0  23,00 % de     15,03     3,46"], date(2026, 10, 6))
     assert [(x.name, x.amount) for x in receipt.items] == [("CAIXA cx 3 17x27x17 verde", Decimal('11.99')),
                                                            ("BOLACHA aveia 600g", Decimal('6.50'))]
     assert receipt.total == Decimal('18.49') and receipt.problems() == []

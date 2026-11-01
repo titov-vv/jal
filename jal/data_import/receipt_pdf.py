@@ -119,8 +119,8 @@ def money(text: str) -> Optional[tuple]:
     return -amount if match['minus'] else amount, _CURRENCIES.get(symbol, symbol if len(symbol) == 3 else '')
 
 
-# Date of a document captured on the day 'captured'. A date of digits only is read as day/month, then as month/day:
-# the reading that is at most NUMERIC_DATE_AGE days old is taken, none if neither is.
+# Date of a document captured on the day 'captured'. A date of digits only is read as day/month, then as month/day,
+# then year first: the reading that is at most NUMERIC_DATE_AGE days old is taken, none if no reading is.
 def parse_date(text: str, captured: date) -> Optional[datetime]:
     text, recent = text.strip(), False
     if match := re.fullmatch(r'(\d{4})-(\d\d)-(\d\d)', text):
@@ -132,6 +132,8 @@ def parse_date(text: str, captured: date) -> Optional[datetime]:
     elif match := re.fullmatch(r'(\d{1,2})[/.-](\d{1,2})[/.-](\d{4}|\d{2})', text):
         year = match[3] if len(match[3]) == 4 else '20' + match[3]
         readings, recent = [(year, match[2], match[1]), (year, match[1], match[2])], True
+        if len(match[3]) == 2:     # a card slip prints '26-11-01'
+            readings.append(('20' + match[1].zfill(2), match[2], match[3]))
     else:
         return None
     for year, month, day in readings:
@@ -269,14 +271,27 @@ class GenericTill:
     _TOTAL = re.compile(r'total(?: a pagar)?(?: ?\((?P<currency>[A-Z]{3})\))?', re.I)
     _VAT_CODE = re.compile(r'(?<=\d)\s+\(?[A-Z0-9]\)?\s*$')     # a letter or a digit, may be printed after the amount
     _WORD = re.compile(r'[^\W\d_]{3}')
+    _DATETIME = re.compile(r'(?<![\d/.-])(?P<date>\d{4}-\d\d-\d\d|\d{1,2}[/.-]\d{1,2}[/.-](?:\d{4}|\d{2}))\s+'
+                           r'(?P<hour>[01]?\d|2[0-3]):(?P<minute>[0-5]\d)(?::(?P<second>[0-5]\d))?(?![\d:])')
 
-    def __init__(self, lines: list):
+    def __init__(self, lines: list, captured: date):
         self.discounts = []
         self.currency = self.shop = self.number = ''
-        self.timestamp = None
+        self.timestamp = self._parse_timestamp(lines, captured)
         end = next((i for i, x in enumerate(lines) if self._BODY_END.match(x)), 0)
         self.items = self._parse_items(lines[:end])
         self.total = self._parse_total(lines[end:])
+
+    # Returns the first date printed with a time, one with seconds (a card slip's) being preferred
+    def _parse_timestamp(self, lines: list, captured: date) -> Optional[datetime]:
+        with_seconds, without_seconds = [], []
+        for match in (x for line in lines for x in self._DATETIME.finditer(line)):
+            moment = parse_date(match['date'], captured)
+            if moment is not None:
+                moment = moment.replace(hour=int(match['hour']), minute=int(match['minute']),
+                                        second=int(match['second'] or 0))
+                (with_seconds if match['second'] else without_seconds).append(moment)
+        return next(iter(with_seconds + without_seconds), None)
 
     def _parse_items(self, lines: list) -> list:
         items, above = [], ''
@@ -320,7 +335,7 @@ def generic_receipt(lines: list, captured: date):
     invoice = GenericReceipt(lines, captured)
     if invoice.items:
         return invoice
-    till = GenericTill(lines)
+    till = GenericTill(lines, captured)
     return till if till.items else invoice
 
 
@@ -342,7 +357,8 @@ def pdf_receipt(data: bytes, at_qr: Optional[AtQr], captured_at: datetime) -> Op
     nif = at_qr.nif if at_qr is not None else header.get('nif', '')
     sign = Decimal('1') if at_qr is not None and at_qr.is_return else Decimal('-1')
     profile = shop_profile(nif) if nif else None
-    receipt = profile(text) if profile is not None else generic_receipt(text, captured_at.date())
+    day = at_qr.date if at_qr is not None else captured_at.date()     # a PDF may be imported long after the purchase
+    receipt = profile(text) if profile is not None else generic_receipt(text, day)
     generic = receipt if profile is None else None
     shop = f"NIF {nif}" if nif else generic.shop
     total = at_qr.total if at_qr is not None else parse_total(text)

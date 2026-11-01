@@ -4,10 +4,11 @@ JAL_RECEIPT_CLASS = "ReceiptContinente"
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Continente: '(A)   NAME   1,19' under 'Department:' rows, a weighed item's '0,705 X 2,49   1,76' on a line of its own;
-# an indented POUPANCA under an item is already in its price, only 'Desconto' below SUBTOTAL is money off
+# Continente and Note!: '(A)   NAME   1,19' under 'Department:' rows, a weighed item's '0,705 X 2,49   1,76' on a line
+# of its own; an indented POUPANCA is already in its price and ACUMULA EM CARTAO is a loyalty credit, only 'Desconto'
+# below SUBTOTAL is money off
 class ReceiptContinente(ShopReceipt):
-    NIF = "502011475"
+    NIFS = ("502011475", "517309505")     # Continente, Note!
     name = "Continente"
     discounts_netted = False
     DepartmentPattern = r'^(?P<dept>[^\s(].*?):\s*$'

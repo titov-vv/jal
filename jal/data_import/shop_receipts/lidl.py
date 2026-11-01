@@ -6,7 +6,7 @@ JAL_RECEIPT_CLASS = "ReceiptLidl"
 # ----------------------------------------------------------------------------------------------------------------------
 # Lidl: 'NAME   1,41 B' with the VAT code last; a discount line reduces what the item above it cost
 class ReceiptLidl(ShopReceipt):
-    NIF = "503340855"
+    NIFS = ("503340855",)
     name = "Lidl"
     discounts_netted = True
     DiscountPattern = r'^\s*(?P<label>Promo\S*[^\d]*?)\s{2,}-(?P<amount>' + AMOUNT + r')\s*$'
