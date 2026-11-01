@@ -3,7 +3,7 @@ from decimal import Decimal
 from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QIcon
 from jal.constants import Setup, BookAccount, PredefinedCategory, PredefinedAsset, PredefinedAccountType, \
-    CorporateActionType
+    CorporateActionType, TransferMark
 from jal.db.helpers import format_decimal, remove_exponent
 from jal.db.db import JalDB
 import jal.db.account
@@ -2037,9 +2037,9 @@ class Transfer(FeeCarrier, LedgerTransaction):
             # The address named the end that had no account; that end is now an account, so it has nothing left to
             # name and is dropped rather than kept as a second statement of the same thing.
             self._exec("UPDATE transfers SET deposit_account=:account, deposit_timestamp=:timestamp, "
-                       "deposit=:deposit, counterparty_address=NULL WHERE oid=:oid",
+                       "deposit=:deposit, note=:note, counterparty_address=NULL WHERE oid=:oid",
                        [(":account", account), (":timestamp", timestamp), (":deposit", deposit),
-                        (":oid", self._oid)], commit=True)
+                        (":note", TransferMark.settled_note(self._note)), (":oid", self._oid)], commit=True)
         else:
             account, timestamp = int(data['withdrawal_account']), int(data['withdrawal_timestamp'])
             if account == self._deposit_account.id():
@@ -2048,9 +2048,9 @@ class Transfer(FeeCarrier, LedgerTransaction):
                 logging.warning(LedgerTransaction.tr("Arrival precedes departure, transfer is left unsettled: ") + self.dump())
                 return False
             self._exec("UPDATE transfers SET withdrawal_account=:account, withdrawal_timestamp=:timestamp, "
-                       "deposit=:deposit, counterparty_address=NULL WHERE oid=:oid",
+                       "deposit=:deposit, note=:note, counterparty_address=NULL WHERE oid=:oid",
                        [(":account", account), (":timestamp", timestamp), (":deposit", deposit),
-                        (":oid", self._oid)], commit=True)
+                        (":note", TransferMark.settled_note(self._note)), (":oid", self._oid)], commit=True)
         if 'fee' in data:
             self.update_fee(data['fee'], data.get('fee_account', 0), data.get('fee_symbol_id'))
         logging.info(LedgerTransaction.tr("Transfer settled by transaction hash: ") + f"{self._number}")

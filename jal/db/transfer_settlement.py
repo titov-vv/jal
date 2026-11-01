@@ -1,7 +1,7 @@
 import logging
 from decimal import Decimal
 from PySide6.QtWidgets import QApplication
-from jal.constants import BookAccount, PredefinedAccountType, PredefinedCategory
+from jal.constants import BookAccount, PredefinedAccountType, PredefinedCategory, TransferMark
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.cost_basis import carried_basis, restated_basis
@@ -213,8 +213,9 @@ class TransferSettlement(JalDB):
     # to take anything else from: what the movement is - when, how much, in what - is what the leg that exists says.
     def _fill_end(self, leg: dict, account_id: int, sending: bool) -> None:
         end = "deposit_account" if sending else "withdrawal_account"
-        self._exec(f"UPDATE transfers SET {end}=:account, counterparty_address=NULL WHERE oid=:oid",
-                   [(":account", account_id), (":oid", int(leg['oid']))], commit=True)
+        self._exec(f"UPDATE transfers SET {end}=:account, note=:note, counterparty_address=NULL WHERE oid=:oid",
+                   [(":account", account_id), (":note", TransferMark.settled_note(leg['note'])),
+                    (":oid", int(leg['oid']))], commit=True)
         logging.info(self.tr("Transfer settled by counterparty address: ")
                      + f"{leg['counterparty_address']}, {remove_exponent(Decimal(leg['withdrawal']))} "
                      + (self._account_name(int(leg['withdrawal_account'])) + " -> " + self._account_name(account_id)
@@ -297,14 +298,14 @@ class TransferSettlement(JalDB):
         # The address named the end that had no account; that end is an account now, so it has nothing left to name
         if sending:
             self._exec("UPDATE transfers SET deposit_account=:account, deposit_timestamp=:timestamp, "
-                       "deposit=:amount, counterparty_address=NULL WHERE oid=:oid",
-                       [(":account", account_id), (":timestamp", timestamp), (":amount", amount), (":oid", oid)],
-                       commit=True)
+                       "deposit=:amount, note=:note, counterparty_address=NULL WHERE oid=:oid",
+                       [(":account", account_id), (":timestamp", timestamp), (":amount", amount),
+                        (":note", TransferMark.settled_note(leg['note'])), (":oid", oid)], commit=True)
         else:
             self._exec(f"UPDATE transfers SET withdrawal_account=:account, withdrawal_timestamp=:timestamp, "
-                       f"{self._amount_field(leg)}=:amount, counterparty_address=NULL WHERE oid=:oid",
-                       [(":account", account_id), (":timestamp", timestamp), (":amount", amount), (":oid", oid)],
-                       commit=True)
+                       f"{self._amount_field(leg)}=:amount, note=:note, counterparty_address=NULL WHERE oid=:oid",
+                       [(":account", account_id), (":timestamp", timestamp), (":amount", amount),
+                        (":note", TransferMark.settled_note(leg['note'])), (":oid", oid)], commit=True)
         known_account = int(leg['withdrawal_account'] if sending else leg['deposit_account'])
         logging.info(self.tr("Transfer end assigned by hand: ")
                      + f"{remove_exponent(Decimal(leg['withdrawal']))} "
@@ -600,7 +601,7 @@ class TransferSettlement(JalDB):
                    "deposit_timestamp=:timestamp, deposit=:deposit, note=:note, counterparty_address=NULL "
                    "WHERE oid=:oid",
                    [(":departure", departure), (":account", int(arrived['deposit_account'])), (":timestamp", arrival),
-                    (":deposit", deposit), (":note", sent['note'] if sent['note'] else arrived['note']),
+                    (":deposit", deposit), (":note", self._settled_note(sent, arrived)),
                     (":oid", int(sent['oid']))])
         # A fee an earlier record didn't know about is adopted rather than dropped with the row that brought it - the
         # same reason Transfer.update_fee() exists. An existing fee is never overwritten: a movement has one, whoever
@@ -616,6 +617,11 @@ class TransferSettlement(JalDB):
                      + f"{remove_exponent(Decimal(sent['withdrawal']))} "
                      + self._account_name(int(sent['withdrawal_account'])) + " -> "
                      + self._account_name(int(arrived['deposit_account'])))
+
+    # The note of the operation two legs become: of the sending leg, or of the arriving one if that leaves nothing
+    @staticmethod
+    def _settled_note(sent: dict, arrived: dict) -> str:
+        return TransferMark.settled_note(sent['note']) or TransferMark.settled_note(arrived['note'])
 
     # The one moment two records that disagree about when their movement happened are both stamped with.
     #
@@ -662,7 +668,7 @@ class TransferSettlement(JalDB):
                 'account_id': out_account,
                 'out_symbol_id': int(sent['symbol_id']), 'out_qty': Decimal(sent['withdrawal']),
                 'in_symbol_id': int(arrived['symbol_id']), 'in_qty': Decimal(arrived['withdrawal']),
-                'note': sent['note'] if sent['note'] else arrived['note']}
+                'note': self._settled_note(sent, arrived)}
         # A swap that receives on ANOTHER account is the cross-chain shape the operation already knows: the acquiring
         # leg keeps its own account, moment and transaction. Left NULL for a same-chain swap, where the acquisition
         # happens on the spot - which is what tells the two apart everywhere else in JAL (see SwapWidget).
@@ -762,7 +768,7 @@ class TransferSettlement(JalDB):
                   'in_timestamp': int(arrived['deposit_timestamp']), 'in_account_id': int(arrived['deposit_account']),
                   'in_symbol_id': int(arrived['symbol_id']), 'in_qty': Decimal(arrived['withdrawal']),
                   'in_tx_hash': arrived['number'],
-                  'note': sent['note'] if sent['note'] else arrived['note']}
+                  'note': self._settled_note(sent, arrived)}
         fee, fee_symbol_id = self._fee_of(sent, arrived)
         if fee:
             bridge.update({'fee_qty': fee, 'fee_symbol_id': fee_symbol_id})
@@ -872,7 +878,7 @@ class TransferSettlement(JalDB):
         payment = {'timestamp': int(leg['deposit_timestamp']), 'number': leg['number'],
                    'type': AssetIncome.DustAttack, 'account_id': int(leg['deposit_account']),
                    'symbol_id': int(leg['symbol_id']), 'amount': Decimal(leg['withdrawal']),
-                   'note': leg['note'] if leg['note'] else self.tr("Unsolicited transfer")}
+                   'note': TransferMark.settled_note(leg['note']) or self.tr("Unsolicited transfer")}
         LedgerTransaction.create_new(LedgerTransaction.AssetIncome, payment)
         self._exec("DELETE FROM transfers WHERE oid=:oid", [(":oid", int(leg['oid']))], commit=True)
         logging.info(self.tr("Unsolicited transfer recorded as a dust attack: ")
@@ -916,7 +922,7 @@ class TransferSettlement(JalDB):
             lines.append({'category_id': PredefinedCategory.Fees, 'amount': -fee, 'note': ''})
         LedgerTransaction.create_new(LedgerTransaction.IncomeSpending, {
             'timestamp': int(leg['withdrawal_timestamp'] if sending else leg['deposit_timestamp']),
-            'account_id': account_id, 'peer_id': peer_id, 'note': leg['note'] if leg['note'] else '',
+            'account_id': account_id, 'peer_id': peer_id, 'note': TransferMark.settled_note(leg['note']) or '',
             'lines': lines})
         self._exec("DELETE FROM transfers WHERE oid=:oid", [(":oid", oid)], commit=True)
         logging.info((self.tr("Transfer recorded as a spending: ") if sending

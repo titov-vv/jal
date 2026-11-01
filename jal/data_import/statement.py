@@ -10,7 +10,7 @@ from collections import defaultdict
 
 from PySide6.QtCore import QObject
 from PySide6.QtWidgets import QDialog, QMessageBox, QInputDialog
-from jal.constants import Setup, AssetLocation, PredefinedAccountType, PredefinedAsset, PredefinedAgents, SymbolId
+from jal.constants import Setup, AssetLocation, PredefinedAccountType, PredefinedAsset, PredefinedAgents, SymbolId, TransferMark
 from jal.db.db import JalDB
 from jal.db.clock import local_time, ZONE_SPAN
 from jal.db.helpers import is_day_marker, remove_exponent, wall_clock_timestamp
@@ -1052,6 +1052,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 operation['fee_symbol_id'] = fee_symbol_id
             if 'description' in operation:
                 operation['note'] = operation.pop('description')
+                if accounts[0] is not None and accounts[1] is not None:   # stored settled, there is nothing to do
+                    operation['note'] = TransferMark.settled_note(operation['note'])
             operation['withdrawal_timestamp'] = operation['deposit_timestamp'] = operation.pop('timestamp')
             operation['withdrawal_account'] = accounts[0]
             operation['deposit_account'] = accounts[1]

@@ -4,7 +4,7 @@ from decimal import Decimal, DecimalException
 from PySide6.QtCore import QObject, Signal
 from PySide6.QtWidgets import QApplication
 
-from jal.constants import AssetLocation, AccountData, PredefinedAccountType
+from jal.constants import AssetLocation, AccountData, PredefinedAccountType, TransferMark
 from jal.data_import.statement import Statement, JSF, Statement_ImportError
 from jal.data_import.token_filter import TokenFilter
 from jal.db.bridge_matcher import BridgeMatcher
@@ -12,20 +12,6 @@ from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
 from jal.db.token_blacklist import normalize_address
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-# Tags that mark a transfer which stands in for an operation the fetcher could record only in part, so that the ledger
-# itself says what is still to be done with it. Several classifications end in "the user finishes this by hand"
-# and a plain transfer is exactly what they all look like, so without a mark nothing but
-# a bare counterparty address distinguished them from an ordinary payment.
-#
-# The tag is deliberately NOT translated, while the sentence that follows it is: it has to stay the same string in
-# every UI language so that the operations list can be filtered on it (and a future automatic matcher can collect its
-# candidates by it), whereas the explanation is there to be read by the user.
-class TransferMark:
-    CUSTODY = '[custody]'    # the asset is held for the wallet elsewhere - merge the legs or convert them
-    BRIDGE = '[bridge]'      # one leg of a cross-chain move - merge it with the half on the other chain
 
 
 # ----------------------------------------------------------------------------------------------------------------------

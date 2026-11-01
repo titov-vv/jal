@@ -5,6 +5,23 @@ from PySide6.QtWidgets import QComboBox
 
 #-----------------------------------------------------------------------------------------------------------------------
 # This class contains a list of predefined constants used by JAL
+# Tags of a note on a transfer that still has to be settled: "<tag> <protocol>: <hint>. <details>"
+# A tag isn't translated, so the operations list can be filtered on it; the hint is.
+class TransferMark:
+    CUSTODY = '[custody]'    # the asset is held for the wallet elsewhere - merge the legs or convert them
+    BRIDGE = '[bridge]'      # one leg of a cross-chain move - merge it with the half on the other chain
+
+    # The note without the tag and the hint. The hint is translated, so it is told by its place and not by its text.
+    @classmethod
+    def settled_note(cls, note):
+        tag = next((x for x in (cls.CUSTODY, cls.BRIDGE) if note and note.startswith(x + ' ')), None)
+        if tag is None:
+            return note
+        head, _, details = note[len(tag) + 1:].partition('. ')
+        protocol = head.partition(': ')[0] if ': ' in head else ''
+        return '. '.join(x for x in (protocol, details) if x)
+
+
 class Setup:
     INI_FILE = "jal.ini"
     DB_PATH = "jal.sqlite"

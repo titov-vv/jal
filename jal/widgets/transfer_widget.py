@@ -14,7 +14,7 @@ from jal.db.account import JalAccount
 from jal.db.symbol import JalSymbol
 from jal.db.common_models import AccountListModel
 from jal.db.asset_models import SymbolsListModel
-from jal.constants import PredefinedAsset
+from jal.constants import PredefinedAsset, TransferMark
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -142,6 +142,7 @@ class TransferWidget(AbstractOperationDetails):
         if not empty:
             # An address stands for the end that has no account, so a transfer naming both of them has no such end left to describe.
             self.model.setData(self.model.index(0, self.model.fieldIndex("counterparty_address")), None)
+            self.model.setData(self.model.index(0, self.model.fieldIndex("note")), TransferMark.settled_note(fields['note']))
         return True
 
     # An asset transfer is told apart from a money one by 'symbol_id' being set, so the field has to be NULL - not
