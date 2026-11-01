@@ -404,48 +404,68 @@ class StatementKuCoin(StatementCSV):
     # A crypto exchange statement is a closed system, so the parser can be checked rather than trusted. Two
     # independent things are verified, and neither is a restatement of the other:
     #
-    #  - replaying every ledger row reproduces the balance KuCoin itself reports in its snapshot file, which is what
-    #    says the rows were read the way KuCoin meant them;
+    #  - starting from the first snapshot, replaying the ledger rows reproduces every later snapshot KuCoin reports;
     #  - the fills the trades are built from move exactly what the ledger's own 'Spot' rows say was moved, which is
     #    what says the trades - the one part that does NOT come from the ledger - agree with it.
     #
-    # Mind what the first check does NOT say. The imported account holds whatever currently sits inside a KuCoin Earn
-    # product on top of the snapshot: the snapshots cover the Main and HF Trading buckets only, and the rows that move
-    # coins into Earn are dropped as internal to the single account they are all imported into. That difference is
-    # intended - the coins are owned throughout - so it is reported rather than treated as an error.
+    # An export may start at any date, so the balance before its first row is taken from the first snapshot. Rows
+    # older than that snapshot can only be checked for not leaving this opening balance negative.
+    #
+    # The imported account also holds what sits inside a KuCoin Earn product: snapshots cover the Main and HF Trading
+    # buckets only, while the rows moving coins into Earn are internal to the account. It is reported, not an error.
     def _validate_balances(self):
         if not self._rows('snapshots'):
             logging.warning(self.tr("Statement has no balance snapshots - import can't be verified"))
             return
-        replay, locked, reported, closing = {}, {}, {}, {}
-        # The snapshots stop at the last midnight while the history runs on to the moment of the export, so the
-        # comparison is made as of the last snapshot and the rows that come after it are only counted into the
-        # closing balance of the account.
-        last_snapshot = max(x['Time(UTC)'] for x in self._rows('snapshots'))
-        for row in self._ledger():
+        snapshots = {}
+        for row in self._rows('snapshots'):
+            reported = snapshots.setdefault(row['Time(UTC)'], {})
+            reported[row['Coin']] = reported.get(row['Coin'], Decimal('0')) + self._amount(row['Amount'])
+        times = sorted(snapshots)
+        ledger = self._ledger()
+        balance = self._opening_balance(ledger, times[0], snapshots[times[0]])
+        locked, next_snapshot = {}, 0
+        for row in ledger:
+            while next_snapshot < len(times) and row['Time(UTC)'] > times[next_snapshot]:
+                self._check_snapshot(balance, snapshots[times[next_snapshot]])
+                next_snapshot += 1
             coin = row['Currency']
-            closing[coin] = closing.get(coin, Decimal('0')) + self._delta(row)
-            if row['Time(UTC)'] > last_snapshot:
-                continue
-            replay[coin] = replay.get(coin, Decimal('0')) + self._delta(row)
-            if row['Type'] in self.EarnLocked:
+            balance[coin] = balance.get(coin, Decimal('0')) + self._delta(row)
+            if row['Type'] in self.EarnLocked and row['Time(UTC)'] <= times[-1]:
                 locked[coin] = locked.get(coin, Decimal('0')) + \
                                self.EarnLocked[row['Type']] * self._amount(row['Amount'])
-        for row in self._rows('snapshots'):
-            if row['Time(UTC)'] == last_snapshot:
-                reported[row['Coin']] = reported.get(row['Coin'], Decimal('0')) + self._amount(row['Amount'])
-        for coin in sorted(set(replay) | set(reported)):
-            if replay.get(coin, Decimal('0')) != reported.get(coin, Decimal('0')):
-                raise Statement_ImportError(
-                    self.tr("Replaying the statement doesn't reproduce the balance KuCoin reports: ")
-                    + f"{coin}: {replay.get(coin, Decimal('0'))} != {reported.get(coin, Decimal('0'))}")
+        for time in times[next_snapshot:]:
+            self._check_snapshot(balance, snapshots[time])
         self._validate_fills()
-        held_in_earn = {coin: amount for coin, amount in locked.items() if amount}
+        held_in_earn = {coin: amount for coin, amount in locked.items() if amount > 0}
         if held_in_earn:
             logging.info(self.tr("Held in KuCoin Earn on top of the reported balance: ") + f"{held_in_earn}")
         account = self._data[JSF.ACCOUNTS][0]
-        account['cash_end'] = closing.get(self._currency, Decimal('0'))
-        logging.info(self.tr("Statement balances verified against exchange snapshots: ") + f"{sorted(reported)}")
+        account['cash_end'] = balance.get(self._currency, Decimal('0'))
+        logging.info(self.tr("Statement balances verified against exchange snapshots: ")
+                     + f"{sorted(snapshots[times[-1]])}")
+
+    # The balance per coin before the first ledger row: the first snapshot less the rows that are older than it
+    def _opening_balance(self, ledger: list, first_snapshot: str, reported: dict) -> dict:
+        moved = {}
+        for row in ledger:
+            if row['Time(UTC)'] <= first_snapshot:
+                moved[row['Currency']] = moved.get(row['Currency'], Decimal('0')) + self._delta(row)
+        opening = dict(reported)
+        for coin, amount in moved.items():
+            opening[coin] = reported.get(coin, Decimal('0')) - amount
+            if opening[coin] < Decimal('0'):
+                self._refuse_balance(coin, amount, reported.get(coin, Decimal('0')))
+        return opening
+
+    def _check_snapshot(self, balance: dict, reported: dict) -> None:
+        for coin in sorted(set(balance) | set(reported)):
+            if balance.get(coin, Decimal('0')) != reported.get(coin, Decimal('0')):
+                self._refuse_balance(coin, balance.get(coin, Decimal('0')), reported.get(coin, Decimal('0')))
+
+    def _refuse_balance(self, coin: str, replayed: Decimal, reported: Decimal) -> None:
+        raise Statement_ImportError(self.tr("Replaying the statement doesn't reproduce the balance KuCoin reports: ")
+                                    + f"{coin}: {replayed} != {reported}")
 
     # The ledger's 'Spot' rows and the fill file describe the same trades from two sides: the ledger says what each
     # coin balance did, the fills say which pair was traded. The trades are built from the fills, so this is what

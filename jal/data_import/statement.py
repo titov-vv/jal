@@ -1107,7 +1107,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     # history that was imported before (after a cursor reset) reaches this the same way.
     @staticmethod
     def _transfer_already_imported(operation: dict, stored_before: int) -> bool:
-        oid = Transfer.find_by_movement(operation, stored_before)
+        oid = Transfer.find_by_movement(operation, stored_before) \
+              or Transfer.find_completed_counterpart(operation, stored_before)
         if not oid:
             return False
         stored = LedgerTransaction.get_operation(LedgerTransaction.Transfer, oid, Transfer.Outgoing)

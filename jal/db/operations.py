@@ -1939,6 +1939,25 @@ class Transfer(FeeCarrier, LedgerTransaction):
                         "AND oid<=:not_after_oid", params)
         return int(oid) if oid else 0
 
+    # The transfer stored earlier that already holds this one-sided record of a movement with both of its accounts,
+    # or 0. Assets are compared rather than listings, as the two sides may name different ones, and time isn't compared.
+    @classmethod
+    def find_completed_counterpart(cls, data: dict, not_after_oid: int) -> int:
+        if not data.get('number') or not data.get('symbol_id'):
+            return 0
+        sending, arriving = data.get('withdrawal_account'), data.get('deposit_account')
+        if (sending is None) == (arriving is None):
+            return 0
+        known = 'deposit_account' if sending is None else 'withdrawal_account'
+        oid = cls._read("SELECT t.oid FROM transfers AS t JOIN asset_symbol AS s ON s.id=t.symbol_id "
+                        "WHERE t.number=:number AND s.asset_id=:asset_id AND t.withdrawal=:withdrawal "
+                        "AND t.oid<=:not_after_oid AND t.withdrawal_account IS NOT NULL "
+                        f"AND t.deposit_account IS NOT NULL AND t.{known}=:account",
+                        [(":number", data['number']), (":asset_id", JalSymbol(data['symbol_id']).asset().id()),
+                         (":withdrawal", data['withdrawal']), (":not_after_oid", not_after_oid),
+                         (":account", data[known])])
+        return int(oid) if oid else 0
+
     # Money transfers into or out of 'account_id' between 'begin' and 'end', settled or not, as seen from that account:
     # [{oid, incoming, timestamp, amount}]
     @classmethod

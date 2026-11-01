@@ -124,6 +124,54 @@ def test_the_other_side_of_the_same_movement_is_kept(wallets, monkeypatch):
     assert (rows[1]['withdrawal_account'], int(rows[1]['deposit_account'])) == ('', WALLET_B)
 
 
+# A one-sided record of a movement that is already stored with both accounts adds nothing and must not be counted again
+@pytest.mark.parametrize("accounts", [[0, 2, 2], [1, 0, 1]])
+def test_one_sided_record_of_a_complete_transfer_is_not_stored(wallets, monkeypatch, accounts):
+    _import(monkeypatch, [1, 2, 1])
+    _import(monkeypatch, accounts)
+
+    rows = _stored()
+    assert len(rows) == 1
+    assert (int(rows[0]['withdrawal_account']), int(rows[0]['deposit_account'])) == (WALLET_A, WALLET_B)
+
+
+# An exchange reports a deposit under its own listing and at its own time, and it still is the same movement
+def test_arrival_under_another_listing_and_time_does_not_double_the_balance(funded, monkeypatch):
+    chain_listing = JalAsset(USDT).add_symbol('USD₮0', 2, AssetLocation.ETH_BLOCKCHAIN)
+    LedgerTransaction.create_new(LedgerTransaction.Transfer, {
+        'withdrawal_timestamp': d2t(210102), 'withdrawal_account': WALLET_A, 'withdrawal': Decimal('1000'),
+        'deposit_timestamp': d2t(210102), 'deposit_account': WALLET_B, 'deposit': '0',
+        'number': '0xhash', 'symbol_id': chain_listing})
+    _import(monkeypatch, [0, 2, 2])
+
+    assert len(_stored()) == 1
+    Ledger().rebuild(from_timestamp=0)
+    assert JalAccount(WALLET_B).get_asset_amount(d2t(210110), USDT) == Decimal('1000')
+    assert _in_transit(USDT) == Decimal('0')
+
+
+# Another transaction, another quantity or another receiving account is a movement of its own
+@pytest.mark.parametrize("accounts, number, amount", [([0, 2, 2], '0xother', Decimal('1000')),
+                                                      ([0, 2, 2], '0xhash', Decimal('999')),
+                                                      ([0, 1, 1], '0xhash', Decimal('1000'))])
+def test_a_different_movement_is_kept_beside_a_complete_transfer(wallets, monkeypatch, accounts, number, amount):
+    _import(monkeypatch, [1, 2, 1])
+    _import(monkeypatch, accounts, number=number, amount=amount)
+
+    assert len(_stored()) == 2
+
+
+# Records of one running import may be a multisend, so only a transfer stored earlier counts
+def test_a_complete_transfer_stored_later_is_not_a_counterpart(wallets, monkeypatch):
+    _import(monkeypatch, [1, 2, 1])
+    oid = int(_stored()[0]['oid'])
+    leg = {'number': '0xhash', 'symbol_id': symbol_id_for(USDT), 'withdrawal': Decimal('1000'),
+           'withdrawal_account': None, 'deposit_account': WALLET_B}
+
+    assert Transfer.find_completed_counterpart(leg, oid) == oid
+    assert Transfer.find_completed_counterpart(leg, oid - 1) == 0
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 # The ledger side: an unsettled leg is value in transit
 

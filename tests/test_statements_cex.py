@@ -198,6 +198,45 @@ def test_kucoin_export_made_in_another_zone_reads_the_same(kucoin, data_path, tm
         assert statement._data[section] == kucoin._data[section]
 
 
+# An export that starts with the fixture's 3rd operation: the fiat deposit and its move between buckets are older
+def _kucoin_from_later_date(kucoin) -> StatementKuCoin:
+    statement = StatementKuCoin()
+    statement._files = dict(kucoin._files)
+    for key in ('funding', 'trading'):
+        statement._files[key] = [x for x in kucoin._files[key] if x['Time(UTC)'] > '2025-01-10 10:06:00']
+    statement._data = {JSF.PERIOD: [None, None], JSF.ACCOUNTS: [], JSF.ASSETS: [], JSF.TRADES: [],
+                       JSF.TRANSFERS: [], JSF.SWAPS: [], JSF.BRIDGES: [], JSF.ASSET_PAYMENTS: []}
+    return statement
+
+
+def _ledger_row(coin, amount, time):
+    return {'UID': '100000001', 'Account Type': 'mainAccount', 'Currency': coin, 'Side': 'Deposit', 'Amount': amount,
+            'Fee': '0', 'Time(UTC)': time, 'Remark': '', 'Type': 'Hold to Earn Earnings'}
+
+
+def test_kucoin_export_of_a_later_period_opens_at_the_balance_held_before_it(kucoin):
+    statement = _kucoin_from_later_date(kucoin)
+    statement._load_statement()
+    # first snapshot 98.1 EUR, after the 900.9 spent on ORD-1 that day: 999 opening - 900.9 + 189.81 from ORD-2
+    assert statement._data[JSF.ACCOUNTS][0]['cash_end'] == Decimal('287.91')
+    assert len(statement._data[JSF.TRADES]) == 2
+
+
+def test_kucoin_refuses_a_row_that_breaks_a_later_snapshot(kucoin):
+    statement = _kucoin_from_later_date(kucoin)
+    statement._files['funding'] = statement._files['funding'] + [_ledger_row('USDT', '1', '2025-01-12 00:00:00')]
+    with pytest.raises(Statement_ImportError, match="doesn't reproduce the balance"):
+        statement._load_statement()
+
+
+def test_kucoin_refuses_rows_that_exceed_the_first_snapshot(kucoin):
+    # ADA isn't in the first snapshot, so 1 ADA credited before it would mean an opening balance of -1
+    statement = _kucoin_from_later_date(kucoin)
+    statement._files['funding'] = statement._files['funding'] + [_ledger_row('ADA', '1', '2025-01-10 12:00:00')]
+    with pytest.raises(Statement_ImportError, match="ADA: 1 != 0"):
+        statement._load_statement()
+
+
 def test_kucoin_refuses_an_unknown_operation(kucoin, data_path):
     # A row type the parser doesn't know must stop the import: skipping it would leave the balances quietly wrong,
     # which is precisely what the statement's own snapshots exist to catch.
