@@ -21,6 +21,7 @@ from jal.data_import.receipt_api.pt_at_qr import AtQr
 from jal.data_import.shop_receipts.lidl import ReceiptLidl
 from jal.data_import.shop_receipts.pingo_doce import ReceiptPingoDoce
 from jal.data_import.shop_receipts.continente import ReceiptContinente
+from jal.data_import.shop_receipts.note import ReceiptNote
 
 LISBON_SUMMER = timezone(timedelta(hours=1))
 CAPTURED = datetime(2026, 8, 20, 9, 5, tzinfo=LISBON_SUMMER)
@@ -346,10 +347,56 @@ def test_continente_items_add_up():
     assert receipt.timestamp == datetime(2026, 9, 26, 14, 22)
 
 
+# Fabricated after the layout of a real Note! receipt with its card slip: 1,99 + 1,95 = 3,94, the 0,39 is a loyalty credit
+NOTE_RECEIPT = [" NIF:      PT517309505|C.S:721.530,00|EUR SIRPEEE:-",
+                "         Nro:FS AAA001/000001 14/08/2026 18:18",
+                "                 NIF: Consumidor Final",
+                "IVA  DESCRICAO                                   VALOR",
+                "Cultura:",
+                "(C)  GIZ TESTE                                   1,99",
+                "    ACUMULA EM CARTAO                        0,19",
+                "Presentes e Servicos:",
+                "(C)  POSTAL TESTE                                1,95",
+                "    ACUMULA EM CARTAO                        0,20",
+                "TOTAL A PAGAR                                  3,94",
+                "Cartao Credito                                    3,94",
+                "         %IVA          Total Liq.      IVA       Total",
+                "(C)      23,00%          3,20          0,74       3,94",
+                "        26-08-14  18:18:42   Per021 Tr074 Msg393",
+                "        CARTAO: ****1234     TC:0000000000000000",
+                "ACUMULOU NO SEU CARTAO                           0,39",
+                "SALDO NO CARTAO                                  0,39"]
+
+
+def test_note_loyalty_credit_is_not_an_item():
+    receipt = ReceiptNote(NOTE_RECEIPT)
+    assert receipt.problems() == []
+    assert [(x.department, x.name, x.vat, receipt.paid(x)) for x in receipt.items] == [
+        ("Cultura", "GIZ TESTE", "C", Decimal('1.99')), ("Presentes e Servicos", "POSTAL TESTE", "C", Decimal('1.95'))]
+    assert receipt.discounts == []
+
+
+def test_time_of_a_card_slip_wins_and_the_document_time_is_the_fallback():
+    assert ReceiptNote(NOTE_RECEIPT).timestamp == datetime(2026, 8, 14, 18, 18, 42)
+    paid_in_cash = [x for x in NOTE_RECEIPT if "Per021" not in x]
+    assert ReceiptNote(paid_in_cash).timestamp == datetime(2026, 8, 14, 18, 18)
+
+
+def test_pdf_receipt_of_note_has_no_loyalty_lines_and_keeps_its_time(prepare_db):
+    at_qr = AtQr.parse(QR.replace("A:503340855", "A:517309505").replace("O:4.84", "O:3.94"))
+    fragments = [(10, 800 - 15 * i, line) for i, line in enumerate(NOTE_RECEIPT)]
+    receipt = pdf_receipt(make_pdf(fragments), at_qr, CAPTURED)
+    assert receipt.slip_lines() == [dict(x, trust=LineTrust.PROVEN) for x in (
+        {'name': "GIZ TESTE", 'amount': Decimal('-1.99')}, {'name': "POSTAL TESTE", 'amount': Decimal('-1.95')})]
+    assert receipt.verdict() == Verdict.RECONCILED and receipt.total() == Decimal('-3.94')
+    assert receipt.datetime() == QDateTime(QDate(2026, 8, 14), QTime(18, 18, 42), local_zone())
+
+
 def test_profiles_are_found_by_nif():
     assert shop_profile("503340855") is ReceiptLidl
     assert shop_profile("500829993") is ReceiptPingoDoce
     assert shop_profile("502011475") is ReceiptContinente
+    assert shop_profile("517309505") is ReceiptNote
     assert shop_profile("999999990") is None
 
 

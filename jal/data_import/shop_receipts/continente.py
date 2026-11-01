@@ -17,3 +17,5 @@ class ReceiptContinente(ShopReceipt):
     ItemPattern = r'^\((?P<vat>[A-Z])\)\s+(?P<name>.*?)(?:\s{2,}(?P<amount>' + AMOUNT + r'))?\s*$'
     DatetimePattern = r'^\s*Nro:.*\s(?P<day>\d{2})/(?P<month>\d{2})/(?P<year>\d{4})\s+(?P<hour>\d{2}):' \
                       r'(?P<minute>\d{2})\s*$'
+    SlipDatetimePattern = r'^\s*(?P<year>\d{2})-(?P<month>\d{2})-(?P<day>\d{2})\s+(?P<hour>\d{2}):(?P<minute>\d{2}):' \
+                          r'(?P<second>\d{2})\s+Per\d+'

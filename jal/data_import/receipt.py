@@ -216,6 +216,7 @@ class ShopReceipt:
     QuantityPattern = ''          # printed under its item: (?P<qty>) (?P<price>)
     ItemPattern = ''              # (?P<name>) [(?P<amount>) (?P<vat>) (?P<qty>) (?P<price>)]
     DatetimePattern = ''          # (?P<year>) (?P<month>) (?P<day>) (?P<hour>) (?P<minute>) [(?P<second>)]
+    SlipDatetimePattern = ''      # the card slip's moment, has seconds and wins over DatetimePattern; the same groups
     VoucherLabel = ''             # start of a payment line by voucher, which is outside the VAT table
     SubtotalPattern = ''          # a heading that, like SUBTOTAL, puts the discounts below it on the whole receipt
 
@@ -256,19 +257,18 @@ class ShopReceipt:
         return problems
 
     def _parse_datetime(self, lines: list) -> Optional[datetime]:
-        if not self.DatetimePattern:
-            return None
-        pattern = re.compile(self.DatetimePattern)
-        for line in lines:
-            if match := pattern.match(line):
-                year = int(match['year'])
-                year = year + 2000 if year < 100 else year
-                second = int(match.groupdict().get('second') or 0)
-                try:
-                    return datetime(year, int(match['month']), int(match['day']), int(match['hour']),
-                                    int(match['minute']), second)
-                except ValueError:
-                    return None
+        for source in (x for x in (self.SlipDatetimePattern, self.DatetimePattern) if x):
+            pattern = re.compile(source)
+            for line in lines:
+                if match := pattern.match(line):
+                    year = int(match['year'])
+                    year = year + 2000 if year < 100 else year
+                    second = int(match.groupdict().get('second') or 0)
+                    try:
+                        return datetime(year, int(match['month']), int(match['day']), int(match['hour']),
+                                        int(match['minute']), second)
+                    except ValueError:
+                        break
         return None
 
     def _parse_body(self, lines: list) -> list:
