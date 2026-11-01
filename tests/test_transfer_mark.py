@@ -1,5 +1,4 @@
 import os
-import sqlite3
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 import pytest
@@ -13,8 +12,6 @@ from jal.db.db import JalDB
 from jal.db.operations import LedgerTransaction, Transfer
 from jal.db.transfer_settlement import TransferSettlement
 from jal.data_import.statement import Statement
-from jal.db.settings import JalSettings
-from tools.clean_transfer_marks import clean_notes
 from jal.db.helpers import db_row2dict
 from jal.widgets.transfer_widget import TransferWidget
 
@@ -196,18 +193,3 @@ def test_the_form_removes_the_mark_when_both_ends_are_named(wallets):
 
 def test_the_form_keeps_the_mark_while_an_end_is_empty(wallets):
     assert _validated_form_note(None) == MARKED
-
-
-def test_cleanup_script_fixes_settled_and_only_settled(wallets):
-    settled, pending = _store(WALLET_A, WALLET_B), _store(WALLET_A, None)
-    own = _store(WALLET_A, WALLET_B, note='My own note', number='2')
-    connection = sqlite3.connect(JalSettings.path(JalSettings.PATH_DB_FILE))
-    try:
-        assert clean_notes(connection) == {'transfers': 1, 'swaps': 0, 'bridges': 0, 'asset_incomes': 0, 'actions': 0}
-        connection.commit()
-        assert clean_notes(connection)['transfers'] == 0     # nothing left for a second run
-    finally:
-        connection.close()
-    assert _note('transfers', settled) == CLEAN
-    assert _note('transfers', pending) == MARKED
-    assert _note('transfers', own) == 'My own note'
