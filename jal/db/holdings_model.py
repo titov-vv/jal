@@ -5,7 +5,7 @@ from decimal import Decimal
 from PySide6.QtCore import Qt, QModelIndex
 from PySide6.QtGui import QBrush, QFont
 from PySide6.QtWidgets import QHeaderView
-from jal.constants import IconOwner, AccountStatus
+from jal.constants import IconOwner, AccountStatus, Setup
 from jal.db.clock import day_finish, local_reading, today_finish
 from jal.db.helpers import now_ts
 from jal.db.tree_model import AbstractTreeItem, ReportTreeModel
@@ -19,7 +19,7 @@ from jal.db.receivable import JalReceivable
 from jal.db.staking import JalStakingBox
 from jal.net.chain_fetchers.protocols import protocol_name
 from jal.widgets.delegates import GridLinesDelegate, FloatDelegate, TimestampDelegate, TaggedIconDelegate, TAG_ICON_ROLE
-from jal.widgets.helpers import ts2d
+from jal.widgets.helpers import ts2d, columns_stored
 from jal.widgets.theme import Theme, Meaning
 
 
@@ -116,8 +116,11 @@ class AssetTreeItem(AbstractTreeItem):
 
 # ----------------------------------------------------------------------------------------------------------------------
 class HoldingsModel(ReportTreeModel):
+    COLUMN_MODE = QHeaderView.Interactive    # ResizeToContents re-measures every cell on each layout of the view
+
     def __init__(self, parent_view):
         super().__init__(parent_view)
+        self._fit_columns = False
         self._grid_delegate = None
         self._header_delegate = None
         self._float_delegate = None
@@ -214,11 +217,8 @@ class HoldingsModel(ReportTreeModel):
         return '\n'.join(lines) if lines else None
 
     def configureView(self):
-        for field in [x['field'] for x in self._columns]:
-            if field == 'asset_name':
-                self._view.header().setSectionResizeMode(self.fieldIndex(field), QHeaderView.Stretch)
-            else:
-                self._view.header().setSectionResizeMode(self.fieldIndex(field), QHeaderView.ResizeToContents)
+        self._fit_columns = self.COLUMN_MODE == QHeaderView.Interactive \
+                            and not columns_stored(self._view, Setup.COLUMNS_STATE_PREFIX)
         self._grid_delegate = GridLinesDelegate(self._view)
         self._header_delegate = TaggedIconDelegate(self._view)
         self._date_delegate = TimestampDelegate(date_only=True, parent=self._view)
@@ -235,6 +235,10 @@ class HoldingsModel(ReportTreeModel):
             if self.fieldIndex(field) >= 0:   # the account view leaves some of the columns out
                 self._view.setItemDelegateForColumn(self.fieldIndex(field), delegate)
         super().configureView()
+        # Set after the restore, as a stored layout brings the resize modes it was saved with
+        for field in [x['field'] for x in self._columns]:
+            mode = QHeaderView.Stretch if field == 'asset_name' else self.COLUMN_MODE
+            self._view.header().setSectionResizeMode(self.fieldIndex(field), mode)
 
     # 'min_status' is the lowest AccountStatus the report reaches down to - a wider view is a lower bound
     def updateView(self, currency_id, date, grouping, min_status):
@@ -420,6 +424,10 @@ class HoldingsModel(ReportTreeModel):
         self._root = self._build_tree()
         self.endResetModel()
         super().prepareData()
+        if self._fit_columns and self._root.childrenCount():   # a table with no stored layout starts fitted once
+            self._fit_columns = False
+            for field in [x['field'] for x in self._columns if x['field'] != 'asset_name']:
+                self._view.resizeColumnToContents(self.fieldIndex(field))
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -435,6 +443,7 @@ class AccountHoldingsRoot(AssetTreeItem):
 # The first total equals JalAccount.balance(). A staking box is an account of its own, so what is staked comes after it.
 class AccountHoldingsModel(HoldingsModel):
     HELD, MONEY, CLAIM, STAKED = 'held', 'money', 'claim', 'staked'
+    COLUMN_MODE = QHeaderView.ResizeToContents
 
     def __init__(self, parent_view):
         super().__init__(parent_view)

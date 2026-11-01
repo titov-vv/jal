@@ -99,6 +99,7 @@ class Ui_PortfolioWidget(object):
         self.PortfolioTreeView = QTreeView(PortfolioWidget)
         self.PortfolioTreeView.setObjectName(u"PortfolioTreeView")
         self.PortfolioTreeView.setAlternatingRowColors(True)
+        self.PortfolioTreeView.setUniformRowHeights(True)
         self.PortfolioTreeView.setAnimated(True)
         self.PortfolioTreeView.setAllColumnsShowFocus(True)
 

@@ -185,6 +185,14 @@ _pending_capture = set()
 _COLUMNS_TRACKED = "jal_columns_key"    # dynamic property that marks a header whose resizes are already followed
 
 
+# True if restore_columns() would find a layout for the view
+def columns_stored(view, prefix: str) -> bool:
+    if not view.objectName():
+        return False
+    key = columns_state_key(view, prefix)
+    return key in _live_columns or bool(JalSettings().getStr(key))
+
+
 # Restores the column layout of a single view: the one in use if the table is already open, the one stored by the
 # previous session otherwise. Called at the end of configureView(), so that a width the user has set survives a
 # re-configuration of the report as well as it survives a restart.

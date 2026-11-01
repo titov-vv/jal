@@ -1,24 +1,28 @@
+import base64
 import os
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 from decimal import Decimal
 
 import pytest
 from PySide6.QtCore import QDate
-from PySide6.QtWidgets import QTreeView
+from PySide6.QtGui import QStandardItemModel
+from PySide6.QtWidgets import QHeaderView, QTreeView, QWidget
 
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import d2t, create_actions, create_assets, create_quotes, create_trades, symbol_id_for
-from jal.constants import PredefinedAsset, PredefinedAccountType, AccountStatus, AccountData, AssetData, AssetLocation
+from jal.constants import PredefinedAsset, PredefinedAccountType, AccountStatus, AccountData, AssetData, AssetLocation, Setup
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
 from jal.db.chain_balance import JalChainBalance
 from jal.db.db import JalDB
-from jal.db.holdings_model import HoldingsModel
+from jal.db.holdings_model import HoldingsModel, AccountHoldingsModel
 from jal.db.ledger import Ledger
 from jal.db.operations import LedgerTransaction
 from jal.db.receivable import JalReceivable
+from jal.db.settings import JalSettings
 from jal.db.staking import JalStakingBox
 from jal.db.transfer_settlement import TransferSettlement
+from jal.widgets.helpers import columns_state_key
 
 EUR = 1
 USD = 2
@@ -263,3 +267,63 @@ def test_a_position_alone_shows_a_profit(wallet):
     assert model.data(model.index(0, model.fieldIndex('value'), claims)) == Decimal('2')
     assert model.data(model.index(2, model.fieldIndex('value'))) is None   # a heading shows no subtotal
     assert model.data(claims) == "Claimable (earned, not yet paid)"
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Column widths of the report: fixed once set, so that a rebuild doesn't measure every cell again
+@pytest.fixture
+def holder(wallet):
+    widget = QWidget()
+    yield widget
+    widget.deleteLater()
+
+
+def _named_view(parent, name='PortfolioTreeView') -> QTreeView:
+    view = QTreeView(parent)
+    view.setObjectName(name)
+    return view
+
+
+def _show_portfolio(view) -> HoldingsModel:
+    model = HoldingsModel(view)
+    view.setModel(model)
+    model.updateView(currency_id=EUR, date=DATE, grouping='', min_status=AccountStatus.Active)
+    return model
+
+
+def test_portfolio_without_stored_layout_is_fitted_once(holder):
+    view = _named_view(holder)
+    model = _show_portfolio(view)
+    header = view.header()
+    field = model.fieldIndex('header')
+    assert header.sectionResizeMode(field) == QHeaderView.Interactive
+    assert header.sectionResizeMode(model.fieldIndex('asset_name')) == QHeaderView.Stretch
+    assert header.sectionSize(field) == view.sizeHintForColumn(field)
+    header.resizeSection(field, 333)
+    model.prepareData()
+    assert header.sectionSize(field) == 333
+
+
+# The layout comes from a table of short texts, so its width differs from what fitting the rows would give
+def test_portfolio_keeps_widths_of_a_layout_saved_with_auto_fit(holder):
+    source = _named_view(holder, 'SavedLayoutTreeView')
+    source.setModel(QStandardItemModel(1, len(HoldingsModel(source)._columns), source))
+    field = HoldingsModel(source).fieldIndex('header')
+    source.header().setSectionResizeMode(field, QHeaderView.ResizeToContents)
+    saved_width = source.header().sectionSize(field)
+    JalSettings().setValue(columns_state_key(source, Setup.COLUMNS_STATE_PREFIX),
+                           base64.encodebytes(source.header().saveState().data()).decode('utf-8'))
+
+    view = _named_view(holder, 'SavedLayoutTreeView')
+    _show_portfolio(view)
+    assert view.header().sectionResizeMode(field) == QHeaderView.Interactive
+    assert view.header().sectionSize(field) == saved_width
+    assert view.sizeHintForColumn(field) != saved_width
+
+
+def test_account_view_still_fits_its_columns(holder):
+    view = _named_view(holder, 'PositionsTreeView')
+    model = AccountHoldingsModel(view)
+    view.setModel(model)
+    model.showAccount(WALLET, EUR, DATE)
+    assert view.header().sectionResizeMode(model.fieldIndex('qty')) == QHeaderView.ResizeToContents
