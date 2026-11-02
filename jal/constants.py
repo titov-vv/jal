@@ -323,6 +323,21 @@ class AccountStatus(PredefinedList, QObject):
         return self._visibility_names
 
 
+# How a swap is booked, stored in 'swaps.treatment': a sale realizes the result, a conversion carries the lots over
+class SwapTreatment(PredefinedList, QObject):
+    Auto = 0         # Resolved at every rebuild from AssetData.PeggedTo of the two assets
+    Sale = 1
+    Conversion = 2
+
+    def __init__(self):
+        super().__init__()
+        self._names = {
+            self.Auto: self.tr("Auto"),
+            self.Sale: self.tr("Sale"),
+            self.Conversion: self.tr("Conversion")
+        }
+
+
 class PredefinedAsset(PredefinedList, QObject):
     Money = 1
     Stock = 2
@@ -428,6 +443,9 @@ class AssetData(PredefinedList, QObject):
     # It is set BY HAND, like Rebasing (and with the same exception) and for the same reason: an 'aEth.../f.../stk...'
     # prefix is a naming convention, not a property, and the contract the operation went through is not kept.
     Protocol = 7
+    # The fiat currency a stablecoin is pegged to, stored as its assets.id; set by hand, like Rebasing.
+    # A swap with a pegged asset on either side is a sale by default, any other a conversion (see SwapTreatment).
+    PeggedTo = 8
 
     def __init__(self):
         super().__init__()
@@ -438,7 +456,8 @@ class AssetData(PredefinedList, QObject):
             self.CoinGeckoId: self.tr("CoinGecko id"),
             self.Rebasing: self.tr("rebasing"),
             self.Decimals: self.tr("decimals"),
-            self.Protocol: self.tr("protocol")
+            self.Protocol: self.tr("protocol"),
+            self.PeggedTo: self.tr("pegged to")
         }
         self._types = {
             self.Tag: "tag",
@@ -447,7 +466,8 @@ class AssetData(PredefinedList, QObject):
             self.CoinGeckoId: "str",
             self.Rebasing: "int",
             self.Decimals: "int",
-            self.Protocol: "str"
+            self.Protocol: "str",
+            self.PeggedTo: "currency"
         }
 
     def get_type(self, type_id, default='') -> str:

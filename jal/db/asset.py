@@ -43,6 +43,10 @@ class JalAsset(JalDB):
         self._principal = Decimal(self._principal) if self._principal else Decimal('0')
         self._coin_id = self._data.get('data', {}).get(AssetData.CoinGeckoId, '')
         self._protocol = self._data.get('data', {}).get(AssetData.Protocol, '')
+        try:
+            self._pegged_to = int(self._data.get('data', {}).get(AssetData.PeggedTo, 0))
+        except (ValueError, TypeError):
+            self._pegged_to = 0
         # Anything unreadable is taken as "not rebasing": the flag adds quantity to a position, so the safe reading
         # of a value nobody can make sense of is the one that changes nothing.
         try:
@@ -499,6 +503,10 @@ class JalAsset(JalDB):
     # (see AssetData.Protocol). A wrapping names its own row from the marked side of the pair.
     def protocol(self) -> str:
         return self._protocol
+
+    # Id of the currency the asset is pegged to (see AssetData.PeggedTo), 0 if it isn't marked as pegged
+    def pegged_to(self) -> int:
+        return self._pegged_to
 
     # True for a rebasing receipt token - one whose on-chain balance grows with no transfer and no event behind it,
     # so that the ledger is structurally short of the real quantity (see AssetData.Rebasing). It is what decides

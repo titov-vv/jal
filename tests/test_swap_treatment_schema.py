@@ -3,10 +3,12 @@ import sqlparse
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo
 from tests.helpers import d2t, create_stocks, create_trades, create_quotes, create_swaps
+from jal.constants import AssetData
+from jal.db.asset import JalAsset
 from jal.db.db import JalDB
 from jal.db.ledger import Ledger
 
-_PEGGED_TO = 8   # AssetData.PeggedTo
+_PEGGED_TO = AssetData.PeggedTo
 _MIGRATION_FROM = "-- SWAP TREATMENT: AUTO / SALE / CONVERSION"
 _MIGRATION_TO = "-- Set new DB schema version"
 _PEG_TRIGGERS = ['asset_data_peg_after_delete', 'asset_data_peg_after_insert', 'asset_data_peg_after_update']
@@ -106,3 +108,20 @@ def test_unrelated_asset_data_keeps_ledger(prepare_db_fifo, asset_id, datatype):
     JalDB._exec("UPDATE asset_data SET value='2' WHERE asset_id=:asset", [(":asset", asset_id)], commit=True)
     JalDB._exec("DELETE FROM asset_data WHERE asset_id=:asset", [(":asset", asset_id)], commit=True)
     assert _ledger_from(t_buy) == rows
+
+
+# The delta and jal_init.sql hard-code the attribute's number in the peg triggers
+def test_triggers_watch_the_pegged_attribute(prepare_db):
+    assert AssetData.PeggedTo == 8
+    for name in _PEG_TRIGGERS:
+        assert "datatype = 8" in _trigger_sql(name)
+
+
+@pytest.mark.parametrize("value, expected", [(None, 0), ('1', 1), ('2', 2), ('', 0), ('USD', 0)])
+def test_pegged_to_reads_a_currency_id(prepare_db_fifo, value, expected):
+    create_stocks([('A', 'Asset A')], currency_id=2)
+    if value is not None:
+        JalDB._exec("INSERT INTO asset_data (asset_id, datatype, value) VALUES (4, :type, :value)",
+                    [(":type", _PEGGED_TO), (":value", value)], commit=True)
+    JalAsset.db_cache.clear_cache()
+    assert JalAsset(4).pegged_to() == expected
