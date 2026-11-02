@@ -8,7 +8,7 @@ from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.symbol import JalSymbol
 from jal.db.account import JalAccount
 from jal.db.operations import LedgerTransaction, AssetPayment, AssetIncome
-from jal.constants import PredefinedAsset, AssetLocation, SymbolId
+from jal.constants import PredefinedAsset, AssetLocation, SymbolId, SwapTreatment
 from jal.data_export.xlsx import XLSX
 
 
@@ -211,13 +211,14 @@ def create_trades(account_id, trades):
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Create swaps for given account_id: swaps is a list of tuples
-# (timestamp, out_asset_id, out_qty, in_asset_id, in_qty, [fee_asset_id, fee_qty])
-def create_swaps(account_id, swaps):
+# (timestamp, out_asset_id, out_qty, in_asset_id, in_qty, [fee_asset_id, fee_qty]); a sale unless 'treatment' says
+def create_swaps(account_id, swaps, treatment=SwapTreatment.Sale):
     currency_id = JalAccount(account_id).currency()
     for swap in swaps:
         data = {'timestamp': swap[0], 'account_id': account_id, 'tx_hash': '',
                 'out_symbol_id': symbol_id_for(swap[1], currency_id), 'out_qty': Decimal(str(swap[2])),
-                'in_symbol_id': symbol_id_for(swap[3], currency_id), 'in_qty': Decimal(str(swap[4]))}
+                'in_symbol_id': symbol_id_for(swap[3], currency_id), 'in_qty': Decimal(str(swap[4])),
+                'treatment': treatment}
         if len(swap) > 6:
             data['fee_symbol_id'] = symbol_id_for(swap[5], currency_id)
             data['fee_qty'] = Decimal(str(swap[6]))
@@ -241,8 +242,8 @@ def create_conversions(account_id, conversions):
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Create cross-chain swaps (the acquired asset arrives on another account, later): swaps is a list of dicts
-# {'ts', 'acc', 'out_asset', 'out_qty', 'in_ts', 'in_acc', 'in_asset', 'in_qty', ['fee_asset', 'fee_qty'], ['note']}
-# Returns the list of created operation ids.
+# {'ts', 'acc', 'out_asset', 'out_qty', 'in_ts', 'in_acc', 'in_asset', 'in_qty', ['fee_asset', 'fee_qty'], ['note'],
+# ['treatment']} - a sale unless 'treatment' says. Returns the list of created operation ids.
 def create_cross_chain_swaps(swaps) -> list:
     oids = []
     for s in swaps:
@@ -251,7 +252,8 @@ def create_cross_chain_swaps(swaps) -> list:
                 'out_symbol_id': symbol_id_for(s['out_asset'], out_currency), 'out_qty': Decimal(str(s['out_qty'])),
                 'in_timestamp': s['in_ts'], 'in_account_id': s['in_acc'],
                 'in_symbol_id': symbol_id_for(s['in_asset'], JalAccount(s['in_acc']).currency()),
-                'in_qty': Decimal(str(s['in_qty'])), 'in_tx_hash': s.get('in_hash', '')}
+                'in_qty': Decimal(str(s['in_qty'])), 'in_tx_hash': s.get('in_hash', ''),
+                'treatment': s.get('treatment', SwapTreatment.Sale)}
         if 'fee_asset' in s:
             data['fee_symbol_id'] = symbol_id_for(s['fee_asset'], out_currency)
             data['fee_qty'] = Decimal(str(s['fee_qty']))

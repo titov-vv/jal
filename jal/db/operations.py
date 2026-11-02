@@ -3,7 +3,7 @@ from decimal import Decimal
 from PySide6.QtWidgets import QApplication
 from PySide6.QtGui import QIcon
 from jal.constants import Setup, BookAccount, PredefinedCategory, PredefinedAsset, PredefinedAccountType, \
-    CorporateActionType, TransferMark
+    CorporateActionType, TransferMark, SwapTreatment
 from jal.db.helpers import format_decimal, remove_exponent
 from jal.db.db import JalDB
 import jal.db.account
@@ -1439,10 +1439,13 @@ class Trade(FeeCarrier, LedgerTransaction):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# On-chain exchange of one asset for another (a DeFi swap). Unlike a SymbolChange/Merger - which preserve cost basis -
-# a swap is a genuine disposal: the out asset is FIFO-closed at its market value, the profit/loss is realized, and the
-# in asset is opened as a brand new lot at that same market value. The swap-closed deals go to the Deals report but are
-# kept out of tax reports until crypto tax treatment is designed (see JalAccount.closed_trades_list(close_otypes=...)).
+# On-chain exchange of one asset for another (a DeFi swap), booked by its treatment (SwapTreatment, see treatment()):
+#   * a SALE is a genuine disposal: the out asset is FIFO-closed at its market value, the profit/loss is realized, and
+#     the in asset is opened as a brand new lot at that same market value;
+#   * a CONVERSION carries the investment over, as a wrapping (Conversion) does: the out lots close at their own basis,
+#     with no result, and re-open on the in asset keeping their opening operation, cost and acquisition date.
+# The swap-closed deals are kept out of tax reports until crypto tax treatment is designed
+# (see JalAccount.closed_trades_list(close_otypes=...)).
 #
 # A CROSS-CHAIN swap (an asset-changing exchange through a bridge/aggregator: A on chain X becomes B on chain Y) is the
 # same disposal spread over two accounts and two moments in time, so it processes as two parts:
@@ -1451,13 +1454,15 @@ class Trade(FeeCarrier, LedgerTransaction):
 #   * Swap.Incoming - drains those proceeds on the destination account (converted with the FX rate of the arrival date
 #     if the two accounts differ in currency, as for a bridge) and opens the acquired asset as a new lot at that value.
 # So nothing is gained or lost between sending and receiving: the whole result of the exchange is realized at the
-# moment of disposal, exactly as in the same-chain case. A same-chain swap keeps a single part (Swap.Whole) and is
+# moment of disposal, exactly as in the same-chain case. A conversion parks the basis instead, and the receiving leg
+# re-opens the lots the sending one closed. A same-chain swap keeps a single part (Swap.Whole) and is
 # processed by the simpler code path below - no value travels through the Transfers book.
 class Swap(FeeCarrier, LedgerTransaction):
     Whole = 0       # A same-chain swap: disposal and acquisition happen at once, on one account
     Outgoing = -1   # Cross-chain: the disposal leg (source account, source chain)
     Incoming = 1    # Cross-chain: the acquisition leg (destination account, destination chain)
     Fee = 2         # The gas paid for the swap - a row of its own, as it is for a transfer and for a bridge
+    Profit = 3      # The result of a sale: a posting part only, never in the sequence
 
     # One part when both sides are on one account, two when the asset arrives on another one: the same swap is
     # either a single instant or a crossing, and which of the two it is, is what the account columns say.
@@ -1485,9 +1490,10 @@ class Swap(FeeCarrier, LedgerTransaction):
         "in_qty": {"mandatory": True, "validation": True},
         "in_tx_hash": {"mandatory": False, "validation": True, "default": ''},
         "note": {"mandatory": False, "validation": False},
+        "treatment": {"mandatory": False, "validation": False, "default": SwapTreatment.Auto},   # a choice, not identity
         **FeeCarrier.FEE_CHILD
     }
-    PART_PROFIT = 1
+    PART_PROFIT = Profit    # Apart from the legs: reports rebuild an operation from its posting part
     PART_FEE = Fee          # The fee posts into the part it is drawn as - see FeeCarrier.Fee
     FeeFields = {'fee_qty': 'amount', 'fee_symbol_id': 'symbol_id'}
     FeeAccountFields = ('account_id',)
@@ -1497,7 +1503,7 @@ class Swap(FeeCarrier, LedgerTransaction):
         super().__init__(operation_data)
         self._data = self._read("SELECT s.timestamp, s.tx_hash, s.account_id, s.out_symbol_id, s.out_qty, "
                                 "s.in_timestamp, s.in_account_id, s.in_symbol_id, s.in_qty, s.in_tx_hash, "
-                                "s.note FROM swaps AS s "
+                                "s.note, s.treatment FROM swaps AS s "
                                 "WHERE s.oid=:oid", [(":oid", self._oid)], named=True)
         if self._data is None:
             raise IndexError(LedgerTransaction.NoOpException)
@@ -1515,24 +1521,36 @@ class Swap(FeeCarrier, LedgerTransaction):
         self._in_timestamp = int(self._data['in_timestamp']) if present(self._data['in_timestamp']) \
             else int(self._data['timestamp'])
         self._cross_chain = self._in_account.id() != self._account.id()
-        if opart == Swap.Fee:   # Gas is burned on the source chain, so the fee rides the leg that starts the swap
-            self._opart = Swap.Fee
+        try:
+            self._stored_treatment = int(self._data['treatment'])
+        except (ValueError, TypeError):
+            self._stored_treatment = SwapTreatment.Auto
+        if opart == Swap.Fee or opart == Swap.Profit:   # Both are booked where the swap starts, on the source chain
+            self._opart = opart
         elif not self._cross_chain:
             self._opart = Swap.Whole
         else:   # A leg must be named for a cross-chain swap; default to the one that starts it
             self._opart = Swap.Outgoing if opart is None or opart == Swap.Whole else opart
-        assert self._opart in [Swap.Whole, Swap.Outgoing, Swap.Incoming, Swap.Fee], "Unknown swap part"
+        assert self._opart in [Swap.Whole, Swap.Outgoing, Swap.Incoming, Swap.Fee, Swap.Profit], "Unknown swap part"
         self._fees = self._read_fees()
-        symbols = {Swap.Whole: self._out_symbol, Swap.Outgoing: self._out_symbol,
+        symbols = {Swap.Whole: self._out_symbol, Swap.Outgoing: self._out_symbol, Swap.Profit: self._out_symbol,
                    Swap.Incoming: self._in_symbol, Swap.Fee: self._part_fee().symbol()}
         self._symbol = symbols[self._opart]
         # Operation's main asset is the one its part deals in (FIFO closing of the disposal works with the out asset,
         # and the fee part disposes of the gas coin instead - see Transfer.__init__ where a fee part does the same)
         self._asset = self._symbol.asset()
         icons = {Swap.Whole: JalIcon.SWAP, Swap.Outgoing: JalIcon.TRANSFER_ASSET_OUT,
-                 Swap.Incoming: JalIcon.TRANSFER_ASSET_IN, Swap.Fee: self.fee_icon()}
-        names = {Swap.Whole: LedgerTransaction.tr("Swap"), Swap.Outgoing: LedgerTransaction.tr("Outgoing swap"),
-                 Swap.Incoming: LedgerTransaction.tr("Incoming swap"), Swap.Fee: LedgerTransaction.tr("Swap fee")}
+                 Swap.Incoming: JalIcon.TRANSFER_ASSET_IN, Swap.Fee: self.fee_icon(),
+                 Swap.Profit: JalIcon.TRANSFER_ASSET_OUT if self._cross_chain else JalIcon.SWAP}
+        if self.treatment() == SwapTreatment.Conversion:
+            names = {Swap.Whole: LedgerTransaction.tr("Swap (conversion)"),
+                     Swap.Outgoing: LedgerTransaction.tr("Outgoing swap (conversion)"),
+                     Swap.Incoming: LedgerTransaction.tr("Incoming swap (conversion)")}
+        else:
+            names = {Swap.Whole: LedgerTransaction.tr("Swap"), Swap.Outgoing: LedgerTransaction.tr("Outgoing swap"),
+                     Swap.Incoming: LedgerTransaction.tr("Incoming swap")}
+        names[Swap.Fee] = LedgerTransaction.tr("Swap fee")
+        names[Swap.Profit] = names[Swap.Outgoing] if self._cross_chain else names[Swap.Whole]
         self._icon = JalIcon[icons[self._opart]]
         self._oname = names[self._opart]
         # Each leg of a cross-chain swap is a transaction of its own chain, so the part decides time, account and hash
@@ -1543,12 +1561,33 @@ class Swap(FeeCarrier, LedgerTransaction):
         self._reconciled = self._leg_account().reconciled_at() >= self._timestamp
         self._note = self._data['note']
         self._peer_id = self._leg_account().organization()
-        self._view_rows = 1 if self._opart == Swap.Fee else 2   # The gas draws its own row, never a line of these
+        self._view_rows = 1 if self._opart in [Swap.Fee, Swap.Profit] else 2   # Gas and result draw one row each
         self._value = None   # Cached disposal value of the swap in the source account currency
 
     # The account the current part is booked on (the destination account only for the acquiring leg)
     def _leg_account(self):
         return self._in_account if self._opart == Swap.Incoming else self._account
+
+    def stored_treatment(self) -> int:
+        return self._stored_treatment
+
+    # Sale or conversion; Auto makes a sale of a swap with a pegged asset on either side
+    def treatment(self) -> int:
+        if self._stored_treatment in [SwapTreatment.Sale, SwapTreatment.Conversion]:
+            return self._stored_treatment
+        if self._out_asset.pegged_to() or self._in_asset.pegged_to():
+            return SwapTreatment.Sale
+        return SwapTreatment.Conversion
+
+    # The result the sale booked, read back from the ledger (in the source account currency)
+    def _profit(self) -> Decimal:
+        profit = self._read("SELECT amount FROM ledger WHERE otype=:otype AND oid=:oid AND opart=:opart "
+                            "AND book_account=:book", [(":otype", self._otype), (":oid", self._oid),
+                                                       (":opart", Swap.Profit), (":book", BookAccount.Incomes)])
+        try:
+            return -Decimal(profit)
+        except (ValueError, TypeError, ArithmeticError):
+            return Decimal('NaN')
 
     # A same-chain swap happens immediately; a cross-chain one is finished when the acquired asset arrives
     def settlement(self) -> int:
@@ -1585,8 +1624,11 @@ class Swap(FeeCarrier, LedgerTransaction):
                 self._value = price * self._in_qty
         return self._value
 
-    # Unit price of the disposed asset - it is the closing price of the FIFO deals created by the swap
-    def price(self) -> Decimal:
+    # Unit price of the disposed asset - it is the closing price of the FIFO deals created by the swap. None for a
+    # conversion, which closes the lots at their own basis (see Conversion.price())
+    def price(self):
+        if self.treatment() == SwapTreatment.Conversion:
+            return None
         return self.value() / self._out_qty
 
     def note(self) -> str:
@@ -1603,6 +1645,8 @@ class Swap(FeeCarrier, LedgerTransaction):
     def value_change(self, part_only=False) -> list:
         if self._opart == Swap.Fee:
             return [-self._part_fee().amount()]
+        if self._opart == Swap.Profit:
+            return [self._profit()]
         if self._opart == Swap.Incoming:
             return [self._in_qty]
         return [-self._out_qty] if self._cross_chain else [-self._out_qty, self._in_qty]
@@ -1610,6 +1654,8 @@ class Swap(FeeCarrier, LedgerTransaction):
     def value_currency(self) -> str:
         if self._opart == Swap.Fee:
             return f"{self._part_fee().symbol().symbol()}"
+        if self._opart == Swap.Profit:
+            return f"{self._account_currency}"
         if self._opart == Swap.Incoming:
             return f"{self._in_symbol.symbol()}"
         return f"{self._out_symbol.symbol()}" if self._cross_chain \
@@ -1618,6 +1664,8 @@ class Swap(FeeCarrier, LedgerTransaction):
     def value_currency_icons(self) -> list:
         if self._opart == Swap.Fee:
             return [self._part_fee().symbol_id()]
+        if self._opart == Swap.Profit:
+            return [JalAsset(self._account.currency()).listing_id()]
         if self._opart == Swap.Incoming:
             return [self._in_symbol.id()]
         return [self._out_symbol.id()] if self._cross_chain else [self._out_symbol.id(), self._in_symbol.id()]
@@ -1625,6 +1673,8 @@ class Swap(FeeCarrier, LedgerTransaction):
     def value_total(self) -> list:
         if self._opart == Swap.Fee:
             return [self._asset_total(self._account.id(), self._part_fee().asset().id())]
+        if self._opart == Swap.Profit:
+            return [self._money_total(self._account.id())]
         if self._opart == Swap.Incoming:
             return [self._asset_total(self._in_account.id(), self._in_asset.id())]
         balance = [self._asset_total(self._account.id(), self._out_asset.id())]
@@ -1644,6 +1694,7 @@ class Swap(FeeCarrier, LedgerTransaction):
             raise LedgerError(LedgerTransaction.tr("Swap quantities must be positive. Operation: ") + self.dump())
         if self._in_timestamp < int(self._data['timestamp']):
             raise LedgerError(LedgerTransaction.tr("Swap can't receive an asset before it was exchanged. Operation: ") + self.dump())
+        assert self._opart != Swap.Profit, "Swap result isn't a part of the sequence"
         if self._opart == Swap.Fee:
             self.processFee(ledger)
             return
@@ -1652,15 +1703,17 @@ class Swap(FeeCarrier, LedgerTransaction):
             return
         self.processOutgoing(ledger)
 
-    # Disposes the out asset at its market value and realizes the profit/loss of the disposal. A same-chain swap opens
-    # the acquired asset right here; a cross-chain one parks the proceeds in the Transfers book for its receiving leg.
+    # Sale: disposes the out asset at its market value and realizes the profit/loss of the disposal. Conversion: closes
+    # the out lots at their basis with no result. A same-chain swap opens the acquired asset right here; a cross-chain
+    # one parks the proceeds (or the basis) in the Transfers book for its receiving leg.
     def processOutgoing(self, ledger):
         available = ledger.getAmount(BookAccount.Assets, self._account.id(), self._out_asset.id())
         if available < self._out_qty:
             raise LedgerError(LedgerTransaction.tr("Asset amount is not enough for swap processing. Date: ")
                               + f"{ts2dt(self._timestamp)}, Asset amount: {available}, "
                               + f"Required: {self._out_qty}, Operation: {self.dump()}")
-        value = self.value()
+        conversion = self.treatment() == SwapTreatment.Conversion
+        value = None if conversion else self.value()
         processed_qty, basis = self._close_deals_fifo(Decimal('-1.0'), self._out_qty, asset=self._out_asset)
         if processed_qty < self._out_qty:
             raise LedgerError(LedgerTransaction.tr("Processed asset amount is less than swap amount. Date: ")
@@ -1669,6 +1722,13 @@ class Swap(FeeCarrier, LedgerTransaction):
         # Withdraw the disposed asset at its cost basis and realize the profit/loss of the disposal
         rounding_error = ledger.appendTransaction(self, BookAccount.Assets, -self._out_qty,
                                                   asset_id=self._out_asset.id(), value=-basis)
+        if conversion:   # As Conversion does, the lots carry 'basis' and a rounding crumb stays with the position
+            if self._cross_chain:
+                ledger.appendTransaction(self, BookAccount.Transfers, basis)
+            else:
+                self._reopen_lots(self._account, Decimal('1'))
+                ledger.appendTransaction(self, BookAccount.Assets, self._in_qty, asset_id=self._in_asset.id(), value=basis)
+            return
         ledger.appendTransaction(self, BookAccount.Incomes, -(value - basis + rounding_error), part=self.PART_PROFIT,
                                  category=PredefinedCategory.Profit, peer=self._peer_id, tag=self._out_asset.tag().id())
         if self._cross_chain:
@@ -1697,8 +1757,25 @@ class Swap(FeeCarrier, LedgerTransaction):
                                   + f"{ts2dt(self._in_timestamp)}, Operation: {self.dump()}")
         in_value = rate * value
         ledger.appendTransaction(self, BookAccount.Transfers, -in_value)
-        self._in_account.open_trade(JalOpenTrade(self, in_value / self._in_qty, self._in_qty), self._in_asset)
+        if self.treatment() == SwapTreatment.Conversion:
+            self._reopen_lots(self._in_account, rate)
+        else:
+            self._in_account.open_trade(JalOpenTrade(self, in_value / self._in_qty, self._in_qty), self._in_asset)
         ledger.appendTransaction(self, BookAccount.Assets, self._in_qty, asset_id=self._in_asset.id(), value=in_value)
+
+    # Re-opens the out lots this swap closed on 'account' as the in asset - each keeping its opening operation, cost and
+    # acquisition date, re-scaled to the acquired quantity and converted by 'rate' (see Conversion.processLedger())
+    def _reopen_lots(self, account, rate: Decimal) -> None:
+        lots = []
+        query = self._exec("SELECT id FROM trades_closed WHERE close_otype=:otype AND close_oid=:oid "
+                           "AND account_id=:account AND asset_id=:asset",
+                           [(":otype", self._otype), (":oid", self._oid), (":account", self._account.id()),
+                            (":asset", self._out_asset.id())])
+        while query.next():
+            lots.append(jal.db.closed_trade.JalClosedTrade(self._read_record(query, cast=[int])))
+        for lot, lot_qty in zip(lots, allocate_qty(lots, self._in_qty)):
+            account.open_trade(lot, self._in_asset, modified_by=self, qty=lot_qty,
+                               price_adjustment=rate * self._out_qty / self._in_qty)
 
 
 # ----------------------------------------------------------------------------------------------------------------------

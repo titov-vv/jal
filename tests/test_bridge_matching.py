@@ -5,7 +5,7 @@ import pytest
 from tests.fixtures import project_root, data_path, prepare_db
 from tests.helpers import d2t, create_assets, create_actions, create_trades, create_bridges, create_transfers, \
     create_quotes
-from jal.constants import PredefinedAsset, PredefinedCategory, PredefinedAccountType
+from jal.constants import PredefinedAsset, PredefinedCategory, PredefinedAccountType, AssetData
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
 from jal.db.db import JalDB
@@ -75,6 +75,9 @@ def test_adopt_transfer_rejects_mismatch(accounts):
 
 # The usual shape: a recognized sending half plus the arriving asset, which the fetcher imported as a plain transfer.
 def test_adopting_another_asset_creates_cross_chain_swap(accounts):
+    JalDB._exec("INSERT INTO asset_data (asset_id, datatype, value) VALUES (:usdc, :pegged, 2)",
+                [(":usdc", USDC), (":pegged", AssetData.PeggedTo)], commit=True)   # USDC is pegged: a sale
+    JalDB().invalidate_cache()
     create_trades(ACC1, [(d2t(210102), d2t(210102), ETH, 3.0, 1000.0, 0.0)])   # 3 ETH @1000
     create_quotes(ETH, 2, [(d2t(210103), 1200.0)])                             # ETH is worth 1200 when sent
     send_oid = create_bridges([{'asset': ETH, 'out_ts': d2t(210103), 'out_acc': ACC1, 'out_qty': 2}])[0]
