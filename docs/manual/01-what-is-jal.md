@@ -53,7 +53,7 @@ An **operation** is one thing that happened. JAL has ten kinds:
 | **Asset Income** | The asset itself arriving: a stock dividend, vested shares, a staking reward |
 | **Corporate Action** | A company changing your shares: a split, a merger, a spin-off |
 | **Wrapping** | One asset becoming another with the price you paid carried across — a deposit into a protocol and back |
-| **Swap** | One asset exchanged for another, on one account, at a market price |
+| **Swap** | One asset exchanged for another |
 | **Bridge** | The same asset moving from one blockchain to another |
 | **Action** | A blockchain transaction that moved nothing but still cost gas: an approval, a failed call |
 

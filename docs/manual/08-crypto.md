@@ -82,13 +82,15 @@ after all.
 ## The four crypto operations
 
 Beside the ordinary Buy/Sell and Transfer, crypto needs four more. For the three that move value,
-two questions decide which one fits: **was the asset disposed of at a market price, or does its cost
-simply carry over?** and **did it stay on one account, or cross to another?**
+two questions decide which one fits: **is it the same position in another form, or an exchange for
+another asset?** and **did it stay on one account, or cross to another?**
 
-|  | cost carried over | disposed of at market |
+|  | the same position in another form | an exchange for another asset |
 |---|---|---|
 | **one account, one moment** | **Wrapping** | **Swap** |
 | **two accounts, two moments** | **Bridge** (same asset only) | **Swap** with *Cross chain* |
+
+A swap is then booked one of two ways, a sale or a conversion - see below.
 
 The fourth, **Action**, records a transaction that moved no value at all.
 
@@ -107,8 +109,27 @@ underlined figure is a rounded one you can hover over to see in full; both are e
 ![The swap editor](img/op_swap.png)
 
 You gave up X of one asset and received Y of another, at whatever rate the market gave you: ETH for
-USDC on a decentralised exchange. It is a sale and a purchase in one, and it **realises a profit or a
-loss** on what you gave up, exactly as selling for cash would.
+USDC on a decentralised exchange. What JAL books depends on what the swap **means**, and the
+**Treatment** box says which:
+
+* **Sale** — you sold for money, or bought with it: ETH for USDC, or USDC for ETH. The asset you gave
+  up is sold at its market value and its **profit or loss is realised**, exactly as selling for cash
+  would; what you received starts as a new purchase, at that value and on that date.
+* **Conversion** — you moved from one investment to another: ETH for UNI, ARB for ETH. Nothing is
+  realised. The asset you received takes over the **cost and the purchase dates** of what you gave
+  up, as a wrapping does, and the result shows only when you finally sell. Its deals are not listed
+  in the Deals report.
+* **Auto** (the default, and what imports use) — a sale when either asset is a stablecoin, that is,
+  an asset with the **pegged to** attribute (see [chapter 6](06-investments.md#assets-and-their-listings));
+  a conversion otherwise. The editor shows what *Auto* resolves to beside the box, and the row of a
+  conversion reads *Swap (conversion)*.
+
+Mark each stablecoin you hold as **pegged to** its currency (USDC and USDT to USD, say) once: every
+*Auto* swap into or out of it becomes a sale, past ones included, and JAL rebuilds its figures from
+the first of them. Choose *Sale* or *Conversion* on a single swap when it should differ.
+
+This is JAL's own view of your investments — holdings, deals, P&L. A tax authority may see the same
+swap differently, and the tax reports do not read swaps yet.
 
 Press **+** next to **Fee** to record the gas, and choose the coin it was paid in. Tick **Cross chain** when what you
 received arrived on a *different* account (a different chain) and possibly minutes later — the lower
@@ -135,8 +156,9 @@ A protocol that gives **no receipt token** back — Aave v4 — has nothing to w
 a transfer into a staked position instead, see
 [Lending with no receipt token](#lending-with-no-receipt-token-aave-v4).
 
-Choosing *Wrapping* where a *Swap* belongs (or the other way round) is the one modelling mistake
-here that matters, because it decides whether a taxable profit exists.
+Choosing *Wrapping* where a *Swap* belongs (or the other way round) is the modelling mistake that
+matters most here, together with a stablecoin left without its *pegged to* attribute: both decide
+whether a profit is realised.
 
 ### Bridge — the same asset, another chain
 

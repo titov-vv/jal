@@ -78,7 +78,8 @@ Every position you have **closed**, with the profit it produced:
 ![The deals report](img/report_deals.png)
 
 One line per closed deal: when it was opened and closed, at what prices, the quantity, the fees, and
-the profit in money and per cent. **Group by** can group them by asset, by the date they were opened
+the profit in money and per cent. A swap booked as a conversion closes nothing here: its result
+appears on the deal that finally sells what it bought. **Group by** can group them by asset, by the date they were opened
 or closed, or by combinations of those. The **Total** at the bottom is the realised profit for the
 period — the figure most tax authorities are interested in.
 

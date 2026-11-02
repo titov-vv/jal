@@ -160,6 +160,9 @@ def create_assets() -> dict:
     # A receipt token names its venue; the attribute has no setter of its own, it is entered by hand in the asset dialog
     JalDB._exec("INSERT INTO asset_data(asset_id, datatype, value) VALUES(:a, :t, 'Aave v3')",
                 [(":a", assets['ausdc']), (":t", AssetData.Protocol)], commit=True)
+    # A stablecoin names the currency it is pegged to, which makes a swap into it a sale
+    JalDB._exec("INSERT INTO asset_data(asset_id, datatype, value) VALUES(:a, :t, :usd)",
+                [(":a", assets['usdc']), (":t", AssetData.PeggedTo), (":usd", USD)], commit=True)
     return assets
 
 

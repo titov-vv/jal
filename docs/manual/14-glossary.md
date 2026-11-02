@@ -63,6 +63,9 @@ corporate action, a wrapping, a swap, a bridge, an action.
 
 **Peer** — the other party to an operation: a shop, an employer, a bank, a person.
 
+**Pegged to** — an attribute of a stablecoin naming the currency it follows (USDC: USD). A swap
+with such an asset on either side is a sale by default.
+
 **Pending / unsettled** — a movement that knows only one of its two ends. Listed in the *Unsettled
 transfers* report until you say what the other end was.
 
@@ -94,8 +97,9 @@ tax calculations use it rather than the trade date.
 issues no receipt token (Aave v4), but are still yours. Kept as an account of its own; see the
 *Staked positions* report.
 
-**Swap** — an operation exchanging one asset for another at a market rate, on one account. It
-**realises** a profit or a loss. Compare *wrapping*.
+**Swap** — an operation exchanging one asset for another, on one account or across two chains. A
+*sale* swap **realises** a profit or a loss; a *conversion* swap carries the cost and purchase dates
+over, as a wrapping does. *Auto* chooses by the *pegged to* attribute. Compare *wrapping*.
 
 **Symbol** — see *listing*.
 
