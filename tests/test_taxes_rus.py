@@ -7,7 +7,7 @@ from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from jal.data_import.broker_statements.ibkr import StatementIBKR
 from tests.helpers import d2t, create_assets, create_quotes, create_dividends, create_coupons, create_trades, \
     create_actions, create_corporate_actions, create_stock_dividends, json_decimal2float, save_test_xls_report, \
-    nth_operation, symbol_id_for
+    nth_operation, symbol_id_for, create_swaps
 from jal.constants import PredefinedAsset, PredefinedCategory, AssetLocation, SymbolId
 from jal.db.ledger import Ledger
 from jal.db.account import JalAccount, JalAccountCreator
@@ -554,3 +554,34 @@ def test_lost_position_stays_out_of_tax_reports(prepare_db_taxes, action):
                          default=str)
     assert "SOLD" in reports
     assert "STK" not in reports and "LOST" not in reports
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Today's output for a swap: its own disposal is in no report, and the lot it opens is sold at the swap's market value
+def test_swap_closed_deal_stays_out_of_tax_reports(prepare_db_taxes):
+    create_assets([("AAA", "Coin A", "", 2, PredefinedAsset.Crypto, 0),     # ID 4
+                   ("BBB", "Coin B", "", 2, PredefinedAsset.Crypto, 0)])    # ID 5
+    t_buy, t_swap, t_sell = d2t(201201), d2t(201210), d2t(201215)
+    create_quotes(2, 1, [(t_buy, 75.0), (t_swap, 74.0), (t_sell, 73.0)])
+    create_quotes(2, 3, [(t_buy, 0.83), (t_swap, 0.82), (t_sell, 0.81)])
+    create_quotes(4, 2, [(t_swap, 15.0)])                                   # 10 A are worth 150 USD at the swap
+    create_trades(1, [(t_buy, t_buy, 4, 10, 10, 1, "buy-A")])
+    create_swaps(1, [(t_swap, 4, 10, 5, 30)])
+    create_trades(1, [(t_sell, t_sell, 5, -30, 6, 0.5, "sell-B")])
+    Ledger().rebuild(from_timestamp=0)
+
+    swap_deals = JalAccount(1).closed_trades_list(close_otypes=(LedgerTransaction.Trade, LedgerTransaction.Swap))
+    assert [(x.asset().id(), x.profit()) for x in swap_deals] == [(4, Decimal('49')), (5, Decimal('29.5'))]
+
+    report = TaxesRussia().prepare_tax_report(2020, 1)
+    assert [k for k, v in report.items() if v] == ["Криптовалюты"]
+    deal, totals = report["Криптовалюты"]
+    assert {k: deal[k] for k in ('symbol', 'qty', 'o_number', 'o_date', 'o_rate', 'o_price', 'o_amount_rub', 'o_fee',
+                                 'c_number', 'c_date', 'c_amount_rub', 'c_fee_rub', 'spending_rub', 'profit',
+                                 'profit_rub')} == \
+           {'symbol': "BBB", 'qty': Decimal('30'), 'o_number': '', 'o_date': t_swap, 'o_rate': Decimal('74'),
+            'o_price': Decimal('5'), 'o_amount_rub': Decimal('11100.00'), 'o_fee': Decimal('0'),
+            'c_number': "sell-B", 'c_date': t_sell, 'c_amount_rub': Decimal('13140.00'), 'c_fee_rub': Decimal('36.50'),
+            'spending_rub': Decimal('11136.50'), 'profit': Decimal('29.50'), 'profit_rub': Decimal('2003.50')}
+    assert totals['report_template'] == "totals" and totals['profit_rub'] == Decimal('2003.50')
+    assert not any(TaxesPortugal().prepare_tax_report(2020, 1).values())
