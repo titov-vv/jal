@@ -1,3 +1,5 @@
+import os
+os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 from decimal import Decimal
 
 import pytest
@@ -168,3 +170,23 @@ def test_sale_profit_draws_as_profit(chains, cross_chain):
     if cross_chain:   # the arriving leg still draws as itself
         incoming = LedgerTransaction.get_operation(LedgerTransaction.Swap, oid, Swap.Incoming)
         assert incoming.value_change(part_only=True) == [Decimal('20')]
+
+
+# The Deals report hides a conversion's zero deals, as it hides a wrapping's. 20 A @100: 10 A -> 20 B sold at 150
+# (500), 10 A -> 30 B converted at 1000; then 50 B @80: 20 * 80 - 1500 = 100 and 30 * 80 - 1000 = 1400
+def test_deals_report_hides_conversion_deals(chains):
+    from jal.reports.deals import DealsReportWindow
+    from jal.reports.reports import Reports
+    t_buy, t_sale, t_conv, t_sell = d2t(220101), d2t(220201), d2t(220202), d2t(220301)
+    create_quotes(A, 2, [(t_sale, 150.0)])
+    create_trades(ACC1, [(t_buy, t_buy, A, 20.0, 100.0, 0.0)])
+    create_swaps(ACC1, [(t_sale, A, 10, B, 20)], treatment=SwapTreatment.Sale)
+    create_swaps(ACC1, [(t_conv, A, 10, B, 30)], treatment=SwapTreatment.Conversion)
+    create_trades(ACC1, [(t_sell, t_sell, B, -50.0, 80.0, 0.0)])
+    Ledger().rebuild(from_timestamp=0)
+    assert len(JalAccount(ACC1).closed_trades_list(close_otypes=_WITH_SWAP)) == 4   # the conversion's zero is there
+
+    window = DealsReportWindow(Reports(None, None))
+    window.ui.ReportRange.setRange(d2t(220101), d2t(220401))
+    window.ui.ReportAccountEdit.selection_done(ACC1)
+    assert sorted(x.profit() for x in window.trades_model._trades) == [Decimal('100'), Decimal('500'), Decimal('1400')]

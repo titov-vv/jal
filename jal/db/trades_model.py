@@ -6,6 +6,7 @@ from jal.db.tree_model import AbstractTreeItem, ReportTreeModel
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.helpers import localize_decimal
+from jal.constants import SwapTreatment
 from jal.db.operations import LedgerTransaction
 from jal.widgets.helpers import ts2d
 from jal.widgets.delegates import TimestampDelegate, FloatDelegate, GridLinesDelegate
@@ -160,6 +161,10 @@ class ClosedTradesModel(ReportTreeModel):
                 return Qt.AlignLeft | Qt.AlignVCenter
         return None
 
+    @staticmethod
+    def _is_conversion(operation) -> bool:
+        return operation.type() == LedgerTransaction.Swap and operation.treatment() == SwapTreatment.Conversion
+
     def updateView(self, account_id, dates, grouping):
         update = False
         if self._account_id != account_id:
@@ -177,10 +182,12 @@ class ClosedTradesModel(ReportTreeModel):
 
     def prepareData(self):
         self.beginResetModel()
-        # The Deals report shows swap-realized deals too; tax reports keep the Trade-only default
+        # The Deals report shows swap-realized deals too; tax reports keep the Trade-only default.
+        # A conversion swap realizes nothing, so its zero deals are hidden as a wrapping's are.
         self._trades = JalAccount(self._account_id).closed_trades_list(
             close_otypes=(LedgerTransaction.Trade, LedgerTransaction.Swap))
-        self._trades = [x for x in self._trades if self._begin <= x.close_operation().timestamp() <= self._end]
+        self._trades = [x for x in self._trades if self._begin <= x.close_operation().timestamp() <= self._end
+                        and not self._is_conversion(x.close_operation())]
         self._root = TradeTreeItem()
         for trade in self._trades:
             new_item = TradeTreeItem(trade)
