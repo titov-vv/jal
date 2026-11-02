@@ -574,7 +574,8 @@ CREATE TABLE swaps (
     in_symbol_id  INTEGER     NOT NULL REFERENCES asset_symbol (id) ON DELETE CASCADE ON UPDATE CASCADE,  -- Acquired asset
     in_qty        TEXT        NOT NULL,
     in_tx_hash    TEXT        NOT NULL DEFAULT (''),           -- Hash of the receiving transaction (destination chain)
-    note          TEXT                                         -- Free text comment
+    note          TEXT,                                        -- Free text comment
+    treatment     INTEGER     NOT NULL DEFAULT (0)             -- SwapTreatment: 0 auto (from AssetData.PeggedTo), 1 sale, 2 conversion
 );
 
 -- Table: bridges (a cross-chain move of ONE asset between two accounts - same asset, different per-chain listing)
@@ -866,11 +867,30 @@ END;
 -- A cross-chain swap receives later than it sends, so wiping the ledger from 'timestamp' (the sending leg) forward
 -- always covers the receiving leg as well - there is no need to look at 'in_timestamp' here.
 DROP TRIGGER IF EXISTS swaps_after_update;
-CREATE TRIGGER swaps_after_update AFTER UPDATE OF timestamp, account_id, out_symbol_id, out_qty, in_timestamp, in_account_id, in_symbol_id, in_qty ON swaps FOR EACH ROW
+CREATE TRIGGER swaps_after_update AFTER UPDATE OF timestamp, account_id, out_symbol_id, out_qty, in_timestamp, in_account_id, in_symbol_id, in_qty, treatment ON swaps FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
     DELETE FROM trades_opened WHERE timestamp >= OLD.timestamp OR timestamp >= NEW.timestamp;
     UPDATE operations SET timestamp = COALESCE(MIN(NEW.timestamp, COALESCE(NEW.in_timestamp, NEW.timestamp)), 0) WHERE id = NEW.oid;
+END;
+-- A peg edit re-resolves every auto swap of that asset (8 = AssetData.PeggedTo)
+DROP TRIGGER IF EXISTS asset_data_peg_after_insert;
+CREATE TRIGGER asset_data_peg_after_insert AFTER INSERT ON asset_data FOR EACH ROW WHEN NEW.datatype = 8
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= (SELECT MIN(w.timestamp) FROM swaps AS w JOIN asset_symbol AS s ON s.id IN (w.out_symbol_id, w.in_symbol_id) WHERE s.asset_id = NEW.asset_id);
+    DELETE FROM trades_opened WHERE timestamp >= (SELECT MIN(w.timestamp) FROM swaps AS w JOIN asset_symbol AS s ON s.id IN (w.out_symbol_id, w.in_symbol_id) WHERE s.asset_id = NEW.asset_id);
+END;
+DROP TRIGGER IF EXISTS asset_data_peg_after_update;
+CREATE TRIGGER asset_data_peg_after_update AFTER UPDATE ON asset_data FOR EACH ROW WHEN OLD.datatype = 8 OR NEW.datatype = 8
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= (SELECT MIN(w.timestamp) FROM swaps AS w JOIN asset_symbol AS s ON s.id IN (w.out_symbol_id, w.in_symbol_id) WHERE s.asset_id IN (OLD.asset_id, NEW.asset_id));
+    DELETE FROM trades_opened WHERE timestamp >= (SELECT MIN(w.timestamp) FROM swaps AS w JOIN asset_symbol AS s ON s.id IN (w.out_symbol_id, w.in_symbol_id) WHERE s.asset_id IN (OLD.asset_id, NEW.asset_id));
+END;
+DROP TRIGGER IF EXISTS asset_data_peg_after_delete;
+CREATE TRIGGER asset_data_peg_after_delete AFTER DELETE ON asset_data FOR EACH ROW WHEN OLD.datatype = 8
+BEGIN
+    DELETE FROM ledger WHERE timestamp >= (SELECT MIN(w.timestamp) FROM swaps AS w JOIN asset_symbol AS s ON s.id IN (w.out_symbol_id, w.in_symbol_id) WHERE s.asset_id = OLD.asset_id);
+    DELETE FROM trades_opened WHERE timestamp >= (SELECT MIN(w.timestamp) FROM swaps AS w JOIN asset_symbol AS s ON s.id IN (w.out_symbol_id, w.in_symbol_id) WHERE s.asset_id = OLD.asset_id);
 END;
 -- The receiving leg of a pending half-bridge is NULL; `>= NULL` is NULL (never true), so the OR simply ignores it
 -- and the sending leg (always present, always the earlier one) governs the wipe. Matching fills the receiving leg,
@@ -1053,7 +1073,7 @@ BEGIN
 END;
 ------------------------------------------------------------------------------------------------------------------------
 -- Initialize default values for settings
-INSERT INTO settings(name, value) VALUES('SchemaVersion', 83);
+INSERT INTO settings(name, value) VALUES('SchemaVersion', 84);
 INSERT INTO settings(name, value) VALUES('Language', 1);
 INSERT INTO settings(name, value) VALUES('RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
 INSERT INTO settings(name, value) VALUES('RuTaxSessionId', '');
