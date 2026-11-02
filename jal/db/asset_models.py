@@ -254,6 +254,8 @@ class AssetDataModel(AttributeListModel):
                 return f"{Decimal(value):.2f}"
             elif datatype_of == "tag":
                 return JalTag(int(value)).name()
+            elif datatype_of == "currency":
+                return JalAsset(int(value)).symbol()
         except (ValueError, InvalidOperation, TypeError):
             return ''
         return value

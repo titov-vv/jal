@@ -23,7 +23,7 @@ from jal.widgets.helpers import set_grids_metrics, DateFormat
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Compound delegate for the 'asset_data' grid: column 'datatype' picks an AssetData attribute, column 'value' shows
-# an editor that depends on the type registered for the currently selected attribute (str/int/float/date/tag).
+# an editor that depends on the type registered for the currently selected attribute (str/int/float/date/tag/currency).
 class AssetAttributeDelegate(KbSafeItemDelegate):
     def __init__(self, key_column, value_column, tag_model_class, tag_dialog_class, parent=None):
         super().__init__(parent=parent)
@@ -54,6 +54,11 @@ class AssetAttributeDelegate(KbSafeItemDelegate):
         elif datatype_of == "tag":
             editor = ReferenceSelectorWidget(aParent, validate=False)
             editor.setup_selector(self._tag_model_class, self._tag_dialog_class, aParent)
+            return editor
+        elif datatype_of == "currency":
+            editor = QComboBox(aParent)
+            for currency_id, symbol in sorted([(x.id(), x.symbol()) for x in JalAsset.get_currencies()], key=lambda x: x[1]):
+                editor.addItem(symbol, userData=currency_id)
             return editor
         else:
             assert False, f"Unknown asset attribute type '{datatype_of}'"
@@ -87,6 +92,11 @@ class AssetAttributeDelegate(KbSafeItemDelegate):
                 editor.selected_id = int(raw)
             except (TypeError, ValueError):
                 editor.selected_id = 0
+        elif datatype_of == "currency":
+            try:
+                editor.setCurrentIndex(max(editor.findData(int(raw)), 0))
+            except (TypeError, ValueError):
+                editor.setCurrentIndex(0)
         else:
             assert False, f"Unknown asset attribute type '{datatype_of}'"
 
@@ -114,6 +124,8 @@ class AssetAttributeDelegate(KbSafeItemDelegate):
             model.setData(index, str(editor.dateTime().toSecsSinceEpoch()))
         elif datatype_of == "tag":
             model.setData(index, str(editor.selected_id))
+        elif datatype_of == "currency":
+            model.setData(index, str(editor.currentData()))
         else:
             assert False, f"Unknown asset attribute type '{datatype_of}'"
 

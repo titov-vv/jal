@@ -14,6 +14,29 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="layout">
+   <item row="0" column="5">
+    <widget class="QLabel" name="treatment_label">
+     <property name="text">
+      <string>Tr&amp;eatment</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+     </property>
+     <property name="buddy">
+      <cstring>treatment</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="7">
+    <widget class="QComboBox" name="treatment">
+     <property name="toolTip">
+      <string>Sale realizes the result; conversion carries the lots over with their cost and date. Auto: a sale if either asset is pegged to a currency</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="9">
+    <widget class="QLabel" name="treatment_resolved"/>
+   </item>
    <item row="7" column="0">
     <widget class="QLabel" name="note_label">
      <property name="text">
@@ -338,6 +361,7 @@
  </customwidgets>
  <tabstops>
   <tabstop>cross_chain_check</tabstop>
+  <tabstop>treatment</tabstop>
   <tabstop>timestamp</tabstop>
   <tabstop>account_widget</tabstop>
   <tabstop>out_qty</tabstop>

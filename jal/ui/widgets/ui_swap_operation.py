@@ -15,9 +15,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QCheckBox, QDateTimeEdit, QGridLayout,
-    QLabel, QLineEdit, QPushButton, QSizePolicy,
-    QSpacerItem, QWidget)
+from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,
+    QGridLayout, QLabel, QLineEdit, QPushButton,
+    QSizePolicy, QSpacerItem, QWidget)
 
 from jal.widgets.fee_widget import FeeWidget
 from jal.widgets.reference_selector import ReferenceSelectorWidget
@@ -29,6 +29,22 @@ class Ui_SwapOperation(object):
         SwapOperation.resize(1078, 283)
         self.layout = QGridLayout(SwapOperation)
         self.layout.setObjectName(u"layout")
+        self.treatment_label = QLabel(SwapOperation)
+        self.treatment_label.setObjectName(u"treatment_label")
+        self.treatment_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
+
+        self.layout.addWidget(self.treatment_label, 0, 5, 1, 1)
+
+        self.treatment = QComboBox(SwapOperation)
+        self.treatment.setObjectName(u"treatment")
+
+        self.layout.addWidget(self.treatment, 0, 7, 1, 1)
+
+        self.treatment_resolved = QLabel(SwapOperation)
+        self.treatment_resolved.setObjectName(u"treatment_resolved")
+
+        self.layout.addWidget(self.treatment_resolved, 0, 9, 1, 1)
+
         self.note_label = QLabel(SwapOperation)
         self.note_label.setObjectName(u"note_label")
         self.note_label.setAlignment(Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignTrailing|Qt.AlignmentFlag.AlignVCenter)
@@ -199,13 +215,15 @@ class Ui_SwapOperation(object):
         self.layout.addWidget(self.fee_widget, 6, 2, 1, 10)
 
 #if QT_CONFIG(shortcut)
+        self.treatment_label.setBuddy(self.treatment)
         self.note_label.setBuddy(self.note)
         self.to_label.setBuddy(self.in_timestamp)
         self.main_label.setBuddy(self.cross_chain_check)
         self.from_label.setBuddy(self.timestamp)
         self.fee_label.setBuddy(self.fee_widget)
 #endif // QT_CONFIG(shortcut)
-        QWidget.setTabOrder(self.cross_chain_check, self.timestamp)
+        QWidget.setTabOrder(self.cross_chain_check, self.treatment)
+        QWidget.setTabOrder(self.treatment, self.timestamp)
         QWidget.setTabOrder(self.timestamp, self.account_widget)
         QWidget.setTabOrder(self.account_widget, self.out_qty)
         QWidget.setTabOrder(self.out_qty, self.out_symbol_widget)
@@ -227,6 +245,10 @@ class Ui_SwapOperation(object):
 
     def retranslateUi(self, SwapOperation):
         SwapOperation.setWindowTitle(QCoreApplication.translate("SwapOperation", u"Form", None))
+        self.treatment_label.setText(QCoreApplication.translate("SwapOperation", u"Tr&eatment", None))
+#if QT_CONFIG(tooltip)
+        self.treatment.setToolTip(QCoreApplication.translate("SwapOperation", u"Sale realizes the result; conversion carries the lots over with their cost and date. Auto: a sale if either asset is pegged to a currency", None))
+#endif // QT_CONFIG(tooltip)
         self.note_label.setText(QCoreApplication.translate("SwapOperation", u"&Note", None))
         self.amount_label.setText(QCoreApplication.translate("SwapOperation", u"Amount", None))
 #if QT_CONFIG(tooltip)

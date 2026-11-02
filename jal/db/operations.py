@@ -1572,12 +1572,16 @@ class Swap(FeeCarrier, LedgerTransaction):
         return self._stored_treatment
 
     # Sale or conversion; Auto makes a sale of a swap with a pegged asset on either side
-    def treatment(self) -> int:
-        if self._stored_treatment in [SwapTreatment.Sale, SwapTreatment.Conversion]:
-            return self._stored_treatment
-        if self._out_asset.pegged_to() or self._in_asset.pegged_to():
+    @staticmethod
+    def resolve_treatment(stored: int, out_asset, in_asset) -> int:
+        if stored in [SwapTreatment.Sale, SwapTreatment.Conversion]:
+            return stored
+        if out_asset.pegged_to() or in_asset.pegged_to():
             return SwapTreatment.Sale
         return SwapTreatment.Conversion
+
+    def treatment(self) -> int:
+        return Swap.resolve_treatment(self._stored_treatment, self._out_asset, self._in_asset)
 
     # The result the sale booked, read back from the ledger (in the source account currency)
     def _profit(self) -> Decimal:

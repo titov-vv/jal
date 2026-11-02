@@ -76,3 +76,38 @@ def test_swap_widget_shows_cross_chain_swap(prepare_db_fifo):
     assert int(row.value("in_timestamp")) == t_in
     assert row.value("in_tx_hash") == '0xabc'
     assert widget.ui.cross_chain_check.isChecked()
+
+
+# The treatment combo shows the stored value; on Auto the editor tells what the swap resolves to
+def test_swap_widget_shows_treatment(prepare_db_fifo):
+    from jal.constants import AssetData, SwapTreatment
+    from jal.db.db import JalDB
+    create_stocks([('A', 'Asset A'), ('B', 'Asset B')], currency_id=2)
+    t_buy, t_swap = d2t(220101), d2t(220201)
+    create_trades(1, [(t_buy, t_buy, 4, 10.0, 100.0, 0.0)])
+    create_swaps(1, [(t_swap, 4, 10, 5, 20)], treatment=SwapTreatment.Auto)
+
+    widget = SwapWidget()
+    widget.set_id(operation_id(LedgerTransaction.Swap))
+    assert widget.ui.treatment.currentIndex() == SwapTreatment.Auto
+    assert widget.ui.treatment_resolved.text() == "→ Conversion"
+
+    JalDB._exec("INSERT INTO asset_data (asset_id, datatype, value) VALUES (5, :type, 2)",
+                [(":type", AssetData.PeggedTo)], commit=True)
+    JalDB().invalidate_cache()
+    widget.set_id(operation_id(LedgerTransaction.Swap))
+    assert widget.ui.treatment_resolved.text() == "→ Sale"
+
+    widget.ui.treatment.setCurrentIndex(SwapTreatment.Conversion)
+    assert widget.ui.treatment_resolved.text() == ''
+    widget.mapper.submit()
+    widget.saveChanges()
+    assert JalDB._read("SELECT treatment FROM swaps") == SwapTreatment.Conversion
+
+
+# A new swap starts on Auto
+def test_swap_widget_new_swap_is_auto(prepare_db):
+    from jal.constants import SwapTreatment
+    widget = SwapWidget()
+    widget.createNew(account_id=1)
+    assert widget.model.record(0).value("treatment") == SwapTreatment.Auto

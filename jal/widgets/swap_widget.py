@@ -1,6 +1,6 @@
 from decimal import Decimal, InvalidOperation
 
-from PySide6.QtCore import Qt, Slot, QByteArray
+from PySide6.QtCore import Qt, Slot, QByteArray, QStringListModel
 from PySide6.QtWidgets import QMessageBox
 from jal.ui.widgets.ui_swap_operation import Ui_SwapOperation
 from jal.widgets.abstract_operation_details import AbstractOperationDetails
@@ -8,7 +8,8 @@ from jal.widgets.helpers import set_visible_retaining_size
 from jal.widgets.delegates import WidgetMapperDelegateBase
 from jal.widgets.reference_dialogs import AccountListDialog
 from jal.widgets.assets_dialogs import SymbolListDialog
-from jal.db.operations import LedgerTransaction, FeeKind
+from jal.constants import SwapTreatment
+from jal.db.operations import LedgerTransaction, FeeKind, Swap
 from jal.db.helpers import db_row2dict, now_ts
 from jal.db.symbol import JalSymbol
 from jal.db.common_models import AccountListModel
@@ -37,6 +38,10 @@ class SwapWidget(AbstractOperationDetails):
         self.ui.in_symbol_widget.setup_selector(SymbolsListModel, SymbolListDialog, self)
 
         self.ui.in_account_widget.setValidation(False)
+        self._treatments = SwapTreatment()
+        names = self._treatments.get_all_names()
+        self.treatment_model = QStringListModel([names[x] for x in sorted(names)])   # index == SwapTreatment value
+        self.ui.treatment.setModel(self.treatment_model)
 
         self.ui.cross_chain_check.clicked.connect(self.cross_chain_toggled)
 
@@ -49,6 +54,9 @@ class SwapWidget(AbstractOperationDetails):
         self.ui.in_account_widget.changed.connect(self.mapper.submit)
         self.ui.out_symbol_widget.changed.connect(self.mapper.submit)
         self.ui.in_symbol_widget.changed.connect(self.mapper.submit)
+        self.ui.out_symbol_widget.changed.connect(self.show_resolved_treatment)
+        self.ui.in_symbol_widget.changed.connect(self.show_resolved_treatment)
+        self.ui.treatment.currentIndexChanged.connect(self.show_resolved_treatment)
         self.mapper.currentIndexChanged.connect(self.record_changed)
 
         self.mapper.addMapping(self.ui.timestamp, self.model.fieldIndex("timestamp"))
@@ -62,6 +70,7 @@ class SwapWidget(AbstractOperationDetails):
         self.mapper.addMapping(self.ui.in_account_widget, self.model.fieldIndex("in_account_id"), QByteArray("selected_id_str"))
         self.mapper.addMapping(self.ui.in_tx_hash, self.model.fieldIndex("in_tx_hash"))
         self.mapper.addMapping(self.ui.note, self.model.fieldIndex("note"))
+        self.mapper.addMapping(self.ui.treatment, self.model.fieldIndex("treatment"), QByteArray().setRawData("currentIndex", 12))
 
         self.model.select()
 
@@ -125,6 +134,7 @@ class SwapWidget(AbstractOperationDetails):
         new_record.setNull("in_account_id")
         new_record.setValue("in_tx_hash", None)
         new_record.setValue("note", None)
+        new_record.setValue("treatment", SwapTreatment.Auto)
         return new_record
 
     def copyToNew(self, row):
@@ -140,6 +150,17 @@ class SwapWidget(AbstractOperationDetails):
         cross_chain = bool(self.ui.in_account_widget.selected_id)
         self.ui.cross_chain_check.setCheckState(Qt.CheckState.Checked if cross_chain else Qt.CheckState.Unchecked)
         self.set_cross_chain_data_visible(cross_chain)
+        self.show_resolved_treatment()
+
+    # On Auto, tells what the swap resolves to with the assets as they are chosen now
+    @Slot()
+    def show_resolved_treatment(self):
+        out_id, in_id = self.ui.out_symbol_widget.selected_id, self.ui.in_symbol_widget.selected_id
+        if self.ui.treatment.currentIndex() != SwapTreatment.Auto or not out_id or not in_id:
+            self.ui.treatment_resolved.setText('')
+            return
+        resolved = Swap.resolve_treatment(SwapTreatment.Auto, JalSymbol(out_id).asset(), JalSymbol(in_id).asset())
+        self.ui.treatment_resolved.setText("→ " + self._treatments.get_name(resolved))
 
     def set_cross_chain_data_visible(self, visible: bool):
         set_visible_retaining_size(self.ui.in_account_widget, visible)
