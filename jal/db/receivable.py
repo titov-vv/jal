@@ -17,7 +17,7 @@ from jal.db.db import JalDB
 # whose asset has never moved anywhere.
 #
 # Nothing here writes to the ledger and nothing here is read by the ledger rebuild. The claim itself is booked when
-# it happens, as a StakingReward payment at market value; what is stored here is what remains UNCLAIMED, which the
+# it happens, as a StakingReward payment; what is stored here is what remains UNCLAIMED, which the
 # chain reports directly, so the two can never count the same reward twice.
 class JalReceivable(JalDB):
     def __init__(self):

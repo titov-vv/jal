@@ -23,11 +23,10 @@ class ChartWidget(QWidget):
             self.quotes_series.append(float(ts2axis(point['timestamp']) * 1000), point['quote'])
 
         self._trades = trades
-        self.trade_series = QScatterSeries()
-        for point in trades:            # Conversion to 'float' in order not to get 'int' overflow on some platforms
-            self.trade_series.append(float(ts2axis(point['timestamp']) * 1000), point['price'])
-        self.trade_series.setMarkerSize(7)
-        self.trade_series.hovered.connect(self.MouseOverTrade)
+        bought = [x for x in trades if not x['income']]
+        received = [x for x in trades if x['income']]   # zero-cost income lots, drawn at their receipt quote
+        self.trade_series = self._marker_series(bought, QScatterSeries.MarkerShape.MarkerShapeCircle)
+        self.income_series = self._marker_series(received, QScatterSeries.MarkerShape.MarkerShapeTriangle)
 
         self.axisX = QDateTimeAxis()
         self.axisX.setTickCount(11)
@@ -45,12 +44,15 @@ class ChartWidget(QWidget):
         self.chartView = QChartView()
         self.chartView.chart().addSeries(self.quotes_series)
         self.chartView.chart().addSeries(self.trade_series)
+        self.chartView.chart().addSeries(self.income_series)
         self.chartView.chart().addAxis(self.axisX, Qt.AlignBottom)
         self.quotes_series.attachAxis(self.axisX)
         self.trade_series.attachAxis(self.axisX)
+        self.income_series.attachAxis(self.axisX)
         self.chartView.chart().addAxis(self.axisY, Qt.AlignLeft)
         self.quotes_series.attachAxis(self.axisY)
         self.trade_series.attachAxis(self.axisY)
+        self.income_series.attachAxis(self.axisY)
         self.chartView.chart().legend().hide()
         self.chartView.setViewportMargins(0, 0, 0, 0)
         self.chartView.chart().layout().setContentsMargins(0, 0, 0, 0)  # To remove extra spacing around chart
@@ -65,14 +67,24 @@ class ChartWidget(QWidget):
         chart.setTheme(QChart.ChartTheme.ChartThemeDark if is_dark_theme() else QChart.ChartTheme.ChartThemeLight)
         chart.setBackgroundBrush(QApplication.palette().base())
         self.quotes_series.setColor(Theme.text(Meaning.INFO))
-        self.trade_series.setBorderColor(Theme.text(Meaning.MUTED))
-        self.trade_series.setPointsConfiguration(
-            {i: {QXYSeries.PointConfiguration.Color: Theme.text(point['meaning'])} for i, point in enumerate(trades)})
+        for series, points in ((self.trade_series, bought), (self.income_series, received)):
+            series.setBorderColor(Theme.text(Meaning.MUTED))
+            series.setPointsConfiguration(
+                {i: {QXYSeries.PointConfiguration.Color: Theme.text(point['meaning'])} for i, point in enumerate(points)})
 
         self.layout = QHBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)  # Remove extra space around layout
         self.layout.addWidget(self.chartView)
         self.setLayout(self.layout)
+
+    def _marker_series(self, points, shape) -> QScatterSeries:
+        series = QScatterSeries()
+        for point in points:            # Conversion to 'float' in order not to get 'int' overflow on some platforms
+            series.append(float(ts2axis(point['timestamp']) * 1000), point['price'])
+        series.setMarkerShape(shape)
+        series.setMarkerSize(7)
+        series.hovered.connect(self.MouseOverTrade)
+        return series
 
     def MouseOverTrade(self, point, state):
         if state:
@@ -81,7 +93,11 @@ class ChartWidget(QWidget):
             qty = sum([x['qty'] for x in trade])
             avg_price = sum([x['price']*x['qty'] for x in trade]) / qty
             tip_text = ts2d(hovered) + ": "
-            tip_text += f"+{qty}@{avg_price}" if qty > 0 else f"{qty}@{avg_price}"
+            if trade[0]['income']:
+                cost_text = self.tr("cost 0, quote")
+                tip_text += f"+{qty}, {cost_text} {avg_price}"
+            else:
+                tip_text += f"+{qty}@{avg_price}" if qty > 0 else f"{qty}@{avg_price}"
             if len(trade) and trade[0]['text']:
                 tip_text += "\n" + trade[0]['text']
             self.setToolTip(tip_text)
@@ -127,12 +143,19 @@ class ChartWindow(MdiWidget):
                 text = self.tr("Sell")
             if operation.type() in (LedgerTransaction.AssetPayment, LedgerTransaction.AssetIncome):
                 text = operation.name() + "\n" + operation.description().split('\n')[0]
+            price = trade.open_price(adjusted=True)
+            income = operation.type() == LedgerTransaction.AssetIncome and price == Decimal('0')
+            if income:       # a zero-cost income lot sits on the quote of its day; an unquoted one is not drawn
+                quote_ts, price = asset.quote(operation.timestamp(), self.currency_id, report_missing=False)
+                if not quote_ts:
+                    continue
             trades.append({
                 'timestamp': operation.timestamp(),
-                'price': trade.open_price(adjusted=True),
+                'price': price,
                 'qty': trade.open_qty(),
                 'meaning': meaning,   # what the marker means - its colour depends on the ground and is picked later
-                'text': text
+                'text': text,
+                'income': income
             })
         return trades
 

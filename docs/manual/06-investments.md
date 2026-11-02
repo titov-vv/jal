@@ -127,12 +127,13 @@ Press **+ → Asset Income**:
 |---|---|
 | **Stock Dividend** | Shares paid instead of cash. |
 | **Stock Vesting** | Shares granted to you. |
-| *Staking reward, Reward, Dust attack, Rebase adjustment, Token account rent returned* | Crypto; see [chapter 8](08-crypto.md#income-types-you-will-meet). |
+| *Staking reward, Reward, Dust attack, Rebase adjustment, Token account rent returned, Lending interest* | Crypto; see [chapter 8](08-crypto.md#income-types-you-will-meet). |
 
 The quantity that arrived is labelled after the type — *Shares received*, *Coins received*, *Dust
 received*. For a stock dividend or vesting you also state the
-**Price** it was valued at — that becomes its cost; the other types are valued from the downloaded
-prices (a rebase adjustment at zero, as it only restates what you already held).
+**Price** it was valued at — that becomes its cost. The crypto types cost nothing: their lot opens
+at zero, so their whole value is a gain until you sell them. What they were worth on arrival is read
+from the downloaded prices.
 
 ## Corporate actions
 
@@ -221,7 +222,8 @@ missing one:
 ![The stored quotes](img/dlg_quotes.png)
 
 In the portfolio report, right-click a position and choose **Show Price Chart** to see its history
-with your own trades marked on it:
+with your own trades marked on it. Coins that came at no cost — a staking reward, lending interest —
+are marked with a triangle at the price of the day they arrived:
 
 ![A price chart](img/price_chart.png)
 

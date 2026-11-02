@@ -300,11 +300,16 @@ Blockchain imports create *Asset Income* operations of kinds an ordinary investo
 
 | Type | What it is |
 |---|---|
-| **Staking reward** | Coins earned by staking or lending |
+| **Staking reward** | Coins earned by staking |
 | **Reward** | Coins received for something else — a referral, a rebate, a bonus |
 | **Dust attack** | An unsolicited crumb, recorded so the balance still matches the chain |
 | **Rebase adjustment** | Quantity a rebasing token gained with no transaction behind it |
 | **Token account rent returned** | Solana's token-account deposit coming back (the deposit itself is an *Action*) |
+| **Lending interest** | Interest a lending position paid out in its own token |
+
+Each of them opens a lot of its own at **zero cost**, dated the day it arrived: nothing was paid for
+the coins, so their whole value is a gain when they are sold, and they never change the cost of what
+you bought. What a receipt was worth when it arrived is still known from the prices.
 
 You will rarely create these by hand; the fetchers do it. Gas is no longer a type of its own: it is
 the fee of whatever it paid for, or the cost of an [Action](#action--a-transaction-that-moved-nothing).

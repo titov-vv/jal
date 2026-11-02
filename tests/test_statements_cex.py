@@ -553,10 +553,9 @@ def test_import_says_how_many_operations_were_new_and_how_many_were_already_pres
     assert JalDB._operation_tally is None
 
 
-def test_reward_payment_is_valued_like_a_staking_reward(prepare_db):
-    # AssetIncome.Reward exists only to keep a promo payout apart from staking income; it must be ACCOUNTED exactly
-    # like a staking reward. That above all means valuing it at the last known quote - a crypto quote is daily and
-    # would never fall on the second the payout arrived, so the stock-vesting path would refuse every reward.
+# AssetIncome.Reward keeps a promo payout apart from staking income and is booked exactly like one: a zero-cost lot,
+# worth the last known quote - a daily crypto quote never falls on the second the payout arrived
+def test_reward_payment_is_booked_like_a_staking_reward(prepare_db):
     JalAccountCreator(currency_id=2, number='', name='KuCoin.1', investing=1, organization=1,
                       account_type=PredefinedAccountType.CEX).commit()
     create_assets([('USDT', 'Tether', '', 2, PredefinedAsset.Crypto, 0)])     # ID = 4
@@ -571,5 +570,5 @@ def test_reward_payment_is_valued_like_a_staking_reward(prepare_db):
     assert JalAccount(1).get_asset_amount(d2t(210301), 4) == Decimal('10')   # the coins are on the account
     lots = JalAccount(1).open_trades_list(JalAsset(4))
     assert sum((lot.open_qty() for lot in lots), Decimal('0')) == Decimal('10')
-    # valued at the last known quote rather than at one stamped at its own second
-    assert nth_operation(LedgerTransaction.AssetIncome, 1).price() == Decimal('0.98')
+    assert nth_operation(LedgerTransaction.AssetIncome, 1).price() == Decimal('0')
+    assert nth_operation(LedgerTransaction.AssetIncome, 1).amount(currency_id=2) == Decimal('9.8')

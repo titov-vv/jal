@@ -6,14 +6,14 @@ import pytest
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo
 from tests.helpers import d2t, create_trades, create_quotes, create_swaps, create_assets, create_actions, \
-    create_cross_chain_swaps, nth_operation
+    create_cross_chain_swaps, nth_operation, symbol_id_for
 from jal.constants import BookAccount, AssetData, PredefinedAsset, PredefinedCategory, PredefinedAccountType, \
     SwapTreatment
 from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
 from jal.db.db import JalDB
-from jal.db.operations import LedgerTransaction, LedgerError, Swap
+from jal.db.operations import LedgerTransaction, LedgerError, Swap, AssetIncome
 
 # Seeded currencies are RUB=1, USD=2, EUR=3; the first created asset gets id 4
 A, B = 4, 5
@@ -91,10 +91,27 @@ def test_cross_chain_conversion_converts_basis_between_currencies(chains):
     assert _lots(ACC_EUR, B) == [(_trade_oid(1), t_buy, Decimal('20'), Decimal('40'))]
     assert _lots(ACC1, A) == []
     assert _profit_rows() == 0
+    # A travels at its basis, as a bridge carries it, and nothing is left in transit
+    amounts, values = LedgerAmounts("amount_acc"), LedgerAmounts("value_acc")
+    assert (amounts[(BookAccount.Transfers, ACC1, A)], values[(BookAccount.Transfers, ACC1, A)]) == (10, 1000)
+    assert (amounts[(BookAccount.Transfers, ACC_EUR, A)], values[(BookAccount.Transfers, ACC_EUR, A)]) == (-10, -800)
+    assert values[(BookAccount.Assets, ACC_EUR, B)] == Decimal('800')
+
+
+# A zero-cost lot (a reward) crosses chains and currencies as a conversion: still zero, still the reward's lot
+def test_cross_chain_conversion_carries_a_zero_basis(chains):
+    t_reward, t_out, t_in = d2t(220101), d2t(220201), d2t(220203)
+    create_quotes(2, 3, [(t_in, 0.8)])
+    reward = LedgerTransaction.create_new(LedgerTransaction.AssetIncome, {
+        'timestamp': t_reward, 'type': AssetIncome.StakingReward, 'account_id': ACC1, 'symbol_id': symbol_id_for(A),
+        'amount': '10', 'tax': '0', 'number': '', 'note': ''})
+    create_cross_chain_swaps([{'ts': t_out, 'acc': ACC1, 'out_asset': A, 'out_qty': 10, 'in_ts': t_in,
+                               'in_acc': ACC_EUR, 'in_asset': B, 'in_qty': 20, 'treatment': SwapTreatment.Conversion}])
+    Ledger().rebuild(from_timestamp=0)
+
+    assert _lots(ACC_EUR, B) == [(reward.id(), t_reward, Decimal('20'), Decimal('0'))]
     amounts = LedgerAmounts("amount_acc")
-    assert amounts[(BookAccount.Transfers, ACC1, 2)] == Decimal('1000')
-    assert amounts[(BookAccount.Transfers, ACC_EUR, 3)] == Decimal('-800')
-    assert LedgerAmounts("value_acc")[(BookAccount.Assets, ACC_EUR, B)] == Decimal('800')
+    assert amounts[(BookAccount.Transfers, ACC1, A)] + amounts[(BookAccount.Transfers, ACC_EUR, A)] == 0
 
 
 # Auto: a pegged asset on either side makes a sale (10 * 150 - 1000 = 500), none a conversion

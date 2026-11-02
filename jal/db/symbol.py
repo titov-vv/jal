@@ -113,7 +113,7 @@ class JalSymbol(JalDB):
     # (symbol_id, currency_id) pairs of the operations that the ledger hasn't accounted for - those at or after its
     # frontier and no later than 'end'.
     # The ledger is not the whole truth about which symbols exist: it ends at its frontier, and it stops there for
-    # good when an operation can't be processed - a staking reward with no quote to value it, above all. An asset
+    # good when an operation can't be processed - a swap with no quote on either side to value it, for one. An asset
     # first acquired beyond that point has no ledger row at all, so a list built from the ledger alone leaves it out
     # of the quote download, which in turn is what the ledger is waiting for. Reading the operations directly breaks
     # that deadlock: the asset gets its quotes and the next rebuild carries the ledger past the operation.

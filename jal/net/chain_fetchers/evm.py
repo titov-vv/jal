@@ -918,11 +918,11 @@ class EVMFetcher(ChainFetcher):
         self._add_conversion(timestamp, a_token, withdrawn, underlying, withdrawn, tx_hash, note=protocol,
                              fee=gas, fee_asset_id=self._native_asset_id() if gas > Decimal('0') else None)
 
-    # Emits claimed rewards as StakingReward payments (each opens a lot at market value, so a reward has a cost
-    # basis). One claim can pay out in SEVERAL assets at once - a single Merkl claim delivered stkGHO and aEthUSDG
-    # together - so each received asset gets a payment of its own, and the gas of the claim rides the FIRST of them
-    # by asset id. Arbitrary and deliberate: the cost was never divided, the rule has to be one a re-import can
-    # reproduce exactly, and attaching it to one of the two is strictly more than the gas used to say for itself.
+    # Emits claimed rewards as StakingReward payments (each opens a zero-cost lot). One claim can pay out in SEVERAL
+    # assets at once - a single Merkl claim delivered stkGHO and aEthUSDG together - so each received asset gets a
+    # payment of its own, and the gas of the claim rides the FIRST of them by asset id. Arbitrary and deliberate: the
+    # cost was never divided, the rule has to be one a re-import can reproduce exactly, and attaching it to one of
+    # the two is strictly more than the gas used to say for itself.
     def _emit_rewards(self, timestamp: int, ins: dict, tx_hash: str, gas: Decimal, protocol: str = '') -> None:
         for position, (asset_id, data) in enumerate(sorted(ins.items())):
             carried = gas if position == 0 else Decimal('0')

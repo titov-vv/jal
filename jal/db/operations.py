@@ -1062,16 +1062,14 @@ class AssetPayment(AssetPaymentBase):
 # ----------------------------------------------------------------------------------------------------------------------
 # The asset itself arriving, at no cost to the account that receives it: shares granted as a dividend or a vesting,
 # coins earned by staking, dust nobody asked for. The amount is a QUANTITY of that asset and never a sum of money,
-# and what the ledger does with it is always the same - it opens a lot, at the price this class is able to state.
+# and what the ledger does with it is always the same - it opens a lot: shares at their stated price, crypto at zero.
 # The tax, where a broker withheld one, is money and leaves the Money book like any other tax.
 class AssetIncome(AssetPaymentBase):
     StockDividend = 1
     StockVesting = 2
     StakingReward = 3      # Coins received for staking
-    # Coins received for something other than staking - a referral or platform bonus, a fee rebate paid out too late
-    # to belong to the trade it came from. Accounted exactly as a StakingReward (an inflow with no counterpart,
-    # valued at the last known quote and opening a lot at that basis); it exists only to keep the two apart, since
-    # what earned the coins may well be taxed differently from what staking earns.
+    # Coins received for something other than staking (a referral, a bonus, a late fee rebate). Booked as a
+    # StakingReward; kept apart because it may be taxed differently.
     Reward = 4
     DustAttack = 5         # Unsolicited native-coin dust from address-poisoning, below the per-chain threshold
     # Quantity a rebasing receipt token gained without ever announcing it. An aToken balance is a scaled number times
@@ -1085,13 +1083,9 @@ class AssetIncome(AssetPaymentBase):
     # anything whose value is not negligible.
     RebaseAdjustment = 6
     # The coin coming back when a token account is closed (see ChainAction.TokenAccountRent for the side that pays).
-    # It arrives on the account that OWNED the token account, which is not necessarily the one that paid, so nothing
-    # here can link it back to the rent it reverses. It is therefore valued like any other inflow that cost the
-    # receiving account nothing - at the quote of the moment it arrives - rather than at the value it left the payer
-    # at, which this account never bore.
+    # It may arrive on another account than the payer, so nothing links it to the rent; a zero-cost lot like any income.
     TokenRentReturn = 7
-    # Interest a lending position paid in its own receipt token. The lot opens at ZERO cost and on the day the
-    # interest arrived, so it never dilutes the basis or borrows the age of the principal.
+    # Interest a lending position paid in its own receipt token; its own lot, dated on arrival, apart from the principal
     LendingInterest = 8
     _db_table = "asset_incomes"
     _otype = LedgerTransaction.AssetIncome
@@ -1147,15 +1141,8 @@ class AssetIncome(AssetPaymentBase):
     def _subject_text(self) -> str:
         return LedgerTransaction.tr("Received:") + f" {self._symbol.symbol()} ({self._asset.name()})"
 
-    # The per-unit value the lot is opened at. Where it comes from is the one thing the subtypes disagree about.
+    # The per-unit cost the lot opens at: the stated grant price for shares, zero for every crypto income
     def price(self) -> Decimal:
-        if self._subtype == AssetIncome.RebaseAdjustment:
-            # Zero by definition, not for want of a quote: this operation only books quantity that a rebasing token
-            # gained without announcing it, and the cost basis of the position it belongs to was paid in full long
-            # before. Pricing the crumb at market would move basis into it and out of the units that were bought.
-            return Decimal('0')
-        if self._subtype == AssetIncome.LendingInterest:
-            return Decimal('0')   # nothing was paid for it; what it is worth is reported by amount()
         if self._subtype in (AssetIncome.StockDividend, AssetIncome.StockVesting):
             if self._price is None:
                 logging.debug(f"Unpriced stock dividend/vesting. Operation: {self.dump()}")
@@ -1164,31 +1151,7 @@ class AssetIncome(AssetPaymentBase):
                                           "and rebuild the ledger.").format(
                                           self._asset.symbol(self._account.currency()), ts2d(self._timestamp)))
             return self._price
-        quote_timestamp, price = self._asset.quote(self._timestamp, self._account.currency(),
-                                                   report_missing=self._subtype != AssetIncome.DustAttack)
-        if self._subtype == AssetIncome.DustAttack:
-            # Unlike a staking reward, a zero basis here is not a mis-statement to guard against - it is the
-            # correct one: the coins were unsolicited and cost nothing, so their whole proceeds are rightly a gain
-            # when sold. Refusing the import for want of a quote would be wrong besides being pointless - a fresh
-            # wallet's first fetch is exactly the case with no local price history yet (see the native dust
-            # threshold in ChainFetcher._is_native_dust), and nobody has reason to go download one for dust.
-            return price if quote_timestamp else Decimal('0')
-        # A reward arrives at a block timestamp, which no daily quote series will ever match exactly, so the last
-        # known price is used instead of demanding a quote of that very second. A reward that can't be priced at all
-        # opens a lot at zero and would show the whole proceeds as gain when sold, so it is refused rather than
-        # silently mis-stating the basis.
-        if not quote_timestamp:
-            # Recoverable and needing no re-import: the income itself is already stored with the right amount, it is
-            # only the valuation that is missing, so downloading the quotes and rebuilding the ledger completes it.
-            # That also resolves the ordering problem of a first-ever import, where the asset is created by that
-            # very import and can have no quotes yet. A LedgerError and not an unexpected one: the ledger stops here
-            # but nothing is wrong with the data, so the user is told what to download instead of being shown a
-            # traceback. The operation dump goes to the log for diagnosis and is kept out of the message.
-            logging.debug(f"Unpriced reward. Operation: {self.dump()}")
-            raise LedgerError(LedgerTransaction.tr("No quote to value a staking reward: {} on {}. "
-                                      "Download quotes from an earlier date and rebuild the ledger.").format(
-                                      self._asset.symbol(self._account.currency()), ts2d(self._timestamp)))
-        return price
+        return Decimal('0')   # nothing was paid for it; what it was worth is reported by amount()
 
     # Returns the quantity received, or what it was worth when a currency is asked for
     def amount(self, currency_id: int = 0) -> Decimal:
@@ -1709,7 +1672,7 @@ class Swap(FeeCarrier, LedgerTransaction):
 
     # Sale: disposes the out asset at its market value and realizes the profit/loss of the disposal. Conversion: closes
     # the out lots at their basis with no result. A same-chain swap opens the acquired asset right here; a cross-chain
-    # one parks the proceeds (or the basis) in the Transfers book for its receiving leg.
+    # one parks the proceeds as money, or the out asset at its basis, in the Transfers book for its receiving leg.
     def processOutgoing(self, ledger):
         available = ledger.getAmount(BookAccount.Assets, self._account.id(), self._out_asset.id())
         if available < self._out_qty:
@@ -1727,8 +1690,9 @@ class Swap(FeeCarrier, LedgerTransaction):
         rounding_error = ledger.appendTransaction(self, BookAccount.Assets, -self._out_qty,
                                                   asset_id=self._out_asset.id(), value=-basis)
         if conversion:   # As Conversion does, the lots carry 'basis' and a rounding crumb stays with the position
-            if self._cross_chain:
-                ledger.appendTransaction(self, BookAccount.Transfers, basis)
+            if self._cross_chain:   # the asset itself travels, as a Bridge carries it; its quantity is never zero
+                ledger.appendTransaction(self, BookAccount.Transfers, self._out_qty, asset_id=self._out_asset.id(),
+                                         value=basis)
             else:
                 self._reopen_lots(self._account, Decimal('1'))
                 ledger.appendTransaction(self, BookAccount.Assets, self._in_qty, asset_id=self._in_asset.id(), value=basis)
@@ -1743,13 +1707,15 @@ class Swap(FeeCarrier, LedgerTransaction):
             self._account.open_trade(JalOpenTrade(self, value / self._in_qty, self._in_qty), self._in_asset)
             ledger.appendTransaction(self, BookAccount.Assets, self._in_qty, asset_id=self._in_asset.id(), value=value)
 
-    # Opens the acquired asset on the destination account, valued at the proceeds the disposing leg parked in transit
+    # Opens the acquired asset on the destination account, valued at what the disposing leg parked in transit
     # (converted into the destination account currency if the two accounts are kept in different currencies).
     def processIncoming(self, ledger):
-        value = self._read("SELECT amount FROM ledger WHERE book_account=:book_transfers AND otype=:otype AND oid=:id",
+        conversion = self.treatment() == SwapTreatment.Conversion
+        column = "value" if conversion else "amount"    # the basis of the asset in transit, or the money proceeds
+        value = self._read(f"SELECT {column} FROM ledger WHERE book_account=:book_transfers AND otype=:otype AND oid=:id",
                            [(":book_transfers", BookAccount.Transfers), (":otype", self._otype), (":id", self._oid)],
                            check_unique=True)
-        if not value:
+        if value is None or value == '':
             raise LedgerError(LedgerTransaction.tr("Asset disposal not found for swap.") + f" Operation:  {self.dump()}")
         value = Decimal(value)
         if self._account.currency() == self._in_account.currency():
@@ -1760,10 +1726,12 @@ class Swap(FeeCarrier, LedgerTransaction):
                 raise LedgerError(LedgerTransaction.tr("There is no FX rate to convert swap proceeds. Date: ")
                                   + f"{ts2dt(self._in_timestamp)}, Operation: {self.dump()}")
         in_value = rate * value
-        ledger.appendTransaction(self, BookAccount.Transfers, -in_value)
-        if self.treatment() == SwapTreatment.Conversion:
+        if conversion:
+            ledger.appendTransaction(self, BookAccount.Transfers, -self._out_qty, asset_id=self._out_asset.id(),
+                                     value=-in_value)
             self._reopen_lots(self._in_account, rate)
         else:
+            ledger.appendTransaction(self, BookAccount.Transfers, -in_value)
             self._in_account.open_trade(JalOpenTrade(self, in_value / self._in_qty, self._in_qty), self._in_asset)
         ledger.appendTransaction(self, BookAccount.Assets, self._in_qty, asset_id=self._in_asset.id(), value=in_value)
 
