@@ -190,3 +190,51 @@ def test_deals_report_hides_conversion_deals(chains):
     window.ui.ReportRange.setRange(d2t(220101), d2t(220401))
     window.ui.ReportAccountEdit.selection_done(ACC1)
     assert sorted(x.profit() for x in window.trades_model._trades) == [Decimal('100'), Decimal('500'), Decimal('1400')]
+
+
+# A sale's result is listed in the by-category report as the result, for a cross-chain swap too (G9: it was drawn as
+# the arriving leg, 20 B, because both used part 1)
+@pytest.mark.parametrize("cross_chain", [False, True])
+def test_category_report_shows_swap_profit(chains, cross_chain):
+    from PySide6.QtWidgets import QTableView
+    from jal.reports.category import CategoryOperationsModel
+    t_buy, t_out, t_in = d2t(220101), d2t(220201), d2t(220203)
+    create_quotes(A, 2, [(t_out, 150.0)])
+    create_trades(ACC1, [(t_buy, t_buy, A, 10.0, 100.0, 0.0)])
+    if cross_chain:
+        create_cross_chain_swaps([{'ts': t_out, 'acc': ACC1, 'out_asset': A, 'out_qty': 10,
+                                   'in_ts': t_in, 'in_acc': ACC2, 'in_asset': B, 'in_qty': 20}])
+    else:
+        create_swaps(ACC1, [(t_out, A, 10, B, 20)])
+    Ledger().rebuild(from_timestamp=0)
+
+    view = QTableView()
+    model = CategoryOperationsModel(view)
+    model.updateView(PredefinedCategory.Profit, (d2t(220101), d2t(220301)), 2)
+    assert model.rowCount() == 1
+    assert model.data(model.index(0, 6)) == [Decimal('500')]
+    assert model.data(model.index(0, 7)) == 'USD'
+    assert model._total == Decimal('500')
+
+
+# A pegged flag set after a rebuild turns an auto swap from a conversion into a sale at the next (incremental)
+# rebuild, and removing it turns it back
+def test_peg_edit_reclassifies_at_next_rebuild(chains):
+    t_buy, t_swap = d2t(220101), d2t(220201)
+    create_quotes(A, 2, [(t_swap, 150.0)])
+    create_trades(ACC1, [(t_buy, t_buy, A, 10.0, 100.0, 0.0)])
+    create_swaps(ACC1, [(t_swap, A, 10, B, 20)], treatment=SwapTreatment.Auto)
+    Ledger().rebuild(from_timestamp=0)
+    buy = _trade_oid(1)
+    swap = nth_operation(LedgerTransaction.Swap, 1).id()
+    assert _profit_rows() == 0 and _lots(ACC1, B) == [(buy, t_buy, Decimal('20'), Decimal('50'))]
+
+    _peg(B)
+    Ledger().rebuild()
+    assert _profit_rows() == 1
+    assert _lots(ACC1, B) == [(swap, t_swap, Decimal('20'), Decimal('75'))]   # a new lot at 1500 / 20
+
+    JalDB._exec("DELETE FROM asset_data WHERE datatype=:type", [(":type", AssetData.PeggedTo)], commit=True)
+    JalDB().invalidate_cache()
+    Ledger().rebuild()
+    assert _profit_rows() == 0 and _lots(ACC1, B) == [(buy, t_buy, Decimal('20'), Decimal('50'))]
