@@ -25,6 +25,8 @@ class TaxesPortugal(TaxReport):
         'profit': "Gain/loss",
         'amount': "Amount",
         'value': "Value at receipt (information)",
+        'rates_missing': "Warning: the database has no ECB rate {pair} after {rate}; operations up to {latest} use the "
+                         "rate of {rate} - download the rates and make the report again",
         'fifo': "Deals are matched FIFO within this account; deals of other accounts are not netted here",
         'one_rate': "Cost, proceeds and expenses are converted at the EUR rate of the disposal date (CIRS art. 23.º)",
         'two_rates': "Each leg is converted at the EUR rate of its own trade date - not the one-rate reading of CIRS art. 23.º",

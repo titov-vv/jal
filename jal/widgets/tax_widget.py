@@ -164,6 +164,13 @@ class TaxWidget(MdiWidget):
                                     headers=taxes.section_headers(section))
         if reports_xls.save():
             logging.info(self.tr("Excel tax report was saved to file ") + f"'{self.xls_filename}'")
+        if taxes.rates_warnings:
+            lines = [f"{pair}: {reading2d(quoted)} - {reading2d(latest)}" for (pair, quoted), latest in sorted(taxes.rates_warnings.items())]
+            message = self.tr("Official currency rates look missing in the database; these operations were converted "
+                              "at an older rate (pair: rate date - latest operation):") + "\n" + "\n".join(lines) + \
+                      "\n" + self.tr("Download the rates and save the report again.")
+            logging.warning(message)
+            QMessageBox().warning(self, self.tr("Currency rates are not up to date"), message, QMessageBox.Ok)
 
         if self.update_ndfl3 or self.update_modelo3:
             if self.update_ndfl3 and not self._warn_missing_broker(taxes.account):

@@ -17,6 +17,7 @@ from jal.db.clock import ZONE_SPAN, wall_clock_reading
 
 REPORT_METHOD = 0
 REPORT_TEMPLATE = 1
+RATES_GAP = 14 * 86400   # how much older than its date a rate may be before it is warned of (holidays differ)
 
 
 # Raised when a report can't be produced as asked; 'missing' lists (symbol, timestamp) of every quote that stopped it
@@ -63,6 +64,8 @@ class TaxReport:
         self.section_notes = {}   # {section: [header lines]} a section states under its title
         self._printed = set()     # (otype, oid) of every operation a section printed
         self._missing = []        # (symbol, timestamp) of every quote a section needed and didn't find
+        self._rates_end = None    # newest official rate into the report currency, read once per report
+        self.rates_warnings = {}  # {(pair, date of the rate used): latest date it converted} for rates likely missing
 
     @staticmethod
     def tr(text):
@@ -155,6 +158,7 @@ class TaxReport:
             self.generate_modelo3 = kwargs['generate_modelo3']
         self.load_parameters(year)
         self.section_notes, self._printed, self._missing = {}, set(), []
+        self._rates_end, self.rates_warnings = None, {}
         sections = {}
         for report in self.reports:
             self._section = report
@@ -190,7 +194,27 @@ class TaxReport:
         quoted, rate = JalAsset(currency_id).quote(timestamp, self._currency_id, report_missing=False, direct_only=True)
         if not quoted:
             self.missing_quote(f"{JalAsset(currency_id).symbol()}/{self.currency_name}", timestamp)
+        elif timestamp - quoted > RATES_GAP and self._rate_missing(currency_id, quoted, timestamp):
+            key = (f"{JalAsset(currency_id).symbol()}/{self.currency_name}", quoted)
+            self.rates_warnings[key] = max(self.rates_warnings.get(key, 0), timestamp)
         return rate
+
+    # A rate older than its date is right if the bank froze it - it publishes no later one of that pair while its
+    # other rates go on (the ECB's RUB since 1 Mar 2022). It is likely missing if the same pair has a later rate (a
+    # hole in the series), or if no rate of the bank reaches the date (the rates were not downloaded).
+    def _rate_missing(self, currency_id: int, quoted: int, timestamp: int) -> bool:
+        later = JalDB._read("SELECT COUNT(*) FROM quotes WHERE asset_id=:asset AND currency_id=:currency "
+                            "AND timestamp>:quoted", [(":asset", currency_id), (":currency", self._currency_id),
+                                                       (":quoted", quoted)])
+        return bool(later) or timestamp > self.rates_end() + RATES_GAP
+
+    # The newest official rate the database holds into the report currency, of any currency
+    def rates_end(self) -> int:
+        if self._rates_end is None:
+            self._rates_end = JalDB._read("SELECT MAX(q.timestamp) FROM quotes AS q JOIN assets AS a ON a.id=q.asset_id "
+                                          "WHERE q.currency_id=:currency AND a.type_id=:money",
+                                          [(":currency", self._currency_id), (":money", PredefinedAsset.Money)]) or 0
+        return self._rates_end
 
     # Records a quote a section needed and didn't find; the report stops after all sections listed theirs
     def missing_quote(self, symbol: str, timestamp: int):
@@ -289,6 +313,10 @@ class TaxReport:
             link = self.uncovered_section[0] if count else ''   # an empty section makes no sheet to link to
             rows.append({'report_template': "count", 'label': label, 'count': count, 'link': link})
         rows.append({'report_template': "count", 'label': self.texts['pending_total'], 'count': pending, 'link': ''})
+        day = lambda x: datetime.fromtimestamp(x, tz=timezone.utc).strftime('%d.%m.%Y')
+        for (pair, quoted), latest in sorted(self.rates_warnings.items()):
+            rows.append({'report_template': "warning",
+                         'warning': self.texts['rates_missing'].format(pair=pair, rate=day(quoted), latest=day(latest))})
         return rows
 
     # Check if 2-letter country code present in tax treaty parameter of current report

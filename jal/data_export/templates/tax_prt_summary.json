@@ -23,5 +23,10 @@
     "rows": [["label", "count", ""]],
     "formats": [["L", "N:0", "T"]]
   },
+  "warning": {
+    "rows": [["warning", null, null]],
+    "formats": [["T:B", null, null]],
+    "span": [[{"h": 2, "v": 0}, null, null]]
+  },
   "footers": []
 }

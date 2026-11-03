@@ -109,3 +109,25 @@ def test_direct_only_quote_takes_no_cross_rate(prepare_db_taxes):
     assert usd.quote(d2t(250110), 3, report_missing=False, direct_only=True) == (0, Decimal('0'))
     create_quotes(2, 3, [(d2t(250102), 0.9)])
     assert usd.quote(d2t(250110), 3, direct_only=True)[1] == Decimal('0.9')
+
+
+# An old rate is warned of when it is likely missing: a hole in its series, or the bank's rates not downloaded.
+# A pair the bank froze while publishing the others is no warning.
+def test_rates_likely_missing_are_warned_of(prepare_db_taxes):
+    _one_sale()                                      # rates of 2 Jan 2025 only, the sale on 4 Jun 2025
+    report = TaxesRussia()
+    summary = report.prepare_tax_report(2025, 1)["Сводка"]
+    assert report.rates_warnings == {("USD/RUB", d2t(250102)): d2t(250604)}      # not downloaded
+    assert summary[-1] == {'report_template': "warning",
+                           'warning': "Внимание: курса ЦБ РФ USD/RUB нет в базе после 02.01.2025; операции по 04.06.2025 "
+                                      "пересчитаны по курсу на 02.01.2025 - загрузите курсы и сформируйте отчёт заново"}
+
+    create_quotes(3, 1, [(d2t(250701), 105.0)])      # the bank's EUR rate goes on: USD/RUB is frozen, not missing
+    report = TaxesRussia()
+    assert report.prepare_tax_report(2025, 1)["Сводка"][-1]['report_template'] == "count"
+    assert report.rates_warnings == {}
+
+    create_quotes(2, 1, [(d2t(250701), 90.0)])       # a later USD/RUB rate: the months before it are a hole
+    report = TaxesRussia()
+    report.prepare_tax_report(2025, 1)
+    assert report.rates_warnings == {("USD/RUB", d2t(250102)): d2t(250604)}
