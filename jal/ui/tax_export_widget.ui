@@ -77,7 +77,7 @@
       <item>
        <widget class="QCheckBox" name="Pt_OneCurrencyRate">
         <property name="text">
-         <string>Use only realization (Sell) currency rate</string>
+         <string>Convert at the rate of the disposal date only (CIRS art. 23)</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -90,7 +90,7 @@
          <bool>true</bool>
         </property>
         <property name="text">
-         <string>     (This selection depends CIRS a.23 interpretation)</string>
+         <string>     (unchecked: each leg at the rate of its own trade date)</string>
         </property>
        </widget>
       </item>
