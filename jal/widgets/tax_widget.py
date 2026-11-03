@@ -42,9 +42,10 @@ class TaxWidget(MdiWidget):
         self.ui = Ui_TaxWidget()
         self.ui.setupUi(self)
 
+        self._option_boxes = {'pt': self.ui.PtBox, 'ru': self.ui.RuBox}
         self.ui.Country.clear()
-        for x in TaxReport.countries:
-            self.ui.Country.addItem(JalIcon.country_flag(TaxReport.countries[x]['flag']), TaxReport.countries[x]['name'])
+        for code, jurisdiction in TaxReport.jurisdictions.items():
+            self.ui.Country.addItem(JalIcon.country_flag(code), jurisdiction['name'], code)
         self.ui.Country.currentIndexChanged.connect(self.OnCountryChange)
         self.ui.Year.valueChanged.connect(self.OnYearChange)
         self.ui.Year.setValue(datetime.now().year - 1)   # Set previous year by default
@@ -52,21 +53,16 @@ class TaxWidget(MdiWidget):
         self.ui.Ndfl3SelectBtn.pressed.connect(partial(self.OnFileBtn, FileType.RU_Declaration_DE))
         self.ui.IRS_Modelo3SelectBtn.pressed.connect(partial(self.OnFileBtn, FileType.PT_Modelo3_XML))
         self.ui.SaveButton.pressed.connect(self.SaveReport)
-        self.ui.Country.setCurrentIndex(TaxReport.RUSSIA)
+        self.ui.Country.setCurrentIndex(self.ui.Country.findData('ru'))
         self.OnYearChange(self.ui.Year.value())
         self._close_shortcut = QShortcut(QKeySequence(Qt.Key_Escape), self)
         self._close_shortcut.setContext(Qt.WidgetWithChildrenShortcut)
         self._close_shortcut.activated.connect(self.close)
 
-    def OnCountryChange(self, item_id):
-        if item_id == TaxReport.PORTUGAL:
-            self.ui.RuBox.setVisible(False)
-            self.ui.PtBox.setVisible(True)
-        elif item_id == TaxReport.RUSSIA:
-            self.ui.RuBox.setVisible(True)
-            self.ui.PtBox.setVisible(False)
-        else:
-            raise ValueError("Selected item has no country handler in code")
+    # Shows the option box of the selected jurisdiction; one without options shows none
+    def OnCountryChange(self, _index):
+        for code, box in self._option_boxes.items():
+            box.setVisible(code == self.country)
         # A window of its own may follow the size of the country block it shows, a tab may not
         if self.isWindow():
             self.update()
@@ -107,6 +103,7 @@ class TaxWidget(MdiWidget):
             JalSettings().setRecentFolder(FolderFor.Report, filename[0])
 
     year = Property(int, fget=lambda self: self.ui.Year.value())
+    country = Property(str, fget=lambda self: self.ui.Country.currentData())
     xls_filename = Property(str, fget=lambda self: self.ui.XlsFileName.text())
     account = Property(int, fget=lambda self: self.ui.Account.currentData())
     update_ndfl3 = Property(bool, fget=lambda self: self.ui.Ndfl3Group.isChecked())
@@ -135,7 +132,7 @@ class TaxWidget(MdiWidget):
             QMessageBox().warning(self, self.tr("Data are incomplete"),
                                   self.tr("You haven't selected an account for tax report"), QMessageBox.Ok)
             return
-        taxes = TaxReport.create_report(self.ui.Country.currentIndex())
+        taxes = TaxReport.create_report(self.country)
         try:
             tax_report = taxes.prepare_tax_report(self.year, self.account,
                                                   use_one_currency_rate=self.use_one_rate,

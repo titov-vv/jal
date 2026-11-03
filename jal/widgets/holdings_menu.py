@@ -10,6 +10,7 @@ from jal.db.clock import day_finish
 from jal.db.common_models import TagTreeModel
 from jal.db.country import JalCountry
 from jal.db.tax_estimator import TaxEstimator
+from jal.data_export.taxes import TaxReport
 from jal.widgets.accrual_chart import AccrualChartWindow, ReceivableChartWindow
 from jal.widgets.icons import JalIcon
 from jal.widgets.price_chart import ChartWindow
@@ -50,12 +51,11 @@ class HoldingsMenu(QObject):
             actionAccrual.triggered.connect(partial(self.showAccrualChart, index))
             menu.addAction(actionAccrual)
         tax_submenu = menu.addMenu(JalIcon[JalIcon.TAX], self.tr("Estimate tax"))
-        actionEstimateTaxPt = QAction(icon=JalIcon.country_flag('pt'), text=self.tr("Portugal"), parent=self._view)
-        actionEstimateTaxPt.triggered.connect(partial(self.estimateSaleTax, index, 'pt'))
-        tax_submenu.addAction(actionEstimateTaxPt)
-        actionEstimateTaxRu = QAction(icon=JalIcon.country_flag('ru'), text=self.tr("Russia"), parent=self._view)
-        actionEstimateTaxRu.triggered.connect(partial(self.estimateSaleTax, index, 'ru'))
-        tax_submenu.addAction(actionEstimateTaxRu)
+        for code in TaxReport.jurisdictions:
+            country = JalCountry(data={'code': code}, search=True)
+            action = QAction(icon=JalIcon.country_flag(code), text=country.name(), parent=self._view)
+            action.triggered.connect(partial(self.estimateSaleTax, index, code))
+            tax_submenu.addAction(action)
         menu.addSeparator()
         if model.get_data_for_tax(index)[1]:   # a group row names no asset
             actionSetTag = QAction(icon=JalIcon[JalIcon.TAG], text=self.tr("Set asset tag"), parent=self._view)

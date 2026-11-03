@@ -15,6 +15,7 @@ from jal.widgets.mdi import MdiWidget
 from jal.widgets.helpers import ts2d, set_grids_metrics, restore_columns
 from jal.widgets.delegates import FloatDelegate
 from jal.data_export.tax_parameters import TaxParameters
+from jal.data_export.taxes import TaxReport
 
 
 class TaxEstimatorModel(QAbstractTableModel):
@@ -75,11 +76,6 @@ class TaxEstimatorModel(QAbstractTableModel):
 
 
 class TaxEstimator(MdiWidget):
-    TAX_CURRENCY = {
-        'pt': 'EUR',
-        'ru': 'RUB'
-    }
-
     def __init__(self, country_code, account_id, asset_id, asset_qty, parent=None):
         super().__init__(parent)
         self.ui = Ui_TaxEstimationDialog()
@@ -94,8 +90,8 @@ class TaxEstimator(MdiWidget):
         self.dataframe = None
         self.ready = False
         try:
-            self.tax_currency_symbol = self.TAX_CURRENCY[self.country.code()]
-        except KeyError:
+            self.tax_currency_symbol = TaxReport.report_class(self.country.code()).currency_name
+        except ValueError:
             self.tax_currency_symbol = ''
 
         self.setWindowTitle(self.tr("Tax estimation for ") + self.asset_name + " / " + self.country.name())

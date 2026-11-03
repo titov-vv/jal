@@ -27,11 +27,10 @@ class TaxReportStop(Exception):
 
 
 class TaxReport:
-    PORTUGAL = 0
-    RUSSIA = 1
-    countries = {
-        PORTUGAL: {"name": "Portugal", "module": "jal.data_export.tax_reports.portugal", "class": "TaxesPortugal", "flag": "pt"},
-        RUSSIA: {"name": "Россия", "module": "jal.data_export.tax_reports.russia", "class": "TaxesRussia", "flag": "ru"}
+    # Every jurisdiction a report exists for, keyed by its ISO 3166-1 alpha-2 code; the name is in its own language
+    jurisdictions = {
+        'pt': {"name": "Portugal", "module": "jal.data_export.tax_reports.portugal", "class": "TaxesPortugal"},
+        'ru': {"name": "Россия", "module": "jal.data_export.tax_reports.russia", "class": "TaxesRussia"}
     }
     jurisdiction = ''   # ISO 3166-1 alpha-2 code of the jurisdiction, names its parameter file
     currency_name = ''  # The name of the currency for tax values calculation
@@ -91,18 +90,22 @@ class TaxReport:
     def _date(day: int) -> int:
         return day
 
+    # The report class of a jurisdiction, imported on demand as the country modules import this one
     @staticmethod
-    def create_report(country: int):
+    def report_class(code: str):
         try:
-            report_data = TaxReport.countries[country]
+            report_data = TaxReport.jurisdictions[code]
         except KeyError:
-            raise ValueError(f"Selected country item {country} has no country handler in tax report code")
+            raise ValueError(f"Jurisdiction '{code}' has no tax report")
         module = importlib.import_module(report_data['module'])
         try:
-            class_instance = getattr(module, report_data['class'])
+            return getattr(module, report_data['class'])
         except AttributeError:
             raise ValueError(f"Tax report class '{report_data['class']}' can't be loaded")
-        return class_instance()
+
+    @staticmethod
+    def create_report(code: str):
+        return TaxReport.report_class(code)()
 
     def report_template(self, report_name):
         if report_name == self.summary_section[0]:

@@ -315,11 +315,10 @@ def capture_edit_dialogs(window):
 
 def capture_tax_windows(window):
     from jal.widgets.tax_widget import TaxWidget, MoneyFlowWidget
-    from jal.data_export.taxes import TaxReport
-    for country, name in ((TaxReport.PORTUGAL, "tax_forms_pt"), (TaxReport.RUSSIA, "tax_forms_ru")):
+    for country, name in (('pt', "tax_forms_pt"), ('ru', "tax_forms_ru")):
         widget = TaxWidget(window.ui.windowArea)
         widget.ui.Year.setValue(2025)
-        widget.ui.Country.setCurrentIndex(country)
+        widget.ui.Country.setCurrentIndex(widget.ui.Country.findData(country))
         widget.resize(720, 300)
         widget.show()
         QApplication.processEvents()

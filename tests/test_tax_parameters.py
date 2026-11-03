@@ -1,6 +1,7 @@
+import openpyxl
 import pytest
 from decimal import Decimal
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QWidget, QMessageBox
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from tests.helpers import d2t, dt2t, create_assets, create_quotes, create_dividends
@@ -73,13 +74,31 @@ def test_every_listed_jurisdiction_builds_a_report(prepare_db_taxes):
     JalIcon()   # loads the icon cache the country flags come from
     parent = QWidget()
     widget = TaxWidget(parent)
-    assert widget.ui.Country.count() == len(TaxReport.countries)
-    boxes = {TaxReport.PORTUGAL: widget.ui.PtBox, TaxReport.RUSSIA: widget.ui.RuBox}
+    assert widget.ui.Country.currentData() == 'ru'
+    assert [widget.ui.Country.itemData(i) for i in range(widget.ui.Country.count())] == list(TaxReport.jurisdictions)
+    boxes = {'pt': widget.ui.PtBox, 'ru': widget.ui.RuBox}
     for index in range(widget.ui.Country.count()):
         widget.ui.Country.setCurrentIndex(index)
-        assert [x for x, box in boxes.items() if not box.isHidden()] == [index]
-        report = TaxReport.create_report(index)
-        assert type(report).__name__ == TaxReport.countries[index]['class']
+        code = widget.country
+        assert [x for x, box in boxes.items() if not box.isHidden()] == [code]
+        report = TaxReport.create_report(code)
+        assert type(report).__name__ == TaxReport.jurisdictions[code]['class']
+        assert report.jurisdiction == code
         sections = report.prepare_tax_report(2025, 1)
         assert list(sections)[0] == report.summary_section[0]
         assert list(sections)[-1] == report.uncovered_section[0]
+
+
+# The dialog saves the report of the jurisdiction it shows, whatever its position in the list
+@pytest.mark.parametrize("code, first_sheet", [('pt', "Summary"), ('ru', "Сводка")])
+def test_dialog_saves_the_selected_jurisdiction(prepare_db_taxes, tmp_path, monkeypatch, code, first_sheet):
+    _us_dividend(2025)
+    monkeypatch.setattr(QMessageBox, "warning", lambda *args, **kwargs: QMessageBox.Ok)
+    JalIcon()
+    parent = QWidget()
+    widget = TaxWidget(parent)
+    widget.ui.Year.setValue(2025)
+    widget.ui.Country.setCurrentIndex(widget.ui.Country.findData(code))
+    widget.ui.XlsFileName.setText(str(tmp_path / "report.xlsx"))
+    widget.SaveReport()
+    assert openpyxl.load_workbook(tmp_path / "report.xlsx").sheetnames[0] == first_sheet
