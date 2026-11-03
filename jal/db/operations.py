@@ -986,7 +986,9 @@ class AssetPaymentBase(FeeCarrier, LedgerTransaction):
 class AssetPayment(AssetPaymentBase):
     Dividend = 1
     BondInterest = 2
-    AssetFee = 3   # A charge or a tax that belongs to the asset itself - an ADR fee, a transaction tax
+    AssetFee = 3   # A charge or a tax that belongs to the asset itself and has no kind of its own below
+    DepositaryFee = 4       # A depositary's charge for holding a receipt - an ADR fee
+    PositionFinancing = 5   # The cost of keeping a position open - a CFD borrow fee
     _db_table = "asset_payments"
     _otype = LedgerTransaction.AssetPayment
     _db_fields = {
@@ -1010,7 +1012,9 @@ class AssetPayment(AssetPaymentBase):
             AssetPayment.NA: LedgerTransaction.tr("UNDEFINED"),
             AssetPayment.Dividend: LedgerTransaction.tr("Dividend"),
             AssetPayment.BondInterest: LedgerTransaction.tr("Bond Interest"),
-            AssetPayment.AssetFee: LedgerTransaction.tr("Asset fee/tax")
+            AssetPayment.AssetFee: LedgerTransaction.tr("Asset fee/tax"),
+            AssetPayment.DepositaryFee: LedgerTransaction.tr("Depositary fee"),
+            AssetPayment.PositionFinancing: LedgerTransaction.tr("Position financing")
         }
 
     @classmethod
@@ -1018,7 +1022,9 @@ class AssetPayment(AssetPaymentBase):
         return {
             AssetPayment.Dividend: JalIcon.DIVIDEND,
             AssetPayment.BondInterest: JalIcon.BOND_INTEREST,
-            AssetPayment.AssetFee: JalIcon.FEE
+            AssetPayment.AssetFee: JalIcon.FEE,
+            AssetPayment.DepositaryFee: JalIcon.FEE,
+            AssetPayment.PositionFinancing: JalIcon.FEE
         }
 
     def _subject_text(self) -> str:
@@ -1041,7 +1047,9 @@ class AssetPayment(AssetPaymentBase):
         # Any other subtype is refused by __init__ already
         category = {AssetPayment.Dividend: PredefinedCategory.Dividends,
                     AssetPayment.BondInterest: PredefinedCategory.Interest,
-                    AssetPayment.AssetFee: PredefinedCategory.Fees}[self._subtype]
+                    AssetPayment.AssetFee: PredefinedCategory.Fees,
+                    AssetPayment.DepositaryFee: PredefinedCategory.Fees,
+                    AssetPayment.PositionFinancing: PredefinedCategory.Fees}[self._subtype]
         operation_value = (self._amount - self._tax)
         if operation_value > Decimal('0'):
             credit_returned = ledger.returnCredit(self, self._account.id(), operation_value)

@@ -348,6 +348,7 @@ CREATE TABLE trades_opened (
                                        -- an operation that changes the quantity of a position it carries over allocates
                                        -- the new quantity over the lots, so they always add up to the position exactly.
     c_price       TEXT    NOT NULL DEFAULT ('1'),  -- Coefficient that was used to adjust price of initial operation (price = c_price * original_price)
+    c_fx          TEXT    NOT NULL DEFAULT ('1'),  -- Rate of every transfer between currencies the lot went through; apart from c_price
     c_qty         TEXT    NOT NULL DEFAULT ('1'),   -- Relates 'remaining_qty' to the quantity of the operation that opened the
                                        -- lot (qty = c_qty * original_qty). REPORTING ONLY - no quantity is scaled by it.
     slice_id      INTEGER,            -- Stable identity of the held slice/lot: assigned when a slice is opened or carried
@@ -621,7 +622,8 @@ CREATE TABLE trades_closed (
     close_price     TEXT    NOT NULL,
     close_qty       TEXT    NOT NULL,   -- Part of close operation that was used in this trade
     c_price         TEXT    NOT NULL DEFAULT ('1'),  -- Historical adjustment coefficient of open price
-    c_qty           TEXT    NOT NULL DEFAULT ('1')   -- Historical adjustment coefficient of open quantity
+    c_qty           TEXT    NOT NULL DEFAULT ('1'),  -- Historical adjustment coefficient of open quantity
+    c_fx            TEXT    NOT NULL DEFAULT ('1')   -- Rate of every transfer between currencies the lot went through
 );
 
 
@@ -1073,7 +1075,7 @@ BEGIN
 END;
 ------------------------------------------------------------------------------------------------------------------------
 -- Initialize default values for settings
-INSERT INTO settings(name, value) VALUES('SchemaVersion', 84);
+INSERT INTO settings(name, value) VALUES('SchemaVersion', 85);
 INSERT INTO settings(name, value) VALUES('Language', 1);
 INSERT INTO settings(name, value) VALUES('RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
 INSERT INTO settings(name, value) VALUES('RuTaxSessionId', '');

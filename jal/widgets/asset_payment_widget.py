@@ -66,7 +66,7 @@ class AssetPaymentWidget(AbstractOperationDetails):
 
     @Slot()
     def typeChanged(self, dividend_type_id):
-        if dividend_type_id == AssetPayment.AssetFee:
+        if dividend_type_id in (AssetPayment.AssetFee, AssetPayment.DepositaryFee, AssetPayment.PositionFinancing):
             self.ui.amount_label.setText(self.tr("Fee / Tax"))
         else:
             self.ui.amount_label.setText(self.tr("Dividend"))
