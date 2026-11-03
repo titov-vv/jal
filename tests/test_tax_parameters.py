@@ -23,33 +23,49 @@ def _us_dividend(year: int):
     Ledger().rebuild(from_timestamp=0)
 
 
+def _warnings(report: dict, section: str) -> list:
+    return [x['warning'] for x in report[section] if x['report_template'] == "warning"]
+
+
 def _dividend_row(report: dict, section: str) -> dict:
     rows = [x for x in report[section] if x['report_template'] == "dividend"]
     assert len(rows) == 1
     return rows[0]
 
 
-# RU: 13% of the gross, less the withheld tax where a treaty with the source country exists; a year the file
-# doesn't have finds no treaty at all and asks for the full 13%
-@pytest.mark.parametrize("year, treaty, tax2pay", [
-    (2025, "Да", Decimal('300.00')),     # (13 - 10) USD * 100
-    (2026, "Да", Decimal('300.00')),
-    (2027, "Нет", Decimal('1300.00')),   # no parameters for 2027
+# RU: 13% of the gross, less the withheld tax where a treaty with the source country exists. A year past the
+# file's review keeps its latest values and says so; a year before its first one has no treaty and no estimate.
+@pytest.mark.parametrize("year, treaty, tax2pay, warning", [
+    (2019, "Нет", None, "налоговых параметров для 2019 года нет"),
+    (2025, "Да", Decimal('300.00'), None),     # (13 - 10) USD * 100
+    (2026, "Да", Decimal('300.00'), None),
+    (2027, "Да", Decimal('300.00'), "проверены по 2026 год"),
 ])
-def test_ru_dividend_treaty_by_parameter_year(prepare_db_taxes, year, treaty, tax2pay):
+def test_ru_dividend_treaty_by_parameter_year(prepare_db_taxes, year, treaty, tax2pay, warning):
     _us_dividend(year)
-    row = _dividend_row(TaxesRussia().prepare_tax_report(year, 1), "Дивиденды")
+    report = TaxesRussia().prepare_tax_report(year, 1)
+    row = _dividend_row(report, "Дивиденды")
     assert row['tax_treaty'] == treaty
     assert row['tax2pay'] == tax2pay
+    totals = [x for x in report["Дивиденды"] if x['report_template'] == "totals"][0]
+    assert totals['tax2pay'] == tax2pay
+    found = [x for x in _warnings(report, "Сводка") if "параметр" in x]
+    assert (len(found) == 1 and warning in found[0]) if warning else found == []
 
 
-# PT: a US dividend is under a treaty; a year the file doesn't have marks it as without one
-@pytest.mark.parametrize("year, treaty", [(2024, "Y"), (2025, "Y"), (2026, "Y"), (2027, "N")])
-def test_pt_dividend_treaty_by_parameter_year(prepare_db_taxes, year, treaty):
+# PT: a US dividend is under a treaty; the file starts with 2022 and was reviewed through 2026
+@pytest.mark.parametrize("year, treaty, warning", [
+    (2021, "N", "no tax parameters for 2021"), (2024, "Y", None), (2025, "Y", None), (2026, "Y", None),
+    (2027, "Y", "last reviewed for 2026"),
+])
+def test_pt_dividend_treaty_by_parameter_year(prepare_db_taxes, year, treaty, warning):
     _us_dividend(year)
-    row = _dividend_row(TaxesPortugal().prepare_tax_report(year, 1), "Dividends")
+    report = TaxesPortugal().prepare_tax_report(year, 1)
+    row = _dividend_row(report, "Dividends")
     assert row['tax_treaty'] == treaty
     assert row['tax_eur'] == Decimal('9.00')
+    found = [x for x in _warnings(report, "Summary") if "parameters" in x]
+    assert (len(found) == 1 and warning in found[0]) if warning else found == []
 
 
 # Every jurisdiction the tax dialog lists builds a report and shows exactly one option box of its own

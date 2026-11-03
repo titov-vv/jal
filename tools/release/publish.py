@@ -213,7 +213,7 @@ def smoke_test(wheel: str, workdir: str, version: str) -> None:
              "site = os.path.dirname(jal.__file__);"
              "print(json.dumps({'version': jal.__version__, 'path': site,"
              " 'missing': [p for p in ['jal_init.sql', 'pypi_description.md', 'languages/ru.qm', 'img/flag_ru.png',"
-             " 'data_export/tax_reports/russia.json', 'data_export/templates/ru_ndfl3/2025.json']"
+             " 'data_export/tax_reports/ru.json', 'data_export/templates/ru_ndfl3/2025.json']"
              " if not os.path.exists(os.path.join(site, p))]}))")
     installed = json.loads(run([python, '-c', probe], cwd=venv))
     if installed['version'] != version:

@@ -44,7 +44,6 @@ class Setup:
     STATEMENT_DUMP = "statement_error_log_"
     TEMPLATE_PATH = "templates"
     TAX_REPORT_PATH = "tax_reports"
-    TAX_TREATY_PARAM = "tax_treaty"
     UPDATE_PREFIX = 'jal_delta_'
     DEFAULT_ACCOUNT_PRECISION = 2
     # Most decimals shown for an amount whose precision isn't fixed by the account - a crypto quantity needs more

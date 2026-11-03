@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime, timezone
 from decimal import Decimal
 
 import pandas as pd
@@ -13,6 +14,7 @@ from jal.ui.reports.ui_tax_estimation import Ui_TaxEstimationDialog
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.helpers import ts2d, set_grids_metrics, restore_columns
 from jal.widgets.delegates import FloatDelegate
+from jal.data_export.tax_parameters import TaxParameters
 
 
 class TaxEstimatorModel(QAbstractTableModel):
@@ -73,10 +75,6 @@ class TaxEstimatorModel(QAbstractTableModel):
 
 
 class TaxEstimator(MdiWidget):
-    TAX_RATE = {
-        'pt': Decimal('0.28'),
-        'ru': Decimal('0.13')
-    }
     TAX_CURRENCY = {
         'pt': 'EUR',
         'ru': 'RUB'
@@ -118,9 +116,8 @@ class TaxEstimator(MdiWidget):
         self.ready = True
 
     def prepare_tax(self):
-        try:
-            tax_rate = self.TAX_RATE[self.country.code()]
-        except KeyError:
+        tax_rate = TaxParameters(self.country.code(), datetime.fromtimestamp(today_finish(), tz=timezone.utc).year).rate(TaxParameters.CAPITAL_GAIN)
+        if tax_rate is None:
             tax_rate = Decimal('0')
             logging.warning(self.tr("Tax rate not found for: ") + self.country.code())
         tax_currency = JalAsset.find({'symbol': self.tax_currency_symbol, 'type_id': PredefinedAsset.Money}).id()

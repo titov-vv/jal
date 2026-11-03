@@ -3,12 +3,13 @@ from jal.constants import PredefinedAsset, PredefinedCategory, SymbolId
 from jal.db.operations import LedgerTransaction, AssetPayment, AssetIncome, CorporateAction
 from jal.db.asset import JalAsset
 from jal.data_export.taxes import TaxReport
+from jal.data_export.tax_parameters import TaxParameters
 
 
 # -----------------------------------------------------------------------------------------------------------------------
 class TaxesRussia(TaxReport):
+    jurisdiction = 'ru'
     currency_name = 'RUB'
-    country_name = "russia"
     report_timezone = 'Europe/Moscow'
     currency_suffix = '_rub'
     summary_section = ("Сводка", "tax_rus_summary.json")
@@ -25,6 +26,10 @@ class TaxesRussia(TaxReport):
         'profit': "Финансовый результат",
         'amount': "Сумма",
         'value': "Стоимость на дату получения",
+        'parameters_unreviewed': "Внимание: налоговые параметры (соглашения, базовые ставки) проверены по {reviewed} год; "
+                                 "для {year} года взяты последние известные значения",
+        'parameters_missing': "Внимание: налоговых параметров для {year} года нет; соглашения об избежании двойного "
+                              "налогообложения не учтены, базовая оценка налога не рассчитана",
         'rates_missing': "Внимание: курса ЦБ РФ {pair} нет в базе после {rate}; операции по {latest} пересчитаны по "
                          "курсу на {rate} - загрузите курсы и сформируйте отчёт заново",
         'fifo': "Сделки сопоставлены по FIFO внутри этого счёта; сделки других счетов здесь не учтены",
@@ -116,8 +121,8 @@ class TaxesRussia(TaxReport):
             rate = self.rate(self.account_currency.id(), dividend.timestamp())
             amount_rub = dividend.amount(self.account_currency.id()) * rate
             tax_rub = dividend.tax() * rate
-            tax2pay = Decimal('0.13') * amount_rub
-            if self.has_tax_treaty_with(country.code()):
+            tax2pay = self.base_estimate(TaxParameters.DIVIDEND, amount_rub)
+            if tax2pay is not None and self.has_tax_treaty_with(country.code()):
                 if tax2pay > tax_rub:
                     tax2pay = tax2pay - tax_rub
                 else:
@@ -136,7 +141,7 @@ class TaxesRussia(TaxReport):
                 'tax_treaty': "Да" if self.has_tax_treaty_with(country.code()) else "Нет",
                 'amount_rub': round(amount_rub, 2),
                 'tax_rub': round(tax_rub, 2),
-                'tax2pay': round(tax2pay, 2),
+                'tax2pay': None if tax2pay is None else round(tax2pay, 2),
                 'note': note
             }
             dividends_report.append(line)
@@ -547,6 +552,10 @@ class TaxesRussia(TaxReport):
         self.insert_totals(fees_report, ["amount", "amount_rub"])
         return fees_report
 
+    def _interest_tax(self, amount_rub: Decimal):
+        tax = self.base_estimate(TaxParameters.INTEREST, amount_rub)
+        return None if tax is None else round(tax, 2)
+
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_broker_interest(self):
         interests_report = []
@@ -563,7 +572,7 @@ class TaxesRussia(TaxReport):
                     'rate': rate,
                     'amount': amount,
                     'amount_rub': round(amount * rate, 2),
-                    'tax_rub': round(Decimal('0.13') * amount * rate, 2),
+                    'tax_rub': self._interest_tax(amount * rate),
                     'description': interest['note'],
                     'note': ''
                 }
@@ -581,7 +590,7 @@ class TaxesRussia(TaxReport):
                 'rate': rate,
                 'amount': payment['amount'],
                 'amount_rub': round(payment['amount'] * rate, 2),
-                'tax_rub': round(Decimal('0.13') * payment['amount'] * rate, 2),
+                'tax_rub': self._interest_tax(payment['amount'] * rate),
                 'description': payment['note'],
                 'note': ''
             }

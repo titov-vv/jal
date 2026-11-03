@@ -6,8 +6,8 @@ from jal.data_export.taxes import TaxReport
 
 
 class TaxesPortugal(TaxReport):
+    jurisdiction = 'pt'
     currency_name = 'EUR'
-    country_name = 'portugal'
     report_timezone = 'Europe/Lisbon'
     currency_suffix = '_eur'
     summary_section = ("Summary", "tax_prt_summary.json")
@@ -25,6 +25,9 @@ class TaxesPortugal(TaxReport):
         'profit': "Gain/loss",
         'amount': "Amount",
         'value': "Value at receipt (information)",
+        'parameters_unreviewed': "Warning: the tax parameters (treaties, base rates) were last reviewed for {reviewed}; "
+                                 "{year} uses the latest values known",
+        'parameters_missing': "Warning: there are no tax parameters for {year}; no tax treaty is assumed",
         'rates_missing': "Warning: the database has no ECB rate {pair} after {rate}; operations up to {latest} use the "
                          "rate of {rate} - download the rates and make the report again",
         'fifo': "Deals are matched FIFO within this account; deals of other accounts are not netted here",

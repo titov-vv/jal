@@ -1,0 +1,11 @@
+{
+  "reviewed_through": 2026,
+  "tax_treaty": {
+    "2020": ["al", "am", "ar", "at", "au", "az", "be", "bg", "bw", "by", "ca", "ch", "cl", "cn", "cu", "cy", "cz", "de", "dk", "dz", "eg", "es", "fi", "fr", "gb", "gr", "hr", "hu", "id", "ie", "il", "in", "ir", "is", "it", "jp", "kg", "kp", "kr", "kw", "kz", "lb", "lk", "lt", "lu", "lv", "ma", "md", "me", "mk", "ml", "mn", "mt", "mx", "my", "na", "nl", "no", "nz", "ph", "pl", "pt", "qa", "rs", "sa", "se", "sg", "si", "sk", "sy", "th", "tj", "tm", "tr", "ua", "us", "uz", "ve", "vn", "za"],
+    "2022": ["al", "am", "ar", "at", "au", "az", "be", "bg", "bw", "by", "ca", "ch", "cl", "cn", "cu", "cy", "cz", "de", "dk", "dz", "eg", "es", "fi", "fr", "gb", "gr", "hr", "hu", "id", "ie", "il", "in", "ir", "is", "it", "jp", "kg", "kp", "kr", "kw", "kz", "lb", "lk", "lt", "lu", "ma", "md", "me", "mk", "ml", "mn", "mt", "mx", "my", "na", "no", "nz", "ph", "pl", "pt", "qa", "rs", "sa", "se", "sg", "si", "sk", "sy", "th", "tj", "tm", "tr", "ua", "us", "uz", "ve", "vn", "za"],
+    "2023": ["al", "am", "ar", "at", "au", "az", "be", "bg", "bw", "by", "ca", "ch", "cl", "cn", "cu", "cy", "cz", "de", "dk", "dz", "eg", "es", "fi", "fr", "gb", "gr", "hr", "hu", "id", "ie", "il", "in", "ir", "is", "it", "jp", "kg", "kp", "kr", "kw", "kz", "lb", "lk", "lt", "lu", "ma", "md", "me", "mk", "ml", "mn", "mt", "mx", "my", "na", "no", "nz", "ph", "pl", "pt", "qa", "rs", "sa", "se", "sg", "si", "sk", "sy", "th", "tj", "tm", "tr", "us", "uz", "ve", "vn", "za"]
+  },
+  "rate_dividend": {"2020": "0.13"},
+  "rate_interest": {"2020": "0.13"},
+  "rate_capital_gain": {"2020": "0.13"}
+}

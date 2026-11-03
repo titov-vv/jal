@@ -1,12 +1,10 @@
 import importlib   # it is used for delayed import in order to avoid circular reference in child classes
-import json
 import logging
 from decimal import Decimal
 from datetime import datetime, timezone
 from PySide6.QtWidgets import QApplication
 
-from jal.constants import Setup, PredefinedAsset
-from jal.db.settings import JalSettings
+from jal.constants import PredefinedAsset
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.category import JalCategory
@@ -14,6 +12,7 @@ from jal.db.db import JalDB
 from jal.db.helpers import is_day_marker
 from jal.db.operations import LedgerTransaction, TaxStatus, AssetPayment, AssetIncome, Transfer
 from jal.db.clock import ZONE_SPAN, wall_clock_reading
+from jal.data_export.tax_parameters import TaxParameters, TAX_TREATY
 
 REPORT_METHOD = 0
 REPORT_TEMPLATE = 1
@@ -34,8 +33,8 @@ class TaxReport:
         PORTUGAL: {"name": "Portugal", "module": "jal.data_export.tax_reports.portugal", "class": "TaxesPortugal", "flag": "pt"},
         RUSSIA: {"name": "Россия", "module": "jal.data_export.tax_reports.russia", "class": "TaxesRussia", "flag": "ru"}
     }
+    jurisdiction = ''   # ISO 3166-1 alpha-2 code of the jurisdiction, names its parameter file
     currency_name = ''  # The name of the currency for tax values calculation
-    country_name = ''   # The name of the country for tax preparation
     currency_suffix = ''   # Suffix of the report-currency fields of a row ('_rub', '_eur')
     # The two sections every report has, in its jurisdiction's language: (name, template)
     summary_section = ('', '')
@@ -59,7 +58,7 @@ class TaxReport:
         self.year_end = 0
         self.use_settlement = True
         self.one_currency_rate = False
-        self._parameters = {}
+        self.parameters = None
         self._section = ''
         self.section_notes = {}   # {section: [header lines]} a section states under its title
         self._printed = set()     # (otype, oid) of every operation a section printed
@@ -116,21 +115,6 @@ class TaxReport:
         else:
             return self.reports[report_name][REPORT_TEMPLATE]
 
-    # Loads report parameters for given year into self._parameters
-    def load_parameters(self, year: int):
-        year_key = str(year)
-        file_path = JalSettings.path(JalSettings.PATH_TAX_REPORT_TEMPLATE) + self.country_name + ".json"
-        try:
-            with open(file_path, 'r', encoding='utf-8') as json_file:
-                parameters = json.load(json_file)
-        except Exception as e:
-            logging.error(self.tr("Can't load tax report parameters from file ") + f"'{file_path}' ({type(e).__name__} {e})")
-            return
-        if year_key not in parameters:
-            logging.warning(self.tr("There are no parameters found for tax report year: ") + year_key)
-            return
-        self._parameters = parameters[year_key]
-
     # ------------------------------------------------------------------------------------------------------------------
     # Create a totals row from provided list of dictionaries
     # it calculates sum for each field in fields and adds it to return dictionary
@@ -139,7 +123,8 @@ class TaxReport:
             return
         totals = {"report_template": "totals"}
         for field in fields:
-            totals[field] = sum([x[field] for x in list_of_values if field in x])
+            values = [x[field] for x in list_of_values if x.get(field) is not None]
+            totals[field] = sum(values) if values else None   # a figure no row has, as a base rate that's missing
         list_of_values.append(totals)
 
     def prepare_tax_report(self, year: int, account_id: int, **kwargs) -> dict:
@@ -156,7 +141,9 @@ class TaxReport:
             self.one_currency_rate = kwargs['use_one_currency_rate']
         if 'generate_modelo3' in kwargs:
             self.generate_modelo3 = kwargs['generate_modelo3']
-        self.load_parameters(year)
+        self.parameters = TaxParameters(self.jurisdiction, year)
+        if self.parameters.value(TAX_TREATY) is None:
+            logging.warning(self.tr("There are no parameters found for tax report year: ") + str(year))
         self.section_notes, self._printed, self._missing = {}, set(), []
         self._rates_end, self.rates_warnings = None, {}
         sections = {}
@@ -314,20 +301,26 @@ class TaxReport:
             rows.append({'report_template': "count", 'label': label, 'count': count, 'link': link})
         rows.append({'report_template': "count", 'label': self.texts['pending_total'], 'count': pending, 'link': ''})
         day = lambda x: datetime.fromtimestamp(x, tz=timezone.utc).strftime('%d.%m.%Y')
+        if self.parameters.value(TAX_TREATY) is None:
+            rows.append({'report_template': "warning", 'warning': self.texts['parameters_missing'].format(
+                year=datetime.fromtimestamp(self.year_begin, tz=timezone.utc).year)})
+        elif self.parameters.unreviewed():
+            rows.append({'report_template': "warning", 'warning': self.texts['parameters_unreviewed'].format(
+                year=datetime.fromtimestamp(self.year_begin, tz=timezone.utc).year,
+                reviewed=self.parameters.reviewed_through())})
         for (pair, quoted), latest in sorted(self.rates_warnings.items()):
             rows.append({'report_template': "warning",
                          'warning': self.texts['rates_missing'].format(pair=pair, rate=day(quoted), latest=day(latest))})
         return rows
 
+    # The base rate of an income kind (TaxParameters.DIVIDEND, ...) times 'base', None if the year has no such rate
+    def base_estimate(self, kind: str, base: Decimal):
+        rate = self.parameters.rate(kind)
+        return None if rate is None else rate * base
+
     # Check if 2-letter country code present in tax treaty parameter of current report
     def has_tax_treaty_with(self, country_code: str) -> bool:
-        if Setup.TAX_TREATY_PARAM not in self._parameters:
-            logging.warning(self.tr("There are no information about tax treaty in tax report parameters"))
-            return False
-        if country_code in self._parameters[Setup.TAX_TREATY_PARAM]:
-            return True
-        else:
-            return False
+        return self.parameters.treaty_with(country_code)
 
     # Returns a list of dividends that should be included into the report for given year
     def dividends_list(self) -> list:
