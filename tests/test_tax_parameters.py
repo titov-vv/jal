@@ -29,11 +29,12 @@ def _dividend_row(report: dict, section: str) -> dict:
     return rows[0]
 
 
-# RU: 13% of the gross, less the withheld tax where a treaty with the source country exists. russia.json ends with
-# 2025, so a 2026 report finds no treaty at all and asks for the full 13%.
+# RU: 13% of the gross, less the withheld tax where a treaty with the source country exists; a year the file
+# doesn't have finds no treaty at all and asks for the full 13%
 @pytest.mark.parametrize("year, treaty, tax2pay", [
     (2025, "Да", Decimal('300.00')),     # (13 - 10) USD * 100
-    (2026, "Нет", Decimal('1300.00')),   # no parameters for 2026
+    (2026, "Да", Decimal('300.00')),
+    (2027, "Нет", Decimal('1300.00')),   # no parameters for 2027
 ])
 def test_ru_dividend_treaty_by_parameter_year(prepare_db_taxes, year, treaty, tax2pay):
     _us_dividend(year)
@@ -42,8 +43,8 @@ def test_ru_dividend_treaty_by_parameter_year(prepare_db_taxes, year, treaty, ta
     assert row['tax2pay'] == tax2pay
 
 
-# PT: portugal.json ends with 2024, so 2025 and 2026 reports mark a US dividend as without a treaty
-@pytest.mark.parametrize("year, treaty", [(2024, "Y"), (2025, "N"), (2026, "N")])
+# PT: a US dividend is under a treaty; a year the file doesn't have marks it as without one
+@pytest.mark.parametrize("year, treaty", [(2024, "Y"), (2025, "Y"), (2026, "Y"), (2027, "N")])
 def test_pt_dividend_treaty_by_parameter_year(prepare_db_taxes, year, treaty):
     _us_dividend(year)
     row = _dividend_row(TaxesPortugal().prepare_tax_report(year, 1), "Dividends")
