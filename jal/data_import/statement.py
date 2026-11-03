@@ -75,6 +75,8 @@ class JSF:
     PAYMENT_STOCK_DIVIDEND = "stock_dividend"
     PAYMENT_STOCK_VESTING = 'stock_vesting'
     PAYMENT_FEE = 'fee'
+    PAYMENT_DEPOSITARY_FEE = 'depositary_fee'           # a depositary's charge for holding a receipt (an ADR fee)
+    PAYMENT_POSITION_FINANCING = 'position_financing'   # the cost of keeping a position open (a CFD borrow fee)
     PAYMENT_GAS_FEE = 'gas_fee'                 # gas burned by a transaction that moved nothing
     PAYMENT_STAKING_REWARD = 'staking_reward'   # coins received for staking
     PAYMENT_LENDING_INTEREST = 'lending_interest'   # interest a lending position paid in its receipt token
@@ -132,6 +134,9 @@ class Statement(QObject):   # derived from QObject to have proper string transla
     # is_day_marker). They are not times of day and they belong to this source alone, so only the module that knows
     # the source can name them - and _moment() leaves what they stamp exactly as it was written.
     source_day_markers = ()
+    # The asset fee types of a statement and the AssetPayment subtype each of them is stored as
+    ASSET_FEE_TYPES = {JSF.PAYMENT_FEE: AssetPayment.AssetFee, JSF.PAYMENT_DEPOSITARY_FEE: AssetPayment.DepositaryFee,
+                       JSF.PAYMENT_POSITION_FINANCING: AssetPayment.PositionFinancing}
     # True when a transfer of this statement is uniquely identified by the transaction it happened in, i.e. its
     # 'number' is a transaction hash. Only then may a transfer that is already in the database be recognized as the
     # same movement and skipped instead of stored again (see _transfer_already_imported).
@@ -1281,8 +1286,8 @@ class Statement(QObject):   # derived from QObject to have proper string transla
             elif operation['type'] == JSF.PAYMENT_STOCK_VESTING:
                 operation['type'] = AssetIncome.StockVesting
                 LedgerTransaction.create_new(LedgerTransaction.AssetIncome, operation)
-            elif operation['type'] == JSF.PAYMENT_FEE:
-                operation['type'] = AssetPayment.AssetFee
+            elif operation['type'] in self.ASSET_FEE_TYPES:
+                operation['type'] = self.ASSET_FEE_TYPES[operation['type']]
                 LedgerTransaction.create_new(LedgerTransaction.AssetPayment, operation)
             elif operation['type'] in (JSF.PAYMENT_GAS_FEE, JSF.PAYMENT_TOKEN_RENT):
                 LedgerTransaction.create_new(LedgerTransaction.ChainAction, self._as_chain_action(operation))

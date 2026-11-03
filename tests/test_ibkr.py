@@ -254,7 +254,7 @@ def test_ibkr_cfd(tmp_path, project_root, data_path, prepare_db_taxes):
 
 
 
-# A CFD charge that names an asset is stored as a fee of that asset whatever it is called, and one that names none
+# A CFD charge that names an asset is a fee of that asset - a borrow fee is position financing - and one that names none
 # is a spending when it is a known kind of interest
 def test_ibkr_cfd_charge_on_an_asset_is_an_asset_fee(caplog):
     ibkr = StatementIBKR()
@@ -269,9 +269,9 @@ def test_ibkr_cfd_charge_on_an_asset_is_an_asset_fee(caplog):
     ]
     ibkr.load_cfd_charges(charges)
 
-    fees = [x for x in ibkr._data[JSF.ASSET_PAYMENTS] if x.get('type') == JSF.PAYMENT_FEE]
-    assert [(x['id'], x['symbol'], x['amount'], x['number']) for x in fees] == [
-        (5, 3, Decimal('-0.02'), '11'), (6, 3, Decimal('-0.50'), '12')]
+    fees = [(x['type'], x['id'], x['symbol'], x['amount'], x['number']) for x in ibkr._data[JSF.ASSET_PAYMENTS] if 'type' in x]
+    assert fees == [(JSF.PAYMENT_POSITION_FINANCING, 5, 3, Decimal('-0.02'), '11'),   # a borrow fee
+                    (JSF.PAYMENT_FEE, 6, 3, Decimal('-0.50'), '12')]                  # a charge of unknown kind
     assert [(x['id'], x['lines'][0]['amount']) for x in ibkr._data[JSF.INCOME_SPENDING]] == [(1, Decimal('-0.06'))]
     unknown = [x.message for x in caplog.records if 'Unknown CFD charge description' in x.message]
     assert [x.split(': ')[1] for x in unknown] == ['SOMETHING NEW FOR MU']
@@ -818,14 +818,14 @@ def test_ibkr_a_payment_stored_without_an_action_id_is_not_imported_twice(tmp_pa
 
 # An ADR fee names the asset it was charged on and is stored as a fee of that asset; a fee that names none stays
 # an ordinary spending
-def test_ibkr_fee_charged_on_an_asset_is_imported_as_asset_fee(tmp_path, project_root, data_path, prepare_db_taxes):
+def test_ibkr_adr_fee_is_imported_as_depositary_fee(tmp_path, project_root, data_path, prepare_db_taxes):
     statement = StatementIBKR()
     statement.load(data_path + 'ibkr_adr_fee.xml')
     statement.match_db_ids()
     statement.import_into_db()
 
     imported = [x for x in JalAccount.get_all_accounts() if x.number() == 'U7654321'][0]
-    fees = AssetPayment.get_list(imported.id(), subtype=AssetPayment.AssetFee)
+    fees = AssetPayment.get_list(imported.id(), subtype=AssetPayment.DepositaryFee)
     assert len(fees) == 1
     assert fees[0].amount() == Decimal('-4')
     assert fees[0].timestamp() == d2t(251111) + 20 * 3600 + 20 * 60

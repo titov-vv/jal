@@ -986,7 +986,7 @@ class StatementIBKR(StatementXML):
         asset_payments_base = self._next_id(JSF.ASSET_PAYMENTS)
         for i, fee in enumerate(asset_fees):
             fee['id'] = asset_payments_base + i
-            fee['type'] = JSF.PAYMENT_FEE
+            fee['type'] = JSF.PAYMENT_DEPOSITARY_FEE if 'ADR Fee' in fee['description'] else JSF.PAYMENT_FEE
             fee['number'] = fee.pop('action_id') or fee['number']   # a commission adjustment has a trade id only
             self.drop_extra_fields(fee, ["currency", "reported", "tid"])
             self._data[JSF.ASSET_PAYMENTS].append(fee)
@@ -1148,10 +1148,11 @@ class StatementIBKR(StatementXML):
         cnt = 0
         for charge in charges:
             if charge['symbol'] != self.NoAsset:   # A charge that names an asset is a fee of that asset
-                if not charge['description'].startswith('CFD BORROW FEE FOR'):
+                borrow_fee = charge['description'].startswith('CFD BORROW FEE FOR')
+                if not borrow_fee:
                     logging.warning(self.tr("Unknown CFD charge description: ") + charge['description'])
                 charge['id'] = self._next_id(JSF.ASSET_PAYMENTS)
-                charge['type'] = JSF.PAYMENT_FEE
+                charge['type'] = JSF.PAYMENT_POSITION_FINANCING if borrow_fee else JSF.PAYMENT_FEE
                 self._data[JSF.ASSET_PAYMENTS].append(charge)
                 cnt += 1
                 continue

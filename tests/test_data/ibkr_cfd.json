@@ -136,7 +136,7 @@
   },
   {
    "id": 2,
-   "type": "fee",
+   "type": "position_financing",
    "account": 1,
    "timestamp": 1657065600,
    "number": "1018307482",

@@ -8,7 +8,7 @@
   "Комиссии":[
     {
       "report_template": "fee",
-      "fee_type": "Прочая комиссия или налог по активу",
+      "fee_type": "Плата за финансирование позиции",
       "payment_date": 1657065600,
       "description": "MUn: CFD BORROW FEE FOR MU for 06-JUL-2022",
       "rate": 58.5118,
