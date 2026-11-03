@@ -1,4 +1,5 @@
 import json
+import pytest
 from decimal import Decimal
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
@@ -9,6 +10,7 @@ from jal.db.ledger import Ledger
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
 from jal.db.operations import LedgerTransaction, AssetIncome, CorporateAction
+from jal.data_export.taxes import TaxReportStop
 from jal.data_export.tax_reports.russia import TaxesRussia
 from jal.data_export.tax_reports.portugal import TaxesPortugal
 
@@ -56,7 +58,7 @@ def test_two_hop_lot_in_jal_view(prepare_db_taxes):
     assert round(lot.open_price(adjusted=True) * lot.open_qty(), 6) == Decimal('18.400000')   # 20 of 92 EUR
 
 
-# The reports of that lot: RU crypto still reads the RUB price as EUR; PT takes the RUB cost at the disposal's rate
+# The reports of that lot: RU crypto still reads the RUB price as EUR; PT takes the RUB cost at the ECB's rate
 def test_two_hop_lot_in_tax_reports(prepare_db_taxes):
     create_two_hop_lot()
 
@@ -67,15 +69,20 @@ def test_two_hop_lot_in_tax_reports(prepare_db_taxes):
             'o_amount_rub': Decimal('615222.40'), 'o_fee': Decimal('8'), 'o_fee_rub': Decimal('736.00'),
             'c_amount_rub': Decimal('6992.00'), 'spending_rub': Decimal('615995.20'),
             'profit_rub': Decimal('-609003.20')}
+    with pytest.raises(TaxReportStop) as stop:   # PT reads the ECB's own RUB/EUR rate only, never a cross-rate
+        TaxesPortugal().prepare_tax_report(2025, 4)
+    assert stop.value.missing == [("RUB/EUR", d2t(250530))]
+
+    create_quotes(RUB, EUR, [(d2t(220301), '0.0085323504')])   # the ECB's last RUB rate, valid since 1 Mar 2022
     pt = TaxesPortugal().prepare_tax_report(2025, 4)
     assert [k for k, v in pt.items() if v] == ["Summary", "Crypto"]
     deal, _totals = pt["Crypto"]
-    assert round(deal['o_fee_eur'], 6) == Decimal('0.086957')          # 80% of 10 RUB, at 1/92
+    assert round(deal['o_fee_eur'], 6) == Decimal('0.068259')          # 80% of 10 RUB at the ECB rate
     assert {k: deal[k] for k in ('o_number', 'o_rate', 'o_amount', 'o_amount_eur', 'c_amount_eur',
                                  'profit_eur', 'note')} == \
-           {'o_number': "buy-USDT", 'o_rate': Decimal('1') / Decimal('92'), 'o_amount': Decimal('73.60'),
-            'o_amount_eur': Decimal('72.69'), 'c_amount_eur': Decimal('76.00'),
-            'profit_eur': Decimal('2.82'), 'note': "Cost paid in RUB: the EUR figures convert it from that currency"}
+           {'o_number': "buy-USDT", 'o_rate': Decimal('0.0085323504'), 'o_amount': Decimal('73.60'),
+            'o_amount_eur': Decimal('57.06'), 'c_amount_eur': Decimal('76.00'),
+            'profit_eur': Decimal('18.47'), 'note': "Cost paid in RUB: the EUR figures convert it from that currency"}
 
 
 # ----------------------------------------------------------------------------------------------------------------------

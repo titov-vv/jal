@@ -111,6 +111,7 @@ class TaxesPortugal(TaxReport):
                     note = "Stock dividend"
                 if dividend.subtype() == AssetIncome.StockVesting:
                     note = "Stock vesting"
+            rate = self.rate(self.account_currency.id(), dividend.timestamp())
             line = {
                 'report_template': "dividend",
                 'payment_date': self._moment(dividend.timestamp(), dividend.timestamp_is_day()),
@@ -119,20 +120,17 @@ class TaxesPortugal(TaxReport):
                 'isin': dividend.symbol().identifier(SymbolId.ISIN),
                 'amount': dividend.amount(self.account_currency.id()),
                 'tax': dividend.tax(),
-                'rate': self.account_currency.quote(dividend.timestamp(), self._currency_id)[1],
+                'rate': rate,
                 'country': country.name(language='en'),
                 'tax_treaty': "Y" if self.has_tax_treaty_with(country.code()) else "N",
-                'amount_eur': round(dividend.amount(self._currency_id), 2),
-                'tax_eur': round(dividend.tax(self._currency_id), 2),
+                'amount_eur': round(dividend.amount(self.account_currency.id()) * rate, 2),
+                'tax_eur': round(dividend.tax() * rate, 2),
                 'note': note
             }
             dividends_report.append(line)
             self.mark_printed(dividend)
         self.insert_totals(dividends_report, ["amount", "amount_eur", "tax", "tax_eur"])
         return dividends_report
-
-    def _to_eur(self, currency_id: int, timestamp: int) -> Decimal:
-        return JalAsset(currency_id).quote(timestamp, self._currency_id)[1]
 
     # The headers every deals section states: the matching rule, the rate rule, the year and the cost
     def _deal_headers(self):
@@ -150,8 +148,8 @@ class TaxesPortugal(TaxReport):
         o_ts = disposal.timestamp() if self.one_currency_rate else open_op.timestamp()
         c_ts = disposal.timestamp() if self.one_currency_rate else close_op.timestamp()
         open_currency = open_op.account().currency()
-        o_rate = self._to_eur(open_currency, o_ts)
-        c_rate = self._to_eur(self.account_currency.id(), c_ts)
+        o_rate = self.rate(open_currency, o_ts)
+        c_rate = self.rate(self.account_currency.id(), c_ts)
         o_amount_eur = round(trade.native_open_amount() * o_rate, 2)
         o_fee_eur = trade.native_open_fee() * o_rate
         c_amount, c_fee = trade.close_amount(), trade.close_fee()
@@ -252,7 +250,7 @@ class TaxesPortugal(TaxReport):
             if not quoted:
                 price = Decimal('0')
             value = income.amount() * price
-            rate = self.account_currency.quote(income.timestamp(), self._currency_id)[1]
+            rate = self.rate(self.account_currency.id(), income.timestamp())
             incomes_report.append({
                 'report_template': "income",
                 'payment_date': self._moment(income.timestamp(), income.timestamp_is_day()),
@@ -280,7 +278,7 @@ class TaxesPortugal(TaxReport):
             payments = AssetPayment.get_list(self.account.id(), subtype=subtype)
             payments = [x for x in payments if self.in_year(self._moment(x.timestamp(), x.timestamp_is_day()))]
             for payment in sorted(payments, key=lambda x: x.timestamp()):
-                rate = self.account_currency.quote(payment.timestamp(), self._currency_id)[1]
+                rate = self.rate(self.account_currency.id(), payment.timestamp())
                 amount = -payment.amount()
                 fees_report.append({
                     'report_template': "fee",
@@ -295,7 +293,7 @@ class TaxesPortugal(TaxReport):
                 self.mark_printed(payment)
         operations = [x for x in self.category_operations(PredefinedCategory.Fees) if x.account_id() == self.account.id()]
         for operation in operations:
-            rate = self.account_currency.quote(operation.timestamp(), self._currency_id)[1]
+            rate = self.rate(self.account_currency.id(), operation.timestamp())
             fees = [x for x in operation.lines() if x['category_id'] == PredefinedCategory.Fees]
             for fee in fees:
                 amount = -Decimal(fee['amount'])
@@ -320,7 +318,7 @@ class TaxesPortugal(TaxReport):
         interest_operations = self.category_operations(PredefinedCategory.Interest)
         interest_operations = [x for x in interest_operations if x.account_id() == self.account.id()]
         for operation in interest_operations:
-            rate = self.account_currency.quote(operation.timestamp(), self._currency_id)[1]
+            rate = self.rate(self.account_currency.id(), operation.timestamp())
             interests = [x for x in operation.lines() if x['category_id'] == PredefinedCategory.Interest]
             for interest in interests:
                 amount = Decimal(interest['amount'])
@@ -340,7 +338,7 @@ class TaxesPortugal(TaxReport):
         payments = CorporateAction.get_payments(self.account)
         payments = [x for x in payments if self.year_begin <= self._moment(x['timestamp'], x['day_only']) < self.year_end]
         for payment in payments:
-            rate = self.account_currency.quote(payment['timestamp'], self._currency_id)[1]
+            rate = self.rate(self.account_currency.id(), payment['timestamp'])
             line = {
                 'report_template': "interest",
                 'payment_date': self._moment(payment['timestamp'], payment['day_only']),

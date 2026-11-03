@@ -305,7 +305,9 @@ class JalAsset(JalDB):
     # Returned timestamp might be less than given.
     # Returns (0, 0) if no quotation information present in db. Return value (timestamp, 0) is a valid quote
     # report_missing=False is for a caller to whom a missing quote is an answer, not a miss (dust)
-    def quote(self, timestamp: int, currency_id: int, report_missing: bool = True) -> tuple:
+    # 'direct_only' takes the pair as stored and never a cross-rate - what a tax report needs, whose rates must all
+    # come from one official source
+    def quote(self, timestamp: int, currency_id: int, report_missing: bool = True, direct_only: bool = False) -> tuple:
         if self._id == currency_id:
             return timestamp, Decimal('1')
         quote = self._read("SELECT timestamp, quote FROM quotes WHERE asset_id=:asset_id "
@@ -313,6 +315,10 @@ class JalAsset(JalDB):
                            "ORDER BY timestamp DESC LIMIT 1",
                            [(":asset_id", self._id), (":currency_id", currency_id),
                             (":timestamp", local_reading(timestamp))])
+        if quote is None and direct_only:
+            if report_missing:
+                self._report_missing_quote(timestamp, currency_id)
+            return 0, Decimal('0')
         if quote is None:
             if self._type == PredefinedAsset.Money and currency_id != self.get_base_currency(timestamp):  # find a cross-rate
                 rate1 = self.quote(timestamp, self.get_base_currency(timestamp))[1]

@@ -1,10 +1,12 @@
 import os
 import openpyxl
 import pytest
+from decimal import Decimal
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from tests.helpers import d2t, create_assets, create_quotes, create_trades, symbol_id_for
 from jal.constants import PredefinedAsset
+from jal.db.asset import JalAsset
 from jal.db.ledger import Ledger
 from jal.db.operations import LedgerTransaction, AssetIncome
 from jal.data_export.taxes import TaxReportStop
@@ -94,3 +96,14 @@ def test_rent_return_is_skipped_by_rule(prepare_db_taxes, report_class, section,
 
     report = report_class().prepare_tax_report(2025, 1)
     assert [(x['report_template'], x['reason']) for x in report[section]] == [("skipped", reason)]
+
+
+# A direct-only quote takes the stored pair and never builds a cross-rate through the residence currency
+def test_direct_only_quote_takes_no_cross_rate(prepare_db_taxes):
+    create_quotes(2, 1, [(d2t(250102), 100.0)])     # USD/RUB
+    create_quotes(3, 1, [(d2t(250102), 110.0)])     # EUR/RUB
+    usd = JalAsset(2)
+    assert usd.quote(d2t(250110), 3)[1] == Decimal('100') / Decimal('110')      # the cross-rate, as before
+    assert usd.quote(d2t(250110), 3, report_missing=False, direct_only=True) == (0, Decimal('0'))
+    create_quotes(2, 3, [(d2t(250102), 0.9)])
+    assert usd.quote(d2t(250110), 3, direct_only=True)[1] == Decimal('0.9')

@@ -1,6 +1,7 @@
 import importlib   # it is used for delayed import in order to avoid circular reference in child classes
 import json
 import logging
+from decimal import Decimal
 from datetime import datetime, timezone
 from PySide6.QtWidgets import QApplication
 
@@ -180,6 +181,16 @@ class TaxReport:
 
     def mark_printed_id(self, otype: int, oid: int):
         self._printed.add((otype, oid))
+
+    # The official rate of a currency into the report's one: the direct pair only, as its source is the jurisdiction's
+    # (CBR for RUB, ECB for EUR) and a cross-rate would mix in another. A missing rate stops the report.
+    def rate(self, currency_id: int, timestamp: int) -> Decimal:
+        if currency_id == self._currency_id:
+            return Decimal('1')
+        quoted, rate = JalAsset(currency_id).quote(timestamp, self._currency_id, report_missing=False, direct_only=True)
+        if not quoted:
+            self.missing_quote(f"{JalAsset(currency_id).symbol()}/{self.currency_name}", timestamp)
+        return rate
 
     # Records a quote a section needed and didn't find; the report stops after all sections listed theirs
     def missing_quote(self, symbol: str, timestamp: int):

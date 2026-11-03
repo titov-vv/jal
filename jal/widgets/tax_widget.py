@@ -142,7 +142,7 @@ class TaxWidget(MdiWidget):
                                                   use_settlement=(not self.no_settlement))
         except TaxReportStop as stop:
             missing = "\n".join(f"{symbol} - {reading2d(timestamp)}" for symbol, timestamp in stop.missing)
-            message = self.tr("The report needs these quotes, add them and save it again:") + "\n" + missing
+            message = self.tr("The report needs these quotes or official currency rates, add them and save it again:") + "\n" + missing
             logging.error(message)
             QMessageBox().warning(self, self.tr("Quotes are missing"), message, QMessageBox.Ok)
             return
