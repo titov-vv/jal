@@ -198,22 +198,40 @@ class JalAccount(JalDB):
                    and normalize_address(location_id, x.address()) == address]
         return matched[0] if len(matched) == 1 else None
 
-    # Anything to be listed in tax report for the account.
-    # The window is widened by a day at each end because it is put to the DATABASE, in stored instants, while the report
-    # counts its year on the clock of the jurisdiction it is filed in - an operation of the small hours of 1 January
-    # belongs to a year while the raw timestamps put it outside of. Offering an account too many is harmless:
-    # the report itself decides, row by row, which year each operation falls in (see TaxReport.category_operations).
+    # Investing accounts with an operation of the year that is a tax event or a base-impacting cost - the SQL twin of
+    # LedgerTransaction.taxable(), kept in step with it by tests/test_tax_status.py. Trades are read from the deals
+    # they closed, so the ledger has to be built. The window is widened by ZONE_SPAN at each end because it is put to
+    # the database in stored instants while a report counts its year on its jurisdiction's clock: offering an account
+    # too many is harmless, the report itself decides which year each operation falls in.
     @classmethod
     def get_taxable_accounts(cls, year: int) -> list:
+        operations = jal.db.operations
         begin = int(datetime(year, 1, 1, tzinfo=timezone.utc).timestamp()) - ZONE_SPAN
         end = int(datetime(year + 1, 1, 1, tzinfo=timezone.utc).timestamp()) + ZONE_SPAN
+        no_event_incomes = ','.join(str(x) for x in (operations.AssetIncome.DustAttack,
+                                                     operations.AssetIncome.RebaseAdjustment))
+        lost_positions = ','.join(str(x) for x in operations.CorporateAction.NoResults)
         accounts = []
-        query = cls._exec("SELECT account_id FROM asset_payments WHERE timestamp>=:y_b AND timestamp<=:y_e "
-                          "UNION "
-                          "SELECT account_id FROM asset_incomes WHERE timestamp>=:y_b AND timestamp<=:y_e "
-                          "UNION "
-                          "SELECT account_id FROM trades WHERE timestamp>=:y_b AND timestamp<=:y_e AND qty<0",
-                          [(":y_b", begin), (":y_e", end)])
+        query = cls._exec(
+            "SELECT id FROM accounts WHERE investing=1 AND id IN ("
+            "SELECT account_id FROM asset_payments WHERE timestamp>=:y_b AND timestamp<=:y_e "
+            "UNION "
+            f"SELECT account_id FROM asset_incomes WHERE timestamp>=:y_b AND timestamp<=:y_e AND type NOT IN ({no_event_incomes}) "
+            "UNION "
+            "SELECT account_id FROM trades_closed WHERE close_otype=:trade AND close_timestamp>=:y_b AND close_timestamp<=:y_e "
+            "UNION "
+            "SELECT account_id FROM swaps WHERE timestamp>=:y_b AND timestamp<=:y_e "
+            "UNION "
+            "SELECT account_id FROM conversions WHERE timestamp>=:y_b AND timestamp<=:y_e "
+            "UNION "
+            "SELECT a.account_id FROM asset_actions AS a JOIN asset_action_results AS r ON r.action_id=a.oid "
+            f"WHERE a.timestamp>=:y_b AND a.timestamp<=:y_e AND a.type NOT IN ({lost_positions}) AND r.keep_date=0 "
+            "UNION "
+            "SELECT a.account_id FROM actions AS a JOIN action_details AS d ON d.pid=a.oid "
+            "WHERE a.timestamp>=:y_b AND a.timestamp<=:y_e AND d.category_id IN (:interest, :fees)"
+            ") ORDER BY id",
+            [(":y_b", begin), (":y_e", end), (":trade", operations.LedgerTransaction.Trade),
+             (":interest", PredefinedCategory.Interest), (":fees", PredefinedCategory.Fees)])
         while query.next():
             account_id = cls._read_record(query, cast=[int])
             accounts.append(JalAccount(account_id))

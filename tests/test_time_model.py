@@ -447,8 +447,8 @@ def test_a_moment_late_at_night_belongs_to_the_next_tax_year_of_another_jurisdic
 
 # A day is not a moment. A settlement day, and a payment whose source stated the day without the hour, are both
 # stored as the midnight they were given - and midnight has no time of day to re-read on another clock, so a report
-# of another country must leave it alone. Read as a moment it would land on the day before, and here in the year
-# before: a Portuguese report of a life lived in Moscow.
+# of another country must leave it alone. Read as a moment on a clock behind UTC it would land on the day before, and
+# here in the year before. The Russian report is used because it is the one that reads the settlement day.
 def test_a_day_stored_without_a_time_of_day_is_never_read_on_another_clock(prepare_db_taxes):
     create_assets([('GE', 'General Electric Company', 'US3696043013', 2, PredefinedAsset.Stock, 'us')])   # id 4
     create_trades(1, [(d2t(241220), d2t(241224), 4, Decimal('10'), Decimal('100'), Decimal('1')),
@@ -456,7 +456,7 @@ def test_a_day_stored_without_a_time_of_day_is_never_read_on_another_clock(prepa
     create_dividends([(d2t(250101), 1, 4, 10.0, 1.0, "Dividend dated by its day alone")])
     Ledger().rebuild(from_timestamp=0)
     _resident_in('Europe/Moscow')
-    report = TaxesPortugal()
+    report = TaxesRussia()   # it reads the settlement, which is the day marker here
 
     assert report._moment(d2t(250101)) == d2t(250101)
     assert report._date(d2t(250101)) == d2t(250101)

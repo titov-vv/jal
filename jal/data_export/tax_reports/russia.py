@@ -11,6 +11,42 @@ class TaxesRussia(TaxReport):
     currency_name = 'RUB'
     country_name = "russia"
     report_timezone = 'Europe/Moscow'
+    currency_suffix = '_rub'
+    summary_section = ("Сводка", "tax_rus_summary.json")
+    uncovered_section = ("Не отражено", "tax_rus_uncovered.json")
+    texts = {
+        'rent_return': "Возврат ренты токен-аккаунта: возврат уплаченного, а не доход",
+        'skipped_count': "Пропущено по правилу: {}",
+        'uncovered': "Ни один раздел отчёта не отражает эту операцию",
+        'skipped_total': "Пропущено по правилу юрисдикции",
+        'uncovered_total': "Не отражено ни в одном разделе",
+        'pending_total': "Строк «ожидает пересчёта»",
+        'income': "Доходы",
+        'spending': "Расходы",
+        'profit': "Финансовый результат",
+        'amount': "Сумма"
+    }
+    operation_labels = {
+        (LedgerTransaction.Trade, None): "Сделка",
+        (LedgerTransaction.Swap, None): "Обмен криптовалюты",
+        (LedgerTransaction.Conversion, None): "Конвертация токена",
+        (LedgerTransaction.IncomeSpending, None): "Денежная операция",
+        (LedgerTransaction.CorporateAction, CorporateAction.Merger): "Реорганизация",
+        (LedgerTransaction.CorporateAction, CorporateAction.SpinOff): "Выделение компании",
+        (LedgerTransaction.CorporateAction, CorporateAction.SymbolChange): "Смена символа",
+        (LedgerTransaction.CorporateAction, CorporateAction.Split): "Сплит",
+        (LedgerTransaction.AssetPayment, AssetPayment.Dividend): "Дивиденд",
+        (LedgerTransaction.AssetPayment, AssetPayment.BondInterest): "Купон или НКД",
+        (LedgerTransaction.AssetPayment, AssetPayment.AssetFee): "Комиссия или налог по активу",
+        (LedgerTransaction.AssetPayment, AssetPayment.DepositaryFee): "Депозитарная комиссия",
+        (LedgerTransaction.AssetPayment, AssetPayment.PositionFinancing): "Плата за финансирование позиции",
+        (LedgerTransaction.AssetIncome, AssetIncome.StockDividend): "Дивиденд ценными бумагами",
+        (LedgerTransaction.AssetIncome, AssetIncome.StockVesting): "Вестинг ценных бумаг",
+        (LedgerTransaction.AssetIncome, AssetIncome.StakingReward): "Вознаграждение за стейкинг",
+        (LedgerTransaction.AssetIncome, AssetIncome.Reward): "Вознаграждение",
+        (LedgerTransaction.AssetIncome, AssetIncome.LendingInterest): "Проценты за предоставление криптовалюты",
+        (LedgerTransaction.AssetIncome, AssetIncome.TokenRentReturn): "Возврат ренты токен-аккаунта"
+    }
 
     CorpActionText = {
         CorporateAction.SymbolChange: "Смена символа {before} {old} -> {after} {new}",
@@ -73,6 +109,7 @@ class TaxesRussia(TaxReport):
                 'note': note
             }
             dividends_report.append(line)
+            self.mark_printed(dividend)
         self.insert_totals(dividends_report, ["amount", "amount_rub", "tax", "tax_rub", "tax2pay"])
         return dividends_report
 
@@ -87,33 +124,33 @@ class TaxesRussia(TaxReport):
         for trade in trades_list:
             corporate_actions = trade.modified_by()
             report_template = "corporate_action" if any([x.type()==LedgerTransaction.CorporateAction for x in corporate_actions]) else "trade"
-            if ns:
-                os_rate = self.account_currency.quote(trade.open_operation().timestamp(), self._currency_id)[1]
-                cs_rate = self.account_currency.quote(trade.close_operation().timestamp(), self._currency_id)[1]
-            else:
-                os_rate = self.account_currency.quote(trade.open_operation().settlement(), self._currency_id)[1]
-                cs_rate = self.account_currency.quote(trade.close_operation().settlement(), self._currency_id)[1]
+            o_ns = ns or not trade.open_operation().settlement()    # no settlement: the trade moment instead
+            c_ns = ns or not trade.close_operation().settlement()
+            os_rate = self.account_currency.quote(self.rate_moment(trade.open_operation(), ns), self._currency_id)[1]
+            cs_rate = self.account_currency.quote(self.rate_moment(trade.close_operation(), ns), self._currency_id)[1]
             if trade.qty() >= Decimal('0'):  # Long trade
                 note = ''
-                income = round(trade.close_amount(no_settlement=ns), 2)
-                income_rub = round(trade.close_amount(self._currency_id, no_settlement=ns), 2)
-                spending = round(trade.open_amount(no_settlement=ns), 2) + round(trade.fee(), 2)
-                spending_rub = round(trade.open_amount(self._currency_id, no_settlement=ns), 2) + round(trade.fee(self._currency_id), 2)
+                income = round(trade.close_amount(no_settlement=c_ns), 2)
+                income_rub = round(trade.close_amount(self._currency_id, no_settlement=c_ns), 2)
+                spending = round(trade.open_amount(no_settlement=o_ns), 2) + round(trade.fee(), 2)
+                spending_rub = round(trade.open_amount(self._currency_id, no_settlement=o_ns), 2) + round(trade.fee(self._currency_id), 2)
             else:                            # Short trade
                 # Check were there any dividends during short position holding
                 short_dividend = Decimal('0')
                 short_dividend_rub = Decimal('0')
                 div_list = [x for x in dividends_withdrawn if x.asset().id() == trade.asset().id()]
-                div_list = [x for x in div_list if trade.open_operation().settlement() <= x.ex_date() <= trade.close_operation().settlement()]
+                div_list = [x for x in div_list if self.rate_moment(trade.open_operation()) <= x.ex_date() <= self.rate_moment(trade.close_operation())]
                 for dividend in div_list:
                     short_dividend -= dividend.amount()
                     short_dividend_rub -= dividend.amount(self._currency_id)  # amount is negative
                 dividends_withdrawn = [x for x in dividends_withdrawn if not x in div_list]
+                for dividend in div_list:
+                    self.mark_printed(dividend)
                 note = f"Удержан дивиденд: {short_dividend_rub:.2f} RUB ({short_dividend:.2f} {self.account_currency.symbol()})\n" if short_dividend_rub > Decimal('0') else ''
-                income = round(trade.open_amount(no_settlement=ns), 2)
-                income_rub = round(trade.open_amount(self._currency_id, no_settlement=ns), 2)
-                spending = round(trade.close_amount(no_settlement=ns), 2) + round(trade.fee(), 2) + short_dividend
-                spending_rub = round(trade.close_amount(self._currency_id, no_settlement=ns), 2) + round(trade.fee(self._currency_id), 2) + short_dividend_rub
+                income = round(trade.open_amount(no_settlement=o_ns), 2)
+                income_rub = round(trade.open_amount(self._currency_id, no_settlement=o_ns), 2)
+                spending = round(trade.close_amount(no_settlement=c_ns), 2) + round(trade.fee(), 2) + short_dividend
+                spending_rub = round(trade.close_amount(self._currency_id, no_settlement=c_ns), 2) + round(trade.fee(self._currency_id), 2) + short_dividend_rub
             for modifier in corporate_actions:
                 note = note + modifier.description() + "\n"
             line = {
@@ -129,23 +166,23 @@ class TaxesRussia(TaxReport):
                 'o_number': trade.open_operation().number(),
                 'o_date': self._moment(trade.acquired(), trade.acquired_is_day()),
                 'o_rate': self.account_currency.quote(trade.open_operation().timestamp(), self._currency_id)[1],
-                'os_date': self._date(trade.open_operation().settlement()),
+                'os_date': self.settlement_date(trade.open_operation()),
                 'os_rate': os_rate,
                 'o_price': trade.open_price(),
                 'cost_basis': Decimal('100') * trade.cost_basis(),
-                'o_amount':  round(trade.open_amount(no_settlement=ns, full=True), 2),
-                'o_amount_rub': round(trade.open_amount(self._currency_id, no_settlement=ns, full=True), 2),
+                'o_amount':  round(trade.open_amount(no_settlement=o_ns, full=True), 2),
+                'o_amount_rub': round(trade.open_amount(self._currency_id, no_settlement=o_ns, full=True), 2),
                 'o_fee': trade.open_fee(full=True),
                 'o_fee_rub': round(trade.open_fee(self._currency_id, full=True), 2),
                 'c_type': "Продажа" if trade.qty() >= Decimal('0') else "Покупка",
                 'c_number': trade.close_operation().number(),
                 'c_date': self._moment(trade.close_operation().timestamp(), trade.close_operation().timestamp_is_day()),
                 'c_rate': self.account_currency.quote(trade.close_operation().timestamp(), self._currency_id)[1],
-                'cs_date': self._date(trade.close_operation().settlement()),
+                'cs_date': self.settlement_date(trade.close_operation()),
                 'cs_rate': cs_rate,
                 'c_price': trade.close_operation().price(),
-                'c_amount': round(trade.close_amount(no_settlement=ns), 2),
-                'c_amount_rub': round(trade.close_amount(self._currency_id, no_settlement=ns), 2),
+                'c_amount': round(trade.close_amount(no_settlement=c_ns), 2),
+                'c_amount_rub': round(trade.close_amount(self._currency_id, no_settlement=c_ns), 2),
                 'c_fee': trade.close_fee(),
                 'c_fee_rub': round(trade.close_fee(self._currency_id), 2),
                 'income': income,    # this field is required for DLSG
@@ -156,6 +193,7 @@ class TaxesRussia(TaxReport):
                 'note': note
             }
             deals_report.append(line)
+            self.mark_printed(trade.close_operation())
         self.insert_totals(deals_report, ["income_rub", "spending_rub", "profit_rub", "profit"])
         return deals_report
 
@@ -185,22 +223,20 @@ class TaxesRussia(TaxReport):
                     no_principal.add(trade.asset().id())
                     logging.warning(TaxReport.tr("Bond has no face value, trade prices are left empty in the report: ")
                                     + f"{trade.asset().symbol(self.account_currency.id())}")
-            if ns:
-                os_rate = self.account_currency.quote(trade.open_operation().timestamp(), self._currency_id)[1]
-                cs_rate = self.account_currency.quote(trade.close_operation().timestamp(), self._currency_id)[1]
-            else:
-                os_rate = self.account_currency.quote(trade.open_operation().settlement(), self._currency_id)[1]
-                cs_rate = self.account_currency.quote(trade.close_operation().settlement(), self._currency_id)[1]
+            o_ns = ns or not trade.open_operation().settlement()    # no settlement: the trade moment instead
+            c_ns = ns or not trade.close_operation().settlement()
+            os_rate = self.account_currency.quote(self.rate_moment(trade.open_operation(), ns), self._currency_id)[1]
+            cs_rate = self.account_currency.quote(self.rate_moment(trade.close_operation(), ns), self._currency_id)[1]
             if trade.qty() >= Decimal('0'):  # Long trade
-                income = round(trade.close_amount(no_settlement=ns), 2) + trade.close_operation().accrued_interest()
-                income_rub = round(trade.close_amount(self._currency_id, no_settlement=ns), 2) + round(trade.close_operation().accrued_interest(self._currency_id), 2)
-                spending = round(trade.open_amount(no_settlement=ns), 2) + trade.fee() - trade.open_operation().accrued_interest()
-                spending_rub = round(trade.open_amount(self._currency_id, no_settlement=ns), 2) + round(trade.fee(self._currency_id), 2) - round(trade.open_operation().accrued_interest(self._currency_id), 2)
+                income = round(trade.close_amount(no_settlement=c_ns), 2) + trade.close_operation().accrued_interest()
+                income_rub = round(trade.close_amount(self._currency_id, no_settlement=c_ns), 2) + round(trade.close_operation().accrued_interest(self._currency_id), 2)
+                spending = round(trade.open_amount(no_settlement=o_ns), 2) + trade.fee() - trade.open_operation().accrued_interest()
+                spending_rub = round(trade.open_amount(self._currency_id, no_settlement=o_ns), 2) + round(trade.fee(self._currency_id), 2) - round(trade.open_operation().accrued_interest(self._currency_id), 2)
             else:                            # Short trade
-                income = round(trade.open_amount(no_settlement=ns), 2) + trade.open_operation().accrued_interest()
-                income_rub = round(trade.open_amount(self._currency_id, no_settlement=ns), 2) + round(trade.open_operation().accrued_interest(self._currency_id), 2)
-                spending = round(trade.close_amount(no_settlement=ns), 2) + trade.fee() - trade.close_operation().accrued_interest()
-                spending_rub = round(trade.close_amount(self._currency_id, no_settlement=ns), 2) + round(trade.fee(self._currency_id), 2) - round(trade.close_operation().accrued_interest(self._currency_id), 2)
+                income = round(trade.open_amount(no_settlement=o_ns), 2) + trade.open_operation().accrued_interest()
+                income_rub = round(trade.open_amount(self._currency_id, no_settlement=o_ns), 2) + round(trade.open_operation().accrued_interest(self._currency_id), 2)
+                spending = round(trade.close_amount(no_settlement=c_ns), 2) + trade.fee() - trade.close_operation().accrued_interest()
+                spending_rub = round(trade.close_amount(self._currency_id, no_settlement=c_ns), 2) + round(trade.fee(self._currency_id), 2) - round(trade.close_operation().accrued_interest(self._currency_id), 2)
             line = {
                 'report_template': "bond_trade",
                 'c_symbol': trade.close_operation().symbol().symbol(),
@@ -215,26 +251,26 @@ class TaxesRussia(TaxReport):
                 'o_number': trade.open_operation().number(),
                 'o_date': self._moment(trade.acquired(), trade.acquired_is_day()),
                 'o_rate': self.account_currency.quote(trade.open_operation().timestamp(), self._currency_id)[1],
-                'os_date': self._date(trade.open_operation().settlement()),
+                'os_date': self.settlement_date(trade.open_operation()),
                 'os_rate': os_rate,
                 'o_price': o_price,
                 'o_int': -trade.open_operation().accrued_interest(),
                 'o_int_rub': -round(trade.open_operation().accrued_interest(self._currency_id), 2),
-                'o_amount':  round(trade.open_amount(no_settlement=ns), 2),
-                'o_amount_rub': round(trade.open_amount(self._currency_id, no_settlement=ns), 2),
+                'o_amount':  round(trade.open_amount(no_settlement=o_ns), 2),
+                'o_amount_rub': round(trade.open_amount(self._currency_id, no_settlement=o_ns), 2),
                 'o_fee': trade.open_fee(),
                 'o_fee_rub': round(trade.open_fee(self._currency_id), 2),
                 'c_type': "Продажа" if trade.qty() >= Decimal('0') else "Покупка",
                 'c_number': trade.close_operation().number(),
                 'c_date': self._moment(trade.close_operation().timestamp(), trade.close_operation().timestamp_is_day()),
                 'c_rate': self.account_currency.quote(trade.close_operation().timestamp(), self._currency_id)[1],
-                'cs_date': self._date(trade.close_operation().settlement()),
+                'cs_date': self.settlement_date(trade.close_operation()),
                 'cs_rate': cs_rate,
                 'c_price': c_price,
                 'c_int': trade.close_operation().accrued_interest(),
                 'c_int_rub': round(trade.close_operation().accrued_interest(self._currency_id), 2),
-                'c_amount': round(trade.close_amount(no_settlement=ns), 2),
-                'c_amount_rub': round(trade.close_amount(self._currency_id, no_settlement=ns), 2),
+                'c_amount': round(trade.close_amount(no_settlement=c_ns), 2),
+                'c_amount_rub': round(trade.close_amount(self._currency_id, no_settlement=c_ns), 2),
                 'c_fee': trade.close_fee(),
                 'c_fee_rub': round(trade.close_fee(self._currency_id), 2),
                 'income': income,  # this field is required for DLSG
@@ -244,6 +280,10 @@ class TaxesRussia(TaxReport):
                 'profit_rub': income_rub - spending_rub
             }
             bonds_report.append(line)
+            self.mark_printed(trade.close_operation())
+            for operation in (trade.open_operation(), trade.close_operation()):
+                if operation.type() == LedgerTransaction.Trade:
+                    self.mark_printed(operation.accrued_interest_payment())
         # Second - take all bond interest payments not linked with buy/sell transactions
         currency = JalAsset(self.account.currency())
         country = self.account.country()
@@ -271,6 +311,7 @@ class TaxesRussia(TaxReport):
                 'country_iso': country.iso_code(),
             }
             bonds_report.append(line)
+            self.mark_printed(interest)
         self.insert_totals(bonds_report, ["income_rub", "spending_rub", "profit_rub", "profit"])
         return bonds_report
 
@@ -283,18 +324,12 @@ class TaxesRussia(TaxReport):
     def prepare_crypto(self):
         country = self.account.country()
         crypto_report = []
-        trades = self.account.closed_trades_list()
-        trades = [x for x in trades if x.asset().type() == PredefinedAsset.Crypto]
-        trades = [x for x in trades if self.year_begin <= self._date(x.close_operation().settlement()) < self.year_end]
+        trades = self.trades_list([PredefinedAsset.Crypto])
         for trade in trades:
             o_rate = self.account_currency.quote(trade.open_operation().timestamp(), self._currency_id)[1]
             c_rate = self.account_currency.quote(trade.close_operation().timestamp(), self._currency_id)[1]
-            if self.use_settlement:
-                os_rate = self.account_currency.quote(trade.open_operation().settlement(), self._currency_id)[1]
-                cs_rate = self.account_currency.quote(trade.close_operation().settlement(), self._currency_id)[1]
-            else:
-                os_rate = o_rate
-                cs_rate = c_rate
+            os_rate = self.account_currency.quote(self.rate_moment(trade.open_operation(), not self.use_settlement), self._currency_id)[1]
+            cs_rate = self.account_currency.quote(self.rate_moment(trade.close_operation(), not self.use_settlement), self._currency_id)[1]
             o_amount = round(trade.open_price() * abs(trade.qty()), 2)
             o_amount_rub = round(o_amount * os_rate, 2)
             c_amount = round(trade.close_operation().price() * abs(trade.qty()), 2)
@@ -316,7 +351,7 @@ class TaxesRussia(TaxReport):
                 'o_number': trade.open_operation().number(),
                 'o_date': self._moment(trade.acquired(), trade.acquired_is_day()),
                 'o_rate': o_rate,
-                'os_date': self._date(trade.open_operation().settlement()),
+                'os_date': self.settlement_date(trade.open_operation()),
                 'os_rate': os_rate,
                 'o_price': trade.open_price(),
                 'o_amount': o_amount,
@@ -327,7 +362,7 @@ class TaxesRussia(TaxReport):
                 'c_number': trade.close_operation().number(),
                 'c_date': self._moment(trade.close_operation().timestamp(), trade.close_operation().timestamp_is_day()),
                 'c_rate': c_rate,
-                'cs_date': self._date(trade.close_operation().settlement()),
+                'cs_date': self.settlement_date(trade.close_operation()),
                 'cs_rate': cs_rate,
                 'c_price': trade.close_operation().price(),
                 'c_amount': c_amount,
@@ -341,6 +376,7 @@ class TaxesRussia(TaxReport):
                 'profit_rub': income_rub - spending_rub
             }
             crypto_report.append(line)
+            self.mark_printed(trade.close_operation())
         self.insert_totals(crypto_report, ["income_rub", "spending_rub", "profit_rub", "profit"])
         return crypto_report
 
@@ -363,6 +399,8 @@ class TaxesRussia(TaxReport):
                     'note': fee['note']
                 }
                 fees_report.append(line)
+            if fees:
+                self.mark_printed(operation)
         self.insert_totals(fees_report, ["amount", "amount_rub"])
         return fees_report
 
@@ -386,6 +424,8 @@ class TaxesRussia(TaxReport):
                     'note': interest['note']
                 }
                 interests_report.append(line)
+            if interests:
+                self.mark_printed(operation)
         # Process cash payments out of corporate actions
         payments = CorporateAction.get_payments(self.account)
         payments = [x for x in payments if self.year_begin <= self._moment(x['timestamp'], x['day_only']) < self.year_end]
@@ -401,5 +441,6 @@ class TaxesRussia(TaxReport):
                 'note': payment['note']
             }
             interests_report.append(line)
+            self.mark_printed_id(LedgerTransaction.CorporateAction, payment['oid'])
         self.insert_totals(interests_report, ["amount", "amount_rub", "tax_rub"])
         return interests_report

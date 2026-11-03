@@ -1,0 +1,27 @@
+{
+  "page": "Сводка",
+  "title": "Сводка отчёта по счёту",
+  "headers": [
+      "Период: {parameters[period]}",
+      "Номер счета: {parameters[account]}",
+      "Итоги разделов в том виде, как они есть в отчёте; без взаимозачёта между разделами и без расчёта налога"
+    ],
+  "columns": [
+    {"name": "Раздел", "width": 30},
+    {"name": "Строк / показатель", "width": 34},
+    {"name": "Сумма, RUB", "width": 14}
+  ],
+  "section": {
+    "rows": [["section", "rows", ""]],
+    "formats": [["T:B", "N:0", "T"]]
+  },
+  "figure": {
+    "rows": [["", "figure", "amount"]],
+    "formats": [["T", "T", "N:2"]]
+  },
+  "count": {
+    "rows": [["label", "count", ""]],
+    "formats": [["L", "N:0", "T"]]
+  },
+  "footers": []
+}

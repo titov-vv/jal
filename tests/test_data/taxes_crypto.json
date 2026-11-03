@@ -1,7 +1,139 @@
 {
   "ru": {
+    "Сводка": [
+      {
+        "report_template": "section",
+        "section": "Дивиденды",
+        "rows": 0
+      },
+      {
+        "report_template": "section",
+        "section": "Акции",
+        "rows": 1
+      },
+      {
+        "report_template": "figure",
+        "figure": "Доходы",
+        "amount": 60600.0
+      },
+      {
+        "report_template": "figure",
+        "figure": "Расходы",
+        "amount": 45691.0
+      },
+      {
+        "report_template": "figure",
+        "figure": "Финансовый результат",
+        "amount": 14909.0
+      },
+      {
+        "report_template": "section",
+        "section": "Облигации",
+        "rows": 0
+      },
+      {
+        "report_template": "section",
+        "section": "ПФИ",
+        "rows": 0
+      },
+      {
+        "report_template": "section",
+        "section": "Криптовалюты",
+        "rows": 5
+      },
+      {
+        "report_template": "figure",
+        "figure": "Доходы",
+        "amount": 869600.0
+      },
+      {
+        "report_template": "figure",
+        "figure": "Расходы",
+        "amount": 615617.19
+      },
+      {
+        "report_template": "figure",
+        "figure": "Финансовый результат",
+        "amount": 253982.81
+      },
+      {
+        "report_template": "section",
+        "section": "Комиссии",
+        "rows": 0
+      },
+      {
+        "report_template": "section",
+        "section": "Проценты",
+        "rows": 0
+      },
+      {
+        "report_template": "count",
+        "label": "Пропущено по правилу юрисдикции",
+        "count": 0,
+        "link": ""
+      },
+      {
+        "report_template": "count",
+        "label": "Не отражено ни в одном разделе",
+        "count": 4,
+        "link": "Не отражено"
+      },
+      {
+        "report_template": "count",
+        "label": "Строк «ожидает пересчёта»",
+        "count": 0,
+        "link": ""
+      }
+    ],
     "Дивиденды": [],
-    "Акции": [],
+    "Акции": [
+      {
+        "report_template": "trade",
+        "c_symbol": "STK",
+        "c_isin": "US0000000201",
+        "c_qty": 10.0,
+        "o_symbol": "STK",
+        "o_isin": "US0000000201",
+        "o_qty": 10.0,
+        "country_iso": "840",
+        "o_type": "Покупка",
+        "o_number": "buy-STK",
+        "o_date": 1733011200,
+        "o_rate": 90.0,
+        "os_date": 1733184000,
+        "os_rate": 91.0,
+        "o_price": 50.0,
+        "cost_basis": 100.0,
+        "o_amount": 500.0,
+        "o_amount_rub": 45500.0,
+        "o_fee": 1.0,
+        "o_fee_rub": 90.0,
+        "c_type": "Продажа",
+        "c_number": "sell-STK",
+        "c_date": 1748736000,
+        "c_rate": 101.0,
+        "cs_date": 1748736000,
+        "cs_rate": 101.0,
+        "c_price": 60.0,
+        "c_amount": 600.0,
+        "c_amount_rub": 60600.0,
+        "c_fee": 1.0,
+        "c_fee_rub": 101.0,
+        "income": 600.0,
+        "income_rub": 60600.0,
+        "spending_rub": 45691.0,
+        "profit": 98.0,
+        "profit_rub": 14909.0,
+        "note": ""
+      },
+      {
+        "report_template": "totals",
+        "income_rub": 60600.0,
+        "spending_rub": 45691.0,
+        "profit_rub": 14909.0,
+        "profit": 98.0
+      }
+    ],
     "Облигации": [],
     "ПФИ": [],
     "Криптовалюты": [
@@ -179,11 +311,177 @@
       }
     ],
     "Комиссии": [],
-    "Проценты": []
+    "Проценты": [],
+    "Не отражено": [
+      {
+        "report_template": "operation",
+        "date": 1738368000,
+        "operation": "Вознаграждение за стейкинг",
+        "symbol": "SOL",
+        "number": "reward",
+        "description": "SOL staking reward\n",
+        "reason": "Ни один раздел отчёта не отражает эту операцию"
+      },
+      {
+        "report_template": "operation",
+        "date": 1740787200,
+        "operation": "Конвертация токена",
+        "symbol": "ETH",
+        "number": "",
+        "description": "1 ETH -> 1 WETH\n",
+        "reason": "Ни один раздел отчёта не отражает эту операцию"
+      },
+      {
+        "report_template": "operation",
+        "date": 1741564800,
+        "operation": "Обмен криптовалюты",
+        "symbol": "UNI",
+        "number": "",
+        "description": "50 UNI -> 0.2 ETH\n",
+        "reason": "Ни один раздел отчёта не отражает эту операцию"
+      },
+      {
+        "report_template": "operation",
+        "date": 1742428800,
+        "operation": "Обмен криптовалюты",
+        "symbol": "UNI",
+        "number": "",
+        "description": "50 UNI -> 0.25 WETH\n",
+        "reason": "Ни один раздел отчёта не отражает эту операцию"
+      }
+    ]
   },
   "pt": {
+    "Summary": [
+      {
+        "report_template": "section",
+        "section": "Dividends",
+        "rows": 0
+      },
+      {
+        "report_template": "section",
+        "section": "Shares",
+        "rows": 1
+      },
+      {
+        "report_template": "figure",
+        "figure": "Income",
+        "amount": 0
+      },
+      {
+        "report_template": "figure",
+        "figure": "Expenses",
+        "amount": 0
+      },
+      {
+        "report_template": "figure",
+        "figure": "Gain/loss",
+        "amount": 154.09
+      },
+      {
+        "report_template": "section",
+        "section": "Interest",
+        "rows": 0
+      },
+      {
+        "report_template": "count",
+        "label": "Skipped by the jurisdiction's rule",
+        "count": 3,
+        "link": "Not covered"
+      },
+      {
+        "report_template": "count",
+        "label": "Not included in any section",
+        "count": 4,
+        "link": "Not covered"
+      },
+      {
+        "report_template": "count",
+        "label": "Rows marked 'pending replay'",
+        "count": 0,
+        "link": ""
+      }
+    ],
     "Dividends": [],
-    "Shares": [],
-    "Interest": []
+    "Shares": [
+      {
+        "report_template": "trade",
+        "symbol": "STK",
+        "isin": "US0000000201",
+        "qty": 10.0,
+        "o_type": "Aquisição",
+        "o_number": "buy-STK",
+        "o_date": 1733011200,
+        "o_rate": 0.9,
+        "o_price": 50.0,
+        "o_fee": 1.0,
+        "o_fee_eur": 0.9,
+        "o_amount": 500.0,
+        "o_amount_eur": 450.0,
+        "c_type": "Venda",
+        "c_number": "sell-STK",
+        "c_date": 1748736000,
+        "c_rate": 1.01,
+        "c_price": 60.0,
+        "c_fee": 1.0,
+        "c_fee_eur": 1.01,
+        "c_amount": 600.0,
+        "c_amount_eur": 606.0,
+        "profit": 98.0,
+        "profit_eur": 154.09,
+        "note": ""
+      },
+      {
+        "report_template": "totals",
+        "income_eur": 0,
+        "spending_eur": 0,
+        "profit_eur": 154.09,
+        "profit": 98.0
+      }
+    ],
+    "Interest": [],
+    "Not covered": [
+      {
+        "report_template": "skipped",
+        "reason": "Crypto-for-crypto exchange: not taxed until exit to fiat (CIRS art. 10.º, n.º 20)",
+        "count": "Skipped by rule: 3"
+      },
+      {
+        "report_template": "operation",
+        "date": 1738368000,
+        "operation": "Staking reward",
+        "symbol": "SOL",
+        "number": "reward",
+        "description": "SOL staking reward\n",
+        "reason": "No section of this report includes this operation"
+      },
+      {
+        "report_template": "operation",
+        "date": 1743465600,
+        "operation": "Trade",
+        "symbol": "ETH",
+        "number": "sell-ETH",
+        "description": "-1.20 ETH @ 3500.0000 (1.00)\n",
+        "reason": "No section of this report includes this operation"
+      },
+      {
+        "report_template": "operation",
+        "date": 1744243200,
+        "operation": "Trade",
+        "symbol": "WETH",
+        "number": "sell-WETH",
+        "description": "-1.25 WETH @ 3600.0000 (1.00)\n",
+        "reason": "No section of this report includes this operation"
+      },
+      {
+        "report_template": "operation",
+        "date": 1746057600,
+        "operation": "Trade",
+        "symbol": "SOL",
+        "number": "sell-SOL",
+        "description": "-0.50 SOL @ 250.0000\n",
+        "reason": "No section of this report includes this operation"
+      }
+    ]
   }
 }

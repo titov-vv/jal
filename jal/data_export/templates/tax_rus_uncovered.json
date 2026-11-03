@@ -1,0 +1,27 @@
+{
+  "page": "Не отражено",
+  "title": "Операции года, не отражённые в разделах отчёта",
+  "headers": [
+      "Период: {parameters[period]}",
+      "Номер счета: {parameters[account]}",
+      "Сначала - пропущенное по правилу юрисдикции, затем - операции, которые не отражает ни один раздел"
+    ],
+  "columns": [
+    {"name": "Дата", "width": 10},
+    {"name": "Операция", "width": 22},
+    {"name": "Актив", "width": 12},
+    {"name": "Номер", "width": 14},
+    {"name": "Описание", "width": 50},
+    {"name": "Причина", "width": 40}
+  ],
+  "skipped": {
+    "rows": [["reason", null, null, null, null, "count"]],
+    "formats": [["T", null, null, null, null, "T"]],
+    "span": [[{"h": 4, "v": 0}, null, null, null, null, null]]
+  },
+  "operation": {
+    "rows": [["date", "operation", "symbol", "number", "description", "reason"]],
+    "formats": [["D", "T", "T", "T", "T", "T"]]
+  },
+  "footers": []
+}

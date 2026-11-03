@@ -1,5 +1,65 @@
 {
   "default": {
+    "Summary": [
+      {
+        "report_template": "section",
+        "section": "Dividends",
+        "rows": 3
+      },
+      {
+        "report_template": "figure",
+        "figure": "Amount",
+        "amount": 216.6
+      },
+      {
+        "report_template": "section",
+        "section": "Shares",
+        "rows": 5
+      },
+      {
+        "report_template": "figure",
+        "figure": "Income",
+        "amount": 0
+      },
+      {
+        "report_template": "figure",
+        "figure": "Expenses",
+        "amount": 0
+      },
+      {
+        "report_template": "figure",
+        "figure": "Gain/loss",
+        "amount": 662.56
+      },
+      {
+        "report_template": "section",
+        "section": "Interest",
+        "rows": 2
+      },
+      {
+        "report_template": "figure",
+        "figure": "Amount",
+        "amount": 26.76
+      },
+      {
+        "report_template": "count",
+        "label": "Skipped by the jurisdiction's rule",
+        "count": 0,
+        "link": ""
+      },
+      {
+        "report_template": "count",
+        "label": "Not included in any section",
+        "count": 1,
+        "link": "Not covered"
+      },
+      {
+        "report_template": "count",
+        "label": "Rows marked 'pending replay'",
+        "count": 0,
+        "link": ""
+      }
+    ],
     "Dividends": [
       {
         "report_template": "dividend",
@@ -164,11 +224,38 @@
         "note": "Split: Split 2:1 of SPLT\nSplit Corp\n"
       },
       {
+        "report_template": "trade",
+        "symbol": "VWRL",
+        "isin": "IE00B3RBWM25",
+        "qty": 5.0,
+        "o_type": "Aquisição",
+        "o_number": "T03",
+        "o_date": 1704897000,
+        "o_rate": 0.91,
+        "o_price": 100.0,
+        "o_fee": 0.5,
+        "o_fee_eur": 0.455,
+        "o_amount": 500.0,
+        "o_amount_eur": 455.0,
+        "c_type": "Venda",
+        "c_number": "T05",
+        "c_date": 1735569000,
+        "c_rate": 0.96,
+        "c_price": 120.0,
+        "c_fee": 1.0,
+        "c_fee_eur": 0.96,
+        "c_amount": 600.0,
+        "c_amount_eur": 576.0,
+        "profit": 98.5,
+        "profit_eur": 119.58,
+        "note": ""
+      },
+      {
         "report_template": "totals",
         "income_eur": 0,
         "spending_eur": 0,
-        "profit_eur": 542.98,
-        "profit": 592.3
+        "profit_eur": 662.56,
+        "profit": 690.8
       }
     ],
     "Interest": [
@@ -192,6 +279,17 @@
         "report_template": "totals",
         "amount": 29.0,
         "amount_eur": 26.76
+      }
+    ],
+    "Not covered": [
+      {
+        "report_template": "operation",
+        "date": 1708439400,
+        "operation": "Dividend",
+        "symbol": "AAPL",
+        "number": "",
+        "description": "AAPL(US0378331005) CASH DIVIDEND USD 0.24 PER SHARE - REVERSAL\nTax: United States",
+        "reason": "No section of this report includes this operation"
       }
     ]
   },
@@ -305,11 +403,38 @@
       "note": "Split: Split 2:1 of SPLT\nSplit Corp\n"
     },
     {
+      "report_template": "trade",
+      "symbol": "VWRL",
+      "isin": "IE00B3RBWM25",
+      "qty": 5.0,
+      "o_type": "Aquisição",
+      "o_number": "T03",
+      "o_date": 1704897000,
+      "o_rate": 0.96,
+      "o_price": 100.0,
+      "o_fee": 0.5,
+      "o_fee_eur": 0.48,
+      "o_amount": 500.0,
+      "o_amount_eur": 480.0,
+      "c_type": "Venda",
+      "c_number": "T05",
+      "c_date": 1735569000,
+      "c_rate": 0.96,
+      "c_price": 120.0,
+      "c_fee": 1.0,
+      "c_fee_eur": 0.96,
+      "c_amount": 600.0,
+      "c_amount_eur": 576.0,
+      "profit": 98.5,
+      "profit_eur": 94.56,
+      "note": ""
+    },
+    {
       "report_template": "totals",
       "income_eur": 0,
       "spending_eur": 0,
-      "profit_eur": 542.5,
-      "profit": 592.3
+      "profit_eur": 637.06,
+      "profit": 690.8
     }
   ]
 }

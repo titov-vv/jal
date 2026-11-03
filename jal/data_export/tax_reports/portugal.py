@@ -1,6 +1,6 @@
 from decimal import Decimal
 from jal.constants import PredefinedAsset, PredefinedCategory, SymbolId
-from jal.db.operations import LedgerTransaction, AssetIncome, CorporateAction
+from jal.db.operations import LedgerTransaction, AssetPayment, AssetIncome, CorporateAction
 from jal.data_export.taxes import TaxReport
 
 
@@ -8,6 +8,43 @@ class TaxesPortugal(TaxReport):
     currency_name = 'EUR'
     country_name = 'portugal'
     report_timezone = 'Europe/Lisbon'
+    currency_suffix = '_eur'
+    summary_section = ("Summary", "tax_prt_summary.json")
+    uncovered_section = ("Not covered", "tax_prt_uncovered.json")
+    texts = {
+        'rent_return': "Token account rent returned: a refund of rent paid, not income",
+        'crypto_exchange': "Crypto-for-crypto exchange: not taxed until exit to fiat (CIRS art. 10.º, n.º 20)",
+        'skipped_count': "Skipped by rule: {}",
+        'uncovered': "No section of this report includes this operation",
+        'skipped_total': "Skipped by the jurisdiction's rule",
+        'uncovered_total': "Not included in any section",
+        'pending_total': "Rows marked 'pending replay'",
+        'income': "Income",
+        'spending': "Expenses",
+        'profit': "Gain/loss",
+        'amount': "Amount"
+    }
+    operation_labels = {
+        (LedgerTransaction.Trade, None): "Trade",
+        (LedgerTransaction.Swap, None): "Crypto swap",
+        (LedgerTransaction.Conversion, None): "Token wrapping",
+        (LedgerTransaction.IncomeSpending, None): "Cash operation",
+        (LedgerTransaction.CorporateAction, CorporateAction.Merger): "Merger",
+        (LedgerTransaction.CorporateAction, CorporateAction.SpinOff): "Spin-off",
+        (LedgerTransaction.CorporateAction, CorporateAction.SymbolChange): "Symbol change",
+        (LedgerTransaction.CorporateAction, CorporateAction.Split): "Split",
+        (LedgerTransaction.AssetPayment, AssetPayment.Dividend): "Dividend",
+        (LedgerTransaction.AssetPayment, AssetPayment.BondInterest): "Bond interest",
+        (LedgerTransaction.AssetPayment, AssetPayment.AssetFee): "Asset fee or tax",
+        (LedgerTransaction.AssetPayment, AssetPayment.DepositaryFee): "Depositary fee",
+        (LedgerTransaction.AssetPayment, AssetPayment.PositionFinancing): "Position financing",
+        (LedgerTransaction.AssetIncome, AssetIncome.StockDividend): "Stock dividend",
+        (LedgerTransaction.AssetIncome, AssetIncome.StockVesting): "Stock vesting",
+        (LedgerTransaction.AssetIncome, AssetIncome.StakingReward): "Staking reward",
+        (LedgerTransaction.AssetIncome, AssetIncome.Reward): "Reward",
+        (LedgerTransaction.AssetIncome, AssetIncome.LendingInterest): "Lending interest",
+        (LedgerTransaction.AssetIncome, AssetIncome.TokenRentReturn): "Token account rent returned"
+    }
 
     def __init__(self):
         super().__init__()
@@ -17,6 +54,16 @@ class TaxesPortugal(TaxReport):
             "Shares": (self.prepare_stocks_and_etf, "tax_prt_shares.json"),
             "Interest": (self.prepare_broker_interest, "tax_prt_interests.json")
         }
+
+    # A trade belongs to the year of its trade date on Lisbon's clock (CIRS a.44), settlement is not read
+    def trade_date(self, operation) -> int:
+        return self._moment(operation.timestamp(), operation.timestamp_is_day())
+
+    # No crypto-for-crypto exchange is a disposal until the exit to fiat; a wrapping is read the same way
+    def skip_reason(self, operation):
+        if operation.type() in (LedgerTransaction.Swap, LedgerTransaction.Conversion):
+            return self.texts['crypto_exchange']
+        return super().skip_reason(operation)
 
     def prepare_dividends(self):
         dividends_report = []
@@ -46,6 +93,7 @@ class TaxesPortugal(TaxReport):
                 'note': note
             }
             dividends_report.append(line)
+            self.mark_printed(dividend)
         self.insert_totals(dividends_report, ["amount", "amount_eur", "tax", "tax_eur"])
         return dividends_report
 
@@ -98,6 +146,7 @@ class TaxesPortugal(TaxReport):
                 'note': note
             }
             deals_report.append(line)
+            self.mark_printed(trade.close_operation())
         self.insert_totals(deals_report, ["income_eur", "spending_eur", "profit_eur", "profit"])
         return deals_report
 
@@ -120,6 +169,8 @@ class TaxesPortugal(TaxReport):
                     'note': interest['note']
                 }
                 interests_report.append(line)
+            if interests:
+                self.mark_printed(operation)
         # Process cash payments out of corporate actions
         payments = CorporateAction.get_payments(self.account)
         payments = [x for x in payments if self.year_begin <= self._moment(x['timestamp'], x['day_only']) < self.year_end]
@@ -134,5 +185,6 @@ class TaxesPortugal(TaxReport):
                 'note': payment['note']
             }
             interests_report.append(line)
+            self.mark_printed_id(LedgerTransaction.CorporateAction, payment['oid'])
         self.insert_totals(interests_report, ["amount", "amount_eur"])
         return interests_report

@@ -1,0 +1,27 @@
+{
+  "page": "Summary",
+  "title": "Account report summary",
+  "headers": [
+      "Period: {parameters[period]}",
+      "Account: {parameters[account]}",
+      "Section totals as they stand in the report; nothing is netted across sections and no tax is computed"
+    ],
+  "columns": [
+    {"name": "Section", "width": 30},
+    {"name": "Rows / figure", "width": 34},
+    {"name": "Amount, EUR", "width": 14}
+  ],
+  "section": {
+    "rows": [["section", "rows", ""]],
+    "formats": [["T:B", "N:0", "T"]]
+  },
+  "figure": {
+    "rows": [["", "figure", "amount"]],
+    "formats": [["T", "T", "N:2"]]
+  },
+  "count": {
+    "rows": [["label", "count", ""]],
+    "formats": [["L", "N:0", "T"]]
+  },
+  "footers": []
+}

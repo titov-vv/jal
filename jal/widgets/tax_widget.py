@@ -20,7 +20,7 @@ from jal.db.asset import JalAsset
 from jal.db.peer import JalPeer
 from jal.db.settings import JalSettings, FolderFor
 from jal.constants import PredefinedAgents
-from jal.data_export.taxes import TaxReport
+from jal.data_export.taxes import TaxReport, TaxReportStop
 from jal.data_export.taxes_flow import TaxesFlowRus
 from jal.data_export.xlsx import XLSX
 from jal.data_export.ru_ndfl3 import Ru_NDFL3
@@ -136,10 +136,16 @@ class TaxWidget(MdiWidget):
                                   self.tr("You haven't selected an account for tax report"), QMessageBox.Ok)
             return
         taxes = TaxReport.create_report(self.ui.Country.currentIndex())
-
-        tax_report = taxes.prepare_tax_report(self.year, self.account,
-                                              use_one_currency_rate=self.use_one_rate,
-                                              use_settlement=(not self.no_settlement))
+        try:
+            tax_report = taxes.prepare_tax_report(self.year, self.account,
+                                                  use_one_currency_rate=self.use_one_rate,
+                                                  use_settlement=(not self.no_settlement))
+        except TaxReportStop as stop:
+            missing = "\n".join(f"{symbol} - {reading2d(timestamp)}" for symbol, timestamp in stop.missing)
+            message = self.tr("The report needs these quotes, add them and save it again:") + "\n" + missing
+            logging.error(message)
+            QMessageBox().warning(self, self.tr("Quotes are missing"), message, QMessageBox.Ok)
+            return
         if not tax_report:
             logging.warning(self.tr("Tax report is empty"))
             return
@@ -154,7 +160,8 @@ class TaxWidget(MdiWidget):
             "broker_iso_country": taxes.account.country().iso_code()
         }
         for section in tax_report:
-            reports_xls.output_data(tax_report[section], taxes.report_template(section), parameters)
+            reports_xls.output_data(tax_report[section], taxes.report_template(section), parameters,
+                                    headers=taxes.section_headers(section))
         if reports_xls.save():
             logging.info(self.tr("Excel tax report was saved to file ") + f"'{self.xls_filename}'")
 

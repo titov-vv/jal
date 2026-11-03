@@ -56,7 +56,7 @@ def test_two_hop_lot_in_jal_view(prepare_db_taxes):
     assert round(lot.open_price(adjusted=True) * lot.open_qty(), 6) == Decimal('18.400000')   # 20 of 92 EUR
 
 
-# Today's reports of that lot: RU crypto reads the RUB price as EUR, PT has no crypto section
+# Today's reports of that lot: RU crypto reads the RUB price as EUR, PT has no crypto section and lists the sale
 def test_two_hop_lot_in_tax_reports(prepare_db_taxes):
     create_two_hop_lot()
 
@@ -67,7 +67,9 @@ def test_two_hop_lot_in_tax_reports(prepare_db_taxes):
             'o_amount_rub': Decimal('615222.40'), 'o_fee': Decimal('8'), 'o_fee_rub': Decimal('736.00'),
             'c_amount_rub': Decimal('6992.00'), 'spending_rub': Decimal('615995.20'),
             'profit_rub': Decimal('-609003.20')}
-    assert not any(TaxesPortugal().prepare_tax_report(2025, 4).values())
+    pt = TaxesPortugal().prepare_tax_report(2025, 4)
+    assert [k for k, v in pt.items() if v] == ["Summary", "Not covered"]
+    assert [x['number'] for x in pt["Not covered"]] == ["sell-USDT"]
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -145,8 +147,8 @@ def test_crypto_scenario_tax_reports(data_path, prepare_db_taxes):
     assert pt == expected['pt']
 
 
-# Today's account list: an account whose only disposals are swaps is not offered
-def test_swap_only_account_is_not_taxable(prepare_db_taxes):
+# An account whose only disposal is a swap is offered for a tax report
+def test_swap_only_account_is_taxable(prepare_db_taxes):
     JalAccountCreator(currency_id=USD, number='S1', name='Swap exchange', investing=1, organization=1,
                       account_type=PredefinedAccountType.CEX).commit()                                         # 2
     create_crypto_scenario()
@@ -154,4 +156,4 @@ def test_swap_only_account_is_not_taxable(prepare_db_taxes):
     create_swaps(2, [(d2t(250320), 6, 10, 4, 0.05)], treatment=SwapTreatment.Sale)
     Ledger().rebuild(from_timestamp=0)
 
-    assert [x.id() for x in JalAccount.get_taxable_accounts(2025)] == [1]
+    assert [x.id() for x in JalAccount.get_taxable_accounts(2025)] == [1, 2]

@@ -78,5 +78,81 @@
  "Криптовалюты": [],
  "Облигации": [],
  "ПФИ": [],
- "Проценты": []
+ "Проценты": [],
+ "Сводка": [
+  {
+   "report_template": "section",
+   "section": "Дивиденды",
+   "rows": 1
+  },
+  {
+   "report_template": "figure",
+   "figure": "Сумма",
+   "amount": 18235.41
+  },
+  {
+   "report_template": "section",
+   "section": "Акции",
+   "rows": 1
+  },
+  {
+   "report_template": "figure",
+   "figure": "Доходы",
+   "amount": 21950.63
+  },
+  {
+   "report_template": "figure",
+   "figure": "Расходы",
+   "amount": 18308.81
+  },
+  {
+   "report_template": "figure",
+   "figure": "Финансовый результат",
+   "amount": 3641.82
+  },
+  {
+   "report_template": "section",
+   "section": "Облигации",
+   "rows": 0
+  },
+  {
+   "report_template": "section",
+   "section": "ПФИ",
+   "rows": 0
+  },
+  {
+   "report_template": "section",
+   "section": "Криптовалюты",
+   "rows": 0
+  },
+  {
+   "report_template": "section",
+   "section": "Комиссии",
+   "rows": 0
+  },
+  {
+   "report_template": "section",
+   "section": "Проценты",
+   "rows": 0
+  },
+  {
+   "report_template": "count",
+   "label": "Пропущено по правилу юрисдикции",
+   "count": 0,
+   "link": ""
+  },
+  {
+   "report_template": "count",
+   "label": "Не отражено ни в одном разделе",
+   "count": 0,
+   "link": ""
+  },
+  {
+   "report_template": "count",
+   "label": "Строк «ожидает пересчёта»",
+   "count": 0,
+   "link": ""
+  }
+ ],
+ "Не отражено": []
 }

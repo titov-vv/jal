@@ -6,7 +6,7 @@ from tests.helpers import d2t, create_assets, create_quotes, create_trades, crea
     create_dividends, create_transfers, create_corporate_actions, symbol_id_for
 from tests.test_taxes_crypto import create_crypto_scenario
 from jal.constants import PredefinedAsset, PredefinedCategory, PredefinedAccountType, CorporateActionType
-from jal.db.account import JalAccountCreator
+from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.db import JalDB
 from jal.db.ledger import Ledger
 from jal.db.operations import LedgerTransaction, TaxStatus, AssetPayment, AssetIncome, ChainAction, \
@@ -122,3 +122,31 @@ def test_lost_position_is_no_event(prepare_db_taxes, action):
     Ledger().rebuild(from_timestamp=0)
 
     assert [x[2] for x in _statuses() if x[0] == LedgerTransaction.CorporateAction] == [NOT]
+
+
+# The account list of the tax report is the SQL twin of taxable(): investing accounts with an event of the year
+def test_taxable_accounts_follow_taxable(prepare_db_taxes):
+    JalAccountCreator(currency_id=2, number='B1', name='Bank', investing=0, organization=1,
+                      account_type=PredefinedAccountType.Bank).commit()                                     # 2
+    JalAccountCreator(currency_id=2, number='Q1', name='Quiet', investing=1, organization=1,
+                      account_type=PredefinedAccountType.Broker).commit()                                   # 3
+    JalAccountCreator(currency_id=2, number='S1', name='Spin', investing=1, organization=1,
+                      account_type=PredefinedAccountType.Broker).commit()                                   # 4
+    create_crypto_scenario()   # account 1, 2025; assets 4-9
+    create_actions([(d2t(250301), 2, 1, [(PredefinedCategory.Interest, 2.0, "Savings interest")])])
+    create_trades(3, [(d2t(250102), d2t(250104), 8, 5, 10, 0, "quiet-buy")])
+    create_transfers([(d2t(250103), 3, 5, 1, 5, 8)])
+    create_trades(4, [(d2t(241202), d2t(241204), 8, 10, 10, 0, "spin-buy")])
+    create_corporate_actions(4, [(d2t(250401), CorporateAction.SpinOff, 8, 10, "Spin-off",
+                                  [(8, 10, 0.9), (9, 2, 0.1)])])
+    Ledger().rebuild(from_timestamp=0)
+
+    expected = set()
+    query = JalDB._exec("SELECT o.otype, o.id FROM operations AS o")
+    while query.next():
+        operation = LedgerTransaction.get_operation(query.value(0), query.value(1))
+        investing = JalDB._read("SELECT investing FROM accounts WHERE id=:id", [(":id", operation.account().id())])
+        if operation.taxable() != NOT and d2t(250101) <= operation.timestamp() < d2t(260101) and investing:
+            expected.add(operation.account().id())
+    assert expected == {1, 4}
+    assert [x.id() for x in JalAccount.get_taxable_accounts(2025)] == sorted(expected)

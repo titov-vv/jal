@@ -18,7 +18,6 @@ class XLSX:
     ROW_WIDTH = 2
     ROW_SPAN_H = 3
     ROW_SPAN_V = 4
-    totals = "ИТОГО"
 
     RPT_METHOD = 0
     RPT_TITLE = 1
@@ -57,13 +56,14 @@ class XLSX:
             logging.error(self.tr("Can't load report template from file ") + f"'{file_path}' ({type(e).__name__} {e})")
         return template
 
-    def output_data(self, data, template_file, parameters):
+    # 'headers' are lines the section states under the template's own, e.g. the treatment it assumed
+    def output_data(self, data, template_file, parameters, headers=()):
         template = self.load_template(template_file)
         if template is None or not data:
             return
         sheet = self.workbook.add_worksheet(template['page'])
         self.add_report_title(sheet, template['title'])
-        row = self.add_report_headers(sheet, template['headers'], parameters)
+        row = self.add_report_headers(sheet, list(template['headers']) + list(headers), parameters)
         numbered = template['columns_numbered'] if 'columns_numbered' in template else False
         row = self.add_column_headers(sheet, template['columns'], parameters, start_row=row + 1, numbered=numbered)
         for i, values in enumerate(data):
@@ -143,7 +143,9 @@ class XLSX:
                 except KeyError:
                     logging.warning(self.tr("Format is missing for report field: ") + column_key)
                     value_format = self.formats.Text(even_odd)
-                if 'span' in template and not template['span'][row][col] is None:
+                if template['formats'][row][col] == 'L' and values.get('link'):   # a link to another sheet
+                    sheet.write_url(start_row+row, col, f"internal:'{values['link']}'!A1", value_format, string=value)
+                elif 'span' in template and not template['span'][row][col] is None:
                     span = template['span'][row][col]
                     sheet.merge_range(start_row+row, col, start_row+row+span['v'], col+span['h'], value, value_format)
                 else:
@@ -169,6 +171,8 @@ class XLSX:
             return value, self.formats.Number(even_odd, tolerance=int(format_string[2:]))
         elif format_string[0] == 'F':
             return value, self.formats.ColumnFooter()
+        elif format_string[0] == 'L':
+            return value, self.formats.Text(even_odd)
         elif format_string[0] == '-':
             return value, self.formats.NoFormat()
         else:

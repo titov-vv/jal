@@ -1413,15 +1413,19 @@ class Trade(FeeCarrier, LedgerTransaction):
             return [amount, qty]
 
     # Searches for dividend with type BondInterest that matches trade by timestamp, account, asset and number
-    # This dividend represents accrued interest for this operation.
-    # Returns value of accrued interest or 0 if such isn't found
-    def accrued_interest(self,currency_id: int = 0) -> Decimal:
+    # The bond interest payment that carries this trade's accrued interest, None if there is none
+    def accrued_interest_payment(self):
         oid = self._read("SELECT p.oid FROM asset_payments AS p LEFT JOIN asset_symbol AS s ON p.symbol_id=s.id "
                          "WHERE p.timestamp=:timestamp AND p.account_id=:account "
                          "AND s.asset_id=:asset AND p.number=:number AND p.type=:interest",
                          [(":timestamp", self._timestamp), (":account", self._account.id()), (":number", self._number),
                           (":asset", self._asset.id()), (":interest", AssetPayment.BondInterest)])
-        value = AssetPayment(oid).amount() if oid else Decimal('0')
+        return AssetPayment(oid) if oid else None
+
+    # Accrued interest of this trade, 0 if there is none
+    def accrued_interest(self, currency_id: int = 0) -> Decimal:
+        payment = self.accrued_interest_payment()
+        value = payment.amount() if payment is not None else Decimal('0')
         if currency_id and currency_id != self._account.currency():
             return value * JalAsset(self._account.currency()).quote(self.timestamp(), currency_id)[1]
         else:
@@ -2650,14 +2654,14 @@ class CorporateAction(LedgerTransaction):
     @classmethod
     def get_payments(cls, account) -> list:
         payments = []
-        query = cls._exec("SELECT a.timestamp, a.timestamp_day_only, r.qty, a.note FROM asset_actions AS a "
+        query = cls._exec("SELECT a.oid, a.timestamp, a.timestamp_day_only, r.qty, a.note FROM asset_actions AS a "
                           "LEFT JOIN asset_action_results AS r ON r.action_id=a.oid "
                           "LEFT JOIN asset_symbol AS s ON r.symbol_id=s.id "
                           "WHERE a.account_id=:account_id AND s.asset_id=:account_currency",
                           [(":account_id", account.id()), (":account_currency", account.currency())])
         while query.next():
-            timestamp, day_only, amount, note = cls._read_record(query, cast=[int, bool, Decimal, str])
-            payments.append({"timestamp": timestamp, "day_only": day_only, "amount": amount, "note": note})
+            oid, timestamp, day_only, amount, note = cls._read_record(query, cast=[int, int, bool, Decimal, str])
+            payments.append({"oid": oid, "timestamp": timestamp, "day_only": day_only, "amount": amount, "note": note})
         return payments
 
     # A short position is carried over by a split and by a symbol change only, and it has to stay short

@@ -123,5 +123,91 @@
   ],
   "Проценты":[
 
+  ],
+  "Сводка": [
+    {
+      "report_template": "section",
+      "section": "Дивиденды",
+      "rows": 0
+    },
+    {
+      "report_template": "section",
+      "section": "Акции",
+      "rows": 0
+    },
+    {
+      "report_template": "section",
+      "section": "Облигации",
+      "rows": 0
+    },
+    {
+      "report_template": "section",
+      "section": "ПФИ",
+      "rows": 2
+    },
+    {
+      "report_template": "figure",
+      "figure": "Доходы",
+      "amount": 144106.67
+    },
+    {
+      "report_template": "figure",
+      "figure": "Расходы",
+      "amount": 135545.077777
+    },
+    {
+      "report_template": "figure",
+      "figure": "Финансовый результат",
+      "amount": 8561.592223
+    },
+    {
+      "report_template": "section",
+      "section": "Криптовалюты",
+      "rows": 0
+    },
+    {
+      "report_template": "section",
+      "section": "Комиссии",
+      "rows": 2
+    },
+    {
+      "report_template": "figure",
+      "figure": "Сумма",
+      "amount": 21.13
+    },
+    {
+      "report_template": "section",
+      "section": "Проценты",
+      "rows": 0
+    },
+    {
+      "report_template": "count",
+      "label": "Пропущено по правилу юрисдикции",
+      "count": 0,
+      "link": ""
+    },
+    {
+      "report_template": "count",
+      "label": "Не отражено ни в одном разделе",
+      "count": 1,
+      "link": "Не отражено"
+    },
+    {
+      "report_template": "count",
+      "label": "Строк «ожидает пересчёта»",
+      "count": 0,
+      "link": ""
+    }
+  ],
+  "Не отражено": [
+    {
+      "report_template": "operation",
+      "date": 1657065600,
+      "operation": "Комиссия или налог по активу",
+      "symbol": "MUn",
+      "number": "1018307482",
+      "description": "CFD BORROW FEE FOR MU for 06-JUL-2022\n",
+      "reason": "Ни один раздел отчёта не отражает эту операцию"
+    }
   ]
 }

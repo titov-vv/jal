@@ -9,12 +9,21 @@ from jal.db.settings import JalSettings
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.category import JalCategory
+from jal.db.db import JalDB
 from jal.db.helpers import is_day_marker
-from jal.db.operations import AssetPayment, AssetIncome
+from jal.db.operations import LedgerTransaction, TaxStatus, AssetPayment, AssetIncome
 from jal.db.clock import ZONE_SPAN, wall_clock_reading
 
 REPORT_METHOD = 0
 REPORT_TEMPLATE = 1
+
+
+# Raised when a report can't be produced as asked; 'missing' lists (symbol, timestamp) of every quote that stopped it
+class TaxReportStop(Exception):
+    def __init__(self, missing: list):
+        super().__init__("Tax report stopped by missing quotes")
+        self.missing = missing
+
 
 class TaxReport:
     PORTUGAL = 0
@@ -25,6 +34,12 @@ class TaxReport:
     }
     currency_name = ''  # The name of the currency for tax values calculation
     country_name = ''   # The name of the country for tax preparation
+    currency_suffix = ''   # Suffix of the report-currency fields of a row ('_rub', '_eur')
+    # The two sections every report has, in its jurisdiction's language: (name, template)
+    summary_section = ('', '')
+    uncovered_section = ('', '')
+    texts = {}             # Report strings in the jurisdiction's language, see the country classes
+    operation_labels = {}  # {(otype, subtype or None): label} in the jurisdiction's language
     # The zone whose wall clock this report counts its days and years on - the one of the jurisdiction the report is
     # filed in. Symmetric to Statement.source_timezone: a report names its own zone the way a statement names its
     # source's. An empty name leaves every stored timestamp read as it is.
@@ -43,6 +58,10 @@ class TaxReport:
         self.use_settlement = True
         self.one_currency_rate = False
         self._parameters = {}
+        self._section = ''
+        self.section_notes = {}   # {section: [header lines]} a section states under its title
+        self._printed = set()     # (otype, oid) of every operation a section printed
+        self._missing = []        # (symbol, timestamp) of every quote a section needed and didn't find
 
     @staticmethod
     def tr(text):
@@ -83,6 +102,10 @@ class TaxReport:
         return class_instance()
 
     def report_template(self, report_name):
+        if report_name == self.summary_section[0]:
+            return self.summary_section[1]
+        if report_name == self.uncovered_section[0]:
+            return self.uncovered_section[1]
         if report_name not in self.reports:
             logging.warning(self.tr("No report template found for section: ") + report_name)
             return ""
@@ -130,9 +153,110 @@ class TaxReport:
         if 'generate_modelo3' in kwargs:
             self.generate_modelo3 = kwargs['generate_modelo3']
         self.load_parameters(year)
+        self.section_notes, self._printed, self._missing = {}, set(), []
+        sections = {}
         for report in self.reports:
-            tax_report[report] = self.reports[report][REPORT_METHOD]()
+            self._section = report
+            sections[report] = self.reports[report][REPORT_METHOD]()
+        if self._missing:
+            raise TaxReportStop(self._missing)
+        skipped, uncovered = self._not_covered()
+        tax_report[self.summary_section[0]] = self.prepare_summary(sections, skipped, uncovered)
+        tax_report.update(sections)
+        tax_report[self.uncovered_section[0]] = self.prepare_not_covered(skipped, uncovered)
         return tax_report
+
+    # A line the section being prepared states under its title - the treatment it assumed
+    def add_header(self, line: str):
+        self.section_notes.setdefault(self._section, []).append(line)
+
+    def section_headers(self, section: str) -> list:
+        return self.section_notes.get(section, [])
+
+    # Records that a section printed this operation, so that it isn't listed as not covered
+    def mark_printed(self, operation):
+        if operation is not None:
+            self._printed.add((operation.type(), operation.id()))
+
+    def mark_printed_id(self, otype: int, oid: int):
+        self._printed.add((otype, oid))
+
+    # Records a quote a section needed and didn't find; the report stops after all sections listed theirs
+    def missing_quote(self, symbol: str, timestamp: int):
+        if (symbol, timestamp) not in self._missing:
+            self._missing.append((symbol, timestamp))
+
+    # Why the jurisdiction's rule takes this operation out of the report, None if it doesn't
+    def skip_reason(self, operation):
+        if operation.type() == LedgerTransaction.AssetIncome and operation.subtype() == AssetIncome.TokenRentReturn:
+            return self.texts['rent_return']
+        return None
+
+    # Every taxable or base-impacting operation of the account in the report's year that no section printed:
+    # returns ({reason: count} of those the jurisdiction skips, [operations] no section claimed)
+    def _not_covered(self):
+        skipped, uncovered = {}, []
+        query = JalDB._exec("SELECT o.otype, o.id FROM ledger_sequence AS s JOIN operations AS o ON o.id=s.operation_id "
+                            "WHERE s.account_id=:account AND s.timestamp>=:begin AND s.timestamp<:end "
+                            "GROUP BY o.id ORDER BY MIN(s.seq_no)",
+                            [(":account", self.account.id()), (":begin", self.year_begin - ZONE_SPAN),
+                             (":end", self.year_end + ZONE_SPAN)])
+        while query.next():
+            otype, oid = query.value(0), query.value(1)
+            if (otype, oid) in self._printed:
+                continue
+            operation = LedgerTransaction.get_operation(otype, oid)
+            if operation.account().id() != self.account.id() or operation.taxable() == TaxStatus.NotTaxable:
+                continue
+            if not self.in_year(self.operation_date(operation)):
+                continue
+            reason = self.skip_reason(operation)
+            if reason is None:
+                uncovered.append(operation)
+            else:
+                skipped[reason] = skipped.get(reason, 0) + 1
+        return skipped, uncovered
+
+    def operation_label(self, operation) -> str:
+        key = (operation.type(), operation.subtype())
+        if key in self.operation_labels:
+            return self.operation_labels[key]
+        return self.operation_labels.get((operation.type(), None), operation.name())
+
+    def prepare_not_covered(self, skipped: dict, uncovered: list) -> list:
+        rows = [{'report_template': "skipped", 'reason': reason, 'count': self.texts['skipped_count'].format(count)}
+                for reason, count in skipped.items()]
+        for operation in uncovered:
+            rows.append({
+                'report_template': "operation",
+                'date': self.operation_date(operation),
+                'operation': self.operation_label(operation),
+                'symbol': operation.symbol().symbol(),
+                'number': operation.number(),
+                'description': operation.description(),
+                'reason': self.texts['uncovered']
+            })
+        return rows
+
+    # Each section with its own totals as they stand, in the report's currency (tax figures left out), then the counts
+    # of what is not covered and of the figures a later replay may still change
+    def prepare_summary(self, sections: dict, skipped: dict, uncovered: list) -> list:
+        rows = []
+        for name, section in sections.items():
+            rows.append({'report_template': "section", 'section': name,
+                         'rows': len([x for x in section if x['report_template'] != "totals"])})
+            totals = [x for x in section if x['report_template'] == "totals"]
+            for field, value in (totals[0].items() if totals else []):
+                if field.endswith(self.currency_suffix) and not field.startswith('tax'):
+                    figure = field[:-len(self.currency_suffix)]
+                    rows.append({'report_template': "figure", 'figure': self.texts.get(figure, figure), 'amount': value})
+        pending = len([x for section in sections.values() for x in section if x.get('pending_replay')])
+        for label, count in ((self.texts['skipped_total'], sum(skipped.values())),
+                             (self.texts['uncovered_total'], len(uncovered))):
+            link = self.uncovered_section[0] if count else ''   # an empty section makes no sheet to link to
+            rows.append({'report_template': "count", 'label': label, 'count': count, 'link': link})
+        rows.append({'report_template': "count", 'label': self.texts['pending_total'], 'count': pending, 'link': ''})
+        return rows
 
     # Check if 2-letter country code present in tax treaty parameter of current report
     def has_tax_treaty_with(self, country_code: str) -> bool:
@@ -159,9 +283,38 @@ class TaxReport:
         operations = JalCategory(category_id).get_operations(self.year_begin - ZONE_SPAN, self.year_end + ZONE_SPAN)
         return [x for x in operations if self.year_begin <= self._moment(x.timestamp()) < self.year_end]
 
-    # Returns a list of closed stock/ETF trades that should be included into the report for given year
+    # The day that puts a trade into a year: its settlement, or its trade date where the source gave no settlement.
+    # A jurisdiction that reads the trade date overrides this.
+    def trade_date(self, operation) -> int:
+        return self.settlement_date(operation)
+
+    # The day that puts a deal into a year - that of its closing operation
+    def deal_date(self, deal) -> int:
+        return self.trade_date(deal.close_operation())
+
+    # The day that puts an operation into a year: a trade's by the jurisdiction's rule, any other its own moment
+    def operation_date(self, operation) -> int:
+        if operation.type() == LedgerTransaction.Trade:
+            return self.trade_date(operation)
+        return self._moment(operation.timestamp(), operation.timestamp_is_day())
+
+    # The moment a leg's rate is read at: its settlement, or its trade moment when asked for or when there is none
+    @staticmethod
+    def rate_moment(operation, no_settlement: bool = False) -> int:
+        return operation.timestamp() if no_settlement or not operation.settlement() else operation.settlement()
+
+    # The settlement day printed for a leg, its trade date where the source gave none
+    def settlement_date(self, operation) -> int:
+        if operation.settlement():
+            return self._date(operation.settlement())
+        return self._moment(operation.timestamp(), operation.timestamp_is_day())
+
+    def in_year(self, timestamp: int) -> bool:
+        return self.year_begin <= timestamp < self.year_end
+
+    # Returns a list of closed deals of the given asset types that belong to the report's year
     def trades_list(self, asset_type) -> list:
         trades = self.account.closed_trades_list()
         trades = [x for x in trades if x.asset().type() in asset_type]
-        trades = [x for x in trades if self.year_begin <= self._date(x.close_operation().settlement()) < self.year_end]
+        trades = [x for x in trades if self.in_year(self.deal_date(x))]
         return trades

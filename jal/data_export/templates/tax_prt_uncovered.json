@@ -1,0 +1,27 @@
+{
+  "page": "Not covered",
+  "title": "Operations of the year no section of the report includes",
+  "headers": [
+      "Period: {parameters[period]}",
+      "Account: {parameters[account]}",
+      "First what the jurisdiction's rule skips, then the operations no section includes"
+    ],
+  "columns": [
+    {"name": "Date", "width": 10},
+    {"name": "Operation", "width": 22},
+    {"name": "Asset", "width": 12},
+    {"name": "Number", "width": 14},
+    {"name": "Description", "width": 50},
+    {"name": "Reason", "width": 40}
+  ],
+  "skipped": {
+    "rows": [["reason", null, null, null, null, "count"]],
+    "formats": [["T", null, null, null, null, "T"]],
+    "span": [[{"h": 4, "v": 0}, null, null, null, null, null]]
+  },
+  "operation": {
+    "rows": [["date", "operation", "symbol", "number", "description", "reason"]],
+    "formats": [["D", "T", "T", "T", "T", "T"]]
+  },
+  "footers": []
+}

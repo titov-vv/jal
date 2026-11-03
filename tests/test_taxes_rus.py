@@ -557,7 +557,8 @@ def test_lost_position_stays_out_of_tax_reports(prepare_db_taxes, action):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Today's output for a swap: its own disposal is in no report, and the lot it opens is sold at the swap's market value
+# A swap's own disposal is in no section yet, only on "Not covered" (RU) or skipped by rule (PT); the lot it opens
+# is sold at the swap's market value
 def test_swap_closed_deal_stays_out_of_tax_reports(prepare_db_taxes):
     create_assets([("AAA", "Coin A", "", 2, PredefinedAsset.Crypto, 0),     # ID 4
                    ("BBB", "Coin B", "", 2, PredefinedAsset.Crypto, 0)])    # ID 5
@@ -574,7 +575,8 @@ def test_swap_closed_deal_stays_out_of_tax_reports(prepare_db_taxes):
     assert [(x.asset().id(), x.profit()) for x in swap_deals] == [(4, Decimal('49')), (5, Decimal('29.5'))]
 
     report = TaxesRussia().prepare_tax_report(2020, 1)
-    assert [k for k, v in report.items() if v] == ["Криптовалюты"]
+    assert [k for k, v in report.items() if v] == ["Сводка", "Криптовалюты", "Не отражено"]
+    assert [(x['operation'], x['symbol']) for x in report["Не отражено"]] == [("Обмен криптовалюты", "AAA")]
     deal, totals = report["Криптовалюты"]
     assert {k: deal[k] for k in ('symbol', 'qty', 'o_number', 'o_date', 'o_rate', 'o_price', 'o_amount_rub', 'o_fee',
                                  'c_number', 'c_date', 'c_amount_rub', 'c_fee_rub', 'spending_rub', 'profit',
@@ -584,4 +586,9 @@ def test_swap_closed_deal_stays_out_of_tax_reports(prepare_db_taxes):
             'c_number': "sell-B", 'c_date': t_sell, 'c_amount_rub': Decimal('13140.00'), 'c_fee_rub': Decimal('36.50'),
             'spending_rub': Decimal('11136.50'), 'profit': Decimal('29.50'), 'profit_rub': Decimal('2003.50')}
     assert totals['report_template'] == "totals" and totals['profit_rub'] == Decimal('2003.50')
-    assert not any(TaxesPortugal().prepare_tax_report(2020, 1).values())
+    report = TaxesPortugal().prepare_tax_report(2020, 1)
+    assert [k for k, v in report.items() if v] == ["Summary", "Not covered"]
+    skipped, sale = report["Not covered"]
+    assert (skipped['reason'], skipped['count']) == \
+           ("Crypto-for-crypto exchange: not taxed until exit to fiat (CIRS art. 10.º, n.º 20)", "Skipped by rule: 1")
+    assert (sale['operation'], sale['number']) == ("Trade", "sell-B")   # no PT crypto section yet
