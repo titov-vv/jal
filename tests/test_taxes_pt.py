@@ -1,11 +1,14 @@
 import json
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
+from decimal import Decimal
+
 from tests.helpers import d2t, dt2t, create_assets, create_quotes, create_dividends, create_trades, create_actions, \
-    create_corporate_actions, create_stock_dividends, json_decimal2float
+    create_corporate_actions, create_stock_dividends, json_decimal2float, symbol_id_for
 from jal.constants import PredefinedAsset, PredefinedCategory
 from jal.db.ledger import Ledger
-from jal.db.operations import CorporateAction, AssetIncome
+from jal.db.operations import LedgerTransaction, CorporateAction, AssetIncome, AssetPayment
+from jal.data_export.irs_modelo3 import IRS_Modelo3
 from jal.data_export.tax_reports.portugal import TaxesPortugal
 
 
@@ -67,12 +70,59 @@ def test_taxes_pt(tmp_path, data_path, prepare_db_taxes):
     create_pt_scenario()
 
     # Hand check: amount_eur = round(amount * rate, 2); profit_eur = c_amount_eur - (o_amount_eur + round(fees_eur, 2))
-    # Frozen as is: Shares totals sum 'income_eur'/'spending_eur' that no row has; SPLT's o_price is the
-    # pre-split 200 beside qty 20; T05 is dropped by its 2025 settlement though portugal.py cites CIRS a.44 for trade date
+    # Default is one rate, the disposal's (CIRS a.23); a short converts at its opening sale's rate
     tax_report = TaxesPortugal().prepare_tax_report(2024, 1)
     json_decimal2float(tax_report)
     assert tax_report == expected['default']
 
-    tax_report = TaxesPortugal().prepare_tax_report(2024, 1, use_one_currency_rate=True)
+    tax_report = TaxesPortugal().prepare_tax_report(2024, 1, use_one_currency_rate=False)
     json_decimal2float(tax_report)
-    assert tax_report['Shares'] == expected['one_currency_rate_shares']
+    assert tax_report['Shares'] == expected['two_rates_shares']
+
+
+# The Modelo 3 lines are made of the Shares rows: one per deal, in EUR
+def test_modelo3_lines_follow_the_shares_rows(prepare_db_taxes):
+    create_pt_scenario()
+    report = TaxesPortugal().prepare_tax_report(2024, 1)
+    form = IRS_Modelo3()
+    form.update_taxes(report, {'broker_iso_country': '840'})
+    lines = form._tax_form.splitlines()
+    assert len(lines) == 5
+    assert "<ValorRealizacao>1647.00</ValorRealizacao>" in lines[0] and "<ValorAquisicao>1372.50</ValorAquisicao>" in lines[0]
+    assert "<DespesasEncargos>2.01</DespesasEncargos>" in lines[0]
+
+
+# Costs of holding grouped by kind, then the broker's fees; each of them marked printed
+def test_fees_sheet(prepare_db_taxes):
+    create_assets([("ERIC", "Ericsson ADR", "US2948216088", 2, PredefinedAsset.Stock, 'se')])   # ID 4
+    create_quotes(2, 3, [(d2t(240101), 0.9)])
+    for subtype, note in ((AssetPayment.DepositaryFee, "ADR Fee"), (AssetPayment.AssetFee, "Some asset tax")):
+        LedgerTransaction.create_new(LedgerTransaction.AssetPayment, {
+            'timestamp': d2t(240510), 'type': subtype, 'account_id': 1, 'symbol_id': symbol_id_for(4),
+            'amount': '-2', 'tax': '0', 'note': note})
+    create_actions([(d2t(240601), 1, 1, [(PredefinedCategory.Fees, -10.0, "Monthly fee")])])
+    Ledger().rebuild(from_timestamp=0)
+
+    report = TaxesPortugal().prepare_tax_report(2024, 1)
+    rows = [(x['fee_type'], x['description'], x['amount'], x['amount_eur']) for x in report['Fees'][:-1]]
+    assert rows == [("Depositary fee", "ERIC: ADR Fee", Decimal('2'), Decimal('1.80')),
+                    ("Other asset fee or tax", "ERIC: Some asset tax", Decimal('2'), Decimal('1.80')),
+                    ("Broker fee", "Monthly fee", Decimal('10'), Decimal('9.00'))]
+    assert report['Not covered'] == []
+
+
+# Crypto income is listed at its quote for information; without a quote it shows 0 and says so
+def test_crypto_income_without_quote(prepare_db_taxes):
+    create_assets([("SOL", "Solana", "", 2, PredefinedAsset.Crypto, 0), ("NEW", "No quote coin", "", 2, PredefinedAsset.Crypto, 0)])
+    create_quotes(2, 3, [(d2t(240101), 0.9)])
+    create_quotes(4, 2, [(d2t(240201), 100.0)])
+    for asset_id, subtype in ((4, AssetIncome.StakingReward), (5, AssetIncome.Reward)):
+        LedgerTransaction.create_new(LedgerTransaction.AssetIncome, {
+            'timestamp': d2t(240202), 'type': subtype, 'account_id': 1, 'symbol_id': symbol_id_for(asset_id),
+            'amount': '2', 'tax': '0', 'number': '', 'note': 'income'})
+    Ledger().rebuild(from_timestamp=0)
+
+    report = TaxesPortugal().prepare_tax_report(2024, 1)
+    rows = [(x['symbol'], x['price'], x['value_eur'], x['note']) for x in report['Crypto income'][:-1]]
+    assert rows == [("SOL", Decimal('100'), Decimal('180.00'), ''),
+                    ("NEW", Decimal('0'), Decimal('0.00'), "quotation is not present in database")]

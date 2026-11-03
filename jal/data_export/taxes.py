@@ -11,7 +11,7 @@ from jal.db.asset import JalAsset
 from jal.db.category import JalCategory
 from jal.db.db import JalDB
 from jal.db.helpers import is_day_marker
-from jal.db.operations import LedgerTransaction, TaxStatus, AssetPayment, AssetIncome
+from jal.db.operations import LedgerTransaction, TaxStatus, AssetPayment, AssetIncome, Transfer
 from jal.db.clock import ZONE_SPAN, wall_clock_reading
 
 REPORT_METHOD = 0
@@ -185,6 +185,28 @@ class TaxReport:
     def missing_quote(self, symbol: str, timestamp: int):
         if (symbol, timestamp) not in self._missing:
             self._missing.append((symbol, timestamp))
+
+    # The operations that changed this deal's lot: the purchase's modifiers that wrote it as the deal's asset, less a
+    # swap or wrapping that only rewrote what stayed behind when it took another part of the purchase elsewhere
+    @staticmethod
+    def deal_modifiers(deal) -> list:
+        query = JalDB._exec("SELECT DISTINCT m_otype, m_oid FROM trades_opened WHERE otype=:otype AND oid=:oid "
+                            "AND asset_id=:asset AND m_otype!=:trade AND NOT (m_otype=otype AND m_oid=oid) "
+                            "ORDER BY timestamp",
+                            [(":otype", deal.open_operation().type()), (":oid", deal.open_operation().id()),
+                             (":asset", deal.asset().id()), (":trade", LedgerTransaction.Trade)])
+        modifiers = []
+        while query.next():
+            operation = LedgerTransaction.get_operation(query.value(0), query.value(1), Transfer.Outgoing)
+            if operation.type() in (LedgerTransaction.Swap, LedgerTransaction.Conversion) \
+                    and operation.in_asset().id() != deal.asset().id():
+                continue
+            modifiers.append(operation)
+        return modifiers
+
+    # True if one of 'otypes' (swap, wrapping) brought this deal's lot into the deal's asset
+    def carried_through(self, deal, otypes) -> bool:
+        return any(x.type() in otypes for x in self.deal_modifiers(deal))
 
     # Why the jurisdiction's rule takes this operation out of the report, None if it doesn't
     def skip_reason(self, operation):

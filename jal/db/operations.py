@@ -1726,6 +1726,10 @@ class Swap(FeeCarrier, LedgerTransaction):
     def taxable(self) -> int:
         return TaxStatus.Taxable
 
+    # The asset this operation acquires
+    def in_asset(self) -> JalAsset:
+        return self._in_asset
+
     def processLedger(self, ledger):
         # Only the disposing leg books a profit/loss and fees, so only it needs a peer to book them against
         if self._opart != Swap.Incoming and not self._peer_id:
@@ -2881,6 +2885,10 @@ class Conversion(FeeCarrier, LedgerTransaction):
     # A disposal for tax whatever JAL's own treatment of it; each jurisdiction decides what it makes of it
     def taxable(self) -> int:
         return TaxStatus.Taxable
+
+    # The asset this operation acquires
+    def in_asset(self) -> JalAsset:
+        return self._in_asset
 
     def processLedger(self, ledger):
         if self._out_asset.id() == 0 or self._in_asset.id() == 0:

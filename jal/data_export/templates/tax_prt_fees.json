@@ -1,0 +1,28 @@
+{
+  "page": "Fees",
+  "title": "Fees and costs of holding",
+  "headers": [
+      "Period: {parameters[period]}",
+      "Account owner: ",
+      "Account: {parameters[account]}"
+    ],
+  "columns": [
+    {"name": "Kind", "width": 18},
+    {"name": "Payment date", "width": 10},
+    {"name": "Description", "width": 45},
+    {"name": "Rate EUR/{parameters[currency]}", "width": 9},
+    {"name": "Amount, {parameters[currency]}", "width": 10},
+    {"name": "Amount, EUR", "width": 10},
+    {"name": "Note", "width": 25}
+  ],
+  "columns_numbered": true,
+  "fee": {
+    "rows": [["fee_type", "payment_date", "description", "rate", "amount", "amount_eur", "note"]],
+    "formats": [["T", "D", "T", "N:4", "N:2", "N:2", "T"]]
+  },
+  "totals": {
+    "rows": [[null, null, null, "TOTAL", "amount", "amount_eur", null]],
+    "formats": [[null, null, null, "F", "F", "F", null]]
+  },
+  "footers": []
+}

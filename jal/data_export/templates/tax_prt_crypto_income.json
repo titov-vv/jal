@@ -1,0 +1,30 @@
+{
+  "page": "Crypto income",
+  "title": "Crypto-assets received as income",
+  "headers": [
+      "Period: {parameters[period]}",
+      "Account owner: ",
+      "Account: {parameters[account]}"
+    ],
+  "columns": [
+    {"name": "Date", "width": 10},
+    {"name": "Income", "width": 18},
+    {"name": "Asset", "width": 8},
+    {"name": "Quantity", "width": 12},
+    {"name": "Quote, {parameters[currency]}", "width": 12},
+    {"name": "Value, {parameters[currency]}", "width": 12},
+    {"name": "Rate EUR/{parameters[currency]}", "width": 9},
+    {"name": "Value, EUR", "width": 12},
+    {"name": "Note", "width": 30}
+  ],
+  "columns_numbered": true,
+  "income": {
+    "rows": [["payment_date", "operation", "symbol", "qty", "price", "value", "rate", "value_eur", "note"]],
+    "formats": [["D", "T", "T", "N:6", "N:6", "N:2", "N:4", "N:2", "T"]]
+  },
+  "totals": {
+    "rows": [[null, null, null, null, "TOTAL", "value", "", "value_eur", null]],
+    "formats": [[null, null, null, null, "F", "F", "F", "F", null]]
+  },
+  "footers": []
+}

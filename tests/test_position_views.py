@@ -52,3 +52,16 @@ def test_price_chart_marks_the_adjusted_position(split_position):
     chart = ChartWindow(1, B, USD, d2t(220401), parent=parent)
     assert chart.ready
     assert [(x['qty'], x['price']) for x in chart.trades] == [(Decimal('5'), Decimal('400'))]
+
+
+# PT converts cost and value at today's rate (CIRS a.23, the would-be disposal), so a USD/EUR move adds no gain
+def test_pt_tax_estimate_converts_both_legs_at_todays_rate(split_position):
+    create_quotes(USD, 3, [(d2t(211231), 0.80), (d2t(220301), 0.90)])   # USD/EUR at the purchase and today
+    parent = QWidget()
+    estimator = TaxEstimator('pt', 1, B, Decimal('5'), parent=parent)
+    assert estimator.ready
+    position = estimator.dataframe.to_dict('records')[0]
+
+    assert position['o_rate'] == Decimal('0.90')
+    assert position['profit_rub'] == Decimal('450.00')               # 5 * (500 - 400) * 0.90
+    assert position['tax'] == Decimal('126.0000')                    # 28% of it

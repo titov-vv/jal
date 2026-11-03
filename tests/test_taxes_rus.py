@@ -587,8 +587,9 @@ def test_swap_closed_deal_stays_out_of_tax_reports(prepare_db_taxes):
             'spending_rub': Decimal('11136.50'), 'profit': Decimal('29.50'), 'profit_rub': Decimal('2003.50')}
     assert totals['report_template'] == "totals" and totals['profit_rub'] == Decimal('2003.50')
     report = TaxesPortugal().prepare_tax_report(2020, 1)
-    assert [k for k, v in report.items() if v] == ["Summary", "Not covered"]
-    skipped, sale = report["Not covered"]
+    assert [k for k, v in report.items() if v] == ["Summary", "Crypto", "Not covered"]
+    skipped, = report["Not covered"]
     assert (skipped['reason'], skipped['count']) == \
            ("Crypto-for-crypto exchange: not taxed until exit to fiat (CIRS art. 10.º, n.º 20)", "Skipped by rule: 1")
-    assert (sale['operation'], sale['number']) == ("Trade", "sell-B")   # no PT crypto section yet
+    sale, _totals = report["Crypto"]
+    assert (sale['c_number'], sale['pending_replay']) == ("sell-B", True)   # its lot was opened by the swap

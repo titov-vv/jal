@@ -142,9 +142,14 @@ class TaxEstimator(MdiWidget):
             # that no longer exists.
             qty = position.open_qty()
             price = position.open_price(adjusted=True)
-            o_rate = account_currency.quote(position.open_operation().settlement(), tax_currency)[1]
+            if self.country.code() == 'pt':   # CIRS a.23: the native cost at the rate of the (would-be) disposal, today
+                o_rate = JalAsset(position.open_operation().account().currency()).quote(today_finish(), tax_currency)[1]
+                tax_price = position.open_price() * position.p_adjustment()
+            else:
+                o_rate = account_currency.quote(position.open_operation().settlement(), tax_currency)[1]
+                tax_price = price
             position_profit = qty * (self.quote - price)
-            position_profit_rub = qty * (self.quote * self.rate - price * o_rate)
+            position_profit_rub = qty * (self.quote * self.rate - tax_price * o_rate)
             tax = tax_rate * position_profit_rub if position_profit_rub > Decimal('0') else Decimal('0')
             table.append({
                 'timestamp': ts2d(position.acquired()),
@@ -158,7 +163,7 @@ class TaxEstimator(MdiWidget):
             profit += position_profit
             value += qty * price
             profit_rub += position_profit_rub
-            value_rub += qty * price * o_rate
+            value_rub += qty * tax_price * o_rate
         tax = tax_rate * profit_rub if profit_rub > Decimal('0') else Decimal('0')
         table.append(
             {'timestamp': self.tr("TOTAL"), 'qty': self.asset_qty, 'o_price': value / self.asset_qty,

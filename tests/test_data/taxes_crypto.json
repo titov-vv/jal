@@ -366,17 +366,52 @@
       {
         "report_template": "figure",
         "figure": "Income",
-        "amount": 0
+        "amount": 606.0
       },
       {
         "report_template": "figure",
         "figure": "Expenses",
-        "amount": 0
+        "amount": 507.02
       },
       {
         "report_template": "figure",
         "figure": "Gain/loss",
-        "amount": 154.09
+        "amount": 98.98
+      },
+      {
+        "report_template": "section",
+        "section": "Crypto",
+        "rows": 5
+      },
+      {
+        "report_template": "figure",
+        "figure": "Income",
+        "amount": 8696.0
+      },
+      {
+        "report_template": "figure",
+        "figure": "Expenses",
+        "amount": 7047.93
+      },
+      {
+        "report_template": "figure",
+        "figure": "Gain/loss",
+        "amount": 1648.07
+      },
+      {
+        "report_template": "section",
+        "section": "Crypto income",
+        "rows": 1
+      },
+      {
+        "report_template": "figure",
+        "figure": "Value at receipt (information)",
+        "amount": 103.4
+      },
+      {
+        "report_template": "section",
+        "section": "Fees",
+        "rows": 0
       },
       {
         "report_template": "section",
@@ -392,13 +427,13 @@
       {
         "report_template": "count",
         "label": "Not included in any section",
-        "count": 4,
-        "link": "Not covered"
+        "count": 0,
+        "link": ""
       },
       {
         "report_template": "count",
         "label": "Rows marked 'pending replay'",
-        "count": 0,
+        "count": 3,
         "link": ""
       }
     ],
@@ -412,12 +447,12 @@
         "o_type": "Aquisição",
         "o_number": "buy-STK",
         "o_date": 1733011200,
-        "o_rate": 0.9,
+        "o_rate": 1.01,
         "o_price": 50.0,
         "o_fee": 1.0,
-        "o_fee_eur": 0.9,
+        "o_fee_eur": 1.01,
         "o_amount": 500.0,
-        "o_amount_eur": 450.0,
+        "o_amount_eur": 505.0,
         "c_type": "Venda",
         "c_number": "sell-STK",
         "c_date": 1748736000,
@@ -427,60 +462,213 @@
         "c_fee_eur": 1.01,
         "c_amount": 600.0,
         "c_amount_eur": 606.0,
+        "income_eur": 606.0,
+        "spending_eur": 507.02,
         "profit": 98.0,
-        "profit_eur": 154.09,
+        "profit_eur": 98.98,
         "note": ""
       },
       {
         "report_template": "totals",
-        "income_eur": 0,
-        "spending_eur": 0,
-        "profit_eur": 154.09,
+        "income_eur": 606.0,
+        "spending_eur": 507.02,
+        "profit_eur": 98.98,
         "profit": 98.0
       }
     ],
+    "Crypto": [
+      {
+        "report_template": "trade",
+        "symbol": "ETH",
+        "isin": "",
+        "qty": 1.0,
+        "o_type": "Aquisição",
+        "o_number": "buy-ETH",
+        "o_date": 1736467200,
+        "o_rate": 0.98,
+        "o_price": 3000.0,
+        "o_fee": 1.0,
+        "o_fee_eur": 0.98,
+        "o_amount": 3000.0,
+        "o_amount_eur": 2940.0,
+        "c_type": "Venda",
+        "c_number": "sell-ETH",
+        "c_date": 1743465600,
+        "c_rate": 0.98,
+        "c_price": 3500.0,
+        "c_fee": 0.8333333333333334,
+        "c_fee_eur": 0.8166666666666667,
+        "c_amount": 3500.0,
+        "c_amount_eur": 3430.0,
+        "income_eur": 3430.0,
+        "spending_eur": 2941.8,
+        "profit": 498.17,
+        "profit_eur": 488.2,
+        "note": "",
+        "days": 81,
+        "held_365": "No"
+      },
+      {
+        "report_template": "trade",
+        "symbol": "ETH",
+        "isin": "",
+        "qty": 0.2,
+        "o_type": "Aquisição",
+        "o_number": "buy-UNI",
+        "o_date": 1736899200,
+        "o_rate": 0.98,
+        "o_price": 2500.0,
+        "o_fee": 0.5,
+        "o_fee_eur": 0.49,
+        "o_amount": 500.0,
+        "o_amount_eur": 490.0,
+        "c_type": "Venda",
+        "c_number": "sell-ETH",
+        "c_date": 1743465600,
+        "c_rate": 0.98,
+        "c_price": 3500.0,
+        "c_fee": 0.16666666666666666,
+        "c_fee_eur": 0.16333333333333333,
+        "c_amount": 700.0,
+        "c_amount_eur": 686.0,
+        "income_eur": 686.0,
+        "spending_eur": 490.65,
+        "profit": 199.33,
+        "profit_eur": 195.35,
+        "note": "Pending replay: the lot passed through a crypto-for-crypto exchange\n50 UNI -> 0.2 ETH",
+        "days": 76,
+        "held_365": "No",
+        "pending_replay": true
+      },
+      {
+        "report_template": "trade",
+        "symbol": "WETH",
+        "isin": "",
+        "qty": 1.0,
+        "o_type": "Aquisição",
+        "o_number": "buy-ETH",
+        "o_date": 1736467200,
+        "o_rate": 0.99,
+        "o_price": 3000.0,
+        "o_fee": 1.0,
+        "o_fee_eur": 0.99,
+        "o_amount": 3000.0,
+        "o_amount_eur": 2970.0,
+        "c_type": "Venda",
+        "c_number": "sell-WETH",
+        "c_date": 1744243200,
+        "c_rate": 0.99,
+        "c_price": 3600.0,
+        "c_fee": 0.8,
+        "c_fee_eur": 0.792,
+        "c_amount": 3600.0,
+        "c_amount_eur": 3564.0,
+        "income_eur": 3564.0,
+        "spending_eur": 2971.78,
+        "profit": 598.2,
+        "profit_eur": 592.22,
+        "note": "Pending replay: the lot passed through a crypto-for-crypto exchange\n1 ETH -> 1 WETH",
+        "days": 90,
+        "held_365": "No",
+        "pending_replay": true
+      },
+      {
+        "report_template": "trade",
+        "symbol": "WETH",
+        "isin": "",
+        "qty": 0.25,
+        "o_type": "Aquisição",
+        "o_number": "",
+        "o_date": 1742428800,
+        "o_rate": 0.99,
+        "o_price": 2600.0,
+        "o_fee": 0.0,
+        "o_fee_eur": 0.0,
+        "o_amount": 650.0,
+        "o_amount_eur": 643.5,
+        "c_type": "Venda",
+        "c_number": "sell-WETH",
+        "c_date": 1744243200,
+        "c_rate": 0.99,
+        "c_price": 3600.0,
+        "c_fee": 0.2,
+        "c_fee_eur": 0.198,
+        "c_amount": 900.0,
+        "c_amount_eur": 891.0,
+        "income_eur": 891.0,
+        "spending_eur": 643.7,
+        "profit": 249.8,
+        "profit_eur": 247.3,
+        "note": "Pending replay: the lot passed through a crypto-for-crypto exchange",
+        "days": 21,
+        "held_365": "No",
+        "pending_replay": true
+      },
+      {
+        "report_template": "trade",
+        "symbol": "SOL",
+        "isin": "",
+        "qty": 0.5,
+        "o_type": "Aquisição",
+        "o_number": "reward",
+        "o_date": 1738368000,
+        "o_rate": 1.0,
+        "o_price": 0.0,
+        "o_fee": 0.0,
+        "o_fee_eur": 0.0,
+        "o_amount": 0.0,
+        "o_amount_eur": 0.0,
+        "c_type": "Venda",
+        "c_number": "sell-SOL",
+        "c_date": 1746057600,
+        "c_rate": 1.0,
+        "c_price": 250.0,
+        "c_fee": 0.0,
+        "c_fee_eur": 0.0,
+        "c_amount": 125.0,
+        "c_amount_eur": 125.0,
+        "income_eur": 125.0,
+        "spending_eur": 0.0,
+        "profit": 125.0,
+        "profit_eur": 125.0,
+        "note": "Received as crypto income: zero cost, taxed on disposal only (CIRS art. 5.º, n.º 11)",
+        "days": 89,
+        "held_365": "No"
+      },
+      {
+        "report_template": "totals",
+        "income_eur": 8696.0,
+        "spending_eur": 7047.93,
+        "profit_eur": 1648.07,
+        "profit": 1670.5
+      }
+    ],
+    "Crypto income": [
+      {
+        "report_template": "income",
+        "payment_date": 1738368000,
+        "operation": "Staking reward",
+        "symbol": "SOL",
+        "qty": 0.5,
+        "price": 220.0,
+        "value": 110.0,
+        "rate": 0.9400000000000001,
+        "value_eur": 103.4,
+        "note": ""
+      },
+      {
+        "report_template": "totals",
+        "value": 110.0,
+        "value_eur": 103.4
+      }
+    ],
+    "Fees": [],
     "Interest": [],
     "Not covered": [
       {
         "report_template": "skipped",
         "reason": "Crypto-for-crypto exchange: not taxed until exit to fiat (CIRS art. 10.º, n.º 20)",
         "count": "Skipped by rule: 3"
-      },
-      {
-        "report_template": "operation",
-        "date": 1738368000,
-        "operation": "Staking reward",
-        "symbol": "SOL",
-        "number": "reward",
-        "description": "SOL staking reward\n",
-        "reason": "No section of this report includes this operation"
-      },
-      {
-        "report_template": "operation",
-        "date": 1743465600,
-        "operation": "Trade",
-        "symbol": "ETH",
-        "number": "sell-ETH",
-        "description": "-1.20 ETH @ 3500.0000 (1.00)\n",
-        "reason": "No section of this report includes this operation"
-      },
-      {
-        "report_template": "operation",
-        "date": 1744243200,
-        "operation": "Trade",
-        "symbol": "WETH",
-        "number": "sell-WETH",
-        "description": "-1.25 WETH @ 3600.0000 (1.00)\n",
-        "reason": "No section of this report includes this operation"
-      },
-      {
-        "report_template": "operation",
-        "date": 1746057600,
-        "operation": "Trade",
-        "symbol": "SOL",
-        "number": "sell-SOL",
-        "description": "-0.50 SOL @ 250.0000\n",
-        "reason": "No section of this report includes this operation"
       }
     ]
   }

@@ -19,17 +19,32 @@
       {
         "report_template": "figure",
         "figure": "Income",
-        "amount": 0
+        "amount": 5214.3
       },
       {
         "report_template": "figure",
         "figure": "Expenses",
-        "amount": 0
+        "amount": 4576.18
       },
       {
         "report_template": "figure",
         "figure": "Gain/loss",
-        "amount": 662.56
+        "amount": 638.12
+      },
+      {
+        "report_template": "section",
+        "section": "Crypto",
+        "rows": 0
+      },
+      {
+        "report_template": "section",
+        "section": "Crypto income",
+        "rows": 0
+      },
+      {
+        "report_template": "section",
+        "section": "Fees",
+        "rows": 0
       },
       {
         "report_template": "section",
@@ -123,12 +138,12 @@
         "o_type": "Aquisição",
         "o_number": "T01",
         "o_date": 1700058600,
-        "o_rate": 0.92,
+        "o_rate": 0.915,
         "o_price": 150.0,
         "o_fee": 1.0,
-        "o_fee_eur": 0.92,
+        "o_fee_eur": 0.915,
         "o_amount": 1500.0,
-        "o_amount_eur": 1380.0,
+        "o_amount_eur": 1372.5,
         "c_type": "Venda",
         "c_number": "T02",
         "c_date": 1710253800,
@@ -138,8 +153,10 @@
         "c_fee_eur": 1.098,
         "c_amount": 1800.0,
         "c_amount_eur": 1647.0,
+        "income_eur": 1647.0,
+        "spending_eur": 1374.51,
         "profit": 297.8,
-        "profit_eur": 264.98,
+        "profit_eur": 272.49,
         "note": ""
       },
       {
@@ -150,12 +167,12 @@
         "o_type": "Aquisição",
         "o_number": "T03",
         "o_date": 1704897000,
-        "o_rate": 0.91,
+        "o_rate": 0.924,
         "o_price": 100.0,
         "o_fee": 0.5,
-        "o_fee_eur": 0.455,
+        "o_fee_eur": 0.462,
         "o_amount": 500.0,
-        "o_amount_eur": 455.0,
+        "o_amount_eur": 462.0,
         "c_type": "Venda",
         "c_number": "T04",
         "c_date": 1720449000,
@@ -165,8 +182,10 @@
         "c_fee_eur": 0.924,
         "c_amount": 550.0,
         "c_amount_eur": 508.2,
+        "income_eur": 508.2,
+        "spending_eur": 463.39,
         "profit": 48.5,
-        "profit_eur": 51.82,
+        "profit_eur": 44.81,
         "note": ""
       },
       {
@@ -186,15 +205,17 @@
         "c_type": "Aquisição",
         "c_number": "T07",
         "c_date": 1725373800,
-        "c_rate": 0.905,
+        "c_rate": 0.927,
         "c_price": 45.0,
         "c_fee": 1.0,
-        "c_fee_eur": 0.905,
+        "c_fee_eur": 0.927,
         "c_amount": 450.0,
-        "c_amount_eur": 407.25,
+        "c_amount_eur": 417.15,
+        "income_eur": 463.5,
+        "spending_eur": 419.0,
         "profit": 48.0,
-        "profit_eur": 54.42,
-        "note": ""
+        "profit_eur": 44.5,
+        "note": "Short sale: converted at the EUR rate of the opening sale - JAL's logical reading, not a confirmed rule, check with a tax adviser\nShort sale: reported in the year of its close - an assumption as well"
       },
       {
         "report_template": "trade",
@@ -204,12 +225,12 @@
         "o_type": "Aquisição",
         "o_number": "T08",
         "o_date": 1706797800,
-        "o_rate": 0.923,
-        "o_price": 200.0,
+        "o_rate": 0.918,
+        "o_price": 100.0,
         "o_fee": 1.0,
-        "o_fee_eur": 0.923,
+        "o_fee_eur": 0.918,
         "o_amount": 2000.0,
-        "o_amount_eur": 1846.0,
+        "o_amount_eur": 1836.0,
         "c_type": "Venda",
         "c_number": "T09",
         "c_date": 1729002600,
@@ -219,9 +240,11 @@
         "c_fee_eur": 0.918,
         "c_amount": 2200.0,
         "c_amount_eur": 2019.6,
+        "income_eur": 2019.6,
+        "spending_eur": 1837.84,
         "profit": 198.0,
-        "profit_eur": 171.76,
-        "note": "Split: Split 2:1 of SPLT\nSplit Corp\n"
+        "profit_eur": 181.76,
+        "note": "Split: Split 2:1 of SPLT\nSplit Corp"
       },
       {
         "report_template": "trade",
@@ -231,12 +254,12 @@
         "o_type": "Aquisição",
         "o_number": "T03",
         "o_date": 1704897000,
-        "o_rate": 0.91,
+        "o_rate": 0.96,
         "o_price": 100.0,
         "o_fee": 0.5,
-        "o_fee_eur": 0.455,
+        "o_fee_eur": 0.48,
         "o_amount": 500.0,
-        "o_amount_eur": 455.0,
+        "o_amount_eur": 480.0,
         "c_type": "Venda",
         "c_number": "T05",
         "c_date": 1735569000,
@@ -246,18 +269,23 @@
         "c_fee_eur": 0.96,
         "c_amount": 600.0,
         "c_amount_eur": 576.0,
+        "income_eur": 576.0,
+        "spending_eur": 481.44,
         "profit": 98.5,
-        "profit_eur": 119.58,
+        "profit_eur": 94.56,
         "note": ""
       },
       {
         "report_template": "totals",
-        "income_eur": 0,
-        "spending_eur": 0,
-        "profit_eur": 662.56,
+        "income_eur": 5214.3,
+        "spending_eur": 4576.18,
+        "profit_eur": 638.12,
         "profit": 690.8
       }
     ],
+    "Crypto": [],
+    "Crypto income": [],
+    "Fees": [],
     "Interest": [
       {
         "report_template": "interest",
@@ -265,7 +293,8 @@
         "rate": 0.919,
         "amount": 3.5,
         "amount_eur": 3.22,
-        "note": "USD CREDIT INT FOR JUL-2024"
+        "description": "USD CREDIT INT FOR JUL-2024",
+        "note": ""
       },
       {
         "report_template": "interest",
@@ -273,7 +302,8 @@
         "rate": 0.923,
         "amount": 25.5,
         "amount_eur": 23.54,
-        "note": "Merger MRG->NEWCO + cash"
+        "description": "Merger MRG->NEWCO + cash",
+        "note": ""
       },
       {
         "report_template": "totals",
@@ -293,7 +323,7 @@
       }
     ]
   },
-  "one_currency_rate_shares": [
+  "two_rates_shares": [
     {
       "report_template": "trade",
       "symbol": "AAPL",
@@ -302,12 +332,12 @@
       "o_type": "Aquisição",
       "o_number": "T01",
       "o_date": 1700058600,
-      "o_rate": 0.915,
+      "o_rate": 0.92,
       "o_price": 150.0,
       "o_fee": 1.0,
-      "o_fee_eur": 0.915,
+      "o_fee_eur": 0.92,
       "o_amount": 1500.0,
-      "o_amount_eur": 1372.5,
+      "o_amount_eur": 1380.0,
       "c_type": "Venda",
       "c_number": "T02",
       "c_date": 1710253800,
@@ -317,8 +347,10 @@
       "c_fee_eur": 1.098,
       "c_amount": 1800.0,
       "c_amount_eur": 1647.0,
+      "income_eur": 1647.0,
+      "spending_eur": 1382.02,
       "profit": 297.8,
-      "profit_eur": 272.49,
+      "profit_eur": 264.98,
       "note": ""
     },
     {
@@ -329,12 +361,12 @@
       "o_type": "Aquisição",
       "o_number": "T03",
       "o_date": 1704897000,
-      "o_rate": 0.924,
+      "o_rate": 0.91,
       "o_price": 100.0,
       "o_fee": 0.5,
-      "o_fee_eur": 0.462,
+      "o_fee_eur": 0.455,
       "o_amount": 500.0,
-      "o_amount_eur": 462.0,
+      "o_amount_eur": 455.0,
       "c_type": "Venda",
       "c_number": "T04",
       "c_date": 1720449000,
@@ -344,8 +376,10 @@
       "c_fee_eur": 0.924,
       "c_amount": 550.0,
       "c_amount_eur": 508.2,
+      "income_eur": 508.2,
+      "spending_eur": 456.38,
       "profit": 48.5,
-      "profit_eur": 44.81,
+      "profit_eur": 51.82,
       "note": ""
     },
     {
@@ -356,12 +390,12 @@
       "o_type": "Venda",
       "o_number": "T06",
       "o_date": 1712068200,
-      "o_rate": 0.905,
+      "o_rate": 0.927,
       "o_price": 50.0,
       "o_fee": 1.0,
-      "o_fee_eur": 0.905,
+      "o_fee_eur": 0.927,
       "o_amount": 500.0,
-      "o_amount_eur": 452.5,
+      "o_amount_eur": 463.5,
       "c_type": "Aquisição",
       "c_number": "T07",
       "c_date": 1725373800,
@@ -371,9 +405,11 @@
       "c_fee_eur": 0.905,
       "c_amount": 450.0,
       "c_amount_eur": 407.25,
+      "income_eur": 463.5,
+      "spending_eur": 409.08,
       "profit": 48.0,
-      "profit_eur": 43.44,
-      "note": ""
+      "profit_eur": 54.42,
+      "note": "Short sale: reported in the year of its close - an assumption as well"
     },
     {
       "report_template": "trade",
@@ -383,12 +419,12 @@
       "o_type": "Aquisição",
       "o_number": "T08",
       "o_date": 1706797800,
-      "o_rate": 0.918,
-      "o_price": 200.0,
+      "o_rate": 0.923,
+      "o_price": 100.0,
       "o_fee": 1.0,
-      "o_fee_eur": 0.918,
+      "o_fee_eur": 0.923,
       "o_amount": 2000.0,
-      "o_amount_eur": 1836.0,
+      "o_amount_eur": 1846.0,
       "c_type": "Venda",
       "c_number": "T09",
       "c_date": 1729002600,
@@ -398,9 +434,11 @@
       "c_fee_eur": 0.918,
       "c_amount": 2200.0,
       "c_amount_eur": 2019.6,
+      "income_eur": 2019.6,
+      "spending_eur": 1847.84,
       "profit": 198.0,
-      "profit_eur": 181.76,
-      "note": "Split: Split 2:1 of SPLT\nSplit Corp\n"
+      "profit_eur": 171.76,
+      "note": "Split: Split 2:1 of SPLT\nSplit Corp"
     },
     {
       "report_template": "trade",
@@ -410,12 +448,12 @@
       "o_type": "Aquisição",
       "o_number": "T03",
       "o_date": 1704897000,
-      "o_rate": 0.96,
+      "o_rate": 0.91,
       "o_price": 100.0,
       "o_fee": 0.5,
-      "o_fee_eur": 0.48,
+      "o_fee_eur": 0.455,
       "o_amount": 500.0,
-      "o_amount_eur": 480.0,
+      "o_amount_eur": 455.0,
       "c_type": "Venda",
       "c_number": "T05",
       "c_date": 1735569000,
@@ -425,15 +463,17 @@
       "c_fee_eur": 0.96,
       "c_amount": 600.0,
       "c_amount_eur": 576.0,
+      "income_eur": 576.0,
+      "spending_eur": 456.42,
       "profit": 98.5,
-      "profit_eur": 94.56,
+      "profit_eur": 119.58,
       "note": ""
     },
     {
       "report_template": "totals",
-      "income_eur": 0,
-      "spending_eur": 0,
-      "profit_eur": 637.06,
+      "income_eur": 5214.3,
+      "spending_eur": 4551.74,
+      "profit_eur": 662.56,
       "profit": 690.8
     }
   ]

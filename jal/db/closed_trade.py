@@ -256,6 +256,12 @@ class JalClosedTrade(JalDB):
         else:
             return Decimal('0')
 
+    # The same share of the opening fee without the rates of transfers between currencies - in the opening account's currency
+    def native_open_fee(self) -> Decimal:
+        if self._open_op.type() == jal.db.operations.LedgerTransaction.Trade:
+            return self.native_cost_basis() * self._open_op.fee() * abs(self._qty / (self._open_op.qty() * self.q_adjustment()))
+        return Decimal('0')
+
     # Fee of closing part of the deal
     # if currency_id isn't 0 then returns fee converted into given currency
     # rate_ts - defines timestamp of currency rate if not zero
