@@ -9,6 +9,7 @@ from jal.constants import PredefinedAccountType, AssetLocation, AccountData, Pre
 from jal.data_import.statement import JSF
 from jal.db.account import JalAccountCreator, JalAccount
 from jal.db.asset import JalAsset, JalAssetCreator
+from jal.db.ledger import Ledger
 from jal.db.symbol import JalSymbol
 from jal.db.settings import JalSettings
 from jal.db.token_blacklist import is_solana_address
@@ -431,6 +432,79 @@ def test_the_same_amount_to_an_ordinary_address_stays_a_transfer(fetcher, sol_wa
     assert _payments(data, JSF.PAYMENT_TOKEN_RENT) == []
     transfers = _transfers(data)
     assert len(transfers) == 1 and transfers[0]['withdrawal'] == Decimal('0.00203928')
+
+
+# A rent-exempt minimum cut (2 039 280 -> 1 488 440 lamports for a token account) let wallets withdraw the excess of
+# an account that stays open with its tokens. The real transaction's shape: no 'nativeTransfers', no token balance
+# change, only a WithdrawExcessLamports instruction ('f') naming the token account and the wallet as destination.
+OTHER_ATA = "8sLbNZoA1cfnvMJLPfp98ZLAnFSYCFApfJKMbiXNLwxj"
+
+
+def _rent_release_tx(recorded, releases):
+    fee = 5001
+    returned = sum(lamports for _account, lamports, _data in releases)
+    return dict(recorded, signature='ReleaseSignature', type='UNKNOWN', feePayer=WALLET, fee=fee,
+                accountData=[{'account': WALLET, 'nativeBalanceChange': returned - fee, 'tokenBalanceChanges': []}]
+                + [{'account': account, 'nativeBalanceChange': -lamports, 'tokenBalanceChanges': []}
+                   for account, lamports, _data in releases],
+                instructions=[{'programId': 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA', 'data': data,
+                               'accounts': [account, WALLET, WALLET], 'innerInstructions': []}
+                              for account, _lamports, data in releases],
+                nativeTransfers=[], tokenTransfers=[])
+
+
+def test_excess_rent_withdrawn_from_an_open_token_account(fetcher, sol_wallet, monkeypatch):
+    recorded = _recorded(fetcher)
+    tx = _rent_release_tx(recorded[0], [(ATA, 550841, 'f')])
+    monkeypatch.setattr(SolanaFetcher, "_get_transactions", lambda self, until: [tx])
+    data = fetcher.fetch(sol_wallet)
+
+    assert _transfers(data) == [] and not fetcher.skipped()     # neither a halt nor a transfer waiting for a pair
+    returned = _payments(data, JSF.PAYMENT_TOKEN_RENT_RETURN)
+    assert len(returned) == 1 and returned[0]['amount'] == Decimal('0.000550841')    # gross, the fee added back
+    assert ATA in returned[0]['description']
+    assert returned[0]['fee'] == Decimal('0.000005001') and returned[0]['fee_account'] == 1   # the gas of taking it
+    assert _payments(data, JSF.PAYMENT_GAS_FEE) == []
+
+
+def test_rent_of_several_closed_accounts_is_one_return(fetcher, sol_wallet, monkeypatch):
+    recorded = _recorded(fetcher)
+    tx = _rent_release_tx(recorded[0], [(ATA, 2039280, 'A'), (OTHER_ATA, 2039280, 'A')])
+    monkeypatch.setattr(SolanaFetcher, "_get_transactions", lambda self, until: [tx])
+    data = fetcher.fetch(sol_wallet)
+
+    returned = _payments(data, JSF.PAYMENT_TOKEN_RENT_RETURN)
+    assert len(returned) == 1 and returned[0]['amount'] == Decimal('0.00407856')
+    assert ATA in returned[0]['description'] and OTHER_ATA in returned[0]['description']
+
+
+# Only an amount the released accounts fully explain is a rent return; anything else still halts for review
+def test_rent_release_that_does_not_explain_the_amount_halts(fetcher, sol_wallet, monkeypatch):
+    recorded = _recorded(fetcher)
+    tx = _rent_release_tx(recorded[0], [(ATA, 550841, 'f')])
+    tx['accountData'][0]['nativeBalanceChange'] += 1000000      # more SOL arrived than the account gave up
+    monkeypatch.setattr(SolanaFetcher, "_get_transactions", lambda self, until: [tx])
+    data = fetcher.fetch(sol_wallet)
+
+    assert _payments(data, JSF.PAYMENT_TOKEN_RENT_RETURN) == []
+    assert any("no counterpart" in reason for reason in fetcher.skipped())
+
+
+def test_rent_return_reaches_the_database_as_income(fetcher, sol_wallet, monkeypatch):
+    from jal.db.operations import AssetIncome, FeeKind
+    recorded = _recorded(fetcher)
+    tx = _rent_release_tx(recorded[0], [(ATA, 550841, 'f')])
+    monkeypatch.setattr(SolanaFetcher, "_get_transactions", lambda self, until: [tx])
+    sol_wallet.set_data(AccountData.Precision, 9)     # lamports; the default 2 digits would round it all away
+    fetcher.fetch(sol_wallet)
+    fetcher.import_fetched()
+    Ledger().rebuild(from_timestamp=0)
+
+    returned = AssetIncome.get_list(sol_wallet.id(), subtype=AssetIncome.TokenRentReturn)
+    assert len(returned) == 1 and returned[0].amount() == Decimal('0.000550841')
+    fees = returned[0].fees()
+    assert len(fees) == 1 and fees[0].amount() == Decimal('0.000005001') and fees[0].kind() == FeeKind.Gas
+    assert sol_wallet.get_asset_amount(2**31, returned[0].asset().id()) == Decimal('0.000545840')   # net of the gas
 
 
 # ----------------------------------------------------------------------------------------------------------------------

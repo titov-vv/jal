@@ -39,6 +39,11 @@ _STAKE_DEACTIVATE = 'UNSTAKE_SOL'    # the stake stops earning; nothing moves
 _STAKE_DEACTIVATE_CALL = 'deactivate()'
 _STAKE_WITHDRAW = 'WITHDRAW'         # lamports move from a stake account back to the wallet
 
+# SPL Token and Token-2022 programs, and the base58 'data' of the two one-byte instructions that pay a token account's
+# lamports out to a destination: CloseAccount (9) and WithdrawExcessLamports (38)
+_TOKEN_PROGRAMS = ('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA', 'TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb')
+_RENT_RELEASES = ('A', 'f')
+
 
 # Raised for a transaction whose shape this fetcher does not (yet) support. It stops the import at that transaction
 # instead of guessing - see _fetch for the halt-and-checkpoint that keeps every earlier transaction and re-tries
@@ -172,7 +177,7 @@ class SolanaFetcher(ChainFetcher):
         if self._invokes(tx, _STAKE_PROGRAM):
             return self._process_stake(tx, timestamp, signature, gas)
 
-        deltas = self._wallet_deltas(tx)
+        deltas, returned = self._wallet_deltas(tx)
         outs = {asset_id: data for asset_id, data in deltas.items() if data['amount'] < 0}
         ins = {asset_id: data for asset_id, data in deltas.items() if data['amount'] > 0}
 
@@ -181,7 +186,9 @@ class SolanaFetcher(ChainFetcher):
         # one of its token accounts was read. Only a transaction the wallet itself paid for leaves anything to
         # record - the gas it burned.
         if not outs and not ins:
-            if own and gas > Decimal('0'):
+            if returned:   # only rent came back: the gas of taking it is a fee of the return, as a claim's gas is
+                self._add_rent_return(timestamp, signature, returned, gas)
+            elif own and gas > Decimal('0'):
                 # No note: this fetcher decodes no program or instruction name, and the operation's own subtype
                 # already says "a contract call, nothing finer known" - see EVMFetcher._call_note for what a note is
                 self._add_payment(JSF.PAYMENT_GAS_FEE, timestamp, self._native_asset_id(), gas, signature)
@@ -201,6 +208,8 @@ class SolanaFetcher(ChainFetcher):
         # deliberately imported as an ordinary incoming transfer even when it is the far leg of a cross-chain move
         # (this wallet's Mayan bridge deliveries are exactly that) - a fetcher cannot tell one from an ordinary
         # receipt, so the user pairs it with its sending half in the matcher instead.
+        if returned:   # the gas rides a transfer leg
+            self._add_rent_return(timestamp, signature, returned, Decimal('0'))
         self._emit_transfers(timestamp, deltas, signature, gas, own)
 
     # Emits the wallet's movements as plain transfers, one per asset. The gas rides one of them the way a broker's
@@ -217,6 +226,11 @@ class SolanaFetcher(ChainFetcher):
                                counterparty=data['counterparty'] or '')
         if own and carrier is None and gas > Decimal('0'):
             self._add_payment(JSF.PAYMENT_GAS_FEE, timestamp, self._native_asset_id(), gas, signature)
+
+    def _add_rent_return(self, timestamp: int, signature: str, returned: dict, gas: Decimal) -> None:
+        self._add_payment(JSF.PAYMENT_TOKEN_RENT_RETURN, timestamp, self._native_asset_id(), returned['amount'],
+                          signature, note=returned['note'],
+                          fee=gas, fee_asset_id=self._native_asset_id() if gas > Decimal('0') else None)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Native staking. A stake account is an address of its own that holds the wallet's lamports while they earn: the
@@ -317,19 +331,25 @@ class SolanaFetcher(ChainFetcher):
     # ------------------------------------------------------------------------------------------------------------------
     # The wallet's net movement per asset in this transaction: incoming positive, outgoing negative. Gas is NOT part
     # of it - it is charged separately - and net-zero assets (a token routed in and straight back out) are dropped.
-    def _wallet_deltas(self, tx: dict) -> dict:
+    # Token account rent coming back is returned apart, as {'amount', 'note'} or None, for the caller to book.
+    def _wallet_deltas(self, tx: dict) -> tuple:
+        returned = None
         deltas = defaultdict(lambda: {'amount': Decimal('0'), 'note': '', 'counterparty': None})
         timestamp = self._timestamp_of(tx)
         native = self._native_delta(tx)
         if native != Decimal('0'):
             incoming = native > Decimal('0')
             counterparty = self._native_counterparty(tx, incoming)
+            released = self._rent_released_by(tx, native) if incoming else []
+            if released:
+                returned = {'amount': native,
+                            'note': '; '.join(self._rent_note(tx, address, True) for address in released)}
             # Address-poisoning dust: a lamport or two sent from an address that imitates one the wallet really uses,
             # so that a later copy-paste out of the history pays the attacker. This wallet receives it in batches
             # blasted at a dozen addresses at once. It is still real SOL that changed the wallet's balance, so it is
             # imported as a DustAttack payment rather than dropped, just not as an ordinary transfer implying a real
             # counterparty.
-            if incoming and self._is_native_dust(native, self._is_own_address(counterparty)):
+            elif incoming and self._is_native_dust(native, self._is_own_address(counterparty)):
                 self._add_payment(JSF.PAYMENT_DUST_ATTACK, timestamp, self._native_asset_id(), native,
                                   tx.get('signature', ''), note=self._counterparty_note(counterparty, incoming))
             elif self._is_token_account(tx, counterparty):
@@ -337,9 +357,11 @@ class SolanaFetcher(ChainFetcher):
                 # that changed the wallet's balance, so it is imported, but it is nobody's transfer: the account it
                 # went to is not a wallet anyone holds a balance on, and left as a transfer leg it would wait for a
                 # counterpart that does not exist (which is what leg 4596 of the real wallet did for months).
-                self._add_payment(JSF.PAYMENT_TOKEN_RENT if not incoming else JSF.PAYMENT_TOKEN_RENT_RETURN,
-                                  timestamp, self._native_asset_id(), abs(native), tx.get('signature', ''),
-                                  note=self._rent_note(tx, counterparty, incoming))
+                if incoming:
+                    returned = {'amount': native, 'note': self._rent_note(tx, counterparty, incoming)}
+                else:
+                    self._add_payment(JSF.PAYMENT_TOKEN_RENT, timestamp, self._native_asset_id(), -native,
+                                      tx.get('signature', ''), note=self._rent_note(tx, counterparty, incoming))
             else:
                 entry = deltas[self._native_asset_id()]
                 entry['amount'] += native
@@ -352,7 +374,7 @@ class SolanaFetcher(ChainFetcher):
                 entry['amount'] += amount
                 entry['note'] = entry['note'] or self._counterparty_note(counterparty, amount > Decimal('0'))
                 self._merge_counterparty(entry, counterparty)
-        return {asset_id: data for asset_id, data in deltas.items() if data['amount'] != Decimal('0')}
+        return {asset_id: data for asset_id, data in deltas.items() if data['amount'] != Decimal('0')}, returned
 
     # Records the address an asset's movement was with, and clears it as soon as a second one takes part: the delta
     # is a NET amount, so an account may only be put on it when every leg that formed it was with that same address.
@@ -479,6 +501,24 @@ class SolanaFetcher(ChainFetcher):
             return False
         return any(entry.get('account', '') == address and entry.get('tokenBalanceChanges')
                    for entry in tx.get('accountData', []))
+
+    # Token accounts whose lamports a CloseAccount or WithdrawExcessLamports paid to the wallet, when together they make
+    # up the wallet's whole incoming 'native'; empty otherwise. Neither instruction shows up in 'nativeTransfers', and
+    # the account's token balance needn't change (an excess withdrawal leaves the account open with its tokens).
+    def _rent_released_by(self, tx: dict, native: Decimal) -> list:
+        address = self._account.address()
+        changes = {entry.get('account', ''): self._lamports(entry.get('nativeBalanceChange', 0))
+                   for entry in tx.get('accountData', [])}
+        sources = []
+        for instruction in tx.get('instructions', []):
+            for call in [instruction] + instruction.get('innerInstructions', []):
+                accounts = call.get('accounts', [])
+                if call.get('programId', '') in _TOKEN_PROGRAMS and call.get('data', '') in _RENT_RELEASES \
+                        and len(accounts) > 1 and accounts[1] == address and accounts[0] not in sources:
+                    sources.append(accounts[0])
+        if sources and -sum(changes.get(source, Decimal('0')) for source in sources) == native:
+            return sources
+        return []
 
     # What a rent movement says about itself: the token account, and the mint it holds - which is what tells the user
     # WHICH delivery locked the coin, since the amount alone says nothing.
