@@ -13,6 +13,7 @@ from jal.db.ledger import Ledger
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
 from jal.db.operations import LedgerTransaction, CorporateAction, AssetPayment, AssetIncome
+from jal.data_export.taxes import TaxReportStop
 from jal.data_export.tax_reports.russia import TaxesRussia
 from jal.data_export.tax_reports.portugal import TaxesPortugal
 from jal.data_export.taxes_flow import TaxesFlowRus
@@ -436,7 +437,7 @@ def test_flow_report_lists_an_account_that_carries_no_number(prepare_db):
 # A bond price is reported as a percentage of the face value, but the face value may be absent - it isn't provided by
 # every statement. The report has to be produced anyway (only the price cells are left empty) and to say in the log
 # which bond needs the face value to be filled in.
-def test_bond_without_face_value_is_reported_with_a_warning(prepare_db_taxes, caplog):
+def test_bond_without_face_value_prints_prices_per_bond(prepare_db_taxes, caplog):
     create_assets([("SU26216RMFS0", "ОФЗ 26216", "RU000A0JXQK2", 2, PredefinedAsset.Bond, 'ru')])   # ID 4, no principal
     create_trades(1, [(d2t(210315), d2t(210317), 4, 10.0, 950.0, 1.0, "B1"),
                       (d2t(211011), d2t(211013), 4, -10.0, 980.0, 1.0, "S1"),
@@ -451,14 +452,11 @@ def test_bond_without_face_value_is_reported_with_a_warning(prepare_db_taxes, ca
         tax_report = TaxesRussia().prepare_tax_report(2021, 1)
 
     trades = [x for x in tax_report["Облигации"] if x['report_template'] == "bond_trade"]
-    assert len(trades) == 2
-    assert [x['principal'] for x in trades] == [Decimal('0'), Decimal('0')]
-    assert [x['o_price'] for x in trades] == [Decimal('0'), Decimal('0')]
-    assert [x['c_price'] for x in trades] == [Decimal('0'), Decimal('0')]
+    assert [(x['o_price'], x['c_price']) for x in trades] == [(Decimal('950'), Decimal('980')),
+                                                             (Decimal('990'), Decimal('995'))]
+    assert all('principal' not in x for x in trades)
     assert trades[0]['profit'] == Decimal('298')   # (980 - 950) * 10 - 2 of fees
-    # The bond is named once, not once per trade
-    assert [x.message for x in caplog.records if x.levelno == logging.WARNING] == \
-           ["Bond has no face value, trade prices are left empty in the report: SU26216RMFS0"]
+    assert [x.message for x in caplog.records if x.levelno == logging.WARNING] == []
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -557,9 +555,8 @@ def test_lost_position_stays_out_of_tax_reports(prepare_db_taxes, action):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# A swap's own disposal is in no section yet, only on "Not covered" (RU) or skipped by rule (PT); the lot it opens
-# is sold at the swap's market value
-def test_swap_closed_deal_stays_out_of_tax_reports(prepare_db_taxes):
+# A swap is a disposal at market value in RU and is skipped by rule in PT; the lot it opens is sold at that value
+def test_swap_is_a_disposal_in_ru_and_skipped_in_pt(prepare_db_taxes):
     create_assets([("AAA", "Coin A", "", 2, PredefinedAsset.Crypto, 0),     # ID 4
                    ("BBB", "Coin B", "", 2, PredefinedAsset.Crypto, 0)])    # ID 5
     t_buy, t_swap, t_sell = d2t(201201), d2t(201210), d2t(201215)
@@ -575,9 +572,12 @@ def test_swap_closed_deal_stays_out_of_tax_reports(prepare_db_taxes):
     assert [(x.asset().id(), x.profit()) for x in swap_deals] == [(4, Decimal('49')), (5, Decimal('29.5'))]
 
     report = TaxesRussia().prepare_tax_report(2020, 1)
-    assert [k for k, v in report.items() if v] == ["Сводка", "Криптовалюты", "Не отражено"]
-    assert [(x['operation'], x['symbol']) for x in report["Не отражено"]] == [("Обмен криптовалюты", "AAA")]
-    deal, totals = report["Криптовалюты"]
+    assert [k for k, v in report.items() if v] == ["Сводка", "Криптовалюты"]
+    swap, deal, totals = report["Криптовалюты"]
+    assert {k: swap[k] for k in ('symbol', 'o_number', 'o_amount_rub', 'o_fee_rub', 'c_amount_rub', 'spending_rub',
+                                 'profit_rub')} == \
+           {'symbol': "AAA", 'o_number': "buy-A", 'o_amount_rub': Decimal('7500.00'), 'o_fee_rub': Decimal('75.00'),
+            'c_amount_rub': Decimal('11100.00'), 'spending_rub': Decimal('7575.00'), 'profit_rub': Decimal('3525.00')}
     assert {k: deal[k] for k in ('symbol', 'qty', 'o_number', 'o_date', 'o_rate', 'o_price', 'o_amount_rub', 'o_fee',
                                  'c_number', 'c_date', 'c_amount_rub', 'c_fee_rub', 'spending_rub', 'profit',
                                  'profit_rub')} == \
@@ -585,7 +585,7 @@ def test_swap_closed_deal_stays_out_of_tax_reports(prepare_db_taxes):
             'o_price': Decimal('5'), 'o_amount_rub': Decimal('11100.00'), 'o_fee': Decimal('0'),
             'c_number': "sell-B", 'c_date': t_sell, 'c_amount_rub': Decimal('13140.00'), 'c_fee_rub': Decimal('36.50'),
             'spending_rub': Decimal('11136.50'), 'profit': Decimal('29.50'), 'profit_rub': Decimal('2003.50')}
-    assert totals['report_template'] == "totals" and totals['profit_rub'] == Decimal('2003.50')
+    assert totals['report_template'] == "totals" and totals['profit_rub'] == Decimal('5528.50')
     report = TaxesPortugal().prepare_tax_report(2020, 1)
     assert [k for k, v in report.items() if v] == ["Summary", "Crypto", "Not covered"]
     skipped, = report["Not covered"]
@@ -593,3 +593,35 @@ def test_swap_closed_deal_stays_out_of_tax_reports(prepare_db_taxes):
            ("Crypto-for-crypto exchange: not taxed until exit to fiat (CIRS art. 10.º, n.º 20)", "Skipped by rule: 1")
     sale, _totals = report["Crypto"]
     assert (sale['c_number'], sale['pending_replay']) == ("sell-B", True)   # its lot was opened by the swap
+
+
+# Crypto income is valued at its quote on receipt: without one the RU report stops and names it
+def test_crypto_income_without_quote_stops_the_report(prepare_db_taxes):
+    create_assets([("SOL", "Solana", "", 2, PredefinedAsset.Crypto, 0), ("NEW", "No quote coin", "", 2, PredefinedAsset.Crypto, 0)])
+    create_quotes(2, 1, [(d2t(250101), 100.0)])
+    create_quotes(4, 2, [(d2t(250201), 150.0)])
+    for asset_id in (4, 5):
+        LedgerTransaction.create_new(LedgerTransaction.AssetIncome, {
+            'timestamp': d2t(250202), 'type': AssetIncome.StakingReward, 'account_id': 1,
+            'symbol_id': symbol_id_for(asset_id), 'amount': '2', 'tax': '0', 'number': '', 'note': 'reward'})
+    Ledger().rebuild(from_timestamp=0)
+
+    with pytest.raises(TaxReportStop) as stop:
+        TaxesRussia().prepare_tax_report(2025, 1)
+    assert stop.value.missing == [("NEW", d2t(250202))]
+    create_quotes(5, 2, [(d2t(250202), 1.0)])
+    income = TaxesRussia().prepare_tax_report(2025, 1)["Криптодоход"]
+    assert [(x['symbol'], x['value_rub']) for x in income[:-1]] == [("SOL", Decimal('30000.00')), ("NEW", Decimal('200.00'))]
+
+
+# The RU report converts at CBR rates only: a USD/RUB rate that exists only as a cross through EUR stops it
+def test_missing_cbr_rate_stops_the_report(prepare_db_taxes):
+    create_assets([("STK", "Stock Corp", "US0000000601", 2, PredefinedAsset.Stock, 'us')])   # ID 4
+    create_quotes(2, 3, [(d2t(250101), 0.9)])        # USD/EUR (ECB)
+    create_quotes(1, 3, [(d2t(250101), 0.01)])       # RUB/EUR (ECB) - together a cross-rate, not a CBR rate
+    create_trades(1, [(d2t(250102), d2t(250104), 4, 10, 10, 0, "buy"), (d2t(250602), d2t(250604), 4, -10, 12, 0, "sell")])
+    Ledger().rebuild(from_timestamp=0)
+
+    with pytest.raises(TaxReportStop) as stop:
+        TaxesRussia().prepare_tax_report(2025, 1)
+    assert ("USD/RUB", d2t(250604)) in stop.value.missing

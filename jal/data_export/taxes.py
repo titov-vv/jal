@@ -331,23 +331,31 @@ class TaxReport:
             return self.trade_date(operation)
         return self._moment(operation.timestamp(), operation.timestamp_is_day())
 
+    # The settlement of an operation, 0 for a kind that has none (an income in kind)
+    @staticmethod
+    def _settlement(operation) -> int:
+        return operation.settlement() if hasattr(operation, 'settlement') else 0
+
     # The moment a leg's rate is read at: its settlement, or its trade moment when asked for or when there is none
     @staticmethod
     def rate_moment(operation, no_settlement: bool = False) -> int:
-        return operation.timestamp() if no_settlement or not operation.settlement() else operation.settlement()
+        settlement = TaxReport._settlement(operation)
+        return operation.timestamp() if no_settlement or not settlement else settlement
 
     # The settlement day printed for a leg, its trade date where the source gave none
     def settlement_date(self, operation) -> int:
-        if operation.settlement():
-            return self._date(operation.settlement())
+        settlement = self._settlement(operation)
+        if settlement:
+            return self._date(settlement)
         return self._moment(operation.timestamp(), operation.timestamp_is_day())
 
     def in_year(self, timestamp: int) -> bool:
         return self.year_begin <= timestamp < self.year_end
 
-    # Returns a list of closed deals of the given asset types that belong to the report's year
-    def trades_list(self, asset_type) -> list:
-        trades = self.account.closed_trades_list()
+    # Returns a list of closed deals of the given asset types that belong to the report's year; 'close_otypes' as in
+    # JalAccount.closed_trades_list(), deals closed by a trade only by default
+    def trades_list(self, asset_type, close_otypes=None) -> list:
+        trades = self.account.closed_trades_list(close_otypes=close_otypes)
         trades = [x for x in trades if x.asset().type() in asset_type]
         trades = [x for x in trades if self.in_year(self.deal_date(x))]
         return trades

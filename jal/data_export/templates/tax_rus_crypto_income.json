@@ -1,0 +1,36 @@
+{
+  "page": "Криптодоход",
+  "title": "Доход, полученный в криптовалюте в отчетном периоде",
+  "headers": [
+      "Документ-основание: ",
+      "Период: {parameters[period]}",
+      "ФИО: ",
+      "Номер счета: {parameters[account]}"
+    ],
+  "columns": [
+    {"name": "Дата получения", "width": 10},
+    {"name": "Вид дохода", "width": 22},
+    {"name": "Криптовалюта", "width": 12},
+    {"name": "Кол-во", "width": 12},
+    {"name": "Котировка, {parameters[currency]}", "width": 12},
+    {"name": "Стоимость, {parameters[currency]}", "width": 12},
+    {"name": "Курс {parameters[currency]}/RUB на дату получения", "width": 10},
+    {"name": "Стоимость, RUB", "width": 12},
+    {"name": "Примечание", "width": 25}
+  ],
+  "columns_numbered": true,
+  "income": {
+    "rows": [["payment_date", "operation", "symbol", "qty", "price", "value", "rate", "value_rub", "note"]],
+    "formats": [["D", "T", "T", "N:6", "N:6", "N:2", "N:4", "N:2", "T"]]
+  },
+  "totals": {
+    "rows": [[null, null, null, null, "ИТОГО", "value", "", "value_rub", null]],
+    "formats": [[null, null, null, null, "F", "F", "F", "F", null]]
+  },
+  "footers": [
+    "Описание данных в столбцах таблицы",
+    "5 - Котировка криптовалюты на дату получения в валюте счёта",
+    "7 - Официальный курс валюты, установленный ЦБ РФ на дату получения",
+    "8 - Стоимость в рублях (= Столбец 4 * Столбец 5 * Столбец 7)"
+  ]
+}

@@ -142,12 +142,14 @@ class TaxEstimator(MdiWidget):
             # that no longer exists.
             qty = position.open_qty()
             price = position.open_price(adjusted=True)
-            if self.country.code() == 'pt':   # CIRS a.23: the native cost at the rate of the (would-be) disposal, today
-                o_rate = JalAsset(position.open_operation().account().currency()).quote(today_finish(), tax_currency)[1]
-                tax_price = position.open_price() * position.p_adjustment()
+            # The native cost (what was paid, in the currency it was paid in): PT at the would-be disposal's rate,
+            # today (CIRS a.23); RU at the purchase's settlement rate
+            open_currency = JalAsset(position.open_operation().account().currency())
+            tax_price = position.open_price() * position.p_adjustment()
+            if self.country.code() == 'pt':
+                o_rate = open_currency.quote(today_finish(), tax_currency)[1]
             else:
-                o_rate = account_currency.quote(position.open_operation().settlement(), tax_currency)[1]
-                tax_price = price
+                o_rate = open_currency.quote(position.open_operation().settlement(), tax_currency)[1]
             position_profit = qty * (self.quote - price)
             position_profit_rub = qty * (self.quote * self.rate - tax_price * o_rate)
             tax = tax_rate * position_profit_rub if position_profit_rub > Decimal('0') else Decimal('0')

@@ -42,8 +42,10 @@ def test_header_lines_and_links_reach_the_workbook(prepare_db_taxes, tmp_path):
     Ledger().rebuild(from_timestamp=0)
     taxes = _NotedReport()
     report = taxes.prepare_tax_report(2025, 1)
-    assert taxes.section_headers("Акции") == ["Сделки сопоставлены по FIFO"]
-    assert taxes.section_headers("Облигации") == []
+    headers = taxes.section_headers("Акции")
+    assert headers == ["Сделки сопоставлены по FIFO", taxes.texts['fifo'], taxes.texts['rate_settlement'],
+                       taxes.texts['native_cost']]
+    assert taxes.section_headers("Дивиденды") == []
 
     file = str(tmp_path) + os.sep + "report.xlsx"
     xlsx = XLSX(file)
@@ -55,9 +57,9 @@ def test_header_lines_and_links_reach_the_workbook(prepare_db_taxes, tmp_path):
     book = openpyxl.load_workbook(file)
     assert book.sheetnames == ["Сводка", "Акции", "Не отражено"]       # empty sections make no sheet
     trades = book["Акции"]
-    lines = [trades.cell(row=r, column=1).value for r in range(3, 8)]
+    lines = [trades.cell(row=r, column=1).value for r in range(3, 11)]
     assert lines == ["Документ-основание: ", "Период: 01/01/2025 - 31/12/2025", "ФИО: ",
-                     "Номер счета: U7654321 (USD)", "Сделки сопоставлены по FIFO"]
+                     "Номер счета: U7654321 (USD)"] + headers
     summary = book["Сводка"]
     links = [(c.value, c.hyperlink.location) for row in summary.iter_rows() for c in row if c.hyperlink]
     assert links == [("Пропущено по правилу юрисдикции", "'Не отражено'!A1")]   # nothing uncovered, no link

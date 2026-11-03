@@ -58,7 +58,7 @@ def test_two_hop_lot_in_jal_view(prepare_db_taxes):
     assert round(lot.open_price(adjusted=True) * lot.open_qty(), 6) == Decimal('18.400000')   # 20 of 92 EUR
 
 
-# The reports of that lot: RU crypto still reads the RUB price as EUR; PT takes the RUB cost at the ECB's rate
+# The reports of that lot: both take the cost as paid in RUB - RU as it is, PT at the ECB's rate
 def test_two_hop_lot_in_tax_reports(prepare_db_taxes):
     create_two_hop_lot()
 
@@ -66,9 +66,10 @@ def test_two_hop_lot_in_tax_reports(prepare_db_taxes):
     assert {k: deal[k] for k in ('o_number', 'o_price', 'o_amount', 'o_amount_rub', 'o_fee', 'o_fee_rub',
                                  'c_amount_rub', 'spending_rub', 'profit_rub')} == \
            {'o_number': "buy-USDT", 'o_price': Decimal('83.59'), 'o_amount': Decimal('6687.20'),
-            'o_amount_rub': Decimal('615222.40'), 'o_fee': Decimal('8'), 'o_fee_rub': Decimal('736.00'),
-            'c_amount_rub': Decimal('6992.00'), 'spending_rub': Decimal('615995.20'),
-            'profit_rub': Decimal('-609003.20')}
+            'o_amount_rub': Decimal('6687.20'), 'o_fee': Decimal('8'), 'o_fee_rub': Decimal('8.00'),
+            'c_amount_rub': Decimal('6992.00'), 'spending_rub': Decimal('6732.00'),   # + 0.4 EUR of fee at 92
+            'profit_rub': Decimal('260.00')}
+    assert deal['note'] == "Расход оплачен в RUB: пересчёт в рубли из этой валюты"
     with pytest.raises(TaxReportStop) as stop:   # PT reads the ECB's own RUB/EUR rate only, never a cross-rate
         TaxesPortugal().prepare_tax_report(2025, 4)
     assert stop.value.missing == [("RUB/EUR", d2t(250530))]
