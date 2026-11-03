@@ -1,6 +1,7 @@
 import logging
 import os
 import json
+from copy import deepcopy
 from datetime import datetime, timezone
 from PySide6.QtWidgets import QApplication
 from jal.constants import Setup
@@ -267,3 +268,44 @@ class Ru_NDFL3:
           "SubtractSum": 0.0
         }
         self._tax_form[FOREIGN_SECTION].append(payment_record)
+
+    # Merges .de5 files made for different sources of income: foreign income lines of all of them, any other key
+    # from the file that fills it most
+    @staticmethod
+    def merge_de5(filenames: list[str]) -> dict:
+        files_data = []
+        for filename in filenames:
+            try:
+                with open(filename, 'r', encoding='utf-8') as src:
+                    content = json.load(src)
+            except Exception as err:
+                raise ValueError(Ru_NDFL3.tr("Failed to read de5 file: ") + f"{filename}: {err}")
+            if not isinstance(content, dict):
+                raise ValueError(Ru_NDFL3.tr("Unsupported de5 file format: ") + filename)
+            files_data.append(content)
+
+        merged = {}
+        all_keys = set().union(*(item.keys() for item in files_data))
+        for key in all_keys:
+            if key == 'CurrencyIncomeList':
+                merged[key] = []
+                for content in files_data:
+                    value = content.get(key, [])
+                    if isinstance(value, list):
+                        merged[key].extend(deepcopy(value))
+                continue
+            merged[key] = deepcopy(max(files_data, key=lambda item: Ru_NDFL3._de5_completeness(item.get(key)) ).get(key))
+
+        merged['CurrencyQuantity'] = len(merged.get('CurrencyIncomeList', []))
+        if isinstance(merged.get('SourseInfoList'), list):
+            merged['SourseInfoQuantity'] = len(merged['SourseInfoList'])
+        return merged
+
+    @staticmethod
+    def _de5_completeness(value) -> int:
+        if isinstance(value, dict):
+            return sum(Ru_NDFL3._de5_completeness(item) for item in value.values()) + \
+                   sum(1 for item in value.values() if item not in ('', None, [], {}, 0, 0.0, False, '0'))
+        if isinstance(value, list):
+            return len(value) + sum(Ru_NDFL3._de5_completeness(item) for item in value)
+        return 0 if value in ('', None, [], {}, 0, 0.0, False, '0') else 1

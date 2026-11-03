@@ -3,7 +3,6 @@ from datetime import datetime
 import logging
 import traceback
 import json
-from copy import deepcopy
 
 from PySide6.QtCore import Property, Slot, Qt
 from PySide6.QtGui import QShortcut, QKeySequence
@@ -283,48 +282,10 @@ class TaxMergeDialog(QDialog):
         input_files = [self.ui.InputFilesList.item(i).text() for i in range(self.ui.InputFilesList.count())]
         output_file = self.ui.OutputFileName.text()
         try:
-            merged_data = self._merge_de5_data(input_files)
+            merged_data = Ru_NDFL3.merge_de5(input_files)
             with open(output_file, 'w', encoding='utf-8') as out:
                 json.dump(merged_data, out, ensure_ascii=False, indent=2)
             logging.info(self.tr("de5 files merged successfully: ") + output_file)
         except Exception as err:
             QMessageBox().warning(self, self.tr("Merge de5"), str(err), QMessageBox.Ok)
         super().accept()
-
-    #FIXME Move this functions to Ru_NDFL3 class (while keep this dialog for other countries)
-    def _merge_de5_data(self, filenames: list[str]) -> dict:
-        files_data = []
-        for filename in filenames:
-            try:
-                with open(filename, 'r', encoding='utf-8') as src:
-                    content = json.load(src)
-            except Exception as err:
-                raise ValueError(self.tr("Failed to read de5 file: ") + f"{filename}: {err}")
-            if not isinstance(content, dict):
-                raise ValueError(self.tr("Unsupported de5 file format: ") + filename)
-            files_data.append(content)
-
-        merged = {}
-        all_keys = set().union(*(item.keys() for item in files_data))
-        for key in all_keys:
-            if key == 'CurrencyIncomeList':
-                merged[key] = []
-                for content in files_data:
-                    value = content.get(key, [])
-                    if isinstance(value, list):
-                        merged[key].extend(deepcopy(value))
-                continue
-            merged[key] = deepcopy(max(files_data, key=lambda item: self._de5_completeness(item.get(key)) ).get(key))
-
-        merged['CurrencyQuantity'] = len(merged.get('CurrencyIncomeList', []))
-        if isinstance(merged.get('SourseInfoList'), list):
-            merged['SourseInfoQuantity'] = len(merged['SourseInfoList'])
-        return merged
-
-    def _de5_completeness(self, value) -> int:
-        if isinstance(value, dict):
-            return sum(self._de5_completeness(item) for item in value.values()) + \
-                   sum(1 for item in value.values() if item not in ('', None, [], {}, 0, 0.0, False, '0'))
-        if isinstance(value, list):
-            return len(value) + sum(self._de5_completeness(item) for item in value)
-        return 0 if value in ('', None, [], {}, 0, 0.0, False, '0') else 1
