@@ -250,7 +250,9 @@ Russia, the two whose rules JAL knows:
 ![A tax estimate](img/tax_estimate.png)
 
 JAL takes the lots you hold, the last known price and the current exchange rate, and shows what
-profit — and what tax at that country's rate — selling everything today would produce. It is a rough
+profit — and what tax at that country's rate — selling everything today would produce. Each lot costs
+what was paid for it, in the currency it was paid in. Portugal converts that cost and today's price at
+today's rate; Russia converts the cost at the rate of the day it was paid. It is a rough
 guide for deciding whether to sell, not a tax return; the real thing is in
 [chapter 11](11-taxes.md).
 

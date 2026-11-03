@@ -21,21 +21,81 @@ investment account for one calendar year.
 |---|---|
 | **Country** | Portugal or Russia |
 | **Year** | The tax year. Defaults to last year, which is usually the one being declared. |
-| **Account** | The investment account. Only accounts with operations in that year are offered. |
+| **Account** | The investment account. Only investment accounts with something taxable in that year — a sale, a swap, an income, a fee — are offered. |
 | **Excel file** | Where to write the detailed report. |
 
 Press **Save Report** and JAL writes a spreadsheet with one sheet per kind of income — trades,
-dividends, coupons, corporate actions, fees — each line showing the amounts in the account's currency,
+dividends, coupons, crypto, fees — each line showing the amounts in the account's currency,
 the exchange rate used, and the amount in the tax currency. It is meant to be readable: an inspector
-(or you, next year) can follow every figure back to the operation it came from.
+(or you, next year) can follow every figure back to the operation it came from. A sheet with
+nothing on it is left out, and lines under a sheet's title state the rules it was built on: how
+deals are matched, which rate is used, what counts as the cost.
+
+### The sheets
+
+| Portugal | Russia | What is on it |
+|---|---|---|
+| Summary | Сводка | The totals of the report, with links to the other sheets — see below. |
+| Dividends | Дивиденды | Dividends and the tax withheld at source. |
+| Shares | Акции | Sales of shares and funds. |
+| — | Облигации | Bond sales, redemptions and coupons; the price is per bond, in the trade's currency. |
+| — | ПФИ | Derivatives. |
+| Crypto | Криптовалюты | Crypto deals. In Portugal only a sale for money; in Russia every exchange of one coin for another as well. |
+| Crypto income | Криптодоход | Staking rewards, lending interest and other crypto received as income, valued on the day it arrived. Portugal lists it for information only: it opens a lot at zero cost and is taxed when sold. |
+| Fees | Комиссии | Fees not linked to a deal — depositary (ADR) fees, position financing, other asset fees — grouped by kind. |
+| Interest | Проценты | Interest the broker paid. |
+| Not covered | Не отражено | Everything taxable that no other sheet shows — see below. |
+
+**The cost of a deal is what was paid, in the currency it was paid in.** Moving shares or coins
+between your own accounts in different currencies does not change it: a coin bought for roubles and
+sold on a euro exchange costs, in the report, the roubles it was bought for, and the line says so.
+
+### Summary and "Not covered"
+
+The **Summary** sheet counts what the report contains and links to each sheet. Its last lines are
+the ones to read before filing:
+
+* **Skipped by the jurisdiction's rule** — operations a sheet leaves out on purpose, each with the
+  reason: in Portugal a crypto-for-crypto exchange is not taxed until the coins are sold for money
+  (CIRS art. 10.º, n.º 20); in both countries a returned token-account rent is a refund, not income.
+* **Not included in any section** — taxable operations JAL has no sheet for yet, such as a spin-off
+  or a deal in a fund. They are listed on **Not covered** so that nothing disappears silently;
+  how to declare them is up to you.
+* **Rows marked "pending replay"** — see below.
+
+### Pending replay
+
+A crypto-for-crypto exchange or a wrapping that you recorded *without a result* moves the old coin's
+cost onto the new one. Russian rules see every such exchange as a sale at market value, and JAL does
+not yet recompute it that way. Lines that depend on such an exchange — the exchange itself, and later
+sales of coins whose cost came through one — are marked **pending replay** (*ожидает пересчёта*):
+their figures may still change when JAL learns to replay them. In Portugal the same mark flags a lot
+whose cost or holding period passed through such an exchange.
+
+### Currency rates
+
+Each report converts with the official rates of one bank only, as the law requires: **Portugal**
+uses the European Central Bank's (they equal the Bank of Portugal's), **Russia** the Central Bank of
+Russia's. JAL never builds a rate from another bank's rates. Where a bank stopped publishing a
+currency, its last rate stays the valid one — the ECB's rouble rate of 1 March 2022, for example.
+
+* If a rate the report needs is not in the database at all, JAL stops and lists the missing rates
+  and quotes; add them and save the report again.
+* If the latest stored rate is more than two weeks older than an operation, and either that
+  currency has a later rate (a hole in the series) or none of the bank's rates reach that day (they
+  were not downloaded), the rate is probably missing. JAL still makes the report on the older rate,
+  but warns of it in a message and on the Summary sheet; download the rates and save the report
+  again. A currency the bank froze while still publishing the others is no warning.
 
 ### The country options
 
 **Portugal**
 
-* **Use only realization (Sell) currency rate** — value the whole deal at the exchange rate of the
-  sale, rather than converting purchase and sale each at its own rate. Which is right depends on how
-  article 23 of the CIRS is read; JAL offers both and takes no side.
+* **Convert at the rate of the disposal date only (CIRS art. 23)** — on by default: the cost, the
+  proceeds and the expenses of a deal are all converted at the rate of the day it was sold, as
+  article 23 of the CIRS describes. Unchecked, each leg is converted at the rate of its own trade
+  date. A short sale is converted at the rate of the sale that opened it; that is JAL's reading,
+  not a confirmed rule, and the line says so.
 * **Create XML records to introduce in Modelo-3 form** — also write an XML file that can be loaded
   into the Modelo 3 declaration.
 
@@ -69,7 +129,9 @@ with **+**, name the output file, press OK.
 ## Before you file anything
 
 * **Download prices and rates for the whole year first.** Every conversion uses a rate JAL has
-  stored; a missing rate is a wrong figure. See [chapter 9](09-importing.md).
+  stored: a missing one stops the report, a probably missing one gives a warning (see
+  [Currency rates](#currency-rates)). See [chapter 9](09-importing.md).
+* **Read the Summary sheet**, and the **Not covered** one if it is there.
 * **Check that the account reconciles.** If JAL's closing balance matches your broker's, the
   underlying data is probably complete.
 * **Check the corporate actions.** JAL refuses to build the ledger past a corporate action whose
