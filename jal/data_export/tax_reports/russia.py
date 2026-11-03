@@ -400,18 +400,24 @@ class TaxesRussia(TaxReport):
                 if price is None:
                     continue
                 o_amount, o_amount_rub = o_qty * price, round(o_qty * unit_rub, 2)
+                a_open = o_amount * trade.fx_adjustment()
                 rates['os_rate'] = self.rate(open_op.account().currency(), open_op.timestamp())
                 notes.append(self.texts['income_lot'])
             else:
                 o_amount = trade.native_open_amount()
                 o_amount_rub = round(o_amount * rates['os_rate'], 2)
-            o_fee = trade.native_open_fee()
+                a_open = trade.open_amount()
+            # o_amount is in the cost currency, a_open in the account currency - the one 'income' and 'profit' use
+            o_fee, a_open_fee = trade.native_open_fee(), trade.open_fee()
             c_amount, c_fee = trade.close_amount(), trade.close_fee()
+            c_price = trade.close_price()
             c_amount_rub = round(c_amount * rates['cs_rate'], 2)
             pending = False
             if close_op.type() in (LedgerTransaction.Swap, LedgerTransaction.Conversion) and close_op.price() is None:
                 # JAL's own figure: no result, the lot moved on at its cost - its fee stays with the deal that sells it
-                c_amount_rub, o_fee = o_amount_rub, Decimal('0')
+                c_amount_rub, o_fee, a_open_fee = o_amount_rub, Decimal('0'), Decimal('0')
+                c_amount = a_open                # the stored close price is the lot's unadjusted open price
+                c_price = c_amount / abs(trade.qty())
                 pending = True
                 notes.insert(0, self.texts['pending_closed'])
             fee_rub = round(o_fee * rates['o_rate'] + c_fee * rates['c_rate'], 2)
@@ -422,9 +428,9 @@ class TaxesRussia(TaxReport):
                 notes.append(self.texts['cost_currency'].format(JalAsset(rates['open_currency']).symbol()))
             notes += self._modifier_notes(trade)
             long = trade.qty() >= Decimal('0')
-            income = c_amount if long else o_amount
+            income = c_amount if long else a_open
             income_rub = c_amount_rub if long else o_amount_rub
-            spending = (o_amount if long else c_amount) + o_fee + c_fee
+            spending = (a_open if long else c_amount) + a_open_fee + c_fee
             spending_rub = (o_amount_rub if long else c_amount_rub) + fee_rub
             line = {
                 'report_template': "trade",
@@ -448,7 +454,7 @@ class TaxesRussia(TaxReport):
                 'c_rate': rates['c_rate'],
                 'cs_date': self.settlement_date(close_op),
                 'cs_rate': rates['cs_rate'],
-                'c_price': trade.close_price(),
+                'c_price': c_price,
                 'c_amount': round(c_amount, 2),
                 'c_amount_rub': c_amount_rub,
                 'c_fee': c_fee,

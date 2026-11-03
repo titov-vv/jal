@@ -70,6 +70,8 @@ def test_two_hop_lot_in_tax_reports(prepare_db_taxes):
             'c_amount_rub': Decimal('6992.00'), 'spending_rub': Decimal('6732.00'),   # + 0.4 EUR of fee at 92
             'profit_rub': Decimal('260.00')}
     assert deal['note'] == "Расход оплачен в RUB: пересчёт в рубли из этой валюты"
+    # the account-currency columns are JAL's view in EUR, never the RUB cost
+    assert (deal['c_amount'], deal['income'], deal['profit']) == (Decimal('76.00'), Decimal('76.00'), Decimal('1.91'))
     with pytest.raises(TaxReportStop) as stop:   # PT reads the ECB's own RUB/EUR rate only, never a cross-rate
         TaxesPortugal().prepare_tax_report(2025, 4)
     assert stop.value.missing == [("RUB/EUR", d2t(250530))]
@@ -84,6 +86,22 @@ def test_two_hop_lot_in_tax_reports(prepare_db_taxes):
            {'o_number': "buy-USDT", 'o_rate': Decimal('0.0085323504'), 'o_amount': Decimal('73.60'),
             'o_amount_eur': Decimal('57.06'), 'c_amount_eur': Decimal('76.00'),
             'profit_eur': Decimal('18.47'), 'note': "Cost paid in RUB: the EUR figures convert it from that currency"}
+
+
+# The rest of that lot wrapped on the EUR exchange: the no-result row closes at JAL's cost in EUR, not at the RUB price
+def test_two_hop_lot_wrapped_is_closed_at_its_cost(prepare_db_taxes):
+    create_two_hop_lot()
+    create_assets([("WUSDT", "Wrapped USDT", "", USD, PredefinedAsset.Crypto, 0)])                          # 5
+    create_conversions(4, [(d2t(250601), 4, 20, 5, 20)])
+    Ledger().rebuild(from_timestamp=0)
+
+    wrap = [x for x in TaxesRussia().prepare_tax_report(2025, 4)["Криптовалюты"] if x.get('pending_replay')]
+    assert len(wrap) == 1
+    assert {k: wrap[0][k] for k in ('qty', 'o_amount', 'o_amount_rub', 'c_price', 'c_amount', 'c_amount_rub',
+                                    'income', 'profit', 'profit_rub')} == \
+           {'qty': Decimal('20'), 'o_amount': Decimal('1671.80'), 'o_amount_rub': Decimal('1671.80'),
+            'c_price': Decimal('0.92'), 'c_amount': Decimal('18.40'), 'c_amount_rub': Decimal('1671.80'),
+            'income': Decimal('18.40'), 'profit': Decimal('0.00'), 'profit_rub': Decimal('0.00')}
 
 
 # ----------------------------------------------------------------------------------------------------------------------
