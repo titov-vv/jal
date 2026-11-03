@@ -38,6 +38,14 @@ class LedgerAssetShortage(LedgerError):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# Whether an operation is a tax event: it closes a lot or brings income, or it is a cost that can lower the tax base
+class TaxStatus:
+    NotTaxable = 0
+    Taxable = 1
+    BaseImpacting = 2
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 class LedgerTransaction(JalDB):
     NoOpException = 'NoLedgerOperation'
     NA = 0                  # Transaction types
@@ -130,6 +138,18 @@ class LedgerTransaction(JalDB):
     @classmethod
     def sequence_parts(cls) -> str:
         return f"SELECT oid AS oid, 0 AS opart, timestamp AS timestamp, account_id AS account_id FROM {cls._db_table}"
+
+    # Tax status of the operation (see TaxStatus), answered by each kind of operation from its own logic
+    def taxable(self) -> int:
+        raise NotImplementedError
+
+    # Looks the subtype up in the class's 'TaxStatusBySubtype'; an entry may be a callable that decides per operation
+    def _subtype_tax_status(self) -> int:
+        try:
+            status = self.TaxStatusBySubtype[self._subtype]
+        except KeyError:
+            raise ValueError(f"No tax status is defined for {type(self).__name__} subtype {self._subtype}")
+        return status(self) if callable(status) else status
 
     @staticmethod
     def get_operation(operation_type, oid, opart=0):
@@ -766,6 +786,12 @@ class IncomeSpending(LedgerTransaction):
         self._exec("UPDATE action_details SET tag_id=:tag_id WHERE pid=:pid",
                    [(":tag_id", tag_id), (":pid", self._oid)])
 
+    # Interest and fees are the only lines an investment tax report reads
+    def taxable(self) -> int:
+        if any(x['category_id'] in (PredefinedCategory.Interest, PredefinedCategory.Fees) for x in self._details):
+            return TaxStatus.Taxable
+        return TaxStatus.NotTaxable
+
     def processLedger(self, ledger):
         if len(self._details) == 0:
             logging.warning(LedgerTransaction.tr("Income/Spending transaction has no details: ") + f" {self.dump()}")
@@ -1038,6 +1064,21 @@ class AssetPayment(AssetPaymentBase):
             return self._amount
         return self._amount * JalAsset(self._account.currency()).quote(self._timestamp, currency_id)[1]
 
+    # A negative payment is paid out: accrued interest with a purchase, a dividend withheld for a short
+    def _income_or_cost(self) -> int:
+        return TaxStatus.Taxable if self._amount > Decimal('0') else TaxStatus.BaseImpacting
+
+    TaxStatusBySubtype = {
+        Dividend: _income_or_cost,
+        BondInterest: _income_or_cost,
+        AssetFee: TaxStatus.BaseImpacting,
+        DepositaryFee: TaxStatus.BaseImpacting,
+        PositionFinancing: TaxStatus.BaseImpacting
+    }
+
+    def taxable(self) -> int:
+        return self._subtype_tax_status()
+
     def processLedger(self, ledger):
         if self.is_fee_row():
             self.processFee(ledger)
@@ -1218,6 +1259,20 @@ class AssetIncome(AssetPaymentBase):
             balance.append(None)
         return balance
 
+    TaxStatusBySubtype = {
+        StockDividend: TaxStatus.Taxable,
+        StockVesting: TaxStatus.Taxable,
+        StakingReward: TaxStatus.Taxable,
+        Reward: TaxStatus.Taxable,
+        DustAttack: TaxStatus.NotTaxable,
+        RebaseAdjustment: TaxStatus.NotTaxable,
+        TokenRentReturn: TaxStatus.Taxable,
+        LendingInterest: TaxStatus.Taxable
+    }
+
+    def taxable(self) -> int:
+        return self._subtype_tax_status()
+
     def processLedger(self, ledger):
         if self.is_fee_row():
             self.processFee(ledger)
@@ -1371,6 +1426,12 @@ class Trade(FeeCarrier, LedgerTransaction):
             return value * JalAsset(self._account.currency()).quote(self.timestamp(), currency_id)[1]
         else:
             return value
+
+    # A trade is a tax event when it closes a lot - a sell, or a buy covering a short; it needs a built ledger
+    def taxable(self) -> int:
+        closed = self._read("SELECT COUNT(*) FROM trades_closed WHERE close_otype=:otype AND close_oid=:oid",
+                            [(":otype", self._otype), (":oid", self._oid)])
+        return TaxStatus.Taxable if closed else TaxStatus.NotTaxable
 
     def processLedger(self, ledger):
         if not self._broker:
@@ -1656,6 +1717,10 @@ class Swap(FeeCarrier, LedgerTransaction):
         if not self._cross_chain:
             balance.append(self._asset_total(self._account.id(), self._in_asset.id()))
         return balance
+
+    # A disposal for tax whatever JAL's own treatment of it; each jurisdiction decides what it makes of it
+    def taxable(self) -> int:
+        return TaxStatus.Taxable
 
     def processLedger(self, ledger):
         # Only the disposing leg books a profit/loss and fees, so only it needs a peer to book them against
@@ -2323,6 +2388,9 @@ class Transfer(FeeCarrier, LedgerTransaction):
             amount = self._money_total(self.account_id())
         return [amount]
 
+    def taxable(self) -> int:
+        return TaxStatus.NotTaxable
+
     def processLedger(self, ledger):
         if self._opart == Transfer.Outgoing:
             if self._asset.id():
@@ -2601,6 +2669,25 @@ class CorporateAction(LedgerTransaction):
             raise LedgerError(LedgerTransaction.tr("Corporate action on a short position has to result in a short position. Date: ")
                               + f"{ts2dt(self._timestamp)}, Operation: {self.dump()}")
 
+    # A result that keeps the lot running is no event, one that ends it is - a new stock, cash.
+    # A lost position (delisting, write-off) is no event: no tax rule realizes that loss
+    def _results_tax_status(self) -> int:
+        if any(not x['keep_date'] for x in self._results):
+            return TaxStatus.Taxable
+        return TaxStatus.NotTaxable
+
+    TaxStatusBySubtype = {
+        Merger: _results_tax_status,
+        SpinOff: _results_tax_status,
+        SymbolChange: _results_tax_status,
+        Split: _results_tax_status,
+        Delisting: TaxStatus.NotTaxable,
+        WriteOff: TaxStatus.NotTaxable
+    }
+
+    def taxable(self) -> int:
+        return self._subtype_tax_status()
+
     def processLedger(self, ledger):
         if self._subtype == CorporateAction.NA:
             raise LedgerError(LedgerTransaction.tr("Corporate action type isn't defined. Date: ") \
@@ -2786,6 +2873,10 @@ class Conversion(FeeCarrier, LedgerTransaction):
             return [self._asset_total(self._account.id(), self._part_fee().asset().id())]
         return [self._asset_total(self._account.id(), self._out_asset.id()),
                 self._asset_total(self._account.id(), self._in_asset.id())]
+
+    # A disposal for tax whatever JAL's own treatment of it; each jurisdiction decides what it makes of it
+    def taxable(self) -> int:
+        return TaxStatus.Taxable
 
     def processLedger(self, ledger):
         if self._out_asset.id() == 0 or self._in_asset.id() == 0:
@@ -3071,6 +3162,9 @@ class Bridge(FeeCarrier, LedgerTransaction):
             amount = self._asset_total(self._out_account.id(), self._asset.id())
         return [amount]
 
+    def taxable(self) -> int:
+        return TaxStatus.NotTaxable
+
     def processLedger(self, ledger):
         if self._has_in:   # Coherence checks that only apply to a complete, matched bridge
             if self._asset.id() == 0 or self._asset.id() != self._in_symbol.asset().id():
@@ -3295,6 +3389,18 @@ class ChainAction(FeeCarrier, LedgerTransaction):
 
     def value_currency_icons(self) -> list:
         return [self._part_fee().symbol_id()] if self.is_fee_row() else []
+
+    TaxStatusBySubtype = {
+        Authorization: TaxStatus.NotTaxable,
+        FailedTransaction: TaxStatus.NotTaxable,
+        PositionCommand: TaxStatus.NotTaxable,
+        NoOp: TaxStatus.NotTaxable,
+        ContractCall: TaxStatus.NotTaxable,
+        TokenAccountRent: TaxStatus.NotTaxable
+    }
+
+    def taxable(self) -> int:
+        return self._subtype_tax_status()
 
     def processLedger(self, ledger):
         if self.is_fee_row():
