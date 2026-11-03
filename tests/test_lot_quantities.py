@@ -89,7 +89,8 @@ def test_currency_crossing_transfer_leaves_the_quantity_alone(prepare_db):
     assert _lots(2, 4) == [(Decimal('3'), Decimal('1'))]
     assert _book_amount(2, 4) == Decimal('3')
     lot = JalAccount(2).open_trades_list(JalAsset(4))[0]
-    assert (lot.open_price(), lot.p_adjustment()) == (Decimal('1000'), Decimal('0.9333333333333333333333333333'))
+    assert (lot.open_price(), lot.p_adjustment(), lot.fx_adjustment()) == \
+           (Decimal('1000'), Decimal('1'), Decimal('0.9333333333333333333333333333'))   # the rate is kept apart
 
 
 # ----------------------------------------------------------------------------------------------------------------------

@@ -1755,7 +1755,7 @@ class Swap(FeeCarrier, LedgerTransaction):
             lots.append(jal.db.closed_trade.JalClosedTrade(self._read_record(query, cast=[int])))
         for lot, lot_qty in zip(lots, allocate_qty(lots, self._in_qty)):
             account.open_trade(lot, self._in_asset, modified_by=self, qty=lot_qty,
-                               price_adjustment=rate * self._out_qty / self._in_qty)
+                               price_adjustment=self._out_qty / self._in_qty, fx_adjustment=rate)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -2387,7 +2387,7 @@ class Transfer(FeeCarrier, LedgerTransaction):
                 # Move open trades from previous account to new and adjust price
                 for trade in transfer_trades:
                     self._deposit_account.open_trade(trade, self._asset, modified_by=self, qty=trade.qty(),
-                                                     price_adjustment=rate)
+                                                     fx_adjustment=rate)
             ledger.appendTransaction(self, BookAccount.Transfers, -transfer_amount, asset_id=self._asset.id(), value=-transfer_value)
             ledger.appendTransaction(self, BookAccount.Assets, transfer_amount, asset_id=self._asset.id(), value=transfer_value)
         else:
@@ -3133,7 +3133,7 @@ class Bridge(FeeCarrier, LedgerTransaction):
                                   + f"{ts2dt(self._in_timestamp)}, Operation: {self.dump()}")
         transfer_value = rate * value
         for trade in transfer_trades:   # Move open trades from source to destination (adjust cost basis by FX rate)
-            self._in_account.open_trade(trade, self._asset, modified_by=self, qty=trade.qty(), price_adjustment=rate)
+            self._in_account.open_trade(trade, self._asset, modified_by=self, qty=trade.qty(), fx_adjustment=rate)
         ledger.appendTransaction(self, BookAccount.Transfers, -self._out_qty, asset_id=self._asset.id(), value=-transfer_value)
         ledger.appendTransaction(self, BookAccount.Assets, self._out_qty, asset_id=self._asset.id(), value=transfer_value)
         if self._in_qty < self._out_qty:

@@ -25,7 +25,7 @@ def allocate_qty(lots: list, total: Decimal) -> list:
 # Class that represents open trade and provides some methods equal to JalClosedTrades to make compatible calls
 class JalOpenTrade(JalDB):
     def __init__(self, operation, price, qty, adjustments=(Decimal('1'), Decimal('1')), slice_id=None,
-                 acquired=None) -> None:
+                 acquired=None, fx=Decimal('1')) -> None:
         super().__init__()
         self._op = operation
         self._acquired = operation.timestamp() if acquired is None else acquired   # the lot's acquisition date
@@ -33,6 +33,7 @@ class JalOpenTrade(JalDB):
         self._qty = qty                    # The EFFECTIVE quantity the lot holds (trades_opened.remaining_qty)
         self._adj_price = adjustments[0]   # Historical adjustments of price and quantity that happened
         self._adj_qty = adjustments[1]     # during holding of this position
+        self._fx = fx                      # Rate of every transfer between currencies the lot went through
         self._slice_id = slice_id          # Stable identity of the held slice; None until the slice is stored
 
     def open_operation(self):
@@ -48,7 +49,7 @@ class JalOpenTrade(JalDB):
 
     def open_price(self, adjusted=False) -> Decimal:
         if adjusted:
-            return self._price * self._adj_price
+            return self._price * self._adj_price * self._fx
         else:
             return self._price
 
@@ -67,6 +68,9 @@ class JalOpenTrade(JalDB):
     def p_adjustment(self) -> Decimal:
         return self._adj_price
 
+    def fx_adjustment(self) -> Decimal:
+        return self._fx
+
     # Relates what the lot holds to the quantity of the operation that opened it (qty = c_qty * original_qty).
     # Reporting only - JalClosedTrade.create_from_trades() needs it to express a closed deal in original units.
     def q_adjustment(self) -> Decimal:
@@ -79,8 +83,8 @@ class JalClosedTrade(JalDB):
         super().__init__()
         self._id = id
         self._data = self._read("SELECT account_id, asset_id, open_otype, open_oid, open_timestamp, open_price, "
-                                "open_qty, close_otype, close_oid, close_timestamp, close_price, close_qty, c_price, c_qty "
-                                "FROM trades_closed WHERE id=:id", [(":id", self._id)], named=True)
+                                "open_qty, close_otype, close_oid, close_timestamp, close_price, close_qty, c_price, c_qty, "
+                                "c_fx FROM trades_closed WHERE id=:id", [(":id", self._id)], named=True)
         if self._data:
             self._account = jal.db.account.JalAccount(self._data['account_id'])
             self._asset = JalAsset(self._data['asset_id'])
@@ -92,11 +96,12 @@ class JalClosedTrade(JalDB):
             self._qty = Decimal(self._data['close_qty'])
             self._adj_price = Decimal(self._data['c_price'])
             self._adj_qty = Decimal(self._data['c_qty'])
+            self._fx = Decimal(self._data['c_fx'])
             self._acquired = self._data['open_timestamp']
         else:
             self._account = self._asset = self._open_op = self._close_op = None
             self._open_price = self._open_qty = self._close_price = self._qty = Decimal('0')
-            self._adj_price = self._adj_qty = Decimal('1')
+            self._adj_price = self._adj_qty = self._fx = Decimal('1')
             self._acquired = 0
 
     @classmethod
@@ -110,16 +115,17 @@ class JalClosedTrade(JalDB):
         c_price = o_trade.open_price() if c_operation.price() is None else c_operation.price()
         _ = cls._exec(
             "INSERT INTO trades_closed(account_id, asset_id, open_otype, open_oid, open_timestamp, open_price, "
-            "open_qty, close_otype, close_oid, close_timestamp, close_price, close_qty, c_price, c_qty) "
+            "open_qty, close_otype, close_oid, close_timestamp, close_price, close_qty, c_price, c_qty, c_fx) "
             "VALUES(:account_id, :asset_id, :open_otype, :open_oid, :open_timestamp, :open_price, :open_qty, "
-            ":close_otype, :close_oid, :close_timestamp, :close_price, :close_qty, :c_price, :c_qty)",
+            ":close_otype, :close_oid, :close_timestamp, :close_price, :close_qty, :c_price, :c_qty, :c_fx)",
             [(":account_id", c_operation.account().id()), (":asset_id", c_operation.asset().id()),
              (":open_otype", o_operation.type()), (":open_oid", o_operation.id()),
              (":open_timestamp", o_trade.acquired()), (":open_price", format_decimal(o_trade.open_price())),
              (":open_qty", format_decimal(o_qty)), (":close_otype", c_operation.type()),
              (":close_oid", c_operation.id()), (":close_timestamp", c_operation.timestamp()),
              (":close_price", format_decimal(c_price)), (":close_qty", format_decimal(qty)),
-             (":c_price", format_decimal(o_trade.p_adjustment())), (":c_qty", format_decimal(o_trade.q_adjustment()))])
+             (":c_price", format_decimal(o_trade.p_adjustment())), (":c_qty", format_decimal(o_trade.q_adjustment())),
+             (":c_fx", format_decimal(o_trade.fx_adjustment()))])
 
     def dump(self) -> list:
         return [
@@ -181,7 +187,7 @@ class JalClosedTrade(JalDB):
 
     def open_price(self, adjusted=False) -> Decimal:
         if adjusted:
-            return self._open_price * self._adj_price
+            return self._open_price * self._adj_price * self._fx
         else:
             return self._open_price
 
@@ -194,8 +200,20 @@ class JalClosedTrade(JalDB):
     def q_adjustment(self) -> Decimal:
         return self._adj_qty
 
+    def fx_adjustment(self) -> Decimal:
+        return self._fx
+
+    # Share of the opening operation's cost this deal carries, in the closing account's currency
     def cost_basis(self) -> Decimal:
+        return self._adj_price * self._adj_qty * self._fx
+
+    # The same share without the rates of transfers between currencies - in the opening account's currency
+    def native_cost_basis(self) -> Decimal:
         return self._adj_price * self._adj_qty
+
+    # Opening amount in the currency it was paid in, the opening account's - what a tax report converts by its own rule
+    def native_open_amount(self) -> Decimal:
+        return self.native_cost_basis() * self.open_price() * abs(self.open_qty())
 
     # If currency_id is different from trade account currency then adjusts value to the rate of currency for
     # given timestamp and returns it. Otherwise, simply returns unchanged value
