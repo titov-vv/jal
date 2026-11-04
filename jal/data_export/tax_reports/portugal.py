@@ -50,7 +50,12 @@ class TaxesPortugal(TaxReport):
         'native_cost': "Cost is what was paid, in the currency it was paid in: a transfer between own accounts doesn't change it",
         'short_rate': "Short sale: converted at the EUR rate of the opening sale - JAL's logical reading, not a confirmed "
                       "rule, check with a tax adviser",
-        'short_year': "Short sale: reported in the year of its close - an assumption as well",
+        'short_open': "Short open at 31 December: the sale is reported in its year without acquisition cost, the "
+                      "later purchase is not deducted; not in the Modelo 3 file - enter it in Annex J by hand",
+        'short_carried': "Closes a short opened in {year}: reported in {year} without acquisition cost, this purchase "
+                         "is not deducted",
+        'short_unhandled': "Warning: the short of {symbol} sold {date} crosses the end of a year - the rule for this kind "
+                           "of asset is not handled, check it by hand",
         'cost_currency': "Cost paid in {}: the EUR figures convert it from that currency",
         'crypto_fiat': "Only disposals for money are here; crypto-for-crypto exchanges and wrappings are on "
                        "'Not covered' (CIRS art. 10.º, n.º 20)",
@@ -199,10 +204,8 @@ class TaxesPortugal(TaxReport):
         notes = []
         if open_currency != self.account_currency.id():
             notes.append(self.texts['cost_currency'].format(JalAsset(open_currency).symbol()))
-        if not long:
-            if self.one_currency_rate:
-                notes.append(self.texts['short_rate'])
-            notes.append(self.texts['short_year'])
+        if not long and self.one_currency_rate:
+            notes.append(self.texts['short_rate'])
         notes += [x.description().strip() for x in self.deal_modifiers(trade) if x.description().strip()]
         return {
             'report_template': "trade",
@@ -242,8 +245,38 @@ class TaxesPortugal(TaxReport):
             kind = TaxParameters.ETF if trade.asset().type() == PredefinedAsset.ETF else TaxParameters.STOCK
             deals_report.append(self._deal_row(trade, kind))
             self.mark_printed(trade.close_operation())
+        deals_report += [self._short_open_row(x) for x in self.stock_year_end_shorts()]
         self.insert_totals(deals_report, ["income_eur", "spending_eur", "profit_eur", "profit"])
         return deals_report
+
+    # A stock short sold in the year and open on 31 December: the proceeds and the fee at the rate of the sale, no
+    # acquisition cost; the Modelo 3 file leaves it out
+    def _short_open_row(self, piece) -> dict:
+        sale = piece['open']
+        rate = self.rate(sale.account().currency(), sale.timestamp())
+        amount, fee = round(piece['amount'], 2), piece['fee']
+        income_eur, fee_eur = round(piece['amount'] * rate, 2), fee * rate
+        return {
+            'report_template': "short_open",
+            **self.coded(TaxParameters.STOCK),
+            'symbol': sale.symbol().symbol(),
+            'isin': sale.symbol().identifier(SymbolId.ISIN),
+            'qty': piece['qty'],
+            'o_type': "Venda",
+            'o_number': sale.number(),
+            'o_date': self._moment(sale.timestamp(), sale.timestamp_is_day()),
+            'o_rate': rate,
+            'o_price': sale.price(),
+            'o_fee': fee,
+            'o_fee_eur': fee_eur,
+            'o_amount': amount,
+            'o_amount_eur': income_eur,
+            'income_eur': income_eur,
+            'spending_eur': round(fee_eur, 2),
+            'profit': amount - round(fee, 2),
+            'profit_eur': income_eur - round(fee_eur, 2),
+            'note': self.texts['short_open']
+        }
 
     # Sales and redemptions of bonds at their price, accrued interest left to the Interest sheet
     def prepare_bonds(self):

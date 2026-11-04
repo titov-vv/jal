@@ -72,6 +72,20 @@ In the order they are written:
 In Portugal a crypto-for-crypto exchange is never a sale, so only sales for money appear; in Russia
 every exchange is one.
 
+### Short sales
+
+Both reports follow the strict reading of the law: a short sale is reported in the year of the
+**sale**, and a buy-back in a later year is not deducted from it. A stock sold short in December and
+bought back in January — or still open — appears in December's year with its proceeds less the fee of
+the sale and no acquisition cost; the next year's report lists the buy-back on **Not covered** and
+deducts nothing. For Russia the year is that of the settlement: a short sold on 30 December and
+settled in January belongs to January's year. A short sold and bought back within one year is an
+ordinary deal. This is why it has always been advised to close shorts before the end of the year.
+
+Only **stocks** follow this rule. A short of anything else — a fund, a bond, an option, a CFD,
+a coin — that is open across the end of a year is not handled: the Summary sheet and a message after
+saving name it, and you have to check it by hand.
+
 **The cost of a deal is what was paid, in the currency it was paid in.** Moving shares or coins
 between your own accounts in different currencies does not change it: a coin bought for roubles and
 sold on a euro exchange costs, in the report, the roubles it was bought for, and the line says so.
@@ -209,8 +223,9 @@ Summary sheet.
   not a confirmed rule, and the line says so.
 * **Create XML records to introduce in Modelo-3 form** — also write an XML file with the lines of
   Annex J: table 9.2A for shares, funds and bonds, each with its code, and table 9.2B for derivatives.
-  A short sale is written as realized by the sale that opened it. The 9.2B lines are a first draft —
-  check them against the form before loading them.
+  A short sale is written as realized by the sale that opened it; a stock short open at the end of
+  the year is left out of the file — enter it by hand (see [Short sales](#short-sales)). The 9.2B
+  lines are a first draft — check them against the form before loading them.
 
 **Russia**
 
@@ -249,6 +264,7 @@ with **+**, name the output file, press OK.
 * **Read the Summary sheet**, and the **Not covered** one if it is there — including its warnings
   about [parameters](#tax-parameters) and the list of [your decisions](#your-decisions-tax-treatment).
 * **Check the [codes](#codes)** against the declaration of the year, the crypto codes above all.
+* **Look for shorts open at the end of the year** — see [Short sales](#short-sales).
 * **Check that the account reconciles.** If JAL's closing balance matches your broker's, the
   underlying data is probably complete.
 * **Check the corporate actions.** JAL refuses to build the ledger past a corporate action whose

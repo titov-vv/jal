@@ -212,7 +212,7 @@
         "spending_eur": 419.0,
         "profit": 48.0,
         "profit_eur": 44.5,
-        "note": "Short sale: converted at the EUR rate of the opening sale - JAL's logical reading, not a confirmed rule, check with a tax adviser\nShort sale: reported in the year of its close - an assumption as well",
+        "note": "Short sale: converted at the EUR rate of the opening sale - JAL's logical reading, not a confirmed rule, check with a tax adviser",
         "code": "G01",
         "kind": "stock"
       },
@@ -483,7 +483,7 @@
       "spending_eur": 409.08,
       "profit": 48.0,
       "profit_eur": 54.42,
-      "note": "Short sale: reported in the year of its close - an assumption as well",
+      "note": "",
       "code": "G01",
       "kind": "stock"
     },

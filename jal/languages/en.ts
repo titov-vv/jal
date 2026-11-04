@@ -5909,17 +5909,17 @@ This looks like the quantity a rebasing position gained without reporting it, wh
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="235"/>
+        <location filename="../widgets/tax_widget.py" line="240"/>
         <source>Excel files (*.xlsx)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="235"/>
+        <location filename="../widgets/tax_widget.py" line="240"/>
         <source>Save money flow report to:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="265"/>
+        <location filename="../widgets/tax_widget.py" line="270"/>
         <source>Excel money flow report was saved to file </source>
         <translation></translation>
     </message>
@@ -8184,32 +8184,32 @@ Unchecked: it is acquired on the date of this corporate action.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="89"/>
+        <location filename="../data_export/ru_ndfl3.py" line="90"/>
         <source>Currency is not supported for 3-NDFL: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="104"/>
+        <location filename="../data_export/ru_ndfl3.py" line="106"/>
         <source>No 3-NDFL code for this kind of income: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="117"/>
+        <location filename="../data_export/ru_ndfl3.py" line="119"/>
         <source>Account country is not set, dividend isn&apos;t exported into 3-NDFL </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="124"/>
+        <location filename="../data_export/ru_ndfl3.py" line="126"/>
         <source>Country is not set for asset, dividend isn&apos;t exported into 3-NDFL </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="290"/>
+        <location filename="../data_export/ru_ndfl3.py" line="292"/>
         <source>Failed to read de5 file: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="292"/>
+        <location filename="../data_export/ru_ndfl3.py" line="294"/>
         <source>Unsupported de5 file format: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -11397,28 +11397,28 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
 <context>
     <name>TaxMergeDialog</name>
     <message>
-        <location filename="../widgets/tax_widget.py" line="286"/>
+        <location filename="../widgets/tax_widget.py" line="291"/>
         <source>Select tax file to merge</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="287"/>
-        <location filename="../widgets/tax_widget.py" line="302"/>
+        <location filename="../widgets/tax_widget.py" line="292"/>
+        <location filename="../widgets/tax_widget.py" line="307"/>
         <source>Declaration files (*.de5)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="301"/>
+        <location filename="../widgets/tax_widget.py" line="306"/>
         <source>Select file to save merged result</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="314"/>
+        <location filename="../widgets/tax_widget.py" line="319"/>
         <source>de5 files merged successfully: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="316"/>
+        <location filename="../widgets/tax_widget.py" line="321"/>
         <source>Merge de5</source>
         <translation></translation>
     </message>
@@ -11495,12 +11495,12 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/taxes.py" line="130"/>
+        <location filename="../data_export/taxes.py" line="132"/>
         <source>No report template found for section: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/taxes.py" line="163"/>
+        <location filename="../data_export/taxes.py" line="165"/>
         <source>There are no parameters found for tax report year: </source>
         <translation></translation>
     </message>
@@ -11732,12 +11732,22 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="210"/>
+        <location filename="../widgets/tax_widget.py" line="193"/>
+        <source>The report doesn&apos;t handle a short of these assets across the end of a year, check them by hand:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/tax_widget.py" line="196"/>
+        <source>Shorts not handled</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/tax_widget.py" line="215"/>
         <source>Tax report saved to file </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="212"/>
+        <location filename="../widgets/tax_widget.py" line="217"/>
         <source>Can&apos;t write tax form into file </source>
         <translation></translation>
     </message>

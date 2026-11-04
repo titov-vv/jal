@@ -189,6 +189,11 @@ class TaxWidget(MdiWidget):
             logging.warning(message)
             QMessageBox().warning(self, self.tr("Currency rates are not up to date"), message, QMessageBox.Ok)
         self._warn_parameters(taxes.parameters)
+        if taxes.short_warnings:
+            message = self.tr("The report doesn't handle a short of these assets across the end of a year, check them "
+                              "by hand:") + "\n" + "\n".join(taxes.short_warnings)
+            logging.warning(message)
+            QMessageBox().warning(self, self.tr("Shorts not handled"), message, QMessageBox.Ok)
 
         if self.update_ndfl3 or self.update_modelo3:
             if self.update_ndfl3 and not self._warn_missing_broker(taxes.account):

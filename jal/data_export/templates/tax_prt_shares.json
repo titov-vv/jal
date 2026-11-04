@@ -39,6 +39,14 @@
       [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null]
     ]
   },
+  "short_open": {
+    "rows": [
+      ["symbol", "isin", "o_type", "o_number", "o_date", "qty", "o_price", "o_amount", "o_fee", "profit", "o_rate", "o_amount_eur", "o_fee_eur", "profit_eur", "note", "code"]
+    ],
+    "formats": [
+      ["T", "N:0", "T", "T", "D", "T", "N:6", "N:2", "N:6", "N:2", "N:4", "N:2", "N:2", "N:2", "T", "T"]
+    ]
+  },
   "totals": {
     "rows": [
       [null, null, null, null, null, null, null, null, "TOTAL", "profit", "", "profit_eur", "", null, null, null]

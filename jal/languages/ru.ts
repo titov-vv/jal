@@ -5923,17 +5923,17 @@ This looks like the quantity a rebasing position gained without reporting it, wh
         <translation>Файл для сохранения расчёта в формате Excel</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="235"/>
+        <location filename="../widgets/tax_widget.py" line="240"/>
         <source>Excel files (*.xlsx)</source>
         <translation>Файлы Excel (*.xslx)</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="235"/>
+        <location filename="../widgets/tax_widget.py" line="240"/>
         <source>Save money flow report to:</source>
         <translation>Сохранить ОоДДС в:</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="265"/>
+        <location filename="../widgets/tax_widget.py" line="270"/>
         <source>Excel money flow report was saved to file </source>
         <translation>Отчёт Excel о движении денежных средств сохранён в файл </translation>
     </message>
@@ -8204,32 +8204,32 @@ Unchecked: it is acquired on the date of this corporate action.</source>
         <translation>Шаблон 3-НДФЛ не найден для данного года: </translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="89"/>
+        <location filename="../data_export/ru_ndfl3.py" line="90"/>
         <source>Currency is not supported for 3-NDFL: </source>
         <translation>Валюта не поддерживается для 3-НДФЛ: </translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="104"/>
+        <location filename="../data_export/ru_ndfl3.py" line="106"/>
         <source>No 3-NDFL code for this kind of income: </source>
         <translation>Нет кода 3-НДФЛ для этого вида дохода: </translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="117"/>
+        <location filename="../data_export/ru_ndfl3.py" line="119"/>
         <source>Account country is not set, dividend isn&apos;t exported into 3-NDFL </source>
         <translation>Не указана страна счёта, дивиденд не будет экспортирован в 3-НДФЛ.</translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="124"/>
+        <location filename="../data_export/ru_ndfl3.py" line="126"/>
         <source>Country is not set for asset, dividend isn&apos;t exported into 3-NDFL </source>
         <translation>Страна не указана для ЦБ, дивиденд не экспортирован в 3-НДФЛ </translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="290"/>
+        <location filename="../data_export/ru_ndfl3.py" line="292"/>
         <source>Failed to read de5 file: </source>
         <translation>Ошибка чтения de5-файла: </translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="292"/>
+        <location filename="../data_export/ru_ndfl3.py" line="294"/>
         <source>Unsupported de5 file format: </source>
         <translation>Неподдерживаемый формат de5-файла: </translation>
     </message>
@@ -11425,28 +11425,28 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
 <context>
     <name>TaxMergeDialog</name>
     <message>
-        <location filename="../widgets/tax_widget.py" line="286"/>
+        <location filename="../widgets/tax_widget.py" line="291"/>
         <source>Select tax file to merge</source>
         <translation>Выберите файл декларации для объединения</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="287"/>
-        <location filename="../widgets/tax_widget.py" line="302"/>
+        <location filename="../widgets/tax_widget.py" line="292"/>
+        <location filename="../widgets/tax_widget.py" line="307"/>
         <source>Declaration files (*.de5)</source>
         <translation>Файл декларации (*.de5)</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="301"/>
+        <location filename="../widgets/tax_widget.py" line="306"/>
         <source>Select file to save merged result</source>
         <translation>Выберите файл для сохранения объединённого результата</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="314"/>
+        <location filename="../widgets/tax_widget.py" line="319"/>
         <source>de5 files merged successfully: </source>
         <translation>de5-файлы объединены успешно: </translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="316"/>
+        <location filename="../widgets/tax_widget.py" line="321"/>
         <source>Merge de5</source>
         <translation>Объединить de5</translation>
     </message>
@@ -11523,12 +11523,12 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation>Неизвестная валюта: </translation>
     </message>
     <message>
-        <location filename="../data_export/taxes.py" line="130"/>
+        <location filename="../data_export/taxes.py" line="132"/>
         <source>No report template found for section: </source>
         <translation>Не указан шаблон отчета для раздела: </translation>
     </message>
     <message>
-        <location filename="../data_export/taxes.py" line="163"/>
+        <location filename="../data_export/taxes.py" line="165"/>
         <source>There are no parameters found for tax report year: </source>
         <translation>Не заданы параметры налогового отчёта для года: </translation>
     </message>
@@ -11760,12 +11760,22 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation>Курсы валют загружены не полностью</translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="210"/>
+        <location filename="../widgets/tax_widget.py" line="193"/>
+        <source>The report doesn&apos;t handle a short of these assets across the end of a year, check them by hand:</source>
+        <translation>Отчёт не обрабатывает короткие позиции этих активов, переходящие через конец года, проверьте их вручную:</translation>
+    </message>
+    <message>
+        <location filename="../widgets/tax_widget.py" line="196"/>
+        <source>Shorts not handled</source>
+        <translation>Короткие позиции не обработаны</translation>
+    </message>
+    <message>
+        <location filename="../widgets/tax_widget.py" line="215"/>
         <source>Tax report saved to file </source>
         <translation>Налоговый отчёт сохранён в файл </translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="212"/>
+        <location filename="../widgets/tax_widget.py" line="217"/>
         <source>Can&apos;t write tax form into file </source>
         <translation>Невозможно записать 3-НДФЛ в файл </translation>
     </message>

@@ -2,8 +2,8 @@
   "Акции": [
     {
       "report_template": "corporate_action",
-      "kind": "stock",
       "code": "1530 / 201",
+      "kind": "stock",
       "c_symbol": "PEIX",
       "c_isin": "US0215131063",
       "c_qty": 70.0,
@@ -43,8 +43,8 @@
     },
     {
       "report_template": "corporate_action",
-      "kind": "stock",
       "code": "1530 / 201",
+      "kind": "stock",
       "c_symbol": "ALTO",
       "c_isin": "US0215131063",
       "c_qty": 70.0,
@@ -83,11 +83,38 @@
       "note": "Symbol change: PEIX(US69423U3059) CUSIP/ISIN CHANGE TO (US0215131063) (PEIX, ALTO INGREDIENTS INC, US0215131063)\nALTO INGREDIENTS INC"
     },
     {
+      "report_template": "short_open",
+      "code": "1530 / 201",
+      "kind": "stock",
+      "c_symbol": "XOM",
+      "c_isin": "US30231G1022",
+      "c_qty": -100.0,
+      "country_iso": "840",
+      "o_type": "Продажа",
+      "o_number": "3764387743",
+      "o_date": 1620764400,
+      "o_rate": 74.1373,
+      "os_date": 1620864000,
+      "os_rate": 74.1567,
+      "o_price": 42.5,
+      "cost_basis": "",
+      "o_amount": 4250.0,
+      "o_amount_rub": 315165.98,
+      "o_fee": 0.033575,
+      "o_fee_rub": 2.49,
+      "income": 4250.0,
+      "income_rub": 315165.98,
+      "spending_rub": 2.49,
+      "profit": 4249.966425,
+      "profit_rub": 315163.49,
+      "note": "Короткая позиция на 31 декабря: доход от продажи отражён в году продажи без расхода на приобретение; покупка в следующем году к вычету не принимается"
+    },
+    {
       "report_template": "totals",
-      "income_rub": 78146.94,
-      "spending_rub": 69063.21,
-      "profit_rub": 9083.73,
-      "profit": 149.47
+      "income_rub": 393312.92,
+      "spending_rub": 69065.7,
+      "profit_rub": 324247.22,
+      "profit": 4399.436425
     }
   ],
   "Дивиденды": [],
@@ -194,22 +221,22 @@
     {
       "report_template": "section",
       "section": "Акции",
-      "rows": 2
+      "rows": 3
     },
     {
       "report_template": "figure",
       "figure": "Расходы",
-      "amount": 69063.21
+      "amount": 69065.7
     },
     {
       "report_template": "figure",
       "figure": "Доходы",
-      "amount": 78146.94
+      "amount": 393312.92
     },
     {
       "report_template": "figure",
       "figure": "Финансовый результат",
-      "amount": 9083.73
+      "amount": 324247.22
     },
     {
       "report_template": "section",
@@ -219,17 +246,17 @@
     {
       "report_template": "base_total",
       "figure": "Итого по базе: Расходы",
-      "amount": 69063.21
+      "amount": 69065.7
     },
     {
       "report_template": "base_total",
       "figure": "Итого по базе: Доходы",
-      "amount": 78146.94
+      "amount": 393312.92
     },
     {
       "report_template": "base_total",
       "figure": "Итого по базе: Финансовый результат",
-      "amount": 9083.73
+      "amount": 324247.22
     },
     {
       "report_template": "base",
@@ -309,7 +336,7 @@
     {
       "report_template": "base_sum",
       "label": "Сумма баз по ставке 13/15 % (ст. 224 п. 1.1 НК РФ): ценные бумаги, ПФИ, дивиденды, криптовалюта и проценты российских плательщиков; убыток - со своим знаком; не налог",
-      "amount": -923992.77
+      "amount": -608829.28
     },
     {
       "report_template": "base",
@@ -337,6 +364,14 @@
       "label": "Строк «ожидает пересчёта»",
       "count": 0,
       "link": ""
+    },
+    {
+      "report_template": "warning",
+      "warning": "Внимание: короткая позиция XOM   220121C00042500 от 07.12.2020 переходит через конец года - для этого вида актива правило не реализовано, проверьте её вручную"
+    },
+    {
+      "report_template": "warning",
+      "warning": "Внимание: короткая позиция FANG  220121C00040000 от 10.11.2020 переходит через конец года - для этого вида актива правило не реализовано, проверьте её вручную"
     }
   ],
   "Не отражено": [],

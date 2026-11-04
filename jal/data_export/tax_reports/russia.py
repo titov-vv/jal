@@ -84,6 +84,12 @@ class TaxesRussia(TaxReport):
         'fee_financing': "Плата за финансирование позиции",
         'fee_asset': "Прочая комиссия или налог по активу",
         'fee_broker': "Комиссия брокера",
+        'short_open': "Короткая позиция на 31 декабря: доход от продажи отражён в году продажи без расхода на "
+                      "приобретение; покупка в следующем году к вычету не принимается",
+        'short_carried': "Закрытие короткой позиции, открытой в {year} году: продажа отражена в отчёте за {year} год "
+                         "без расхода, эта покупка к вычету не принимается",
+        'short_unhandled': "Внимание: короткая позиция {symbol} от {date} переходит через конец года - для этого вида "
+                           "актива правило не реализовано, проверьте её вручную",
         'home_codes': "Коды не указаны: счёт открыт у российского брокера или банка, доход отражает налоговый агент",
         'traded': "Все ценные бумаги считаются обращающимися на организованном рынке (ст. 214.1 п. 3 НК РФ); "
                   "необращающиеся JAL не выделяет",
@@ -303,9 +309,48 @@ class TaxesRussia(TaxReport):
                    PredefinedAsset.Derivative: TaxParameters.DERIVATIVE}
 
     def prepare_stocks_and_etf(self):
-        trades = self.prepare_trades_report(self.trades_list([PredefinedAsset.Stock, PredefinedAsset.ETF]))
+        deals = self.prepare_trades_report(self.trades_list([PredefinedAsset.Stock, PredefinedAsset.ETF]))
+        deals = [x for x in deals if x['report_template'] != "totals"]
+        deals += [self._short_open_row(x) for x in self.stock_year_end_shorts()]
+        self.insert_totals(deals, ["income_rub", "spending_rub", "profit_rub", "profit"])
         self.add_header(self.texts['traded'])
-        return trades
+        return deals
+
+    # A stock short sold in the year and open on 31 December: the proceeds at the sale's settlement rate, its fee at the
+    # rate of its trade date, no acquisition cost
+    def _short_open_row(self, piece) -> dict:
+        sale = piece['open']
+        currency = sale.account().currency()
+        o_rate = self.rate(currency, sale.timestamp())
+        os_rate = self.rate(currency, self.rate_moment(sale, not self.use_settlement))
+        income, fee = round(piece['amount'], 2), piece['fee']
+        income_rub, spending_rub = round(piece['amount'] * os_rate, 2), round(fee * o_rate, 2)
+        return {
+            'report_template': "short_open",
+            **self.coded(TaxParameters.STOCK),
+            'c_symbol': sale.symbol().symbol(),
+            'c_isin': sale.symbol().identifier(SymbolId.ISIN),
+            'c_qty': piece['qty'],
+            'country_iso': self.account.country().iso_code(),
+            'o_type': "Продажа",
+            'o_number': sale.number(),
+            'o_date': self._moment(sale.timestamp(), sale.timestamp_is_day()),
+            'o_rate': o_rate,
+            'os_date': self.settlement_date(sale),
+            'os_rate': os_rate,
+            'o_price': sale.price(),
+            'cost_basis': '',
+            'o_amount': income,
+            'o_amount_rub': income_rub,
+            'o_fee': fee,
+            'o_fee_rub': spending_rub,
+            'income': income,
+            'income_rub': income_rub,
+            'spending_rub': spending_rub,
+            'profit': income - fee,
+            'profit_rub': income_rub - spending_rub,
+            'note': self.texts['short_open']
+        }
 
     # -----------------------------------------------------------------------------------------------------------------------
     # Accrued interest of a bond trade in RUB, at the official rate of the trade date

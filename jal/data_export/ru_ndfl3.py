@@ -69,7 +69,8 @@ class Ru_NDFL3:
             "Дивиденды": {"dividend": self.append_dividend},
             "Акции": {
                 "trade": self.append_stock_trade,
-                "corporate_action": self.append_stock_trade
+                "corporate_action": self.append_stock_trade,
+                "short_open": self.append_stock_trade
             },
             "Облигации": {"bond_trade": self.append_stock_trade, "bond_interest": self.append_bond_interest},
             "ПФИ": {"trade": self.append_derivative_trade},

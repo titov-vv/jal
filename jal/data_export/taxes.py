@@ -78,6 +78,8 @@ class TaxReport:
         self._no_country = []     # names of the assets whose country a section needed and didn't find
         self._rates_end = None    # newest official rate into the report currency, read once per report
         self.rates_warnings = {}  # {(pair, date of the rate used): latest date it converted} for rates likely missing
+        self.short_warnings = []  # a line for each short of an asset kind whose year-end rule isn't handled
+        self._carried = []        # closing operations of stock shorts reported in an earlier year
 
     @staticmethod
     def tr(text):
@@ -164,6 +166,10 @@ class TaxReport:
         self.section_notes, self._printed, self._missing, self._no_country = {}, set(), [], []
         self._overrides, self._applied = JalTaxOverride.for_jurisdiction(self.jurisdiction), {}
         self._rates_end, self.rates_warnings = None, {}
+        self.short_warnings, self._carried = [], []
+        for piece in self.year_end_shorts():
+            if piece['open'].asset().type() not in self.SHORT_HANDLED:
+                self._warn_short(piece['open'].asset(), piece['open'])
         sections = {}
         for report in self.reports:
             self._section = report
@@ -311,6 +317,8 @@ class TaxReport:
                 for reason, count in skipped.items()]
         for operation in uncovered:
             rows.append(self._operation_row(operation, self.texts['uncovered']))
+        for operation, year in self._carried:
+            rows.append(self._operation_row(operation, self.texts['short_carried'].format(year=year)))
         for (oid, kind), operation in self._applied.items():
             if kind == TaxOverride.NotTaxEvent:
                 rows.append(self._operation_row(operation, self.texts['excluded'].format(self._overrides[(oid, kind)][1])))
@@ -344,7 +352,7 @@ class TaxReport:
         for name in self.outside:
             rows += self._section_rows(name, sections[name], self._section_figures(sections[name]))
         pending = len([x for section in sections.values() for x in section if x.get('pending_replay')])
-        for label, count in ((self.texts['skipped_total'], sum(skipped.values())),
+        for label, count in ((self.texts['skipped_total'], sum(skipped.values()) + len(self._carried)),
                              (self.texts['uncovered_total'], len(uncovered))):
             link = self.uncovered_section[0] if count else ''   # an empty section makes no sheet to link to
             rows.append({'report_template': "count", 'label': label, 'count': count, 'link': link})
@@ -358,6 +366,7 @@ class TaxReport:
             rows.append({'report_template': "warning", 'warning': self.texts['parameters_unreviewed'].format(
                 year=datetime.fromtimestamp(self.year_begin, tz=timezone.utc).year,
                 reviewed=self.parameters.reviewed_through())})
+        rows += [{'report_template': "warning", 'warning': x} for x in self.short_warnings]
         for (pair, quoted), latest in sorted(self.rates_warnings.items()):
             rows.append({'report_template': "warning",
                          'warning': self.texts['rates_missing'].format(pair=pair, rate=day(quoted), latest=day(latest))})
@@ -519,10 +528,60 @@ class TaxReport:
     def in_year(self, timestamp: int) -> bool:
         return self.year_begin <= timestamp < self.year_end
 
-    # Returns a list of closed deals of the given asset types that belong to the report's year, less those whose close
-    # the user excluded; 'close_otypes' as in JalAccount.closed_trades_list(), deals closed by a trade only by default
+    # Closed deals of the asset types in the report's year, less those the user excluded and the stock shorts reported
+    # in the year of their sale (listed on "Not covered"); 'close_otypes' as in JalAccount.closed_trades_list()
     def trades_list(self, asset_type, close_otypes=None) -> list:
         trades = self.account.closed_trades_list(close_otypes=close_otypes)
         trades = [x for x in trades if x.asset().type() in asset_type]
         trades = [x for x in trades if self.in_year(self.deal_date(x))]
-        return [x for x in trades if not self.excluded(x.close_operation())]
+        trades = [x for x in trades if not self.excluded(x.close_operation())]
+        deals = []
+        for deal in trades:
+            if deal.qty() < Decimal('0') and self.trade_date(deal.open_operation()) < self.year_begin:
+                if deal.asset().type() in self.SHORT_HANDLED:
+                    year = datetime.fromtimestamp(self.trade_date(deal.open_operation()), tz=timezone.utc).year
+                    self._carried.append((deal.close_operation(), year))
+                    self.mark_printed(deal.close_operation())
+                    continue
+                self._warn_short(deal.asset(), deal.open_operation())
+            deals.append(deal)
+        return deals
+
+    SHORT_HANDLED = (PredefinedAsset.Stock,)   # asset kinds whose shorts follow the year-of-sale rule
+
+    # Slices of a short sold in the report's year and not bought back in it (later, or not yet), as
+    # {'open': sale, 'qty', 'p_adj', 'q_adj', 'close': buy-back or None}
+    def year_end_shorts(self) -> list:
+        pieces = []
+        for deal in self.account.closed_trades_list():
+            if deal.qty() < Decimal('0') and self.in_year(self.trade_date(deal.open_operation())) \
+                    and self.trade_date(deal.close_operation()) >= self.year_end:
+                pieces.append({'open': deal.open_operation(), 'qty': deal.qty(), 'p_adj': deal.p_adjustment(),
+                               'q_adj': deal.q_adjustment(), 'close': deal.close_operation()})
+        query = JalDB._exec("SELECT DISTINCT asset_id FROM trades_opened WHERE account_id=:account",
+                            [(":account", self.account.id())])
+        while query.next():
+            for lot in self.account.open_trades_list(JalAsset(query.value(0))):   # a lot holds a short as a positive qty
+                sale = lot.open_operation()
+                if sale.type() == LedgerTransaction.Trade and sale.qty() < Decimal('0') \
+                        and self.in_year(self.trade_date(sale)):
+                    pieces.append({'open': sale, 'qty': -lot.open_qty(), 'p_adj': lot.p_adjustment(),
+                                   'q_adj': lot.q_adjustment(), 'close': None})
+        return sorted(pieces, key=lambda x: x['open'].timestamp())
+
+    # The stock shorts of year_end_shorts(), each with its share of the sale's proceeds and fee, in the sale's currency
+    def stock_year_end_shorts(self) -> list:
+        pieces = [x for x in self.year_end_shorts() if x['open'].asset().type() in self.SHORT_HANDLED]
+        for piece in pieces:
+            sale = piece['open']
+            share = piece['p_adj'] * piece['q_adj'] * abs(piece['qty'] / (sale.qty() * piece['q_adj']))
+            piece['amount'] = share * abs(sale.qty()) * sale.price()
+            piece['fee'] = share * sale.fee()
+            self.mark_printed(sale)
+        return pieces
+
+    def _warn_short(self, asset, sale):
+        line = self.texts['short_unhandled'].format(symbol=asset.symbol(), date=datetime.fromtimestamp(
+            self.trade_date(sale), tz=timezone.utc).strftime('%d.%m.%Y'))
+        if line not in self.short_warnings:
+            self.short_warnings.append(line)
