@@ -91,7 +91,8 @@ class Ru_NDFL3:
         self.broker_name = parameters['broker_name']
         self.broker_iso_country = parameters['broker_iso_country']
         self.account_name = parameters.get('account_name', '')
-        for section in [x for x in self.stored_data if x in tax_report]:   # the file's order, not the report's
+        sections = ["Дивиденды"] if self._only_dividends else self.stored_data
+        for section in [x for x in sections if x in tax_report]:   # the file's order, not the report's
             for template in self.stored_data[section]:
                 for item in tax_report[section]:
                     if item['report_template'] == template:

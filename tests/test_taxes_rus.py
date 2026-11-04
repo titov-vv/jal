@@ -117,6 +117,7 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
     tax_report = taxes.prepare_tax_report(2020, 1)
     check_ndfl3_export(tax_report, data_path, 'rus_2020')
     check_ndfl3_export(tax_report, data_path, 'rus_2020_broker', broker_as_income=True)
+    check_ndfl3_export(tax_report, data_path, 'rus_2020_dividends', only_dividends=True)
     json_decimal2float(tax_report)
     assert tax_report == report
 

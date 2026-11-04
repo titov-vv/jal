@@ -352,8 +352,9 @@ def save_test_xls_report(path, tax_report):
 # ----------------------------------------------------------------------------------------------------------------------
 # The foreign-income records Ru_NDFL3 makes of a RU tax report, compared with those recorded under 'name' in
 # ndfl3_export.json; the report is copied as the exporter modifies short-deal rows
-def check_ndfl3_export(tax_report: dict, data_path: str, name: str, broker_as_income: bool = False):
-    form = Ru_NDFL3(2025, broker_as_income=broker_as_income)
+def check_ndfl3_export(tax_report: dict, data_path: str, name: str, broker_as_income: bool = False,
+                       only_dividends: bool = False):
+    form = Ru_NDFL3(2025, broker_as_income=broker_as_income, only_dividends=only_dividends)
     form.update_taxes(deepcopy(tax_report), {'currency': 'USD', 'broker_name': 'IBKR', 'broker_iso_country': '840',
                                              'account_name': 'TEST'})
     records = json.loads(json.dumps(form._tax_form[FOREIGN_SECTION], ensure_ascii=False))
