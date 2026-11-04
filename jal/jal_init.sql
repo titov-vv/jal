@@ -89,6 +89,20 @@ CREATE TABLE fees (
 );
 CREATE INDEX fees_by_operation ON fees (operation_id);
 
+-- The user's decision on how one operation is treated by one jurisdiction's tax report (JalTaxOverride).
+-- Read by the reports only, never by the ledger.
+DROP TABLE IF EXISTS tax_overrides;
+CREATE TABLE tax_overrides (
+    id           INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    operation_id INTEGER NOT NULL REFERENCES operations (id) ON DELETE CASCADE,
+    jurisdiction TEXT    NOT NULL,               -- ISO code of the jurisdiction ('pt', 'ru')
+    kind         INTEGER NOT NULL,               -- TaxOverride kind in jal/db/tax_override.py
+    value        TEXT    NOT NULL DEFAULT (''),  -- The decision, if the kind needs one
+    note         TEXT    NOT NULL                -- The user's reason, printed in the report
+);
+DROP INDEX IF EXISTS tax_overrides_uniqueness;
+CREATE UNIQUE INDEX tax_overrides_uniqueness ON tax_overrides (operation_id, jurisdiction, kind);
+
 ------------------------------------------------------------------------------------------------------------------------
 -- tables to store information about Income/Spending transactions
 -- action_details keeps details about each transaction
@@ -1075,7 +1089,7 @@ BEGIN
 END;
 ------------------------------------------------------------------------------------------------------------------------
 -- Initialize default values for settings
-INSERT INTO settings(name, value) VALUES('SchemaVersion', 85);
+INSERT INTO settings(name, value) VALUES('SchemaVersion', 86);
 INSERT INTO settings(name, value) VALUES('Language', 1);
 INSERT INTO settings(name, value) VALUES('RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
 INSERT INTO settings(name, value) VALUES('RuTaxSessionId', '');
