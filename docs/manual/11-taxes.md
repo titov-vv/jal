@@ -24,40 +24,91 @@ investment account for one calendar year.
 | **Account** | The investment account. Only investment accounts with something taxable in that year — a sale, a swap, an income, a fee — are offered. |
 | **Excel file** | Where to write the detailed report. |
 
-Press **Save Report** and JAL writes a spreadsheet with one sheet per kind of income — trades,
-dividends, coupons, crypto, fees — each line showing the amounts in the account's currency,
-the exchange rate used, and the amount in the tax currency. It is meant to be readable: an inspector
-(or you, next year) can follow every figure back to the operation it came from. A sheet with
-nothing on it is left out, and lines under a sheet's title state the rules it was built on: how
-deals are matched, which rate is used, what counts as the cost.
+Press **Save Report** and JAL writes a spreadsheet with one sheet per kind of income — shares,
+bonds, dividends, crypto, fees — arranged by the **tax bases** of the country (below). Each line shows
+the amounts in the account's currency, the exchange rate used, the amount in the tax currency and the
+code the declaration asks for. It is meant to be readable: an inspector (or you, next year) can follow
+every figure back to the operation it came from. A sheet with nothing on it is left out, and lines
+under a sheet's title state the rules it was built on: how deals are matched, which rate is used,
+what counts as the cost, what JAL assumed about the law.
+
+### Tax bases
+
+The law declares some kinds of income apart from others, and a loss on one kind does not reduce a
+gain on another. The report follows that division: the sheets are grouped by base, and the Summary
+gives a total per base.
+
+* **Russia** — separate bases, none of them netted with another: securities (shares and bonds
+  together, coupons included), derivatives, dividends, interest, crypto and crypto income. JAL
+  cannot tell derivatives on securities from other derivatives, so they stay on one sheet beside the
+  securities and are not added to them; and it treats every security as traded on an organized market.
+* **Portugal** — two categories: **G**, one balance of shares, bonds, derivatives and crypto held
+  under 365 days, where a loss on one offsets a gain on another; and **E**, dividends and interest,
+  each taxed gross. Crypto held 365 days or more is excluded from tax and listed apart, for the
+  declaration's information annex.
+
+Losses of earlier years are not carried into the report — that is for the declaration.
 
 ### The sheets
 
-| Portugal | Russia | What is on it |
-|---|---|---|
-| Summary | Сводка | The totals of the report, with links to the other sheets — see below. |
-| Dividends | Дивиденды | Dividends and the tax withheld at source. The Russian sheet adds the tax still to pay, as a [base estimation](#base-estimation). |
-| Shares | Акции | Sales of shares and funds. |
-| — | Облигации | Bond sales, redemptions and coupons; the price is per bond, in the trade's currency. |
-| — | ПФИ | Derivatives. |
-| Crypto | Криптовалюты | Crypto deals. In Portugal only a sale for money; in Russia every exchange of one coin for another as well. |
-| Crypto income | Криптодоход | Staking rewards, lending interest and other crypto received as income, valued on the day it arrived. Portugal lists it for information only: it opens a lot at zero cost and is taxed when sold. |
-| Fees | Комиссии | Fees not linked to a deal — depositary (ADR) fees, position financing, other asset fees — grouped by kind. |
-| Interest | Проценты | Interest the broker paid. The Russian sheet adds the tax on it, as a [base estimation](#base-estimation). |
-| Not covered | Не отражено | Everything taxable that no other sheet shows — see below. |
+In the order they are written:
+
+| Portugal | Russia | Base | What is on it |
+|---|---|---|---|
+| Summary | Сводка | — | The totals of each base — see below. |
+| Shares | Акции | G · securities | Sales of shares and funds. |
+| Bonds | Облигации | G · securities | Bond sales and redemptions. In Russia the coupons and accrued interest too; in Portugal they go on Interest. The Russian price is per bond, in the trade's currency. |
+| Derivatives | ПФИ | G · derivatives | Options, futures and other derivatives closed in the year. |
+| Crypto < 365 days | — | G | Crypto sold for money after less than 365 days. |
+| Dividends | Дивиденды | E · dividends | Dividends and the tax withheld at source. The Russian sheet adds the tax still to pay, as a [base estimation](#base-estimation). |
+| Interest | Проценты | E · interest | Interest the broker paid and cash from corporate actions; in Portugal also bond coupons and accrued interest received. The Russian sheet names the payer and its country, and adds the tax as a [base estimation](#base-estimation). |
+| — | Криптовалюты | crypto | Crypto deals: every sale, and every exchange of one coin for another. |
+| — | Криптодоход | crypto income | Staking rewards, lending interest and other crypto received as income, valued on the day it arrived. |
+| Crypto ≥ 365 days | — | outside | Crypto sold for money after 365 days or more: excluded, still to be declared. |
+| Crypto income | — | outside | Crypto received as income, for information only: it opens a lot at zero cost and is taxed when sold. |
+| Fees | Комиссии | outside | Fees not linked to a deal — depositary (ADR) fees, position financing, other asset fees — grouped by kind. No base takes them; whether and where to claim them is up to you. |
+| Not covered | Не отражено | — | Everything taxable that no other sheet shows — see below. |
+
+In Portugal a crypto-for-crypto exchange is never a sale, so only sales for money appear; in Russia
+every exchange is one.
 
 **The cost of a deal is what was paid, in the currency it was paid in.** Moving shares or coins
 between your own accounts in different currencies does not change it: a coin bought for roubles and
 sold on a euro exchange costs, in the report, the roubles it was bought for, and the line says so.
 
+### Codes
+
+The last column of a sheet holds the code the declaration asks for, from the
+[parameter file](#tax-parameters) of the year:
+
+* **Russia** — the income and deduction codes of the official list, e.g. 1530 / 201 for securities,
+  1532 / 206 for derivatives, 1010 for dividends, 4800 for interest. The crypto codes (6035 / 435,
+  and 4800 for crypto income) are not in that list yet; the sheet says so — check them before filing.
+* **Portugal** — the codes of Annex J: G01 for shares, G20 for funds and ETFs, G10 for bonds, G30
+  for derivatives, E11 for dividends, E21 for interest. Crypto has no code: the sheet names the table
+  it goes in (Annex J 9.4A, or Annex G1 table 7 for crypto held 365 days or more).
+
+An account with a bank or broker of the report's own country (a Russian broker in the Russian report,
+a Portuguese one in the Portuguese report) gets no codes: tax is withheld there and the tax office
+receives the figures pre-filled. The sheet says so. The declaration files below still include them.
+
 ### Summary and "Not covered"
 
-The **Summary** sheet counts what the report contains and links to each sheet. Its last lines are
-the ones to read before filing:
+The **Summary** sheet has a heading per tax base, the sheets of the base under it with their figures,
+and a total for the base: for sales the acquisition cost, the disposal value and the gain or loss, as
+the declarations ask for them; for income its gross amount. Bases are never added to each other —
+
+* except on one line of the Russian Summary: the **sum of the bases taxed at 13/15 %** (securities,
+  derivatives, dividends, crypto, and interest from Russian payers), since that rate depends on their
+  sum. Each base counts with its sign, a loss included. It is a sum of bases, not a tax.
+
+The sheets outside every base follow, listed with their amounts and never totalled. Then come the
+lines to read before filing:
 
 * **Skipped by the jurisdiction's rule** — operations a sheet leaves out on purpose, each with the
   reason: in Portugal a crypto-for-crypto exchange is not taxed until the coins are sold for money
-  (CIRS art. 10.º, n.º 20); in both countries a returned token-account rent is a refund, not income.
+  (CIRS art. 10.º, n.º 20), and accrued interest paid when buying a bond is not deducted; in both
+  countries a returned token-account rent is a refund, not income.
 * **Not included in any section** — taxable operations JAL has no sheet for yet, such as a spin-off
   or a deal in a fund. They are listed on **Not covered** so that nothing disappears silently;
   how to declare them is up to you.
@@ -94,8 +145,8 @@ currency, its last rate stays the valid one — the ECB's rouble rate of 1 March
 ### Tax parameters
 
 What a report needs to know about the law of a year — which countries have a tax treaty with the
-jurisdiction, the base tax rate of each kind of income — comes from a parameter file shipped with JAL,
-one per country. Each value holds from the year it starts to apply until the year it changes, and the
+jurisdiction, the base tax rate of each kind of income, the [code](#codes) of each kind of line —
+comes from a parameter file shipped with JAL, one per country. Each value holds from the year it starts to apply until the year it changes, and the
 file says up to which year it was last **reviewed** against the official sources.
 
 * A report for a year **after** the review is still made, with the latest values known; a line on the
@@ -136,6 +187,10 @@ printed in the report next to the decision:
 * **Tax treaty applies** / **No tax treaty** — offered for dividends only: that country's report
   takes your answer instead of its treaty list, for the treaty column and for the
   [base estimation](#base-estimation).
+* **Source: the asset's country** — offered for a corporate action that paid cash, in the Russian row
+  only: the Проценты line names the company and its country as the payer instead of your broker, and
+  that country decides whether the line counts among the 13/15 % bases. If the asset has no country,
+  the report stops and asks for it.
 * **As the report decides** — removes the decision.
 
 A decision belongs to one country: the other country's report does not see it. An operation that has
@@ -152,8 +207,10 @@ Summary sheet.
   article 23 of the CIRS describes. Unchecked, each leg is converted at the rate of its own trade
   date. A short sale is converted at the rate of the sale that opened it; that is JAL's reading,
   not a confirmed rule, and the line says so.
-* **Create XML records to introduce in Modelo-3 form** — also write an XML file that can be loaded
-  into the Modelo 3 declaration.
+* **Create XML records to introduce in Modelo-3 form** — also write an XML file with the lines of
+  Annex J: table 9.2A for shares, funds and bonds, each with its code, and table 9.2B for derivatives.
+  A short sale is written as realized by the sale that opened it. The 9.2B lines are a first draft —
+  check them against the form before loading them.
 
 **Russia**
 
@@ -165,7 +222,9 @@ Summary sheet.
 * **Use broker name as income source** — name the broker, rather than the issuer, as the source of
   income.
 * **Create tax form in "Декларация 2.0" program format** — also write a declaration file for the
-  official program (its extension carries the year: `.de5` for 2025, `.de6` for 2026).
+  official program (its extension carries the year: `.de5` for 2025, `.de6` for 2026), with the codes
+  of the parameter file. It holds dividends, securities, derivatives and interest; crypto is not in it
+  yet.
 
 ## Money flow report *(Russia)*
 
@@ -189,6 +248,7 @@ with **+**, name the output file, press OK.
   [Currency rates](#currency-rates)). See [chapter 9](09-importing.md).
 * **Read the Summary sheet**, and the **Not covered** one if it is there — including its warnings
   about [parameters](#tax-parameters) and the list of [your decisions](#your-decisions-tax-treatment).
+* **Check the [codes](#codes)** against the declaration of the year, the crypto codes above all.
 * **Check that the account reconciles.** If JAL's closing balance matches your broker's, the
   underlying data is probably complete.
 * **Check the corporate actions.** JAL refuses to build the ledger past a corporate action whose
