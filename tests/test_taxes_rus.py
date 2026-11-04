@@ -7,7 +7,7 @@ from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from jal.data_import.broker_statements.ibkr import StatementIBKR
 from tests.helpers import d2t, create_assets, create_quotes, create_dividends, create_coupons, create_trades, \
     create_actions, create_corporate_actions, create_stock_dividends, json_decimal2float, save_test_xls_report, \
-    nth_operation, symbol_id_for, create_swaps
+    nth_operation, symbol_id_for, create_swaps, check_ndfl3_export
 from jal.constants import PredefinedAsset, PredefinedCategory, AssetLocation, SymbolId
 from jal.db.ledger import Ledger
 from jal.db.account import JalAccount, JalAccountCreator
@@ -115,6 +115,8 @@ def test_taxes_rus(tmp_path, data_path, prepare_db_taxes):
 
     taxes = TaxesRussia()
     tax_report = taxes.prepare_tax_report(2020, 1)
+    check_ndfl3_export(tax_report, data_path, 'rus_2020')
+    check_ndfl3_export(tax_report, data_path, 'rus_2020_broker', broker_as_income=True)
     json_decimal2float(tax_report)
     assert tax_report == report
 
@@ -158,6 +160,7 @@ def test_taxes_rus_bonds(tmp_path, project_root, data_path, prepare_db_taxes):
 
     taxes = TaxesRussia()
     tax_report = taxes.prepare_tax_report(2021, 1)
+    check_ndfl3_export(tax_report, data_path, 'bond')
     json_decimal2float(tax_report)
     assert tax_report == report
 
@@ -193,6 +196,7 @@ def test_taxes_stock_vesting(data_path, prepare_db_taxes):
 
     taxes = TaxesRussia()
     tax_report = taxes.prepare_tax_report(2021, 1)
+    check_ndfl3_export(tax_report, data_path, 'vesting')
     json_decimal2float(tax_report)
     assert tax_report == report
 
@@ -225,6 +229,7 @@ def test_taxes_merger_complex(tmp_path, data_path, prepare_db_taxes):
 
     taxes = TaxesRussia()
     tax_report = taxes.prepare_tax_report(2021, 1)
+    check_ndfl3_export(tax_report, data_path, 'merger_complex')
 
     with open(data_path + 'taxes_merger_complex_rus.json', 'r', encoding='utf-8') as json_file:
         report = json.load(json_file)
@@ -261,6 +266,7 @@ def test_taxes_spinoff(tmp_path, data_path, prepare_db_taxes):
 
     taxes = TaxesRussia()
     tax_report = taxes.prepare_tax_report(2021, 1)
+    check_ndfl3_export(tax_report, data_path, 'spinoff')
 
     with open(data_path + 'taxes_spinoff_rus.json', 'r', encoding='utf-8') as json_file:
         report = json.load(json_file)
@@ -297,6 +303,7 @@ def test_taxes_over_years(tmp_path, project_root, data_path, prepare_db_taxes):
 
     taxes = TaxesRussia()
     tax_report = taxes.prepare_tax_report(2021, 1)
+    check_ndfl3_export(tax_report, data_path, 'over_years')
 
     json_decimal2float(tax_report)
     with open(data_path + 'taxes_over_years_rus.json', 'r', encoding='utf-8') as json_file:
@@ -346,6 +353,7 @@ def test_taxes_merger_spinoff(tmp_path, data_path, prepare_db_taxes):
 
     taxes = TaxesRussia()
     tax_report = taxes.prepare_tax_report(2022, 1)
+    check_ndfl3_export(tax_report, data_path, 'merger_spinoff')
 
     with open(data_path + 'taxes_merger_spinoff_rus.json', 'r', encoding='utf-8') as json_file:
         report = json.load(json_file)
@@ -381,6 +389,7 @@ def test_taxes_cfd_short_dividends(tmp_path, data_path, prepare_db_taxes):
 
     taxes = TaxesRussia()
     tax_report = taxes.prepare_tax_report(2022, 2)  # Account '7654321F' will be here
+    check_ndfl3_export(tax_report, data_path, 'cfd')
     json_decimal2float(tax_report)
     assert tax_report == report
 

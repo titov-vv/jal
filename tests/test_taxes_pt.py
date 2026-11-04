@@ -4,7 +4,7 @@ from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from decimal import Decimal
 
 from tests.helpers import d2t, dt2t, create_assets, create_quotes, create_dividends, create_trades, create_actions, \
-    create_corporate_actions, create_stock_dividends, json_decimal2float, symbol_id_for
+    create_corporate_actions, create_stock_dividends, json_decimal2float, symbol_id_for, figure_fingerprint
 from jal.constants import PredefinedAsset, PredefinedCategory
 from jal.db.ledger import Ledger
 from jal.db.operations import LedgerTransaction, CorporateAction, AssetIncome, AssetPayment
@@ -75,6 +75,9 @@ def test_taxes_pt(tmp_path, data_path, prepare_db_taxes):
     json_decimal2float(tax_report)
     assert tax_report == expected['default']
 
+    assert figure_fingerprint(tax_report, "Summary", "Not covered") == \
+           figure_fingerprint(expected['default'], "Summary", "Not covered")
+
     tax_report = TaxesPortugal().prepare_tax_report(2024, 1, use_one_currency_rate=False)
     json_decimal2float(tax_report)
     assert tax_report['Shares'] == expected['two_rates_shares']
@@ -86,10 +89,18 @@ def test_modelo3_lines_follow_the_shares_rows(prepare_db_taxes):
     report = TaxesPortugal().prepare_tax_report(2024, 1)
     form = IRS_Modelo3()
     form.update_taxes(report, {'broker_iso_country': '840'})
-    lines = form._tax_form.splitlines()
-    assert len(lines) == 5
-    assert "<ValorRealizacao>1647.00</ValorRealizacao>" in lines[0] and "<ValorAquisicao>1372.50</ValorAquisicao>" in lines[0]
-    assert "<DespesasEncargos>2.01</DespesasEncargos>" in lines[0]
+    line = "<AnexoJq092AT01-Linha><CodPais>840</CodPais><Codigo>{}</Codigo><AnoRealizacao>{}</AnoRealizacao>" \
+           "<MesRealizacao>{}</MesRealizacao><DiaRealizacao>{}</DiaRealizacao><ValorRealizacao>{}</ValorRealizacao>" \
+           "<AnoAquisicao>{}</AnoAquisicao><MesAquisicao>{}</MesAquisicao><DiaAquisicao>{}</DiaAquisicao>" \
+           "<ValorAquisicao>{}</ValorAquisicao><DespesasEncargos>{}</DespesasEncargos>" \
+           "<RespeitaValoresMobiliarios>S</RespeitaValoresMobiliarios></AnexoJq092AT01-Linha>"
+    assert form._tax_form.splitlines() == [
+        line.format("G01", 2024, 3, 12, "1647.00", 2023, 11, 15, "1372.50", "2.01"),
+        line.format("G01", 2024, 7, 8, "508.20", 2024, 1, 10, "462.00", "1.39"),
+        line.format("G01", 2024, 9, 3, "417.15", 2024, 4, 2, "463.50", "1.85"),   # short: values as exported today
+        line.format("G01", 2024, 10, 15, "2019.60", 2024, 2, 1, "1836.00", "1.84"),
+        line.format("G01", 2024, 12, 30, "576.00", 2024, 1, 10, "480.00", "1.44")
+    ]
 
 
 # Costs of holding grouped by kind, then the broker's fees; each of them marked printed
@@ -126,3 +137,16 @@ def test_crypto_income_without_quote(prepare_db_taxes):
     rows = [(x['symbol'], x['price'], x['value_eur'], x['note']) for x in report['Crypto income'][:-1]]
     assert rows == [("SOL", Decimal('100'), Decimal('180.00'), ''),
                     ("NEW", Decimal('0'), Decimal('0.00'), "quotation is not present in database")]
+
+
+# The fingerprint holds the same figures wherever their rows stand, and tells a changed figure
+def test_figure_fingerprint(data_path):
+    with open(data_path + 'taxes_pt.json', 'r', encoding='utf-8') as json_file:
+        report = json.load(json_file)['default']
+    fingerprint = figure_fingerprint(report, "Summary", "Not covered")
+    moved = {"Summary": [], "All": [x for name, section in report.items() if name not in ("Summary", "Not covered")
+                                    for x in section if x['report_template'] != "totals"], "Not covered": []}
+    moved["All"] = [{(k if k == 'report_template' else f"renamed_{k}"): v for k, v in x.items()} for x in reversed(moved["All"])]
+    assert figure_fingerprint(moved, "Summary", "Not covered") == fingerprint
+    moved["All"][0] = {k: (v + 0.01 if isinstance(v, float) else v) for k, v in moved["All"][0].items()}
+    assert figure_fingerprint(moved, "Summary", "Not covered") != fingerprint

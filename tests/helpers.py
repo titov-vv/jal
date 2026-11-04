@@ -1,5 +1,8 @@
 import os
+import json
 import time
+from collections import Counter
+from copy import deepcopy
 from contextlib import contextmanager
 from decimal import Decimal
 from datetime import datetime, timezone
@@ -10,6 +13,7 @@ from jal.db.account import JalAccount
 from jal.db.operations import LedgerTransaction, AssetPayment, AssetIncome
 from jal.constants import PredefinedAsset, AssetLocation, SymbolId, SwapTreatment
 from jal.data_export.xlsx import XLSX
+from jal.data_export.ru_ndfl3 import Ru_NDFL3, FOREIGN_SECTION
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -343,3 +347,25 @@ def save_test_xls_report(path, tax_report):
             continue
         reports_xls.output_data(tax_report[section], templates[section], parameters)
     reports_xls.save()
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The foreign-income records Ru_NDFL3 makes of a RU tax report, compared with those recorded under 'name' in
+# ndfl3_export.json; the report is copied as the exporter modifies short-deal rows
+def check_ndfl3_export(tax_report: dict, data_path: str, name: str, broker_as_income: bool = False):
+    form = Ru_NDFL3(2025, broker_as_income=broker_as_income)
+    form.update_taxes(deepcopy(tax_report), {'currency': 'USD', 'broker_name': 'IBKR', 'broker_iso_country': '840',
+                                             'account_name': 'TEST'})
+    records = json.loads(json.dumps(form._tax_form[FOREIGN_SECTION], ensure_ascii=False))
+    with open(data_path + 'ndfl3_export.json', 'r', encoding='utf-8') as json_file:
+        assert records == json.load(json_file)[name]
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Every figure of a tax report's rows, grouped by row and wherever it stands: the same fingerprint means the same
+# numbers in any arrangement of sheets, columns and field names. Totals, Summary and "Not covered" are left out.
+def figure_fingerprint(tax_report: dict, summary: str, uncovered: str) -> Counter:
+    rows = [x for name, section in tax_report.items() if name not in (summary, uncovered) for x in section
+            if x['report_template'] != "totals"]
+    return Counter(tuple(sorted(str(Decimal(str(v)).normalize()) for v in x.values()
+                                if isinstance(v, (int, float, Decimal)) and not isinstance(v, bool))) for x in rows)
