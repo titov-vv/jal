@@ -82,16 +82,6 @@
  "Сводка": [
   {
    "report_template": "section",
-   "section": "Дивиденды",
-   "rows": 1
-  },
-  {
-   "report_template": "figure",
-   "figure": "Сумма",
-   "amount": 18235.41
-  },
-  {
-   "report_template": "section",
    "section": "Акции",
    "rows": 1
   },
@@ -122,6 +112,21 @@
   },
   {
    "report_template": "section",
+   "section": "Дивиденды",
+   "rows": 1
+  },
+  {
+   "report_template": "figure",
+   "figure": "Сумма",
+   "amount": 18235.41
+  },
+  {
+   "report_template": "section",
+   "section": "Проценты",
+   "rows": 0
+  },
+  {
+   "report_template": "section",
    "section": "Криптовалюты",
    "rows": 0
   },
@@ -133,11 +138,6 @@
   {
    "report_template": "section",
    "section": "Комиссии",
-   "rows": 0
-  },
-  {
-   "report_template": "section",
-   "section": "Проценты",
    "rows": 0
   },
   {

@@ -89,12 +89,11 @@ class Ru_NDFL3:
         self.broker_name = parameters['broker_name']
         self.broker_iso_country = parameters['broker_iso_country']
         self.account_name = parameters.get('account_name', '')
-        for section in tax_report:
-            if section in self.stored_data:
-                for template in self.stored_data[section]:
-                    for item in tax_report[section]:
-                        if item['report_template'] == template:
-                            self.stored_data[section][template](item)
+        for section in [x for x in self.stored_data if x in tax_report]:   # the file's order, not the report's
+            for template in self.stored_data[section]:
+                for item in tax_report[section]:
+                    if item['report_template'] == template:
+                        self.stored_data[section][template](item)
 
     # Save tax form in file format of russian tax software "Декларация 2.0" with given filename
     def save(self, filename):

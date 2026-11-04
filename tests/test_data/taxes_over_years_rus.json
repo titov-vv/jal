@@ -181,11 +181,6 @@
   "Сводка": [
     {
       "report_template": "section",
-      "section": "Дивиденды",
-      "rows": 0
-    },
-    {
-      "report_template": "section",
       "section": "Акции",
       "rows": 2
     },
@@ -231,6 +226,16 @@
     },
     {
       "report_template": "section",
+      "section": "Дивиденды",
+      "rows": 0
+    },
+    {
+      "report_template": "section",
+      "section": "Проценты",
+      "rows": 0
+    },
+    {
+      "report_template": "section",
       "section": "Криптовалюты",
       "rows": 0
     },
@@ -242,11 +247,6 @@
     {
       "report_template": "section",
       "section": "Комиссии",
-      "rows": 0
-    },
-    {
-      "report_template": "section",
-      "section": "Проценты",
       "rows": 0
     },
     {

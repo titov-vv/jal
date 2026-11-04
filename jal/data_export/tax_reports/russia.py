@@ -2,7 +2,7 @@ from decimal import Decimal
 from jal.constants import PredefinedAsset, PredefinedCategory, SymbolId
 from jal.db.operations import LedgerTransaction, AssetPayment, AssetIncome, CorporateAction
 from jal.db.asset import JalAsset
-from jal.data_export.taxes import TaxReport
+from jal.data_export.taxes import TaxReport, GAIN, INCOME
 from jal.data_export.tax_parameters import TaxParameters
 
 
@@ -14,6 +14,13 @@ class TaxesRussia(TaxReport):
     currency_suffix = '_rub'
     summary_section = ("Сводка", "tax_rus_summary.json")
     uncovered_section = ("Не отражено", "tax_rus_uncovered.json")
+    bases = [("Ценные бумаги", GAIN, ["Акции", "Облигации"]),
+             ("ПФИ", GAIN, ["ПФИ"]),
+             ("Дивиденды", INCOME, ["Дивиденды"]),
+             ("Проценты", INCOME, ["Проценты"]),
+             ("Криптовалюты", GAIN, ["Криптовалюты"]),
+             ("Криптодоход", INCOME, ["Криптодоход"])]
+    outside = ["Комиссии"]
     texts = {
         'rent_return': "Возврат ренты токен-аккаунта: возврат уплаченного, а не доход",
         'skipped_count': "Пропущено по правилу: {}",
@@ -107,14 +114,14 @@ class TaxesRussia(TaxReport):
         self.broker_iso_cc = "000"
         self._processed_trade_qty = {}  # It will handle {trade_id: qty} records to keep track of already processed qty
         self.reports = {
-            "Дивиденды": (self.prepare_dividends, "tax_rus_dividends.json"),
             "Акции": (self.prepare_stocks_and_etf, "tax_rus_trades.json"),
             "Облигации": (self.prepare_bonds, "tax_rus_bonds.json"),
             "ПФИ": (self.prepare_derivatives, "tax_rus_derivatives.json"),
+            "Дивиденды": (self.prepare_dividends, "tax_rus_dividends.json"),
+            "Проценты": (self.prepare_broker_interest, "tax_rus_interests.json"),
             "Криптовалюты": (self.prepare_crypto, "tax_rus_crypto.json"),
             "Криптодоход": (self.prepare_crypto_income, "tax_rus_crypto_income.json"),
-            "Комиссии": (self.prepare_broker_fees, "tax_rus_fees.json"),
-            "Проценты": (self.prepare_broker_interest, "tax_rus_interests.json")
+            "Комиссии": (self.prepare_broker_fees, "tax_rus_fees.json")
         }
 
     def prepare_dividends(self):

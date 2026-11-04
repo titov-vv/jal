@@ -3,16 +3,6 @@
     "Summary": [
       {
         "report_template": "section",
-        "section": "Dividends",
-        "rows": 3
-      },
-      {
-        "report_template": "figure",
-        "figure": "Amount",
-        "amount": 216.6
-      },
-      {
-        "report_template": "section",
         "section": "Shares",
         "rows": 5
       },
@@ -38,13 +28,13 @@
       },
       {
         "report_template": "section",
-        "section": "Crypto income",
-        "rows": 0
+        "section": "Dividends",
+        "rows": 3
       },
       {
-        "report_template": "section",
-        "section": "Fees",
-        "rows": 0
+        "report_template": "figure",
+        "figure": "Amount",
+        "amount": 216.6
       },
       {
         "report_template": "section",
@@ -55,6 +45,16 @@
         "report_template": "figure",
         "figure": "Amount",
         "amount": 26.76
+      },
+      {
+        "report_template": "section",
+        "section": "Crypto income",
+        "rows": 0
+      },
+      {
+        "report_template": "section",
+        "section": "Fees",
+        "rows": 0
       },
       {
         "report_template": "count",

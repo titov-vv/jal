@@ -2,7 +2,7 @@ from decimal import Decimal
 from jal.constants import PredefinedAsset, PredefinedCategory, SymbolId
 from jal.db.asset import JalAsset
 from jal.db.operations import LedgerTransaction, AssetPayment, AssetIncome, CorporateAction
-from jal.data_export.taxes import TaxReport
+from jal.data_export.taxes import TaxReport, GAIN, INCOME
 
 
 class TaxesPortugal(TaxReport):
@@ -12,6 +12,9 @@ class TaxesPortugal(TaxReport):
     currency_suffix = '_eur'
     summary_section = ("Summary", "tax_prt_summary.json")
     uncovered_section = ("Not covered", "tax_prt_uncovered.json")
+    bases = [("Category G", GAIN, ["Shares", "Crypto"]),
+             ("Category E", INCOME, ["Dividends", "Interest"])]
+    outside = ["Crypto income", "Fees"]
     texts = {
         'rent_return': "Token account rent returned: a refund of rent paid, not income",
         'crypto_exchange': "Crypto-for-crypto exchange: not taxed until exit to fiat (CIRS art. 10.º, n.º 20)",
@@ -91,12 +94,12 @@ class TaxesPortugal(TaxReport):
         self._processed_trade_qty = {}  # It will handle {trade_id: qty} records to keep track of already processed qty
         self.one_currency_rate = True   # CIRS a.23: cost, proceeds and fees at the rate of the disposal
         self.reports = {
-            "Dividends": (self.prepare_dividends, "tax_prt_dividends.json"),
             "Shares": (self.prepare_stocks_and_etf, "tax_prt_shares.json"),
             "Crypto": (self.prepare_crypto, "tax_prt_crypto.json"),
+            "Dividends": (self.prepare_dividends, "tax_prt_dividends.json"),
+            "Interest": (self.prepare_broker_interest, "tax_prt_interests.json"),
             "Crypto income": (self.prepare_crypto_income, "tax_prt_crypto_income.json"),
-            "Fees": (self.prepare_fees, "tax_prt_fees.json"),
-            "Interest": (self.prepare_broker_interest, "tax_prt_interests.json")
+            "Fees": (self.prepare_fees, "tax_prt_fees.json")
         }
 
     # A trade belongs to the year of its trade date on Lisbon's clock (CIRS a.44), settlement is not read

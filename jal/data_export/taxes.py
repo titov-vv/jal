@@ -19,6 +19,8 @@ REPORT_METHOD = 0
 REPORT_TEMPLATE = 1
 RATES_GAP = 14 * 86400   # how much older than its date a rate may be before it is warned of (holidays differ)
 ESTIMATE = 'tax2pay'     # the field of a row that holds a base estimation of the tax
+GAIN = 'gain'            # kinds of tax base: capital gains (cost, disposal, profit) and income (gross amount)
+INCOME = 'income'
 
 
 # Raised when a report can't be produced as asked; 'missing' lists (symbol, timestamp) of every quote that stopped it
@@ -40,6 +42,10 @@ class TaxReport:
     # The two sections every report has, in its jurisdiction's language: (name, template)
     summary_section = ('', '')
     uncovered_section = ('', '')
+    # The jurisdiction's tax bases in report order: (title, GAIN or INCOME, [sections]); then the sections outside
+    # every base. Together they list each section of 'reports' once, in the order the sheets are written.
+    bases = []
+    outside = []
     texts = {}             # Report strings in the jurisdiction's language, see the country classes
     operation_labels = {}  # {(otype, subtype or None): label} in the jurisdiction's language
     # The zone whose wall clock this report counts its days and years on - the one of the jurisdiction the report is
@@ -372,6 +378,14 @@ class TaxReport:
     def base_estimate(self, kind: str, base: Decimal):
         rate = self.parameters.rate(kind)
         return None if rate is None else rate * base
+
+    # The form codes of a kind of row (TaxParameters.STOCK, ...) as (income, expense); none for an account of the
+    # jurisdiction's own country, whose income the authority gets pre-filled
+    def code(self, kind: str) -> tuple:
+        if self.account.country().code() == self.jurisdiction:
+            return '', ''
+        codes = self.parameters.code(kind)
+        return ('', '') if codes is None else codes
 
     # States under the section's title how its base estimation was made, if any of its rows has one
     def add_estimate_header(self, rows: list, text: str, kind: str):

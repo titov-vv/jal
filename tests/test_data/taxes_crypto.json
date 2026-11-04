@@ -3,11 +3,6 @@
     "Сводка": [
       {
         "report_template": "section",
-        "section": "Дивиденды",
-        "rows": 0
-      },
-      {
-        "report_template": "section",
         "section": "Акции",
         "rows": 1
       },
@@ -34,6 +29,16 @@
       {
         "report_template": "section",
         "section": "ПФИ",
+        "rows": 0
+      },
+      {
+        "report_template": "section",
+        "section": "Дивиденды",
+        "rows": 0
+      },
+      {
+        "report_template": "section",
+        "section": "Проценты",
         "rows": 0
       },
       {
@@ -69,11 +74,6 @@
       {
         "report_template": "section",
         "section": "Комиссии",
-        "rows": 0
-      },
-      {
-        "report_template": "section",
-        "section": "Проценты",
         "rows": 0
       },
       {
@@ -458,11 +458,6 @@
     "Summary": [
       {
         "report_template": "section",
-        "section": "Dividends",
-        "rows": 0
-      },
-      {
-        "report_template": "section",
         "section": "Shares",
         "rows": 1
       },
@@ -503,6 +498,16 @@
       },
       {
         "report_template": "section",
+        "section": "Dividends",
+        "rows": 0
+      },
+      {
+        "report_template": "section",
+        "section": "Interest",
+        "rows": 0
+      },
+      {
+        "report_template": "section",
         "section": "Crypto income",
         "rows": 1
       },
@@ -514,11 +519,6 @@
       {
         "report_template": "section",
         "section": "Fees",
-        "rows": 0
-      },
-      {
-        "report_template": "section",
-        "section": "Interest",
         "rows": 0
       },
       {
