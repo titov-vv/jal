@@ -434,6 +434,11 @@ class TaxReport:
         codes = self.parameters.code(kind)
         return ('', '') if codes is None else codes
 
+    # The fields a row of the kind carries: its codes as printed, and the kind itself for the form exports, which read
+    # the codes from the parameters (a home account's rows are exported too)
+    def coded(self, kind: str) -> dict:
+        return {'code': self.code_text(kind), 'kind': kind}
+
     # The codes of a kind of row as printed: "income / expense", or the income code alone; the section being prepared
     # states why when the account's own country leaves them out
     def code_text(self, kind: str) -> str:

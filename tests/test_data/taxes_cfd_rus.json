@@ -51,6 +51,7 @@
   "ПФИ":[
     {
       "report_template": "trade",
+      "kind": "derivative",
       "code": "1532 / 206",
       "c_symbol": "MUn",
       "c_isin": "",
@@ -91,6 +92,7 @@
     },
     {
       "report_template": "trade",
+      "kind": "derivative",
       "code": "1532 / 206",
       "c_symbol": "MUn",
       "c_isin": "",

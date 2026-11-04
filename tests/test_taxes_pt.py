@@ -83,11 +83,11 @@ def test_taxes_pt(tmp_path, data_path, prepare_db_taxes):
     assert tax_report['Shares'] == expected['two_rates_shares']
 
 
-# The Modelo 3 lines are made of the Shares rows: one per deal, in EUR
+# The quadro 9.2A lines are made of the Shares rows: one per deal, in EUR, with the code of the kind of asset
 def test_modelo3_lines_follow_the_shares_rows(prepare_db_taxes):
     create_pt_scenario()
     report = TaxesPortugal().prepare_tax_report(2024, 1)
-    form = IRS_Modelo3()
+    form = IRS_Modelo3(2024)
     form.update_taxes(report, {'broker_iso_country': '840'})
     line = "<AnexoJq092AT01-Linha><CodPais>840</CodPais><Codigo>{}</Codigo><AnoRealizacao>{}</AnoRealizacao>" \
            "<MesRealizacao>{}</MesRealizacao><DiaRealizacao>{}</DiaRealizacao><ValorRealizacao>{}</ValorRealizacao>" \
@@ -96,10 +96,10 @@ def test_modelo3_lines_follow_the_shares_rows(prepare_db_taxes):
            "<RespeitaValoresMobiliarios>S</RespeitaValoresMobiliarios></AnexoJq092AT01-Linha>"
     assert form._tax_form.splitlines() == [
         line.format("G01", 2024, 3, 12, "1647.00", 2023, 11, 15, "1372.50", "2.01"),
-        line.format("G01", 2024, 7, 8, "508.20", 2024, 1, 10, "462.00", "1.39"),
-        line.format("G01", 2024, 9, 3, "417.15", 2024, 4, 2, "463.50", "1.85"),   # short: values as exported today
+        line.format("G20", 2024, 7, 8, "508.20", 2024, 1, 10, "462.00", "1.39"),     # an ETF
+        line.format("G01", 2024, 4, 2, "463.50", 2024, 9, 3, "417.15", "1.85"),      # short: realized by its opening sale
         line.format("G01", 2024, 10, 15, "2019.60", 2024, 2, 1, "1836.00", "1.84"),
-        line.format("G01", 2024, 12, 30, "576.00", 2024, 1, 10, "480.00", "1.44")
+        line.format("G20", 2024, 12, 30, "576.00", 2024, 1, 10, "480.00", "1.44")
     ]
 
 
@@ -193,3 +193,18 @@ def test_g_category_sheets(prepare_db_taxes):
     skipped = [x for x in report["Not covered"] if x['report_template'] == "skipped"]
     assert [(x['reason'], x['count']) for x in skipped] == [(taxes.texts['accrued_paid'], "Skipped by rule: 1")]
     assert [x for x in report["Not covered"] if x['report_template'] == "operation"] == []
+
+
+# Bonds are quadro 9.2A lines at G10; a derivative a quadro 9.2B line (a stub) with its net income
+def test_modelo3_bonds_and_derivatives(prepare_db_taxes):
+    _g_category_scenario()
+    form = IRS_Modelo3(2025)
+    form.update_taxes(TaxesPortugal().prepare_tax_report(2025, 1), {'broker_iso_country': '840'})
+    assert form._tax_form.splitlines() == [
+        "<AnexoJq092AT01-Linha><CodPais>840</CodPais><Codigo>G10</Codigo><AnoRealizacao>2025</AnoRealizacao>"
+        "<MesRealizacao>6</MesRealizacao><DiaRealizacao>2</DiaRealizacao><ValorRealizacao>1818.00</ValorRealizacao>"
+        "<AnoAquisicao>2025</AnoAquisicao><MesAquisicao>1</MesAquisicao><DiaAquisicao>2</DiaAquisicao>"
+        "<ValorAquisicao>1800.00</ValorAquisicao><DespesasEncargos>1.80</DespesasEncargos>"
+        "<RespeitaValoresMobiliarios>S</RespeitaValoresMobiliarios></AnexoJq092AT01-Linha>",
+        "<AnexoJq092BT01-Linha><CodPais>840</CodPais><Codigo>G30</Codigo><Rendimento>16.20</Rendimento>"
+        "</AnexoJq092BT01-Linha>"]

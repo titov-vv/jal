@@ -2,6 +2,7 @@
   "Акции":[
     {
       "report_template": "corporate_action",
+      "kind": "stock",
       "code": "1530 / 201",
       "c_symbol": "DNA",
       "c_isin": "US37611X1000",
@@ -42,6 +43,7 @@
     },
     {
       "report_template": "corporate_action",
+      "kind": "stock",
       "code": "1530 / 201",
       "c_symbol": "DNA",
       "c_isin": "US37611X1000",
@@ -82,6 +84,7 @@
     },
     {
       "report_template": "corporate_action",
+      "kind": "stock",
       "code": "1530 / 201",
       "c_symbol": "DNA",
       "c_isin": "US37611X1000",
@@ -143,6 +146,7 @@
   "ПФИ":[
     {
       "report_template": "corporate_action",
+      "kind": "derivative",
       "code": "1532 / 206",
       "c_symbol": "DNA WS",
       "c_isin": "US37611X1182",
@@ -183,6 +187,7 @@
     },
     {
       "report_template": "corporate_action",
+      "kind": "derivative",
       "code": "1532 / 206",
       "c_symbol": "DNA WS",
       "c_isin": "US37611X1182",
@@ -232,6 +237,7 @@
   "Проценты":[
     {
       "report_template": "interest",
+      "kind": "interest",
       "code": "4800",
       "payer": "None",
       "country": "США",

@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from PySide6.QtWidgets import QApplication
 from jal.constants import Setup
 from jal.db.settings import JalSettings
+from jal.data_export.tax_parameters import TaxParameters
 
 
 FOREIGN_SECTION = "CurrencyIncomeList"
@@ -59,6 +60,7 @@ class Ru_NDFL3:
         self._only_dividends = only_dividends
         self._broker_as_income = broker_as_income
         self._year = year
+        self._parameters = TaxParameters('ru', year)
         self.currency = None
         self.account_name = ''
         self.broker_name = ''
@@ -94,6 +96,13 @@ class Ru_NDFL3:
                 for item in tax_report[section]:
                     if item['report_template'] == template:
                         self.stored_data[section][template](item)
+
+    # The (income, expense) codes of a report row, read from the parameters by the row's kind
+    def _codes(self, item) -> tuple:
+        codes = self._parameters.code(item['kind'])
+        if codes is None:
+            raise ValueError(self.tr("No 3-NDFL code for this kind of income: ") + item['kind'])
+        return codes
 
     # Save tax form in file format of russian tax software "Декларация 2.0" with given filename
     def save(self, filename):
@@ -135,9 +144,9 @@ class Ru_NDFL3:
           "KIKIncomeType": 0,
           "KIKNum": "",
           "TaxKIKHoldRF": 0.0,
-          "IncomeCod": "1010",   # Dividend code
+          "IncomeCod": self._codes(dividend)[0],
           "IncomeSum": float(dividend['amount']),
-          "SubtractCod": "",
+          "SubtractCod": self._codes(dividend)[1],
           "SubtractSum": 0.0
         }
         self._tax_form[FOREIGN_SECTION].append(dividend_record)
@@ -169,9 +178,9 @@ class Ru_NDFL3:
             "KIKIncomeType": 0,
             "KIKNum": "",
             "TaxKIKHoldRF": 0.0,
-            "IncomeCod": "1530",  # '(01)Доходы от реализации ЦБ (обращ-ся на орг. рынке ЦБ)'
+            "IncomeCod": self._codes(trade)[0],
             "IncomeSum": float(trade['income']),
-            "SubtractCod": "201",
+            "SubtractCod": self._codes(trade)[1],
             "SubtractSum": float(trade['spending_rub'])
         }
         self._tax_form[FOREIGN_SECTION].append(trade_record)
@@ -203,9 +212,9 @@ class Ru_NDFL3:
             "KIKIncomeType": 0,
             "KIKNum": "",
             "TaxKIKHoldRF": 0.0,
-            "IncomeCod": "1532",  # '(06)Доходы по оп-циям с ПФИ (обращ-ся на орг. рынке ЦБ), баз. ак. по которым являются ЦБ'
+            "IncomeCod": self._codes(trade)[0],
             "IncomeSum": float(trade['income']),
-            "SubtractCod": "206",
+            "SubtractCod": self._codes(trade)[1],
             "SubtractSum": float(trade['spending_rub'])
         }
         self._tax_form[FOREIGN_SECTION].append(trade_record)
@@ -234,9 +243,9 @@ class Ru_NDFL3:
             "KIKIncomeType": 0,
             "KIKNum": "",
             "TaxKIKHoldRF": 0.0,
-            "IncomeCod": "1530",  # '(01)Доходы от реализации ЦБ (обращ-ся на орг. рынке ЦБ)'
+            "IncomeCod": self._codes(interest)[0],
             "IncomeSum": float(interest['interest']),
-            "SubtractCod": "",
+            "SubtractCod": self._codes(interest)[1],
             "SubtractSum": 0.0
         }
         self._tax_form[FOREIGN_SECTION].append(interest_record)
@@ -261,9 +270,9 @@ class Ru_NDFL3:
           "KIKIncomeType": 0,
           "KIKNum": "",
           "TaxKIKHoldRF": 0.0,
-          "IncomeCod": "4800",   # 'Иные доходы'
+          "IncomeCod": self._codes(payment)[0],
           "IncomeSum": float(payment['amount']),
-          "SubtractCod": "",
+          "SubtractCod": self._codes(payment)[1],
           "SubtractSum": 0.0
         }
         self._tax_form[FOREIGN_SECTION].append(payment_record)

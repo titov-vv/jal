@@ -164,7 +164,7 @@ class TaxesRussia(TaxReport):
                     tax2pay = Decimal('0.0')
             line = {
                 'report_template': "dividend",
-                'code': self.code_text(TaxParameters.DIVIDEND),
+                **self.coded(TaxParameters.DIVIDEND),
                 'payment_date': self._moment(dividend.timestamp(), dividend.timestamp_is_day()),
                 'symbol': dividend.symbol().symbol(),
                 'full_name': dividend.asset().name(),
@@ -255,7 +255,7 @@ class TaxesRussia(TaxReport):
             o_amount_full = round(trade.open_amount(full=True), 2)
             line = {
                 'report_template': report_template,
-                'code': self.code_text(self.TRADE_CODES[trade.asset().type()]),
+                **self.coded(self.TRADE_CODES[trade.asset().type()]),
                 'c_symbol': trade.close_operation().symbol().symbol(),
                 'c_isin': trade.close_operation().symbol().identifier(SymbolId.ISIN),  # May be not used in template (for derivatives as example)
                 'c_qty': trade.qty(),
@@ -337,7 +337,7 @@ class TaxesRussia(TaxReport):
                 spending_rub = c_amount_rub + fee_rub - self._accrued_rub(close_op)
             line = {
                 'report_template': "bond_trade",
-                'code': self.code_text(TaxParameters.BOND),
+                **self.coded(TaxParameters.BOND),
                 'c_symbol': close_op.symbol().symbol(),
                 'c_isin': close_op.symbol().identifier(SymbolId.ISIN),
                 'c_qty': trade.qty(),
@@ -392,7 +392,7 @@ class TaxesRussia(TaxReport):
             amount_rub = round(amount * rate, 2)
             line = {
                 'report_template': "bond_interest",
-                'code': self.code_text(TaxParameters.COUPON),
+                **self.coded(TaxParameters.COUPON),
                 'type': "Купон",
                 'empty': '',  # to keep cell borders drawn
                 'o_date': self._moment(interest.timestamp(), interest.timestamp_is_day()),
@@ -487,7 +487,7 @@ class TaxesRussia(TaxReport):
             spending_rub = (o_amount_rub if long else c_amount_rub) + fee_rub
             line = {
                 'report_template': "trade",
-                'code': self.code_text(TaxParameters.CRYPTO),
+                **self.coded(TaxParameters.CRYPTO),
                 'symbol': close_op.symbol().symbol(),
                 'qty': trade.qty(),
                 'country_iso': country.iso_code(),
@@ -544,7 +544,7 @@ class TaxesRussia(TaxReport):
                 continue
             incomes_report.append({
                 'report_template': "income",
-                'code': self.code_text(TaxParameters.CRYPTO_INCOME),
+                **self.coded(TaxParameters.CRYPTO_INCOME),
                 'payment_date': self._moment(income.timestamp(), income.timestamp_is_day()),
                 'operation': self.operation_label(income),
                 'symbol': income.symbol().symbol(),
@@ -651,7 +651,7 @@ class TaxesRussia(TaxReport):
                     'tax2pay': self._interest_tax(amount * rate),
                     'description': interest['note'],
                     'note': '',
-                    'code': self.code_text(TaxParameters.INTEREST)
+                    **self.coded(TaxParameters.INTEREST)
                 } | self._payer()
                 interests_report.append(line)
             if interests:
@@ -672,7 +672,7 @@ class TaxesRussia(TaxReport):
                 'tax2pay': self._interest_tax(payment['amount'] * rate),
                 'description': payment['note'],
                 'note': '',
-                'code': self.code_text(TaxParameters.INTEREST)
+                **self.coded(TaxParameters.INTEREST)
             } | self._payer(LedgerTransaction.get_operation(LedgerTransaction.CorporateAction, payment['oid']))
             interests_report.append(line)
             self.mark_printed_id(LedgerTransaction.CorporateAction, payment['oid'])

@@ -157,7 +157,7 @@ class TaxesPortugal(TaxReport):
                 'amount_eur': round(dividend.amount(self.account_currency.id()) * rate, 2),
                 'tax_eur': round(dividend.tax() * rate, 2),
                 'note': note,
-                'code': self.code_text(TaxParameters.DIVIDEND)
+                **self.coded(TaxParameters.DIVIDEND)
             }
             dividends_report.append(line)
             self.mark_printed(dividend)
@@ -232,7 +232,7 @@ class TaxesPortugal(TaxReport):
             'profit': profit,
             'profit_eur': income_eur - spending_eur,
             'note': "\n".join(notes),
-            'code': '' if kind is None else self.code_text(kind)
+            **({} if kind is None else self.coded(kind))
         }
 
     def prepare_stocks_and_etf(self):
@@ -287,7 +287,6 @@ class TaxesPortugal(TaxReport):
         deals_report = []
         for trade in self.trades_list([PredefinedAsset.Crypto]):
             line = self._deal_row(trade)
-            del line['code']
             days = (line['c_date'] - line['o_date']) // 86400
             if (days >= 365) != long_held:
                 continue
@@ -404,7 +403,7 @@ class TaxesPortugal(TaxReport):
                     'amount_eur': round(amount * rate, 2),
                     'description': interest['note'],
                     'note': '',
-                    'code': self.code_text(TaxParameters.INTEREST)
+                    **self.coded(TaxParameters.INTEREST)
                 }
                 interests_report.append(line)
             if interests:
@@ -424,7 +423,7 @@ class TaxesPortugal(TaxReport):
                 'amount_eur': round(payment['amount'] * rate, 2),
                 'description': payment['note'],
                 'note': '',
-                'code': self.code_text(TaxParameters.INTEREST)
+                **self.coded(TaxParameters.INTEREST)
             }
             interests_report.append(line)
             self.mark_printed_id(LedgerTransaction.CorporateAction, payment['oid'])
@@ -443,7 +442,7 @@ class TaxesPortugal(TaxReport):
                 'amount_eur': round(coupon.amount() * rate, 2),
                 'description': f"{self.texts['coupon']} {coupon.symbol().symbol()}: {coupon.note()}".strip(),
                 'note': '',
-                'code': self.code_text(TaxParameters.COUPON)
+                **self.coded(TaxParameters.COUPON)
             })
             self.mark_printed(coupon)
         self.insert_totals(interests_report, ["amount", "amount_eur"])

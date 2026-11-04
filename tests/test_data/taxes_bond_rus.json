@@ -14,6 +14,7 @@
    "Облигации":[
       {
          "report_template": "bond_trade",
+         "kind": "bond",
          "code": "1530 / 201",
          "c_symbol": "X 6 1/4 03/15/26 - PARTIAL CALL RED DATE 9/26",
          "c_isin": "US912CALAN84",
@@ -56,6 +57,7 @@
       },
       {
          "report_template": "bond_interest",
+         "kind": "coupon",
          "code": "1530",
          "type": "Купон",
          "empty": "",
@@ -74,6 +76,7 @@
       },
       {
          "report_template": "bond_interest",
+         "kind": "coupon",
          "code": "1530",
          "type": "Купон",
          "empty": "",
@@ -92,6 +95,7 @@
       },
       {
          "report_template": "bond_interest",
+         "kind": "coupon",
          "code": "1530",
          "type": "Купон",
          "empty": "",

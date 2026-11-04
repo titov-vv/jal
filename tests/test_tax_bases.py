@@ -9,6 +9,7 @@ from jal.db.ledger import Ledger
 from jal.db.account import JalAccountCreator
 from jal.data_export.taxes import TaxReport, GAIN, INCOME
 from jal.data_export.tax_parameters import TaxParameters
+from jal.data_export.ru_ndfl3 import Ru_NDFL3, FOREIGN_SECTION
 
 
 # Each section of a report is in exactly one base or outside them all, and the sheets follow the bases' order
@@ -43,6 +44,9 @@ def test_home_account_rows_have_no_code(prepare_db_taxes):
     rows = report.prepare_tax_report(2025, account.id())["Дивиденды"]
     assert [x['code'] for x in rows if x['report_template'] == "dividend"] == ['']
     assert report.texts['home_codes'] in report.section_headers("Дивиденды")
+    form = Ru_NDFL3(2025)    # the export reads the code by the row's kind, so the row is filed all the same
+    form.update_taxes({"Дивиденды": rows}, {'currency': 'USD', 'broker_name': 'Bank', 'broker_iso_country': '643'})
+    assert [x['IncomeCod'] for x in form._tax_form[FOREIGN_SECTION]] == ['1010']
 
 
 # Every base total of a recorded report is the sum of its sections' own totals, and the RU 13/15 % line the signed sum

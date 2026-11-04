@@ -194,13 +194,17 @@ class TaxWidget(MdiWidget):
             if self.update_ndfl3 and not self._warn_missing_broker(taxes.account):
                 return
             tax_forms = None
-            if self.update_ndfl3:
-                tax_forms = Ru_NDFL3(self.year, broker_as_income=self.ndfl3_broker_as_income, only_dividends=self.ndfl3_dividends_only)
-                filename = self.ndfl3_filename
-            if self.update_modelo3:
-                tax_forms = IRS_Modelo3()
-                filename = self.modelo3_filename
-            tax_forms.update_taxes(tax_report, parameters)
+            try:
+                if self.update_ndfl3:
+                    tax_forms = Ru_NDFL3(self.year, broker_as_income=self.ndfl3_broker_as_income, only_dividends=self.ndfl3_dividends_only)
+                    filename = self.ndfl3_filename
+                if self.update_modelo3:
+                    tax_forms = IRS_Modelo3(self.year)
+                    filename = self.modelo3_filename
+                tax_forms.update_taxes(tax_report, parameters)
+            except ValueError as e:   # no form template or no code for the year
+                logging.error(str(e))
+                return
             try:
                 tax_forms.save(filename)
                 logging.info(self.tr("Tax report saved to file ") + f"'{filename}'")
