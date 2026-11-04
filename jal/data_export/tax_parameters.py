@@ -15,6 +15,13 @@ class TaxParameters:
     DIVIDEND = "dividend"           # kinds of income a base rate is given for
     INTEREST = "interest"
     CAPITAL_GAIN = "capital_gain"
+    STOCK = "stock"                 # kinds of row a form code is given for, beside DIVIDEND and INTEREST
+    ETF = "etf"
+    BOND = "bond"
+    COUPON = "coupon"
+    DERIVATIVE = "derivative"
+    CRYPTO = "crypto"
+    CRYPTO_INCOME = "crypto_income"
 
     def __init__(self, code: str, year: int):
         self._year = year
@@ -55,3 +62,11 @@ class TaxParameters:
     def rate(self, kind: str):
         rate = self.value("rate_" + kind)
         return None if rate is None else Decimal(rate)
+
+    # The form codes of a kind of row in this year as (income code, expense code), '' for a code the form doesn't
+    # ask for; None if the file gives none
+    def code(self, kind: str):
+        codes = self.value("code_" + kind)
+        if codes is None:
+            return None
+        return codes[0], codes[1] if len(codes) > 1 else ''

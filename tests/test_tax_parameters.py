@@ -8,6 +8,7 @@ from tests.helpers import d2t, dt2t, create_assets, create_quotes, create_divide
 from jal.constants import PredefinedAsset
 from jal.db.ledger import Ledger
 from jal.data_export.taxes import TaxReport
+from jal.data_export.tax_parameters import TaxParameters
 from jal.data_export.tax_reports.russia import TaxesRussia
 from jal.data_export.tax_reports.portugal import TaxesPortugal
 from jal.widgets.icons import JalIcon
@@ -119,3 +120,31 @@ def test_dialog_warns_of_parameters(prepare_db_taxes, tmp_path, monkeypatch, yea
     widget.SaveReport()
     parameter_warnings = [x for x in warnings if "parameters" in x]
     assert parameter_warnings == [] if expected is None else expected in parameter_warnings[0]
+
+
+# The form codes of each kind of row: RU income / expense codes from 2020, PT Anexo J codes from 2022; crypto has no
+# PT code (the quadro is its classification), a year before the file has none at all
+@pytest.mark.parametrize("code, year, kind, expected", [
+    ('ru', 2020, TaxParameters.STOCK, ('1530', '201')),
+    ('ru', 2025, TaxParameters.ETF, ('1530', '201')),
+    ('ru', 2025, TaxParameters.BOND, ('1530', '201')),
+    ('ru', 2025, TaxParameters.COUPON, ('1530', '')),
+    ('ru', 2025, TaxParameters.DERIVATIVE, ('1532', '206')),
+    ('ru', 2025, TaxParameters.DIVIDEND, ('1010', '')),
+    ('ru', 2025, TaxParameters.INTEREST, ('4800', '')),
+    ('ru', 2025, TaxParameters.CRYPTO, ('6035', '435')),
+    ('ru', 2025, TaxParameters.CRYPTO_INCOME, ('4800', '')),
+    ('ru', 2019, TaxParameters.STOCK, None),
+    ('pt', 2025, TaxParameters.STOCK, ('G01', '')),
+    ('pt', 2025, TaxParameters.ETF, ('G20', '')),
+    ('pt', 2025, TaxParameters.BOND, ('G10', '')),
+    ('pt', 2025, TaxParameters.COUPON, ('E21', '')),
+    ('pt', 2025, TaxParameters.DERIVATIVE, ('G30', '')),
+    ('pt', 2025, TaxParameters.DIVIDEND, ('E11', '')),
+    ('pt', 2025, TaxParameters.INTEREST, ('E21', '')),
+    ('pt', 2025, TaxParameters.CRYPTO, None),
+    ('pt', 2021, TaxParameters.STOCK, None),
+    ('ru', 2025, "unknown", None),
+])
+def test_form_codes(prepare_db, code, year, kind, expected):
+    assert TaxParameters(code, year).code(kind) == expected

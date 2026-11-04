@@ -7,5 +7,14 @@
   },
   "rate_dividend": {"2020": "0.13"},
   "rate_interest": {"2020": "0.13"},
-  "rate_capital_gain": {"2020": "0.13"}
+  "rate_capital_gain": {"2020": "0.13"},
+  "code_stock": {"2020": ["1530", "201"]},
+  "code_etf": {"2020": ["1530", "201"]},
+  "code_bond": {"2020": ["1530", "201"]},
+  "code_coupon": {"2020": ["1530"]},
+  "code_derivative": {"2020": ["1532", "206"]},
+  "code_dividend": {"2020": ["1010"]},
+  "code_interest": {"2020": ["4800"]},
+  "code_crypto": {"2020": ["6035", "435"]},
+  "code_crypto_income": {"2020": ["4800"]}
 }
