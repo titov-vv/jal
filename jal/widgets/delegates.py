@@ -526,6 +526,7 @@ class TaggedIconDelegate(GridLinesDelegate):
 # ----------------------------------------------------------------------------------------------------------------------
 # The transaction a row belongs to as [number, timestamp], or None for a row that names none.
 TRANSACTION_ROLE = Qt.UserRole + 102
+TAX_OVERRIDE_ROLE = Qt.UserRole + 103   # True for a row whose operation has a tax treatment override
 
 
 # How a row joins its neighbours as the view shows them: (tied to the row above, tied to the row below, the row above
@@ -546,9 +547,14 @@ def transaction_link(index) -> tuple:
 # Draws the rows of one transaction as a group in the first three columns of the operations list. The first row stays
 # as it is; every next one loses what it repeats - the time, the number and an account equal to the one above - and
 # is tied to the first one by a line, with its own icon moved aside. Its notes are drawn as secondary text.
+# A tax treatment override puts the tax glyph at the right end of the notes.
 class TransactionTieDelegate(GridLinesDelegate):
     def initStyleOption(self, option, index):
         super().initStyleOption(option, index)
+        if index.column() == 2 and index.data(TAX_OVERRIDE_ROLE):
+            option.icon = JalIcon[JalIcon.TAX]
+            option.features |= QStyleOptionViewItem.HasDecoration
+            option.decorationPosition = QStyleOptionViewItem.Right
         above, _, same_account = transaction_link(index)
         if not above:
             return

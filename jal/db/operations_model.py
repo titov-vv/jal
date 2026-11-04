@@ -9,7 +9,7 @@ from jal.db.tax_override import JalTaxOverride
 from jal.db.clock import today_finish
 from jal.widgets.helpers import ts2dt, restore_columns, grid_row_height
 from jal.widgets.delegates import ColoredAmountsDelegate, TickerIconsDelegate, TransactionTieDelegate, \
-    long_fraction, ROW_LINES_ROLE, TRANSACTION_ROLE
+    long_fraction, ROW_LINES_ROLE, TRANSACTION_ROLE, TAX_OVERRIDE_ROLE
 from jal.widgets.theme import Theme, Meaning
 from jal.universal_cache import UniversalCache
 
@@ -26,6 +26,7 @@ class OperationsModel(QAbstractTableModel):
         self._currency_delegate = None
         self._tie_delegate = None
         self._data = []
+        self._overridden = set()   # ids of the operations with a tax treatment override
         self._cache = UniversalCache()
         self._begin = 0
         self._end = 0
@@ -62,6 +63,8 @@ class OperationsModel(QAbstractTableModel):
         if role == TRANSACTION_ROLE:
             number = operation.transaction() if operation is not None else ''
             return [number, odata['timestamp']] if number else None
+        if role == TAX_OVERRIDE_ROLE:
+            return odata['oid'] in self._overridden
         if role == ROW_LINES_ROLE:
             # How tall this row was made, in lines - so that a column holding fewer values than that puts them on
             # the first lines instead of in the middle of the height the other columns asked for.
@@ -83,11 +86,11 @@ class OperationsModel(QAbstractTableModel):
             if index.column() == 4 and operation.reconciled():
                 return Theme.text(Meaning.INFO)
         if role == Qt.ToolTipRole:
-            if index.column() == 0:
-                return operation.name()
-            elif index.column() == 2:
-                overrides = JalTaxOverride.describe(odata['oid'])
-                return self.tr("Tax treatment:") + "\n" + overrides if overrides else None
+            if index.column() <= 2:
+                lines = [operation.name()] if index.column() == 0 else []
+                if odata['oid'] in self._overridden:
+                    lines += [self.tr("Tax treatment:"), JalTaxOverride.describe(odata['oid'])]
+                return "\n".join(lines) if lines else None
             elif index.column() == 3 or index.column() == 4:
                 # The cell rounds an amount to two decimals and writes a smaller one in compact form, so the exact
                 # number is only here. It is named with the listing of its own line, as the Currency column is.
@@ -183,8 +186,15 @@ class OperationsModel(QAbstractTableModel):
         self.beginResetModel()
         self._data = []
         self._data = Ledger.get_operations_sequence(self._begin, self._end, self._account)
+        self._overridden = JalTaxOverride.operation_ids()
         self._cache.clear_cache()
         self.endResetModel()
+
+    # Re-reads which operations have a tax treatment override and repaints the columns that show it
+    def refresh_tax_overrides(self):
+        self._overridden = JalTaxOverride.operation_ids()
+        if self._data:
+            self.dataChanged.emit(self.index(0, 0), self.index(len(self._data) - 1, 2))
 
     def delete_rows(self, rows):
         for row in rows:

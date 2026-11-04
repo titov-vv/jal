@@ -1,8 +1,12 @@
-from PySide6.QtWidgets import QWidget, QDialogButtonBox
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QWidget, QDialogButtonBox, QTableView, QStyleOptionViewItem
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from tests.helpers import d2t, create_stocks, create_trades, create_dividends, operation_id
 from jal.db.country import JalCountry
+from jal.db.ledger import Ledger
+from jal.db.operations_model import OperationsModel
+from jal.widgets.delegates import TAX_OVERRIDE_ROLE
 from jal.db.operations import LedgerTransaction
 from jal.db.tax_override import JalTaxOverride, TaxOverride
 from jal.widgets.tax_override_dialog import TaxOverrideDialog
@@ -60,3 +64,32 @@ def test_dialog_offers_treaty_for_dividends_only(prepare_db_taxes):
     parent = QWidget()
     dialog = TaxOverrideDialog(LedgerTransaction.Trade, trade, parent=parent)
     assert [dialog._rows[x][0].count() for x in dialog._rows] == [2, 2]
+
+
+# The operations list marks an overridden operation with the tax glyph at the end of its notes and lists the decisions
+# in the tooltips of its first three columns
+def test_operations_list_shows_overrides(prepare_db_taxes):
+    dividend, trade = _dividend_and_trade()
+    Ledger().rebuild(from_timestamp=0)
+    view = QTableView()
+    model = OperationsModel(view)
+    view.setModel(model)
+    model.configureView()
+    model.setDateRange(0, d2t(251231))
+    row = next(i for i, x in enumerate(model._data) if x['oid'] == dividend)
+    other = next(i for i, x in enumerate(model._data) if x['oid'] == trade)
+    assert not model.data(model.index(row, 2), TAX_OVERRIDE_ROLE)
+
+    JalTaxOverride.set('pt', dividend, TaxOverride.NotTaxEvent, '', "Return of capital")
+    model.refresh_tax_overrides()
+    assert model.data(model.index(row, 2), TAX_OVERRIDE_ROLE)
+    assert not model.data(model.index(other, 2), TAX_OVERRIDE_ROLE)
+    decision = JalTaxOverride.describe(dividend)
+    assert model.data(model.index(row, 0), Qt.ToolTipRole).split("\n")[1:] == ["Tax treatment:", decision]
+    assert model.data(model.index(row, 2), Qt.ToolTipRole) == "Tax treatment:\n" + decision
+    assert model.data(model.index(other, 2), Qt.ToolTipRole) is None
+
+    option = QStyleOptionViewItem()
+    view.itemDelegateForColumn(2).initStyleOption(option, model.index(row, 2))
+    assert option.features & QStyleOptionViewItem.HasDecoration
+    assert option.decorationPosition == QStyleOptionViewItem.Right

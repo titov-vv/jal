@@ -366,8 +366,8 @@ class OperationsWidget(MdiWidget):
     @Slot()
     def edit_tax_treatment(self):
         otype, oid = self._operation_at(self.current_index)
-        if oid:
-            TaxOverrideDialog(otype, oid, self).exec()
+        if oid and TaxOverrideDialog(otype, oid, self).exec() == QDialog.Accepted:
+            self.operations_model.refresh_tax_overrides()
 
     @Slot()
     def match_bridge(self):

@@ -51,6 +51,15 @@ class JalTaxOverride(JalDB):
             overrides.append({'jurisdiction': jurisdiction, 'kind': kind, 'value': value, 'note': note})
         return overrides
 
+    # Ids of every operation that has an override
+    @classmethod
+    def operation_ids(cls) -> set:
+        query = cls._exec("SELECT DISTINCT operation_id FROM tax_overrides")
+        ids = set()
+        while query.next():
+            ids.add(int(query.value(0)))
+        return ids
+
     # Every override of the jurisdiction, as {(operation_id, kind): (value, note)}
     @classmethod
     def for_jurisdiction(cls, jurisdiction: str) -> dict:
