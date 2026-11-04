@@ -4,7 +4,7 @@
   "headers": [
       "Period: {parameters[period]}",
       "Account: {parameters[account]}",
-      "First what the jurisdiction's rule skips, then the operations no section includes"
+      "First what the jurisdiction's rule skips, then the operations no section includes, last those you excluded"
     ],
   "columns": [
     {"name": "Date", "width": 10},

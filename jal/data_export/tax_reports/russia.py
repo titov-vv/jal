@@ -21,6 +21,11 @@ class TaxesRussia(TaxReport):
         'skipped_total': "Пропущено по правилу юрисдикции",
         'uncovered_total': "Не отражено ни в одном разделе",
         'pending_total': "Строк «ожидает пересчёта»",
+        'excluded': "Решение пользователя - не налоговое событие в РФ: {}",
+        'decisions': "Решения пользователя, применённые в этом отчёте (переопределение налогового режима)",
+        'override_excluded': "Не налоговое событие",
+        'override_treaty': "Соглашение об избежании двойного налогообложения применяется",
+        'override_no_treaty': "Соглашение не применяется",
         'income': "Доходы",
         'spending': "Расходы",
         'profit': "Финансовый результат",
@@ -122,7 +127,7 @@ class TaxesRussia(TaxReport):
             amount_rub = dividend.amount(self.account_currency.id()) * rate
             tax_rub = dividend.tax() * rate
             tax2pay = self.base_estimate(TaxParameters.DIVIDEND, amount_rub)
-            if tax2pay is not None and self.has_tax_treaty_with(country.code()):
+            if tax2pay is not None and self.has_tax_treaty_with(country.code(), dividend):
                 if tax2pay > tax_rub:
                     tax2pay = tax2pay - tax_rub
                 else:
@@ -138,7 +143,7 @@ class TaxesRussia(TaxReport):
                 'rate': rate,
                 'country': country.name(language='ru'),
                 'country_iso': country.iso_code(),  # it is required for DLSG export
-                'tax_treaty': "Да" if self.has_tax_treaty_with(country.code()) else "Нет",
+                'tax_treaty': "Да" if self.has_tax_treaty_with(country.code(), dividend) else "Нет",
                 'amount_rub': round(amount_rub, 2),
                 'tax_rub': round(tax_rub, 2),
                 'tax2pay': None if tax2pay is None else round(tax2pay, 2),
@@ -180,7 +185,7 @@ class TaxesRussia(TaxReport):
         # Prepare list of dividends withdrawn from account (due to short trades)
         dividends_withdrawn = AssetPayment.get_list(self.account.id(), subtype=AssetPayment.Dividend)
         dividends_withdrawn = [x for x in dividends_withdrawn if self.year_begin <= self._moment(x.timestamp(), x.timestamp_is_day()) < self.year_end]
-        dividends_withdrawn = [x for x in dividends_withdrawn if x.amount() < Decimal('0')]
+        dividends_withdrawn = [x for x in dividends_withdrawn if x.amount() < Decimal('0') and not self.excluded(x)]
         for trade in trades_list:
             corporate_actions = trade.modified_by()
             report_template = "corporate_action" if any([x.type()==LedgerTransaction.CorporateAction for x in corporate_actions]) else "trade"
@@ -341,6 +346,7 @@ class TaxesRussia(TaxReport):
         # Second - take all bond interest payments not linked with buy/sell transactions
         interests = AssetPayment.get_list(self.account.id(), subtype=AssetPayment.BondInterest, skip_accrued=True)
         interests = [x for x in interests if self.year_begin <= self._moment(x.timestamp(), x.timestamp_is_day()) < self.year_end]  # Only in given range
+        interests = [x for x in interests if not self.excluded(x)]
         for interest in interests:
             amount = interest.amount()
             rate = self.rate(self.account_currency.id(), interest.timestamp())
@@ -487,6 +493,8 @@ class TaxesRussia(TaxReport):
             incomes += AssetIncome.get_list(self.account.id(), subtype=subtype)
         incomes = [x for x in incomes if self.in_year(self._moment(x.timestamp(), x.timestamp_is_day()))]
         for income in sorted(incomes, key=lambda x: x.timestamp()):
+            if self.excluded(income):
+                continue
             price, unit_rub = self._income_unit_value(income)
             if price is None:
                 continue
@@ -517,6 +525,8 @@ class TaxesRussia(TaxReport):
             payments = AssetPayment.get_list(self.account.id(), subtype=subtype)
             payments = [x for x in payments if self.in_year(self._moment(x.timestamp(), x.timestamp_is_day()))]
             for payment in sorted(payments, key=lambda x: x.timestamp()):
+                if self.excluded(payment):
+                    continue
                 rate = self.rate(self.account_currency.id(), payment.timestamp())
                 amount = -payment.amount()
                 fees_report.append({
@@ -531,7 +541,7 @@ class TaxesRussia(TaxReport):
                 })
                 self.mark_printed(payment)
         fee_operations = self.category_operations(PredefinedCategory.Fees)
-        fee_operations = [x for x in fee_operations if x.account_id() == self.account.id()]
+        fee_operations = [x for x in fee_operations if x.account_id() == self.account.id() and not self.excluded(x)]
         for operation in fee_operations:
             rate = self.rate(self.account_currency.id(), operation.timestamp())
             fees = [x for x in operation.lines() if x['category_id'] == PredefinedCategory.Fees]
@@ -560,7 +570,7 @@ class TaxesRussia(TaxReport):
     def prepare_broker_interest(self):
         interests_report = []
         interest_operations = self.category_operations(PredefinedCategory.Interest)
-        interest_operations = [x for x in interest_operations if x.account_id() == self.account.id()]
+        interest_operations = [x for x in interest_operations if x.account_id() == self.account.id() and not self.excluded(x)]
         for operation in interest_operations:
             rate = self.rate(self.account_currency.id(), operation.timestamp())
             interests = [x for x in operation.lines() if x['category_id'] == PredefinedCategory.Interest]
@@ -583,6 +593,8 @@ class TaxesRussia(TaxReport):
         payments = CorporateAction.get_payments(self.account)
         payments = [x for x in payments if self.year_begin <= self._moment(x['timestamp'], x['day_only']) < self.year_end]
         for payment in payments:
+            if self.excluded_id(LedgerTransaction.CorporateAction, payment['oid']):
+                continue
             rate = self.rate(self.account_currency.id(), payment['timestamp'])
             line = {
                 'report_template': "interest",

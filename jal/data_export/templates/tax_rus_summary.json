@@ -28,5 +28,15 @@
     "formats": [["T:B", null, null]],
     "span": [[{"h": 2, "v": 0}, null, null]]
   },
+  "decisions": {
+    "rows": [["title", null, null]],
+    "formats": [["T:B", null, null]],
+    "span": [[{"h": 2, "v": 0}, null, null]]
+  },
+  "decision": {
+    "rows": [["operation", "decision", null]],
+    "formats": [["T", "T", null]],
+    "span": [[null, {"h": 1, "v": 0}, null]]
+  },
   "footers": []
 }

@@ -12,6 +12,7 @@ from jal.db.db import JalDB
 from jal.db.helpers import is_day_marker
 from jal.db.operations import LedgerTransaction, TaxStatus, AssetPayment, AssetIncome, Transfer
 from jal.db.clock import ZONE_SPAN, wall_clock_reading
+from jal.db.tax_override import JalTaxOverride, TaxOverride
 from jal.data_export.tax_parameters import TaxParameters, TAX_TREATY
 
 REPORT_METHOD = 0
@@ -61,6 +62,8 @@ class TaxReport:
         self._section = ''
         self.section_notes = {}   # {section: [header lines]} a section states under its title
         self._printed = set()     # (otype, oid) of every operation a section printed
+        self._overrides = {}      # The user's decisions for this jurisdiction, see JalTaxOverride.for_jurisdiction()
+        self._applied = {}        # {(oid, kind): operation} of every override this report applied
         self._missing = []        # (symbol, timestamp) of every quote a section needed and didn't find
         self._rates_end = None    # newest official rate into the report currency, read once per report
         self.rates_warnings = {}  # {(pair, date of the rate used): latest date it converted} for rates likely missing
@@ -148,6 +151,7 @@ class TaxReport:
         if self.parameters.value(TAX_TREATY) is None:
             logging.warning(self.tr("There are no parameters found for tax report year: ") + str(year))
         self.section_notes, self._printed, self._missing = {}, set(), []
+        self._overrides, self._applied = JalTaxOverride.for_jurisdiction(self.jurisdiction), {}
         self._rates_end, self.rates_warnings = None, {}
         sections = {}
         for report in self.reports:
@@ -175,6 +179,18 @@ class TaxReport:
 
     def mark_printed_id(self, otype: int, oid: int):
         self._printed.add((otype, oid))
+
+    # True if the user decided the operation is not a tax event in this jurisdiction; the section then leaves it out
+    def excluded(self, operation) -> bool:
+        if operation is None or (operation.id(), TaxOverride.NotTaxEvent) not in self._overrides:
+            return False
+        self._applied[(operation.id(), TaxOverride.NotTaxEvent)] = operation
+        return True
+
+    def excluded_id(self, otype: int, oid: int) -> bool:
+        if (oid, TaxOverride.NotTaxEvent) not in self._overrides:
+            return False
+        return self.excluded(LedgerTransaction.get_operation(otype, oid))
 
     # The official rate of a currency into the report's one: the direct pair only, as its source is the jurisdiction's
     # (CBR for RUB, ECB for EUR) and a cross-rate would mix in another. A missing rate stops the report.
@@ -257,6 +273,8 @@ class TaxReport:
                 continue
             if not self.in_year(self.operation_date(operation)):
                 continue
+            if self.excluded(operation):
+                continue
             reason = self.skip_reason(operation)
             if reason is None:
                 uncovered.append(operation)
@@ -274,16 +292,16 @@ class TaxReport:
         rows = [{'report_template': "skipped", 'reason': reason, 'count': self.texts['skipped_count'].format(count)}
                 for reason, count in skipped.items()]
         for operation in uncovered:
-            rows.append({
-                'report_template': "operation",
-                'date': self.operation_date(operation),
-                'operation': self.operation_label(operation),
-                'symbol': operation.symbol().symbol(),
-                'number': operation.number(),
-                'description': operation.description(),
-                'reason': self.texts['uncovered']
-            })
+            rows.append(self._operation_row(operation, self.texts['uncovered']))
+        for (oid, kind), operation in self._applied.items():
+            if kind == TaxOverride.NotTaxEvent:
+                rows.append(self._operation_row(operation, self.texts['excluded'].format(self._overrides[(oid, kind)][1])))
         return rows
+
+    def _operation_row(self, operation, reason: str) -> dict:
+        return {'report_template': "operation", 'date': self.operation_date(operation),
+                'operation': self.operation_label(operation), 'symbol': operation.symbol().symbol(),
+                'number': operation.number(), 'description': operation.description(), 'reason': reason}
 
     # Each section with its own totals as they stand, in the report's currency (tax figures left out), then the counts
     # of what is not covered and of the figures a later replay may still change
@@ -314,6 +332,24 @@ class TaxReport:
         for (pair, quoted), latest in sorted(self.rates_warnings.items()):
             rows.append({'report_template': "warning",
                          'warning': self.texts['rates_missing'].format(pair=pair, rate=day(quoted), latest=day(latest))})
+        rows += self._decision_rows()
+        return rows
+
+    # The overrides this report applied: a title line, then one line per operation and kind, oldest first
+    def _decision_rows(self) -> list:
+        if not self._applied:
+            return []
+        rows = [{'report_template': "decisions", 'title': self.texts['decisions']}]
+        day = lambda x: datetime.fromtimestamp(x, tz=timezone.utc).strftime('%d.%m.%Y')
+        texts = {(TaxOverride.NotTaxEvent, ''): 'override_excluded',
+                 (TaxOverride.Treaty, TaxOverride.TreatyApplies): 'override_treaty',
+                 (TaxOverride.Treaty, TaxOverride.NoTreaty): 'override_no_treaty'}
+        for (oid, kind), operation in sorted(self._applied.items(), key=lambda x: (x[1].timestamp(), x[0])):
+            value, note = self._overrides[(oid, kind)]
+            rows.append({'report_template': "decision",
+                         'operation': f"{day(self.operation_date(operation))} {self.operation_label(operation)} "
+                                      f"{operation.symbol().symbol()}".strip(),
+                         'decision': f"{self.texts[texts[(kind, value)]]}: {note}"})
         return rows
 
     # The base rate of an income kind (TaxParameters.DIVIDEND, ...) times 'base', None if the year has no such rate
@@ -321,17 +357,21 @@ class TaxReport:
         rate = self.parameters.rate(kind)
         return None if rate is None else rate * base
 
-    # Check if 2-letter country code present in tax treaty parameter of current report
-    def has_tax_treaty_with(self, country_code: str) -> bool:
+    # True if a tax treaty with the country covers the operation: the user's decision on it first, then the parameters
+    def has_tax_treaty_with(self, country_code: str, operation) -> bool:
+        key = (operation.id(), TaxOverride.Treaty)
+        if key in self._overrides:
+            self._applied[key] = operation
+            return self._overrides[key][0] == TaxOverride.TreatyApplies
         return self.parameters.treaty_with(country_code)
 
-    # Returns a list of dividends that should be included into the report for given year
+    # Returns a list of dividends that should be included into the report for given year, less those the user excluded
     def dividends_list(self) -> list:
         dividends = AssetPayment.get_list(self.account.id(), subtype=AssetPayment.Dividend)
         dividends += AssetIncome.get_list(self.account.id(), subtype=AssetIncome.StockDividend)
         dividends += AssetIncome.get_list(self.account.id(), subtype=AssetIncome.StockVesting)
         dividends = [x for x in dividends if self.year_begin <= self._moment(x.timestamp()) < self.year_end]
-        return dividends
+        return [x for x in dividends if not self.excluded(x)]
 
     # Returns operations of the given category that belong to the report's year. The database is asked for a wider
     # window than the year, because an operation stamped just outside it may well be inside it on the report's clock;
@@ -376,10 +416,10 @@ class TaxReport:
     def in_year(self, timestamp: int) -> bool:
         return self.year_begin <= timestamp < self.year_end
 
-    # Returns a list of closed deals of the given asset types that belong to the report's year; 'close_otypes' as in
-    # JalAccount.closed_trades_list(), deals closed by a trade only by default
+    # Returns a list of closed deals of the given asset types that belong to the report's year, less those whose close
+    # the user excluded; 'close_otypes' as in JalAccount.closed_trades_list(), deals closed by a trade only by default
     def trades_list(self, asset_type, close_otypes=None) -> list:
         trades = self.account.closed_trades_list(close_otypes=close_otypes)
         trades = [x for x in trades if x.asset().type() in asset_type]
         trades = [x for x in trades if self.in_year(self.deal_date(x))]
-        return trades
+        return [x for x in trades if not self.excluded(x.close_operation())]

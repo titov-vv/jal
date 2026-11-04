@@ -20,6 +20,11 @@ class TaxesPortugal(TaxReport):
         'skipped_total': "Skipped by the jurisdiction's rule",
         'uncovered_total': "Not included in any section",
         'pending_total': "Rows marked 'pending replay'",
+        'excluded': "Your decision - not a tax event in Portugal: {}",
+        'decisions': "Your decisions applied in this report (tax treatment overrides)",
+        'override_excluded': "Not a tax event",
+        'override_treaty': "Tax treaty applies",
+        'override_no_treaty': "No tax treaty",
         'income': "Income",
         'spending': "Expenses",
         'profit': "Gain/loss",
@@ -127,7 +132,7 @@ class TaxesPortugal(TaxReport):
                 'tax': dividend.tax(),
                 'rate': rate,
                 'country': country.name(language='en'),
-                'tax_treaty': "Y" if self.has_tax_treaty_with(country.code()) else "N",
+                'tax_treaty': "Y" if self.has_tax_treaty_with(country.code(), dividend) else "N",
                 'amount_eur': round(dividend.amount(self.account_currency.id()) * rate, 2),
                 'tax_eur': round(dividend.tax() * rate, 2),
                 'note': note
@@ -251,6 +256,8 @@ class TaxesPortugal(TaxReport):
             incomes += AssetIncome.get_list(self.account.id(), subtype=subtype)
         incomes = [x for x in incomes if self.in_year(self._moment(x.timestamp(), x.timestamp_is_day()))]
         for income in sorted(incomes, key=lambda x: x.timestamp()):
+            if self.excluded(income):
+                continue
             quoted, price = income.asset().quote(income.timestamp(), self.account_currency.id(), report_missing=False)
             if not quoted:
                 price = Decimal('0')
@@ -283,6 +290,8 @@ class TaxesPortugal(TaxReport):
             payments = AssetPayment.get_list(self.account.id(), subtype=subtype)
             payments = [x for x in payments if self.in_year(self._moment(x.timestamp(), x.timestamp_is_day()))]
             for payment in sorted(payments, key=lambda x: x.timestamp()):
+                if self.excluded(payment):
+                    continue
                 rate = self.rate(self.account_currency.id(), payment.timestamp())
                 amount = -payment.amount()
                 fees_report.append({
@@ -297,6 +306,7 @@ class TaxesPortugal(TaxReport):
                 })
                 self.mark_printed(payment)
         operations = [x for x in self.category_operations(PredefinedCategory.Fees) if x.account_id() == self.account.id()]
+        operations = [x for x in operations if not self.excluded(x)]
         for operation in operations:
             rate = self.rate(self.account_currency.id(), operation.timestamp())
             fees = [x for x in operation.lines() if x['category_id'] == PredefinedCategory.Fees]
@@ -321,7 +331,7 @@ class TaxesPortugal(TaxReport):
     def prepare_broker_interest(self):
         interests_report = []
         interest_operations = self.category_operations(PredefinedCategory.Interest)
-        interest_operations = [x for x in interest_operations if x.account_id() == self.account.id()]
+        interest_operations = [x for x in interest_operations if x.account_id() == self.account.id() and not self.excluded(x)]
         for operation in interest_operations:
             rate = self.rate(self.account_currency.id(), operation.timestamp())
             interests = [x for x in operation.lines() if x['category_id'] == PredefinedCategory.Interest]
@@ -343,6 +353,8 @@ class TaxesPortugal(TaxReport):
         payments = CorporateAction.get_payments(self.account)
         payments = [x for x in payments if self.year_begin <= self._moment(x['timestamp'], x['day_only']) < self.year_end]
         for payment in payments:
+            if self.excluded_id(LedgerTransaction.CorporateAction, payment['oid']):
+                continue
             rate = self.rate(self.account_currency.id(), payment['timestamp'])
             line = {
                 'report_template': "interest",
