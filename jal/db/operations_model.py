@@ -5,6 +5,7 @@ from jal.constants import Setup
 from jal.db.ledger import Ledger
 from jal.db.helpers import localize_decimal
 from jal.db.operations import LedgerTransaction
+from jal.db.tax_override import JalTaxOverride
 from jal.db.clock import today_finish
 from jal.widgets.helpers import ts2dt, restore_columns, grid_row_height
 from jal.widgets.delegates import ColoredAmountsDelegate, TickerIconsDelegate, TransactionTieDelegate, \
@@ -84,6 +85,9 @@ class OperationsModel(QAbstractTableModel):
         if role == Qt.ToolTipRole:
             if index.column() == 0:
                 return operation.name()
+            elif index.column() == 2:
+                overrides = JalTaxOverride.describe(odata['oid'])
+                return self.tr("Tax treatment:") + "\n" + overrides if overrides else None
             elif index.column() == 3 or index.column() == 4:
                 # The cell rounds an amount to two decimals and writes a smaller one in compact form, so the exact
                 # number is only here. It is named with the listing of its own line, as the Currency column is.

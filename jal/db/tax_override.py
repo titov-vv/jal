@@ -1,4 +1,7 @@
+from PySide6.QtWidgets import QApplication
 from jal.db.db import JalDB
+from jal.db.country import JalCountry
+from jal.db.operations import LedgerTransaction, AssetPayment, AssetIncome
 
 
 # Kinds of a tax override and the values they take
@@ -8,6 +11,27 @@ class TaxOverride:
 
     TreatyApplies = '1'
     NoTreaty = '0'
+
+    @staticmethod
+    def tr(text):
+        return QApplication.translate("TaxOverride", text)
+
+    # The decision as the user reads it
+    @staticmethod
+    def label(kind: int, value: str) -> str:
+        labels = {(TaxOverride.NotTaxEvent, ''): TaxOverride.tr("Not a tax event"),
+                  (TaxOverride.Treaty, TaxOverride.TreatyApplies): TaxOverride.tr("Tax treaty applies"),
+                  (TaxOverride.Treaty, TaxOverride.NoTreaty): TaxOverride.tr("No tax treaty")}
+        return labels.get((kind, value), '')
+
+    # True for the operations a report reads as dividends - the only ones a treaty decision applies to
+    @staticmethod
+    def takes_treaty(operation) -> bool:
+        if operation.type() == LedgerTransaction.AssetPayment:
+            return operation.subtype() == AssetPayment.Dividend
+        if operation.type() == LedgerTransaction.AssetIncome:
+            return operation.subtype() in (AssetIncome.StockDividend, AssetIncome.StockVesting)
+        return False
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -57,3 +81,12 @@ class JalTaxOverride(JalDB):
     def delete(cls, jurisdiction: str, operation_id: int, kind: int) -> None:
         cls._exec("DELETE FROM tax_overrides WHERE operation_id=:oid AND jurisdiction=:code AND kind=:kind",
                   [(":oid", operation_id), (":code", jurisdiction), (":kind", kind)], commit=True)
+
+    # One line per override of the operation: "<country>: <decision> - <note>"
+    @classmethod
+    def describe(cls, operation_id: int) -> str:
+        lines = []
+        for item in cls.for_operation(operation_id):
+            country = JalCountry(data={'code': item['jurisdiction']}, search=True).name()
+            lines.append(f"{country}: {TaxOverride.label(item['kind'], item['value'])} - {item['note']}")
+        return "\n".join(lines)

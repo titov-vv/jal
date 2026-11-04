@@ -28,6 +28,7 @@ from jal.widgets.swap_convert_dialog import SwapConvertDialog
 from jal.widgets.transfer_assign_dialog import TransferAssignDialog
 from jal.widgets.transfer_match_dialog import TransferMatchDialog
 from jal.widgets.transfer_payment_dialog import TransferPaymentDialog
+from jal.widgets.tax_override_dialog import TaxOverrideDialog
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -291,6 +292,8 @@ class OperationsWidget(MdiWidget):
         actionReconcile.triggered.connect(self.reconcile_at_current_operation)
         actionTag = QAction(JalIcon[JalIcon.TAG], self.tr("Assign tag"), self)
         actionTag.triggered.connect(self.assign_tag)
+        actionTax = QAction(JalIcon[JalIcon.TAX], self.tr("Tax treatment…"), self)
+        actionTax.triggered.connect(self.edit_tax_treatment)
         actionCopy = QAction(JalIcon[JalIcon.COPY], self.tr("Copy"), self)
         actionCopy.triggered.connect(self.copy_operation)
         actionDelete = QAction(JalIcon[JalIcon.REMOVE], self.tr("Delete"), self)
@@ -300,6 +303,7 @@ class OperationsWidget(MdiWidget):
         contextMenu.addAction(actionReconcile)
         contextMenu.addSeparator()
         contextMenu.addAction(actionTag)
+        contextMenu.addAction(actionTax)
         contextMenu.addSeparator()
         contextMenu.addAction(actionCopy)
         contextMenu.addAction(actionDelete)
@@ -307,6 +311,7 @@ class OperationsWidget(MdiWidget):
         single = len(self.ui.OperationsTableView.selectionModel().selectedRows()) == 1
         actionReconcile.setEnabled(single)
         actionCopy.setEnabled(single)
+        actionTax.setEnabled(single and self._operation_at(self.current_index)[1] != 0)
         # Matching is offered only on a pending half-bridge - a cross-chain leg still waiting for its
         # counterpart, which pairing turns into a complete bridge or into a cross-chain swap
         if single and self._is_pending_bridge(self.current_index):
@@ -357,6 +362,12 @@ class OperationsWidget(MdiWidget):
         if otype != LedgerTransaction.Transfer:
             return False
         return LedgerTransaction.get_operation(otype, oid).is_pending()
+
+    @Slot()
+    def edit_tax_treatment(self):
+        otype, oid = self._operation_at(self.current_index)
+        if oid:
+            TaxOverrideDialog(otype, oid, self).exec()
 
     @Slot()
     def match_bridge(self):

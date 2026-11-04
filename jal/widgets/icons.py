@@ -279,7 +279,7 @@ class JalIcon(UserDict):
     def country_flag(cls, country_code) -> QIcon:
         if country_code not in cls._flags:
             return QIcon()
-        return cls._icons[cls._flags[country_code]]
+        return cls._icons.get(cls._flags[country_code], QIcon())
 
     # The sign of the currency with the given ticker ('USD' -> money_usd.ico), or an empty icon if the package
     # carries none for it. It marks a KIND of thing - every dollar account, listing or amount wears the same
