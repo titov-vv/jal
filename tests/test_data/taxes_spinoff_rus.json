@@ -2,6 +2,7 @@
   "Акции": [
     {
       "report_template": "corporate_action",
+      "code": "1530 / 201",
       "c_symbol": "WAB",
       "c_isin": "",
       "c_qty": 0.5371,
@@ -41,6 +42,7 @@
     },
     {
       "report_template": "corporate_action",
+      "code": "1530 / 201",
       "c_symbol": "GE",
       "c_isin": "US3696041033",
       "c_qty": 100.0,

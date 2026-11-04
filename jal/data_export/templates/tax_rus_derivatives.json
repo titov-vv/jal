@@ -22,47 +22,48 @@
     {"name": "Комиссия, {parameters[currency]}", "width": 12},
     {"name": "Комиссия, RUB", "width": 9},
     {"name": "Доля расхода к учёту, %", "width": 9},
-    {"name": "Доход, RUB (код 1532)", "width": 12},
-    {"name": "Расход, RUB (код 206)", "width": 12},
+    {"name": "Доход, RUB", "width": 12},
+    {"name": "Расход, RUB", "width": 12},
     {"name": "Финансовый результат, RUB", "width": 12},
     {"name": "Финансовый результат, {parameters[currency]}", "width": 12},
-    {"name": "Примечания", "width": 12}
+    {"name": "Примечания", "width": 12},
+    {"name": "Код дохода / вычета", "width": 10}
   ],
   "columns_numbered": true,
   "trade": {
     "rows": [
-      ["c_symbol", "c_qty", "o_type", "o_date", "o_number", "o_rate", "os_date", "os_rate", "o_price", "o_amount", "o_amount_rub", "o_fee", "o_fee_rub", "cost_basis", "income_rub", "spending_rub", "profit_rub", "profit", "note"],
-      [null,       null,    "c_type", "c_date", "c_number", "c_rate", "cs_date", "cs_rate", "c_price", "c_amount", "c_amount_rub", "c_fee", "c_fee_rub", null,         null,         null,           null,         null,     null]
+      ["c_symbol", "c_qty", "o_type", "o_date", "o_number", "o_rate", "os_date", "os_rate", "o_price", "o_amount", "o_amount_rub", "o_fee", "o_fee_rub", "cost_basis", "income_rub", "spending_rub", "profit_rub", "profit", "note", "code"],
+      [null,       null,    "c_type", "c_date", "c_number", "c_rate", "cs_date", "cs_rate", "c_price", "c_amount", "c_amount_rub", "c_fee", "c_fee_rub", null,         null,         null,           null,         null,     null, null]
     ],
     "formats": [
-      ["T", "N:0", "T", "D", "T", "N:4", "D", "N:4", "N:6", "N:2", "N:2", "N:6", "N:2", "N:2", "N:2", "N:2", "N:2", "N:2", "T"],
-      [null, null, "T", "D", "T", "N:4", "D", "N:4", "N:6", "N:2", "N:2", "N:6", "N:2", null,  null,  null,  null,  null,  null]
+      ["T", "N:0", "T", "D", "T", "N:4", "D", "N:4", "N:6", "N:2", "N:2", "N:6", "N:2", "N:2", "N:2", "N:2", "N:2", "N:2", "T", "T"],
+      [null, null, "T", "D", "T", "N:4", "D", "N:4", "N:6", "N:2", "N:2", "N:6", "N:2", null,  null,  null,  null,  null,  null, null]
     ],
     "span": [
-      [{"h": 0, "v":  1}, {"h": 0, "v":  1}, null, null, null, null, null, null, null, null, null, null, null, {"h": 0, "v":  1}, {"h": 0, "v":  1}, {"h": 0, "v":  1}, {"h": 0, "v":  1}, {"h": 0, "v":  1}, {"h": 0, "v":  1}],
-      [null,              null,              null, null, null, null, null, null, null, null, null, null, null, null,              null,              null,              null,              null,              null]
+      [{"h": 0, "v":  1}, {"h": 0, "v":  1}, null, null, null, null, null, null, null, null, null, null, null, {"h": 0, "v":  1}, {"h": 0, "v":  1}, {"h": 0, "v":  1}, {"h": 0, "v":  1}, {"h": 0, "v":  1}, {"h": 0, "v":  1}, {"h": 0, "v":  1}],
+      [null,              null,              null, null, null, null, null, null, null, null, null, null, null, null,              null,              null,              null,              null,              null, null]
     ]
   },
   "corporate_action": {
     "rows": [
-      ["o_symbol", "o_qty", "o_type", "o_date", "o_number", "o_rate", "os_date", "os_rate", "o_price", "o_amount", "o_amount_rub", "o_fee", "o_fee_rub", "cost_basis", "income_rub", "spending_rub", "profit_rub", "profit", "note"],
-      ["c_symbol", "c_qty", "c_type", "c_date", "c_number", "c_rate", "cs_date", "cs_rate", "c_price", "c_amount", "c_amount_rub", "c_fee", "c_fee_rub", null,         null,         null,           null,         null,     null]
+      ["o_symbol", "o_qty", "o_type", "o_date", "o_number", "o_rate", "os_date", "os_rate", "o_price", "o_amount", "o_amount_rub", "o_fee", "o_fee_rub", "cost_basis", "income_rub", "spending_rub", "profit_rub", "profit", "note", "code"],
+      ["c_symbol", "c_qty", "c_type", "c_date", "c_number", "c_rate", "cs_date", "cs_rate", "c_price", "c_amount", "c_amount_rub", "c_fee", "c_fee_rub", null,         null,         null,           null,         null,     null, null]
     ],
     "formats": [
-      ["T", "N:0", "T", "D", "T", "N:4", "D", "N:4", "N:6", "N:2", "N:2", "N:6", "N:2", "N:2", "N:2", "N:2", "N:2", "N:2", "T" ],
-      ["T", "N:0", "T", "D", "T", "N:4", "D", "N:4", "N:6", "N:2", "N:2", "N:6", "N:2", null,  null,  null,  null,  null,  null]
+      ["T", "N:0", "T", "D", "T", "N:4", "D", "N:4", "N:6", "N:2", "N:2", "N:6", "N:2", "N:2", "N:2", "N:2", "N:2", "N:2", "T" , "T"],
+      ["T", "N:0", "T", "D", "T", "N:4", "D", "N:4", "N:6", "N:2", "N:2", "N:6", "N:2", null,  null,  null,  null,  null,  null, null]
     ],
     "span": [
-      [null, null, null, null, null, null, null, null, null, null, null, null, null, {"h": 0, "v":  1}, {"h": 0, "v":  1}, {"h": 0, "v":  1}, {"h": 0, "v":  1}, {"h": 0, "v":  1}, {"h": 0, "v":  1}],
-      [null, null, null, null, null, null, null, null, null, null, null, null, null, null,              null,              null,              null,              null,              null             ]
+      [null, null, null, null, null, null, null, null, null, null, null, null, null, {"h": 0, "v":  1}, {"h": 0, "v":  1}, {"h": 0, "v":  1}, {"h": 0, "v":  1}, {"h": 0, "v":  1}, {"h": 0, "v":  1}, {"h": 0, "v":  1}],
+      [null, null, null, null, null, null, null, null, null, null, null, null, null, null,              null,              null,              null,              null,              null             , null]
     ]
   },
   "totals": {
     "rows": [
-      [null, null, null, null, null, null, null, null, null, null, null, null, null, "ИТОГО", "income_rub", "spending_rub", "profit_rub", "profit", null]
+      [null, null, null, null, null, null, null, null, null, null, null, null, null, "ИТОГО", "income_rub", "spending_rub", "profit_rub", "profit", null, null]
     ],
     "formats": [
-      [null, null, null, null, null, null, null, null, null, null, null, null, null, "F", "F", "F", "F", "F", null]
+      [null, null, null, null, null, null, null, null, null, null, null, null, null, "F", "F", "F", "F", "F", null, null]
     ]
   },
   "footers": [
@@ -85,6 +86,7 @@
     "16 - Расходы, понесённые на покупку ценных бумаг и уплату комиссий (равны сумме сделки покупки из столбца 12 + комиссии из столбца 14)",
     "17 - Финансовый результат сделки в рублях (= Столбец 15 - Столбец 16)",
     "18 - Финансовый результат сделки в валюте счета",
-    "19 - Дополнительная информация"
+    "19 - Дополнительная информация",
+    "20 - Код дохода / код вычета по справочнику ФНС (приказ ММВ-7-11/387@); не указан для счёта у российского брокера или банка"
   ]
 }

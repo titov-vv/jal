@@ -99,6 +99,7 @@
     "Акции": [
       {
         "report_template": "trade",
+        "code": "1530 / 201",
         "c_symbol": "STK",
         "c_isin": "US0000000201",
         "c_qty": 10.0,
@@ -149,6 +150,7 @@
     "Криптовалюты": [
       {
         "report_template": "trade",
+        "code": "6035 / 435",
         "symbol": "ETH",
         "qty": 1.0,
         "country_iso": "840",
@@ -184,6 +186,7 @@
       },
       {
         "report_template": "trade",
+        "code": "6035 / 435",
         "symbol": "UNI",
         "qty": 50.0,
         "country_iso": "840",
@@ -219,6 +222,7 @@
       },
       {
         "report_template": "trade",
+        "code": "6035 / 435",
         "symbol": "UNI",
         "qty": 50.0,
         "country_iso": "840",
@@ -253,6 +257,7 @@
       },
       {
         "report_template": "trade",
+        "code": "6035 / 435",
         "symbol": "ETH",
         "qty": 1.0,
         "country_iso": "840",
@@ -287,6 +292,7 @@
       },
       {
         "report_template": "trade",
+        "code": "6035 / 435",
         "symbol": "ETH",
         "qty": 0.2,
         "country_iso": "840",
@@ -322,6 +328,7 @@
       },
       {
         "report_template": "trade",
+        "code": "6035 / 435",
         "symbol": "WETH",
         "qty": 1.0,
         "country_iso": "840",
@@ -357,6 +364,7 @@
       },
       {
         "report_template": "trade",
+        "code": "6035 / 435",
         "symbol": "WETH",
         "qty": 0.25,
         "country_iso": "840",
@@ -391,6 +399,7 @@
       },
       {
         "report_template": "trade",
+        "code": "6035 / 435",
         "symbol": "SOL",
         "qty": 0.5,
         "country_iso": "840",
@@ -434,6 +443,7 @@
     "Криптодоход": [
       {
         "report_template": "income",
+        "code": "4800",
         "payment_date": 1738368000,
         "operation": "Вознаграждение за стейкинг",
         "symbol": "SOL",

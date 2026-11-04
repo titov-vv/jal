@@ -12,25 +12,28 @@
     {"name": "Дата выплаты", "width": 10},
     {"name": "Курс {parameters[currency]}/RUB на дату выплаты", "width": 10},
     {"name": "Сумма, {parameters[currency]}", "width": 10},
-    {"name": "Доход, RUB (код 1011)", "width": 10},
+    {"name": "Доход, RUB", "width": 10},
     {"name": "Налог к уплате, RUB (базовая оценка)", "width": 14},
-    {"name": "Примечание", "width": 25}
+    {"name": "Примечание", "width": 25},
+    {"name": "Плательщик", "width": 20},
+    {"name": "Страна плательщика", "width": 14},
+    {"name": "Код дохода", "width": 10}
   ],
   "columns_numbered": true,
   "interest": {
     "rows": [
-      ["description", "payment_date", "rate", "amount", "amount_rub", "tax2pay", "note"]
+      ["description", "payment_date", "rate", "amount", "amount_rub", "tax2pay", "note", "payer", "country", "code"]
     ],
     "formats": [
-      ["T", "D", "N:4", "N:2", "N:2", "Ne:2", "T"]
+      ["T", "D", "N:4", "N:2", "N:2", "Ne:2", "T", "T", "T", "T"]
     ]
   },
   "totals": {
     "rows": [
-      [null, null, "ИТОГО", "amount", "amount_rub", "tax2pay", null]
+      [null, null, "ИТОГО", "amount", "amount_rub", "tax2pay", null, null, null, null]
     ],
     "formats": [
-      [null, null, "F", "F", "F", "Fe", null]
+      [null, null, "F", "F", "F", "Fe", null, null, null, null]
     ]
   },
   "footers": [
@@ -40,6 +43,10 @@
     "3 - Официальный курс валюты,  установленный ЦБ РФ на дату платежа",
     "4 - Сумма платежа в валюте счёта",
     "5 - Сумма дохода в рублях (= Столбец 3 * Столбец 4)",
-    "6 - Базовая оценка налога к уплате (базовая ставка от столбца 5)"
+    "6 - Базовая оценка налога к уплате (базовая ставка от столбца 5)",
+    "7 - Примечание",
+    "8 - Банк или брокер, выплативший доход",
+    "9 - Страна плательщика: российский - база по вкладам в банках РФ, иностранный - основная налоговая база",
+    "10 - Код дохода по справочнику ФНС (приказ ММВ-7-11/387@); не указан для счёта у российского брокера или банка"
   ]
 }

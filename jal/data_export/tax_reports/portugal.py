@@ -65,7 +65,8 @@ class TaxesPortugal(TaxReport):
         'fee_depositary': "Depositary fee",
         'fee_financing': "Position financing",
         'fee_asset': "Other asset fee or tax",
-        'fee_broker': "Broker fee"
+        'fee_broker': "Broker fee",
+        'home_codes': "No codes: the account is with a Portuguese bank or broker, whose income comes pre-filled"
     }
     operation_labels = {
         (LedgerTransaction.Trade, None): "Trade",

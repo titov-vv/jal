@@ -174,7 +174,9 @@ class TaxReport:
 
     # A line the section being prepared states under its title - the treatment it assumed
     def add_header(self, line: str):
-        self.section_notes.setdefault(self._section, []).append(line)
+        lines = self.section_notes.setdefault(self._section, [])
+        if line not in lines:
+            lines.append(line)
 
     def section_headers(self, section: str) -> list:
         return self.section_notes.get(section, [])
@@ -386,6 +388,14 @@ class TaxReport:
             return '', ''
         codes = self.parameters.code(kind)
         return ('', '') if codes is None else codes
+
+    # The codes of a kind of row as printed: "income / expense", or the income code alone; the section being prepared
+    # states why when the account's own country leaves them out
+    def code_text(self, kind: str) -> str:
+        if self.account.country().code() == self.jurisdiction:
+            self.add_header(self.texts['home_codes'])
+        income, expense = self.code(kind)
+        return f"{income} / {expense}" if expense else income
 
     # States under the section's title how its base estimation was made, if any of its rows has one
     def add_estimate_header(self, rows: list, text: str, kind: str):

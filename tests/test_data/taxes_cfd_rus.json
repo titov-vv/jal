@@ -51,6 +51,7 @@
   "ПФИ":[
     {
       "report_template": "trade",
+      "code": "1532 / 206",
       "c_symbol": "MUn",
       "c_isin": "",
       "c_qty": -37.0,
@@ -90,6 +91,7 @@
     },
     {
       "report_template": "trade",
+      "code": "1532 / 206",
       "c_symbol": "MUn",
       "c_isin": "",
       "c_qty": -1.0,

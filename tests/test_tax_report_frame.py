@@ -44,7 +44,7 @@ def test_header_lines_and_links_reach_the_workbook(prepare_db_taxes, tmp_path):
     report = taxes.prepare_tax_report(2025, 1)
     headers = taxes.section_headers("Акции")
     assert headers == ["Сделки сопоставлены по FIFO", taxes.texts['fifo'], taxes.texts['rate_settlement'],
-                       taxes.texts['native_cost']]
+                       taxes.texts['native_cost'], taxes.texts['traded']]
     assert taxes.section_headers("Дивиденды") == []
 
     file = str(tmp_path) + os.sep + "report.xlsx"
@@ -57,7 +57,7 @@ def test_header_lines_and_links_reach_the_workbook(prepare_db_taxes, tmp_path):
     book = openpyxl.load_workbook(file)
     assert book.sheetnames == ["Сводка", "Акции", "Не отражено"]       # empty sections make no sheet
     trades = book["Акции"]
-    lines = [trades.cell(row=r, column=1).value for r in range(3, 11)]
+    lines = [trades.cell(row=r, column=1).value for r in range(3, 12)]
     assert lines == ["Документ-основание: ", "Период: 01/01/2025 - 31/12/2025", "ФИО: ",
                      "Номер счета: U7654321 (USD)"] + headers
     summary = book["Сводка"]

@@ -2,6 +2,7 @@
  "Акции": [
   {
    "report_template": "trade",
+   "code": "1530 / 201",
    "c_symbol": "VTRS",
    "c_isin": "US92556V1061",
    "c_qty": 11.0,
@@ -59,6 +60,7 @@
     "payment_date": 1621641600,
     "rate": 73.5803,
     "report_template": "dividend",
+    "code": "1010",
     "symbol": "VTRS",
     "tax": 0.0,
     "tax2pay": 2370.60,

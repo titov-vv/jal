@@ -15,7 +15,8 @@ def test_estimates_stated_and_summed(prepare_db_taxes):
     taxes = TaxesRussia()
     report = taxes.prepare_tax_report(2025, 1)
     assert taxes.section_headers("Дивиденды") == [taxes.texts['estimate_dividend'].format(rate="13")]
-    assert taxes.section_headers("Проценты") == [taxes.texts['estimate_interest'].format(rate="13")]
+    assert taxes.section_headers("Проценты") == [taxes.texts['estimate_interest'].format(rate="13"),
+                                                 taxes.texts['interest_base']]
     assert _rows(report["Проценты"], "interest")[0]['tax2pay'] == Decimal('65')   # 13 % of 500 RUB
     summary = report[taxes.summary_section[0]]
     assert _rows(summary, "estimates") == [{'report_template': "estimates", 'title': taxes.texts['estimates']}]

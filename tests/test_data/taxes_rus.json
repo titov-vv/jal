@@ -2,6 +2,7 @@
    "Акции":[
       {
          "report_template": "trade",
+         "code": "1530 / 201",
          "c_symbol": "GOLD",
          "c_isin": "CA0679011084",
          "c_qty": 10.0,
@@ -41,6 +42,7 @@
       },
       {
          "report_template": "trade",
+         "code": "1530 / 201",
          "c_symbol": "TEVA",
          "c_isin": "US8816242098",
          "c_qty": 4.0,
@@ -80,6 +82,7 @@
       },
       {
          "report_template": "trade",
+         "code": "1530 / 201",
          "c_symbol": "TEVA",
          "c_isin": "US8816242098",
          "c_qty": 1.0,
@@ -119,6 +122,7 @@
       },
       {
          "report_template": "corporate_action",
+         "code": "1530 / 201",
          "c_symbol": "VTRS",
          "c_isin": "US92556V1061",
          "c_qty": 50.0,
@@ -158,6 +162,7 @@
       },
       {
          "report_template": "corporate_action",
+         "code": "1530 / 201",
          "c_symbol": "TLT",
          "c_isin": "US4642874329",
          "c_qty": 25.0,
@@ -197,6 +202,7 @@
       },
       {
          "report_template": "corporate_action",
+         "code": "1530 / 201",
          "c_symbol": "TLT",
          "c_isin": "US4642874329",
          "c_qty": 25.0,
@@ -254,6 +260,7 @@
          "payment_date":1580156400,
          "rate":61.8031,
          "report_template":"dividend",
+         "code": "1010",
          "symbol":"GE",
          "tax":0.1,
          "tax2pay":1.85,
@@ -271,6 +278,7 @@
          "payment_date":1581106800,
          "rate":62.7977,
          "report_template":"dividend",
+         "code": "1010",
          "symbol":"TLT",
          "tax":0.0,
          "tax2pay":138.29,
@@ -288,6 +296,7 @@
          "payment_date":1587586800,
          "rate":76.2562,
          "report_template":"dividend",
+         "code": "1010",
          "symbol":"ERIC",
          "tax":1.12,
          "tax2pay":0.0,
@@ -305,6 +314,7 @@
          "payment_date":1593205200,
          "rate":69.466,
          "report_template":"dividend",
+         "code": "1010",
          "symbol":"GE",
          "tax":10.68,
          "tax2pay":222.57,
@@ -350,6 +360,7 @@
    "Криптовалюты":[
       {
          "report_template": "trade",
+         "code": "6035 / 435",
          "symbol": "BTC",
          "qty": 0.001,
          "country_iso": "840",
@@ -393,6 +404,7 @@
    "Облигации":[
       {
          "report_template": "bond_trade",
+         "code": "1530 / 201",
          "c_symbol": "X 6 1/4 03/15/26",
          "c_isin": "US912909AN84",
          "c_qty": 2.0,
@@ -434,6 +446,7 @@
       },
       {
          "report_template": "bond_interest",
+         "code": "1530",
          "type": "Купон",
          "empty": "",
          "o_date": 1600128000,
@@ -495,6 +508,7 @@
          "profit":161.1,
          "profit_rub":9164.42,
          "report_template":"trade",
+         "code": "1532 / 206",
          "spending_rub":8896.82
       },
       {
@@ -508,6 +522,10 @@
    "Проценты":[
       {
          "report_template": "interest",
+         "code": "4800",
+         "payer": "None",
+         "country": "США",
+         "country_code": "us",
          "payment_date": 1591142400,
          "rate": 68.9831,
          "amount": 1.5,

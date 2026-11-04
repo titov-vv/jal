@@ -2,6 +2,7 @@ from decimal import Decimal
 from jal.constants import PredefinedAsset, PredefinedCategory, SymbolId
 from jal.db.operations import LedgerTransaction, AssetPayment, AssetIncome, CorporateAction
 from jal.db.asset import JalAsset
+from jal.db.peer import JalPeer
 from jal.data_export.taxes import TaxReport, GAIN, INCOME
 from jal.data_export.tax_parameters import TaxParameters
 
@@ -75,7 +76,16 @@ class TaxesRussia(TaxReport):
         'fee_depositary': "Депозитарная комиссия",
         'fee_financing': "Плата за финансирование позиции",
         'fee_asset': "Прочая комиссия или налог по активу",
-        'fee_broker': "Комиссия брокера"
+        'fee_broker': "Комиссия брокера",
+        'home_codes': "Коды не указаны: счёт открыт у российского брокера или банка, доход отражает налоговый агент",
+        'traded': "Все ценные бумаги считаются обращающимися на организованном рынке (ст. 214.1 п. 3 НК РФ); "
+                  "необращающиеся JAL не выделяет",
+        'derivatives_mixed': "ПФИ на ценные бумаги и фондовые индексы не отделены от прочих ПФИ: коды 1532 / 206 "
+                             "указаны для всех",
+        'interest_base': "Проценты российского плательщика - база по вкладам в банках РФ; иностранного - основная "
+                         "налоговая база",
+        'crypto_codes': "Коды 6035 / 435 (криптовалюта) и 4800 (доход в криптовалюте) не подтверждены официальным "
+                        "источником - проверьте их перед подачей декларации"
     }
     operation_labels = {
         (LedgerTransaction.Trade, None): "Сделка",
@@ -147,6 +157,7 @@ class TaxesRussia(TaxReport):
                     tax2pay = Decimal('0.0')
             line = {
                 'report_template': "dividend",
+                'code': self.code_text(TaxParameters.DIVIDEND),
                 'payment_date': self._moment(dividend.timestamp(), dividend.timestamp_is_day()),
                 'symbol': dividend.symbol().symbol(),
                 'full_name': dividend.asset().name(),
@@ -237,6 +248,7 @@ class TaxesRussia(TaxReport):
             o_amount_full = round(trade.open_amount(full=True), 2)
             line = {
                 'report_template': report_template,
+                'code': self.code_text(self.TRADE_CODES[trade.asset().type()]),
                 'c_symbol': trade.close_operation().symbol().symbol(),
                 'c_isin': trade.close_operation().symbol().identifier(SymbolId.ISIN),  # May be not used in template (for derivatives as example)
                 'c_qty': trade.qty(),
@@ -280,9 +292,13 @@ class TaxesRussia(TaxReport):
         return deals_report
 
     # -----------------------------------------------------------------------------------------------------------------------
+    TRADE_CODES = {PredefinedAsset.Stock: TaxParameters.STOCK, PredefinedAsset.ETF: TaxParameters.ETF,
+                   PredefinedAsset.Derivative: TaxParameters.DERIVATIVE}
+
     def prepare_stocks_and_etf(self):
-        trades = self.trades_list([PredefinedAsset.Stock, PredefinedAsset.ETF])
-        return self.prepare_trades_report(trades)
+        trades = self.prepare_trades_report(self.trades_list([PredefinedAsset.Stock, PredefinedAsset.ETF]))
+        self.add_header(self.texts['traded'])
+        return trades
 
     # -----------------------------------------------------------------------------------------------------------------------
     # Accrued interest of a bond trade in RUB, at the official rate of the trade date
@@ -292,6 +308,7 @@ class TaxesRussia(TaxReport):
     def prepare_bonds(self):
         self._deal_headers()
         self.add_header(self.texts['bond_price'])
+        self.add_header(self.texts['traded'])
         country = self.account.country()
         bonds_report = []
         trades = self.trades_list([PredefinedAsset.Bond])
@@ -313,6 +330,7 @@ class TaxesRussia(TaxReport):
                 spending_rub = c_amount_rub + fee_rub - self._accrued_rub(close_op)
             line = {
                 'report_template': "bond_trade",
+                'code': self.code_text(TaxParameters.BOND),
                 'c_symbol': close_op.symbol().symbol(),
                 'c_isin': close_op.symbol().identifier(SymbolId.ISIN),
                 'c_qty': trade.qty(),
@@ -367,6 +385,7 @@ class TaxesRussia(TaxReport):
             amount_rub = round(amount * rate, 2)
             line = {
                 'report_template': "bond_interest",
+                'code': self.code_text(TaxParameters.COUPON),
                 'type': "Купон",
                 'empty': '',  # to keep cell borders drawn
                 'o_date': self._moment(interest.timestamp(), interest.timestamp_is_day()),
@@ -389,8 +408,9 @@ class TaxesRussia(TaxReport):
 
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_derivatives(self):
-        trades = self.trades_list([PredefinedAsset.Derivative])
-        return self.prepare_trades_report(trades)
+        trades = self.prepare_trades_report(self.trades_list([PredefinedAsset.Derivative]))
+        self.add_header(self.texts['derivatives_mixed'])
+        return trades
 
     # -----------------------------------------------------------------------------------------------------------------------
     # The value in RUB of an income in crypto at its receipt, per unit of the asset received: the asset's quote in the
@@ -412,6 +432,7 @@ class TaxesRussia(TaxReport):
         self.add_header(self.texts['crypto_income_lot'])
         self.add_header(self.texts['crypto_gas'])
         self.add_header(self.texts['crypto_pending'])
+        self.add_header(self.texts['crypto_codes'])
         country = self.account.country()
         crypto_report = []
         otypes = (LedgerTransaction.Trade, LedgerTransaction.Swap, LedgerTransaction.Conversion)
@@ -459,6 +480,7 @@ class TaxesRussia(TaxReport):
             spending_rub = (o_amount_rub if long else c_amount_rub) + fee_rub
             line = {
                 'report_template': "trade",
+                'code': self.code_text(TaxParameters.CRYPTO),
                 'symbol': close_op.symbol().symbol(),
                 'qty': trade.qty(),
                 'country_iso': country.iso_code(),
@@ -501,6 +523,7 @@ class TaxesRussia(TaxReport):
     # Crypto received as income, valued at its receipt; a missing quote stops the report
     def prepare_crypto_income(self):
         self.add_header(self.texts['income_valued'])
+        self.add_header(self.texts['crypto_codes'])
         incomes_report = []
         incomes = []
         for subtype in self.CRYPTO_INCOMES:
@@ -514,6 +537,7 @@ class TaxesRussia(TaxReport):
                 continue
             incomes_report.append({
                 'report_template': "income",
+                'code': self.code_text(TaxParameters.CRYPTO_INCOME),
                 'payment_date': self._moment(income.timestamp(), income.timestamp_is_day()),
                 'operation': self.operation_label(income),
                 'symbol': income.symbol().symbol(),
@@ -580,6 +604,12 @@ class TaxesRussia(TaxReport):
         tax = self.base_estimate(TaxParameters.INTEREST, amount_rub)
         return None if tax is None else round(tax, 2)
 
+    # The payer of an interest row: the account's bank or broker, in the account's country
+    def _payer(self) -> dict:
+        country = self.account.country()
+        return {'payer': JalPeer(self.account.organization()).name(), 'country': country.name(language='ru'),
+                'country_code': country.code()}
+
     # -----------------------------------------------------------------------------------------------------------------------
     def prepare_broker_interest(self):
         interests_report = []
@@ -598,8 +628,9 @@ class TaxesRussia(TaxReport):
                     'amount_rub': round(amount * rate, 2),
                     'tax2pay': self._interest_tax(amount * rate),
                     'description': interest['note'],
-                    'note': ''
-                }
+                    'note': '',
+                    'code': self.code_text(TaxParameters.INTEREST)
+                } | self._payer()
                 interests_report.append(line)
             if interests:
                 self.mark_printed(operation)
@@ -618,10 +649,12 @@ class TaxesRussia(TaxReport):
                 'amount_rub': round(payment['amount'] * rate, 2),
                 'tax2pay': self._interest_tax(payment['amount'] * rate),
                 'description': payment['note'],
-                'note': ''
-            }
+                'note': '',
+                'code': self.code_text(TaxParameters.INTEREST)
+            } | self._payer()
             interests_report.append(line)
             self.mark_printed_id(LedgerTransaction.CorporateAction, payment['oid'])
         self.add_estimate_header(interests_report, self.texts['estimate_interest'], TaxParameters.INTEREST)
+        self.add_header(self.texts['interest_base'])
         self.insert_totals(interests_report, ["amount", "amount_rub", "tax2pay"])
         return interests_report

@@ -2,6 +2,7 @@
   "Акции": [
     {
       "report_template": "corporate_action",
+      "code": "1530 / 201",
       "c_symbol": "PEIX",
       "c_isin": "US0215131063",
       "c_qty": 70.0,
@@ -41,6 +42,7 @@
     },
     {
       "report_template": "corporate_action",
+      "code": "1530 / 201",
       "c_symbol": "ALTO",
       "c_isin": "US0215131063",
       "c_qty": 70.0,
@@ -127,6 +129,7 @@
       "profit": 519.33,
       "profit_rub": 38561.33,
       "report_template": "trade",
+      "code": "1532 / 206",
       "spending_rub": 50.18,
       "note": ""
     },
@@ -166,6 +169,7 @@
       "profit": -13590.83,
       "profit_rub": -971637.83,
       "report_template": "trade",
+      "code": "1532 / 206",
       "spending_rub": 1098607.81,
       "note": ""
     },

@@ -2,6 +2,7 @@
   "Акции":[
     {
       "report_template": "corporate_action",
+      "code": "1530 / 201",
       "c_symbol": "SNPXD",
       "c_isin": "US87167T2015",
       "c_qty": 0.5,
@@ -41,6 +42,7 @@
     },
     {
       "report_template": "corporate_action",
+      "code": "1530 / 201",
       "c_symbol": "PTPI",
       "c_isin": "US71678J2096",
       "c_qty": 0.2,
