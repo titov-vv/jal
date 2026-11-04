@@ -78,8 +78,8 @@ def test_two_hop_lot_in_tax_reports(prepare_db_taxes):
 
     create_quotes(RUB, EUR, [(d2t(220301), '0.0085323504')])   # the ECB's last RUB rate, valid since 1 Mar 2022
     pt = TaxesPortugal().prepare_tax_report(2025, 4)
-    assert [k for k, v in pt.items() if v] == ["Summary", "Crypto"]
-    deal, _totals = pt["Crypto"]
+    assert [k for k, v in pt.items() if v] == ["Summary", "Crypto < 365 days"]
+    deal, _totals = pt["Crypto < 365 days"]
     assert round(deal['o_fee_eur'], 6) == Decimal('0.068259')          # 80% of 10 RUB at the ECB rate
     assert {k: deal[k] for k in ('o_number', 'o_rate', 'o_amount', 'o_amount_eur', 'c_amount_eur',
                                  'profit_eur', 'note')} == \

@@ -3,6 +3,7 @@ from jal.constants import PredefinedAsset, PredefinedCategory, SymbolId
 from jal.db.asset import JalAsset
 from jal.db.operations import LedgerTransaction, AssetPayment, AssetIncome, CorporateAction
 from jal.data_export.taxes import TaxReport, GAIN, INCOME
+from jal.data_export.tax_parameters import TaxParameters
 
 
 class TaxesPortugal(TaxReport):
@@ -12,9 +13,9 @@ class TaxesPortugal(TaxReport):
     currency_suffix = '_eur'
     summary_section = ("Summary", "tax_prt_summary.json")
     uncovered_section = ("Not covered", "tax_prt_uncovered.json")
-    bases = [("Category G", GAIN, ["Shares", "Crypto"]),
+    bases = [("Category G", GAIN, ["Shares", "Bonds", "Derivatives", "Crypto < 365 days"]),
              ("Category E", INCOME, ["Dividends", "Interest"])]
-    outside = ["Crypto income", "Fees"]
+    outside = ["Crypto ≥ 365 days", "Crypto income", "Fees"]
     texts = {
         'rent_return': "Token account rent returned: a refund of rent paid, not income",
         'crypto_exchange': "Crypto-for-crypto exchange: not taxed until exit to fiat (CIRS art. 10.º, n.º 20)",
@@ -55,8 +56,6 @@ class TaxesPortugal(TaxReport):
                           "period may still change",
         'pending': "Pending replay: the lot passed through a crypto-for-crypto exchange",
         'reward_lot': "Received as crypto income: zero cost, taxed on disposal only (CIRS art. 5.º, n.º 11)",
-        'yes': "Yes",
-        'no': "No",
         'income_not_taxed': "Crypto received as income is not taxed at receipt: it opens a lot at zero cost, taxed when "
                             "disposed of (CIRS art. 5.º, n.º 11). Values are for information",
         'no_quote': "quotation is not present in database",
@@ -67,7 +66,14 @@ class TaxesPortugal(TaxReport):
         'fee_financing': "Position financing",
         'fee_asset': "Other asset fee or tax",
         'fee_broker': "Broker fee",
-        'home_codes': "No codes: the account is with a Portuguese bank or broker, whose income comes pre-filled"
+        'home_codes': "No codes: the account is with a Portuguese bank or broker, whose income comes pre-filled",
+        'quadro_94a': "Declared in Anexo J, quadro 9.4A: no code, the quadro is the classification",
+        'quadro_g1': "Declared for information in Anexo G1, quadro 7: no code",
+        'bond_accrued': "Accrued interest is not in the price: received, it is category E income on the Interest sheet; "
+                        "paid with a purchase, it is not deducted (category E has no expenses)",
+        'accrued_paid': "Accrued interest paid with a bond purchase: not deducted, category E has no expenses",
+        'no_40a': "The 50% exclusion of art. 40.º-A is assumed not to apply",
+        'coupon': "Bond interest"
     }
     operation_labels = {
         (LedgerTransaction.Trade, None): "Trade",
@@ -97,9 +103,12 @@ class TaxesPortugal(TaxReport):
         self.one_currency_rate = True   # CIRS a.23: cost, proceeds and fees at the rate of the disposal
         self.reports = {
             "Shares": (self.prepare_stocks_and_etf, "tax_prt_shares.json"),
-            "Crypto": (self.prepare_crypto, "tax_prt_crypto.json"),
+            "Bonds": (self.prepare_bonds, "tax_prt_bonds.json"),
+            "Derivatives": (self.prepare_derivatives, "tax_prt_derivatives.json"),
+            "Crypto < 365 days": (self.prepare_crypto_short, "tax_prt_crypto.json"),
             "Dividends": (self.prepare_dividends, "tax_prt_dividends.json"),
             "Interest": (self.prepare_broker_interest, "tax_prt_interests.json"),
+            "Crypto ≥ 365 days": (self.prepare_crypto_long, "tax_prt_crypto_365.json"),
             "Crypto income": (self.prepare_crypto_income, "tax_prt_crypto_income.json"),
             "Fees": (self.prepare_fees, "tax_prt_fees.json")
         }
@@ -112,9 +121,13 @@ class TaxesPortugal(TaxReport):
     def skip_reason(self, operation):
         if operation.type() in (LedgerTransaction.Swap, LedgerTransaction.Conversion):
             return self.texts['crypto_exchange']
+        if operation.type() == LedgerTransaction.AssetPayment and operation.subtype() == AssetPayment.BondInterest \
+                and operation.amount() < Decimal('0'):
+            return self.texts['accrued_paid']
         return super().skip_reason(operation)
 
     def prepare_dividends(self):
+        self.add_header(self.texts['no_40a'])
         dividends_report = []
         dividends = self.dividends_list()
         dividends = [x for x in dividends if x.amount(self.account_currency.id()) > 0]  # Skip negative dividends
@@ -140,7 +153,8 @@ class TaxesPortugal(TaxReport):
                 'tax_treaty': "Y" if self.has_tax_treaty_with(country.code(), dividend) else "N",
                 'amount_eur': round(dividend.amount(self.account_currency.id()) * rate, 2),
                 'tax_eur': round(dividend.tax() * rate, 2),
-                'note': note
+                'note': note,
+                'code': self.code_text(TaxParameters.DIVIDEND)
             }
             dividends_report.append(line)
             self.mark_printed(dividend)
@@ -156,7 +170,7 @@ class TaxesPortugal(TaxReport):
 
     # One deal: the account-currency columns are JAL's own view, the EUR ones the tax figures - the native cost converted
     # from the currency it was paid in, at the rate of the disposal (a short's opening sale) or of each leg's own date
-    def _deal_row(self, trade) -> dict:
+    def _deal_row(self, trade, kind=None) -> dict:
         open_op, close_op = trade.open_operation(), trade.close_operation()
         long = trade.qty() >= Decimal('0')
         disposal = close_op if long else open_op
@@ -214,30 +228,67 @@ class TaxesPortugal(TaxReport):
             'spending_eur': spending_eur,
             'profit': profit,
             'profit_eur': income_eur - spending_eur,
-            'note': "\n".join(notes)
+            'note': "\n".join(notes),
+            'code': '' if kind is None else self.code_text(kind)
         }
 
     def prepare_stocks_and_etf(self):
         self._deal_headers()
         deals_report = []
         for trade in self.trades_list([PredefinedAsset.Stock, PredefinedAsset.ETF]):
-            deals_report.append(self._deal_row(trade))
+            kind = TaxParameters.ETF if trade.asset().type() == PredefinedAsset.ETF else TaxParameters.STOCK
+            deals_report.append(self._deal_row(trade, kind))
+            self.mark_printed(trade.close_operation())
+        self.insert_totals(deals_report, ["income_eur", "spending_eur", "profit_eur", "profit"])
+        return deals_report
+
+    # Sales and redemptions of bonds at their price, accrued interest left to the Interest sheet
+    def prepare_bonds(self):
+        self._deal_headers()
+        self.add_header(self.texts['bond_accrued'])
+        return self._deals_of([PredefinedAsset.Bond], TaxParameters.BOND)
+
+    def prepare_derivatives(self):
+        self._deal_headers()
+        return self._deals_of([PredefinedAsset.Derivative], TaxParameters.DERIVATIVE)
+
+    def _deals_of(self, asset_types, kind) -> list:
+        deals_report = []
+        for trade in self.trades_list(asset_types):
+            deals_report.append(self._deal_row(trade, kind))
             self.mark_printed(trade.close_operation())
         self.insert_totals(deals_report, ["income_eur", "spending_eur", "profit_eur", "profit"])
         return deals_report
 
     # Disposals of crypto for money, with the holding period that decides the 365-day exclusion
-    def prepare_crypto(self):
+    # Disposals of crypto for money held under 365 days: category G
+    def prepare_crypto_short(self):
+        self._crypto_headers()
+        self.add_header(self.texts['quadro_94a'])
+        return self._crypto_deals(long_held=False)
+
+    # Disposals of crypto for money held 365 days or more: excluded, declared for information
+    def prepare_crypto_long(self):
+        self._crypto_headers()
+        self.add_header(self.texts['crypto_365'])
+        self.add_header(self.texts['quadro_g1'])
+        return self._crypto_deals(long_held=True)
+
+    def _crypto_headers(self):
         self._deal_headers()
         self.add_header(self.texts['crypto_fiat'])
-        self.add_header(self.texts['crypto_365'])
         self.add_header(self.texts['crypto_pending'])
+
+    # The crypto deals on one side of the 365 days, with the holding period
+    def _crypto_deals(self, long_held: bool) -> list:
         deals_report = []
         for trade in self.trades_list([PredefinedAsset.Crypto]):
             line = self._deal_row(trade)
+            del line['code']
             days = (line['c_date'] - line['o_date']) // 86400
+            if (days >= 365) != long_held:
+                continue
             line['days'] = days
-            line['held_365'] = self.texts['yes'] if days >= 365 else self.texts['no']
             notes = [line['note']] if line['note'] else []
             if trade.open_operation().type() == LedgerTransaction.AssetIncome:
                 notes.insert(0, self.texts['reward_lot'])
@@ -349,7 +400,8 @@ class TaxesPortugal(TaxReport):
                     'amount': amount,
                     'amount_eur': round(amount * rate, 2),
                     'description': interest['note'],
-                    'note': ''
+                    'note': '',
+                    'code': self.code_text(TaxParameters.INTEREST)
                 }
                 interests_report.append(line)
             if interests:
@@ -368,9 +420,28 @@ class TaxesPortugal(TaxReport):
                 'amount': payment['amount'],
                 'amount_eur': round(payment['amount'] * rate, 2),
                 'description': payment['note'],
-                'note': ''
+                'note': '',
+                'code': self.code_text(TaxParameters.INTEREST)
             }
             interests_report.append(line)
             self.mark_printed_id(LedgerTransaction.CorporateAction, payment['oid'])
+        # Bond coupons and the accrued interest received on a sale; that paid on a purchase is skipped by rule
+        coupons = AssetPayment.get_list(self.account.id(), subtype=AssetPayment.BondInterest)
+        coupons = [x for x in coupons if self.in_year(self._moment(x.timestamp(), x.timestamp_is_day()))]
+        for coupon in sorted(coupons, key=lambda x: x.timestamp()):
+            if coupon.amount() <= Decimal('0') or self.excluded(coupon):
+                continue
+            rate = self.rate(self.account_currency.id(), coupon.timestamp())
+            interests_report.append({
+                'report_template': "interest",
+                'payment_date': self._moment(coupon.timestamp(), coupon.timestamp_is_day()),
+                'rate': rate,
+                'amount': coupon.amount(),
+                'amount_eur': round(coupon.amount() * rate, 2),
+                'description': f"{self.texts['coupon']} {coupon.symbol().symbol()}: {coupon.note()}".strip(),
+                'note': '',
+                'code': self.code_text(TaxParameters.COUPON)
+            })
+            self.mark_printed(coupon)
         self.insert_totals(interests_report, ["amount", "amount_eur"])
         return interests_report

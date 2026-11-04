@@ -488,7 +488,17 @@
       },
       {
         "report_template": "section",
-        "section": "Crypto",
+        "section": "Bonds",
+        "rows": 0
+      },
+      {
+        "report_template": "section",
+        "section": "Derivatives",
+        "rows": 0
+      },
+      {
+        "report_template": "section",
+        "section": "Crypto < 365 days",
         "rows": 5
       },
       {
@@ -514,6 +524,11 @@
       {
         "report_template": "section",
         "section": "Interest",
+        "rows": 0
+      },
+      {
+        "report_template": "section",
+        "section": "Crypto ≥ 365 days",
         "rows": 0
       },
       {
@@ -550,7 +565,6 @@
         "link": ""
       }
     ],
-    "Dividends": [],
     "Shares": [
       {
         "report_template": "trade",
@@ -579,7 +593,8 @@
         "spending_eur": 507.02,
         "profit": 98.0,
         "profit_eur": 98.98,
-        "note": ""
+        "note": "",
+        "code": "G01"
       },
       {
         "report_template": "totals",
@@ -589,7 +604,9 @@
         "profit": 98.0
       }
     ],
-    "Crypto": [
+    "Bonds": [],
+    "Derivatives": [],
+    "Crypto < 365 days": [
       {
         "report_template": "trade",
         "symbol": "ETH",
@@ -618,8 +635,7 @@
         "profit": 498.17,
         "profit_eur": 488.2,
         "note": "",
-        "days": 81,
-        "held_365": "No"
+        "days": 81
       },
       {
         "report_template": "trade",
@@ -650,7 +666,6 @@
         "profit_eur": 195.35,
         "note": "Pending replay: the lot passed through a crypto-for-crypto exchange\n50 UNI -> 0.2 ETH",
         "days": 76,
-        "held_365": "No",
         "pending_replay": true
       },
       {
@@ -682,7 +697,6 @@
         "profit_eur": 592.22,
         "note": "Pending replay: the lot passed through a crypto-for-crypto exchange\n1 ETH -> 1 WETH",
         "days": 90,
-        "held_365": "No",
         "pending_replay": true
       },
       {
@@ -714,7 +728,6 @@
         "profit_eur": 247.3,
         "note": "Pending replay: the lot passed through a crypto-for-crypto exchange",
         "days": 21,
-        "held_365": "No",
         "pending_replay": true
       },
       {
@@ -745,8 +758,7 @@
         "profit": 125.0,
         "profit_eur": 125.0,
         "note": "Received as crypto income: zero cost, taxed on disposal only (CIRS art. 5.º, n.º 11)",
-        "days": 89,
-        "held_365": "No"
+        "days": 89
       },
       {
         "report_template": "totals",
@@ -756,6 +768,9 @@
         "profit": 1670.5
       }
     ],
+    "Dividends": [],
+    "Interest": [],
+    "Crypto ≥ 365 days": [],
     "Crypto income": [
       {
         "report_template": "income",
@@ -776,7 +791,6 @@
       }
     ],
     "Fees": [],
-    "Interest": [],
     "Not covered": [
       {
         "report_template": "skipped",

@@ -3,7 +3,7 @@ import json
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from decimal import Decimal
 
-from tests.helpers import d2t, dt2t, create_assets, create_quotes, create_dividends, create_trades, create_actions, \
+from tests.helpers import d2t, dt2t, create_assets, create_quotes, create_dividends, create_trades, create_actions, create_coupons, \
     create_corporate_actions, create_stock_dividends, json_decimal2float, symbol_id_for, figure_fingerprint
 from jal.constants import PredefinedAsset, PredefinedCategory
 from jal.db.ledger import Ledger
@@ -150,3 +150,46 @@ def test_figure_fingerprint(data_path):
     assert figure_fingerprint(moved, "Summary", "Not covered") == fingerprint
     moved["All"][0] = {k: (v + 0.01 if isinstance(v, float) else v) for k, v in moved["All"][0].items()}
     assert figure_fingerprint(moved, "Summary", "Not covered") != fingerprint
+
+
+# 2025, 1 USD = 0.9 EUR: a bond B (ID 4) with accrued interest paid on purchase and received on sale and a coupon between,
+# an option D (ID 5), and crypto C (ID 6) - one lot held 735 days, one held 28 days
+def _g_category_scenario():
+    create_assets([("B", "Bond B", "US0000000B01", 2, PredefinedAsset.Bond, 'us'),
+                   ("D", "Option D", "", 2, PredefinedAsset.Derivative, 'us'),
+                   ("C", "Coin C", "", 2, PredefinedAsset.Crypto, 0)])
+    create_quotes(2, 3, [(d2t(220102), 0.9)])
+    create_trades(1, [(d2t(250102), d2t(250104), 4, 2, 1000, 1, "bb"), (d2t(250602), d2t(250604), 4, -2, 1010, 1, "bs"),
+                      (d2t(250110), d2t(250110), 5, 1, 50, 1, "db"), (d2t(250210), d2t(250210), 5, -1, 70, 1, "ds"),
+                      (d2t(230101), d2t(230101), 6, 1, 100, 0, "c1"), (d2t(250105), d2t(250105), 6, -1, 150, 0, "c2"),
+                      (d2t(250201), d2t(250201), 6, 1, 200, 0, "c3"), (d2t(250301), d2t(250301), 6, -1, 210, 0, "c4")])
+    create_coupons([(d2t(250102), 1, 4, -10.0, 0.0, "accrued paid", "bb"), (d2t(250301), 1, 4, 25.0, 0.0, "coupon", ""),
+                    (d2t(250602), 1, 4, 5.0, 0.0, "accrued received", "bs")])
+    Ledger().rebuild(from_timestamp=0)
+
+
+# Bonds and derivatives are category G deals at their price; bond interest received is category E, that paid with a
+# purchase is skipped; crypto splits at 365 days
+def test_g_category_sheets(prepare_db_taxes):
+    _g_category_scenario()
+    taxes = TaxesPortugal()
+    report = taxes.prepare_tax_report(2025, 1)
+    bond, bond_totals = report["Bonds"]
+    assert (bond['code'], bond['o_amount_eur'], bond['c_amount_eur'], bond['profit_eur']) == \
+           ('G10', Decimal('1800.00'), Decimal('1818.00'), Decimal('16.20'))
+    assert taxes.texts['bond_accrued'] in taxes.section_headers("Bonds")
+    option, _ = report["Derivatives"]
+    assert (option['code'], option['o_amount_eur'], option['c_amount_eur'], option['profit_eur']) == \
+           ('G30', Decimal('45.00'), Decimal('63.00'), Decimal('16.20'))
+    interest = [(x['description'], x['amount_eur'], x['code']) for x in report["Interest"] if x['report_template'] == "interest"]
+    assert interest == [("Bond interest B: coupon", Decimal('22.50'), 'E21'),
+                        ("Bond interest B: accrued received", Decimal('4.50'), 'E21')]
+    long_held, _ = report["Crypto ≥ 365 days"]
+    short_held, _ = report["Crypto < 365 days"]
+    assert (long_held['c_number'], long_held['days'], 'code' in long_held) == ("c2", 735, False)
+    assert (short_held['c_number'], short_held['days']) == ("c4", 28)
+    assert taxes.texts['quadro_g1'] in taxes.section_headers("Crypto ≥ 365 days")
+    assert taxes.texts['quadro_94a'] in taxes.section_headers("Crypto < 365 days")
+    skipped = [x for x in report["Not covered"] if x['report_template'] == "skipped"]
+    assert [(x['reason'], x['count']) for x in skipped] == [(taxes.texts['accrued_paid'], "Skipped by rule: 1")]
+    assert [x for x in report["Not covered"] if x['report_template'] == "operation"] == []

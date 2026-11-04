@@ -23,7 +23,17 @@
       },
       {
         "report_template": "section",
-        "section": "Crypto",
+        "section": "Bonds",
+        "rows": 0
+      },
+      {
+        "report_template": "section",
+        "section": "Derivatives",
+        "rows": 0
+      },
+      {
+        "report_template": "section",
+        "section": "Crypto < 365 days",
         "rows": 0
       },
       {
@@ -45,6 +55,11 @@
         "report_template": "figure",
         "figure": "Amount",
         "amount": 26.76
+      },
+      {
+        "report_template": "section",
+        "section": "Crypto \u2265 365 days",
+        "rows": 0
       },
       {
         "report_template": "section",
@@ -75,67 +90,13 @@
         "link": ""
       }
     ],
-    "Dividends": [
-      {
-        "report_template": "dividend",
-        "payment_date": 1708007400,
-        "symbol": "AAPL",
-        "full_name": "Apple Inc",
-        "isin": "US0378331005",
-        "amount": 24.0,
-        "tax": 3.6,
-        "rate": 0.93,
-        "country": "United States",
-        "tax_treaty": "Y",
-        "amount_eur": 22.32,
-        "tax_eur": 3.35,
-        "note": ""
-      },
-      {
-        "report_template": "dividend",
-        "payment_date": 1715351400,
-        "symbol": "XYZ",
-        "full_name": "XYZ Holdings Ltd",
-        "isin": "KYG000000001",
-        "amount": 10.0,
-        "tax": 0.0,
-        "rate": 0.928,
-        "country": "Cayman Islands",
-        "tax_treaty": "N",
-        "amount_eur": 9.28,
-        "tax_eur": 0.0,
-        "note": ""
-      },
-      {
-        "report_template": "dividend",
-        "payment_date": 1718893800,
-        "symbol": "VWRL",
-        "full_name": "Vanguard FTSE All-World ETF",
-        "isin": "IE00B3RBWM25",
-        "amount": 200.0,
-        "tax": 0.0,
-        "rate": 0.925,
-        "country": "Ireland",
-        "tax_treaty": "Y",
-        "amount_eur": 185.0,
-        "tax_eur": 0.0,
-        "note": "Stock dividend"
-      },
-      {
-        "report_template": "totals",
-        "amount": 234.0,
-        "amount_eur": 216.6,
-        "tax": 3.6,
-        "tax_eur": 3.35
-      }
-    ],
     "Shares": [
       {
         "report_template": "trade",
         "symbol": "AAPL",
         "isin": "US0378331005",
         "qty": 10.0,
-        "o_type": "Aquisição",
+        "o_type": "Aquisi\u00e7\u00e3o",
         "o_number": "T01",
         "o_date": 1700058600,
         "o_rate": 0.915,
@@ -157,14 +118,15 @@
         "spending_eur": 1374.51,
         "profit": 297.8,
         "profit_eur": 272.49,
-        "note": ""
+        "note": "",
+        "code": "G01"
       },
       {
         "report_template": "trade",
         "symbol": "VWRL",
         "isin": "IE00B3RBWM25",
         "qty": 5.0,
-        "o_type": "Aquisição",
+        "o_type": "Aquisi\u00e7\u00e3o",
         "o_number": "T03",
         "o_date": 1704897000,
         "o_rate": 0.924,
@@ -186,7 +148,8 @@
         "spending_eur": 463.39,
         "profit": 48.5,
         "profit_eur": 44.81,
-        "note": ""
+        "note": "",
+        "code": "G20"
       },
       {
         "report_template": "trade",
@@ -202,7 +165,7 @@
         "o_fee_eur": 0.927,
         "o_amount": 500.0,
         "o_amount_eur": 463.5,
-        "c_type": "Aquisição",
+        "c_type": "Aquisi\u00e7\u00e3o",
         "c_number": "T07",
         "c_date": 1725373800,
         "c_rate": 0.927,
@@ -215,14 +178,15 @@
         "spending_eur": 419.0,
         "profit": 48.0,
         "profit_eur": 44.5,
-        "note": "Short sale: converted at the EUR rate of the opening sale - JAL's logical reading, not a confirmed rule, check with a tax adviser\nShort sale: reported in the year of its close - an assumption as well"
+        "note": "Short sale: converted at the EUR rate of the opening sale - JAL's logical reading, not a confirmed rule, check with a tax adviser\nShort sale: reported in the year of its close - an assumption as well",
+        "code": "G01"
       },
       {
         "report_template": "trade",
         "symbol": "SPLT",
         "isin": "US0000000002",
         "qty": 20.0,
-        "o_type": "Aquisição",
+        "o_type": "Aquisi\u00e7\u00e3o",
         "o_number": "T08",
         "o_date": 1706797800,
         "o_rate": 0.918,
@@ -244,14 +208,15 @@
         "spending_eur": 1837.84,
         "profit": 198.0,
         "profit_eur": 181.76,
-        "note": "Split: Split 2:1 of SPLT\nSplit Corp"
+        "note": "Split: Split 2:1 of SPLT\nSplit Corp",
+        "code": "G01"
       },
       {
         "report_template": "trade",
         "symbol": "VWRL",
         "isin": "IE00B3RBWM25",
         "qty": 5.0,
-        "o_type": "Aquisição",
+        "o_type": "Aquisi\u00e7\u00e3o",
         "o_number": "T03",
         "o_date": 1704897000,
         "o_rate": 0.96,
@@ -273,7 +238,8 @@
         "spending_eur": 481.44,
         "profit": 98.5,
         "profit_eur": 94.56,
-        "note": ""
+        "note": "",
+        "code": "G20"
       },
       {
         "report_template": "totals",
@@ -283,9 +249,66 @@
         "profit": 690.8
       }
     ],
-    "Crypto": [],
-    "Crypto income": [],
-    "Fees": [],
+    "Bonds": [],
+    "Derivatives": [],
+    "Crypto < 365 days": [],
+    "Dividends": [
+      {
+        "report_template": "dividend",
+        "payment_date": 1708007400,
+        "symbol": "AAPL",
+        "full_name": "Apple Inc",
+        "isin": "US0378331005",
+        "amount": 24.0,
+        "tax": 3.6,
+        "rate": 0.93,
+        "country": "United States",
+        "tax_treaty": "Y",
+        "amount_eur": 22.32,
+        "tax_eur": 3.35,
+        "note": "",
+        "code": "E11"
+      },
+      {
+        "report_template": "dividend",
+        "payment_date": 1715351400,
+        "symbol": "XYZ",
+        "full_name": "XYZ Holdings Ltd",
+        "isin": "KYG000000001",
+        "amount": 10.0,
+        "tax": 0.0,
+        "rate": 0.928,
+        "country": "Cayman Islands",
+        "tax_treaty": "N",
+        "amount_eur": 9.28,
+        "tax_eur": 0.0,
+        "note": "",
+        "code": "E11"
+      },
+      {
+        "report_template": "dividend",
+        "payment_date": 1718893800,
+        "symbol": "VWRL",
+        "full_name": "Vanguard FTSE All-World ETF",
+        "isin": "IE00B3RBWM25",
+        "amount": 200.0,
+        "tax": 0.0,
+        "rate": 0.925,
+        "country": "Ireland",
+        "tax_treaty": "Y",
+        "amount_eur": 185.0,
+        "tax_eur": 0.0,
+        "note": "Stock dividend",
+        "code": "E11"
+      },
+      {
+        "report_template": "totals",
+        "amount": 234.0,
+        "amount_eur": 216.6,
+        "tax": 3.6,
+        "tax_eur": 3.35
+      }
+    ],
     "Interest": [
       {
         "report_template": "interest",
@@ -294,7 +317,8 @@
         "amount": 3.5,
         "amount_eur": 3.22,
         "description": "USD CREDIT INT FOR JUL-2024",
-        "note": ""
+        "note": "",
+        "code": "E21"
       },
       {
         "report_template": "interest",
@@ -303,7 +327,8 @@
         "amount": 25.5,
         "amount_eur": 23.54,
         "description": "Merger MRG->NEWCO + cash",
-        "note": ""
+        "note": "",
+        "code": "E21"
       },
       {
         "report_template": "totals",
@@ -311,6 +336,9 @@
         "amount_eur": 26.76
       }
     ],
+    "Crypto \u2265 365 days": [],
+    "Crypto income": [],
+    "Fees": [],
     "Not covered": [
       {
         "report_template": "operation",
@@ -329,7 +357,7 @@
       "symbol": "AAPL",
       "isin": "US0378331005",
       "qty": 10.0,
-      "o_type": "Aquisição",
+      "o_type": "Aquisi\u00e7\u00e3o",
       "o_number": "T01",
       "o_date": 1700058600,
       "o_rate": 0.92,
@@ -351,14 +379,15 @@
       "spending_eur": 1382.02,
       "profit": 297.8,
       "profit_eur": 264.98,
-      "note": ""
+      "note": "",
+      "code": "G01"
     },
     {
       "report_template": "trade",
       "symbol": "VWRL",
       "isin": "IE00B3RBWM25",
       "qty": 5.0,
-      "o_type": "Aquisição",
+      "o_type": "Aquisi\u00e7\u00e3o",
       "o_number": "T03",
       "o_date": 1704897000,
       "o_rate": 0.91,
@@ -380,7 +409,8 @@
       "spending_eur": 456.38,
       "profit": 48.5,
       "profit_eur": 51.82,
-      "note": ""
+      "note": "",
+      "code": "G20"
     },
     {
       "report_template": "trade",
@@ -396,7 +426,7 @@
       "o_fee_eur": 0.927,
       "o_amount": 500.0,
       "o_amount_eur": 463.5,
-      "c_type": "Aquisição",
+      "c_type": "Aquisi\u00e7\u00e3o",
       "c_number": "T07",
       "c_date": 1725373800,
       "c_rate": 0.905,
@@ -409,14 +439,15 @@
       "spending_eur": 409.08,
       "profit": 48.0,
       "profit_eur": 54.42,
-      "note": "Short sale: reported in the year of its close - an assumption as well"
+      "note": "Short sale: reported in the year of its close - an assumption as well",
+      "code": "G01"
     },
     {
       "report_template": "trade",
       "symbol": "SPLT",
       "isin": "US0000000002",
       "qty": 20.0,
-      "o_type": "Aquisição",
+      "o_type": "Aquisi\u00e7\u00e3o",
       "o_number": "T08",
       "o_date": 1706797800,
       "o_rate": 0.923,
@@ -438,14 +469,15 @@
       "spending_eur": 1847.84,
       "profit": 198.0,
       "profit_eur": 171.76,
-      "note": "Split: Split 2:1 of SPLT\nSplit Corp"
+      "note": "Split: Split 2:1 of SPLT\nSplit Corp",
+      "code": "G01"
     },
     {
       "report_template": "trade",
       "symbol": "VWRL",
       "isin": "IE00B3RBWM25",
       "qty": 5.0,
-      "o_type": "Aquisição",
+      "o_type": "Aquisi\u00e7\u00e3o",
       "o_number": "T03",
       "o_date": 1704897000,
       "o_rate": 0.91,
@@ -467,7 +499,8 @@
       "spending_eur": 456.42,
       "profit": 98.5,
       "profit_eur": 119.58,
-      "note": ""
+      "note": "",
+      "code": "G20"
     },
     {
       "report_template": "totals",

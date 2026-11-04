@@ -17,23 +17,25 @@
     {"name": "Tax withheld, {parameters[currency]}", "width": 12},
     {"name": "Tax withheld, EUR", "width": 12},
     {"name": "Country", "width": 20},
-    {"name": "Tax treaty", "width": 7}
+    {"name": "Tax treaty", "width": 7},
+    {"name": "Note", "width": 25},
+    {"name": "Código (Anexo J)", "width": 9}
   ],
   "columns_numbered": true,
   "dividend": {
     "rows": [
-      ["payment_date", "symbol", "isin", "full_name", "rate", "amount", "amount_eur", "tax", "tax_eur", "country", "tax_treaty", "note"]
+      ["payment_date", "symbol", "isin", "full_name", "rate", "amount", "amount_eur", "tax", "tax_eur", "country", "tax_treaty", "note", "code"]
     ],
     "formats": [
-      ["D", "T", "T", "T", "N:4", "N:2", "N:2", "N:2", "N:2", "T", "T", "-"]
+      ["D", "T", "T", "T", "N:4", "N:2", "N:2", "N:2", "N:2", "T", "T", "-", "T"]
     ]
   },
   "totals": {
     "rows": [
-      [null, null, null, null, "TOTAL", "amount", "amount_eur", "tax", "tax_eur", null, null]
+      [null, null, null, null, "TOTAL", "amount", "amount_eur", "tax", "tax_eur", null, null, null, null]
     ],
     "formats": [
-      [null, null, null, null, "F", "F", "F", "F", "F", null, null]
+      [null, null, null, null, "F", "F", "F", "F", "F", null, null, null, null]
     ]
   },
   "footers": []

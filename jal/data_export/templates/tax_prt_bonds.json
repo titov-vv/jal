@@ -1,0 +1,51 @@
+{
+  "page": "Bonds",
+  "title": "Disposals and redemptions of bonds",
+  "headers": [
+      "Período: {parameters[period]}",
+      "Proprietário da conta: ",
+      "Conta: {parameters[account]}"
+    ],
+  "columns": [  
+    {"name": "Código", "width": 8},
+    {"name": "ISIN", "width": 11},
+    {"name": "Operação", "width": 8},
+    {"name": "Operação #", "width": 10},
+    {"name": "Data de operação", "width": 10},
+    {"name": "Quantidade", "width": 9},
+    {"name": "Preço, {parameters[currency]}", "width": 12},
+    {"name": "Valor, {parameters[currency]}", "width": 12},
+    {"name": "Encargos, {parameters[currency]}", "width": 12},
+    {"name": "Ganhos/perdas, {parameters[currency]}", "width": 10},
+    {"name": "Câmbio EUR/{parameters[currency]}", "width": 9},
+    {"name": "Valor, EUR", "width": 12},
+    {"name": "Encargos, EUR", "width": 12},
+    {"name": "Ganhos/perdas, EUR", "width": 10},
+    {"name": "Comentário", "width": 25},
+    {"name": "Código (Anexo J)", "width": 9}
+  ],
+  "columns_numbered": true,
+  "trade": {
+    "rows": [
+      ["symbol", "isin", "o_type", "o_number", "o_date", "qty", "o_price", "o_amount", "o_fee", "profit", "o_rate", "o_amount_eur", "o_fee_eur", "profit_eur", "note", "code"],
+      [null, null, "c_type", "c_number", "c_date", null, "c_price", "c_amount", "c_fee", null, "c_rate", "c_amount_eur", "c_fee_eur", null, null, null]
+    ],
+    "formats": [
+      ["T", "N:0", "T", "T", "D", "T", "N:6", "N:2", "N:6", "N:2", "N:4", "N:2", "N:2", "N:2", "T", "T"],
+      [null, null, "T", "T", "D", null, "N:6", "N:2", "N:6", null, "N:4", "N:2", "N:2", null, null, null]
+    ],
+    "span": [
+      [{"h": 0, "v":  1}, {"h": 0, "v":  1}, null, null, null, {"h": 0, "v":  1}, null, null, null, {"h": 0, "v":  1}, null, null, null, {"h": 0, "v":  1}, {"h": 0, "v":  1}, {"h": 0, "v": 1}],
+      [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null]
+    ]
+  },
+  "totals": {
+    "rows": [
+      [null, null, null, null, null, null, null, null, "TOTAL", "profit", "", "profit_eur", "", null, null, null]
+    ],
+    "formats": [
+      [null, null, null, null, null, null, null, null, "F", "F", "F", "F", "F", null, null, null]
+    ]
+  },
+  "footers": []
+}

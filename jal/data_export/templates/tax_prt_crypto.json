@@ -1,6 +1,6 @@
 {
-  "page": "Crypto",
-  "title": "Disposals of crypto-assets for money",
+  "page": "Crypto < 365 days",
+  "title": "Disposals of crypto-assets for money, held less than 365 days",
   "headers": [
       "Period: {parameters[period]}",
       "Account owner: ",
@@ -21,30 +21,29 @@
     {"name": "Expenses, EUR", "width": 10},
     {"name": "Gain/loss, EUR", "width": 10},
     {"name": "Days held", "width": 7},
-    {"name": "Held 365 days or more", "width": 8},
     {"name": "Note", "width": 30}
   ],
   "columns_numbered": true,
   "trade": {
     "rows": [
-      ["symbol", "o_type", "o_number", "o_date", "qty", "o_price", "o_amount", "o_fee", "profit", "o_rate", "o_amount_eur", "o_fee_eur", "profit_eur", "days", "held_365", "note"],
-      [null,     "c_type", "c_number", "c_date", null,  "c_price", "c_amount", "c_fee", null,     "c_rate", "c_amount_eur", "c_fee_eur", null,         null,   null,       null  ]
+      ["symbol", "o_type", "o_number", "o_date", "qty", "o_price", "o_amount", "o_fee", "profit", "o_rate", "o_amount_eur", "o_fee_eur", "profit_eur", "days", "note"],
+      [null, "c_type", "c_number", "c_date", null, "c_price", "c_amount", "c_fee", null, "c_rate", "c_amount_eur", "c_fee_eur", null, null, null]
     ],
     "formats": [
-      ["T", "T", "T", "D", "N:6", "N:6", "N:2", "N:6", "N:2", "N:4", "N:2", "N:2", "N:2", "N:0", "T", "T"],
-      [null, "T", "T", "D", null, "N:6", "N:2", "N:6", null,  "N:4", "N:2", "N:2", null,  null,  null, null]
+      ["T", "T", "T", "D", "N:6", "N:6", "N:2", "N:6", "N:2", "N:4", "N:2", "N:2", "N:2", "N:0", "T"],
+      [null, "T", "T", "D", null, "N:6", "N:2", "N:6", null, "N:4", "N:2", "N:2", null, null, null]
     ],
     "span": [
-      [{"h": 0, "v": 1}, null, null, null, {"h": 0, "v": 1}, null, null, null, {"h": 0, "v": 1}, null, null, null, {"h": 0, "v": 1}, {"h": 0, "v": 1}, {"h": 0, "v": 1}, {"h": 0, "v": 1}],
-      [null,             null, null, null, null,             null, null, null, null,             null, null, null, null,             null,             null,             null            ]
+      [{"h": 0, "v": 1}, null, null, null, {"h": 0, "v": 1}, null, null, null, {"h": 0, "v": 1}, null, null, null, {"h": 0, "v": 1}, {"h": 0, "v": 1}, {"h": 0, "v": 1}],
+      [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null]
     ]
   },
   "totals": {
     "rows": [
-      [null, null, null, null, null, null, null, "TOTAL", "profit", "", "", "", "profit_eur", null, null, null]
+      [null, null, null, null, null, null, null, "TOTAL", "profit", "", "", "", "profit_eur", null, null]
     ],
     "formats": [
-      [null, null, null, null, null, null, null, "F", "F", "F", "F", "F", "F", null, null, null]
+      [null, null, null, null, null, null, null, "F", "F", "F", "F", "F", "F", null, null]
     ]
   },
   "footers": []
