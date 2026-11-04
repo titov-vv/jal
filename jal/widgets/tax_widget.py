@@ -20,6 +20,7 @@ from jal.db.peer import JalPeer
 from jal.db.settings import JalSettings, FolderFor
 from jal.constants import PredefinedAgents
 from jal.data_export.taxes import TaxReport, TaxReportStop
+from jal.data_export.tax_parameters import TAX_TREATY
 from jal.data_export.taxes_flow import TaxesFlowRus
 from jal.data_export.xlsx import XLSX
 from jal.data_export.ru_ndfl3 import Ru_NDFL3
@@ -125,6 +126,20 @@ class TaxWidget(MdiWidget):
         reply = QMessageBox().warning(self, self.tr("Warning"), warning, QMessageBox.Ok | QMessageBox.Cancel, QMessageBox.Cancel)
         return reply == QMessageBox.Ok
 
+    # The report was made with parameters missing or not reviewed for its year; the Summary sheet says the same
+    def _warn_parameters(self, parameters):
+        if parameters.value(TAX_TREATY) is None:
+            message = self.tr("There are no tax parameters for {year}: no tax treaty is assumed and no tax is "
+                              "estimated").format(year=self.year)
+        elif parameters.unreviewed():
+            message = self.tr("The tax parameters (treaties, base rates) were last reviewed for {reviewed}; {year} "
+                              "uses the latest values known - check them against the law").format(
+                reviewed=parameters.reviewed_through(), year=self.year)
+        else:
+            return
+        logging.warning(message)
+        QMessageBox().warning(self, self.tr("Tax parameters"), message, QMessageBox.Ok)
+
     @Slot()
     def SaveReport(self):
         if not self.account:
@@ -167,6 +182,7 @@ class TaxWidget(MdiWidget):
                       "\n" + self.tr("Download the rates and save the report again.")
             logging.warning(message)
             QMessageBox().warning(self, self.tr("Currency rates are not up to date"), message, QMessageBox.Ok)
+        self._warn_parameters(taxes.parameters)
 
         if self.update_ndfl3 or self.update_modelo3:
             if self.update_ndfl3 and not self._warn_missing_broker(taxes.account):

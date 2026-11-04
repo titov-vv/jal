@@ -150,77 +150,77 @@
 <context>
     <name>AccountData</name>
     <message>
-        <location filename="../constants.py" line="512"/>
+        <location filename="../constants.py" line="511"/>
         <source>Account #</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="513"/>
+        <location filename="../constants.py" line="512"/>
         <source>Credit limit</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="514"/>
+        <location filename="../constants.py" line="513"/>
         <source>Country</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="515"/>
+        <location filename="../constants.py" line="514"/>
         <source>Precision</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="516"/>
+        <location filename="../constants.py" line="515"/>
         <source>Address</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="517"/>
+        <location filename="../constants.py" line="516"/>
         <source>Blockchain</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="518"/>
+        <location filename="../constants.py" line="517"/>
         <source>Sync cursor</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="519"/>
+        <location filename="../constants.py" line="518"/>
         <source>Deposit end date</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="520"/>
+        <location filename="../constants.py" line="519"/>
         <source>Interest rate, %</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="521"/>
+        <location filename="../constants.py" line="520"/>
         <source>Staking state</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="522"/>
+        <location filename="../constants.py" line="521"/>
         <source>Staking protocol</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="523"/>
+        <location filename="../constants.py" line="522"/>
         <source>Tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="524"/>
+        <location filename="../constants.py" line="523"/>
         <source>Opened on</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="525"/>
+        <location filename="../constants.py" line="524"/>
         <source>Closed on</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="526"/>
+        <location filename="../constants.py" line="525"/>
         <source>Card (last 4 digits)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -503,32 +503,32 @@ Do you want to delete the account anyway?</source>
 <context>
     <name>AccountStatus</name>
     <message>
-        <location filename="../constants.py" line="310"/>
+        <location filename="../constants.py" line="309"/>
         <source>Closed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="311"/>
+        <location filename="../constants.py" line="310"/>
         <source>Background</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="312"/>
+        <location filename="../constants.py" line="311"/>
         <source>Active</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="316"/>
+        <location filename="../constants.py" line="315"/>
         <source>Active accounts only</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="317"/>
+        <location filename="../constants.py" line="316"/>
         <source>With background accounts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="318"/>
+        <location filename="../constants.py" line="317"/>
         <source>With closed accounts</source>
         <translation type="unfinished"></translation>
     </message>
@@ -696,42 +696,42 @@ Do you want to delete the account anyway?</source>
 <context>
     <name>AssetData</name>
     <message>
-        <location filename="../constants.py" line="454"/>
+        <location filename="../constants.py" line="453"/>
         <source>expiry</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="455"/>
+        <location filename="../constants.py" line="454"/>
         <source>principal</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="456"/>
+        <location filename="../constants.py" line="455"/>
         <source>CoinGecko id</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="457"/>
+        <location filename="../constants.py" line="456"/>
         <source>rebasing</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="458"/>
+        <location filename="../constants.py" line="457"/>
         <source>decimals</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="459"/>
+        <location filename="../constants.py" line="458"/>
         <source>protocol</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="460"/>
+        <location filename="../constants.py" line="459"/>
         <source>pegged to</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="453"/>
+        <location filename="../constants.py" line="452"/>
         <source>Tag</source>
         <translation></translation>
     </message>
@@ -899,142 +899,142 @@ Do you want to delete the account anyway?</source>
 <context>
     <name>AssetLocation</name>
     <message>
-        <location filename="../constants.py" line="681"/>
+        <location filename="../constants.py" line="680"/>
         <source>Unknown</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="682"/>
+        <location filename="../constants.py" line="681"/>
         <source>Cash</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="683"/>
+        <location filename="../constants.py" line="682"/>
         <source>Bank account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="684"/>
+        <location filename="../constants.py" line="683"/>
         <source>NYSE</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="685"/>
+        <location filename="../constants.py" line="684"/>
         <source>Nasdaq</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="686"/>
+        <location filename="../constants.py" line="685"/>
         <source>LSE</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="687"/>
+        <location filename="../constants.py" line="686"/>
         <source>Euronext</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="688"/>
+        <location filename="../constants.py" line="687"/>
         <source>Frankfurt Borse</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="689"/>
+        <location filename="../constants.py" line="688"/>
         <source>Borsa Italiana</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="690"/>
+        <location filename="../constants.py" line="689"/>
         <source>Warsaw Stock Exchange</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="691"/>
+        <location filename="../constants.py" line="690"/>
         <source>TMX TSX</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="692"/>
+        <location filename="../constants.py" line="691"/>
         <source>MOEX</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="693"/>
+        <location filename="../constants.py" line="692"/>
         <source>Crypto exchange</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="694"/>
+        <location filename="../constants.py" line="693"/>
         <source>Nasdaq Helsinki</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="695"/>
+        <location filename="../constants.py" line="694"/>
         <source>Ethereum</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="696"/>
+        <location filename="../constants.py" line="695"/>
         <source>Arbitrum</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="697"/>
+        <location filename="../constants.py" line="696"/>
         <source>Bitcoin</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="698"/>
+        <location filename="../constants.py" line="697"/>
         <source>Solana</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="699"/>
+        <location filename="../constants.py" line="698"/>
         <source>Tron</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="700"/>
+        <location filename="../constants.py" line="699"/>
         <source>Hyperliquid</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="701"/>
+        <location filename="../constants.py" line="700"/>
         <source>Avalanche</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="702"/>
+        <location filename="../constants.py" line="701"/>
         <source>NEAR</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="703"/>
+        <location filename="../constants.py" line="702"/>
         <source>Cardano</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="704"/>
+        <location filename="../constants.py" line="703"/>
         <source>Polkadot</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="705"/>
+        <location filename="../constants.py" line="704"/>
         <source>Binance</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="706"/>
+        <location filename="../constants.py" line="705"/>
         <source>KuCoin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="707"/>
+        <location filename="../constants.py" line="706"/>
         <source>Bitget</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="708"/>
+        <location filename="../constants.py" line="707"/>
         <source>Victoria Seguros</source>
         <translation></translation>
     </message>
@@ -3393,33 +3393,23 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>HoldingsMenu</name>
     <message>
-        <location filename="../widgets/holdings_menu.py" line="35"/>
+        <location filename="../widgets/holdings_menu.py" line="36"/>
         <source>Show claim history</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/holdings_menu.py" line="41"/>
+        <location filename="../widgets/holdings_menu.py" line="42"/>
         <source>Show Price Chart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/holdings_menu.py" line="49"/>
+        <location filename="../widgets/holdings_menu.py" line="50"/>
         <source>Show Accrual Chart</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/holdings_menu.py" line="52"/>
-        <source>Estimate tax</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../widgets/holdings_menu.py" line="53"/>
-        <source>Portugal</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../widgets/holdings_menu.py" line="56"/>
-        <source>Russia</source>
+        <source>Estimate tax</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -5911,17 +5901,17 @@ This looks like the quantity a rebasing position gained without reporting it, wh
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="213"/>
+        <location filename="../widgets/tax_widget.py" line="225"/>
         <source>Excel files (*.xlsx)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="213"/>
+        <location filename="../widgets/tax_widget.py" line="225"/>
         <source>Save money flow report to:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="243"/>
+        <location filename="../widgets/tax_widget.py" line="255"/>
         <source>Excel money flow report was saved to file </source>
         <translation></translation>
     </message>
@@ -6055,150 +6045,160 @@ This looks like the quantity a rebasing position gained without reporting it, wh
 <context>
     <name>OperationsModel</name>
     <message>
-        <location filename="../db/operations_model.py" line="20"/>
+        <location filename="../db/operations_model.py" line="21"/>
         <source>Timestamp</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="20"/>
+        <location filename="../db/operations_model.py" line="21"/>
         <source>Account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="20"/>
+        <location filename="../db/operations_model.py" line="21"/>
         <source>Notes</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="21"/>
+        <location filename="../db/operations_model.py" line="22"/>
         <source>Amount</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="21"/>
+        <location filename="../db/operations_model.py" line="22"/>
         <source>Balance</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="21"/>
+        <location filename="../db/operations_model.py" line="22"/>
         <source>Currency</source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="../db/operations_model.py" line="92"/>
+        <source>Tax treatment:</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>OperationsWidget</name>
     <message>
-        <location filename="../widgets/operations_widget.py" line="290"/>
+        <location filename="../widgets/operations_widget.py" line="291"/>
         <source>Reconcile</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="292"/>
+        <location filename="../widgets/operations_widget.py" line="293"/>
         <source>Assign tag</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="294"/>
+        <location filename="../widgets/operations_widget.py" line="297"/>
         <source>Copy</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="296"/>
+        <location filename="../widgets/operations_widget.py" line="299"/>
         <source>Delete</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="250"/>
+        <location filename="../widgets/operations_widget.py" line="251"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="183"/>
+        <location filename="../widgets/operations_widget.py" line="184"/>
         <source>Show operations</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="185"/>
+        <location filename="../widgets/operations_widget.py" line="186"/>
         <source>Show positions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="251"/>
+        <location filename="../widgets/operations_widget.py" line="252"/>
         <source>Are you sure to delete selected transaction(s)?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="298"/>
+        <location filename="../widgets/operations_widget.py" line="295"/>
+        <source>Tax treatment…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/operations_widget.py" line="301"/>
         <source>Match cross-chain legs…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="329"/>
+        <location filename="../widgets/operations_widget.py" line="334"/>
         <source>Assign an account…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="330"/>
+        <location filename="../widgets/operations_widget.py" line="335"/>
         <source>Match with another leg…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="331"/>
+        <location filename="../widgets/operations_widget.py" line="336"/>
         <source>Convert into a swap…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="332"/>
+        <location filename="../widgets/operations_widget.py" line="337"/>
         <source>Convert into a bridge…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="334"/>
+        <location filename="../widgets/operations_widget.py" line="339"/>
         <source>Record as a spending or an income…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="406"/>
+        <location filename="../widgets/operations_widget.py" line="417"/>
         <source>Choose account...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="411"/>
+        <location filename="../widgets/operations_widget.py" line="422"/>
         <source>Show accounts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="421"/>
+        <location filename="../widgets/operations_widget.py" line="432"/>
         <source>Use credit limits</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="426"/>
+        <location filename="../widgets/operations_widget.py" line="437"/>
         <source>Group by tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="432"/>
+        <location filename="../widgets/operations_widget.py" line="443"/>
         <source>Balance history chart</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="440"/>
+        <location filename="../widgets/operations_widget.py" line="451"/>
         <source>Expand all</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="443"/>
+        <location filename="../widgets/operations_widget.py" line="454"/>
         <source>Collapse all</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="465"/>
+        <location filename="../widgets/operations_widget.py" line="476"/>
         <source>Please select tag</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="466"/>
+        <location filename="../widgets/operations_widget.py" line="477"/>
         <source>Choose tag to be assigned to selected operations:</source>
         <translation></translation>
     </message>
@@ -6229,7 +6229,7 @@ This looks like the quantity a rebasing position gained without reporting it, wh
     </message>
     <message>
         <location filename="../ui/operations_widget.ui" line="220"/>
-        <location filename="../widgets/operations_widget.py" line="184"/>
+        <location filename="../widgets/operations_widget.py" line="185"/>
         <source>Hide positions</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6240,7 +6240,7 @@ This looks like the quantity a rebasing position gained without reporting it, wh
     </message>
     <message>
         <location filename="../ui/operations_widget.ui" line="395"/>
-        <location filename="../widgets/operations_widget.py" line="186"/>
+        <location filename="../widgets/operations_widget.py" line="187"/>
         <source>Hide operations</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6814,42 +6814,42 @@ Its other record is found by the transaction, but the two accounts are kept in d
 <context>
     <name>PredefinedAccountType</name>
     <message>
-        <location filename="../constants.py" line="268"/>
+        <location filename="../constants.py" line="267"/>
         <source>Cash</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="269"/>
+        <location filename="../constants.py" line="268"/>
         <source>Bank account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="270"/>
+        <location filename="../constants.py" line="269"/>
         <source>Card</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="271"/>
+        <location filename="../constants.py" line="270"/>
         <source>Broker account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="272"/>
+        <location filename="../constants.py" line="271"/>
         <source>Wallet</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="273"/>
+        <location filename="../constants.py" line="272"/>
         <source>Term deposit</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="274"/>
+        <location filename="../constants.py" line="273"/>
         <source>Crypto exchange</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="275"/>
+        <location filename="../constants.py" line="274"/>
         <source>Staking</source>
         <translation></translation>
     </message>
@@ -6857,7 +6857,7 @@ Its other record is found by the transaction, but the two accounts are kept in d
 <context>
     <name>PredefinedAgents</name>
     <message>
-        <location filename="../constants.py" line="194"/>
+        <location filename="../constants.py" line="193"/>
         <source>None</source>
         <translation></translation>
     </message>
@@ -6865,47 +6865,47 @@ Its other record is found by the transaction, but the two accounts are kept in d
 <context>
     <name>PredefinedAsset</name>
     <message>
-        <location filename="../constants.py" line="355"/>
+        <location filename="../constants.py" line="354"/>
         <source>Money</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="356"/>
+        <location filename="../constants.py" line="355"/>
         <source>Shares</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="357"/>
+        <location filename="../constants.py" line="356"/>
         <source>Bonds</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="358"/>
+        <location filename="../constants.py" line="357"/>
         <source>ETFs</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="359"/>
+        <location filename="../constants.py" line="358"/>
         <source>Commodities</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="360"/>
+        <location filename="../constants.py" line="359"/>
         <source>Derivatives</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="361"/>
+        <location filename="../constants.py" line="360"/>
         <source>Forex</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="362"/>
+        <location filename="../constants.py" line="361"/>
         <source>Funds</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="363"/>
+        <location filename="../constants.py" line="362"/>
         <source>Crypto-currency</source>
         <translation></translation>
     </message>
@@ -6913,57 +6913,57 @@ Its other record is found by the transaction, but the two accounts are kept in d
 <context>
     <name>PredefinedCategory</name>
     <message>
-        <location filename="../constants.py" line="214"/>
+        <location filename="../constants.py" line="213"/>
         <source>Income</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="215"/>
+        <location filename="../constants.py" line="214"/>
         <source>Spending</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="216"/>
+        <location filename="../constants.py" line="215"/>
         <source>Profits</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="217"/>
+        <location filename="../constants.py" line="216"/>
         <source>Starting balance</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="218"/>
+        <location filename="../constants.py" line="217"/>
         <source>Fees</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="219"/>
+        <location filename="../constants.py" line="218"/>
         <source>Taxes</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="220"/>
+        <location filename="../constants.py" line="219"/>
         <source>Dividends</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="221"/>
+        <location filename="../constants.py" line="220"/>
         <source>Interest</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="222"/>
+        <location filename="../constants.py" line="221"/>
         <source>Results of investments</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="223"/>
+        <location filename="../constants.py" line="222"/>
         <source>Discounts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="224"/>
+        <location filename="../constants.py" line="223"/>
         <source>Losses</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6971,27 +6971,27 @@ Its other record is found by the transaction, but the two accounts are kept in d
 <context>
     <name>PredefinedTags</name>
     <message>
-        <location filename="../constants.py" line="238"/>
+        <location filename="../constants.py" line="237"/>
         <source>Account type</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="239"/>
+        <location filename="../constants.py" line="238"/>
         <source>Cash</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="240"/>
+        <location filename="../constants.py" line="239"/>
         <source>Bank account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="241"/>
+        <location filename="../constants.py" line="240"/>
         <source>Card</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="242"/>
+        <location filename="../constants.py" line="241"/>
         <source>Broker account</source>
         <translation></translation>
     </message>
@@ -8171,24 +8171,34 @@ Unchecked: it is acquired on the date of this corporate action.</source>
 <context>
     <name>Ru_NDFL3</name>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="57"/>
+        <location filename="../data_export/ru_ndfl3.py" line="58"/>
         <source>3-NDFL template not found for given year: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="86"/>
+        <location filename="../data_export/ru_ndfl3.py" line="87"/>
         <source>Currency is not supported for 3-NDFL: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="108"/>
+        <location filename="../data_export/ru_ndfl3.py" line="109"/>
         <source>Account country is not set, dividend isn&apos;t exported into 3-NDFL </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="115"/>
+        <location filename="../data_export/ru_ndfl3.py" line="116"/>
         <source>Country is not set for asset, dividend isn&apos;t exported into 3-NDFL </source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="../data_export/ru_ndfl3.py" line="282"/>
+        <source>Failed to read de5 file: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_export/ru_ndfl3.py" line="284"/>
+        <source>Unsupported de5 file format: </source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -10796,17 +10806,17 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
 <context>
     <name>SwapTreatment</name>
     <message>
-        <location filename="../constants.py" line="335"/>
+        <location filename="../constants.py" line="334"/>
         <source>Auto</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="336"/>
+        <location filename="../constants.py" line="335"/>
         <source>Sale</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="337"/>
+        <location filename="../constants.py" line="336"/>
         <source>Conversion</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11008,77 +11018,77 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
 <context>
     <name>SymbolId</name>
     <message>
-        <location filename="../constants.py" line="391"/>
+        <location filename="../constants.py" line="390"/>
         <source>UUID</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="392"/>
+        <location filename="../constants.py" line="391"/>
         <source>FIGI</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="393"/>
+        <location filename="../constants.py" line="392"/>
         <source>ISIN</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="394"/>
+        <location filename="../constants.py" line="393"/>
         <source>ITIN</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="395"/>
+        <location filename="../constants.py" line="394"/>
         <source>CUSIP</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="396"/>
+        <location filename="../constants.py" line="395"/>
         <source>Reg.code</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="397"/>
+        <location filename="../constants.py" line="396"/>
         <source>ISO4217 currency code</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="398"/>
+        <location filename="../constants.py" line="397"/>
         <source>ETH address</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="399"/>
+        <location filename="../constants.py" line="398"/>
         <source>ARB address</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="400"/>
+        <location filename="../constants.py" line="399"/>
         <source>SOL address</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="401"/>
+        <location filename="../constants.py" line="400"/>
         <source>TRX address</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="402"/>
+        <location filename="../constants.py" line="401"/>
         <source>HL token id</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="403"/>
+        <location filename="../constants.py" line="402"/>
         <source>HyperEVM address</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="404"/>
+        <location filename="../constants.py" line="403"/>
         <source>AVAX address</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="405"/>
+        <location filename="../constants.py" line="404"/>
         <source>IBKR conid</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11298,21 +11308,36 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <source>Current rate:</source>
         <translation></translation>
     </message>
+    <message>
+        <location filename="../ui/reports/tax_estimation.ui" line="125"/>
+        <source>Base estimation</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>TaxEstimator</name>
     <message>
-        <location filename="../db/tax_estimator.py" line="103"/>
+        <location filename="../db/tax_estimator.py" line="105"/>
         <source>Tax estimation for </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="125"/>
+        <location filename="../db/tax_estimator.py" line="129"/>
         <source>Tax rate not found for: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="171"/>
+        <location filename="../db/tax_estimator.py" line="130"/>
+        <source>No base rate for {year}: the tax column is not estimated</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/tax_estimator.py" line="132"/>
+        <source>Base estimation: {rate} % of the gain at today&apos;s quote and rate, per position and on the total; no other deals offset, no brackets, no exemptions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/tax_estimator.py" line="180"/>
         <source>TOTAL</source>
         <translation></translation>
     </message>
@@ -11320,74 +11345,128 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
 <context>
     <name>TaxEstimatorModel</name>
     <message>
-        <location filename="../db/tax_estimator.py" line="25"/>
+        <location filename="../db/tax_estimator.py" line="31"/>
         <source>Date</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="26"/>
+        <location filename="../db/tax_estimator.py" line="32"/>
         <source>Qty</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="27"/>
+        <location filename="../db/tax_estimator.py" line="33"/>
         <source>Open</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="28"/>
+        <location filename="../db/tax_estimator.py" line="34"/>
         <source>Rate, </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="29"/>
-        <location filename="../db/tax_estimator.py" line="30"/>
+        <location filename="../db/tax_estimator.py" line="35"/>
+        <location filename="../db/tax_estimator.py" line="36"/>
         <source>Profit, </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/tax_estimator.py" line="31"/>
+        <location filename="../db/tax_estimator.py" line="37"/>
         <source>Tax, </source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="../db/tax_estimator.py" line="37"/>
+        <source> (base estimation)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>TaxMergeDialog</name>
     <message>
-        <location filename="../widgets/tax_widget.py" line="264"/>
+        <location filename="../widgets/tax_widget.py" line="276"/>
         <source>Select tax file to merge</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="265"/>
-        <location filename="../widgets/tax_widget.py" line="280"/>
+        <location filename="../widgets/tax_widget.py" line="277"/>
+        <location filename="../widgets/tax_widget.py" line="292"/>
         <source>Declaration files (*.de5)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="279"/>
+        <location filename="../widgets/tax_widget.py" line="291"/>
         <source>Select file to save merged result</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="292"/>
+        <location filename="../widgets/tax_widget.py" line="304"/>
         <source>de5 files merged successfully: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="294"/>
+        <location filename="../widgets/tax_widget.py" line="306"/>
         <source>Merge de5</source>
         <translation></translation>
     </message>
+</context>
+<context>
+    <name>TaxOverride</name>
     <message>
-        <location filename="../widgets/tax_widget.py" line="305"/>
-        <source>Failed to read de5 file: </source>
-        <translation></translation>
+        <location filename="../db/tax_override.py" line="22"/>
+        <source>Not a tax event</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="307"/>
-        <source>Unsupported de5 file format: </source>
-        <translation></translation>
+        <location filename="../db/tax_override.py" line="23"/>
+        <source>Tax treaty applies</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/tax_override.py" line="24"/>
+        <source>No tax treaty</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>TaxOverrideDialog</name>
+    <message>
+        <location filename="../widgets/tax_override_dialog.py" line="23"/>
+        <source>Tax treatment</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/tax_override_dialog.py" line="28"/>
+        <source>Jurisdiction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/tax_override_dialog.py" line="29"/>
+        <source>Decision</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/tax_override_dialog.py" line="30"/>
+        <source>Note, printed in the report</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/tax_override_dialog.py" line="37"/>
+        <source>As the report decides</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>TaxParameters</name>
+    <message>
+        <location filename="../data_export/tax_parameters.py" line="27"/>
+        <source>Can&apos;t load tax report parameters from file </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_export/tax_parameters.py" line="50"/>
+        <source>There are no information about tax treaty in tax report parameters</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -11398,23 +11477,13 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/taxes.py" line="114"/>
+        <location filename="../data_export/taxes.py" line="120"/>
         <source>No report template found for section: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/taxes.py" line="127"/>
-        <source>Can&apos;t load tax report parameters from file </source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../data_export/taxes.py" line="130"/>
+        <location filename="../data_export/taxes.py" line="153"/>
         <source>There are no parameters found for tax report year: </source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../data_export/taxes.py" line="325"/>
-        <source>There are no information about tax treaty in tax report parameters</source>
         <translation></translation>
     </message>
 </context>
@@ -11535,97 +11604,112 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="92"/>
+        <location filename="../widgets/tax_widget.py" line="88"/>
         <source>Save tax reports to:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="92"/>
+        <location filename="../widgets/tax_widget.py" line="88"/>
         <source>Excel files (*.xlsx)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="95"/>
+        <location filename="../widgets/tax_widget.py" line="91"/>
         <source>Save tax form to:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="95"/>
+        <location filename="../widgets/tax_widget.py" line="91"/>
         <source>Tax form (*.de{last_digit})</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="97"/>
+        <location filename="../widgets/tax_widget.py" line="93"/>
         <source>Save IRS Modelo 3 tax data to:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="97"/>
+        <location filename="../widgets/tax_widget.py" line="93"/>
         <source>XML files (*.xml)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="126"/>
+        <location filename="../widgets/tax_widget.py" line="123"/>
         <source>Selected account isn&apos;t bound to a broker or broker name isn&apos;t set. Tax form export may be incomplete.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="129"/>
+        <location filename="../widgets/tax_widget.py" line="126"/>
         <source>Warning</source>
         <translation></translation>
     </message>
     <message>
+        <location filename="../widgets/tax_widget.py" line="132"/>
+        <source>There are no tax parameters for {year}: no tax treaty is assumed and no tax is estimated</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../widgets/tax_widget.py" line="135"/>
+        <source>The tax parameters (treaties, base rates) were last reviewed for {reviewed}; {year} uses the latest values known - check them against the law</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/tax_widget.py" line="141"/>
+        <source>Tax parameters</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/tax_widget.py" line="146"/>
         <source>Data are incomplete</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="136"/>
+        <location filename="../widgets/tax_widget.py" line="147"/>
         <source>You haven&apos;t selected an account for tax report</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="145"/>
+        <location filename="../widgets/tax_widget.py" line="156"/>
         <source>The report needs these quotes or official currency rates, add them and save it again:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="147"/>
+        <location filename="../widgets/tax_widget.py" line="158"/>
         <source>Quotes are missing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="150"/>
+        <location filename="../widgets/tax_widget.py" line="161"/>
         <source>Tax report is empty</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="166"/>
+        <location filename="../widgets/tax_widget.py" line="177"/>
         <source>Excel tax report was saved to file </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="169"/>
+        <location filename="../widgets/tax_widget.py" line="180"/>
         <source>Official currency rates look missing in the database; these operations were converted at an older rate (pair: rate date - latest operation):</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="171"/>
+        <location filename="../widgets/tax_widget.py" line="182"/>
         <source>Download the rates and save the report again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="173"/>
+        <location filename="../widgets/tax_widget.py" line="184"/>
         <source>Currency rates are not up to date</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="188"/>
+        <location filename="../widgets/tax_widget.py" line="200"/>
         <source>Tax report saved to file </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="190"/>
+        <location filename="../widgets/tax_widget.py" line="202"/>
         <source>Can&apos;t write tax form into file </source>
         <translation></translation>
     </message>
@@ -11677,37 +11761,37 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
 <context>
     <name>TokenList</name>
     <message>
-        <location filename="../constants.py" line="739"/>
+        <location filename="../constants.py" line="738"/>
         <source>Jupiter verified tokens</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="740"/>
+        <location filename="../constants.py" line="739"/>
         <source>Uniswap default list</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="741"/>
+        <location filename="../constants.py" line="740"/>
         <source>CoinGecko token list</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="742"/>
+        <location filename="../constants.py" line="741"/>
         <source>DappRadar tokens blacklist</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="743"/>
+        <location filename="../constants.py" line="742"/>
         <source>MyEtherWallet token list</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="744"/>
+        <location filename="../constants.py" line="743"/>
         <source>CoinGecko Tron token list</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="745"/>
+        <location filename="../constants.py" line="744"/>
         <source>CoinGecko Avalanche token list</source>
         <translation></translation>
     </message>
@@ -11715,12 +11799,12 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
 <context>
     <name>TokenListKind</name>
     <message>
-        <location filename="../constants.py" line="721"/>
+        <location filename="../constants.py" line="720"/>
         <source>Allow-list</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../constants.py" line="722"/>
+        <location filename="../constants.py" line="721"/>
         <source>Block-list</source>
         <translation></translation>
     </message>
@@ -12999,7 +13083,7 @@ A zero may well be right. If it isn&apos;t, open this transfer in the operations
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/xlsx.py" line="179"/>
+        <location filename="../data_export/xlsx.py" line="183"/>
         <source>Unrecognized format string: </source>
         <translation></translation>
     </message>

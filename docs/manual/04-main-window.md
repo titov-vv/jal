@@ -198,6 +198,9 @@ These sit to the right of the editor. With the editor hidden, the shortcuts open
 
 * **Reconcile** — mark the account as checked up to this operation (see next chapter).
 * **Assign tag** — put a tag on every line of the operation at once.
+* **Tax treatment…** — your decision on how a country's tax report treats this operation; an
+  operation that has one shows the tax icon at the end of its notes. See
+  [chapter 11](11-taxes.md#your-decisions-tax-treatment).
 * **Copy**, **Delete** — the same as the buttons.
 
 Two more entries appear only where they mean something: **Match cross-chain legs…** for a crypto

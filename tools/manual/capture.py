@@ -324,12 +324,31 @@ def capture_tax_windows(window):
         QApplication.processEvents()
         save(widget, name)
         widget.close()
+    capture_tax_treatment(window)
     flow = MoneyFlowWidget(window.ui.windowArea)
     flow.resize(720, 200)
     flow.show()
     QApplication.processEvents()
     save(flow, "tax_money_flow")
     flow.close()
+
+
+# The tax treatment dialog on the first ACME dividend, with a decision for Russia filled in and cancelled, not saved
+def capture_tax_treatment(window):
+    from jal.db.db import JalDB
+    from jal.db.operations import LedgerTransaction, AssetPayment
+    from jal.widgets.tax_override_dialog import TaxOverrideDialog
+    oid = JalDB._read("SELECT oid FROM asset_payments WHERE type=:dividend ORDER BY timestamp LIMIT 1",
+                      [(":dividend", AssetPayment.Dividend)])
+    dialog = TaxOverrideDialog(LedgerTransaction.AssetPayment, oid, window)
+    decision, note = dialog._rows['ru']
+    decision.setCurrentIndex(3)   # No tax treaty
+    note.setText("Withheld at 30 %: the broker lost its treaty status")
+    dialog.adjustSize()
+    dialog.show()
+    QApplication.processEvents()
+    save(dialog, "dlg_tax_treatment")
+    dialog.reject()
 
 
 # The price chart and the tax estimate are opened from the portfolio report, on the row of one position.
@@ -344,7 +363,7 @@ def capture_position_windows(window):
     chart.close()
 
     estimator = TaxEstimator('pt', 4, 4, 15)   # 15 shares of ACME held on the trading account
-    window.ui.windowArea.addWindow(estimator, floating=True, size=(900, 300))
+    window.ui.windowArea.addWindow(estimator, floating=True, size=(1000, 300))   # as holdings_menu opens it
     QApplication.processEvents()
     save(estimator, "tax_estimate")
     estimator.close()

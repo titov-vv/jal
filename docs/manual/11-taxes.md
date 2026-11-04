@@ -36,14 +36,14 @@ deals are matched, which rate is used, what counts as the cost.
 | Portugal | Russia | What is on it |
 |---|---|---|
 | Summary | Сводка | The totals of the report, with links to the other sheets — see below. |
-| Dividends | Дивиденды | Dividends and the tax withheld at source. |
+| Dividends | Дивиденды | Dividends and the tax withheld at source. The Russian sheet adds the tax still to pay, as a [base estimation](#base-estimation). |
 | Shares | Акции | Sales of shares and funds. |
 | — | Облигации | Bond sales, redemptions and coupons; the price is per bond, in the trade's currency. |
 | — | ПФИ | Derivatives. |
 | Crypto | Криптовалюты | Crypto deals. In Portugal only a sale for money; in Russia every exchange of one coin for another as well. |
 | Crypto income | Криптодоход | Staking rewards, lending interest and other crypto received as income, valued on the day it arrived. Portugal lists it for information only: it opens a lot at zero cost and is taxed when sold. |
 | Fees | Комиссии | Fees not linked to a deal — depositary (ADR) fees, position financing, other asset fees — grouped by kind. |
-| Interest | Проценты | Interest the broker paid. |
+| Interest | Проценты | Interest the broker paid. The Russian sheet adds the tax on it, as a [base estimation](#base-estimation). |
 | Not covered | Не отражено | Everything taxable that no other sheet shows — see below. |
 
 **The cost of a deal is what was paid, in the currency it was paid in.** Moving shares or coins
@@ -62,6 +62,10 @@ the ones to read before filing:
   or a deal in a fund. They are listed on **Not covered** so that nothing disappears silently;
   how to declare them is up to you.
 * **Rows marked "pending replay"** — see below.
+
+Below the counts come the [base estimations](#base-estimation) of tax, one line per sheet that has one,
+then any warning — rates probably missing, [parameters](#tax-parameters) not reviewed for the year — and
+last the list of [your decisions](#your-decisions-tax-treatment) the report applied.
 
 ### Pending replay
 
@@ -86,6 +90,58 @@ currency, its last rate stays the valid one — the ECB's rouble rate of 1 March
   were not downloaded), the rate is probably missing. JAL still makes the report on the older rate,
   but warns of it in a message and on the Summary sheet; download the rates and save the report
   again. A currency the bank froze while still publishing the others is no warning.
+
+### Tax parameters
+
+What a report needs to know about the law of a year — which countries have a tax treaty with the
+jurisdiction, the base tax rate of each kind of income — comes from a parameter file shipped with JAL,
+one per country. Each value holds from the year it starts to apply until the year it changes, and the
+file says up to which year it was last **reviewed** against the official sources.
+
+* A report for a year **after** the review is still made, with the latest values known; a line on the
+  Summary sheet and in the message after saving says so. The law may have changed since — check.
+* A report for a year **before** the file begins assumes no treaty and computes no base estimation;
+  the Summary sheet and the message say that too. The Russian file starts in 2020.
+
+### Base estimation
+
+Some figures are JAL's estimate rather than a fact from the broker: in the Russian report, the
+dividend tax still to pay and the tax on interest; and the tax column of the
+[tax estimate](06-investments.md#what-a-sale-would-cost-in-tax) window. Each of them is a **base
+estimation**: the base rate of the year from the [parameters](#tax-parameters), applied to the income
+and nothing more —
+
+* no progressive bracket, no deduction, no netting with other sheets or other accounts;
+* for a dividend, the tax withheld abroad is subtracted only where a tax treaty applies, and never
+  below zero.
+
+It is printed in italics on a pale amber background, the column header says *базовая оценка* /
+*base estimation*, a line under the sheet's title states the rate, and the Summary sheet adds the
+estimations up per sheet. It is a guide to the order of the amount, **not** the tax you owe: the
+declaration computes that.
+
+### Your decisions (tax treatment)
+
+JAL's rules cannot know everything about an operation: a "dividend" that was really a return of
+capital, a dividend on which the broker could not apply the treaty. Right-click the operation in the
+operations list and choose **Tax treatment…**:
+
+![The tax treatment dialog](img/dlg_tax_treatment.png)
+
+There is one row per country. Choose a decision and write a note — the note is required, as it is
+printed in the report next to the decision:
+
+* **Not a tax event** — that country's report leaves the operation out of its sheet and its totals,
+  and lists it last on **Not covered** with your note.
+* **Tax treaty applies** / **No tax treaty** — offered for dividends only: that country's report
+  takes your answer instead of its treaty list, for the treaty column and for the
+  [base estimation](#base-estimation).
+* **As the report decides** — removes the decision.
+
+A decision belongs to one country: the other country's report does not see it. An operation that has
+one shows the tax icon at the right end of its notes in the operations list, and the decisions in the
+tooltip of its first three columns. Each report lists every decision it applied at the end of its
+Summary sheet.
 
 ### The country options
 
@@ -131,7 +187,8 @@ with **+**, name the output file, press OK.
 * **Download prices and rates for the whole year first.** Every conversion uses a rate JAL has
   stored: a missing one stops the report, a probably missing one gives a warning (see
   [Currency rates](#currency-rates)). See [chapter 9](09-importing.md).
-* **Read the Summary sheet**, and the **Not covered** one if it is there.
+* **Read the Summary sheet**, and the **Not covered** one if it is there — including its warnings
+  about [parameters](#tax-parameters) and the list of [your decisions](#your-decisions-tax-treatment).
 * **Check that the account reconciles.** If JAL's closing balance matches your broker's, the
   underlying data is probably complete.
 * **Check the corporate actions.** JAL refuses to build the ledger past a corporate action whose

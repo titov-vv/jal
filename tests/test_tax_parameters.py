@@ -102,3 +102,20 @@ def test_dialog_saves_the_selected_jurisdiction(prepare_db_taxes, tmp_path, monk
     widget.ui.XlsFileName.setText(str(tmp_path / "report.xlsx"))
     widget.SaveReport()
     assert openpyxl.load_workbook(tmp_path / "report.xlsx").sheetnames[0] == first_sheet
+
+
+# A year past the review, or before the file, is warned of in a message after saving as well as on the Summary sheet
+@pytest.mark.parametrize("year, expected", [(2025, None), (2027, "last reviewed for 2026"), (2019, "no tax parameters")])
+def test_dialog_warns_of_parameters(prepare_db_taxes, tmp_path, monkeypatch, year, expected):
+    _us_dividend(year)
+    warnings = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda _self, _parent, title, text, *args: warnings.append(text) or QMessageBox.Ok)
+    JalIcon()
+    parent = QWidget()
+    widget = TaxWidget(parent)
+    widget.ui.Year.setValue(year)
+    widget.ui.Country.setCurrentIndex(widget.ui.Country.findData('ru'))
+    widget.ui.XlsFileName.setText(str(tmp_path / "report.xlsx"))
+    widget.SaveReport()
+    parameter_warnings = [x for x in warnings if "parameters" in x]
+    assert parameter_warnings == [] if expected is None else expected in parameter_warnings[0]
