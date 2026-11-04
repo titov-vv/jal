@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 import pytest
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_fifo
@@ -44,6 +45,14 @@ def test_tax_estimator_uses_the_adjusted_position(split_position):
     assert positions[0]['tax'] == Decimal('6500')                    # 13% of it
     assert positions[1]['qty'] == Decimal('5')                       # TOTAL of the single position
     assert positions[1]['o_price'] == Decimal('400')
+    # the tax column is a base estimation: labelled, italic on a tint, explained under the table
+    model = estimator.model
+    assert model.headerData(6, Qt.Horizontal).endswith("(base estimation)")
+    assert model.data(model.index(0, 6), Qt.FontRole).italic()
+    assert not model.data(model.index(0, 5), Qt.FontRole).italic()
+    assert model.data(model.index(0, 6), Qt.BackgroundRole) is not None
+    assert model.data(model.index(0, 5), Qt.BackgroundRole) is None
+    assert "13 %" in estimator.ui.EstimateLbl.text()
 
 
 # The chart marks the position where it really sits: 5 shares at 400, on the price series of B.

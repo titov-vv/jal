@@ -231,7 +231,7 @@
       "rate": 72.7171,
       "amount": 136.53,
       "amount_rub": 9928.07,
-      "tax_rub": 1290.65,
+      "tax2pay": 1290.65,
       "description": "SRNGU(G8354H100) CASH and STOCK MERGER (Acquisition) DNA WS 1 FOR 5, US37611X1000 1 FOR 1 AND USD 1.23 (DNA WS, DNA 01AUG26 11.5 C, US37611X1182)",
       "note": ""
     },
@@ -239,7 +239,7 @@
       "report_template": "totals",
       "amount": 136.53,
       "amount_rub": 9928.07,
-      "tax_rub": 1290.65
+      "tax2pay": 1290.65
     }
   ],
   "Сводка": [
@@ -335,6 +335,15 @@
       "label": "Строк «ожидает пересчёта»",
       "count": 0,
       "link": ""
+    },
+    {
+      "report_template": "estimates",
+      "title": "Базовая оценка налога - не сумма к уплате (без прогрессивной шкалы, вычетов и сальдирования)"
+    },
+    {
+      "report_template": "estimate",
+      "label": "Проценты",
+      "amount": 1290.65
     }
   ],
   "Не отражено": [],

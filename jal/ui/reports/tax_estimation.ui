@@ -119,6 +119,16 @@
      </attribute>
     </widget>
    </item>
+   <item>
+    <widget class="QLabel" name="EstimateLbl">
+     <property name="text">
+      <string>Base estimation</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <tabstops>

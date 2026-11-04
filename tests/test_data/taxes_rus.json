@@ -512,7 +512,7 @@
          "rate": 68.9831,
          "amount": 1.5,
          "amount_rub": 103.47,
-         "tax_rub": 13.45,
+         "tax2pay": 13.45,
          "description": "RUB CREDIT INT FOR MAY-2020",
          "note": ""
       },
@@ -520,7 +520,7 @@
          "report_template": "totals",
          "amount": 1.5,
          "amount_rub": 103.47,
-         "tax_rub": 13.45
+         "tax2pay": 13.45
       }
    ],
    "Сводка": [
@@ -656,6 +656,25 @@
          "label": "Строк «ожидает пересчёта»",
          "count": 0,
          "link": ""
+      },
+      {
+         "report_template": "estimates",
+         "title": "Базовая оценка налога - не сумма к уплате (без прогрессивной шкалы, вычетов и сальдирования)"
+      },
+      {
+         "report_template": "estimate",
+         "label": "Дивиденды",
+         "amount": 362.71
+      },
+      {
+         "report_template": "estimate",
+         "label": "Проценты",
+         "amount": 13.45
+      },
+      {
+         "report_template": "estimate",
+         "label": "Итого базовая оценка",
+         "amount": 376.16
       }
    ],
    "Не отражено": [],

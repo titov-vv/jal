@@ -18,6 +18,7 @@ from jal.data_export.tax_parameters import TaxParameters, TAX_TREATY
 REPORT_METHOD = 0
 REPORT_TEMPLATE = 1
 RATES_GAP = 14 * 86400   # how much older than its date a rate may be before it is warned of (holidays differ)
+ESTIMATE = 'tax2pay'     # the field of a row that holds a base estimation of the tax
 
 
 # Raised when a report can't be produced as asked; 'missing' lists (symbol, timestamp) of every quote that stopped it
@@ -321,6 +322,7 @@ class TaxReport:
             link = self.uncovered_section[0] if count else ''   # an empty section makes no sheet to link to
             rows.append({'report_template': "count", 'label': label, 'count': count, 'link': link})
         rows.append({'report_template': "count", 'label': self.texts['pending_total'], 'count': pending, 'link': ''})
+        rows += self._estimate_rows(sections)
         day = lambda x: datetime.fromtimestamp(x, tz=timezone.utc).strftime('%d.%m.%Y')
         if self.parameters.value(TAX_TREATY) is None:
             rows.append({'report_template': "warning", 'warning': self.texts['parameters_missing'].format(
@@ -334,6 +336,20 @@ class TaxReport:
                          'warning': self.texts['rates_missing'].format(pair=pair, rate=day(quoted), latest=day(latest))})
         rows += self._decision_rows()
         return rows
+
+    # The base estimation of each section that has one, and their sum when there are several
+    def _estimate_rows(self, sections: dict) -> list:
+        estimates = []
+        for name, section in sections.items():
+            totals = [x for x in section if x['report_template'] == "totals"]
+            if totals and totals[0].get(ESTIMATE) is not None:
+                estimates.append({'report_template': "estimate", 'label': name, 'amount': totals[0][ESTIMATE]})
+        if not estimates:
+            return []
+        if len(estimates) > 1:
+            estimates.append({'report_template': "estimate", 'label': self.texts['estimate_total'],
+                              'amount': sum(x['amount'] for x in estimates)})
+        return [{'report_template': "estimates", 'title': self.texts['estimates']}] + estimates
 
     # The overrides this report applied: a title line, then one line per operation and kind, oldest first
     def _decision_rows(self) -> list:
@@ -356,6 +372,11 @@ class TaxReport:
     def base_estimate(self, kind: str, base: Decimal):
         rate = self.parameters.rate(kind)
         return None if rate is None else rate * base
+
+    # States under the section's title how its base estimation was made, if any of its rows has one
+    def add_estimate_header(self, rows: list, text: str, kind: str):
+        if any(x.get(ESTIMATE) is not None for x in rows):
+            self.add_header(text.format(rate=format((self.parameters.rate(kind) * 100).normalize(), 'f')))
 
     # True if a tax treaty with the country covers the operation: the user's decision on it first, then the parameters
     def has_tax_treaty_with(self, country_code: str, operation) -> bool:

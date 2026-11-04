@@ -4,7 +4,7 @@
   "headers": [
       "Период: {parameters[period]}",
       "Номер счета: {parameters[account]}",
-      "Итоги разделов в том виде, как они есть в отчёте; без взаимозачёта между разделами и без расчёта налога"
+      "Итоги разделов в том виде, как они есть в отчёте; без взаимозачёта между разделами; налог - только базовая оценка"
     ],
   "columns": [
     {"name": "Раздел", "width": 30},
@@ -27,6 +27,15 @@
     "rows": [["warning", null, null]],
     "formats": [["T:B", null, null]],
     "span": [[{"h": 2, "v": 0}, null, null]]
+  },
+  "estimates": {
+    "rows": [["title", null, null]],
+    "formats": [["T:B", null, null]],
+    "span": [[{"h": 2, "v": 0}, null, null]]
+  },
+  "estimate": {
+    "rows": [["", "label", "amount"]],
+    "formats": [["T", "T", "Ne:2"]]
   },
   "decisions": {
     "rows": [["title", null, null]],

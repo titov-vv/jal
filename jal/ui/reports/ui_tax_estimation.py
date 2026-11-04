@@ -89,6 +89,12 @@ class Ui_TaxEstimationDialog(object):
 
         self.verticalLayout.addWidget(self.DealsView)
 
+        self.EstimateLbl = QLabel(TaxEstimationDialog)
+        self.EstimateLbl.setObjectName(u"EstimateLbl")
+        self.EstimateLbl.setWordWrap(True)
+
+        self.verticalLayout.addWidget(self.EstimateLbl)
+
 
         self.retranslateUi(TaxEstimationDialog)
 
@@ -101,5 +107,6 @@ class Ui_TaxEstimationDialog(object):
         self.QuoteLbl.setText(QCoreApplication.translate("TaxEstimationDialog", u"X.XX", None))
         self.CurrentRateLbl.setText(QCoreApplication.translate("TaxEstimationDialog", u"Current rate:", None))
         self.RateLbl.setText(QCoreApplication.translate("TaxEstimationDialog", u"X.XX", None))
+        self.EstimateLbl.setText(QCoreApplication.translate("TaxEstimationDialog", u"Base estimation", None))
     # retranslateUi
 

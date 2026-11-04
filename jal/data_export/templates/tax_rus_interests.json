@@ -13,24 +13,24 @@
     {"name": "Курс {parameters[currency]}/RUB на дату выплаты", "width": 10},
     {"name": "Сумма, {parameters[currency]}", "width": 10},
     {"name": "Доход, RUB (код 1011)", "width": 10},
-    {"name": "Налог, RUB", "width": 10},
+    {"name": "Налог к уплате, RUB (базовая оценка)", "width": 14},
     {"name": "Примечание", "width": 25}
   ],
   "columns_numbered": true,
   "interest": {
     "rows": [
-      ["description", "payment_date", "rate", "amount", "amount_rub", "tax_rub", "note"]
+      ["description", "payment_date", "rate", "amount", "amount_rub", "tax2pay", "note"]
     ],
     "formats": [
-      ["T", "D", "N:4", "N:2", "N:2", "N:2", "T"]
+      ["T", "D", "N:4", "N:2", "N:2", "Ne:2", "T"]
     ]
   },
   "totals": {
     "rows": [
-      [null, null, "ИТОГО", "amount", "amount_rub", "tax_rub", null]
+      [null, null, "ИТОГО", "amount", "amount_rub", "tax2pay", null]
     ],
     "formats": [
-      [null, null, "F", "F", "F", "F", null]
+      [null, null, "F", "F", "F", "Fe", null]
     ]
   },
   "footers": [
@@ -40,6 +40,6 @@
     "3 - Официальный курс валюты,  установленный ЦБ РФ на дату платежа",
     "4 - Сумма платежа в валюте счёта",
     "5 - Сумма дохода в рублях (= Столбец 3 * Столбец 4)",
-    "6 - Сумма налога к уплате (13% от столбца 5)"
+    "6 - Базовая оценка налога к уплате (базовая ставка от столбца 5)"
   ]
 }

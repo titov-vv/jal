@@ -167,8 +167,12 @@ class XLSX:
             # itself reaches here already read on that jurisdiction's clock - see TaxReport._moment().
             value = datetime.fromtimestamp(value, tz=timezone.utc).strftime(TAX_REPORT_DATE_FORMAT)
             return value, self.formats.Text(even_odd)
+        elif format_string.startswith('Ne'):   # 'e' marks a base estimation
+            return value, self.formats.Number(tolerance=int(format_string[3:]), estimate=True)
         elif format_string[0] == 'N':
             return value, self.formats.Number(even_odd, tolerance=int(format_string[2:]))
+        elif format_string == 'Fe':
+            return value, self.formats.ColumnFooter(estimate=True)
         elif format_string[0] == 'F':
             return value, self.formats.ColumnFooter()
         elif format_string[0] == 'L':
@@ -192,6 +196,7 @@ class xslxFormat:
         self.wbk = workbook
         self.even_color_bg = '#C0C0C0'
         self.odd_color_bg = '#FFFFFF'
+        self.estimate_color_bg = '#FFF2CC'
         self.text_font_size = 9
 
     def Bold(self):
@@ -208,9 +213,10 @@ class xslxFormat:
                                     'font_color': '#FFFFFF',
                                     'border': 1})
 
-    def ColumnFooter(self):
+    def ColumnFooter(self, estimate=False):
         return self.wbk.add_format({'font_size': self.text_font_size,
                                     'bold': True,
+                                    'italic': estimate,
                                     'num_format': '#,###,##0.00',
                                     'bg_color': '#808080',
                                     'font_color': '#FFFFFF',
@@ -233,8 +239,11 @@ class xslxFormat:
     def CommentText(self):
         return self.wbk.add_format({'font_size': self.text_font_size, 'valign': 'vcenter'})
 
-    def Number(self, even_odd_value=1, tolerance=2, center=False):
-        if even_odd_value % 2:
+    # 'estimate' marks a base estimation: italic on its own pale fill, whatever the row's stripe
+    def Number(self, even_odd_value=1, tolerance=2, center=False, estimate=False):
+        if estimate:
+            bg_color = self.estimate_color_bg
+        elif even_odd_value % 2:
             bg_color = self.odd_color_bg
         else:
             bg_color = self.even_color_bg
@@ -248,6 +257,7 @@ class xslxFormat:
         else:
             align = 'right'
         return self.wbk.add_format({'font_size': self.text_font_size,
+                                    'italic': estimate,
                                     'num_format': num_format,
                                     'border': 1,
                                     'align': align,

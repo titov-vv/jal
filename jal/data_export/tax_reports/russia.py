@@ -21,6 +21,12 @@ class TaxesRussia(TaxReport):
         'skipped_total': "Пропущено по правилу юрисдикции",
         'uncovered_total': "Не отражено ни в одном разделе",
         'pending_total': "Строк «ожидает пересчёта»",
+        'estimate_dividend': "Налог к уплате - базовая оценка (курсив на цветном фоне): {rate} % от дохода, за вычетом "
+                             "налога, удержанного за рубежом, только при наличии СОИДН; без прогрессивной шкалы и вычетов",
+        'estimate_interest': "Налог к уплате - базовая оценка (курсив на цветном фоне): {rate} % от дохода; без "
+                             "прогрессивной шкалы и вычетов",
+        'estimates': "Базовая оценка налога - не сумма к уплате (без прогрессивной шкалы, вычетов и сальдирования)",
+        'estimate_total': "Итого базовая оценка",
         'excluded': "Решение пользователя - не налоговое событие в РФ: {}",
         'decisions': "Решения пользователя, применённые в этом отчёте (переопределение налогового режима)",
         'override_excluded': "Не налоговое событие",
@@ -151,6 +157,7 @@ class TaxesRussia(TaxReport):
             }
             dividends_report.append(line)
             self.mark_printed(dividend)
+        self.add_estimate_header(dividends_report, self.texts['estimate_dividend'], TaxParameters.DIVIDEND)
         self.insert_totals(dividends_report, ["amount", "amount_rub", "tax", "tax_rub", "tax2pay"])
         return dividends_report
 
@@ -582,7 +589,7 @@ class TaxesRussia(TaxReport):
                     'rate': rate,
                     'amount': amount,
                     'amount_rub': round(amount * rate, 2),
-                    'tax_rub': self._interest_tax(amount * rate),
+                    'tax2pay': self._interest_tax(amount * rate),
                     'description': interest['note'],
                     'note': ''
                 }
@@ -602,11 +609,12 @@ class TaxesRussia(TaxReport):
                 'rate': rate,
                 'amount': payment['amount'],
                 'amount_rub': round(payment['amount'] * rate, 2),
-                'tax_rub': self._interest_tax(payment['amount'] * rate),
+                'tax2pay': self._interest_tax(payment['amount'] * rate),
                 'description': payment['note'],
                 'note': ''
             }
             interests_report.append(line)
             self.mark_printed_id(LedgerTransaction.CorporateAction, payment['oid'])
-        self.insert_totals(interests_report, ["amount", "amount_rub", "tax_rub"])
+        self.add_estimate_header(interests_report, self.texts['estimate_interest'], TaxParameters.INTEREST)
+        self.insert_totals(interests_report, ["amount", "amount_rub", "tax2pay"])
         return interests_report

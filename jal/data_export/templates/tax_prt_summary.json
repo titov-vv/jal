@@ -28,6 +28,15 @@
     "formats": [["T:B", null, null]],
     "span": [[{"h": 2, "v": 0}, null, null]]
   },
+  "estimates": {
+    "rows": [["title", null, null]],
+    "formats": [["T:B", null, null]],
+    "span": [[{"h": 2, "v": 0}, null, null]]
+  },
+  "estimate": {
+    "rows": [["", "label", "amount"]],
+    "formats": [["T", "T", "Ne:2"]]
+  },
   "decisions": {
     "rows": [["title", null, null]],
     "formats": [["T:B", null, null]],

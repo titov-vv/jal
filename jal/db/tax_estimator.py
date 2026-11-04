@@ -5,6 +5,7 @@ from decimal import Decimal
 import pandas as pd
 from PySide6.QtCore import Qt, QAbstractTableModel
 from PySide6.QtGui import QFont
+from PySide6.QtWidgets import QStyle
 from jal.constants import PredefinedAsset, Setup
 from jal.db.account import JalAccount
 from jal.db.clock import today_finish
@@ -14,11 +15,13 @@ from jal.ui.reports.ui_tax_estimation import Ui_TaxEstimationDialog
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.helpers import ts2d, set_grids_metrics, restore_columns
 from jal.widgets.delegates import FloatDelegate
+from jal.widgets.theme import Theme, Meaning
 from jal.data_export.tax_parameters import TaxParameters
 from jal.data_export.taxes import TaxReport
 
 
 class TaxEstimatorModel(QAbstractTableModel):
+    TAX_COLUMN = 6   # a base estimation, marked as such
     def __init__(self, parent_view, data, currency, tax_currency):
         super().__init__(parent_view)
         self._view = parent_view
@@ -31,7 +34,7 @@ class TaxEstimatorModel(QAbstractTableModel):
                          self.tr("Rate, ") + self._currency + "/" + self._tax_currency,
                          self.tr("Profit, ") + self._currency,
                          self.tr("Profit, ") + self._tax_currency,
-                         self.tr("Tax, ") + self._tax_currency]
+                         self.tr("Tax, ") + self._tax_currency + self.tr(" (base estimation)")]
         self._float_delegate2 = None
         self._float_delegate4 = None
 
@@ -51,10 +54,12 @@ class TaxEstimatorModel(QAbstractTableModel):
                 else:
                     return int(Qt.AlignRight | Qt.AlignVCenter)
             elif role == Qt.FontRole:
-                if index.row() == (self._data.shape[0] - 1):
-                    bold = QFont()
-                    bold.setBold(True)
-                    return bold
+                font = QFont(self._view.font())
+                font.setBold(index.row() == (self._data.shape[0] - 1))
+                font.setItalic(index.column() == self.TAX_COLUMN)
+                return font
+            elif role == Qt.BackgroundRole and index.column() == self.TAX_COLUMN:
+                return Theme.tint(Meaning.WARNING)
         return None
 
     def headerData(self, col, orientation, role=Qt.DisplayRole):
@@ -72,6 +77,9 @@ class TaxEstimatorModel(QAbstractTableModel):
                 self._view.setItemDelegateForColumn(i, self._float_delegate2)
             else:
                 self._view.setItemDelegateForColumn(i, self._float_delegate4)
+        header = self._view.horizontalHeader()
+        self._view.setColumnWidth(self.TAX_COLUMN, max(120, header.fontMetrics().horizontalAdvance(
+            self._columns[self.TAX_COLUMN]) + 2 * header.style().pixelMetric(QStyle.PM_HeaderMargin) + 8))
         restore_columns(self._view, Setup.COLUMNS_STATE_PREFIX)
 
 
@@ -99,12 +107,14 @@ class TaxEstimator(MdiWidget):
         self.quote = 0
         self.rate = 1
         self.currency_name = ''
+        self.estimate_note = ''
         self.prepare_tax()
         if self.dataframe is None:
             return
 
         self.ui.QuoteLbl.setText(f"{self.quote:.4f}")
         self.ui.RateLbl.setText(f"{self.rate:.4f} {self.currency_name}/{self.tax_currency_symbol}")
+        self.ui.EstimateLbl.setText(self.estimate_note)
 
         self.model = TaxEstimatorModel(self.ui.DealsView, self.dataframe, self.currency_name, self.tax_currency_symbol)
         self.ui.DealsView.setModel(self.model)
@@ -112,10 +122,16 @@ class TaxEstimator(MdiWidget):
         self.ready = True
 
     def prepare_tax(self):
-        tax_rate = TaxParameters(self.country.code(), datetime.fromtimestamp(today_finish(), tz=timezone.utc).year).rate(TaxParameters.CAPITAL_GAIN)
+        year = datetime.fromtimestamp(today_finish(), tz=timezone.utc).year
+        tax_rate = TaxParameters(self.country.code(), year).rate(TaxParameters.CAPITAL_GAIN)
         if tax_rate is None:
             tax_rate = Decimal('0')
             logging.warning(self.tr("Tax rate not found for: ") + self.country.code())
+            self.estimate_note = self.tr("No base rate for {year}: the tax column is not estimated").format(year=year)
+        else:
+            self.estimate_note = self.tr("Base estimation: {rate} % of the gain at today's quote and rate, per position "
+                                         "and on the total; no other deals offset, no brackets, no exemptions").format(
+                rate=format((tax_rate * 100).normalize(), 'f'))
         tax_currency = JalAsset.find({'symbol': self.tax_currency_symbol, 'type_id': PredefinedAsset.Money}).id()
         account = JalAccount(self.account_id)
         asset = JalAsset(self.asset_id)
