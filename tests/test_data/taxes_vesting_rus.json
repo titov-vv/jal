@@ -83,19 +83,23 @@
  "Проценты": [],
  "Сводка": [
   {
+   "report_template": "base",
+   "title": "Ценные бумаги"
+  },
+  {
    "report_template": "section",
    "section": "Акции",
    "rows": 1
   },
   {
    "report_template": "figure",
-   "figure": "Доходы",
-   "amount": 21950.63
+   "figure": "Расходы",
+   "amount": 18308.81
   },
   {
    "report_template": "figure",
-   "figure": "Расходы",
-   "amount": 18308.81
+   "figure": "Доходы",
+   "amount": 21950.63
   },
   {
    "report_template": "figure",
@@ -108,9 +112,32 @@
    "rows": 0
   },
   {
+   "report_template": "base_total",
+   "figure": "Итого по базе: Расходы",
+   "amount": 18308.81
+  },
+  {
+   "report_template": "base_total",
+   "figure": "Итого по базе: Доходы",
+   "amount": 21950.63
+  },
+  {
+   "report_template": "base_total",
+   "figure": "Итого по базе: Финансовый результат",
+   "amount": 3641.82
+  },
+  {
+   "report_template": "base",
+   "title": "ПФИ"
+  },
+  {
    "report_template": "section",
    "section": "ПФИ",
    "rows": 0
+  },
+  {
+   "report_template": "base",
+   "title": "Дивиденды"
   },
   {
    "report_template": "section",
@@ -119,8 +146,17 @@
   },
   {
    "report_template": "figure",
-   "figure": "Сумма",
+   "figure": "Доход",
    "amount": 18235.41
+  },
+  {
+   "report_template": "base_total",
+   "figure": "Итого по базе: Доход",
+   "amount": 18235.41
+  },
+  {
+   "report_template": "base",
+   "title": "Проценты"
   },
   {
    "report_template": "section",
@@ -128,14 +164,31 @@
    "rows": 0
   },
   {
+   "report_template": "base",
+   "title": "Криптовалюты"
+  },
+  {
    "report_template": "section",
    "section": "Криптовалюты",
    "rows": 0
   },
   {
+   "report_template": "base",
+   "title": "Криптодоход"
+  },
+  {
    "report_template": "section",
    "section": "Криптодоход",
    "rows": 0
+  },
+  {
+   "report_template": "base_sum",
+   "label": "Сумма баз по ставке 13/15 % (ст. 224 п. 1.1 НК РФ): ценные бумаги, ПФИ, дивиденды, криптовалюта и проценты российских плательщиков; убыток - со своим знаком; не налог",
+   "amount": 21877.23
+  },
+  {
+   "report_template": "base",
+   "title": "Вне налоговых баз - для сведения, без итога"
   },
   {
    "report_template": "section",

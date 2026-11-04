@@ -321,18 +321,28 @@ class TaxReport:
                 'operation': self.operation_label(operation), 'symbol': operation.symbol().symbol(),
                 'number': operation.number(), 'description': operation.description(), 'reason': reason}
 
-    # Each section with its own totals as they stand, in the report's currency (tax figures left out), then the counts
-    # of what is not covered and of the figures a later replay may still change
+    # Each base with its sections and its total, then the sections outside every base, listed and not totalled; then
+    # the counts of what is not covered and of the figures a later replay may still change
     def prepare_summary(self, sections: dict, skipped: dict, uncovered: list) -> list:
         rows = []
-        for name, section in sections.items():
-            rows.append({'report_template': "section", 'section': name,
-                         'rows': len([x for x in section if x['report_template'] != "totals"])})
-            totals = [x for x in section if x['report_template'] == "totals"]
-            for field, value in (totals[0].items() if totals else []):
-                if field.endswith(self.currency_suffix) and not field.startswith('tax'):
-                    figure = field[:-len(self.currency_suffix)]
-                    rows.append({'report_template': "figure", 'figure': self.texts.get(figure, figure), 'amount': value})
+        totals = {}   # {base title: {figure: amount}}
+        for title, kind, names in self.bases:
+            rows.append({'report_template': "base", 'title': title})
+            base = {}
+            for name in names:
+                figures = self._section_figures(sections[name])
+                if kind == INCOME:   # gross income, whichever field the section keeps it in
+                    figures = {'gross': x for x in figures.values()}
+                rows += self._section_rows(name, sections[name], figures)
+                for figure, amount in figures.items():
+                    base[figure] = base.get(figure, Decimal('0')) + amount
+            rows += [{'report_template': "base_total", 'figure': f"{self.texts['base_total']}: {self.texts[x]}",
+                      'amount': base[x]} for x in base]   # none for a base whose sections are all empty
+            totals[title] = base
+        rows += self.base_sum_rows(sections, totals)
+        rows.append({'report_template': "base", 'title': self.texts['outside']})
+        for name in self.outside:
+            rows += self._section_rows(name, sections[name], self._section_figures(sections[name]))
         pending = len([x for section in sections.values() for x in section if x.get('pending_replay')])
         for label, count in ((self.texts['skipped_total'], sum(skipped.values())),
                              (self.texts['uncovered_total'], len(uncovered))):
@@ -353,6 +363,31 @@ class TaxReport:
                          'warning': self.texts['rates_missing'].format(pair=pair, rate=day(quoted), latest=day(latest))})
         rows += self._decision_rows()
         return rows
+
+    GAIN_FIGURES = ('spending', 'income', 'profit')   # acquisition cost, disposal value, profit / loss
+
+    # The figures a section adds to its base, in the report's currency: those of a deal if it has them, else its amount
+    def _section_figures(self, section: list) -> dict:
+        totals = [x for x in section if x['report_template'] == "totals"]
+        if not totals:
+            return {}
+        values = {k[:-len(self.currency_suffix)]: v for k, v in totals[0].items()
+                  if k.endswith(self.currency_suffix) and not k.startswith('tax') and v is not None}
+        if 'profit' in values:
+            return {x: values[x] for x in self.GAIN_FIGURES if x in values}
+        for figure in ('amount', 'value'):
+            if figure in values:
+                return {figure: values[figure]}
+        return {}
+
+    def _section_rows(self, name: str, section: list, figures: dict) -> list:
+        rows = [{'report_template': "section", 'section': name,
+                 'rows': len([x for x in section if x['report_template'] != "totals"])}]
+        return rows + [{'report_template': "figure", 'figure': self.texts[x], 'amount': v} for x, v in figures.items()]
+
+    # Lines the jurisdiction adds after its bases; 'totals' is {base title: {figure: amount}}
+    def base_sum_rows(self, sections: dict, totals: dict) -> list:
+        return []
 
     # The base estimation of each section that has one, and their sum when there are several
     def _estimate_rows(self, sections: dict) -> list:

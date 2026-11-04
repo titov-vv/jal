@@ -45,8 +45,13 @@ class TaxesRussia(TaxReport):
         'income': "Доходы",
         'spending': "Расходы",
         'profit': "Финансовый результат",
+        'gross': "Доход",
         'amount': "Сумма",
         'value': "Стоимость на дату получения",
+        'base_total': "Итого по базе",
+        'outside': "Вне налоговых баз - для сведения, без итога",
+        'rate_sum': "Сумма баз по ставке 13/15 % (ст. 224 п. 1.1 НК РФ): ценные бумаги, ПФИ, дивиденды, криптовалюта и "
+                    "проценты российских плательщиков; убыток - со своим знаком; не налог",
         'parameters_unreviewed': "Внимание: налоговые параметры (соглашения, базовые ставки) проверены по {reviewed} год; "
                                  "для {year} года взяты последние известные значения",
         'parameters_missing': "Внимание: налоговых параметров для {year} года нет; соглашения об избежании двойного "
@@ -605,6 +610,15 @@ class TaxesRussia(TaxReport):
     def _interest_tax(self, amount_rub: Decimal):
         tax = self.base_estimate(TaxParameters.INTEREST, amount_rub)
         return None if tax is None else round(tax, 2)
+
+    RATE_BASES = (("Ценные бумаги", 'profit'), ("ПФИ", 'profit'), ("Дивиденды", 'gross'), ("Криптовалюты", 'profit'))
+
+    # The sum of the bases taxed at the rate of ст. 224 п. 1.1, each with its sign; of interest only Russian payers'
+    def base_sum_rows(self, sections: dict, totals: dict) -> list:
+        amount = sum(totals[base].get(figure, Decimal('0')) for base, figure in self.RATE_BASES)
+        amount += sum(x['amount_rub'] for x in sections["Проценты"]
+                      if x['report_template'] == "interest" and x['country_code'] == 'ru')
+        return [{'report_template': "base_sum", 'label': self.texts['rate_sum'], 'amount': amount}]
 
     # The payer of an interest row: the account's bank or broker, in the account's country - or the operation's asset in
     # its own country if the user decided so; an asset without a country stops the report

@@ -2,19 +2,23 @@
   "default": {
     "Summary": [
       {
+        "report_template": "base",
+        "title": "Category G"
+      },
+      {
         "report_template": "section",
         "section": "Shares",
         "rows": 5
       },
       {
         "report_template": "figure",
-        "figure": "Income",
-        "amount": 5214.3
+        "figure": "Acquisition cost and expenses",
+        "amount": 4576.18
       },
       {
         "report_template": "figure",
-        "figure": "Expenses",
-        "amount": 4576.18
+        "figure": "Disposal value",
+        "amount": 5214.3
       },
       {
         "report_template": "figure",
@@ -37,13 +41,32 @@
         "rows": 0
       },
       {
+        "report_template": "base_total",
+        "figure": "Total of the category: Acquisition cost and expenses",
+        "amount": 4576.18
+      },
+      {
+        "report_template": "base_total",
+        "figure": "Total of the category: Disposal value",
+        "amount": 5214.3
+      },
+      {
+        "report_template": "base_total",
+        "figure": "Total of the category: Gain/loss",
+        "amount": 638.12
+      },
+      {
+        "report_template": "base",
+        "title": "Category E"
+      },
+      {
         "report_template": "section",
         "section": "Dividends",
         "rows": 3
       },
       {
         "report_template": "figure",
-        "figure": "Amount",
+        "figure": "Gross income",
         "amount": 216.6
       },
       {
@@ -53,12 +76,21 @@
       },
       {
         "report_template": "figure",
-        "figure": "Amount",
+        "figure": "Gross income",
         "amount": 26.76
       },
       {
+        "report_template": "base_total",
+        "figure": "Total of the category: Gross income",
+        "amount": 243.36
+      },
+      {
+        "report_template": "base",
+        "title": "Outside both categories - for information, not totalled"
+      },
+      {
         "report_template": "section",
-        "section": "Crypto \u2265 365 days",
+        "section": "Crypto ≥ 365 days",
         "rows": 0
       },
       {

@@ -253,19 +253,23 @@
   ],
   "Сводка": [
     {
+      "report_template": "base",
+      "title": "Ценные бумаги"
+    },
+    {
       "report_template": "section",
       "section": "Акции",
       "rows": 3
     },
     {
       "report_template": "figure",
-      "figure": "Доходы",
-      "amount": 95590.07
+      "figure": "Расходы",
+      "amount": 78354.92
     },
     {
       "report_template": "figure",
-      "figure": "Расходы",
-      "amount": 78354.92
+      "figure": "Доходы",
+      "amount": 95590.07
     },
     {
       "report_template": "figure",
@@ -278,14 +282,28 @@
       "rows": 0
     },
     {
+      "report_template": "base_total",
+      "figure": "Итого по базе: Расходы",
+      "amount": 78354.92
+    },
+    {
+      "report_template": "base_total",
+      "figure": "Итого по базе: Доходы",
+      "amount": 95590.07
+    },
+    {
+      "report_template": "base_total",
+      "figure": "Итого по базе: Финансовый результат",
+      "amount": 17235.15
+    },
+    {
+      "report_template": "base",
+      "title": "ПФИ"
+    },
+    {
       "report_template": "section",
       "section": "ПФИ",
       "rows": 2
-    },
-    {
-      "report_template": "figure",
-      "figure": "Доходы",
-      "amount": 6298.28
     },
     {
       "report_template": "figure",
@@ -294,13 +312,41 @@
     },
     {
       "report_template": "figure",
+      "figure": "Доходы",
+      "amount": 6298.28
+    },
+    {
+      "report_template": "figure",
       "figure": "Финансовый результат",
       "amount": 2145.45
+    },
+    {
+      "report_template": "base_total",
+      "figure": "Итого по базе: Расходы",
+      "amount": 4152.83
+    },
+    {
+      "report_template": "base_total",
+      "figure": "Итого по базе: Доходы",
+      "amount": 6298.28
+    },
+    {
+      "report_template": "base_total",
+      "figure": "Итого по базе: Финансовый результат",
+      "amount": 2145.45
+    },
+    {
+      "report_template": "base",
+      "title": "Дивиденды"
     },
     {
       "report_template": "section",
       "section": "Дивиденды",
       "rows": 0
+    },
+    {
+      "report_template": "base",
+      "title": "Проценты"
     },
     {
       "report_template": "section",
@@ -309,8 +355,17 @@
     },
     {
       "report_template": "figure",
-      "figure": "Сумма",
+      "figure": "Доход",
       "amount": 9928.07
+    },
+    {
+      "report_template": "base_total",
+      "figure": "Итого по базе: Доход",
+      "amount": 9928.07
+    },
+    {
+      "report_template": "base",
+      "title": "Криптовалюты"
     },
     {
       "report_template": "section",
@@ -318,9 +373,22 @@
       "rows": 0
     },
     {
+      "report_template": "base",
+      "title": "Криптодоход"
+    },
+    {
       "report_template": "section",
       "section": "Криптодоход",
       "rows": 0
+    },
+    {
+      "report_template": "base_sum",
+      "label": "Сумма баз по ставке 13/15 % (ст. 224 п. 1.1 НК РФ): ценные бумаги, ПФИ, дивиденды, криптовалюта и проценты российских плательщиков; убыток - со своим знаком; не налог",
+      "amount": 19380.6
+    },
+    {
+      "report_template": "base",
+      "title": "Вне налоговых баз - для сведения, без итога"
     },
     {
       "report_template": "section",

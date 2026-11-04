@@ -142,6 +142,10 @@
   ],
   "Сводка": [
     {
+      "report_template": "base",
+      "title": "Ценные бумаги"
+    },
+    {
       "report_template": "section",
       "section": "Акции",
       "rows": 0
@@ -152,14 +156,13 @@
       "rows": 0
     },
     {
+      "report_template": "base",
+      "title": "ПФИ"
+    },
+    {
       "report_template": "section",
       "section": "ПФИ",
       "rows": 2
-    },
-    {
-      "report_template": "figure",
-      "figure": "Доходы",
-      "amount": 144106.67
     },
     {
       "report_template": "figure",
@@ -168,8 +171,32 @@
     },
     {
       "report_template": "figure",
+      "figure": "Доходы",
+      "amount": 144106.67
+    },
+    {
+      "report_template": "figure",
       "figure": "Финансовый результат",
       "amount": 8561.592223
+    },
+    {
+      "report_template": "base_total",
+      "figure": "Итого по базе: Расходы",
+      "amount": 135545.077777
+    },
+    {
+      "report_template": "base_total",
+      "figure": "Итого по базе: Доходы",
+      "amount": 144106.67
+    },
+    {
+      "report_template": "base_total",
+      "figure": "Итого по базе: Финансовый результат",
+      "amount": 8561.592223
+    },
+    {
+      "report_template": "base",
+      "title": "Дивиденды"
     },
     {
       "report_template": "section",
@@ -177,9 +204,17 @@
       "rows": 0
     },
     {
+      "report_template": "base",
+      "title": "Проценты"
+    },
+    {
       "report_template": "section",
       "section": "Проценты",
       "rows": 0
+    },
+    {
+      "report_template": "base",
+      "title": "Криптовалюты"
     },
     {
       "report_template": "section",
@@ -187,9 +222,22 @@
       "rows": 0
     },
     {
+      "report_template": "base",
+      "title": "Криптодоход"
+    },
+    {
       "report_template": "section",
       "section": "Криптодоход",
       "rows": 0
+    },
+    {
+      "report_template": "base_sum",
+      "label": "Сумма баз по ставке 13/15 % (ст. 224 п. 1.1 НК РФ): ценные бумаги, ПФИ, дивиденды, криптовалюта и проценты российских плательщиков; убыток - со своим знаком; не налог",
+      "amount": 8561.592223
+    },
+    {
+      "report_template": "base",
+      "title": "Вне налоговых баз - для сведения, без итога"
     },
     {
       "report_template": "section",

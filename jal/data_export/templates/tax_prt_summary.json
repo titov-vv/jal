@@ -4,7 +4,7 @@
   "headers": [
       "Period: {parameters[period]}",
       "Account: {parameters[account]}",
-      "Section totals as they stand in the report; nothing is netted across sections and no tax is computed"
+      "Totals per category as they stand in the report; the categories are not netted with each other and no tax is computed"
     ],
   "columns": [
     {"name": "Section", "width": 30},
@@ -18,6 +18,15 @@
   "figure": {
     "rows": [["", "figure", "amount"]],
     "formats": [["T", "T", "N:2"]]
+  },
+  "base": {
+    "rows": [["title", null, null]],
+    "formats": [["T:B", null, null]],
+    "span": [[{"h": 2, "v": 0}, null, null]]
+  },
+  "base_total": {
+    "rows": [["", "figure", "amount"]],
+    "formats": [["T", "T:B", "F"]]
   },
   "count": {
     "rows": [["label", "count", ""]],

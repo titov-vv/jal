@@ -1,8 +1,10 @@
+import json
 import pytest
+from decimal import Decimal
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
-from tests.helpers import d2t, dt2t, create_assets, create_quotes, create_dividends
-from jal.constants import PredefinedAsset
+from tests.helpers import d2t, dt2t, create_assets, create_quotes, create_dividends, create_trades, create_actions
+from jal.constants import PredefinedAsset, PredefinedCategory
 from jal.db.ledger import Ledger
 from jal.db.account import JalAccountCreator
 from jal.data_export.taxes import TaxReport, GAIN, INCOME
@@ -41,3 +43,51 @@ def test_home_account_rows_have_no_code(prepare_db_taxes):
     rows = report.prepare_tax_report(2025, account.id())["Дивиденды"]
     assert [x['code'] for x in rows if x['report_template'] == "dividend"] == ['']
     assert report.texts['home_codes'] in report.section_headers("Дивиденды")
+
+
+# Every base total of a recorded report is the sum of its sections' own totals, and the RU 13/15 % line the signed sum
+# of its bases with the interest of Russian payers
+@pytest.mark.parametrize("file, path, code", [
+    ('taxes_rus.json', [], 'ru'), ('taxes_cfd_rus.json', [], 'ru'), ('taxes_merger_complex_rus.json', [], 'ru'),
+    ('taxes_crypto.json', ['ru'], 'ru'), ('taxes_pt.json', ['default'], 'pt'), ('taxes_crypto.json', ['pt'], 'pt')])
+def test_base_totals_sum_their_sections(prepare_db, data_path, file, path, code):
+    with open(data_path + file, 'r', encoding='utf-8') as json_file:
+        report = json.load(json_file)
+    for key in path:
+        report = report[key]
+    taxes = TaxReport.create_report(code)
+    suffix = taxes.currency_suffix
+    summary = report[taxes.summary_section[0]]
+    totals = lambda name: ([x for x in report[name] if x['report_template'] == "totals"] or [{}])[0]
+    for title, kind, sections in taxes.bases:
+        fields = ('spending', 'income', 'profit') if kind == GAIN else ('amount', 'value')
+        expected = {}
+        for field in fields:
+            values = [totals(x)[field + suffix] for x in sections if totals(x).get(field + suffix) is not None]
+            if values:
+                expected['gross' if kind == INCOME else field] = round(sum(values), 2)
+        start = summary.index({'report_template': "base", 'title': title}) + 1
+        end = next(i for i in range(start, len(summary)) if summary[i]['report_template'] in ("base", "base_sum"))
+        found = {x['figure'].split(': ', 1)[1]: round(x['amount'], 2) for x in summary[start:end]
+                 if x['report_template'] == "base_total"}
+        assert found == {taxes.texts[k]: v for k, v in expected.items()}, title
+    if code == 'ru':
+        expected = sum(totals(x).get('profit_rub', 0) for x in ("Акции", "Облигации", "ПФИ", "Криптовалюты")) + \
+            sum(x['amount_rub'] for x in report["Дивиденды"] if x['report_template'] == "dividend") + \
+            sum(x['amount_rub'] for x in report["Проценты"] if x['report_template'] == "interest" and x['country_code'] == 'ru')
+        line, = [x for x in summary if x['report_template'] == "base_sum"]
+        assert round(line['amount'], 2) == round(expected, 2)
+
+
+# A loss stays negative in the RU 13/15 % line, and interest paid by a Russian bank is in it
+def test_rate_sum_keeps_a_loss(prepare_db_taxes):
+    account = JalAccountCreator(currency_id=2, number='H1', name='Home', investing=1, country='ru').commit()
+    create_assets([("AAPL", "Apple Inc", "US0378331005", 2, PredefinedAsset.Stock, 'us')])
+    create_quotes(2, 1, [(d2t(250101), 100.0)])
+    create_trades(account.id(), [(d2t(250102), d2t(250102), 4, 10, 10, 0), (d2t(250202), d2t(250202), 4, -10, 8, 0)])
+    create_actions([(d2t(250301), account.id(), 1, [(PredefinedCategory.Interest, 5.0, "Deposit interest")])])
+    Ledger().rebuild(from_timestamp=0)
+    taxes = TaxReport.create_report('ru')
+    summary = taxes.prepare_tax_report(2025, account.id())[taxes.summary_section[0]]
+    line, = [x for x in summary if x['report_template'] == "base_sum"]
+    assert line['amount'] == Decimal('-1500.00')    # (8 - 10) * 10 USD at 100 RUB, plus 5 USD of interest
