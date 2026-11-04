@@ -152,10 +152,16 @@ class TaxWidget(MdiWidget):
                                                   use_one_currency_rate=self.use_one_rate,
                                                   use_settlement=(not self.no_settlement))
         except TaxReportStop as stop:
-            missing = "\n".join(f"{symbol} - {reading2d(timestamp)}" for symbol, timestamp in stop.missing)
-            message = self.tr("The report needs these quotes or official currency rates, add them and save it again:") + "\n" + missing
-            logging.error(message)
-            QMessageBox().warning(self, self.tr("Quotes are missing"), message, QMessageBox.Ok)
+            if stop.missing:
+                missing = "\n".join(f"{symbol} - {reading2d(timestamp)}" for symbol, timestamp in stop.missing)
+                message = self.tr("The report needs these quotes or official currency rates, add them and save it again:") + "\n" + missing
+                logging.error(message)
+                QMessageBox().warning(self, self.tr("Quotes are missing"), message, QMessageBox.Ok)
+            if stop.no_country:
+                message = self.tr("The report needs the country of these assets, set it and save the report again:") + \
+                          "\n" + "\n".join(stop.no_country)
+                logging.error(message)
+                QMessageBox().warning(self, self.tr("Countries are missing"), message, QMessageBox.Ok)
             return
         if not tax_report:
             logging.warning(self.tr("Tax report is empty"))

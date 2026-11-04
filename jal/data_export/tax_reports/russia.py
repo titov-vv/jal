@@ -12,6 +12,7 @@ class TaxesRussia(TaxReport):
     jurisdiction = 'ru'
     currency_name = 'RUB'
     report_timezone = 'Europe/Moscow'
+    asset_source_override = True
     currency_suffix = '_rub'
     summary_section = ("Сводка", "tax_rus_summary.json")
     uncovered_section = ("Не отражено", "tax_rus_uncovered.json")
@@ -40,6 +41,7 @@ class TaxesRussia(TaxReport):
         'override_excluded': "Не налоговое событие",
         'override_treaty': "Соглашение об избежании двойного налогообложения применяется",
         'override_no_treaty': "Соглашение не применяется",
+        'override_asset_source': "Источник дохода - эмитент и страна актива",
         'income': "Доходы",
         'spending': "Расходы",
         'profit': "Финансовый результат",
@@ -604,8 +606,14 @@ class TaxesRussia(TaxReport):
         tax = self.base_estimate(TaxParameters.INTEREST, amount_rub)
         return None if tax is None else round(tax, 2)
 
-    # The payer of an interest row: the account's bank or broker, in the account's country
-    def _payer(self) -> dict:
+    # The payer of an interest row: the account's bank or broker, in the account's country - or the operation's asset in
+    # its own country if the user decided so; an asset without a country stops the report
+    def _payer(self, operation=None) -> dict:
+        if operation is not None and self.asset_source(operation):
+            asset, country = operation.asset(), operation.asset().country()
+            if not country.id():
+                self.missing_country(f"{asset.symbol()} ({asset.name()})")
+            return {'payer': asset.name(), 'country': country.name(language='ru'), 'country_code': country.code()}
         country = self.account.country()
         return {'payer': JalPeer(self.account.organization()).name(), 'country': country.name(language='ru'),
                 'country_code': country.code()}
@@ -651,7 +659,7 @@ class TaxesRussia(TaxReport):
                 'description': payment['note'],
                 'note': '',
                 'code': self.code_text(TaxParameters.INTEREST)
-            } | self._payer()
+            } | self._payer(LedgerTransaction.get_operation(LedgerTransaction.CorporateAction, payment['oid']))
             interests_report.append(line)
             self.mark_printed_id(LedgerTransaction.CorporateAction, payment['oid'])
         self.add_estimate_header(interests_report, self.texts['estimate_interest'], TaxParameters.INTEREST)

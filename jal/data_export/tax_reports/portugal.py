@@ -28,6 +28,7 @@ class TaxesPortugal(TaxReport):
         'override_excluded': "Not a tax event",
         'override_treaty': "Tax treaty applies",
         'override_no_treaty': "No tax treaty",
+        'override_asset_source': "Source: the asset's country",
         'income': "Income",
         'spending': "Expenses",
         'profit': "Gain/loss",

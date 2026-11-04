@@ -23,11 +23,13 @@ GAIN = 'gain'            # kinds of tax base: capital gains (cost, disposal, pro
 INCOME = 'income'
 
 
-# Raised when a report can't be produced as asked; 'missing' lists (symbol, timestamp) of every quote that stopped it
+# Raised when a report can't be produced as asked; 'missing' lists (symbol, timestamp) of every quote that stopped it,
+# 'no_country' the names of assets whose country a row needed and didn't find
 class TaxReportStop(Exception):
-    def __init__(self, missing: list):
-        super().__init__("Tax report stopped by missing quotes")
+    def __init__(self, missing: list, no_country: list = None):
+        super().__init__("Tax report stopped by missing data")
         self.missing = missing
+        self.no_country = no_country or []
 
 
 class TaxReport:
@@ -52,6 +54,7 @@ class TaxReport:
     # filed in. Symmetric to Statement.source_timezone: a report names its own zone the way a statement names its
     # source's. An empty name leaves every stored timestamp read as it is.
     report_timezone = ''
+    asset_source_override = False   # True if the report reads TaxOverride.AssetSource
 
     def __init__(self):
         self._currency_id = JalAsset.find({'symbol': self.currency_name, 'type_id': PredefinedAsset.Money}).id()
@@ -72,6 +75,7 @@ class TaxReport:
         self._overrides = {}      # The user's decisions for this jurisdiction, see JalTaxOverride.for_jurisdiction()
         self._applied = {}        # {(oid, kind): operation} of every override this report applied
         self._missing = []        # (symbol, timestamp) of every quote a section needed and didn't find
+        self._no_country = []     # names of the assets whose country a section needed and didn't find
         self._rates_end = None    # newest official rate into the report currency, read once per report
         self.rates_warnings = {}  # {(pair, date of the rate used): latest date it converted} for rates likely missing
 
@@ -157,15 +161,15 @@ class TaxReport:
         self.parameters = TaxParameters(self.jurisdiction, year)
         if self.parameters.value(TAX_TREATY) is None:
             logging.warning(self.tr("There are no parameters found for tax report year: ") + str(year))
-        self.section_notes, self._printed, self._missing = {}, set(), []
+        self.section_notes, self._printed, self._missing, self._no_country = {}, set(), [], []
         self._overrides, self._applied = JalTaxOverride.for_jurisdiction(self.jurisdiction), {}
         self._rates_end, self.rates_warnings = None, {}
         sections = {}
         for report in self.reports:
             self._section = report
             sections[report] = self.reports[report][REPORT_METHOD]()
-        if self._missing:
-            raise TaxReportStop(self._missing)
+        if self._missing or self._no_country:
+            raise TaxReportStop(self._missing, self._no_country)
         skipped, uncovered = self._not_covered()
         tax_report[self.summary_section[0]] = self.prepare_summary(sections, skipped, uncovered)
         tax_report.update(sections)
@@ -235,6 +239,11 @@ class TaxReport:
     def missing_quote(self, symbol: str, timestamp: int):
         if (symbol, timestamp) not in self._missing:
             self._missing.append((symbol, timestamp))
+
+    # Records an asset whose country a section needed and didn't find; the report stops after all sections ran
+    def missing_country(self, name: str):
+        if name not in self._no_country:
+            self._no_country.append(name)
 
     # The operations that changed this deal's lot: the purchase's modifiers that wrote it as the deal's asset, less a
     # swap or wrapping that only rewrote what stayed behind when it took another part of the purchase elsewhere
@@ -367,7 +376,8 @@ class TaxReport:
         day = lambda x: datetime.fromtimestamp(x, tz=timezone.utc).strftime('%d.%m.%Y')
         texts = {(TaxOverride.NotTaxEvent, ''): 'override_excluded',
                  (TaxOverride.Treaty, TaxOverride.TreatyApplies): 'override_treaty',
-                 (TaxOverride.Treaty, TaxOverride.NoTreaty): 'override_no_treaty'}
+                 (TaxOverride.Treaty, TaxOverride.NoTreaty): 'override_no_treaty',
+                 (TaxOverride.AssetSource, TaxOverride.AssetCountry): 'override_asset_source'}
         for (oid, kind), operation in sorted(self._applied.items(), key=lambda x: (x[1].timestamp(), x[0])):
             value, note = self._overrides[(oid, kind)]
             rows.append({'report_template': "decision",
@@ -409,6 +419,14 @@ class TaxReport:
             self._applied[key] = operation
             return self._overrides[key][0] == TaxOverride.TreatyApplies
         return self.parameters.treaty_with(country_code)
+
+    # True if the user decided the operation's income comes from its asset and the asset's country
+    def asset_source(self, operation) -> bool:
+        key = (operation.id(), TaxOverride.AssetSource)
+        if key not in self._overrides:
+            return False
+        self._applied[key] = operation
+        return True
 
     # Returns a list of dividends that should be included into the report for given year, less those the user excluded
     def dividends_list(self) -> list:

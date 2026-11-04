@@ -1,13 +1,16 @@
 import os
+import pytest
 import openpyxl
 from decimal import Decimal
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from tests.helpers import d2t, create_assets, create_quotes, create_trades, create_dividends, create_actions, \
-    operation_id
+    create_corporate_actions, operation_id
 from jal.constants import PredefinedAsset, PredefinedCategory
 from jal.db.ledger import Ledger
-from jal.db.operations import LedgerTransaction
+from jal.db.country import JalCountry
+from jal.db.operations import LedgerTransaction, CorporateAction
+from jal.data_export.taxes import TaxReportStop
 from jal.db.tax_override import JalTaxOverride, TaxOverride
 from jal.data_export.tax_reports.russia import TaxesRussia
 from jal.data_export.tax_reports.portugal import TaxesPortugal
@@ -132,3 +135,47 @@ def test_decisions_reach_the_workbook(prepare_db_taxes, tmp_path):
     cells = [(sheet.cell(row=r, column=1).value, sheet.cell(row=r, column=2).value) for r in range(1, sheet.max_row + 1)]
     assert cells[-2:] == [(pt.texts['decisions'], None),
                           ("01.04.2025 Dividend ERIC", f"{pt.texts['override_excluded']}: Return of capital")]
+
+
+# Account 1 in 2025: 10 MRG (ID 4) bought, merged into 5 NEWCO (ID 5) and 25.5 USD of cash. Returns the merger's id.
+def _cash_merger(country) -> int:
+    create_assets([("MRG", "Merger Corp", "CA0000000401", 2, PredefinedAsset.Stock, country),
+                   ("NEWCO", "New Corp", "CA0000000501", 2, PredefinedAsset.Stock, 'ca')])
+    create_quotes(2, 1, [(d2t(240102), 100.0)])
+    create_trades(1, [(d2t(250102), d2t(250104), 4, 10, 10, 0, "buy")])
+    create_corporate_actions(1, [(d2t(250701), CorporateAction.Merger, 4, 10, "Merger MRG->NEWCO + cash",
+                                  [(5, 5.0, 1.0), (2, 25.5, 0.0)])])
+    Ledger().rebuild(from_timestamp=0)
+    return operation_id(LedgerTransaction.CorporateAction, 1)
+
+
+# The cash of a corporate action is paid by the broker in its country, or - by the user's decision - by the asset's
+# issuer in the asset's country; the Summary lists the decision
+def test_asset_source_override(prepare_db_taxes):
+    merger = _cash_merger('ca')
+    payer = lambda report: [{k: x[k] for k in ('payer', 'country', 'country_code')}
+                            for x in _rows(report["Проценты"], "interest")]
+    taxes = TaxesRussia()
+    assert payer(taxes.prepare_tax_report(2025, 1)) == \
+           [{'payer': 'None', 'country': JalCountry(2).name(language='ru'), 'country_code': 'us'}]
+    JalTaxOverride.set('ru', merger, TaxOverride.AssetSource, TaxOverride.AssetCountry, "Cash paid by the issuer")
+    report = taxes.prepare_tax_report(2025, 1)
+    canada = JalCountry(data={'code': 'ca'}, search=True)
+    assert payer(report) == [{'payer': 'Merger Corp', 'country': canada.name(language='ru'), 'country_code': 'ca'}]
+    assert _decisions(report, taxes) == [f"{taxes.texts['override_asset_source']}: Cash paid by the issuer"]
+
+
+# The override needs the asset's country: without one the report stops and names the asset
+def test_asset_source_without_country_stops(prepare_db_taxes):
+    merger = _cash_merger(0)
+    JalTaxOverride.set('ru', merger, TaxOverride.AssetSource, TaxOverride.AssetCountry, "Cash paid by the issuer")
+    with pytest.raises(TaxReportStop) as stop:
+        TaxesRussia().prepare_tax_report(2025, 1)
+    assert stop.value.missing == [] and stop.value.no_country == ["MRG (Merger Corp)"]
+
+
+def test_asset_source_values(prepare_db_taxes):
+    merger = _cash_merger('ca')
+    with pytest.raises(ValueError):
+        JalTaxOverride.set('ru', merger, TaxOverride.AssetSource, '0', "Wrong value")
+    assert TaxOverride.takes_asset_source(LedgerTransaction.get_operation(LedgerTransaction.CorporateAction, merger))

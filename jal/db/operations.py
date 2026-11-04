@@ -2635,6 +2635,10 @@ class CorporateAction(LedgerTransaction):
     def qty(self) -> Decimal:
         return self._qty
 
+    # True if one of the results is money in the account's currency
+    def pays_cash(self) -> bool:
+        return any(x['asset_id'] == self._account.currency() for x in self._results)
+
     # Price is undefined for corporate action but method is required in FIFO processing
     def price(self):
         return None

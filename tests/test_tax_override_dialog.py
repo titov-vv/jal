@@ -2,12 +2,12 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QDialogButtonBox, QTableView, QStyleOptionViewItem
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
-from tests.helpers import d2t, create_stocks, create_trades, create_dividends, operation_id
+from tests.helpers import d2t, create_stocks, create_trades, create_dividends, create_corporate_actions, operation_id
 from jal.db.country import JalCountry
 from jal.db.ledger import Ledger
 from jal.db.operations_model import OperationsModel
 from jal.widgets.delegates import TAX_OVERRIDE_ROLE
-from jal.db.operations import LedgerTransaction
+from jal.db.operations import LedgerTransaction, CorporateAction
 from jal.db.tax_override import JalTaxOverride, TaxOverride
 from jal.widgets.tax_override_dialog import TaxOverrideDialog
 
@@ -64,6 +64,28 @@ def test_dialog_offers_treaty_for_dividends_only(prepare_db_taxes):
     parent = QWidget()
     dialog = TaxOverrideDialog(LedgerTransaction.Trade, trade, parent=parent)
     assert [dialog._rows[x][0].count() for x in dialog._rows] == [2, 2]
+
+
+# The asset as the source of a corporate action's cash: offered for a cash payment, in the RU row only
+def test_dialog_offers_asset_source_for_cash_in_ru(prepare_db_taxes):
+    create_stocks([('A', 'Asset A'), ('B', 'Asset B')], currency_id=2)   # ID 4, 5
+    create_trades(1, [(d2t(250102), d2t(250104), 4, 10, 10, 0, "buy")])
+    create_corporate_actions(1, [(d2t(250701), CorporateAction.Merger, 4, 10, "A->B + cash", [(5, 5.0, 1.0), (2, 25.5, 0.0)]),
+                                 (d2t(250801), CorporateAction.Split, 5, 5, "Split", [(5, 10.0, 1.0)])])
+    parent = QWidget()
+    merger = TaxOverrideDialog(LedgerTransaction.CorporateAction, operation_id(LedgerTransaction.CorporateAction, 1),
+                               parent=parent)
+    assert [merger._rows[x][0].count() for x in merger._rows] == [2, 3]
+    ru_decision, ru_note = merger._rows['ru']
+    ru_decision.setCurrentIndex(2)
+    ru_note.setText("Cash paid by the issuer")
+    merger.accept()
+    assert JalTaxOverride.for_operation(operation_id(LedgerTransaction.CorporateAction, 1)) == [
+        {'jurisdiction': 'ru', 'kind': TaxOverride.AssetSource, 'value': TaxOverride.AssetCountry,
+         'note': "Cash paid by the issuer"}]
+    split = TaxOverrideDialog(LedgerTransaction.CorporateAction, operation_id(LedgerTransaction.CorporateAction, 2),
+                              parent=parent)
+    assert [split._rows[x][0].count() for x in split._rows] == [2, 2]
 
 
 # The operations list marks an overridden operation with the tax glyph at the end of its notes and lists the decisions

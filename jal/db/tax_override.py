@@ -8,9 +8,11 @@ from jal.db.operations import LedgerTransaction, AssetPayment, AssetIncome
 class TaxOverride:
     NotTaxEvent = 1   # The operation is not a tax event in this jurisdiction; value unused
     Treaty = 2        # A tax treaty applies to this dividend (value '1') or doesn't ('0')
+    AssetSource = 3   # The income's source is the asset and its country, not the account's broker (value '1')
 
     TreatyApplies = '1'
     NoTreaty = '0'
+    AssetCountry = '1'
 
     @staticmethod
     def tr(text):
@@ -21,7 +23,8 @@ class TaxOverride:
     def label(kind: int, value: str) -> str:
         labels = {(TaxOverride.NotTaxEvent, ''): TaxOverride.tr("Not a tax event"),
                   (TaxOverride.Treaty, TaxOverride.TreatyApplies): TaxOverride.tr("Tax treaty applies"),
-                  (TaxOverride.Treaty, TaxOverride.NoTreaty): TaxOverride.tr("No tax treaty")}
+                  (TaxOverride.Treaty, TaxOverride.NoTreaty): TaxOverride.tr("No tax treaty"),
+                  (TaxOverride.AssetSource, TaxOverride.AssetCountry): TaxOverride.tr("Source: the asset's country")}
         return labels.get((kind, value), '')
 
     # True for the operations a report reads as dividends - the only ones a treaty decision applies to
@@ -33,12 +36,18 @@ class TaxOverride:
             return operation.subtype() in (AssetIncome.StockDividend, AssetIncome.StockVesting)
         return False
 
+    # True for a corporate action that paid cash - the only operation whose source may be switched to its asset
+    @staticmethod
+    def takes_asset_source(operation) -> bool:
+        return operation.type() == LedgerTransaction.CorporateAction and operation.pays_cash()
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Access to 'tax_overrides': the user's decision on how one jurisdiction's tax report treats one operation.
 # Report input only, the ledger never reads it.
 class JalTaxOverride(JalDB):
-    _VALUES = {TaxOverride.NotTaxEvent: ('',), TaxOverride.Treaty: (TaxOverride.TreatyApplies, TaxOverride.NoTreaty)}
+    _VALUES = {TaxOverride.NotTaxEvent: ('',), TaxOverride.Treaty: (TaxOverride.TreatyApplies, TaxOverride.NoTreaty),
+               TaxOverride.AssetSource: (TaxOverride.AssetCountry,)}
 
     # Every override of the operation, as a list of {'jurisdiction', 'kind', 'value', 'note'}
     @classmethod

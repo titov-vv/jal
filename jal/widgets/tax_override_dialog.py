@@ -12,13 +12,20 @@ from jal.widgets.helpers import ts2dt
 # The user's decision on how each jurisdiction's tax report treats one operation: one row per jurisdiction, a decision
 # and the note the report prints with it. Ok writes the rows; a row without a decision removes its overrides.
 class TaxOverrideDialog(QDialog):
+    KINDS = (TaxOverride.NotTaxEvent, TaxOverride.Treaty, TaxOverride.AssetSource)   # one of them per jurisdiction
+
     def __init__(self, otype: int, oid: int, parent=None):
         super().__init__(parent)
         self._oid = oid
         operation = LedgerTransaction.get_operation(otype, oid)
-        self._choices = [(None, None), (TaxOverride.NotTaxEvent, '')]   # index 0: no override
+        choices = [(None, None), (TaxOverride.NotTaxEvent, '')]   # index 0: no override
         if TaxOverride.takes_treaty(operation):
-            self._choices += [(TaxOverride.Treaty, TaxOverride.TreatyApplies), (TaxOverride.Treaty, TaxOverride.NoTreaty)]
+            choices += [(TaxOverride.Treaty, TaxOverride.TreatyApplies), (TaxOverride.Treaty, TaxOverride.NoTreaty)]
+        self._choices = {}   # {jurisdiction: [(kind, value)]}
+        for code in TaxReport.jurisdictions:
+            self._choices[code] = list(choices)
+            if TaxOverride.takes_asset_source(operation) and TaxReport.report_class(code).asset_source_override:
+                self._choices[code].append((TaxOverride.AssetSource, TaxOverride.AssetCountry))
         stored = {(x['jurisdiction'], x['kind']): x for x in JalTaxOverride.for_operation(oid)}
         self.setWindowTitle(self.tr("Tax treatment"))
         layout = QGridLayout(self)
@@ -35,12 +42,12 @@ class TaxOverrideDialog(QDialog):
             name = QLabel(JalCountry(data={'code': code}, search=True).name(), self)
             decision = QComboBox(self)
             decision.addItem(self.tr("As the report decides"))
-            for kind, value in self._choices[1:]:
+            for kind, value in self._choices[code][1:]:
                 decision.addItem(TaxOverride.label(kind, value))
             note = QLineEdit(self)
-            override = stored.get((code, TaxOverride.NotTaxEvent), stored.get((code, TaxOverride.Treaty)))
-            if override is not None and (override['kind'], override['value']) in self._choices:
-                decision.setCurrentIndex(self._choices.index((override['kind'], override['value'])))
+            override = next((stored[(code, x)] for x in self.KINDS if (code, x) in stored), None)
+            if override is not None and (override['kind'], override['value']) in self._choices[code]:
+                decision.setCurrentIndex(self._choices[code].index((override['kind'], override['value'])))
                 note.setText(override['note'])
             decision.currentIndexChanged.connect(self._validate)
             note.textChanged.connect(self._validate)
@@ -64,8 +71,8 @@ class TaxOverrideDialog(QDialog):
 
     def accept(self):
         for code, (decision, note) in self._rows.items():
-            kind, value = self._choices[decision.currentIndex()]
-            for stored_kind in (TaxOverride.NotTaxEvent, TaxOverride.Treaty):
+            kind, value = self._choices[code][decision.currentIndex()]
+            for stored_kind in self.KINDS:
                 if stored_kind != kind:
                     JalTaxOverride.delete(code, self._oid, stored_kind)
             if kind is not None:
