@@ -38,33 +38,33 @@ class LedgerLotStore(JalDB):
             lots.append(self._read_record(query, cast=[int, int, Decimal, Decimal, Decimal, Decimal, Decimal, int, int]))
         return lots
 
-    # Latest quantity of every non-empty slice of every position: (account_id, asset_id, qty), the quantity unsigned
-    def latest_quantities(self) -> list:
-        quantities = []
-        query = self._exec("WITH open_trades_numbered AS "
-                           "(SELECT account_id, asset_id, remaining_qty, "
-                           "ROW_NUMBER() OVER (PARTITION BY slice_id ORDER BY timestamp DESC, id DESC) AS row_no "
-                           "FROM trades_opened) "
-                           "SELECT account_id, asset_id, remaining_qty FROM open_trades_numbered "
-                           "WHERE row_no=1 AND remaining_qty!=:zero", [(":zero", format_decimal(Decimal('0')))])
-        while query.next():
-            quantities.append(self._read_record(query, cast=[int, int, Decimal]))
-        return quantities
+    # Latest state of every slice with its quantity signed: a lot keeps an unsigned quantity and is short when the trade
+    # that opened it sold. 'where' narrows the slices by o.account_id / o.asset_id.
+    _SIGNED_SLICES = ("WITH open_trades_numbered AS "
+                      "(SELECT o.account_id, o.asset_id, o.remaining_qty, "
+                      "CASE WHEN o.otype=:trade AND CAST(t.qty AS REAL)<0 THEN -1 ELSE 1 END AS side, "
+                      "ROW_NUMBER() OVER (PARTITION BY o.slice_id ORDER BY o.timestamp DESC, o.id DESC) AS row_no "
+                      "FROM trades_opened AS o LEFT JOIN trades AS t ON o.otype=:trade AND t.oid=o.oid {where}) "
+                      "SELECT account_id, asset_id, remaining_qty, side FROM open_trades_numbered WHERE row_no=1")
 
-    # What the lots of a position hold now, negative for a short one: a lot keeps an unsigned quantity and is short
-    # when the trade that opened it sold
+    # (account_id, asset_id, signed qty) of the latest state of every slice of every position
+    def slices(self) -> list:
+        query = self._exec(self._SIGNED_SLICES.format(where=""),
+                           [(":trade", jal.db.operations.LedgerTransaction.Trade)])
+        slices = []
+        while query.next():
+            account_id, asset_id, qty, side = self._read_record(query, cast=[int, int, Decimal, int])
+            slices.append((account_id, asset_id, qty * side))
+        return slices
+
+    # What the lots of a position hold now, negative for a short one
     def position(self, account_id: int, asset_id: int) -> Decimal:
-        query = self._exec("WITH open_trades_numbered AS "
-                           "(SELECT o.remaining_qty, CASE WHEN o.otype=:trade AND CAST(t.qty AS REAL)<0 THEN -1 ELSE 1 "
-                           "END AS side, ROW_NUMBER() OVER (PARTITION BY o.slice_id ORDER BY o.timestamp DESC, o.id DESC) "
-                           "AS row_no FROM trades_opened AS o LEFT JOIN trades AS t ON o.otype=:trade AND t.oid=o.oid "
-                           "WHERE o.account_id=:account AND o.asset_id=:asset) "
-                           "SELECT remaining_qty, side FROM open_trades_numbered WHERE row_no=1",
+        query = self._exec(self._SIGNED_SLICES.format(where="WHERE o.account_id=:account AND o.asset_id=:asset"),
                            [(":trade", jal.db.operations.LedgerTransaction.Trade), (":account", account_id),
                             (":asset", asset_id)])
         position = Decimal('0')
         while query.next():
-            qty, side = self._read_record(query, cast=[Decimal, int])
+            _, _, qty, side = self._read_record(query, cast=[int, int, Decimal, int])
             position += qty * side
         return position
 

@@ -383,7 +383,7 @@ class Ledger(QObject, JalDB):
     def report_position_mismatches(self):
         lots = defaultdict(Decimal)
         # Summed in Python because the amounts are decimals kept as TEXT and SQL SUM() would coerce them to float.
-        for account_id, asset_id, qty in LedgerLotStore().latest_quantities():
+        for account_id, asset_id, qty in LedgerLotStore().slices():
             lots[(account_id, asset_id)] += qty
         query = self._exec("SELECT account_id, asset_id, amount_acc FROM ledger WHERE book_account=:assets "
                            "AND id IN (SELECT MAX(id) FROM ledger WHERE book_account=:assets "

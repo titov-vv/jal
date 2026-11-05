@@ -137,3 +137,15 @@ def test_rebuild_is_quiet_when_lots_match_the_books(prepare_db_fifo, caplog):
 
     assert _lots_total(1, 4) == _book_amount(1, 4)
     assert [x.message for x in caplog.records if x.levelno == logging.WARNING] == []
+
+
+# ...and quiet on an open short position, whose lots hold an unsigned quantity against a negative one in the books
+def test_rebuild_is_quiet_on_an_open_short_position(prepare_db_fifo, caplog):
+    create_stocks([('NEAR', 'Near Protocol')], currency_id=2)
+    create_trades(1, [(d2t(220101), d2t(220101), 4, Decimal('-10'), Decimal('5'), Decimal('0')),
+                      (d2t(220102), d2t(220102), 4, Decimal('4'), Decimal('5'), Decimal('0'))])
+    with caplog.at_level(logging.WARNING):
+        Ledger().rebuild(from_timestamp=0)
+
+    assert _book_amount(1, 4) == Decimal('-6')
+    assert [x.message for x in caplog.records if x.levelno == logging.WARNING] == []
