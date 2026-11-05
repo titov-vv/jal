@@ -10,8 +10,9 @@ from jal.db.asset import JalAsset
 from jal.db.category import JalCategory
 from jal.db.db import JalDB
 from jal.db.helpers import is_day_marker
-from jal.db.lots import LedgerLotStore
-from jal.db.operations import LedgerTransaction, TaxStatus, AssetPayment, AssetIncome, Transfer
+from jal.db.lots import LedgerLotStore, ScratchLotStore, replay
+from jal.db.basis_policy import JalPolicy
+from jal.db.operations import LedgerTransaction, LedgerError, TaxStatus, AssetPayment, AssetIncome, Transfer
 from jal.db.clock import ZONE_SPAN, wall_clock_reading
 from jal.db.tax_override import JalTaxOverride, TaxOverride
 from jal.data_export.tax_parameters import TaxParameters, TAX_TREATY
@@ -25,12 +26,18 @@ INCOME = 'income'
 
 
 # Raised when a report can't be produced as asked; 'missing' lists (symbol, timestamp) of every quote that stopped it,
-# 'no_country' the names of assets whose country a row needed and didn't find
+# 'no_country' the names of assets whose country a row needed and didn't find, 'replay' why the lot replay stopped
 class TaxReportStop(Exception):
-    def __init__(self, missing: list, no_country: list = None):
+    def __init__(self, missing: list, no_country: list = None, replay: str = ''):
         super().__init__("Tax report stopped by missing data")
         self.missing = missing
         self.no_country = no_country or []
+        self.replay = replay
+
+
+# Raised when the user stops a report while it runs
+class TaxReportCancelled(Exception):
+    pass
 
 
 class TaxReport:
@@ -56,6 +63,8 @@ class TaxReport:
     # source's. An empty name leaves every stored timestamp read as it is.
     report_timezone = ''
     asset_source_override = False   # True if the report reads TaxOverride.AssetSource
+    policy = JalPolicy              # The BasisPolicy class the report replays the lots of the whole history by
+    REPLAY_SHARE = 90               # Percent of the progress the replay takes, the sections the rest
 
     def __init__(self):
         self._currency_id = JalAsset.find({'symbol': self.currency_name, 'type_id': PredefinedAsset.Money}).id()
@@ -81,7 +90,9 @@ class TaxReport:
         self.rates_warnings = {}  # {(pair, date of the rate used): latest date it converted} for rates likely missing
         self.short_warnings = []  # a line for each short of an asset kind whose year-end rule isn't handled
         self._carried = []        # closing operations of stock shorts reported in an earlier year
-        self.lots = LedgerLotStore()   # the lot store every deal and lot of the report is read from
+        self.lots = LedgerLotStore()   # the lot store deals and lots are read from: the replay's while a report runs
+        self._progress = None     # progress(percent, text) of a running report, see prepare_tax_report()
+        self._cancelled = False
 
     @staticmethod
     def tr(text):
@@ -169,20 +180,58 @@ class TaxReport:
         self._overrides, self._applied = JalTaxOverride.for_jurisdiction(self.jurisdiction), {}
         self._rates_end, self.rates_warnings = None, {}
         self.short_warnings, self._carried = [], []
-        for piece in self.year_end_shorts():
-            if piece['open'].asset().type() not in self.SHORT_HANDLED:
-                self._warn_short(piece['open'].asset(), piece['open'])
-        sections = {}
-        for report in self.reports:
-            self._section = report
-            sections[report] = self.reports[report][REPORT_METHOD]()
-        if self._missing or self._no_country:
-            raise TaxReportStop(self._missing, self._no_country)
-        skipped, uncovered = self._not_covered()
-        tax_report[self.summary_section[0]] = self.prepare_summary(sections, skipped, uncovered)
-        tax_report.update(sections)
-        tax_report[self.uncovered_section[0]] = self.prepare_not_covered(skipped, uncovered)
+        self._progress = kwargs.get('progress')
+        self._cancelled = False
+        self.lots = ScratchLotStore()
+        try:
+            self._replay()
+            for piece in self.year_end_shorts():
+                if piece['open'].asset().type() not in self.SHORT_HANDLED:
+                    self._warn_short(piece['open'].asset(), piece['open'])
+            sections = {}
+            for i, report in enumerate(self.reports):
+                self._show_progress(self.REPLAY_SHARE + (100 - self.REPLAY_SHARE) * i / len(self.reports),
+                                    f"{report}: %p%")
+                self._section = report
+                sections[report] = self.reports[report][REPORT_METHOD]()
+            if self._missing or self._no_country:
+                raise TaxReportStop(self._missing, self._no_country)
+            skipped, uncovered = self._not_covered()
+            tax_report[self.summary_section[0]] = self.prepare_summary(sections, skipped, uncovered)
+            tax_report.update(sections)
+            tax_report[self.uncovered_section[0]] = self.prepare_not_covered(skipped, uncovered)
+        finally:
+            self.lots.detach()
+            self.lots = LedgerLotStore()
         return tax_report
+
+    # The lots of the whole history replayed into the report's store by its jurisdiction's policy: the buy-backs of
+    # the year's shorts come after the year, and lots arrive from other accounts
+    def _replay(self):
+        text = self.tr("Tax replay") + f" ({self.jurisdiction.upper()}): %p%"
+        shown = [None]
+
+        def progress(done: int, total: int):
+            percent = self.REPLAY_SHARE * done // total
+            if percent != shown[0]:
+                shown[0] = percent
+                self._show_progress(percent, text)
+
+        try:
+            replay(self.lots, self.policy(), progress=progress if self._progress is not None else None)
+        except LedgerError as e:
+            raise TaxReportStop([], replay=str(e))
+
+    # Reports the progress; a stop asked for meanwhile ends the report here, as the events are processed in 'progress'
+    def _show_progress(self, percent: float, text: str):
+        if self._progress is not None:
+            self._progress(percent, text)
+        if self._cancelled:
+            raise TaxReportCancelled()
+
+    # Stops the running report at its next progress step
+    def cancel(self):
+        self._cancelled = True
 
     # A line the section being prepared states under its title - the treatment it assumed
     def add_header(self, line: str):

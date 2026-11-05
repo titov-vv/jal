@@ -129,7 +129,7 @@ class MainWindow(QMainWindow):
         self.ui.actionTokenBlacklist.triggered.connect(partial(self.onDataDialog, TokenBlacklistDialog))
         self.ui.actionResidence.triggered.connect(partial(self.onDataDialog, ResidenceDialog))
         self.ui.actionPreferences.triggered.connect(self.showPreferences)
-        self.ui.PrepareTaxForms.triggered.connect(partial(TaxWidget.showInWindowArea, self.ui.windowArea))
+        self.ui.PrepareTaxForms.triggered.connect(partial(TaxWidget.showInWindowArea, self.ui.windowArea, self))
         self.ui.PrepareFlowReport.triggered.connect(partial(MoneyFlowWidget.showInWindowArea, self.ui.windowArea))
         self.CancelButton.clicked.connect(self.downloader.on_cancel)
         self.CancelButton.clicked.connect(self.ledger.on_cancel)

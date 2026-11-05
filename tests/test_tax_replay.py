@@ -1,16 +1,22 @@
 from decimal import Decimal
 
 import pytest
+from PySide6.QtWidgets import QWidget, QMessageBox
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from tests.helpers import d2t, create_assets, create_quotes, create_trades, create_swaps, create_conversions, \
     create_corporate_actions, symbol_id_for
 from tests.test_taxes_shorts import _shorts
+from jal.widgets.icons import JalIcon
+from jal.widgets.tax_widget import TaxWidget
+from jal.widgets.main_window import MainWindow
 from jal.constants import PredefinedAsset, SwapTreatment, AssetData
 from jal.db.db import JalDB
 from jal.db.ledger import Ledger
-from jal.db.lots import ScratchLotStore, replay
-from jal.db.operations import LedgerTransaction, AssetIncome, CorporateAction
+from jal.db.lots import LedgerLotStore, ScratchLotStore
+from jal.db.basis_policy import JalPolicy
+from jal.db.operations import LedgerTransaction, LedgerError, AssetIncome, CorporateAction
+from jal.data_export.taxes import TaxReportStop, TaxReportCancelled
 from jal.data_export.tax_reports.russia import TaxesRussia
 from jal.data_export.tax_reports.portugal import TaxesPortugal
 
@@ -201,8 +207,7 @@ def create_pt_scenario_in_rub():
     create_quotes(USD, RUB, [(d2t(230101), 90)])
 
 
-# A report reads every deal and lot from its store: one replayed by JalPolicy gives the main tables' report even
-# with those tables emptied
+# A report replays the lots of the whole history and reads every deal and lot from there, never from the main tables
 @pytest.mark.parametrize("scenario, report_class, year", [(create_ru_scenario, TaxesRussia, 2025),
                                                           (create_pt_scenario, TaxesPortugal, 2024),
                                                           (create_pt_scenario, TaxesPortugal, 2025),
@@ -212,14 +217,115 @@ def create_pt_scenario_in_rub():
 def test_report_reads_its_lot_store(prepare_db_taxes, scenario, report_class, year):
     scenario()
     expected = report_class().prepare_tax_report(year, 1)
+    JalDB._exec("DELETE FROM main.trades_closed")
+    JalDB._exec("DELETE FROM main.trades_opened", commit=True)
+    assert report_class().prepare_tax_report(year, 1) == expected
 
-    store = ScratchLotStore()
+
+# A stop of the replay stops the report, and the replay's store is let go after a stop as after a report
+def test_replay_stop_and_store_release(prepare_db_taxes):
+    class StoppingPolicy(JalPolicy):
+        def treatment(self, operation):
+            raise LedgerError("no quote for the swap")
+
+    create_ru_scenario()
+    report = TaxesRussia()
+    report.policy = StoppingPolicy
+    with pytest.raises(TaxReportStop) as stop:
+        report.prepare_tax_report(2025, 1)
+    assert (stop.value.missing, stop.value.replay) == ([], "no quote for the swap")
+    assert isinstance(report.lots, LedgerLotStore) and not isinstance(report.lots, ScratchLotStore)
+    assert [x for x in JalDB._read_to_list("PRAGMA database_list") if 'lots_replay' in x] == []
+    report.policy = JalPolicy
+    assert report.prepare_tax_report(2025, 1)["Криптовалюты"]
+    assert [x for x in JalDB._read_to_list("PRAGMA database_list") if 'lots_replay' in x] == []
+
+
+# Progress: the replay up to 90 % under its own text, then one step per section under the section's name
+def test_report_progress(prepare_db_taxes):
+    create_pt_scenario()
+    steps = []
+    TaxesPortugal().prepare_tax_report(2024, 1, progress=lambda percent, text: steps.append((percent, text)))
+    replayed = [x for x in steps if x[1] == "Tax replay (PT): %p%"]
+    assert [x[0] for x in replayed] == sorted(set(x[0] for x in replayed)) and replayed[-1][0] == 90
+    assert [x[1] for x in steps[len(replayed):]] == [f"{x}: %p%" for x in TaxesPortugal().reports]
+    assert [x[0] for x in steps] == sorted(x[0] for x in steps) and steps[-1][0] < 100
+
+
+# The tax window shows the report's progress and stays disabled and open while the report runs
+def test_tax_window_while_a_report_runs(prepare_db_taxes, tmp_path, monkeypatch):
+    create_ru_scenario()
+    monkeypatch.setattr(QMessageBox, "warning", lambda *args, **kwargs: QMessageBox.Ok)
+    JalIcon()
+    parent = QWidget()
+    widget = TaxWidget(parent)
+    widget.ui.Year.setValue(2025)
+    widget.ui.Country.setCurrentIndex(widget.ui.Country.findData('ru'))
+    widget.ui.XlsFileName.setText(str(tmp_path / "report.xlsx"))
+    shown, texts, during = [], [], []
+    widget.show_progress.connect(shown.append)
+    widget.update_progress_text.connect(texts.append)
+    widget.update_progress.connect(lambda _x: during.append((widget.isEnabled(), widget.close())))
+    widget.SaveReport()
+    assert shown == [True, False]
+    assert texts[0] == "Tax replay (RU): %p%" and texts[-1] == "Комиссии: %p%"
+    assert set(during) == {(False, False)}
+    assert widget.isEnabled() and (tmp_path / "report.xlsx").exists()
+
+
+# A stop asked for during the replay ends the report at the next progress step and lets its store go
+def test_report_cancel(prepare_db_taxes):
+    create_ru_scenario()
+    report = TaxesRussia()
+    steps = []
+    with pytest.raises(TaxReportCancelled):
+        report.prepare_tax_report(2025, 1, progress=lambda percent, text: steps.append(percent) or report.cancel())
+    assert len(steps) == 1 and steps[0] < TaxesRussia.REPLAY_SHARE   # stopped inside the replay
+    assert [x for x in JalDB._read_to_list("PRAGMA database_list") if 'lots_replay' in x] == []
+    assert report.prepare_tax_report(2025, 1)["Криптовалюты"]   # the next report runs to its end
+
+
+# The window's stop ends its report: nothing saved, no message, the window enabled again
+def test_tax_window_stop(prepare_db_taxes, tmp_path, monkeypatch):
+    create_ru_scenario()
+    messages = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda *args, **kwargs: messages.append(args) or QMessageBox.Ok)
+    JalIcon()
+    parent = QWidget()
+    widget = TaxWidget(parent)
+    widget.ui.Year.setValue(2025)
+    widget.ui.Country.setCurrentIndex(widget.ui.Country.findData('ru'))
+    widget.ui.XlsFileName.setText(str(tmp_path / "report.xlsx"))
+    shown = []
+    widget.show_progress.connect(shown.append)
+    widget.update_progress.connect(lambda _x: widget.on_cancel())
+    widget.SaveReport()
+    assert shown == [True, False] and messages == []
+    assert widget.isEnabled() and not (tmp_path / "report.xlsx").exists()
+
+
+# The main window shows a tax report's progress, and its Stop button ends the report
+def test_main_window_stops_a_tax_report(prepare_db_taxes, tmp_path, monkeypatch):
+    create_ru_scenario()
+    monkeypatch.setattr(QMessageBox, "warning", lambda *args, **kwargs: QMessageBox.Ok)
+    JalIcon()
+    main_window = MainWindow(None)
     try:
-        replay(store)
-        JalDB._exec("DELETE FROM main.trades_closed")
-        JalDB._exec("DELETE FROM main.trades_opened", commit=True)
-        report = report_class()
-        report.lots = store
-        assert report.prepare_tax_report(year, 1) == expected
+        main_window.ui.PrepareTaxForms.trigger()
+        widget, = [x for x in main_window.ui.windowArea.windows() if isinstance(x, TaxWidget)]
+        widget.ui.Year.setValue(2025)
+        widget.ui.Country.setCurrentIndex(widget.ui.Country.findData('ru'))
+        widget.ui.XlsFileName.setText(str(tmp_path / "report.xlsx"))
+        seen = []
+
+        def press_stop(_percent):
+            seen.append((not main_window.ProgressBar.isHidden(), main_window.ProgressBar.format()))
+            main_window.CancelButton.click()
+
+        widget.update_progress.connect(press_stop)
+        widget.SaveReport()
+        assert seen == [(True, "Tax replay (RU): %p%")]
+        assert main_window.ProgressBar.isHidden() and not (tmp_path / "report.xlsx").exists()
     finally:
-        store.detach()
+        main_window.close()
+        main_window.deleteLater()

@@ -318,14 +318,24 @@ class ScratchLotStore(LedgerLotStore):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Replays the lot half of every operation of the built sequence up to 'until' into 'store', touching no ledger
-def replay(store, policy=None, until=None) -> LotEngine:
+# Replays the lot half of every operation of the built sequence up to 'until' into 'store', touching no ledger;
+# 'progress(done, total)' is called after each part
+def replay(store, policy=None, until=None, progress=None) -> LotEngine:
     engine = LotEngine(store, policy)
     until = Setup.MAX_TIMESTAMP if until is None else until
+    total = JalDB._read("SELECT COUNT(*) FROM ledger_sequence WHERE timestamp <= :until", [(":until", until)]) \
+        if progress is not None else 0
     query = JalDB._exec("SELECT o.otype, s.operation_id AS oid, s.opart FROM ledger_sequence AS s "
                         "JOIN operations AS o ON o.id=s.operation_id WHERE s.timestamp <= :until ORDER BY s.seq_no",
                         [(":until", until)])
-    while query.next():
-        otype, oid, opart = JalDB._read_record(query)
-        jal.db.operations.LedgerTransaction.get_operation(otype, oid, opart).process_lots(engine)
+    done = 0
+    try:
+        while query.next():
+            otype, oid, opart = JalDB._read_record(query)
+            jal.db.operations.LedgerTransaction.get_operation(otype, oid, opart).process_lots(engine)
+            done += 1
+            if progress is not None:
+                progress(done, total)
+    finally:
+        query.finish()   # an active statement on the store would keep it from being detached after a stop
     return engine

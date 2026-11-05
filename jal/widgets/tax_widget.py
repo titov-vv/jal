@@ -4,7 +4,7 @@ import logging
 import traceback
 import json
 
-from PySide6.QtCore import Property, Slot, Qt
+from PySide6.QtCore import Property, Slot, Signal, Qt
 from PySide6.QtGui import QShortcut, QKeySequence
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QApplication, QDialog
 
@@ -19,7 +19,7 @@ from jal.db.asset import JalAsset
 from jal.db.peer import JalPeer
 from jal.db.settings import JalSettings, FolderFor
 from jal.constants import PredefinedAgents
-from jal.data_export.taxes import TaxReport, TaxReportStop
+from jal.data_export.taxes import TaxReport, TaxReportStop, TaxReportCancelled
 from jal.data_export.tax_parameters import TAX_TREATY
 from jal.data_export.taxes_flow import TaxesFlowRus
 from jal.data_export.xlsx import XLSX
@@ -37,10 +37,15 @@ class FileType:
 
 # ----------------------------------------------------------------------------------------------------------------------
 class TaxWidget(MdiWidget):
+    show_progress = Signal(bool)          # a report starts or ends, for the main window's progress bar
+    update_progress = Signal(float)       # percent of the report done
+    update_progress_text = Signal(str)    # the bar's text, with %p% for the percent
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.ui = Ui_TaxWidget()
         self.ui.setupUi(self)
+        self._report = None    # the report being prepared, see _prepare()
 
         self._option_boxes = {'pt': self.ui.PtBox, 'ru': self.ui.RuBox}
         self.ui.Country.clear()
@@ -76,11 +81,17 @@ class TaxWidget(MdiWidget):
         for account in accounts:
             self.ui.Account.addItem(account.name(), account.id())
 
-    # Displays tax widget in a given window area.
+    # Displays tax widget in a given window area, its progress on 'main_window' if given.
     # It is implemented as a separate static method in order to prevent unexpected object deletion
     @staticmethod
-    def showInWindowArea(parent_area):
-        parent_area.addWindow(TaxWidget(), floating=True)
+    def showInWindowArea(parent_area, main_window=None):
+        widget = TaxWidget()
+        if main_window is not None:
+            widget.show_progress.connect(main_window.onToggleProgressDisplay)
+            widget.update_progress.connect(main_window.onUpdatePorgressDisplay)
+            widget.update_progress_text.connect(main_window.onUpdateProgressText)
+            main_window.CancelButton.clicked.connect(widget.on_cancel)
+        parent_area.addWindow(widget, floating=True)
 
     @Slot()
     def OnFileBtn(self, type):
@@ -115,6 +126,40 @@ class TaxWidget(MdiWidget):
     modelo3_filename = Property(str, fget=lambda self: self.ui.IRS_Modelo3Filename.text())
     no_settlement = Property(bool, fget=lambda self: self.ui.Ru_NoSettlement.isChecked())
 
+    # The report with a busy cursor and the progress shown; the window is disabled meanwhile, as the main window
+    # disables itself, since the events processed during the replay would let a second report start beside it
+    def _prepare(self, taxes) -> dict:
+        def progress(percent: float, text: str):
+            self.update_progress_text.emit(text)
+            self.update_progress.emit(percent)
+            QApplication.processEvents()
+
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        self.setEnabled(False)
+        self._report = taxes
+        self.show_progress.emit(True)
+        try:
+            return taxes.prepare_tax_report(self.year, self.account, use_one_currency_rate=self.use_one_rate,
+                                            use_settlement=(not self.no_settlement), progress=progress)
+        finally:
+            self.show_progress.emit(False)
+            self._report = None
+            self.setEnabled(True)
+            QApplication.restoreOverrideCursor()
+
+    @Slot()
+    def on_cancel(self):
+        if self._report is not None:
+            self._report.cancel()
+
+    # A floating window may be closed by the window manager while disabled; it stays while its report runs
+    @Slot()
+    def closeEvent(self, event):
+        if self._report is not None:
+            event.ignore()
+            return
+        super().closeEvent(event)
+
     def _warn_missing_broker(self, account: JalAccount) -> bool:
         broker_id = account.organization()
         broker_name = JalPeer(broker_id).name() if broker_id else ''
@@ -148,10 +193,16 @@ class TaxWidget(MdiWidget):
             return
         taxes = TaxReport.create_report(self.country)
         try:
-            tax_report = taxes.prepare_tax_report(self.year, self.account,
-                                                  use_one_currency_rate=self.use_one_rate,
-                                                  use_settlement=(not self.no_settlement))
+            tax_report = self._prepare(taxes)
+        except TaxReportCancelled:
+            logging.warning(self.tr("Interrupted by user"))
+            return
         except TaxReportStop as stop:
+            if stop.replay:
+                message = self.tr("The tax replay of the lots stopped, correct the operation and save the report "
+                                  "again:") + "\n" + stop.replay
+                logging.error(message)
+                QMessageBox().warning(self, self.tr("Tax replay stopped"), message, QMessageBox.Ok)
             if stop.missing:
                 missing = "\n".join(f"{symbol} - {reading2d(timestamp)}" for symbol, timestamp in stop.missing)
                 message = self.tr("The report needs these quotes or official currency rates, add them and save it again:") + "\n" + missing
