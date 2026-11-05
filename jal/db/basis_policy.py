@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from decimal import Decimal
+from typing import Optional
 from enum import Enum, auto
 import jal.db.operations
 from jal.constants import SwapTreatment
@@ -18,12 +19,14 @@ class Clock(Enum):
     RESTART = auto()
 
 
-# The answer for one exchange; 'share' is the part of the cost a corporate action result takes
+# The answer for one exchange; 'share' is the part of the cost a corporate action result takes, 'value' the total a
+# DISPOSAL is realized at in the account currency (None: the operation's own market value; required for a result)
 @dataclass(frozen=True)
 class Treatment:
     basis: Basis
     clock: Clock
     share: Decimal = Decimal('1')
+    value: Optional[Decimal] = None
 
 
 # ----------------------------------------------------------------------------------------------------------------------

@@ -12,6 +12,8 @@ import jal.db.account
 # Every statement on trades_opened / trades_closed, in the main database or in an attached 'schema'.
 # Ids and decimals in, rows out; LotEngine builds the lot objects and orders them.
 class LedgerLotStore(JalDB):
+    REALIZED = False   # True for a store whose trades_closed has 'realized': deals an exchange realized at a value
+
     def __init__(self, schema=None):
         super().__init__()
         self._opened = 'trades_opened' if schema is None else f'{schema}.trades_opened'
@@ -78,15 +80,19 @@ class LedgerLotStore(JalDB):
             position += qty * side
         return position
 
-    # Stores a deal
+    # Stores a deal; a 'realized' one only where the store has the column
     def close(self, account_id: int, asset_id: int, open_otype: int, open_oid: int, open_timestamp: int,
               open_price: Decimal, open_qty: Decimal, close_otype: int, close_oid: int, close_timestamp: int,
-              close_price: Decimal, close_qty: Decimal, c_price: Decimal, c_qty: Decimal, c_fx: Decimal):
+              close_price: Decimal, close_qty: Decimal, c_price: Decimal, c_qty: Decimal, c_fx: Decimal,
+              realized: bool = False):
+        if realized and not self.REALIZED:
+            raise ValueError("This lot store keeps no realized deals")
+        column, value = (", realized", ", 1") if realized else ("", "")
         _ = self._exec(
             f"INSERT INTO {self._closed}(account_id, asset_id, open_otype, open_oid, open_timestamp, open_price, "
-            "open_qty, close_otype, close_oid, close_timestamp, close_price, close_qty, c_price, c_qty, c_fx) "
+            f"open_qty, close_otype, close_oid, close_timestamp, close_price, close_qty, c_price, c_qty, c_fx{column}) "
             "VALUES(:account_id, :asset_id, :open_otype, :open_oid, :open_timestamp, :open_price, :open_qty, "
-            ":close_otype, :close_oid, :close_timestamp, :close_price, :close_qty, :c_price, :c_qty, :c_fx)",
+            f":close_otype, :close_oid, :close_timestamp, :close_price, :close_qty, :c_price, :c_qty, :c_fx{value})",
             [(":account_id", account_id), (":asset_id", asset_id), (":open_otype", open_otype),
              (":open_oid", open_oid), (":open_timestamp", open_timestamp), (":open_price", format_decimal(open_price)),
              (":open_qty", format_decimal(open_qty)), (":close_otype", close_otype), (":close_oid", close_oid),
@@ -100,23 +106,32 @@ class LedgerLotStore(JalDB):
                           "open_qty, close_otype, close_oid, close_timestamp, close_price, close_qty, c_price, c_qty, "
                           f"c_fx FROM {self._closed} WHERE id=:id", [(":id", deal_id)], named=True)
 
-    # Ids of the deals of an account (of one asset if given) closed by operations of 'close_otypes'
-    def deals(self, account_id: int, asset_id, close_otypes) -> list:
+    # Ids of the deals of an account (of one asset if given) closed by operations of 'close_otypes'; the realized ones
+    # instead if 'realized'
+    def deals(self, account_id: int, asset_id, close_otypes, realized: bool = False) -> list:
+        if realized and not self.REALIZED:
+            return []
         otypes = ','.join(str(int(x)) for x in close_otypes)
+        where = self._realized_filter(realized)
         if asset_id is None:
-            query = self._exec(f"SELECT id FROM {self._closed} WHERE close_otype IN ({otypes}) AND account_id=:account",
-                               [(":account", account_id)])
+            query = self._exec(f"SELECT id FROM {self._closed} WHERE close_otype IN ({otypes}) AND account_id=:account"
+                               f"{where}", [(":account", account_id)])
         else:
-            query = self._exec(f"SELECT id FROM {self._closed} WHERE close_otype IN ({otypes}) AND account_id=:account AND asset_id=:asset",
-                               [(":account", account_id), (":asset", asset_id)])
+            query = self._exec(f"SELECT id FROM {self._closed} WHERE close_otype IN ({otypes}) AND account_id=:account "
+                               f"AND asset_id=:asset{where}", [(":account", account_id), (":asset", asset_id)])
         return self._ids(query)
 
-    # Ids of the deals operation (otype, oid) closed in a position
+    # Ids of the deals operation (otype, oid) closed in a position, the realized ones left out
     def deals_closed_by(self, otype: int, oid: int, account_id: int, asset_id: int) -> list:
         query = self._exec(f"SELECT id FROM {self._closed} WHERE close_otype=:otype AND close_oid=:oid "
-                           "AND account_id=:account AND asset_id=:asset",
+                           f"AND account_id=:account AND asset_id=:asset{self._realized_filter(False)}",
                            [(":otype", otype), (":oid", oid), (":account", account_id), (":asset", asset_id)])
         return self._ids(query)
+
+    def _realized_filter(self, realized: bool) -> str:
+        if not self.REALIZED:
+            return ""
+        return " AND realized=1" if realized else " AND realized=0"
 
     # (otype, oid) of the operations other than trades that stored a state of the lots opened by (otype, oid)
     def modifiers(self, otype: int, oid: int) -> list:
@@ -219,6 +234,17 @@ class LotEngine:
             self._store(account, asset, deal, operation, qty=lot_qty, price_adjustment=price_factor,
                         acquired=acquired, fx_adjustment=fx_factor)
 
+    # Realizes 'share' of the cost of each of 'deals' (as carried() gives them) at 'value' in all, allocated over them
+    # as carry_in() allocates 'qty'; the deals are written as realized beside the carried ones
+    def realize(self, deals, account, asset, operation, share: Decimal, value: Decimal, qty: Decimal):
+        for deal, lot_qty in zip(deals, jal.db.closed_trade.allocate_qty(deals, qty)):
+            opened_by = deal.open_operation()
+            close_price = value * lot_qty / qty / abs(deal.qty())
+            self.store.close(account.id(), asset.id(), opened_by.type(), opened_by.id(), deal.acquired(),
+                             deal.open_price(), deal.open_qty(), operation.type(), operation.id(), operation.timestamp(),
+                             close_price, deal.qty(), deal.p_adjustment() * share, deal.q_adjustment(),
+                             deal.fx_adjustment(), realized=True)
+
     # FIFO-takes 'qty' out of the lots without deals; returns the quantity taken and its basis
     def consume(self, account, asset, operation, qty: Decimal) -> (Decimal, Decimal):
         return self._match(account, asset, operation, qty, None, record_deals=False)
@@ -290,6 +316,8 @@ class LotEngine:
 # ----------------------------------------------------------------------------------------------------------------------
 # A replay's own lot store: the lot tables in an in-memory database attached as 'schema', outside any transaction
 class ScratchLotStore(LedgerLotStore):
+    REALIZED = True
+
     def __init__(self, schema: str = 'lots_replay'):
         super().__init__(schema)
         self._schema = schema
@@ -308,7 +336,7 @@ class ScratchLotStore(LedgerLotStore):
                    "open_qty TEXT NOT NULL, close_otype INTEGER NOT NULL, close_oid INTEGER NOT NULL, "
                    "close_timestamp INTEGER NOT NULL, close_price TEXT NOT NULL, close_qty TEXT NOT NULL, "
                    "c_price TEXT NOT NULL DEFAULT ('1'), c_qty TEXT NOT NULL DEFAULT ('1'), "
-                   "c_fx TEXT NOT NULL DEFAULT ('1'))")
+                   "c_fx TEXT NOT NULL DEFAULT ('1'), realized INTEGER NOT NULL DEFAULT (0))")
 
     def schema(self) -> str:
         return self._schema

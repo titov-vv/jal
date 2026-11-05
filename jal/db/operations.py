@@ -1464,6 +1464,18 @@ class Trade(FeeCarrier, LedgerTransaction):
 # moment of disposal, exactly as in the same-chain case. A conversion parks the basis instead, and the receiving leg
 # re-opens the lots the sending one closed. A same-chain swap keeps a single part (Swap.Whole) and is
 # processed by the simpler code path below - no value travels through the Transfers book.
+# Market value of an exchange in 'currency_id': the disposed asset's quote, or the acquired asset's if the disposed one
+# has none; None if neither is quoted
+def exchange_value(out_asset, out_qty: Decimal, out_timestamp: int, in_asset, in_qty: Decimal, in_timestamp: int,
+                   currency_id: int):
+    _, price = out_asset.quote(out_timestamp, currency_id)
+    if price != Decimal('0'):
+        return price * out_qty
+    _, price = in_asset.quote(in_timestamp, currency_id)
+    return None if price == Decimal('0') else price * in_qty
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 class Swap(FeeCarrier, LedgerTransaction):
     Whole = 0       # A same-chain swap: disposal and acquisition happen at once, on one account
     Outgoing = -1   # Cross-chain: the disposal leg (source account, source chain)
@@ -1624,15 +1636,11 @@ class Swap(FeeCarrier, LedgerTransaction):
     # same moment for a same-chain swap).
     def value(self) -> Decimal:
         if self._value is None:
-            _, price = self._out_asset.quote(int(self._data['timestamp']), self._account.currency())
-            if price != Decimal('0'):
-                self._value = price * self._out_qty
-            else:
-                _, price = self._in_asset.quote(self._in_timestamp, self._account.currency())
-                if price == Decimal('0'):
-                    raise LedgerError(LedgerTransaction.tr("There are no quotes to value the swap. Date: ")
-                                      + f"{ts2dt(self._timestamp)}, Operation: {self.dump()}")
-                self._value = price * self._in_qty
+            self._value = exchange_value(self._out_asset, self._out_qty, int(self._data['timestamp']), self._in_asset,
+                                         self._in_qty, self._in_timestamp, self._account.currency())
+            if self._value is None:
+                raise LedgerError(LedgerTransaction.tr("There are no quotes to value the swap. Date: ")
+                                  + f"{ts2dt(self._timestamp)}, Operation: {self.dump()}")
         return self._value
 
     # Unit price of the disposed asset - it is the closing price of the FIFO deals created by the swap. None for a
@@ -1792,12 +1800,12 @@ class Swap(FeeCarrier, LedgerTransaction):
             else:
                 engine.acquire(self._in_account, self._in_asset, self, in_value / self._in_qty, self._in_qty)
             return in_value
-        value = None if conversion else self.value()
+        value = None if conversion else (self.value() if treatment.value is None else treatment.value)
         if conversion:
             processed_qty, basis = engine.carry_out(self._account, self._out_asset, self, self._out_qty)
         else:
             processed_qty, basis = engine.dispose(self._account, self._out_asset, self, self._out_qty,
-                                                  self.value() / self._out_qty)
+                                                  value / self._out_qty)
         if processed_qty < self._out_qty:
             raise LedgerError(LedgerTransaction.tr("Processed asset amount is less than swap amount. Date: ")
                               + f"{ts2dt(self._timestamp)}, Processed amount: {processed_qty}, "
@@ -2755,8 +2763,13 @@ class CorporateAction(LedgerTransaction):
                 continue
             qty = Decimal(result['qty'])
             treatment = engine.policy.action_result(self, result)
-            if treatment.basis != jal.db.basis_policy.Basis.CARRY:
-                raise ValueError(f"A corporate action result can only carry its lots, not {treatment.basis}")
+            if treatment.basis == jal.db.basis_policy.Basis.DISPOSAL:   # its share of each lot sold at the value
+                if treatment.value is None:
+                    raise ValueError("A corporate action result can't be realized without a value")
+                engine.realize(closed_trades, self._account, self._asset, self, treatment.share, treatment.value,
+                               abs(qty))
+                engine.acquire(self._account, asset, self, treatment.value / abs(qty), abs(qty))
+                continue
             # The quantity the action produced is allocated over the lots it carries over, so they add up to it
             # exactly; their price keeps the coefficient that preserves the value of each lot.
             acquired = None if treatment.clock == jal.db.basis_policy.Clock.KEEP else self._timestamp
@@ -2907,20 +2920,35 @@ class Conversion(FeeCarrier, LedgerTransaction):
     def in_asset(self) -> JalAsset:
         return self._in_asset
 
+    # Market value of the conversion in the account currency, as a swap's (see exchange_value())
+    def value(self) -> Decimal:
+        value = exchange_value(self._out_asset, self._out_qty, self._timestamp, self._in_asset, self._in_qty,
+                               self._timestamp, self._account.currency())
+        if value is None:
+            raise LedgerError(LedgerTransaction.tr("There are no quotes to value the wrapping. Date: ")
+                              + f"{ts2dt(self._timestamp)}, Operation: {self.dump()}")
+        return value
+
     # The lot half of a conversion; returns the quantity converted and its basis
     def process_lots(self, engine, parked=None):
         if self.is_fee_row():
             return super().process_lots(engine)
-        # The lots close at basis and re-open on the acquired asset, re-scaled by in_qty/out_qty so their value
-        # stays; the policy keeps or restarts their date.
+        # A carry closes the lots at basis and re-opens them on the acquired asset, re-scaled by in_qty/out_qty so
+        # their value stays, the date kept or restarted; a disposal sells them at the value and buys the acquired asset
         treatment = engine.policy.treatment(self)
-        if treatment.basis != jal.db.basis_policy.Basis.CARRY:
-            raise ValueError(f"A conversion can only carry its lots, not {treatment.basis}")
-        processed_qty, processed_value = engine.carry_out(self._account, self._out_asset, self, self._out_qty)
+        if treatment.basis == jal.db.basis_policy.Basis.DISPOSAL:
+            value = self.value() if treatment.value is None else treatment.value
+            processed_qty, processed_value = engine.dispose(self._account, self._out_asset, self, self._out_qty,
+                                                            value / self._out_qty)
+        else:
+            processed_qty, processed_value = engine.carry_out(self._account, self._out_asset, self, self._out_qty)
         if processed_qty < self._out_qty:
             raise LedgerError(LedgerTransaction.tr("Processed asset amount is less than wrapped amount. Date: ")
                               + f"{ts2dt(self._timestamp)}, Processed amount: {processed_qty}, "
                               + f"Required: {self._out_qty}, Operation: {self.dump()}")
+        if treatment.basis == jal.db.basis_policy.Basis.DISPOSAL:
+            engine.acquire(self._account, self._in_asset, self, value / self._in_qty, self._in_qty)
+            return processed_qty, processed_value
         closed_trades = engine.carried(self, self._account, self._out_asset)
         acquired = self._timestamp if treatment.clock == jal.db.basis_policy.Clock.RESTART else None
         engine.carry_in(closed_trades, self._account, self._in_asset, self, qty=self._in_qty,

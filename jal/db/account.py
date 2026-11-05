@@ -538,12 +538,12 @@ class JalAccount(JalDB):
     # Returns a list of JalClosedTrade objects recorded for the account which represents normally closed trades
     # 'close_otypes' selects which kinds of closing operation to include; it defaults to Trade only, so tax reports
     # (which don't pass it) stay unchanged. The Deals report passes (Trade, Swap) to also show swap-realized deals.
-    def closed_trades_list(self, asset=None, close_otypes=None, store=None) -> list:
+    def closed_trades_list(self, asset=None, close_otypes=None, store=None, realized=False) -> list:
         if close_otypes is None:
             close_otypes = (jal.db.operations.LedgerTransaction.Trade,)
         store = jal.db.lots.LedgerLotStore() if store is None else store
         trades = []
-        for deal_id in store.deals(self._id, None if asset is None else asset.id(), close_otypes):
+        for deal_id in store.deals(self._id, None if asset is None else asset.id(), close_otypes, realized):
             trades.append(jal.db.closed_trade.JalClosedTrade(deal_id, store=store))
         return trades
 
