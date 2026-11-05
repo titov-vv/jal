@@ -7,6 +7,7 @@ import re
 import logging
 import functools
 import importlib
+import weakref
 import sqlparse
 from configparser import ConfigParser, Error as ConfigError
 from packaging.version import Version
@@ -105,7 +106,8 @@ class JalDB:
         "UNION ALL SELECT f.symbol_id, f.account_id, o.timestamp FROM fees AS f " \
         "LEFT JOIN operations AS o ON o.id=f.operation_id"
     _tables = []
-    _instances_with_cache = []
+    _class_caches = {}                               # {class with a class-level cache: its first instance}
+    _instance_caches = weakref.WeakValueDictionary()  # {id: instance with a cache of its own}, while alive
     _sql_call_count = 0
     _trace_sql_requests = os.environ.get('TRACE_SQL', '').upper() == 'YES'
     _in_transaction = False   # True while an explicit transaction is open (see start_transaction())
@@ -121,8 +123,11 @@ class JalDB:
     # By default, db objects don't cache data. But if and object may cache db data we need to track it so parameter
     # 'cached' to be set to True. Such objects should implement invalidate_cache(), class_cache() methods also.
     def __init__(self, cached=False, **kwargs):
-        if cached:
-            self._instances_with_cache.append(self)
+        if cached:   # one instance reaches a class-level cache, so only the first is kept
+            if self.class_cache():
+                JalDB._class_caches.setdefault(type(self), self)
+            else:
+                JalDB._instance_caches[id(self)] = self
         super().__init__()
 
     @staticmethod
@@ -355,12 +360,7 @@ class JalDB:
 
     # ------------------------------------------------------------------------------------------------------------------
     def invalidate_cache(self):
-        processed_cache_classes = set()   # a list of classes that were already invalidated and don't need extra action
-        for item in self._instances_with_cache:
-            if item.class_cache() and type(item) in processed_cache_classes:
-                continue
-            else:
-                processed_cache_classes.add(type(item))
+        for item in list(JalDB._class_caches.values()) + list(JalDB._instance_caches.values()):
             item.invalidate_cache()
 
     # Method returns true if data are cached on a class level, not in every instance
