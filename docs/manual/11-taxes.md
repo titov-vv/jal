@@ -56,7 +56,7 @@ In the order they are written:
 | Portugal | Russia | Base | What is on it |
 |---|---|---|---|
 | Summary | Сводка | — | The totals of each base — see below. |
-| Shares | Акции | G · securities | Sales of shares and funds. |
+| Shares | Акции | G · securities | Sales of shares and funds. In Portugal also the shares given up in a merger into a company outside the EU, as a disposal (*Permuta*) — see [How each country sees an exchange](#how-each-country-sees-an-exchange). |
 | Bonds | Облигации | G · securities | Bond sales and redemptions. In Russia the coupons and accrued interest too; in Portugal they go on Interest. The Russian price is per bond, in the trade's currency. |
 | Derivatives | ПФИ | G · derivatives | Options, futures and other derivatives closed in the year. |
 | Crypto < 365 days | — | G | Crypto sold for money after less than 365 days. |
@@ -70,7 +70,7 @@ In the order they are written:
 | Not covered | Не отражено | — | Everything taxable that no other sheet shows — see below. |
 
 In Portugal a crypto-for-crypto exchange is never a sale, so only sales for money appear; in Russia
-every exchange is one.
+every exchange is one. How each country values them is [below](#how-each-country-sees-an-exchange).
 
 ### Short sales
 
@@ -126,20 +126,40 @@ lines to read before filing:
 * **Not included in any section** — taxable operations JAL has no sheet for yet, such as a spin-off
   or a deal in a fund. They are listed on **Not covered** so that nothing disappears silently;
   how to declare them is up to you.
-* **Rows marked "pending replay"** — see below.
 
-Below the counts come the [base estimations](#base-estimation) of tax, one line per sheet that has one,
-then any warning — rates probably missing, [parameters](#tax-parameters) not reviewed for the year — and
+Below the counts come the [base estimations](#base-estimation) of tax, one line per tax base on sales and
+per sheet of income that has one, then any warning — rates probably missing, [parameters](#tax-parameters) not reviewed for the year — and
 last the list of [your decisions](#your-decisions-tax-treatment) the report applied.
 
-### Pending replay
+### How each country sees an exchange
 
-A crypto-for-crypto exchange or a wrapping that you recorded *without a result* moves the old coin's
-cost onto the new one. Russian rules see every such exchange as a sale at market value, and JAL does
-not yet recompute it that way. Lines that depend on such an exchange — the exchange itself, and later
-sales of coins whose cost came through one — are marked **pending replay** (*ожидает пересчёта*):
-their figures may still change when JAL learns to replay them. In Portugal the same mark flags a lot
-whose cost or holding period passed through such an exchange.
+JAL books an exchange its own way: a swap you recorded as a sale realizes a result, while a swap
+recorded *without a result*, a wrapping (ETH → WETH), a supply to or a withdrawal from a lending
+protocol, and a corporate action carry the cost of the old asset onto the new one. Countries read
+these differently, and a different reading changes not only the exchange but every later sale of what
+it gave you. So each report **replays the whole history of your lots under its country's rules**,
+all accounts and all years, and takes its figures from that replay. Your own ledger, holdings, Deals
+and profit and loss are not touched — they stay as JAL books them.
+
+* **Russia** — every swap and every wrapping, the supply and withdrawal of a lending protocol
+  included, is a **sale at market value**: the old coin's quote of that day, or the new coin's if the
+  old one has none. The coin received starts at that value, on that day. Crypto received as income
+  starts at its quote on the day it arrived — the value the Криптодоход sheet taxes — so a later sale
+  is not taxed on it twice. Corporate actions are carried as JAL books them.
+* **Portugal** — a crypto-for-crypto exchange or a wrapping is no sale: the coin received **keeps the
+  cost of the coin given**, through any number of exchanges, back to the purchase for money — but its
+  **365-day holding period starts again** at each exchange (CIRS art. 10.º, n.º 20). A sale may
+  therefore move between the *Crypto < 365 days* and *Crypto ≥ 365 days* sheets compared with JAL's own
+  view. Crypto received as income starts at zero. Shares exchanged in a **merger into a company outside
+  the EU** are a disposal (article 10.º, n.º 8 covers EU companies only), valued per new share at the
+  higher of the old shares' last quote times their part of the cost, and the new shares' first quote;
+  the new shares start at that value. A spin-off is no disposal: the cost is split as the corporate
+  action states, and the Shares sheet says so.
+
+The replay takes time — around **20 seconds** per report on a ledger of several years. A progress bar
+on the status bar shows it; **Stop** ends the report without writing anything. The tax window stays
+locked until it is done. If an exchange the country treats as a sale has no quote to value it, the
+report stops and names it.
 
 ### Currency rates
 
@@ -171,18 +191,23 @@ file says up to which year it was last **reviewed** against the official sources
 ### Base estimation
 
 Some figures are JAL's estimate rather than a fact from the broker: in the Russian report, the
-dividend tax still to pay and the tax on interest; and the tax column of the
+dividend tax still to pay and the tax on interest; in both reports, the tax on each base of sales on the
+Summary sheet; and the tax column of the
 [tax estimate](06-investments.md#what-a-sale-would-cost-in-tax) window. Each of them is a **base
 estimation**: the base rate of the year from the [parameters](#tax-parameters), applied to the income
 and nothing more —
 
 * no progressive bracket, no deduction, no netting with other sheets or other accounts;
 * for a dividend, the tax withheld abroad is subtracted only where a tax treaty applies, and never
-  below zero.
+  below zero;
+* for sales, one estimate per base, on its total: in **Russia** securities (shares and bonds together),
+  derivatives and crypto, each apart — derivatives are not netted with securities, as JAL cannot tell
+  derivatives on securities from the others; in **Portugal** the one balance of category G, crypto held
+  365 days or more left out. A loss counts as zero and reduces no other base.
 
 It is printed in italics on a pale amber background, the column header says *базовая оценка* /
 *base estimation*, a line under the sheet's title states the rate, and the Summary sheet adds the
-estimations up per sheet. It is a guide to the order of the amount, **not** the tax you owe: the
+estimations up. It is a guide to the order of the amount, **not** the tax you owe: the
 declaration computes that.
 
 ### Your decisions (tax treatment)
@@ -197,7 +222,16 @@ There is one row per country. Choose a decision and write a note — the note is
 printed in the report next to the decision:
 
 * **Not a tax event** — that country's report leaves the operation out of its sheet and its totals,
-  and lists it last on **Not covered** with your note.
+  and lists it last on **Not covered** with your note. On an exchange — a swap, a wrapping, a corporate
+  action — it also makes the [replay](#how-each-country-sees-an-exchange) carry the cost and the date
+  through it, so that the gain is taxed when what you received is sold.
+* **A tax event** — offered for an exchange the country's rules carry (a crypto exchange in Portugal, a
+  corporate action in Russia): the replay sells the old asset at market value — for a corporate action,
+  the estimate described above — and the new one starts at that value.
+* **A tax event at a price per received share** — offered for a corporate action into one other asset:
+  enter the price in the **Price** column; the old shares are sold, and the new ones start, at that
+  price times the shares received. Use it where the market value is known, e.g. from the exchange ratio
+  and a reference price.
 * **Tax treaty applies** / **No tax treaty** — offered for dividends only: that country's report
   takes your answer instead of its treaty list, for the treaty column and for the
   [base estimation](#base-estimation).

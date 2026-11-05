@@ -76,7 +76,7 @@ class TaxOverrideDialog(QDialog):
         self._buttons.accepted.connect(self.accept)
         self._buttons.rejected.connect(self.reject)
         layout.addWidget(self._buttons, len(self._rows) + 2, 0, 1, 5)
-        self.setMinimumWidth(600)
+        self.setMinimumWidth(720)
         self._validate()
 
     # True if the jurisdiction's own rule carries the exchange, so that a decision may make it a tax event

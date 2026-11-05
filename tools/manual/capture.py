@@ -341,7 +341,7 @@ def capture_tax_treatment(window):
     oid = JalDB._read("SELECT oid FROM asset_payments WHERE type=:dividend ORDER BY timestamp LIMIT 1",
                       [(":dividend", AssetPayment.Dividend)])
     dialog = TaxOverrideDialog(LedgerTransaction.AssetPayment, oid, window)
-    decision, note = dialog._rows['ru']
+    decision, _, note = dialog._rows['ru']
     decision.setCurrentIndex(3)   # No tax treaty
     note.setText("Withheld at 30 %: the broker lost its treaty status")
     dialog.adjustSize()

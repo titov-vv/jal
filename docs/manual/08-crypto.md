@@ -129,7 +129,8 @@ Mark each stablecoin you hold as **pegged to** its currency (USDC and USDT to US
 the first of them. Choose *Sale* or *Conversion* on a single swap when it should differ.
 
 This is JAL's own view of your investments — holdings, deals, P&L. A tax authority may see the same
-swap differently, and the tax reports do not read swaps yet.
+swap differently: each tax report applies its own country's rules to every swap, whatever you chose
+here — see [chapter 11](11-taxes.md#how-each-country-sees-an-exchange).
 
 Press **+** next to **Fee** to record the gas, and choose the coin it was paid in. Tick **Cross chain** when what you
 received arrived on a *different* account (a different chain) and possibly minutes later — the lower
