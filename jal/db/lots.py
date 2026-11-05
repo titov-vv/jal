@@ -1,12 +1,14 @@
 from decimal import Decimal
+from jal.constants import Setup
 from jal.db.db import JalDB
 from jal.db.helpers import format_decimal
 import jal.db.operations
+import jal.db.closed_trade
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Where lots and deals live: every statement on 'trades_opened' / 'trades_closed' of the ledger rebuild.
-# Works on ids and decimals, returns rows; building lot objects and their FIFO order stay with the callers.
+# Works on ids and decimals and returns rows; LotEngine builds the lot objects and orders them.
 class LedgerLotStore(JalDB):
     # Stores a state of a lot; a NULL 'slice_id' makes the trades_opened_set_slice trigger give it the row's own id
     def open(self, timestamp: int, otype: int, oid: int, m_otype: int, m_oid: int, account_id: int, asset_id: int,
@@ -128,3 +130,119 @@ class LedgerLotStore(JalDB):
         while query.next():
             ids.append(self._read_record(query, cast=[int]))
         return ids
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The only code that matches lots: FIFO over a LotStore and the primitives every operation's lot path reduces to.
+# A quantity given to dispose()/carry_out() is what leaves the position: positive closes a long, negative a short.
+class LotEngine:
+    def __init__(self, store=None):
+        self.store = LedgerLotStore() if store is None else store
+
+    # Open lots of a position at 'timestamp' (latest if None) in FIFO order: by acquisition date, then by the
+    # original operation; slice_id breaks the remaining ties, as slices get ids in replay (chronological) order
+    def lots(self, account, asset, timestamp=None) -> list:
+        if timestamp is None:
+            timestamp = Setup.MAX_TIMESTAMP
+        lots = []
+        for otype, oid, price, qty, p, q, fx, slice_id, acquired in self.store.lots(account.id(), asset.id(), timestamp):
+            operation = jal.db.operations.LedgerTransaction().get_operation(otype, oid,
+                                                                            jal.db.operations.Transfer.Incoming)
+            lots.append(jal.db.closed_trade.JalOpenTrade(operation, price, qty, adjustments=(p, q), fx=fx,
+                                                         slice_id=slice_id, acquired=acquired))
+        return sorted(lots, key=lambda x: (x.acquired(), x.open_operation().timestamp(), x.slice_id()))
+
+    # Opens a new lot of 'qty' at 'price'; 'acquired' defaults to the operation's own time
+    def acquire(self, account, asset, operation, price: Decimal, qty: Decimal, acquired=None):
+        self._store(account, asset, jal.db.closed_trade.JalOpenTrade(operation, price, qty, acquired=acquired),
+                    operation)
+
+    # FIFO-closes 'qty' into deals at 'close_price'; returns the quantity matched and its basis, both unsigned
+    def dispose(self, account, asset, operation, qty: Decimal, close_price: Decimal) -> (Decimal, Decimal):
+        return self._match(account, asset, operation, qty, close_price, record_deals=True)
+
+    # FIFO-closes 'qty' into deals at each lot's own price, for carry_in() to re-open; returns (quantity, basis)
+    def carry_out(self, account, asset, operation, qty: Decimal) -> (Decimal, Decimal):
+        return self._match(account, asset, operation, qty, None, record_deals=True)
+
+    # The deals 'operation' closed in a position, as carry_in() takes them
+    def carried(self, operation, account, asset) -> list:
+        deals = self.store.deals_closed_by(operation.type(), operation.id(), account.id(), asset.id())
+        return [jal.db.closed_trade.JalClosedTrade(x) for x in deals]
+
+    # Re-opens 'deals' as lots of 'asset' on 'account'. Each keeps its quantity when 'qty' is None, otherwise 'qty' is
+    # allocated over them; their price takes 'price_factor', c_fx takes 'fx_factor'; 'acquired' restarts the date.
+    def carry_in(self, deals, account, asset, operation, qty=None, price_factor=Decimal('1'), fx_factor=Decimal('1'),
+                 acquired=None):
+        quantities = [x.qty() for x in deals] if qty is None else jal.db.closed_trade.allocate_qty(deals, qty)
+        for deal, lot_qty in zip(deals, quantities):
+            self._store(account, asset, deal, operation, qty=lot_qty, price_adjustment=price_factor,
+                        acquired=acquired, fx_adjustment=fx_factor)
+
+    # FIFO-takes 'qty' out of the lots without deals; returns the quantity taken and its basis
+    def consume(self, account, asset, operation, qty: Decimal) -> (Decimal, Decimal):
+        return self._match(account, asset, operation, qty, None, record_deals=False)
+
+    # What FIFO would take for 'qty' at 'timestamp', writing nothing: (quantity matched, basis, lots touched)
+    def basis(self, account, asset, qty: Decimal, timestamp: int) -> (Decimal, Decimal, int):
+        matched, basis, lots = Decimal('0'), Decimal('0'), 0
+        if qty <= Decimal('0'):
+            return matched, basis, lots
+        for lot, taken, _ in self._walk(self.lots(account, asset, timestamp), qty):
+            matched += taken
+            basis += taken * lot.open_price(adjusted=True)
+            lots += 1
+        return matched, basis, lots
+
+    # FIFO steps over 'lots' for 'qty': (lot, quantity taken, quantity left in the lot). A lot and the quantity still
+    # required that differ by no more than LOT_QTY_TOLERANCE are the same number: postings are rounded to the account
+    # precision while lots are not, so the crumb must neither abort a rebuild nor stay behind as a dust lot.
+    @staticmethod
+    def _walk(lots, qty: Decimal):
+        tolerance = qty * Decimal(Setup.LOT_QTY_TOLERANCE)
+        taken = Decimal('0')
+        for lot in lots:
+            held = lot.open_qty()
+            required = qty - taken
+            if abs(held - required) <= tolerance:
+                step, left = required, Decimal('0')
+            else:
+                step = held if held <= required else required
+                left = held - step
+            yield lot, step, left
+            taken += step
+            if taken == qty:
+                return
+
+    def _match(self, account, asset, operation, qty, close_price, record_deals) -> (Decimal, Decimal):
+        sign = Decimal('-1') if qty < Decimal('0') else Decimal('1')
+        matched, basis = Decimal('0'), Decimal('0')
+        for lot, taken, left in self._walk(self.lots(account, asset), abs(qty)):
+            lot.set_qty(left)
+            self._store(account, asset, lot, operation)
+            if record_deals:
+                deal_price = lot.open_price() if close_price is None else close_price
+                self._close(account, asset, lot, operation, sign * taken, deal_price)
+            matched += taken
+            basis += taken * lot.open_price(adjusted=True)
+        return matched, basis
+
+    # Stores a state of 'lot' changed by 'operation'. 'qty' re-sizes it (c_qty then relates it to the opening
+    # quantity, for reporting only); 'price_adjustment' and 'fx_adjustment' multiply into c_price and c_fx.
+    def _store(self, account, asset, lot, operation, qty=None, price_adjustment=Decimal('1'), acquired=None,
+               fx_adjustment=Decimal('1')):
+        opened_by = lot.open_operation()
+        acquired = lot.acquired() if acquired is None else acquired
+        if qty is None:
+            qty, q_adjustment = lot.open_qty(), lot.q_adjustment()
+        else:
+            q_adjustment = qty / abs(lot.open_qty()) if lot.open_qty() else Decimal('1')   # a short deal is negative
+        self.store.open(operation.timestamp(), opened_by.type(), opened_by.id(), operation.type(), operation.id(),
+                        account.id(), asset.id(), lot.open_price(), qty, lot.p_adjustment() * price_adjustment,
+                        q_adjustment, lot.fx_adjustment() * fx_adjustment, lot.slice_id(), acquired)
+
+    def _close(self, account, asset, lot, operation, qty: Decimal, close_price: Decimal):
+        opened_by = lot.open_operation()
+        self.store.close(account.id(), asset.id(), opened_by.type(), opened_by.id(), lot.acquired(), lot.open_price(),
+                         qty / lot.q_adjustment(), operation.type(), operation.id(), operation.timestamp(), close_price,
+                         qty, lot.p_adjustment(), lot.q_adjustment(), lot.fx_adjustment())

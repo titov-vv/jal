@@ -53,7 +53,7 @@ def test_the_basis_is_what_was_paid_for_the_quantity(funded):
     assert basis['complete'] is True
 
 
-# The quantity is taken lot by lot in the order they were opened, exactly as _close_deals_fifo() takes it - a basis
+# The quantity is taken lot by lot in the order they were opened, exactly as the rebuild takes it - a basis
 # computed on the average or on the newest lot would disagree with what the rebuild books afterwards.
 def test_the_lots_are_taken_in_fifo_order(funded):
     create_trades(WALLET, [(d2t(210102), d2t(210102), USDT, 100.0, 1.0, 0.0),
@@ -64,6 +64,18 @@ def test_the_lots_are_taken_in_fifo_order(funded):
 
     assert basis['basis'] == Decimal('200')            # 100 at 1.00, then 50 at 2.00
     assert basis['lots'] == 2
+
+
+# A lot a rounding crumb short of the quantity covers it, as the rebuild's FIFO would take it
+def test_a_crumb_short_lot_covers_the_quantity(funded):
+    create_trades(WALLET, [(d2t(210102), d2t(210102), USDT, 1.0, 1.0, 0.0)])
+    Ledger().rebuild(from_timestamp=0)
+
+    basis = _basis(Decimal('1.00000000000000000000000001'))
+
+    assert basis['qty'] == Decimal('1.00000000000000000000000001') and basis['short'] == Decimal('0')
+    assert basis['lots'] == 1
+    assert basis['complete'] is True
 
 
 # The lots as they stood at the moment asked about, not as they stand now: an operation is booked where it belongs

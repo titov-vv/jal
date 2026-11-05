@@ -2,6 +2,7 @@ from decimal import Decimal
 from jal.db.clock import local_moment, local_reading
 from jal.db.asset import JalAsset
 from jal.db.db import JalDB
+from jal.db.lots import LotEngine
 
 
 # A rate found this long before the moment it is asked about is no longer a statement about that moment. Currency
@@ -57,12 +58,11 @@ def _stored_rate_age(currency: int, target_currency: int, timestamp: int) -> int
 # ----------------------------------------------------------------------------------------------------------------------
 # What 'qty' of 'asset' cost the account that holds it, and what that cost amounts to in 'target_currency'.
 #
-# This is the read-only twin of LedgerTransaction._close_deals_fifo(): it takes the same open lots, in the same FIFO
-# order, from the same 'trades_opened' table - but writes nothing, closes no deal and moves no quantity. It answers
-# what an operation WOULD consume if it were recorded at 'timestamp', which is what lets a cost basis be shown, and
-# corrected, before anything is committed.
+# It is LotEngine.basis(): the FIFO the rebuild matches lots with, walked read-only - it writes nothing, closes no deal
+# and moves no quantity. It answers what an operation WOULD consume if it were recorded at 'timestamp', which is what
+# lets a cost basis be shown, and corrected, before anything is committed.
 #
-# It is exact rather than an estimate, as long as the ledger is built past 'timestamp': open_trades_list() rebuilds
+# It is exact rather than an estimate, as long as the ledger is built past 'timestamp': LotEngine.lots() rebuilds
 # the lots as they stood at that moment, which is the state the rebuild will meet when it reaches the operation.
 #
 # Everything it returns is a statement about what is already recorded, and nothing here is stored anywhere - the
@@ -82,18 +82,7 @@ def _stored_rate_age(currency: int, target_currency: int, timestamp: int) -> int
 #   'value'          'basis' converted into 'target_currency'
 #   'complete'       every part of the answer is present and current, so it may be offered as a default
 def carried_basis(account, asset, qty: Decimal, timestamp: int, target_currency: int) -> dict:
-    matched = Decimal('0')
-    basis = Decimal('0')
-    lots = 0
-    if qty > Decimal('0'):
-        for trade in account.open_trades_list(asset, timestamp):
-            available = trade.open_qty()
-            taken = available if available < (qty - matched) else (qty - matched)
-            matched += taken
-            basis += taken * trade.open_price(adjusted=True)
-            lots += 1
-            if matched >= qty:
-                break
+    matched, basis, lots = LotEngine().basis(account, asset, qty, timestamp)
     return restated_basis(basis, account.currency(), timestamp, target_currency, matched, qty - matched, lots)
 
 

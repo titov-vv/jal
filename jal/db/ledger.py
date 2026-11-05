@@ -10,7 +10,7 @@ from jal.constants import BookAccount, Setup
 from jal.db.helpers import format_decimal
 from jal.db.db import JalDB
 from jal.db.account import JalAccount
-from jal.db.lots import LedgerLotStore
+from jal.db.lots import LedgerLotStore, LotEngine
 from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
 from jal.db.operations import LedgerTransaction, LedgerError, LedgerAssetShortage
@@ -116,6 +116,7 @@ class Ledger(QObject, JalDB):
         self._cancelled = False
         self.amounts = LedgerAmounts("amount_acc")    # store last amount for [book, account, asset]
         self.values = LedgerAmounts("value_acc")      # together with corresponding value
+        self.lots = LotEngine()                       # the lot matching every operation of the rebuild goes through
         # The LedgerError that ended the last rebuild, or None when it ran to the end. The message of it is logged
         # for the user either way; the exception itself is kept so that a caller who knows how to make the stop good
         # can act on what it carries (absorb_residues() below) instead of parsing the text back out.

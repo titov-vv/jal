@@ -44,7 +44,7 @@ class JalOpenTrade(JalDB):
         return self._acquired
 
     # Identity of the held slice this trade represents (see trades_opened.slice_id). None means "not yet stored":
-    # a freshly opened or carried-over slice that JalAccount.open_trade() will let the DB assign a new id to.
+    # a freshly opened or carried-over slice that LotEngine stores for the DB to assign a new id to.
     def slice_id(self):
         return self._slice_id
 
@@ -73,7 +73,7 @@ class JalOpenTrade(JalDB):
         return self._fx
 
     # Relates what the lot holds to the quantity of the operation that opened it (qty = c_qty * original_qty).
-    # Reporting only - JalClosedTrade.create_from_trades() needs it to express a closed deal in original units.
+    # Reporting only - LotEngine needs it to express a closed deal in original units.
     def q_adjustment(self) -> Decimal:
         return self._adj_qty
 
@@ -103,20 +103,6 @@ class JalClosedTrade(JalDB):
             self._adj_price = self._adj_qty = self._fx = Decimal('1')
             self._acquired = 0
 
-    @classmethod
-    # Creates a record in 'trades_closed' table based on given data:
-    # o_trade - trade JalClosedTrade that initiates the trade (may also be AssetPayment as Stock Dividend or Vesting)
-    # c_operation - LedgerTransaction that closed current trade
-    # o_qty and c_qty - how many items were used from opening and closing trades respectively
-    def create_from_trades(cls, o_trade: JalOpenTrade, c_operation, qty):
-        o_operation = o_trade.open_operation()
-        o_qty = qty / o_trade.q_adjustment()   # Calculate adjusted amount for opening trade
-        c_price = o_trade.open_price() if c_operation.price() is None else c_operation.price()
-        jal.db.lots.LedgerLotStore().close(c_operation.account().id(), c_operation.asset().id(), o_operation.type(),
-                                           o_operation.id(), o_trade.acquired(), o_trade.open_price(), o_qty,
-                                           c_operation.type(), c_operation.id(), c_operation.timestamp(), c_price, qty,
-                                           o_trade.p_adjustment(), o_trade.q_adjustment(), o_trade.fx_adjustment())
-
     def dump(self) -> list:
         return [
             self._asset.symbol(self._account.currency()),
@@ -143,7 +129,7 @@ class JalClosedTrade(JalDB):
         return self._open_op
 
     # A closed trade is only ever re-opened as a brand new slice on a destination account (Transfer/CorporateAction
-    # carry-over), so it never preserves a slice identity - open_trade() lets the DB assign a fresh one.
+    # carry-over), so it never preserves a slice identity - the DB assigns a fresh one.
     def slice_id(self):
         return None
 

@@ -7,7 +7,7 @@ import jal.db.operations
 import jal.db.closed_trade
 import jal.db.chain_balance
 import jal.db.receivable
-from jal.db.lots import LedgerLotStore
+from jal.db.lots import LedgerLotStore, LotEngine
 from jal.constants import Setup, BookAccount, PredefinedAsset, PredefinedAgents, PredefinedAccountType, AccountStatus, AccountData, AssetLocation, \
     PredefinedCategory
 from jal.db.clock import ZONE_SPAN
@@ -546,55 +546,11 @@ class JalAccount(JalDB):
             trades.append(jal.db.closed_trade.JalClosedTrade(deal_id))
         return trades
 
-    # Creates a record in 'trades_open' table that manifests current asset position
-    # trade - JalOpenTrade that should be stored as open trade (may represent existing position or be a new object)
-    # asset - JalAsset for which trade is recorded
-    # modified_by - indicate operation that modifies the original position
-    # qty - the quantity the stored lot holds - it can be explicitly adjusted by some conversion operation.
-    #       None keeps what 'trade' holds, which is what an open position being re-written after partial consumption.
-    # price_adjustment - coefficient applied to the price of the original operation (a size change)
-    # fx_adjustment - rate of a transfer between currencies, kept apart in 'c_fx' so the native cost survives it
-    # 'acquired' gives the lot a new acquisition date (a corporate action's new stock); None keeps the trade's own
-    def open_trade(self, trade, asset, modified_by=None, qty=None, price_adjustment=Decimal('1'), acquired=None,
-                   fx_adjustment=Decimal('1')):
-        operation = trade.open_operation()
-        acquired = trade.acquired() if acquired is None else acquired
-        modified_by = operation if modified_by is None else modified_by
-        if qty is None:
-            remaining_qty, q_adjustment = trade.open_qty(), trade.q_adjustment()
-        else:
-            # 'c_qty' relates the stored quantity to the quantity of the operation that opened the lot, which for a
-            # closed deal is its 'open_qty'. It is written for reporting only and never multiplies a quantity again.
-            remaining_qty = qty
-            q_adjustment = qty / abs(trade.open_qty()) if trade.open_qty() else Decimal('1')   # a short deal has a negative quantity
-        # slice_id carries the slice's stable identity: a trade taken from open_trades_list() (a state change of an
-        # existing slice after partial consumption) keeps it; a freshly opened or carried-over slice has None here and
-        # the trades_opened_set_slice trigger assigns the new row's own id as its slice identity.
-        LedgerLotStore().open(modified_by.timestamp(), operation.type(), operation.id(), modified_by.type(),
-                              modified_by.id(), self._id, asset.id(), trade.open_price(), remaining_qty,
-                              trade.p_adjustment() * price_adjustment, q_adjustment,
-                              trade.fx_adjustment() * fx_adjustment, trade.slice_id(), acquired)
-
     # Returns a list of JalOpenTrades that represents all trades that were opened for given asset at given timestamp
     # LedgerTransaction might be Trade, AssetPayment, CorporateAction or Transfer
     # Returns the latest open trades if timestamp is omitted.
     def open_trades_list(self, asset, timestamp=None) -> list:
-        if timestamp is None:
-            timestamp = Setup.MAX_TIMESTAMP
-        trades = []
-        # Positions are grouped by slice_id (the slice's stable identity), keeping only the latest state of each
-        # slice. Grouping by (otype, oid) instead would merge two independent slices carried over from the same
-        # original operation into one bucket and drop all but the newest, silently losing quantity and understating
-        # realized P&L. (otype, oid) is still selected, but only to rebuild the opening operation and its cost basis.
-        for otype, oid, price, qty, p, q, fx, slice_id, acquired in LedgerLotStore().lots(self._id, asset.id(), timestamp):
-            operation = jal.db.operations.LedgerTransaction().get_operation(otype, oid, jal.db.operations.Transfer.Incoming)
-            trades.append(jal.db.closed_trade.JalOpenTrade(operation, price, qty, adjustments=(p, q), fx=fx, slice_id=slice_id,
-                                                           acquired=acquired))
-        # FIFO takes slices by acquisition date, then by original operation, not last modification.
-        # slice_id breaks the remaining ties: slices are assigned ids in replay (chronological) order, so among slices
-        # sharing an original operation (a lot split by several carry-overs) the earliest-arrived one is consumed first.
-        trades = sorted(trades, key=lambda op: (op.acquired(), op.open_operation().timestamp(), op.slice_id()))
-        return trades
+        return LotEngine().lots(self, asset, timestamp)
 
     # Returns amount that was paid for an asset that was hold on the account during time between start_ts and end_ts
     # Asset payment is counted if its ex-date is between start and end or, if ex-date is missing, the timestamp of
