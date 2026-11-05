@@ -7,7 +7,7 @@ import jal.db.operations
 import jal.db.closed_trade
 import jal.db.chain_balance
 import jal.db.receivable
-from jal.db.lots import LedgerLotStore, LotEngine
+import jal.db.lots
 from jal.constants import Setup, BookAccount, PredefinedAsset, PredefinedAgents, PredefinedAccountType, AccountStatus, AccountData, AssetLocation, \
     PredefinedCategory
 from jal.db.clock import ZONE_SPAN
@@ -542,7 +542,7 @@ class JalAccount(JalDB):
         if close_otypes is None:
             close_otypes = (jal.db.operations.LedgerTransaction.Trade,)
         trades = []
-        for deal_id in LedgerLotStore().deals(self._id, None if asset is None else asset.id(), close_otypes):
+        for deal_id in jal.db.lots.LedgerLotStore().deals(self._id, None if asset is None else asset.id(), close_otypes):
             trades.append(jal.db.closed_trade.JalClosedTrade(deal_id))
         return trades
 
@@ -550,7 +550,7 @@ class JalAccount(JalDB):
     # LedgerTransaction might be Trade, AssetPayment, CorporateAction or Transfer
     # Returns the latest open trades if timestamp is omitted.
     def open_trades_list(self, asset, timestamp=None) -> list:
-        return LotEngine().lots(self, asset, timestamp)
+        return jal.db.lots.LotEngine().lots(self, asset, timestamp)
 
     # Returns amount that was paid for an asset that was hold on the account during time between start_ts and end_ts
     # Asset payment is counted if its ex-date is between start and end or, if ex-date is missing, the timestamp of

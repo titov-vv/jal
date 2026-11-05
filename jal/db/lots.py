@@ -4,6 +4,7 @@ from jal.db.db import JalDB
 from jal.db.helpers import format_decimal
 import jal.db.operations
 import jal.db.closed_trade
+import jal.db.basis_policy
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -133,14 +134,15 @@ class LedgerLotStore(JalDB):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# The only code that matches lots: FIFO over a LotStore and the primitives every operation's lot path reduces to.
+# The only code that matches lots: the primitives every operation's lot path reduces to, over a LotStore, in the
+# order and by the rules of a BasisPolicy (JalPolicy unless given).
 # A quantity given to dispose()/carry_out() is what leaves the position: positive closes a long, negative a short.
 class LotEngine:
-    def __init__(self, store=None):
+    def __init__(self, store=None, policy=None):
         self.store = LedgerLotStore() if store is None else store
+        self.policy = jal.db.basis_policy.JalPolicy() if policy is None else policy
 
-    # Open lots of a position at 'timestamp' (latest if None) in FIFO order: by acquisition date, then by the
-    # original operation; slice_id breaks the remaining ties, as slices get ids in replay (chronological) order
+    # Open lots of a position at 'timestamp' (latest if None) in the order the policy takes them
     def lots(self, account, asset, timestamp=None) -> list:
         if timestamp is None:
             timestamp = Setup.MAX_TIMESTAMP
@@ -150,7 +152,7 @@ class LotEngine:
                                                                             jal.db.operations.Transfer.Incoming)
             lots.append(jal.db.closed_trade.JalOpenTrade(operation, price, qty, adjustments=(p, q), fx=fx,
                                                          slice_id=slice_id, acquired=acquired))
-        return sorted(lots, key=lambda x: (x.acquired(), x.open_operation().timestamp(), x.slice_id()))
+        return self.policy.order(lots)
 
     # What the lots of a position hold now, negative for a short one
     def position(self, account, asset) -> Decimal:

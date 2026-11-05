@@ -7,6 +7,7 @@ from jal.constants import Setup, BookAccount, PredefinedCategory, PredefinedAsse
 from jal.db.helpers import format_decimal, remove_exponent
 from jal.db.db import JalDB
 import jal.db.account
+import jal.db.basis_policy
 from jal.db.asset import JalAsset
 from jal.db.symbol import JalSymbol
 from jal.widgets.helpers import ts2d, ts2dt
@@ -1234,7 +1235,7 @@ class AssetIncome(AssetPaymentBase):
     def process_lots(self, engine, parked=None):
         if self.is_fee_row():
             return super().process_lots(engine)
-        engine.acquire(self._account, self._asset, self, self.price(), self._amount)
+        engine.acquire(self._account, self._asset, self, engine.policy.income_cost(self), self._amount)
 
     def processLedger(self, ledger):
         if self.is_fee_row():
@@ -1250,7 +1251,7 @@ class AssetIncome(AssetPaymentBase):
                               f" Operation: {self.dump()}")
         self.process_lots(ledger.lots)
         ledger.appendTransaction(self, BookAccount.Assets, self._amount,
-                                 asset_id=self._asset.id(), value=self._amount * self.price())
+                                 asset_id=self._asset.id(), value=self._amount * ledger.lots.policy.income_cost(self))
         if self._tax:
             ledger.appendTransaction(self, BookAccount.Money, -self._tax)
             ledger.appendTransaction(self, BookAccount.Costs, self._tax,
@@ -1730,7 +1731,7 @@ class Swap(FeeCarrier, LedgerTransaction):
             raise LedgerError(LedgerTransaction.tr("Asset amount is not enough for swap processing. Date: ")
                               + f"{ts2dt(self._timestamp)}, Asset amount: {available}, "
                               + f"Required: {self._out_qty}, Operation: {self.dump()}")
-        conversion = self.treatment() == SwapTreatment.Conversion
+        conversion = ledger.lots.policy.treatment(self).basis == jal.db.basis_policy.Basis.CARRY
         processed_qty, basis, value = self.process_lots(ledger.lots)
         # Withdraw the disposed asset at its cost basis and realize the profit/loss of the disposal
         rounding_error = ledger.appendTransaction(self, BookAccount.Assets, -self._out_qty,
@@ -1754,7 +1755,7 @@ class Swap(FeeCarrier, LedgerTransaction):
     # Opens the acquired asset on the destination account, valued at what the disposing leg parked in transit
     # (converted into the destination account currency if the two accounts are kept in different currencies).
     def processIncoming(self, ledger):
-        conversion = self.treatment() == SwapTreatment.Conversion
+        conversion = ledger.lots.policy.treatment(self).basis == jal.db.basis_policy.Basis.CARRY
         column = "value" if conversion else "amount"    # the basis of the asset in transit, or the money proceeds
         value = self._read(f"SELECT {column} FROM ledger WHERE book_account=:book_transfers AND otype=:otype AND oid=:id",
                            [(":book_transfers", BookAccount.Transfers), (":otype", self._otype), (":id", self._oid)],
@@ -1775,7 +1776,8 @@ class Swap(FeeCarrier, LedgerTransaction):
     def process_lots(self, engine, parked=None):
         if self.is_fee_row():
             return super().process_lots(engine)
-        conversion = self.treatment() == SwapTreatment.Conversion
+        treatment = engine.policy.treatment(self)
+        conversion = treatment.basis == jal.db.basis_policy.Basis.CARRY
         if self._opart == Swap.Incoming:
             if self._account.currency() == self._in_account.currency():
                 rate = Decimal('1')
@@ -1786,7 +1788,7 @@ class Swap(FeeCarrier, LedgerTransaction):
                                       + f"{ts2dt(self._in_timestamp)}, Operation: {self.dump()}")
             in_value = rate * parked
             if conversion:
-                self._reopen_lots(engine, self._in_account, rate)
+                self._reopen_lots(engine, self._in_account, rate, treatment.clock)
             else:
                 engine.acquire(self._in_account, self._in_asset, self, in_value / self._in_qty, self._in_qty)
             return in_value
@@ -1794,24 +1796,26 @@ class Swap(FeeCarrier, LedgerTransaction):
         if conversion:
             processed_qty, basis = engine.carry_out(self._account, self._out_asset, self, self._out_qty)
         else:
-            processed_qty, basis = engine.dispose(self._account, self._out_asset, self, self._out_qty, self.price())
+            processed_qty, basis = engine.dispose(self._account, self._out_asset, self, self._out_qty,
+                                                  self.value() / self._out_qty)
         if processed_qty < self._out_qty:
             raise LedgerError(LedgerTransaction.tr("Processed asset amount is less than swap amount. Date: ")
                               + f"{ts2dt(self._timestamp)}, Processed amount: {processed_qty}, "
                               + f"Required: {self._out_qty}, Operation: {self.dump()}")
         if not self._cross_chain:
             if conversion:
-                self._reopen_lots(engine, self._account, Decimal('1'))
+                self._reopen_lots(engine, self._account, Decimal('1'), treatment.clock)
             else:
                 engine.acquire(self._account, self._in_asset, self, value / self._in_qty, self._in_qty)
         return processed_qty, basis, value
 
-    # Re-opens the out lots this swap closed on 'account' as the in asset - each keeping its opening operation, cost and
-    # acquisition date, re-scaled to the acquired quantity and converted by 'rate' (see Conversion.processLedger())
-    def _reopen_lots(self, engine, account, rate: Decimal) -> None:
+    # Re-opens the out lots this swap closed on 'account' as the in asset - each keeping its opening operation and cost,
+    # re-scaled to the acquired quantity and converted by 'rate'; 'clock' keeps or restarts the acquisition date
+    def _reopen_lots(self, engine, account, rate: Decimal, clock) -> None:
         deals = engine.carried(self, self._account, self._out_asset)
+        acquired = self.timestamp() if clock == jal.db.basis_policy.Clock.RESTART else None
         engine.carry_in(deals, account, self._in_asset, self, qty=self._in_qty,
-                        price_factor=self._out_qty / self._in_qty, fx_factor=rate)
+                        price_factor=self._out_qty / self._in_qty, fx_factor=rate, acquired=acquired)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -2729,7 +2733,7 @@ class CorporateAction(LedgerTransaction):
         for result in self._results:
             asset = JalSymbol(result['symbol_id']).asset()
             qty = Decimal(result['qty'])
-            value = Decimal(result['value_share']) * processed_value
+            value = ledger.lots.policy.action_result(self, result).share * processed_value
             if asset.type() == PredefinedAsset.Money:
                 ledger.appendTransaction(self, BookAccount.Money, qty)
                 ledger.appendTransaction(self, BookAccount.Incomes, -qty, category=PredefinedCategory.Interest, peer=self._broker)
@@ -2737,7 +2741,7 @@ class CorporateAction(LedgerTransaction):
                 ledger.appendTransaction(self, BookAccount.Assets, qty, asset_id=asset.id(), value=sign * value)
 
     # The lot half of a corporate action: the position closes at basis and every asset result re-opens its lots,
-    # sharing their cost by value_share. Returns the quantity closed and its basis.
+    # with the share of their cost and the date the policy gives it. Returns the quantity closed and its basis.
     def process_lots(self, engine, parked=None):
         processed_qty, processed_value = engine.carry_out(self._account, self._asset, self, self._qty)
         if self._subtype in CorporateAction.NoResults:
@@ -2748,12 +2752,14 @@ class CorporateAction(LedgerTransaction):
             if asset.type() == PredefinedAsset.Money:
                 continue
             qty = Decimal(result['qty'])
-            share = Decimal(result['value_share'])
+            treatment = engine.policy.action_result(self, result)
+            if treatment.basis != jal.db.basis_policy.Basis.CARRY:
+                raise ValueError(f"A corporate action result can only carry its lots, not {treatment.basis}")
             # The quantity the action produced is allocated over the lots it carries over, so they add up to it
             # exactly; their price keeps the coefficient that preserves the value of each lot.
-            acquired = None if result['keep_date'] else self._timestamp   # a new stock is acquired by the action
+            acquired = None if treatment.clock == jal.db.basis_policy.Clock.KEEP else self._timestamp
             engine.carry_in(closed_trades, self._account, asset, self, qty=abs(qty),
-                            price_factor=share * self._qty / qty, acquired=acquired)
+                            price_factor=treatment.share * self._qty / qty, acquired=acquired)
         return processed_qty, processed_value
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -2903,19 +2909,22 @@ class Conversion(FeeCarrier, LedgerTransaction):
     def process_lots(self, engine, parked=None):
         if self.is_fee_row():
             return super().process_lots(engine)
-        # The lots of the converted asset are closed at their own cost basis (self.price() is None, so the deals
-        # carry no profit or loss) and then re-opened on the acquired asset - each one keeping the operation that
-        # opened it, and therefore its acquisition date. The whole position is re-scaled by the quantity the
-        # conversion produced: per-unit price is multiplied by out_qty/in_qty and quantity by in_qty/out_qty, which
-        # leaves every lot's value untouched. This is exactly how a corporate action and a bridge carry a basis over.
+        # The lots of the converted asset are closed at their own cost basis (the deals carry no profit or loss) and
+        # re-opened on the acquired asset, each keeping the operation that opened it; the policy keeps or restarts
+        # their date. The position is re-scaled by the quantity the conversion produced: per-unit price by
+        # out_qty/in_qty and quantity by in_qty/out_qty, which leaves every lot's value untouched.
+        treatment = engine.policy.treatment(self)
+        if treatment.basis != jal.db.basis_policy.Basis.CARRY:
+            raise ValueError(f"A conversion can only carry its lots, not {treatment.basis}")
         processed_qty, processed_value = engine.carry_out(self._account, self._out_asset, self, self._out_qty)
         if processed_qty < self._out_qty:
             raise LedgerError(LedgerTransaction.tr("Processed asset amount is less than wrapped amount. Date: ")
                               + f"{ts2dt(self._timestamp)}, Processed amount: {processed_qty}, "
                               + f"Required: {self._out_qty}, Operation: {self.dump()}")
         closed_trades = engine.carried(self, self._account, self._out_asset)
+        acquired = self._timestamp if treatment.clock == jal.db.basis_policy.Clock.RESTART else None
         engine.carry_in(closed_trades, self._account, self._in_asset, self, qty=self._in_qty,
-                        price_factor=self._out_qty / self._in_qty)
+                        price_factor=self._out_qty / self._in_qty, acquired=acquired)
         return processed_qty, processed_value
 
     def processLedger(self, ledger):
