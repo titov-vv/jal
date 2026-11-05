@@ -10,6 +10,7 @@ import jal.db.account
 from jal.db.asset import JalAsset
 from jal.db.symbol import JalSymbol
 from jal.db.closed_trade import JalClosedTrade, JalOpenTrade, allocate_qty
+from jal.db.lots import LedgerLotStore
 from jal.widgets.helpers import ts2d, ts2dt
 from jal.widgets.icons import JalIcon
 
@@ -308,12 +309,8 @@ class LedgerTransaction(JalDB):
 
     # Returns a list of JalClosedTrade objects that were closed by calling operation (used in Transfer and CorporateAction)
     def _deals_closed_by_operation(self):
-        trades = []
-        query = self._exec("SELECT id FROM trades_closed WHERE close_otype=:otype AND close_oid=:oid AND account_id=:account AND asset_id=:asset",
-                [(":otype", self._otype), (":oid", self._oid), (":account", self._account.id()), (":asset", self._asset.id())])
-        while query.next():
-            trades.append(jal.db.closed_trade.JalClosedTrade(self._read_record(query, cast=[int])))
-        return trades
+        deals = LedgerLotStore().deals_closed_by(self._otype, self._oid, self._account.id(), self._asset.id())
+        return [jal.db.closed_trade.JalClosedTrade(x) for x in deals]
 
     # The single line any fee of any operation reaches the Costs book through. 'part' is the part of the operation
     # that bears it, 'peer' the organization that took it and 'tag' the tag of the asset it was paid in.
@@ -1819,13 +1816,8 @@ class Swap(FeeCarrier, LedgerTransaction):
     # Re-opens the out lots this swap closed on 'account' as the in asset - each keeping its opening operation, cost and
     # acquisition date, re-scaled to the acquired quantity and converted by 'rate' (see Conversion.processLedger())
     def _reopen_lots(self, account, rate: Decimal) -> None:
-        lots = []
-        query = self._exec("SELECT id FROM trades_closed WHERE close_otype=:otype AND close_oid=:oid "
-                           "AND account_id=:account AND asset_id=:asset",
-                           [(":otype", self._otype), (":oid", self._oid), (":account", self._account.id()),
-                            (":asset", self._out_asset.id())])
-        while query.next():
-            lots.append(jal.db.closed_trade.JalClosedTrade(self._read_record(query, cast=[int])))
+        deals = LedgerLotStore().deals_closed_by(self._otype, self._oid, self._account.id(), self._out_asset.id())
+        lots = [jal.db.closed_trade.JalClosedTrade(x) for x in deals]
         for lot, lot_qty in zip(lots, allocate_qty(lots, self._in_qty)):
             account.open_trade(lot, self._in_asset, modified_by=self, qty=lot_qty,
                                price_adjustment=self._out_qty / self._in_qty, fx_adjustment=rate)

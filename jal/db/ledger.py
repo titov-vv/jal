@@ -10,6 +10,7 @@ from jal.constants import BookAccount, Setup
 from jal.db.helpers import format_decimal
 from jal.db.db import JalDB
 from jal.db.account import JalAccount
+from jal.db.lots import LedgerLotStore
 from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
 from jal.db.operations import LedgerTransaction, LedgerError, LedgerAssetShortage
@@ -313,10 +314,9 @@ class Ledger(QObject, JalDB):
         self.show_progress.emit(True)
         logging.info(self.tr("Re-building ledger since: ") + f"{ts2dt(frontier)}")
         start_time = datetime.now()
-        _ = self._exec("DELETE FROM trades_closed WHERE close_timestamp >= :frontier", [(":frontier", frontier)])
+        LedgerLotStore().wipe_from(frontier)
         _ = self._exec("DELETE FROM ledger WHERE timestamp >= :frontier", [(":frontier", frontier)])
         _ = self._exec("DELETE FROM ledger_totals WHERE timestamp >= :frontier", [(":frontier", frontier)])
-        _ = self._exec("DELETE FROM trades_opened WHERE timestamp >= :frontier", [(":frontier", frontier)])
         try:
             # 'seq_no' is the processing order itself, assigned when the rows were stored above
             query = self._exec("SELECT o.otype, s.operation_id AS oid, s.opart, s.timestamp, s.account_id "
@@ -382,16 +382,8 @@ class Ledger(QObject, JalDB):
     # would NOT pass over silently.
     def report_position_mismatches(self):
         lots = defaultdict(Decimal)
-        # The latest state of every slice, the way JalAccount.open_trades_list() takes it, for all positions at once.
         # Summed in Python because the amounts are decimals kept as TEXT and SQL SUM() would coerce them to float.
-        query = self._exec("WITH open_trades_numbered AS "
-                           "(SELECT account_id, asset_id, remaining_qty, "
-                           "ROW_NUMBER() OVER (PARTITION BY slice_id ORDER BY timestamp DESC, id DESC) AS row_no "
-                           "FROM trades_opened) "
-                           "SELECT account_id, asset_id, remaining_qty FROM open_trades_numbered "
-                           "WHERE row_no=1 AND remaining_qty!=:zero", [(":zero", format_decimal(Decimal('0')))])
-        while query.next():
-            account_id, asset_id, qty = self._read_record(query, cast=[int, int, Decimal])
+        for account_id, asset_id, qty in LedgerLotStore().latest_quantities():
             lots[(account_id, asset_id)] += qty
         query = self._exec("SELECT account_id, asset_id, amount_acc FROM ledger WHERE book_account=:assets "
                            "AND id IN (SELECT MAX(id) FROM ledger WHERE book_account=:assets "

@@ -1,8 +1,9 @@
 from decimal import Decimal
 from jal.db.db import JalDB
-from jal.db.helpers import format_decimal, is_day_marker
+from jal.db.helpers import is_day_marker
 import jal.db.account
 import jal.db.operations
+import jal.db.lots
 from jal.db.asset import JalAsset
 
 
@@ -82,9 +83,7 @@ class JalClosedTrade(JalDB):
     def __init__(self, id: int = 0) -> None:
         super().__init__()
         self._id = id
-        self._data = self._read("SELECT account_id, asset_id, open_otype, open_oid, open_timestamp, open_price, "
-                                "open_qty, close_otype, close_oid, close_timestamp, close_price, close_qty, c_price, c_qty, "
-                                "c_fx FROM trades_closed WHERE id=:id", [(":id", self._id)], named=True)
+        self._data = jal.db.lots.LedgerLotStore().deal(self._id)
         if self._data:
             self._account = jal.db.account.JalAccount(self._data['account_id'])
             self._asset = JalAsset(self._data['asset_id'])
@@ -113,19 +112,10 @@ class JalClosedTrade(JalDB):
         o_operation = o_trade.open_operation()
         o_qty = qty / o_trade.q_adjustment()   # Calculate adjusted amount for opening trade
         c_price = o_trade.open_price() if c_operation.price() is None else c_operation.price()
-        _ = cls._exec(
-            "INSERT INTO trades_closed(account_id, asset_id, open_otype, open_oid, open_timestamp, open_price, "
-            "open_qty, close_otype, close_oid, close_timestamp, close_price, close_qty, c_price, c_qty, c_fx) "
-            "VALUES(:account_id, :asset_id, :open_otype, :open_oid, :open_timestamp, :open_price, :open_qty, "
-            ":close_otype, :close_oid, :close_timestamp, :close_price, :close_qty, :c_price, :c_qty, :c_fx)",
-            [(":account_id", c_operation.account().id()), (":asset_id", c_operation.asset().id()),
-             (":open_otype", o_operation.type()), (":open_oid", o_operation.id()),
-             (":open_timestamp", o_trade.acquired()), (":open_price", format_decimal(o_trade.open_price())),
-             (":open_qty", format_decimal(o_qty)), (":close_otype", c_operation.type()),
-             (":close_oid", c_operation.id()), (":close_timestamp", c_operation.timestamp()),
-             (":close_price", format_decimal(c_price)), (":close_qty", format_decimal(qty)),
-             (":c_price", format_decimal(o_trade.p_adjustment())), (":c_qty", format_decimal(o_trade.q_adjustment())),
-             (":c_fx", format_decimal(o_trade.fx_adjustment()))])
+        jal.db.lots.LedgerLotStore().close(c_operation.account().id(), c_operation.asset().id(), o_operation.type(),
+                                           o_operation.id(), o_trade.acquired(), o_trade.open_price(), o_qty,
+                                           c_operation.type(), c_operation.id(), c_operation.timestamp(), c_price, qty,
+                                           o_trade.p_adjustment(), o_trade.q_adjustment(), o_trade.fx_adjustment())
 
     def dump(self) -> list:
         return [
@@ -286,12 +276,7 @@ class JalClosedTrade(JalDB):
     # Returns a list of LedgerTransactions that modified position after its opening
     # (i.e. transfers or corporate actions that happened during position lifetime)
     def modified_by(self) -> list:
-        query = self._exec("SELECT DISTINCT m_otype, m_oid FROM trades_opened "
-                           "WHERE otype=:otype AND oid=:oid AND m_otype!=:trade",
-                           [(":otype", self._open_op.type()), (":oid", self._open_op.id()),
-                            (":trade", jal.db.operations.LedgerTransaction.Trade)])
         modifiers = []
-        while query.next():
-            otype, oid = self._read_record(query)
+        for otype, oid in jal.db.lots.LedgerLotStore().modifiers(self._open_op.type(), self._open_op.id()):
             modifiers.append(jal.db.operations.LedgerTransaction.get_operation(otype, oid, jal.db.operations.Transfer.Outgoing))
         return modifiers

@@ -7,13 +7,14 @@ import jal.db.operations
 import jal.db.closed_trade
 import jal.db.chain_balance
 import jal.db.receivable
+from jal.db.lots import LedgerLotStore
 from jal.constants import Setup, BookAccount, PredefinedAsset, PredefinedAgents, PredefinedAccountType, AccountStatus, AccountData, AssetLocation, \
     PredefinedCategory
 from jal.db.clock import ZONE_SPAN
 from jal.db.country import JalCountry
 from jal.db.tag import JalTag
 from jal.db.token_blacklist import normalize_address, is_valid_address
-from jal.db.helpers import format_decimal, localize_amount, now_ts
+from jal.db.helpers import localize_amount, now_ts
 from jal.universal_cache import UniversalCache
 
 
@@ -540,16 +541,9 @@ class JalAccount(JalDB):
     def closed_trades_list(self, asset=None, close_otypes=None) -> list:
         if close_otypes is None:
             close_otypes = (jal.db.operations.LedgerTransaction.Trade,)
-        otypes = ','.join(str(int(x)) for x in close_otypes)
         trades = []
-        if asset is None:
-            query = self._exec(f"SELECT id FROM trades_closed WHERE close_otype IN ({otypes}) AND account_id=:account",
-                               [(":account", self._id)])
-        else:
-            query = self._exec(f"SELECT id FROM trades_closed WHERE close_otype IN ({otypes}) AND account_id=:account AND asset_id=:asset",
-                               [(":account", self._id), (":asset", asset.id())])
-        while query.next():
-            trades.append(jal.db.closed_trade.JalClosedTrade(self._read_record(query, cast=[int])))
+        for deal_id in LedgerLotStore().deals(self._id, None if asset is None else asset.id(), close_otypes):
+            trades.append(jal.db.closed_trade.JalClosedTrade(deal_id))
         return trades
 
     # Creates a record in 'trades_open' table that manifests current asset position
@@ -576,19 +570,10 @@ class JalAccount(JalDB):
         # slice_id carries the slice's stable identity: a trade taken from open_trades_list() (a state change of an
         # existing slice after partial consumption) keeps it; a freshly opened or carried-over slice has None here and
         # the trades_opened_set_slice trigger assigns the new row's own id as its slice identity.
-        _ = self._exec(
-            "INSERT INTO trades_opened(timestamp, otype, oid, m_otype, m_oid, account_id, asset_id, "
-            "price, remaining_qty, c_price, c_qty, c_fx, slice_id, acquired) "
-            "VALUES(:timestamp, :otype, :oid, :m_otype, :m_oid, :account_id, :asset_id, :price, "
-            ":remaining_qty, :c_price, :c_qty, :c_fx, :slice_id, :acquired)",
-            [(":timestamp", modified_by.timestamp()), (":otype", operation.type()), (":oid", operation.id()),
-             (":m_otype", modified_by.type()), (":m_oid", modified_by.id()), (":account_id", self._id),
-             (":asset_id", asset.id()), (":price", format_decimal(trade.open_price())),
-             (":remaining_qty", format_decimal(remaining_qty)),
-             (":c_price", format_decimal(trade.p_adjustment() * price_adjustment)),
-             (":c_qty", format_decimal(q_adjustment)),
-             (":c_fx", format_decimal(trade.fx_adjustment() * fx_adjustment)),
-             (":slice_id", trade.slice_id()), (":acquired", acquired)])
+        LedgerLotStore().open(modified_by.timestamp(), operation.type(), operation.id(), modified_by.type(),
+                              modified_by.id(), self._id, asset.id(), trade.open_price(), remaining_qty,
+                              trade.p_adjustment() * price_adjustment, q_adjustment,
+                              trade.fx_adjustment() * fx_adjustment, trade.slice_id(), acquired)
 
     # Returns a list of JalOpenTrades that represents all trades that were opened for given asset at given timestamp
     # LedgerTransaction might be Trade, AssetPayment, CorporateAction or Transfer
@@ -601,16 +586,7 @@ class JalAccount(JalDB):
         # slice. Grouping by (otype, oid) instead would merge two independent slices carried over from the same
         # original operation into one bucket and drop all but the newest, silently losing quantity and understating
         # realized P&L. (otype, oid) is still selected, but only to rebuild the opening operation and its cost basis.
-        query = self._exec("WITH open_trades_numbered AS "
-                           "(SELECT timestamp, otype, oid, price, remaining_qty, c_price, c_qty, c_fx, slice_id, acquired, "
-                           "ROW_NUMBER() OVER (PARTITION BY slice_id ORDER BY timestamp DESC, id DESC) AS row_no "
-                           "FROM trades_opened WHERE account_id=:account AND asset_id=:asset AND timestamp<=:timestamp) "
-                           "SELECT otype, oid, price, remaining_qty, c_price, c_qty, c_fx, slice_id, acquired "
-                           "FROM open_trades_numbered WHERE row_no=1 AND remaining_qty!=:zero ",
-                           [(":account", self._id), (":asset", asset.id()),
-                            (":timestamp", timestamp), (":zero", format_decimal(Decimal('0')))])
-        while query.next():
-            otype, oid, price, qty, p, q, fx, slice_id, acquired = self._read_record(query, cast=[int, int, Decimal, Decimal, Decimal, Decimal, Decimal, int, int])
+        for otype, oid, price, qty, p, q, fx, slice_id, acquired in LedgerLotStore().lots(self._id, asset.id(), timestamp):
             operation = jal.db.operations.LedgerTransaction().get_operation(otype, oid, jal.db.operations.Transfer.Incoming)
             trades.append(jal.db.closed_trade.JalOpenTrade(operation, price, qty, adjustments=(p, q), fx=fx, slice_id=slice_id,
                                                            acquired=acquired))
