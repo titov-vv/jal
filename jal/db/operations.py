@@ -280,13 +280,18 @@ class LedgerTransaction(JalDB):
             raise LedgerError(self.tr("Asset amount is not enough to pay: ") + f"{self._oname}. "
                               + f"Date: {ts2dt(self.timestamp())}, Asset amount: {available}, "
                               + f"Required: {qty}, Operation: {self.dump()}")
-        processed_qty, processed_value = ledger.lots.consume(account, asset, self, qty)
+        processed_qty, processed_value = self._consume_lots(ledger.lots, qty, asset, account)
+        ledger.appendTransaction(self, BookAccount.Assets, -processed_qty, asset_id=asset.id(), value=-processed_value)
+        self._post_fee_cost(ledger, processed_value, part, peer, tag=asset.tag().id())
+
+    # The lot half of _dispose_at_basis(): 'qty' of 'asset' taken out of the lots of 'account' at basis
+    def _consume_lots(self, engine, qty, asset, account) -> (Decimal, Decimal):
+        processed_qty, processed_value = engine.consume(account, asset, self, qty)
         if processed_qty < qty:
             raise LedgerError(self.tr("Processed asset amount is less than: ") + f"{self._oname}. "
                               + f"Date: {ts2dt(self.timestamp())}, Processed amount: {processed_qty}, "
                               + f"Required: {qty}, Operation: {self.dump()}")
-        ledger.appendTransaction(self, BookAccount.Assets, -processed_qty, asset_id=asset.id(), value=-processed_value)
-        self._post_fee_cost(ledger, processed_value, part, peer, tag=asset.tag().id())
+        return processed_qty, processed_value
 
     def id(self):
         return self._oid
@@ -391,6 +396,11 @@ class LedgerTransaction(JalDB):
 
     def processLedger(self, ledger):
         raise NotImplementedError(f"processLedger() method is not defined in {type(self).__name__} class")
+
+    # The lot half of this part on 'engine': what both the ledger rebuild and a lot replay do, reading no ledger.
+    # 'parked' is the value the sending leg left in transit, for an arriving leg. Returns what the postings need.
+    def process_lots(self, engine, parked=None):
+        return None
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -577,6 +587,13 @@ class FeeCarrier:
                 self.processAssetFee(ledger, fee)
             else:
                 self._process_money_fee(ledger, fee)
+
+    # The lot half of a fee part: every fee paid in an asset leaves its lots at basis, as processFee() takes it
+    def process_lots(self, engine, parked=None):
+        if self.is_fee_row():
+            for fee in self.fees():
+                if fee.is_asset_fee():
+                    self._consume_lots(engine, fee.amount(), fee.asset(), fee.account())
 
     # A fee paid in an asset - on-chain gas, burned in the native coin of the chain, or a commission taken in a coin.
     # That coin may or may not be the asset the operation itself deals in, so it is disposed from its own position.
@@ -1213,6 +1230,12 @@ class AssetIncome(AssetPaymentBase):
     def taxable(self) -> int:
         return self._subtype_tax_status()
 
+    # A received asset opens a lot at the price it is valued at
+    def process_lots(self, engine, parked=None):
+        if self.is_fee_row():
+            return super().process_lots(engine)
+        engine.acquire(self._account, self._asset, self, self.price(), self._amount)
+
     def processLedger(self, ledger):
         if self.is_fee_row():
             self.processFee(ledger)
@@ -1225,7 +1248,7 @@ class AssetIncome(AssetPaymentBase):
             # A LedgerError, so the rebuild stops with a reason for the user instead of a traceback
             raise LedgerError(LedgerTransaction.tr("Not supported action: asset income closes short trade.") +
                               f" Operation: {self.dump()}")
-        ledger.lots.acquire(self._account, self._asset, self, self.price(), self._amount)
+        self.process_lots(ledger.lots)
         ledger.appendTransaction(self, BookAccount.Assets, self._amount,
                                  asset_id=self._asset.id(), value=self._amount * self.price())
         if self._tax:
@@ -1377,19 +1400,26 @@ class Trade(FeeCarrier, LedgerTransaction):
                             [(":otype", self._otype), (":oid", self._oid)])
         return TaxStatus.Taxable if closed else TaxStatus.NotTaxable
 
+    # Closes the lots of the opposite side the position holds, FIFO at the trade's price; the remainder opens a lot.
+    # Returns the quantity closed and its basis.
+    def process_lots(self, engine, parked=None):
+        deal_sign = Decimal('1.0').copy_sign(self._qty)  # 1 is buy and -1 is sell operation
+        qty = abs(self._qty)
+        processed_qty = processed_value = Decimal('0')
+        if (-deal_sign) * engine.position(self._account, self._asset) > Decimal('0'):
+            processed_qty, processed_value = engine.dispose(self._account, self._asset, self, -deal_sign * qty,
+                                                            self.price())
+        if processed_qty < qty:
+            engine.acquire(self._account, self._asset, self, self._price, qty - processed_qty)
+        return processed_qty, processed_value
+
     def processLedger(self, ledger):
         if not self._broker:
             raise LedgerError(LedgerTransaction.tr("Can't process trade as bank isn't set for investment account: ") + self._account_name)
         deal_sign = Decimal('1.0').copy_sign(self._qty)  # 1 is buy and -1 is sell operation
         qty = abs(self._qty)
         trade_value = self._price * qty + deal_sign * self.fee()
-        processed_qty = Decimal('0')
-        processed_value = Decimal('0')
-        # Get asset amount accumulated before current operation
-        asset_amount = ledger.getAmount(BookAccount.Assets, self._account.id(), self._asset.id())
-        if ((-deal_sign) * asset_amount) > Decimal('0'):  # Match trade if we have asset that is opposite to operation
-            processed_qty, processed_value = ledger.lots.dispose(self._account, self._asset, self, -deal_sign * qty,
-                                                                 self.price())
+        processed_qty, processed_value = self.process_lots(ledger.lots)
         if deal_sign > 0:
             credit_value = ledger.takeCredit(self, self._account.id(), trade_value)
         else:
@@ -1404,7 +1434,6 @@ class Trade(FeeCarrier, LedgerTransaction):
                                      deal_sign * ((self._price * processed_qty) - processed_value + rounding_error),
                                      part=self.PART_PROFIT, category=PredefinedCategory.Profit, peer=self._broker, tag=self._asset.tag().id())
         if processed_qty < qty:  # We have a reminder that opens a new position
-            ledger.lots.acquire(self._account, self._asset, self, self._price, qty - processed_qty)
             ledger.appendTransaction(self, BookAccount.Assets, deal_sign * (qty - processed_qty),
                                      asset_id=self._asset.id(), value=deal_sign * (qty - processed_qty) * self._price)
         # The money side of a trade's fee is not a payment of its own - it is already inside 'trade_value' above,
@@ -1702,15 +1731,7 @@ class Swap(FeeCarrier, LedgerTransaction):
                               + f"{ts2dt(self._timestamp)}, Asset amount: {available}, "
                               + f"Required: {self._out_qty}, Operation: {self.dump()}")
         conversion = self.treatment() == SwapTreatment.Conversion
-        value = None if conversion else self.value()
-        if conversion:
-            processed_qty, basis = ledger.lots.carry_out(self._account, self._out_asset, self, self._out_qty)
-        else:
-            processed_qty, basis = ledger.lots.dispose(self._account, self._out_asset, self, self._out_qty, self.price())
-        if processed_qty < self._out_qty:
-            raise LedgerError(LedgerTransaction.tr("Processed asset amount is less than swap amount. Date: ")
-                              + f"{ts2dt(self._timestamp)}, Processed amount: {processed_qty}, "
-                              + f"Required: {self._out_qty}, Operation: {self.dump()}")
+        processed_qty, basis, value = self.process_lots(ledger.lots)
         # Withdraw the disposed asset at its cost basis and realize the profit/loss of the disposal
         rounding_error = ledger.appendTransaction(self, BookAccount.Assets, -self._out_qty,
                                                   asset_id=self._out_asset.id(), value=-basis)
@@ -1719,7 +1740,6 @@ class Swap(FeeCarrier, LedgerTransaction):
                 ledger.appendTransaction(self, BookAccount.Transfers, self._out_qty, asset_id=self._out_asset.id(),
                                          value=basis)
             else:
-                self._reopen_lots(ledger, self._account, Decimal('1'))
                 ledger.appendTransaction(self, BookAccount.Assets, self._in_qty, asset_id=self._in_asset.id(), value=basis)
             return
         ledger.appendTransaction(self, BookAccount.Incomes, -(value - basis + rounding_error), part=self.PART_PROFIT,
@@ -1729,7 +1749,6 @@ class Swap(FeeCarrier, LedgerTransaction):
             ledger.appendTransaction(self, BookAccount.Transfers, value)
         else:
             # Deposit the acquired asset as a new open position at the swap-implied cost
-            ledger.lots.acquire(self._account, self._in_asset, self, value / self._in_qty, self._in_qty)
             ledger.appendTransaction(self, BookAccount.Assets, self._in_qty, asset_id=self._in_asset.id(), value=value)
 
     # Opens the acquired asset on the destination account, valued at what the disposing leg parked in transit
@@ -1742,30 +1761,57 @@ class Swap(FeeCarrier, LedgerTransaction):
                            check_unique=True)
         if value is None or value == '':
             raise LedgerError(LedgerTransaction.tr("Asset disposal not found for swap.") + f" Operation:  {self.dump()}")
-        value = Decimal(value)
-        if self._account.currency() == self._in_account.currency():
-            rate = Decimal('1')
-        else:   # Proceeds are converted into the destination account currency with the FX rate at the arrival time
-            rate = JalAsset(self._account.currency()).quote(self._in_timestamp, self._in_account.currency())[1]
-            if rate == Decimal('0'):
-                raise LedgerError(LedgerTransaction.tr("There is no FX rate to convert swap proceeds. Date: ")
-                                  + f"{ts2dt(self._in_timestamp)}, Operation: {self.dump()}")
-        in_value = rate * value
+        in_value = self.process_lots(ledger.lots, parked=Decimal(value))
         if conversion:
             ledger.appendTransaction(self, BookAccount.Transfers, -self._out_qty, asset_id=self._out_asset.id(),
                                      value=-in_value)
-            self._reopen_lots(ledger, self._in_account, rate)
         else:
             ledger.appendTransaction(self, BookAccount.Transfers, -in_value)
-            ledger.lots.acquire(self._in_account, self._in_asset, self, in_value / self._in_qty, self._in_qty)
         ledger.appendTransaction(self, BookAccount.Assets, self._in_qty, asset_id=self._in_asset.id(), value=in_value)
+
+    # The lot half of a swap. The disposing leg closes the out lots - at the market for a sale, at basis for a
+    # conversion - and, same-chain, opens the in asset; returns (quantity, basis, sale value or None). The arriving
+    # leg opens the in asset on its account from 'parked', the value in transit, and returns its value there.
+    def process_lots(self, engine, parked=None):
+        if self.is_fee_row():
+            return super().process_lots(engine)
+        conversion = self.treatment() == SwapTreatment.Conversion
+        if self._opart == Swap.Incoming:
+            if self._account.currency() == self._in_account.currency():
+                rate = Decimal('1')
+            else:   # Proceeds are converted into the destination account currency with the FX rate at the arrival time
+                rate = JalAsset(self._account.currency()).quote(self._in_timestamp, self._in_account.currency())[1]
+                if rate == Decimal('0'):
+                    raise LedgerError(LedgerTransaction.tr("There is no FX rate to convert swap proceeds. Date: ")
+                                      + f"{ts2dt(self._in_timestamp)}, Operation: {self.dump()}")
+            in_value = rate * parked
+            if conversion:
+                self._reopen_lots(engine, self._in_account, rate)
+            else:
+                engine.acquire(self._in_account, self._in_asset, self, in_value / self._in_qty, self._in_qty)
+            return in_value
+        value = None if conversion else self.value()
+        if conversion:
+            processed_qty, basis = engine.carry_out(self._account, self._out_asset, self, self._out_qty)
+        else:
+            processed_qty, basis = engine.dispose(self._account, self._out_asset, self, self._out_qty, self.price())
+        if processed_qty < self._out_qty:
+            raise LedgerError(LedgerTransaction.tr("Processed asset amount is less than swap amount. Date: ")
+                              + f"{ts2dt(self._timestamp)}, Processed amount: {processed_qty}, "
+                              + f"Required: {self._out_qty}, Operation: {self.dump()}")
+        if not self._cross_chain:
+            if conversion:
+                self._reopen_lots(engine, self._account, Decimal('1'))
+            else:
+                engine.acquire(self._account, self._in_asset, self, value / self._in_qty, self._in_qty)
+        return processed_qty, basis, value
 
     # Re-opens the out lots this swap closed on 'account' as the in asset - each keeping its opening operation, cost and
     # acquisition date, re-scaled to the acquired quantity and converted by 'rate' (see Conversion.processLedger())
-    def _reopen_lots(self, ledger, account, rate: Decimal) -> None:
-        deals = ledger.lots.carried(self, self._account, self._out_asset)
-        ledger.lots.carry_in(deals, account, self._in_asset, self, qty=self._in_qty,
-                             price_factor=self._out_qty / self._in_qty, fx_factor=rate)
+    def _reopen_lots(self, engine, account, rate: Decimal) -> None:
+        deals = engine.carried(self, self._account, self._out_asset)
+        engine.carry_in(deals, account, self._in_asset, self, qty=self._in_qty,
+                        price_factor=self._out_qty / self._in_qty, fx_factor=rate)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -2365,18 +2411,13 @@ class Transfer(FeeCarrier, LedgerTransaction):
                 raise LedgerError(LedgerTransaction.tr("Asset amount is not enough for asset transfer processing. Date: ")
                                   + f"{ts2dt(self._withdrawal_timestamp)}, Asset amount: {asset_amount}, "
                                   + f"Required: {transfer_amount}, Operation: {self.dump()}")
-            processed_qty, processed_value = ledger.lots.carry_out(self._account, self._asset, self, transfer_amount)
-            if processed_qty < transfer_amount:
-                raise LedgerError(LedgerTransaction.tr("Processed asset amount is less than transfer amount. Date: ")
-                                  + f"{ts2dt(self._withdrawal_timestamp)}, Processed amount: {processed_qty}, "
-                                  + f"Required: {transfer_amount}, Operation: {self.dump()}")
+            processed_qty, processed_value = self.process_lots(ledger.lots)
             ledger.appendTransaction(self, BookAccount.Assets, -processed_qty, asset_id=self._asset.id(), value=-processed_value)
             ledger.appendTransaction(self, BookAccount.Transfers, transfer_amount, asset_id=self._asset.id(), value=processed_value)
         elif self._opart == Transfer.Incoming:
             if not self._has_out:
                 self.processPendingArrival(ledger, transfer_amount)
                 return
-            transfer_trades = ledger.lots.carried(self, self._account, self._asset)
             # get initial value of withdrawn asset
             value = self._read("SELECT value FROM ledger "
                                "WHERE book_account=:book_transfers AND otype=:otype AND oid=:id",
@@ -2384,24 +2425,43 @@ class Transfer(FeeCarrier, LedgerTransaction):
                                 (":id", self._oid)], check_unique=True)
             if not value:
                 raise LedgerError(LedgerTransaction.tr("Asset withdrawal not found for transfer.") + f" Operation:  {self.dump()}")
-            # A zero withdrawn value is treated like the same-currency case: there is no rate that rescales zero to
-            # the destination value, and a zero-cost lot stays zero-cost whatever it is multiplied by. This happens
-            # when the asset was received with its cost basis left to be filled in later (e.g. a fetched transfer),
-            # and without this guard a single unfilled cost basis divides by zero and aborts the whole ledger rebuild.
-            if self._withdrawal_account.currency() == self._deposit_account.currency() or Decimal(value) == 0:
-                transfer_value = Decimal(value)
-                # Move open trades from previous account to new account. A transfer moves a quantity without changing
-                # it, so each lot arrives holding exactly what left the source and nothing is allocated or scaled.
-                ledger.lots.carry_in(transfer_trades, self._deposit_account, self._asset, self)
-            else:
-                transfer_value = self._deposit
-                rate = transfer_value/Decimal(value)
-                # Move open trades from previous account to new and adjust price
-                ledger.lots.carry_in(transfer_trades, self._deposit_account, self._asset, self, fx_factor=rate)
+            transfer_value = self.process_lots(ledger.lots, parked=Decimal(value))
             ledger.appendTransaction(self, BookAccount.Transfers, -transfer_amount, asset_id=self._asset.id(), value=-transfer_value)
             ledger.appendTransaction(self, BookAccount.Assets, transfer_amount, asset_id=self._asset.id(), value=transfer_value)
         else:
             assert False, "Unknown transfer type for asset transfer"
+
+    # The lots an asset transfer moves: the sending leg closes them at basis and returns (quantity, basis); the
+    # arriving leg re-opens them on the destination and returns the value they arrive at, 'parked' being the value
+    # the sending leg left in transit. An arrival from an unknown source opens a lot of its own at zero.
+    def process_lots(self, engine, parked=None):
+        if self.is_fee_row():
+            return super().process_lots(engine)
+        if not self._asset.id():
+            return None
+        transfer_amount = self._withdrawal
+        if self._opart == Transfer.Outgoing:
+            processed_qty, processed_value = engine.carry_out(self._account, self._asset, self, transfer_amount)
+            if processed_qty < transfer_amount:
+                raise LedgerError(LedgerTransaction.tr("Processed asset amount is less than transfer amount. Date: ")
+                                  + f"{ts2dt(self._withdrawal_timestamp)}, Processed amount: {processed_qty}, "
+                                  + f"Required: {transfer_amount}, Operation: {self.dump()}")
+            return processed_qty, processed_value
+        if not self._has_out:
+            engine.acquire(self._deposit_account, self._asset, self, Decimal('0'), transfer_amount)
+            return Decimal('0')
+        transfer_trades = engine.carried(self, self._account, self._asset)
+        # A zero withdrawn value is treated like the same-currency case: there is no rate that rescales zero to
+        # the destination value, and a zero-cost lot stays zero-cost whatever it is multiplied by. This happens
+        # when the asset was received with its cost basis left to be filled in later (e.g. a fetched transfer),
+        # and without this guard a single unfilled cost basis divides by zero and aborts the whole ledger rebuild.
+        if self._withdrawal_account.currency() == self._deposit_account.currency() or parked == 0:
+            # A transfer moves a quantity without changing it, so each lot arrives holding exactly what left
+            engine.carry_in(transfer_trades, self._deposit_account, self._asset, self)
+            return parked
+        rate = self._deposit / parked
+        engine.carry_in(transfer_trades, self._deposit_account, self._asset, self, fx_factor=rate)
+        return self._deposit
 
     # An asset that arrived from a source that is still unknown. There is no sending leg, so there is neither a value
     # parked in the Transfers book to drain nor a closed deal whose lots could be carried over - the position is
@@ -2415,7 +2475,7 @@ class Transfer(FeeCarrier, LedgerTransaction):
     # settlement invariant: positive = sent but not arrived, negative = arrived from an unknown source), so a settled
     # pair cancels exactly.
     def processPendingArrival(self, ledger, transfer_amount):
-        ledger.lots.acquire(self._deposit_account, self._asset, self, Decimal('0'), transfer_amount)
+        self.process_lots(ledger.lots)
         ledger.appendTransaction(self, BookAccount.Transfers, -transfer_amount, asset_id=self._asset.id(), value=Decimal('0'))
         ledger.appendTransaction(self, BookAccount.Assets, transfer_amount, asset_id=self._asset.id(), value=Decimal('0'))
 
@@ -2658,7 +2718,7 @@ class CorporateAction(LedgerTransaction):
             raise LedgerError(LedgerTransaction.tr("Results value of corporate action doesn't match 100% of initial asset value. ")
                               + f"Date: {ts2dt(self._timestamp)}, Asset amount: {asset_amount}, "
                               + f"Distributed: {100.0 * float(allocation)}%, Operation: {self.dump()}")
-        processed_qty, processed_value = ledger.lots.carry_out(self._account, self._asset, self, self._qty)
+        processed_qty, processed_value = self.process_lots(ledger.lots)
         # Withdraw value with old quantity of old asset
         ledger.appendTransaction(self, BookAccount.Assets, -sign * processed_qty, asset_id=self._asset.id(),
                                  value=-sign * processed_value)
@@ -2666,23 +2726,35 @@ class CorporateAction(LedgerTransaction):
             category = PredefinedCategory.Losses if self._subtype == CorporateAction.WriteOff else PredefinedCategory.Profit
             ledger.appendTransaction(self, BookAccount.Costs, processed_value, category=category, peer=self._broker, tag=self._asset.tag().id())
             return
-        # Process assets after corporate action
-        closed_trades = ledger.lots.carried(self, self._account, self._asset)
         for result in self._results:
             asset = JalSymbol(result['symbol_id']).asset()
             qty = Decimal(result['qty'])
-            share = Decimal(result['value_share'])
-            value = share * processed_value
+            value = Decimal(result['value_share']) * processed_value
             if asset.type() == PredefinedAsset.Money:
                 ledger.appendTransaction(self, BookAccount.Money, qty)
                 ledger.appendTransaction(self, BookAccount.Incomes, -qty, category=PredefinedCategory.Interest, peer=self._broker)
             else:
-                # The quantity the action produced is allocated over the lots it carries over, so they add up to it
-                # exactly; their price keeps the coefficient that preserves the value of each lot.
-                acquired = None if result['keep_date'] else self._timestamp   # a new stock is acquired by the action
-                ledger.lots.carry_in(closed_trades, self._account, asset, self, qty=abs(qty),
-                                     price_factor=share * self._qty / qty, acquired=acquired)
                 ledger.appendTransaction(self, BookAccount.Assets, qty, asset_id=asset.id(), value=sign * value)
+
+    # The lot half of a corporate action: the position closes at basis and every asset result re-opens its lots,
+    # sharing their cost by value_share. Returns the quantity closed and its basis.
+    def process_lots(self, engine, parked=None):
+        processed_qty, processed_value = engine.carry_out(self._account, self._asset, self, self._qty)
+        if self._subtype in CorporateAction.NoResults:
+            return processed_qty, processed_value
+        closed_trades = engine.carried(self, self._account, self._asset)
+        for result in self._results:
+            asset = JalSymbol(result['symbol_id']).asset()
+            if asset.type() == PredefinedAsset.Money:
+                continue
+            qty = Decimal(result['qty'])
+            share = Decimal(result['value_share'])
+            # The quantity the action produced is allocated over the lots it carries over, so they add up to it
+            # exactly; their price keeps the coefficient that preserves the value of each lot.
+            acquired = None if result['keep_date'] else self._timestamp   # a new stock is acquired by the action
+            engine.carry_in(closed_trades, self._account, asset, self, qty=abs(qty),
+                            price_factor=share * self._qty / qty, acquired=acquired)
+        return processed_qty, processed_value
 
 # ----------------------------------------------------------------------------------------------------------------------
 # A same-account exchange of one asset into another that PRESERVES THE COST BASIS and recognizes no income.
@@ -2827,6 +2899,25 @@ class Conversion(FeeCarrier, LedgerTransaction):
     def in_asset(self) -> JalAsset:
         return self._in_asset
 
+    # The lot half of a conversion; returns the quantity converted and its basis
+    def process_lots(self, engine, parked=None):
+        if self.is_fee_row():
+            return super().process_lots(engine)
+        # The lots of the converted asset are closed at their own cost basis (self.price() is None, so the deals
+        # carry no profit or loss) and then re-opened on the acquired asset - each one keeping the operation that
+        # opened it, and therefore its acquisition date. The whole position is re-scaled by the quantity the
+        # conversion produced: per-unit price is multiplied by out_qty/in_qty and quantity by in_qty/out_qty, which
+        # leaves every lot's value untouched. This is exactly how a corporate action and a bridge carry a basis over.
+        processed_qty, processed_value = engine.carry_out(self._account, self._out_asset, self, self._out_qty)
+        if processed_qty < self._out_qty:
+            raise LedgerError(LedgerTransaction.tr("Processed asset amount is less than wrapped amount. Date: ")
+                              + f"{ts2dt(self._timestamp)}, Processed amount: {processed_qty}, "
+                              + f"Required: {self._out_qty}, Operation: {self.dump()}")
+        closed_trades = engine.carried(self, self._account, self._out_asset)
+        engine.carry_in(closed_trades, self._account, self._in_asset, self, qty=self._in_qty,
+                        price_factor=self._out_qty / self._in_qty)
+        return processed_qty, processed_value
+
     def processLedger(self, ledger):
         if self._out_asset.id() == 0 or self._in_asset.id() == 0:
             raise LedgerError(LedgerTransaction.tr("Wrapping assets aren't set. Operation: ") + self.dump())
@@ -2847,21 +2938,9 @@ class Conversion(FeeCarrier, LedgerTransaction):
                                       + f"{ts2dt(self._timestamp)}, Asset amount: {available}, "
                                       + f"Required: {self._out_qty}, Operation: {self.dump()}",
                                       self, self._account.id(), self._out_symbol.id(), available, self._out_qty)
-        # The lots of the converted asset are closed at their own cost basis (self.price() is None, so the deals
-        # carry no profit or loss) and then re-opened on the acquired asset - each one keeping the operation that
-        # opened it, and therefore its acquisition date. The whole position is re-scaled by the quantity the
-        # conversion produced: per-unit price is multiplied by out_qty/in_qty and quantity by in_qty/out_qty, which
-        # leaves every lot's value untouched. This is exactly how a corporate action and a bridge carry a basis over.
-        processed_qty, processed_value = ledger.lots.carry_out(self._account, self._out_asset, self, self._out_qty)
-        if processed_qty < self._out_qty:
-            raise LedgerError(LedgerTransaction.tr("Processed asset amount is less than wrapped amount. Date: ")
-                              + f"{ts2dt(self._timestamp)}, Processed amount: {processed_qty}, "
-                              + f"Required: {self._out_qty}, Operation: {self.dump()}")
+        processed_qty, processed_value = self.process_lots(ledger.lots)
         ledger.appendTransaction(self, BookAccount.Assets, -processed_qty,
                                  asset_id=self._out_asset.id(), value=-processed_value)
-        closed_trades = ledger.lots.carried(self, self._account, self._out_asset)
-        ledger.lots.carry_in(closed_trades, self._account, self._in_asset, self, qty=self._in_qty,
-                             price_factor=self._out_qty / self._in_qty)
         ledger.appendTransaction(self, BookAccount.Assets, self._in_qty,
                                  asset_id=self._in_asset.id(), value=processed_value)
 
@@ -3141,41 +3220,19 @@ class Bridge(FeeCarrier, LedgerTransaction):
             raise LedgerError(LedgerTransaction.tr("Asset amount is not enough for bridge processing. Date: ")
                               + f"{ts2dt(self._out_timestamp)}, Asset amount: {available}, "
                               + f"Required: {self._out_qty}, Operation: {self.dump()}")
-        processed_qty, processed_value = ledger.lots.carry_out(self._out_account, self._asset, self, self._out_qty)
-        if processed_qty < self._out_qty:
-            raise LedgerError(LedgerTransaction.tr("Processed asset amount is less than bridge amount. Date: ")
-                              + f"{ts2dt(self._out_timestamp)}, Processed amount: {processed_qty}, "
-                              + f"Required: {self._out_qty}, Operation: {self.dump()}")
+        processed_qty, processed_value = self.process_lots(ledger.lots)
         ledger.appendTransaction(self, BookAccount.Assets, -processed_qty, asset_id=self._asset.id(), value=-processed_value)
         ledger.appendTransaction(self, BookAccount.Transfers, self._out_qty, asset_id=self._asset.id(), value=processed_value)
 
     # The arriving leg only ever runs for a complete bridge (a pending half has no such part in the sequence):
-    # take the deals closed by the outgoing leg (created strictly before the fee leg's, and summing to out_qty), then
-    # drain the value the outgoing leg parked in the Transfers book.
+    # re-open the lots the outgoing leg closed, then drain the value it parked in the Transfers book.
     def processIncoming(self, ledger):
-        transfer_trades = []
-        bridged_qty = Decimal('0')
-        for trade in ledger.lots.carried(self, self._out_account, self._asset):
-            if bridged_qty >= self._out_qty:
-                break
-            transfer_trades.append(trade)
-            bridged_qty += trade.qty()
         value = self._read("SELECT value FROM ledger WHERE book_account=:book_transfers AND otype=:otype AND oid=:id",
                            [(":book_transfers", BookAccount.Transfers), (":otype", self._otype), (":id", self._oid)],
                            check_unique=True)
         if not value:
             raise LedgerError(LedgerTransaction.tr("Asset withdrawal not found for bridge.") + f" Operation:  {self.dump()}")
-        value = Decimal(value)
-        if self._out_account.currency() == self._in_account.currency():
-            rate = Decimal('1')
-        else:   # Cost basis is converted into the destination account currency with the FX rate at the deposit time
-            rate = JalAsset(self._out_account.currency()).quote(self._in_timestamp, self._in_account.currency())[1]
-            if rate == Decimal('0'):
-                raise LedgerError(LedgerTransaction.tr("There is no FX rate to convert bridge cost basis. Date: ")
-                                  + f"{ts2dt(self._in_timestamp)}, Operation: {self.dump()}")
-        transfer_value = rate * value
-        # Move open trades from source to destination (adjust cost basis by FX rate)
-        ledger.lots.carry_in(transfer_trades, self._in_account, self._asset, self, fx_factor=rate)
+        transfer_value = self._arrive_lots(ledger.lots, Decimal(value))
         ledger.appendTransaction(self, BookAccount.Transfers, -self._out_qty, asset_id=self._asset.id(), value=-transfer_value)
         ledger.appendTransaction(self, BookAccount.Assets, self._out_qty, asset_id=self._asset.id(), value=transfer_value)
         if self._in_qty < self._out_qty:
@@ -3184,6 +3241,44 @@ class Bridge(FeeCarrier, LedgerTransaction):
             # say - and it is borne by the arriving account rather than by the sending one.
             self._dispose_at_basis(ledger, self._out_qty - self._in_qty, self._asset, self._in_account,
                                    self.InKindFee, self._in_account.organization())
+
+    # The lot half of a bridge. The sending leg closes the lots at basis and returns (quantity, basis); the arriving
+    # leg re-opens them on the destination, converted into its currency, and takes the in-kind fee out of them.
+    def process_lots(self, engine, parked=None):
+        if self.is_fee_row():
+            return super().process_lots(engine)
+        if self._opart == Bridge.Outgoing:
+            processed_qty, processed_value = engine.carry_out(self._out_account, self._asset, self, self._out_qty)
+            if processed_qty < self._out_qty:
+                raise LedgerError(LedgerTransaction.tr("Processed asset amount is less than bridge amount. Date: ")
+                                  + f"{ts2dt(self._out_timestamp)}, Processed amount: {processed_qty}, "
+                                  + f"Required: {self._out_qty}, Operation: {self.dump()}")
+            return processed_qty, processed_value
+        transfer_value = self._arrive_lots(engine, parked)
+        if self._in_qty < self._out_qty:
+            self._consume_lots(engine, self._out_qty - self._in_qty, self._asset, self._in_account)
+        return transfer_value
+
+    # The deals closed by the sending leg (created strictly before the fee leg's, and summing to out_qty) re-opened on
+    # the destination; returns the value they arrive at, 'parked' being what the sending leg left in transit
+    def _arrive_lots(self, engine, parked: Decimal) -> Decimal:
+        transfer_trades = []
+        bridged_qty = Decimal('0')
+        for trade in engine.carried(self, self._out_account, self._asset):
+            if bridged_qty >= self._out_qty:
+                break
+            transfer_trades.append(trade)
+            bridged_qty += trade.qty()
+        if self._out_account.currency() == self._in_account.currency():
+            rate = Decimal('1')
+        else:   # Cost basis is converted into the destination account currency with the FX rate at the deposit time
+            rate = JalAsset(self._out_account.currency()).quote(self._in_timestamp, self._in_account.currency())[1]
+            if rate == Decimal('0'):
+                raise LedgerError(LedgerTransaction.tr("There is no FX rate to convert bridge cost basis. Date: ")
+                                  + f"{ts2dt(self._in_timestamp)}, Operation: {self.dump()}")
+        # Move open trades from source to destination (adjust cost basis by FX rate)
+        engine.carry_in(transfer_trades, self._in_account, self._asset, self, fx_factor=rate)
+        return rate * parked
 
 
 # ----------------------------------------------------------------------------------------------------------------------

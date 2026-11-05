@@ -152,6 +152,10 @@ class LotEngine:
                                                          slice_id=slice_id, acquired=acquired))
         return sorted(lots, key=lambda x: (x.acquired(), x.open_operation().timestamp(), x.slice_id()))
 
+    # What the lots of a position hold now, negative for a short one
+    def position(self, account, asset) -> Decimal:
+        return self.store.position(account.id(), asset.id())
+
     # Opens a new lot of 'qty' at 'price'; 'acquired' defaults to the operation's own time
     def acquire(self, account, asset, operation, price: Decimal, qty: Decimal, acquired=None):
         self._store(account, asset, jal.db.closed_trade.JalOpenTrade(operation, price, qty, acquired=acquired),
