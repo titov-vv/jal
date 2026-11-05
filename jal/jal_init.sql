@@ -373,6 +373,8 @@ CREATE TABLE trades_opened (
 
 DROP INDEX IF EXISTS open_trades_by_time;
 CREATE INDEX open_trades_by_time ON trades_opened (timestamp, id);
+DROP INDEX IF EXISTS open_trades_by_position;
+CREATE INDEX open_trades_by_position ON trades_opened (account_id, asset_id, timestamp);
 
 -- A row inserted without an explicit slice_id starts a new slice and gets its own row id as the slice identity.
 -- Rows that carry an existing slice_id (a slice's state re-written after partial consumption) keep it, so
@@ -1089,7 +1091,7 @@ BEGIN
 END;
 ------------------------------------------------------------------------------------------------------------------------
 -- Initialize default values for settings
-INSERT INTO settings(name, value) VALUES('SchemaVersion', 86);
+INSERT INTO settings(name, value) VALUES('SchemaVersion', 87);
 INSERT INTO settings(name, value) VALUES('Language', 1);
 INSERT INTO settings(name, value) VALUES('RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
 INSERT INTO settings(name, value) VALUES('RuTaxSessionId', '');
