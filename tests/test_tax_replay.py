@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QWidget, QMessageBox
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from tests.helpers import d2t, create_assets, create_quotes, create_trades, create_swaps, create_conversions, \
-    create_corporate_actions, symbol_id_for
+    create_corporate_actions, symbol_id_for, operation_id
 from tests.test_taxes_shorts import _shorts
 from jal.widgets.icons import JalIcon
 from jal.widgets.tax_widget import TaxWidget
@@ -17,6 +17,7 @@ from jal.db.lots import LedgerLotStore, ScratchLotStore
 from jal.db.basis_policy import JalPolicy
 from jal.db.operations import LedgerTransaction, LedgerError, AssetIncome, CorporateAction
 from jal.data_export.taxes import TaxReportStop, TaxReportCancelled
+from jal.db.tax_override import JalTaxOverride, TaxOverride
 from jal.data_export.tax_reports.russia import TaxesRussia
 from jal.data_export.tax_reports.portugal import TaxesPortugal
 
@@ -352,3 +353,82 @@ def test_main_window_stops_a_tax_report(prepare_db_taxes, tmp_path, monkeypatch)
     finally:
         main_window.close()
         main_window.deleteLater()
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The user's decisions steer the replay, and the Summary lists each one the replay applied
+def _decisions(report: dict, summary: str) -> list:
+    return [x['decision'] for x in report[summary] if x['report_template'] == "decision"]
+
+
+# PT: a tax event on the sale swap disposes of the ETH at its 7 000 market value; the UNI then costs that
+def test_pt_swap_decided_a_tax_event(prepare_db_taxes):
+    create_pt_scenario()
+    JalTaxOverride.set('pt', operation_id(LedgerTransaction.Swap, 1), TaxOverride.TaxEvent, '', "Ruling")
+
+    report = TaxesPortugal().prepare_tax_report(2024, 1)
+    assert [pick(x, PT_FIELDS) for x in deal_rows(report["Crypto ≥ 365 days"])] == [
+        {'symbol': "ETH", 'qty': Decimal('2'), 'o_number': "buy-ETH", 'o_date': d2t(230110),
+         'o_amount': Decimal('3000.00'), 'c_number': '', 'c_date': d2t(240301), 'c_amount': Decimal('7000.00'),
+         'profit': Decimal('4000.00'), 'o_amount_eur': Decimal('2760.00'), 'c_amount_eur': Decimal('6440.00'),
+         'profit_eur': Decimal('3680.00'), 'days': 416}]
+    uni = next(x for x in deal_rows(report["Crypto < 365 days"]) if x['symbol'] == "UNI")
+    assert (uni['o_amount'], uni['profit'], uni['days']) == (Decimal('3500.00'), Decimal('500.00'), 275)
+    assert _decisions(report, "Summary") == ["A tax event: Ruling"]
+
+
+# PT: not a tax event on the merger carries it as JAL books it; a price per received share realizes it at that price
+def test_pt_merger_decided_not_a_tax_event(prepare_db_taxes):
+    create_pt_scenario()
+    JalTaxOverride.set('pt', operation_id(LedgerTransaction.CorporateAction, 1), TaxOverride.NotTaxEvent, '', "Ruling")
+
+    report = TaxesPortugal().prepare_tax_report(2024, 1)
+    assert [pick(x, ('symbol', 'o_date', 'o_amount', 'profit')) for x in deal_rows(report["Shares"])] == [
+        {'symbol': "NEW", 'o_date': d2t(230301), 'o_amount': Decimal('2400.00'), 'profit': Decimal('1100.00')}]
+    assert _decisions(report, "Summary") == ["Not a tax event: Ruling"]
+
+
+def test_pt_merger_at_the_price_set(prepare_db_taxes):
+    create_pt_scenario()
+    JalTaxOverride.set('pt', operation_id(LedgerTransaction.CorporateAction, 1), TaxOverride.PricePerShare, '60',
+                       "Exchange ratio")
+
+    report = TaxesPortugal().prepare_tax_report(2024, 1)
+    shares = deal_rows(report["Shares"])
+    assert [pick(x, ('symbol', 'o_amount', 'c_amount', 'profit', 'c_type')) for x in shares] == [
+        {'symbol': "NEW", 'o_amount': Decimal('3000.00'), 'c_amount': Decimal('3500.00'), 'profit': Decimal('500.00'),
+         'c_type': "Venda"},
+        {'symbol': "OLD", 'o_amount': Decimal('2400.00'), 'c_amount': Decimal('3000.00'), 'profit': Decimal('600.00'),
+         'c_type': "Permuta"}]
+    assert shares[1]['note'].startswith(TaxesPortugal.texts['exchange_price'])
+    assert _decisions(report, "Summary") == ["A tax event at 60 per received share: Exchange ratio"]
+
+
+# RU: not a tax event on the conversion swap carries UNI's cost and date into AVAX; the swap is listed as excluded
+def test_ru_swap_decided_not_a_tax_event(prepare_db_taxes):
+    create_ru_scenario()
+    JalTaxOverride.set('ru', operation_id(LedgerTransaction.Swap, 1), TaxOverride.NotTaxEvent, '', "Ruling")
+
+    report = TaxesRussia().prepare_tax_report(2025, 1)
+    rows = deal_rows(report["Криптовалюты"])
+    assert "UNI" not in [x['symbol'] for x in rows]
+    avax = next(x for x in rows if x['symbol'] == "AVAX")
+    assert (avax['o_number'], avax['o_date'], avax['o_amount'], avax['profit_rub']) == \
+           ("buy-UNI", d2t(250115), Decimal('1000.00'), Decimal('47400.00'))
+    assert [x['number'] for x in report["Не отражено"] if x['report_template'] == "operation"] == ['']
+    assert _decisions(report, "Сводка") == ["Не налоговое событие: Ruling"]
+
+
+# RU: a tax event on the merger realizes OLD at the estimate, 2 560 (51.2 x 50); NEW opens there
+def test_ru_merger_decided_a_tax_event(prepare_db_taxes):
+    create_pt_scenario_in_rub()
+    JalTaxOverride.set('ru', operation_id(LedgerTransaction.CorporateAction, 1), TaxOverride.TaxEvent, '', "Ruling")
+
+    report = TaxesRussia().prepare_tax_report(2024, 1)
+    rows = [x for x in report["Акции"] if x['report_template'] in ("trade", "corporate_action")]
+    assert [(x['c_symbol'], x['c_type'], x['cost_basis'], x['spending_rub'], x['c_amount_rub'], x['profit_rub'])
+            for x in rows] == [   # the purchase prints whole, the cost share beside it
+        ("NEW", "Продажа", Decimal('100'), Decimal('230400.00'), Decimal('315000.00'), Decimal('84600.00')),
+        ("OLD", "Мена", Decimal('80.0'), Decimal('216000.00'), Decimal('230400.00'), Decimal('14400.00'))]
+    assert rows[1]['note'].startswith(TaxesRussia.texts['exchange_decided'])
+    assert _decisions(report, "Сводка") == ["Налоговое событие: Ruling"]

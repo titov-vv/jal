@@ -1,6 +1,9 @@
+from decimal import Decimal, InvalidOperation
 from PySide6.QtWidgets import QApplication
+from jal.constants import PredefinedAsset
 from jal.db.db import JalDB
 from jal.db.country import JalCountry
+from jal.db.symbol import JalSymbol
 from jal.db.operations import LedgerTransaction, AssetPayment, AssetIncome
 
 
@@ -9,6 +12,8 @@ class TaxOverride:
     NotTaxEvent = 1   # The operation is not a tax event in this jurisdiction; value unused
     Treaty = 2        # A tax treaty applies to this dividend (value '1') or doesn't ('0')
     AssetSource = 3   # The income's source is the asset and its country, not the account's broker (value '1')
+    TaxEvent = 4      # An exchange the jurisdiction carries is a disposal at market value; value unused
+    PricePerShare = 5   # A corporate action is a disposal at this price per received share (value: the price)
 
     TreatyApplies = '1'
     NoTreaty = '0'
@@ -24,8 +29,40 @@ class TaxOverride:
         labels = {(TaxOverride.NotTaxEvent, ''): TaxOverride.tr("Not a tax event"),
                   (TaxOverride.Treaty, TaxOverride.TreatyApplies): TaxOverride.tr("Tax treaty applies"),
                   (TaxOverride.Treaty, TaxOverride.NoTreaty): TaxOverride.tr("No tax treaty"),
-                  (TaxOverride.AssetSource, TaxOverride.AssetCountry): TaxOverride.tr("Source: the asset's country")}
+                  (TaxOverride.AssetSource, TaxOverride.AssetCountry): TaxOverride.tr("Source: the asset's country"),
+                  (TaxOverride.TaxEvent, ''): TaxOverride.tr("A tax event")}
+        if kind == TaxOverride.PricePerShare:
+            return TaxOverride.tr("A tax event at a price per received share") + (f": {value}" if value else '')
         return labels.get((kind, value), '')
+
+    # The results of a corporate action into another asset than money, as asset_action_results dicts
+    @staticmethod
+    def exchange_results(operation) -> list:
+        if operation.type() != LedgerTransaction.CorporateAction:
+            return []
+        return [x for x in operation.results() if JalSymbol(x['symbol_id']).asset().id() != operation.asset().id()
+                and JalSymbol(x['symbol_id']).asset().type() != PredefinedAsset.Money]
+
+    # True for an exchange a jurisdiction may carry: a swap, a wrapping, a corporate action into another asset
+    @staticmethod
+    def takes_tax_event(operation) -> bool:
+        if operation.type() in (LedgerTransaction.Swap, LedgerTransaction.Conversion):
+            return not operation.is_fee_row()
+        return bool(TaxOverride.exchange_results(operation))
+
+    # True for a corporate action into one other asset - the one a price per received share can be given for
+    @staticmethod
+    def takes_price(operation) -> bool:
+        return len(TaxOverride.exchange_results(operation)) == 1
+
+    # The price a value of PricePerShare holds, None if it isn't a positive number
+    @staticmethod
+    def price(value: str):
+        try:
+            price = Decimal(value)
+        except (InvalidOperation, TypeError):
+            return None
+        return price if price.is_finite() and price > Decimal('0') else None
 
     # True for the operations a report reads as dividends - the only ones a treaty decision applies to
     @staticmethod
@@ -47,7 +84,8 @@ class TaxOverride:
 # Report input only, the ledger never reads it.
 class JalTaxOverride(JalDB):
     _VALUES = {TaxOverride.NotTaxEvent: ('',), TaxOverride.Treaty: (TaxOverride.TreatyApplies, TaxOverride.NoTreaty),
-               TaxOverride.AssetSource: (TaxOverride.AssetCountry,)}
+               TaxOverride.AssetSource: (TaxOverride.AssetCountry,), TaxOverride.TaxEvent: ('',),
+               TaxOverride.PricePerShare: None}   # None: any positive number
 
     # Every override of the operation, as a list of {'jurisdiction', 'kind', 'value', 'note'}
     @classmethod
@@ -85,7 +123,11 @@ class JalTaxOverride(JalDB):
     def set(cls, jurisdiction: str, operation_id: int, kind: int, value: str, note: str) -> None:
         if kind not in cls._VALUES:
             raise ValueError(f"Unknown tax override kind: {kind}")
-        if value not in cls._VALUES[kind]:
+        if cls._VALUES[kind] is None:
+            if TaxOverride.price(value) is None:
+                raise ValueError(f"Invalid value '{value}' for tax override kind {kind}")
+            value = format(TaxOverride.price(value).normalize(), 'f')
+        elif value not in cls._VALUES[kind]:
             raise ValueError(f"Invalid value '{value}' for tax override kind {kind}")
         if not jurisdiction or not note.strip():
             raise ValueError("A tax override needs a jurisdiction and a note")

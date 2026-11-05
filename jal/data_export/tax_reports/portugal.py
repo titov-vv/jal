@@ -1,11 +1,12 @@
 from datetime import datetime, timezone
 from decimal import Decimal
-from jal.constants import PredefinedAsset, PredefinedCategory, SymbolId, Setup
+from jal.constants import PredefinedAsset, PredefinedCategory, SymbolId
 from jal.db.asset import JalAsset
 from jal.db.symbol import JalSymbol
 from jal.db.operations import LedgerTransaction, AssetPayment, AssetIncome, CorporateAction, Swap, Conversion
 from jal.db.basis_policy import Basis, Clock, Treatment, JalPolicy
-from jal.data_export.taxes import TaxReport, GAIN, INCOME
+from jal.data_export.taxes import TaxReport, GAIN, INCOME, exchange_estimate
+from jal.db.tax_override import TaxOverride
 from jal.data_export.tax_parameters import TaxParameters
 
 
@@ -26,7 +27,11 @@ class PtPolicy(JalPolicy):
         treatment = super().action_result(action, result)
         if not self.exchange_outside_eu(action, result):
             return treatment
-        return Treatment(Basis.DISPOSAL, Clock.RESTART, treatment.share, self.exchange_value(action, result))
+        value = exchange_estimate(action, result)
+        if value is None:
+            self._missing_quote(JalSymbol(result['symbol_id']).symbol(), action.timestamp())
+            value = Decimal('0')
+        return Treatment(Basis.DISPOSAL, Clock.RESTART, treatment.share, value)
 
     # True for a merger result into another asset whose issuer is outside the EU in the year of the action
     def exchange_outside_eu(self, action, result: dict) -> bool:
@@ -39,20 +44,6 @@ class PtPolicy(JalPolicy):
             return False
         year = datetime.fromtimestamp(action.timestamp(), tz=timezone.utc).year
         return not TaxParameters('pt', year).eu_member(asset.country().code())
-
-    # The market value of a result: per received share, the higher of the old shares' last non-zero quote before the
-    # action times their cost share, and the new shares' first non-zero quote after it; in the account currency
-    def exchange_value(self, action, result: dict) -> Decimal:
-        currency_id = action.account().currency()
-        asset = JalSymbol(result['symbol_id']).asset()
-        qty = abs(Decimal(result['qty']))
-        before = [q for _, q in action.asset().quotes(0, action.timestamp() - 1, currency_id) if q]
-        after = [q for _, q in asset.quotes(action.timestamp() + 1, Setup.MAX_TIMESTAMP, currency_id) if q]
-        prices = ([before[-1] * Decimal(result['value_share']) * abs(action.qty()) / qty] if before else []) + after[:1]
-        if not prices:
-            self._missing_quote(asset.symbol(), action.timestamp())
-            return Decimal('0')
-        return max(prices) * qty
 
 
 class TaxesPortugal(TaxReport):
@@ -114,6 +105,12 @@ class TaxesPortugal(TaxReport):
                     "a disposal at market value - the higher of the last quote of the old shares times their cost "
                     "share and the first quote of the new ones",
         'spin_off': "A spin-off is no disposal: the cost is split between the shares as the corporate action states",
+        'exchange_price': "Exchange at the price per received share you set: a disposal at that value",
+        'exchange_decided': "Your decision: a disposal at market value, estimated as the higher of the last quote of "
+                            "the old shares times their cost share and the first quote of the new ones",
+        'swap_decided': "Your decision: this exchange is a disposal at market value",
+        'override_tax_event': "A tax event",
+        'override_price': "A tax event at {} per received share",
         'reward_lot': "Received as crypto income: zero cost, taxed on disposal only (CIRS art. 5.º, n.º 11)",
         'income_not_taxed': "Crypto received as income is not taxed at receipt: it opens a lot at zero cost, taxed when "
                             "disposed of (CIRS art. 5.º, n.º 11). Values are for information",
@@ -307,19 +304,13 @@ class TaxesPortugal(TaxReport):
             line = self._deal_row(trade, kind)
             line['c_type'] = "Permuta"
             line['c_price'] = trade.close_price()
-            line['note'] = "\n".join([self.texts['exchange']] + ([line['note']] if line['note'] else []))
+            note = self.exchange_note(trade.close_operation())
+            line['note'] = "\n".join([note] + ([line['note']] if line['note'] else []))
             deals_report.append(line)
             self.mark_printed(trade.close_operation())
         deals_report += [self._short_open_row(x) for x in self.stock_year_end_shorts()]
         self.insert_totals(deals_report, ["income_eur", "spending_eur", "profit_eur", "profit"])
         return deals_report
-
-    # Deals the policy realized at an exchange by a corporate action in the year, less those the user excluded
-    def exchanges_list(self, asset_type) -> list:
-        trades = self.account.closed_trades_list(close_otypes=(LedgerTransaction.CorporateAction,), store=self.lots,
-                                                 realized=True)
-        trades = [x for x in trades if x.asset().type() in asset_type and self.in_year(self.deal_date(x))]
-        return [x for x in trades if not self.excluded(x.close_operation())]
 
     # A stock short sold in the year and open on 31 December: the proceeds and the fee at the rate of the sale, no
     # acquisition cost; the Modelo 3 file leaves it out
@@ -390,8 +381,14 @@ class TaxesPortugal(TaxReport):
     # The crypto deals on one side of the 365 days, with the holding period
     def _crypto_deals(self, long_held: bool) -> list:
         deals_report = []
-        for trade in self.trades_list([PredefinedAsset.Crypto]):
+        otypes = (LedgerTransaction.Trade, LedgerTransaction.Swap, LedgerTransaction.Conversion)
+        for trade in self.trades_list([PredefinedAsset.Crypto], close_otypes=otypes):
+            exchange = trade.close_operation().type() != LedgerTransaction.Trade
+            if exchange and (trade.close_operation().id(), TaxOverride.TaxEvent) not in self._overrides:
+                continue   # carried, the deal is no disposal
             line = self._deal_row(trade)
+            if exchange:
+                line['c_price'] = trade.close_price()
             days = (line['c_date'] - line['o_date']) // 86400
             if (days >= 365) != long_held:
                 continue
@@ -399,6 +396,8 @@ class TaxesPortugal(TaxReport):
             notes = [line['note']] if line['note'] else []
             if trade.open_operation().type() == LedgerTransaction.AssetIncome:
                 notes.insert(0, self.texts['reward_lot'])
+            if exchange:
+                notes.insert(0, self.texts['swap_decided'])
             line['note'] = "\n".join(notes)
             deals_report.append(line)
             self.mark_printed(trade.close_operation())

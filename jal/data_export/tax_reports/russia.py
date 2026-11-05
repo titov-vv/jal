@@ -67,6 +67,12 @@ class TaxesRussia(TaxReport):
         'override_treaty': "Соглашение об избежании двойного налогообложения применяется",
         'override_no_treaty': "Соглашение не применяется",
         'override_asset_source': "Источник дохода - эмитент и страна актива",
+        'override_tax_event': "Налоговое событие",
+        'override_price': "Налоговое событие по цене {} за полученную акцию",
+        'exchange': "Мена акций: реализация по рыночной стоимости",
+        'exchange_price': "Мена акций по указанной пользователем цене за полученную акцию: реализация по этой стоимости",
+        'exchange_decided': "Решение пользователя: реализация по рыночной стоимости, оценённой как наибольшая из "
+                            "последней котировки прежних акций с учётом их доли стоимости и первой котировки новых",
         'income': "Доходы",
         'spending': "Расходы",
         'profit': "Финансовый результат",
@@ -331,8 +337,14 @@ class TaxesRussia(TaxReport):
                    PredefinedAsset.Derivative: TaxParameters.DERIVATIVE}
 
     def prepare_stocks_and_etf(self):
-        deals = self.prepare_trades_report(self.trades_list([PredefinedAsset.Stock, PredefinedAsset.ETF]))
+        trades = self.trades_list([PredefinedAsset.Stock, PredefinedAsset.ETF])
+        exchanges = self.exchanges_list([PredefinedAsset.Stock, PredefinedAsset.ETF])
+        deals = self.prepare_trades_report(trades + exchanges)
         deals = [x for x in deals if x['report_template'] != "totals"]
+        for line, trade in zip(deals[len(trades):], exchanges):   # realized at an exchange the user decided on
+            line['c_type'], line['c_price'] = "Мена", trade.close_price()
+            notes = [self.exchange_note(trade.close_operation())] + ([line['note']] if line['note'] else [])
+            line['note'] = "\n".join(notes)
         deals += [self._short_open_row(x) for x in self.stock_year_end_shorts()]
         self.insert_totals(deals, ["income_rub", "spending_rub", "profit_rub", "profit"])
         self.add_header(self.texts['traded'])

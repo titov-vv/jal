@@ -2643,6 +2643,10 @@ class CorporateAction(LedgerTransaction):
     def qty(self) -> Decimal:
         return self._qty
 
+    # The results as asset_action_results rows: {'asset_id', 'symbol_id', 'qty', 'value_share', 'keep_date'}
+    def results(self) -> list:
+        return self._results
+
     # True if one of the results is money in the account's currency
     def pays_cash(self) -> bool:
         return any(x['asset_id'] == self._account.currency() for x in self._results)

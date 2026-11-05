@@ -179,3 +179,14 @@ def test_asset_source_values(prepare_db_taxes):
     with pytest.raises(ValueError):
         JalTaxOverride.set('ru', merger, TaxOverride.AssetSource, '0', "Wrong value")
     assert TaxOverride.takes_asset_source(LedgerTransaction.get_operation(LedgerTransaction.CorporateAction, merger))
+
+
+# A price per received share takes a positive number only, stored in plain notation
+def test_price_per_share_values(prepare_db_taxes):
+    merger = _cash_merger('ca')
+    for value in ('', 'abc', '0', '-3', 'NaN', 'Infinity'):
+        with pytest.raises(ValueError):
+            JalTaxOverride.set('pt', merger, TaxOverride.PricePerShare, value, "A note")
+    JalTaxOverride.set('pt', merger, TaxOverride.PricePerShare, '60.00', "A note")
+    assert JalTaxOverride.for_operation(merger)[0]['value'] == '60'
+    assert TaxOverride.label(TaxOverride.PricePerShare, '60') == "A tax event at a price per received share: 60"

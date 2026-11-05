@@ -4,14 +4,15 @@ from decimal import Decimal
 from datetime import datetime, timezone
 from PySide6.QtWidgets import QApplication
 
-from jal.constants import PredefinedAsset
+from jal.constants import PredefinedAsset, Setup
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.category import JalCategory
 from jal.db.db import JalDB
 from jal.db.helpers import is_day_marker
 from jal.db.lots import LedgerLotStore, ScratchLotStore, replay
-from jal.db.basis_policy import JalPolicy
+from jal.db.basis_policy import Basis, Clock, Treatment, BasisPolicy, JalPolicy
+from jal.db.symbol import JalSymbol
 from jal.db.operations import LedgerTransaction, LedgerError, TaxStatus, AssetPayment, AssetIncome, Transfer
 from jal.db.clock import ZONE_SPAN, wall_clock_reading
 from jal.db.tax_override import JalTaxOverride, TaxOverride
@@ -38,6 +39,69 @@ class TaxReportStop(Exception):
 # Raised when the user stops a report while it runs
 class TaxReportCancelled(Exception):
     pass
+
+
+# The market value of a corporate action result in the account currency, estimated per received share as the higher
+# of the old shares' last non-zero quote before the action times their cost share and the new shares' first non-zero
+# quote after it; None without either quote
+def exchange_estimate(action, result: dict):
+    currency_id = action.account().currency()
+    asset = JalSymbol(result['symbol_id']).asset()
+    qty = abs(Decimal(result['qty']))
+    before = [q for _, q in action.asset().quotes(0, action.timestamp() - 1, currency_id) if q]
+    after = [q for _, q in asset.quotes(action.timestamp() + 1, Setup.MAX_TIMESTAMP, currency_id) if q]
+    prices = ([before[-1] * Decimal(result['value_share']) * abs(action.qty()) / qty] if before else []) + after[:1]
+    return max(prices) * qty if prices else None
+
+
+# The jurisdiction's policy with the user's decisions on top: 'not a tax event' carries an exchange with its date,
+# 'a tax event' disposes of it at market value, a price per received share disposes of a corporate action at it.
+# 'applied(operation, kind)' hears of each decision used, 'missing_quote(symbol, timestamp)' of a value not found.
+class DecidedPolicy(BasisPolicy):
+    def __init__(self, policy, overrides: dict, applied, missing_quote):
+        self._policy = policy
+        self._overrides = overrides
+        self._applied = applied
+        self._missing_quote = missing_quote
+
+    def _decision(self, operation):
+        for kind in (TaxOverride.NotTaxEvent, TaxOverride.TaxEvent, TaxOverride.PricePerShare):
+            if (operation.id(), kind) in self._overrides:
+                self._applied(operation, kind)
+                return kind, self._overrides[(operation.id(), kind)][0]
+        return None, None
+
+    def treatment(self, operation) -> Treatment:
+        kind, _ = self._decision(operation)
+        if kind == TaxOverride.NotTaxEvent:
+            return Treatment(Basis.CARRY, Clock.KEEP)
+        if kind == TaxOverride.TaxEvent:
+            return Treatment(Basis.DISPOSAL, Clock.RESTART)
+        return self._policy.treatment(operation)
+
+    def action_result(self, action, result: dict) -> Treatment:
+        treatment = self._policy.action_result(action, result)
+        if result not in TaxOverride.exchange_results(action):
+            return treatment
+        kind, value = self._decision(action)
+        if kind == TaxOverride.NotTaxEvent:
+            return Treatment(Basis.CARRY, Clock.KEEP, treatment.share)
+        if kind == TaxOverride.PricePerShare:
+            return Treatment(Basis.DISPOSAL, Clock.RESTART, treatment.share,
+                             TaxOverride.price(value) * abs(Decimal(result['qty'])))
+        if kind == TaxOverride.TaxEvent and treatment.basis != Basis.DISPOSAL:
+            value = exchange_estimate(action, result)
+            if value is None:
+                self._missing_quote(JalSymbol(result['symbol_id']).symbol(), action.timestamp())
+                return treatment
+            return Treatment(Basis.DISPOSAL, Clock.RESTART, treatment.share, value)
+        return treatment
+
+    def income_cost(self, income) -> Decimal:
+        return self._policy.income_cost(income)
+
+    def order(self, lots: list) -> list:
+        return self._policy.order(lots)
 
 
 class TaxReport:
@@ -217,11 +281,16 @@ class TaxReport:
                 self._show_progress(percent, text)
 
         try:
-            replay(self.lots, self.basis_policy(), progress=progress if self._progress is not None else None)
+            policy = DecidedPolicy(self.basis_policy(), self._overrides, self._decided, self.missing_quote)
+            replay(self.lots, policy, progress=progress if self._progress is not None else None)
         except LedgerError as e:
             raise TaxReportStop([], replay=str(e))
 
     # Reports the progress; a stop asked for meanwhile ends the report here, as the events are processed in 'progress'
+    # A decision the replay used: listed with the others the report applied
+    def _decided(self, operation, kind: int):
+        self._applied[(operation.id(), kind)] = operation
+
     # The BasisPolicy the report replays the lots by: the jurisdiction's rules where they differ from JAL's
     def basis_policy(self):
         return JalPolicy()
@@ -364,8 +433,9 @@ class TaxReport:
             rows.append(self._operation_row(operation, self.texts['uncovered']))
         for operation, year in self._carried:
             rows.append(self._operation_row(operation, self.texts['short_carried'].format(year=year)))
-        for (oid, kind), operation in self._applied.items():
-            if kind == TaxOverride.NotTaxEvent:
+        for (oid, kind), operation in self._applied.items():   # the replay applies those of every account and year
+            if kind == TaxOverride.NotTaxEvent and operation.account().id() == self.account.id() \
+                    and self.in_year(self.operation_date(operation)):
                 rows.append(self._operation_row(operation, self.texts['excluded'].format(self._overrides[(oid, kind)][1])))
         return rows
 
@@ -464,13 +534,18 @@ class TaxReport:
         texts = {(TaxOverride.NotTaxEvent, ''): 'override_excluded',
                  (TaxOverride.Treaty, TaxOverride.TreatyApplies): 'override_treaty',
                  (TaxOverride.Treaty, TaxOverride.NoTreaty): 'override_no_treaty',
-                 (TaxOverride.AssetSource, TaxOverride.AssetCountry): 'override_asset_source'}
+                 (TaxOverride.AssetSource, TaxOverride.AssetCountry): 'override_asset_source',
+                 (TaxOverride.TaxEvent, ''): 'override_tax_event'}
         for (oid, kind), operation in sorted(self._applied.items(), key=lambda x: (x[1].timestamp(), x[0])):
             value, note = self._overrides[(oid, kind)]
+            if kind == TaxOverride.PricePerShare:
+                decision = self.texts['override_price'].format(value)
+            else:
+                decision = self.texts[texts[(kind, value)]]
             rows.append({'report_template': "decision",
                          'operation': f"{day(self.operation_date(operation))} {self.operation_label(operation)} "
                                       f"{operation.symbol().symbol()}".strip(),
-                         'decision': f"{self.texts[texts[(kind, value)]]}: {note}"})
+                         'decision': f"{decision}: {note}"})
         return rows
 
     # The base rate of an income kind (TaxParameters.DIVIDEND, ...) times 'base', None if the year has no such rate
@@ -589,6 +664,21 @@ class TaxReport:
                 self._warn_short(deal.asset(), deal.open_operation())
             deals.append(deal)
         return deals
+
+    # Deals the replay realized at an exchange by a corporate action in the year, less those the user excluded
+    def exchanges_list(self, asset_type) -> list:
+        trades = self.account.closed_trades_list(close_otypes=(LedgerTransaction.CorporateAction,), store=self.lots,
+                                                 realized=True)
+        trades = [x for x in trades if x.asset().type() in asset_type and self.in_year(self.deal_date(x))]
+        return [x for x in trades if not self.excluded(x.close_operation())]
+
+    # The note of a realized exchange: the user's price, the user's decision, or the jurisdiction's rule
+    def exchange_note(self, action) -> str:
+        if (action.id(), TaxOverride.PricePerShare) in self._overrides:
+            return self.texts['exchange_price']
+        if (action.id(), TaxOverride.TaxEvent) in self._overrides:
+            return self.texts['exchange_decided']
+        return self.texts['exchange']
 
     SHORT_HANDLED = (PredefinedAsset.Stock,)   # asset kinds whose shorts follow the year-of-sale rule
 
