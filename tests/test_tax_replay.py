@@ -1,11 +1,15 @@
 from decimal import Decimal
 
+import pytest
+
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from tests.helpers import d2t, create_assets, create_quotes, create_trades, create_swaps, create_conversions, \
     create_corporate_actions, symbol_id_for
+from tests.test_taxes_shorts import _shorts
 from jal.constants import PredefinedAsset, SwapTreatment, AssetData
 from jal.db.db import JalDB
 from jal.db.ledger import Ledger
+from jal.db.lots import ScratchLotStore, replay
 from jal.db.operations import LedgerTransaction, AssetIncome, CorporateAction
 from jal.data_export.tax_reports.russia import TaxesRussia
 from jal.data_export.tax_reports.portugal import TaxesPortugal
@@ -189,3 +193,33 @@ def test_pt_2025_today(prepare_db_taxes):
          'c_number': "sell-UNI-2", 'c_date': d2t(250401), 'c_amount': Decimal('5000.00'), 'profit': Decimal('1500.00'),
          'o_amount_eur': Decimal('3185.00'), 'c_amount_eur': Decimal('4550.00'), 'profit_eur': Decimal('1365.00'),
          'days': 396, 'pending': True}]
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def create_pt_scenario_in_rub():
+    create_pt_scenario()
+    create_quotes(USD, RUB, [(d2t(230101), 90)])
+
+
+# A report reads every deal and lot from its store: one replayed by JalPolicy gives the main tables' report even
+# with those tables emptied
+@pytest.mark.parametrize("scenario, report_class, year", [(create_ru_scenario, TaxesRussia, 2025),
+                                                          (create_pt_scenario, TaxesPortugal, 2024),
+                                                          (create_pt_scenario, TaxesPortugal, 2025),
+                                                          (_shorts, TaxesRussia, 2024), (_shorts, TaxesRussia, 2025),
+                                                          (_shorts, TaxesPortugal, 2025),
+                                                          (create_pt_scenario_in_rub, TaxesRussia, 2024)])
+def test_report_reads_its_lot_store(prepare_db_taxes, scenario, report_class, year):
+    scenario()
+    expected = report_class().prepare_tax_report(year, 1)
+
+    store = ScratchLotStore()
+    try:
+        replay(store)
+        JalDB._exec("DELETE FROM main.trades_closed")
+        JalDB._exec("DELETE FROM main.trades_opened", commit=True)
+        report = report_class()
+        report.lots = store
+        assert report.prepare_tax_report(year, 1) == expected
+    finally:
+        store.detach()

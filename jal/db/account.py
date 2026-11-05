@@ -538,19 +538,20 @@ class JalAccount(JalDB):
     # Returns a list of JalClosedTrade objects recorded for the account which represents normally closed trades
     # 'close_otypes' selects which kinds of closing operation to include; it defaults to Trade only, so tax reports
     # (which don't pass it) stay unchanged. The Deals report passes (Trade, Swap) to also show swap-realized deals.
-    def closed_trades_list(self, asset=None, close_otypes=None) -> list:
+    def closed_trades_list(self, asset=None, close_otypes=None, store=None) -> list:
         if close_otypes is None:
             close_otypes = (jal.db.operations.LedgerTransaction.Trade,)
+        store = jal.db.lots.LedgerLotStore() if store is None else store
         trades = []
-        for deal_id in jal.db.lots.LedgerLotStore().deals(self._id, None if asset is None else asset.id(), close_otypes):
-            trades.append(jal.db.closed_trade.JalClosedTrade(deal_id))
+        for deal_id in store.deals(self._id, None if asset is None else asset.id(), close_otypes):
+            trades.append(jal.db.closed_trade.JalClosedTrade(deal_id, store=store))
         return trades
 
     # Returns a list of JalOpenTrades that represents all trades that were opened for given asset at given timestamp
     # LedgerTransaction might be Trade, AssetPayment, CorporateAction or Transfer
     # Returns the latest open trades if timestamp is omitted.
-    def open_trades_list(self, asset, timestamp=None) -> list:
-        return jal.db.lots.LotEngine().lots(self, asset, timestamp)
+    def open_trades_list(self, asset, timestamp=None, store=None) -> list:
+        return jal.db.lots.LotEngine(store).lots(self, asset, timestamp)
 
     # Returns amount that was paid for an asset that was hold on the account during time between start_ts and end_ts
     # Asset payment is counted if its ex-date is between start and end or, if ex-date is missing, the timestamp of

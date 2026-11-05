@@ -128,6 +128,24 @@ class LedgerLotStore(JalDB):
             modifiers.append(self._read_record(query))
         return modifiers
 
+    # (otype, oid) of the operations other than trades and (otype, oid) itself that stored a state of its lots in
+    # 'asset_id', oldest first
+    def lot_modifiers(self, otype: int, oid: int, asset_id: int) -> list:
+        query = self._exec(f"SELECT DISTINCT m_otype, m_oid FROM {self._opened} WHERE otype=:otype AND oid=:oid "
+                           "AND asset_id=:asset AND m_otype!=:trade AND NOT (m_otype=otype AND m_oid=oid) "
+                           "ORDER BY timestamp",
+                           [(":otype", otype), (":oid", oid), (":asset", asset_id),
+                            (":trade", jal.db.operations.LedgerTransaction.Trade)])
+        modifiers = []
+        while query.next():
+            modifiers.append(self._read_record(query))
+        return modifiers
+
+    # Ids of every asset the account has held a lot of
+    def assets(self, account_id: int) -> list:
+        return self._ids(self._exec(f"SELECT DISTINCT asset_id FROM {self._opened} WHERE account_id=:account",
+                                    [(":account", account_id)]))
+
     # Removes the deals closed and the lot states stored at or after 'frontier'
     def wipe_from(self, frontier: int):
         _ = self._exec(f"DELETE FROM {self._closed} WHERE close_timestamp >= :frontier", [(":frontier", frontier)])

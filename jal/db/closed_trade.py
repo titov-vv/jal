@@ -83,7 +83,8 @@ class JalClosedTrade(JalDB):
     def __init__(self, id: int = 0, store=None) -> None:
         super().__init__()
         self._id = id
-        self._data = (jal.db.lots.LedgerLotStore() if store is None else store).deal(self._id)
+        self._store = jal.db.lots.LedgerLotStore() if store is None else store
+        self._data = self._store.deal(self._id)
         if self._data:
             self._account = jal.db.account.JalAccount(self._data['account_id'])
             self._asset = JalAsset(self._data['asset_id'])
@@ -263,6 +264,6 @@ class JalClosedTrade(JalDB):
     # (i.e. transfers or corporate actions that happened during position lifetime)
     def modified_by(self) -> list:
         modifiers = []
-        for otype, oid in jal.db.lots.LedgerLotStore().modifiers(self._open_op.type(), self._open_op.id()):
+        for otype, oid in self._store.modifiers(self._open_op.type(), self._open_op.id()):
             modifiers.append(jal.db.operations.LedgerTransaction.get_operation(otype, oid, jal.db.operations.Transfer.Outgoing))
         return modifiers

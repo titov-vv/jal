@@ -10,6 +10,7 @@ from jal.db.asset import JalAsset
 from jal.db.category import JalCategory
 from jal.db.db import JalDB
 from jal.db.helpers import is_day_marker
+from jal.db.lots import LedgerLotStore
 from jal.db.operations import LedgerTransaction, TaxStatus, AssetPayment, AssetIncome, Transfer
 from jal.db.clock import ZONE_SPAN, wall_clock_reading
 from jal.db.tax_override import JalTaxOverride, TaxOverride
@@ -80,6 +81,7 @@ class TaxReport:
         self.rates_warnings = {}  # {(pair, date of the rate used): latest date it converted} for rates likely missing
         self.short_warnings = []  # a line for each short of an asset kind whose year-end rule isn't handled
         self._carried = []        # closing operations of stock shorts reported in an earlier year
+        self.lots = LedgerLotStore()   # the lot store every deal and lot of the report is read from
 
     @staticmethod
     def tr(text):
@@ -253,16 +255,11 @@ class TaxReport:
 
     # The operations that changed this deal's lot: the purchase's modifiers that wrote it as the deal's asset, less a
     # swap or wrapping that only rewrote what stayed behind when it took another part of the purchase elsewhere
-    @staticmethod
-    def deal_modifiers(deal) -> list:
-        query = JalDB._exec("SELECT DISTINCT m_otype, m_oid FROM trades_opened WHERE otype=:otype AND oid=:oid "
-                            "AND asset_id=:asset AND m_otype!=:trade AND NOT (m_otype=otype AND m_oid=oid) "
-                            "ORDER BY timestamp",
-                            [(":otype", deal.open_operation().type()), (":oid", deal.open_operation().id()),
-                             (":asset", deal.asset().id()), (":trade", LedgerTransaction.Trade)])
+    def deal_modifiers(self, deal) -> list:
         modifiers = []
-        while query.next():
-            operation = LedgerTransaction.get_operation(query.value(0), query.value(1), Transfer.Outgoing)
+        for otype, oid in self.lots.lot_modifiers(deal.open_operation().type(), deal.open_operation().id(),
+                                                  deal.asset().id()):
+            operation = LedgerTransaction.get_operation(otype, oid, Transfer.Outgoing)
             if operation.type() in (LedgerTransaction.Swap, LedgerTransaction.Conversion) \
                     and operation.in_asset().id() != deal.asset().id():
                 continue
@@ -531,7 +528,7 @@ class TaxReport:
     # Closed deals of the asset types in the report's year, less those the user excluded and the stock shorts reported
     # in the year of their sale (listed on "Not covered"); 'close_otypes' as in JalAccount.closed_trades_list()
     def trades_list(self, asset_type, close_otypes=None) -> list:
-        trades = self.account.closed_trades_list(close_otypes=close_otypes)
+        trades = self.account.closed_trades_list(close_otypes=close_otypes, store=self.lots)
         trades = [x for x in trades if x.asset().type() in asset_type]
         trades = [x for x in trades if self.in_year(self.deal_date(x))]
         trades = [x for x in trades if not self.excluded(x.close_operation())]
@@ -553,15 +550,13 @@ class TaxReport:
     # {'open': sale, 'qty', 'p_adj', 'q_adj', 'close': buy-back or None}
     def year_end_shorts(self) -> list:
         pieces = []
-        for deal in self.account.closed_trades_list():
+        for deal in self.account.closed_trades_list(store=self.lots):
             if deal.qty() < Decimal('0') and self.in_year(self.trade_date(deal.open_operation())) \
                     and self.trade_date(deal.close_operation()) >= self.year_end:
                 pieces.append({'open': deal.open_operation(), 'qty': deal.qty(), 'p_adj': deal.p_adjustment(),
                                'q_adj': deal.q_adjustment(), 'close': deal.close_operation()})
-        query = JalDB._exec("SELECT DISTINCT asset_id FROM trades_opened WHERE account_id=:account",
-                            [(":account", self.account.id())])
-        while query.next():
-            for lot in self.account.open_trades_list(JalAsset(query.value(0))):   # a lot holds a short as a positive qty
+        for asset_id in self.lots.assets(self.account.id()):
+            for lot in self.account.open_trades_list(JalAsset(asset_id), store=self.lots):   # a short as a positive qty
                 sale = lot.open_operation()
                 if sale.type() == LedgerTransaction.Trade and sale.qty() < Decimal('0') \
                         and self.in_year(self.trade_date(sale)):
