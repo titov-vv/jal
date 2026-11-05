@@ -9,9 +9,8 @@ import jal.db.account
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Where lots and deals live: every statement on 'trades_opened' / 'trades_closed' of the ledger rebuild, in the main
-# database or in the attached 'schema' of a ScratchLotStore.
-# Works on ids and decimals and returns rows; LotEngine builds the lot objects and orders them.
+# Every statement on trades_opened / trades_closed, in the main database or in an attached 'schema'.
+# Ids and decimals in, rows out; LotEngine builds the lot objects and orders them.
 class LedgerLotStore(JalDB):
     def __init__(self, schema=None):
         super().__init__()
@@ -142,9 +141,8 @@ class LedgerLotStore(JalDB):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# The only code that matches lots: the primitives every operation's lot path reduces to, over a LotStore, in the
-# order and by the rules of a BasisPolicy (JalPolicy unless given).
-# A quantity given to dispose()/carry_out() is what leaves the position: positive closes a long, negative a short.
+# The only code that matches lots, over a store and by a BasisPolicy (JalPolicy unless given).
+# A quantity given to dispose()/carry_out() leaves the position: positive closes a long, negative a short.
 class LotEngine:
     def __init__(self, store=None, policy=None):
         self.store = LedgerLotStore() if store is None else store
@@ -218,9 +216,8 @@ class LotEngine:
             lots += 1
         return matched, basis, lots
 
-    # FIFO steps over 'lots' for 'qty': (lot, quantity taken, quantity left in the lot). A lot and the quantity still
-    # required that differ by no more than LOT_QTY_TOLERANCE are the same number: postings are rounded to the account
-    # precision while lots are not, so the crumb must neither abort a rebuild nor stay behind as a dust lot.
+    # Steps over 'lots' for 'qty': (lot, taken, left). A difference within LOT_QTY_TOLERANCE is a rounding crumb of
+    # the account precision and counts as the same number, so it neither aborts a rebuild nor leaves a dust lot.
     @staticmethod
     def _walk(lots, qty: Decimal):
         tolerance = qty * Decimal(Setup.LOT_QTY_TOLERANCE)
@@ -273,8 +270,7 @@ class LotEngine:
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# A lot store of its own for a replay: the two lot tables in an in-memory database attached to JAL's connection as
-# 'schema'. ATTACH is refused inside a transaction, so it is created and dropped outside one.
+# A replay's own lot store: the lot tables in an in-memory database attached as 'schema', outside any transaction
 class ScratchLotStore(LedgerLotStore):
     def __init__(self, schema: str = 'lots_replay'):
         super().__init__(schema)
@@ -304,8 +300,7 @@ class ScratchLotStore(LedgerLotStore):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Replays the lot half of every operation of the built ledger sequence up to 'until' into 'store' by 'policy', reading
-# and writing nothing of the ledger itself. Returns the engine, whose store holds the lots and deals.
+# Replays the lot half of every operation of the built sequence up to 'until' into 'store', touching no ledger
 def replay(store, policy=None, until=None) -> LotEngine:
     engine = LotEngine(store, policy)
     until = Setup.MAX_TIMESTAMP if until is None else until

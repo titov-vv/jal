@@ -57,8 +57,8 @@ def _oid(otype, n=1) -> int:
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# D1: a trade closes at its own price, a transfer at the lot's unadjusted open price
-def test_d1_close_price_of_a_sale_and_of_a_transfer(lots):
+# a trade closes at its own price, a transfer at the lot's unadjusted open price
+def test_close_price_of_a_sale_and_of_a_transfer(lots):
     create_trades(USD_ACC, [(T2, T2, A, -4, 150, 0, "sell-A")])
     create_transfers([(T3, USD_ACC, 6, EUR_ACC, 540, A)])
     Ledger().rebuild(from_timestamp=0)
@@ -70,9 +70,9 @@ def test_d1_close_price_of_a_sale_and_of_a_transfer(lots):
     assert _opened(EUR_ACC, A) == [[T3, TRADE, buy, TRANSFER, move, T1, '1E+2', '6', '1', '1', '0.9']]
 
 
-# D2: a sale swap closes at the market and opens the received asset anew; a conversion swap carries the lot
+# a sale swap closes at the market and opens the received asset anew; a conversion swap carries the lot
 @pytest.mark.parametrize("treatment", [SwapTreatment.Sale, SwapTreatment.Conversion])
-def test_d2_swap_sale_or_conversion(lots, treatment):
+def test_swap_sale_or_conversion(lots, treatment):
     create_quotes(A, 2, [(T2, 120)])
     create_swaps(USD_ACC, [(T2, A, 10, B, 20)], treatment=treatment)
     Ledger().rebuild(from_timestamp=0)
@@ -88,8 +88,8 @@ def test_d2_swap_sale_or_conversion(lots, treatment):
     assert (_closed(USD_ACC, A), _opened(USD_ACC, B)) == expected[treatment]
 
 
-# D3: a wrapping and a bridge carry the lot, its date and its cost
-def test_d3_wrapping_and_bridge_carry_the_lot(lots):
+# a wrapping and a bridge carry the lot, its date and its cost
+def test_wrapping_and_bridge_carry_the_lot(lots):
     create_conversions(USD_ACC, [(T2, A, 10, B, 20)])
     create_bridges([{'asset': B, 'out_ts': T3, 'out_acc': USD_ACC, 'out_qty': 20,
                      'in_ts': T4, 'in_acc': EUR_ACC, 'in_qty': 20}])
@@ -103,8 +103,8 @@ def test_d3_wrapping_and_bridge_carry_the_lot(lots):
                                     '0.9']]
 
 
-# D4: a spin-off splits the cost by value_share; the old stock keeps its date, the new one starts at the action
-def test_d4_corporate_action_shares_cost_and_dates(lots):
+# a spin-off splits the cost by value_share; the old stock keeps its date, the new one starts at the action
+def test_corporate_action_shares_cost_and_dates(lots):
     create_trades(USD_ACC, [(T1, T1, S, 10, 50, 0, "buy-S")])
     create_corporate_actions(USD_ACC, [(T2, CorporateAction.SpinOff, S, 10, 'spin-off',
                                         [(S, 10, 0.8), (T, 5, 0.2)])])
@@ -118,8 +118,8 @@ def test_d4_corporate_action_shares_cost_and_dates(lots):
     assert _opened(USD_ACC, T) == [[T2, TRADE, buy, ca, action, T2, '5E+1', '5', '0.4', '0.5', '1']]
 
 
-# D5: a stock dividend opens at its stated price, a crypto reward at zero
-def test_d5_income_opens_at_its_price(lots):
+# a stock dividend opens at its stated price, a crypto reward at zero
+def test_income_opens_at_its_price(lots):
     create_stock_dividends([(AssetIncome.StockDividend, T2, USD_ACC, S, 2, 2, 55, 0, "dividend")])
     LedgerTransaction.create_new(LedgerTransaction.AssetIncome, {
         'timestamp': T2, 'type': AssetIncome.Reward, 'account_id': USD_ACC, 'symbol_id': symbol_id_for(GAS),
@@ -132,8 +132,8 @@ def test_d5_income_opens_at_its_price(lots):
     assert _opened(USD_ACC, GAS) == [[T2, income, reward, income, reward, T2, '0', '3', '1', '1', '1']]
 
 
-# D6: FIFO follows the acquisition date, so a lot carried in with an older date goes before a newer local buy
-def test_d6_fifo_by_acquisition_date(lots):
+# FIFO follows the acquisition date, so a lot carried in with an older date goes before a newer local buy
+def test_fifo_by_acquisition_date(lots):
     create_trades(EUR_ACC, [(T2, T2, A, 5, 80, 0, "buy-A-eur")])
     create_transfers([(T3, USD_ACC, 10, EUR_ACC, 900, A)])
     create_trades(EUR_ACC, [(T4, T4, A, -12, 120, 0, "sell-A-eur")])
@@ -146,8 +146,8 @@ def test_d6_fifo_by_acquisition_date(lots):
     assert _opened(EUR_ACC, A)[-1] == [T4, TRADE, buy_eur, TRADE, sell, T2, '8E+1', '3', '1', '1', '1']
 
 
-# D7: a transfer between currencies puts deposit / value into c_fx
-def test_d7_transfer_rate_goes_to_c_fx(lots):
+# a transfer between currencies puts deposit / value into c_fx
+def test_transfer_rate_goes_to_c_fx(lots):
     create_transfers([(T2, USD_ACC, 10, EUR_ACC, 918, A)])
     Ledger().rebuild(from_timestamp=0)
 
@@ -155,8 +155,8 @@ def test_d7_transfer_rate_goes_to_c_fx(lots):
                                     '1', '0.918']]
 
 
-# D8: gas leaves the lots at basis and closes no deal
-def test_d8_gas_is_consumed_without_a_deal(lots):
+# gas leaves the lots at basis and closes no deal
+def test_gas_is_consumed_without_a_deal(lots):
     create_trades(USD_ACC, [(T1, T1, GAS, 2, 10, 0, "buy-GAS")])
     create_conversions(USD_ACC, [(T2, A, 10, B, 20, GAS, 0.5)])
     Ledger().rebuild(from_timestamp=0)
@@ -167,8 +167,8 @@ def test_d8_gas_is_consumed_without_a_deal(lots):
                                      [T2, TRADE, gas_buy, CONV, wrap, T1, '1E+1', '1.5', '1', '1', '1']]
 
 
-# D9: an arrival from an unknown source opens a lot of its own at zero
-def test_d9_arrival_from_nowhere_opens_at_zero(lots):
+# an arrival from an unknown source opens a lot of its own at zero
+def test_arrival_from_nowhere_opens_at_zero(lots):
     LedgerTransaction.create_new(TRANSFER, {
         'withdrawal_timestamp': T2, 'withdrawal_account': None, 'withdrawal': '7', 'deposit_timestamp': T2,
         'deposit_account': EUR_ACC, 'deposit': '0', 'number': '', 'symbol_id': symbol_id_for(B)})

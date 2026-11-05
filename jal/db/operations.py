@@ -398,9 +398,8 @@ class LedgerTransaction(JalDB):
     def processLedger(self, ledger):
         raise NotImplementedError(f"processLedger() method is not defined in {type(self).__name__} class")
 
-    # The lot half of this part on 'engine': what both the ledger rebuild and a lot replay do, reading no ledger.
-    # 'parked' is the value the sending leg left in transit, for an arriving leg; None takes what the sending leg
-    # parked in the same engine (a replay). Returns what the postings need.
+    # The lot half of this part, which reads no ledger; returns what the postings need. 'parked' is the value in
+    # transit for an arriving leg; None takes what the sending leg parked in this engine.
     def process_lots(self, engine, parked=None):
         return None
 
@@ -1771,9 +1770,8 @@ class Swap(FeeCarrier, LedgerTransaction):
             ledger.appendTransaction(self, BookAccount.Transfers, -in_value)
         ledger.appendTransaction(self, BookAccount.Assets, self._in_qty, asset_id=self._in_asset.id(), value=in_value)
 
-    # The lot half of a swap. The disposing leg closes the out lots - at the market for a sale, at basis for a
-    # conversion - and, same-chain, opens the in asset; returns (quantity, basis, sale value or None). The arriving
-    # leg opens the in asset on its account from 'parked', the value in transit, and returns its value there.
+    # The disposing leg closes the out lots and, same-chain, opens the in asset: (qty, basis, sale value or None).
+    # The arriving leg opens the in asset from 'parked' and returns its value there.
     def process_lots(self, engine, parked=None):
         if self.is_fee_row():
             return super().process_lots(engine)
@@ -2438,9 +2436,8 @@ class Transfer(FeeCarrier, LedgerTransaction):
         else:
             assert False, "Unknown transfer type for asset transfer"
 
-    # The lots an asset transfer moves: the sending leg closes them at basis and returns (quantity, basis); the
-    # arriving leg re-opens them on the destination and returns the value they arrive at, 'parked' being the value
-    # the sending leg left in transit. An arrival from an unknown source opens a lot of its own at zero.
+    # The sending leg closes the lots at basis: (qty, basis). The arriving leg re-opens them and returns their value;
+    # an arrival from an unknown source opens a lot at zero.
     def process_lots(self, engine, parked=None):
         if self.is_fee_row():
             return super().process_lots(engine)
@@ -2914,10 +2911,8 @@ class Conversion(FeeCarrier, LedgerTransaction):
     def process_lots(self, engine, parked=None):
         if self.is_fee_row():
             return super().process_lots(engine)
-        # The lots of the converted asset are closed at their own cost basis (the deals carry no profit or loss) and
-        # re-opened on the acquired asset, each keeping the operation that opened it; the policy keeps or restarts
-        # their date. The position is re-scaled by the quantity the conversion produced: per-unit price by
-        # out_qty/in_qty and quantity by in_qty/out_qty, which leaves every lot's value untouched.
+        # The lots close at basis and re-open on the acquired asset, re-scaled by in_qty/out_qty so their value
+        # stays; the policy keeps or restarts their date.
         treatment = engine.policy.treatment(self)
         if treatment.basis != jal.db.basis_policy.Basis.CARRY:
             raise ValueError(f"A conversion can only carry its lots, not {treatment.basis}")

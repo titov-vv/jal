@@ -47,8 +47,7 @@ class BasisPolicy:
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# The rules JAL books by: a sale swap is a disposal, a conversion and a wrapping carry the lot with its date, a
-# corporate action result takes its value_share and keeps the date as the result says, FIFO by acquisition date
+# JAL's own rules: a sale swap is a disposal, other exchanges carry the lot and its date, FIFO by acquisition date
 class JalPolicy(BasisPolicy):
     def treatment(self, operation) -> Treatment:
         if isinstance(operation, jal.db.operations.Swap) and operation.treatment() == SwapTreatment.Sale:
