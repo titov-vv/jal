@@ -114,6 +114,15 @@
         "label": "Not included in any section",
         "count": 1,
         "link": "Not covered"
+      },
+      {
+        "report_template": "estimates",
+        "title": "Base estimate of the tax - not the amount due (no englobamento, deductions or losses of earlier years)"
+      },
+      {
+        "report_template": "estimate",
+        "label": "Category G: 28 % of the balance of gains and losses, a negative balance as zero; crypto held 365 days or more is outside it",
+        "amount": 183.84
       }
     ],
     "Shares": [

@@ -155,6 +155,25 @@
         "label": "Не отражено ни в одном разделе",
         "count": 0,
         "link": ""
+      },
+      {
+        "report_template": "estimates",
+        "title": "Базовая оценка налога - не сумма к уплате (без прогрессивной шкалы, вычетов и сальдирования)"
+      },
+      {
+        "report_template": "estimate",
+        "label": "Ценные бумаги: 13 % от финансового результата базы, убыток - ноль; базы не сальдируются",
+        "amount": 1938.17
+      },
+      {
+        "report_template": "estimate",
+        "label": "Криптовалюты: 13 % от финансового результата базы, убыток - ноль; базы не сальдируются",
+        "amount": 27792.18
+      },
+      {
+        "report_template": "estimate",
+        "label": "Итого базовая оценка",
+        "amount": 29730.35
       }
     ],
     "Акции": [
@@ -652,6 +671,15 @@
         "label": "Not included in any section",
         "count": 0,
         "link": ""
+      },
+      {
+        "report_template": "estimates",
+        "title": "Base estimate of the tax - not the amount due (no englobamento, deductions or losses of earlier years)"
+      },
+      {
+        "report_template": "estimate",
+        "label": "Category G: 28 % of the balance of gains and losses, a negative balance as zero; crypto held 365 days or more is outside it",
+        "amount": 530.62
       }
     ],
     "Shares": [

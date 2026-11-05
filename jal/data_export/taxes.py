@@ -470,7 +470,7 @@ class TaxReport:
                              (self.texts['uncovered_total'], len(uncovered))):
             link = self.uncovered_section[0] if count else ''   # an empty section makes no sheet to link to
             rows.append({'report_template': "count", 'label': label, 'count': count, 'link': link})
-        rows += self._estimate_rows(sections)
+        rows += self._estimate_rows(sections, totals)
         day = lambda x: datetime.fromtimestamp(x, tz=timezone.utc).strftime('%d.%m.%Y')
         if self.parameters.value(TAX_TREATY) is None:
             rows.append({'report_template': "warning", 'warning': self.texts['parameters_missing'].format(
@@ -511,19 +511,39 @@ class TaxReport:
     def base_sum_rows(self, sections: dict, totals: dict) -> list:
         return []
 
-    # The base estimation of each section that has one, and their sum when there are several
-    def _estimate_rows(self, sections: dict) -> list:
+    # The base estimation of each base and section that has one, and their sum when there are several: a gain base on
+    # its profit at the capital gain rate, a loss as zero; any other section on the estimates of its rows
+    def _estimate_rows(self, sections: dict, totals: dict) -> list:
         estimates = []
-        for name, section in sections.items():
-            totals = [x for x in section if x['report_template'] == "totals"]
-            if totals and totals[0].get(ESTIMATE) is not None:
-                estimates.append({'report_template': "estimate", 'label': name, 'amount': totals[0][ESTIMATE]})
+        for title, kind, names in self.bases:
+            if kind == GAIN:
+                estimates += self._gain_estimate(title, totals[title])
+            else:
+                estimates += [x for name in names for x in self._section_estimate(name, sections[name])]
+        estimates += [x for name in self.outside for x in self._section_estimate(name, sections[name])]
         if not estimates:
             return []
         if len(estimates) > 1:
             estimates.append({'report_template': "estimate", 'label': self.texts['estimate_total'],
                               'amount': sum(x['amount'] for x in estimates)})
         return [{'report_template': "estimates", 'title': self.texts['estimates']}] + estimates
+
+    def _gain_estimate(self, title: str, figures: dict) -> list:
+        if 'profit' not in figures:
+            return []
+        amount = self.base_estimate(TaxParameters.CAPITAL_GAIN, max(figures['profit'], Decimal('0')))
+        if amount is None:
+            return []
+        rate = format((self.parameters.rate(TaxParameters.CAPITAL_GAIN) * 100).normalize(), 'f')
+        return [{'report_template': "estimate", 'label': self.texts['estimate_gain'].format(base=title, rate=rate),
+                 'amount': round(amount, 2)}]
+
+    @staticmethod
+    def _section_estimate(name: str, section: list) -> list:
+        totals = [x for x in section if x['report_template'] == "totals"]
+        if totals and totals[0].get(ESTIMATE) is not None:
+            return [{'report_template': "estimate", 'label': name, 'amount': totals[0][ESTIMATE]}]
+        return []
 
     # The overrides this report applied: a title line, then one line per operation and kind, oldest first
     def _decision_rows(self) -> list:

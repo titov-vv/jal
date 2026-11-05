@@ -110,6 +110,11 @@ class TaxesPortugal(TaxReport):
                             "the old shares times their cost share and the first quote of the new ones",
         'swap_decided': "Your decision: this exchange is a disposal at market value",
         'override_tax_event': "A tax event",
+        'estimates': "Base estimate of the tax - not the amount due (no englobamento, deductions or losses of earlier "
+                     "years)",
+        'estimate_total': "Total of the base estimates",
+        'estimate_gain': "{base}: {rate} % of the balance of gains and losses, a negative balance as zero; crypto held "
+                         "365 days or more is outside it",
         'override_price': "A tax event at {} per received share",
         'reward_lot': "Received as crypto income: zero cost, taxed on disposal only (CIRS art. 5.º, n.º 11)",
         'income_not_taxed': "Crypto received as income is not taxed at receipt: it opens a lot at zero cost, taxed when "

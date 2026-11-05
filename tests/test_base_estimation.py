@@ -20,12 +20,17 @@ def test_estimates_stated_and_summed(prepare_db_taxes):
     assert _rows(report["Проценты"], "interest")[0]['tax2pay'] == Decimal('65')   # 13 % of 500 RUB
     summary = report[taxes.summary_section[0]]
     assert _rows(summary, "estimates") == [{'report_template': "estimates", 'title': taxes.texts['estimates']}]
-    # dividends: 30 (STK, treaty) + 0 (ERIC, 600 withheld exceeds 260)
+    # securities: 13 % of the base's 2 000 RUB; dividends: 30 (STK, treaty) + 0 (ERIC, 600 withheld exceeds 260)
     assert [(x['label'], x['amount']) for x in _rows(summary, "estimate")] == \
-           [("Дивиденды", Decimal('30')), ("Проценты", Decimal('65')), (taxes.texts['estimate_total'], Decimal('95'))]
+           [(taxes.texts['estimate_gain'].format(base="Ценные бумаги", rate="13"), Decimal('260.00')),
+            ("Дивиденды", Decimal('30')), ("Проценты", Decimal('65')), (taxes.texts['estimate_total'], Decimal('355.00'))]
 
-    pt = TaxesPortugal()
-    assert _rows(pt.prepare_tax_report(2025, 1)[pt.summary_section[0]], "estimates") == []
+    pt = TaxesPortugal()   # one estimate on the balance of category G
+    summary = pt.prepare_tax_report(2025, 1)[pt.summary_section[0]]
+    balance, = [x['amount'] for x in summary if x['report_template'] == "base_total"
+                and x['figure'] == f"{pt.texts['base_total']}: {pt.texts['profit']}"]
+    assert [(x['label'], x['amount']) for x in _rows(summary, "estimate")] == \
+           [(pt.texts['estimate_gain'].format(base="Category G", rate="28"), round(balance * Decimal('0.28'), 2))]
 
 
 # A year without parameters has no estimate, so no header line and no Summary block

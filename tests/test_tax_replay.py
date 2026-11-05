@@ -432,3 +432,19 @@ def test_ru_merger_decided_a_tax_event(prepare_db_taxes):
         ("OLD", "Мена", Decimal('80.0'), Decimal('216000.00'), Decimal('230400.00'), Decimal('14400.00'))]
     assert rows[1]['note'].startswith(TaxesRussia.texts['exchange_decided'])
     assert _decisions(report, "Сводка") == ["Налоговое событие: Ruling"]
+
+
+# RU estimates each gain base apart: the crypto base at 13 %, a securities loss as zero and not offset against it
+def test_ru_bases_estimated_apart(prepare_db_taxes):
+    create_ru_scenario()
+    create_assets([("STK", "Stock Corp", "US0000000301", USD, PredefinedAsset.Stock, 'us')])            # 10
+    create_trades(1, [(d2t(250110), d2t(250110), 10, 10, 100, 0, "buy-STK"),
+                      (d2t(250410), d2t(250410), 10, -10, 50, 0, "sell-STK")])                   # 50 000 RUB lost
+    Ledger().rebuild(from_timestamp=0)
+
+    taxes = TaxesRussia()
+    report = taxes.prepare_tax_report(2025, 1)
+    assert [(x['label'], x['amount']) for x in report["Сводка"] if x['report_template'] == "estimate"] == [
+        (taxes.texts['estimate_gain'].format(base="Ценные бумаги", rate="13"), Decimal('0.00')),
+        (taxes.texts['estimate_gain'].format(base="Криптовалюты", rate="13"), Decimal('17563.00')),   # of 135 100
+        (taxes.texts['estimate_total'], Decimal('17563.00'))]

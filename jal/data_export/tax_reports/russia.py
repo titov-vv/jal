@@ -61,6 +61,9 @@ class TaxesRussia(TaxReport):
                              "прогрессивной шкалы и вычетов",
         'estimates': "Базовая оценка налога - не сумма к уплате (без прогрессивной шкалы, вычетов и сальдирования)",
         'estimate_total': "Итого базовая оценка",
+        'estimate_gain': "{base}: {rate} % от финансового результата базы, убыток - ноль; базы не сальдируются",
+        'derivatives_apart': "ПФИ - отдельная база, в оценке налога не сальдируется с ценными бумагами: ст. 214.1 НК "
+                             "РФ допускает это для ПФИ на ценные бумаги, но виды ПФИ в отчёте не разделены",
         'excluded': "Решение пользователя - не налоговое событие в РФ: {}",
         'decisions': "Решения пользователя, применённые в этом отчёте (переопределение налогового режима)",
         'override_excluded': "Не налоговое событие",
@@ -496,6 +499,7 @@ class TaxesRussia(TaxReport):
     def prepare_derivatives(self):
         trades = self.prepare_trades_report(self.trades_list([PredefinedAsset.Derivative]))
         self.add_header(self.texts['derivatives_mixed'])
+        self.add_header(self.texts['derivatives_apart'])
         return trades
 
     # -----------------------------------------------------------------------------------------------------------------------

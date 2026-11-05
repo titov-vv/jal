@@ -124,7 +124,7 @@ def test_rates_likely_missing_are_warned_of(prepare_db_taxes):
 
     create_quotes(3, 1, [(d2t(250701), 105.0)])      # the bank's EUR rate goes on: USD/RUB is frozen, not missing
     report = TaxesRussia()
-    assert report.prepare_tax_report(2025, 1)["Сводка"][-1]['report_template'] == "count"
+    assert [x for x in report.prepare_tax_report(2025, 1)["Сводка"] if x['report_template'] == "warning"] == []
     assert report.rates_warnings == {}
 
     create_quotes(2, 1, [(d2t(250701), 90.0)])       # a later USD/RUB rate: the months before it are a hole

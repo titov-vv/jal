@@ -215,8 +215,18 @@
   },
   {
    "report_template": "estimate",
+   "label": "Ценные бумаги: 13 % от финансового результата базы, убыток - ноль; базы не сальдируются",
+   "amount": 473.44
+  },
+  {
+   "report_template": "estimate",
    "label": "Дивиденды",
    "amount": 2370.6
+  },
+  {
+   "report_template": "estimate",
+   "label": "Итого базовая оценка",
+   "amount": 2844.04
   }
  ],
  "Не отражено": [],
