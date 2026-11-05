@@ -69,42 +69,44 @@ def create_ru_scenario():
     Ledger().rebuild(from_timestamp=0)
 
 
-# Today: a lot that a conversion swap or a wrapping disposed of closes at its cost and the lot carried on keeps cost
-# and date, both marked pending; the reward lot is re-priced to its quote by the report
-def test_ru_crypto_today(prepare_db_taxes):
+# Every swap and wrapping is a disposal at market and the asset it buys opens there; the reward lot opens at its quote.
+# The RUB total is today's, as each exchange is converted at its own day's rate on both of its sides.
+def test_ru_crypto(prepare_db_taxes):
     create_ru_scenario()
 
     report = TaxesRussia().prepare_tax_report(2025, 1)
     assert [pick(x, DEAL_FIELDS + ('o_amount_rub', 'c_amount_rub', 'profit_rub')) | {'pending': 'pending_replay' in x}
             for x in deal_rows(report["Криптовалюты"])] == [
-        {'symbol': "UNI", 'qty': Decimal('100'), 'o_number': "buy-UNI", 'o_date': d2t(250115),
-         'o_amount': Decimal('1000.00'), 'c_number': '', 'c_date': d2t(250301), 'c_amount': Decimal('1000.00'),
-         'profit': Decimal('0.00'), 'o_amount_rub': Decimal('101000.00'), 'c_amount_rub': Decimal('101000.00'),
-         'profit_rub': Decimal('0.00'), 'pending': True},
+        {'symbol': "UNI", 'qty': Decimal('100'), 'o_number': "buy-UNI", 'o_date': d2t(250115),   # 100 x 12
+         'o_amount': Decimal('1000.00'), 'c_number': '', 'c_date': d2t(250301), 'c_amount': Decimal('1200.00'),
+         'profit': Decimal('200.00'), 'o_amount_rub': Decimal('101000.00'), 'c_amount_rub': Decimal('123600.00'),
+         'profit_rub': Decimal('22600.00'), 'pending': False},
         {'symbol': "ETH", 'qty': Decimal('1'), 'o_number': "buy-ETH", 'o_date': d2t(250110),
-         'o_amount': Decimal('3000.00'), 'c_number': '', 'c_date': d2t(250310), 'c_amount': Decimal('3000.00'),
-         'profit': Decimal('0.00'), 'o_amount_rub': Decimal('300000.00'), 'c_amount_rub': Decimal('300000.00'),
-         'profit_rub': Decimal('0.00'), 'pending': True},
+         'o_amount': Decimal('3000.00'), 'c_number': '', 'c_date': d2t(250310), 'c_amount': Decimal('3200.00'),
+         'profit': Decimal('200.00'), 'o_amount_rub': Decimal('300000.00'), 'c_amount_rub': Decimal('332800.00'),
+         'profit_rub': Decimal('32800.00'), 'pending': False},
         {'symbol': "SOL", 'qty': Decimal('2'), 'o_number': "reward-SOL", 'o_date': d2t(250201),   # 2 x 200
          'o_amount': Decimal('400.00'), 'c_number': '', 'c_date': d2t(250320), 'c_amount': Decimal('440.00'),
          'profit': Decimal('40.00'), 'o_amount_rub': Decimal('40800.00'), 'c_amount_rub': Decimal('46200.00'),
          'profit_rub': Decimal('5400.00'), 'pending': False},
-        {'symbol': "AVAX", 'qty': Decimal('40'), 'o_number': "buy-UNI", 'o_date': d2t(250115),
-         'o_amount': Decimal('1000.00'), 'c_number': "sell-AVAX", 'c_date': d2t(250401), 'c_amount': Decimal('1400.00'),
-         'profit': Decimal('400.00'), 'o_amount_rub': Decimal('101000.00'), 'c_amount_rub': Decimal('148400.00'),
-         'profit_rub': Decimal('47400.00'), 'pending': True},
-        {'symbol': "WETH", 'qty': Decimal('1'), 'o_number': "buy-ETH", 'o_date': d2t(250110),
-         'o_amount': Decimal('3000.00'), 'c_number': "sell-WETH", 'c_date': d2t(250410), 'c_amount': Decimal('3500.00'),
-         'profit': Decimal('500.00'), 'o_amount_rub': Decimal('300000.00'), 'c_amount_rub': Decimal('374500.00'),
-         'profit_rub': Decimal('74500.00'), 'pending': True},
+        {'symbol': "AVAX", 'qty': Decimal('40'), 'o_number': '', 'o_date': d2t(250301),   # opened at the swap's 1 200
+         'o_amount': Decimal('1200.00'), 'c_number': "sell-AVAX", 'c_date': d2t(250401), 'c_amount': Decimal('1400.00'),
+         'profit': Decimal('200.00'), 'o_amount_rub': Decimal('123600.00'), 'c_amount_rub': Decimal('148400.00'),
+         'profit_rub': Decimal('24800.00'), 'pending': False},
+        {'symbol': "WETH", 'qty': Decimal('1'), 'o_number': '', 'o_date': d2t(250310),    # opened at the wrapping's 3 200
+         'o_amount': Decimal('3200.00'), 'c_number': "sell-WETH", 'c_date': d2t(250410), 'c_amount': Decimal('3500.00'),
+         'profit': Decimal('300.00'), 'o_amount_rub': Decimal('332800.00'), 'c_amount_rub': Decimal('374500.00'),
+         'profit_rub': Decimal('41700.00'), 'pending': False},
         {'symbol': "LINK", 'qty': Decimal('25'), 'o_number': '', 'o_date': d2t(250320),   # opened at the swap's 440
          'o_amount': Decimal('440.00'), 'c_number': "sell-LINK", 'c_date': d2t(250501), 'c_amount': Decimal('500.00'),
          'profit': Decimal('60.00'), 'o_amount_rub': Decimal('46200.00'), 'c_amount_rub': Decimal('54000.00'),
          'profit_rub': Decimal('7800.00'), 'pending': False}]
+    totals, = [x for x in report["Криптовалюты"] if x['report_template'] == "totals"]
+    assert totals['profit_rub'] == Decimal('135100.00')
     income, = [x for x in report["Криптодоход"] if x['report_template'] == "income"]
     assert (income['value'], income['value_rub']) == (Decimal('400.00'), Decimal('40800.00'))
     pending, = [x for x in report["Сводка"] if x.get('label') == TaxesRussia.texts['pending_total']]
-    assert pending['count'] == 4
+    assert pending['count'] == 0
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -135,6 +137,7 @@ def create_pt_scenario():
     create_quotes(6, USD, [(d2t(240301), 25)])
     create_quotes(10, USD, [(d2t(240828), 32)])
     create_quotes(11, USD, [(d2t(240830), 50)])
+    create_quotes(8, USD, [(d2t(240601), 1), (d2t(250101), 1)])
     create_trades(1, [(d2t(230110), d2t(230110), 4, 2, 1500, 0, "buy-ETH"),
                       (d2t(230110), d2t(230110), 6, 10, 20, 0, "buy-SOL"),
                       (d2t(230301), d2t(230301), 10, 100, 30, 0, "buy-OLD"),
@@ -230,13 +233,13 @@ def test_replay_stop_and_store_release(prepare_db_taxes):
 
     create_ru_scenario()
     report = TaxesRussia()
-    report.policy = StoppingPolicy
+    report.basis_policy = StoppingPolicy
     with pytest.raises(TaxReportStop) as stop:
         report.prepare_tax_report(2025, 1)
     assert (stop.value.missing, stop.value.replay) == ([], "no quote for the swap")
     assert isinstance(report.lots, LedgerLotStore) and not isinstance(report.lots, ScratchLotStore)
     assert [x for x in JalDB._read_to_list("PRAGMA database_list") if 'lots_replay' in x] == []
-    report.policy = JalPolicy
+    del report.basis_policy
     assert report.prepare_tax_report(2025, 1)["Криптовалюты"]
     assert [x for x in JalDB._read_to_list("PRAGMA database_list") if 'lots_replay' in x] == []
 

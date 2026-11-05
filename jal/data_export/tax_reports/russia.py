@@ -1,10 +1,36 @@
 from decimal import Decimal
 from jal.constants import PredefinedAsset, PredefinedCategory, SymbolId
-from jal.db.operations import LedgerTransaction, AssetPayment, AssetIncome, CorporateAction
+from jal.db.operations import LedgerTransaction, AssetPayment, AssetIncome, CorporateAction, Swap, Conversion
+from jal.db.basis_policy import Basis, Clock, Treatment, JalPolicy
 from jal.db.asset import JalAsset
 from jal.db.peer import JalPeer
 from jal.data_export.taxes import TaxReport, GAIN, INCOME
 from jal.data_export.tax_parameters import TaxParameters
+
+
+# -----------------------------------------------------------------------------------------------------------------------
+# RU: every swap and every wrapping is a disposal at market and the received asset opens at that value; crypto received
+# as income opens at its quote, the value the income is taxed at. 'missing_quote(symbol, timestamp)' collects a quote
+# an income lacks.
+class RuPolicy(JalPolicy):
+    INCOMES = (AssetIncome.StakingReward, AssetIncome.Reward, AssetIncome.LendingInterest)
+
+    def __init__(self, missing_quote):
+        self._missing_quote = missing_quote
+
+    def treatment(self, operation) -> Treatment:
+        if isinstance(operation, (Swap, Conversion)):
+            return Treatment(Basis.DISPOSAL, Clock.RESTART)
+        return super().treatment(operation)
+
+    def income_cost(self, income) -> Decimal:
+        if income.subtype() not in self.INCOMES:
+            return super().income_cost(income)
+        quoted, price = income.asset().quote(income.timestamp(), income.account().currency(), report_missing=False)
+        if not quoted:
+            self._missing_quote(income.symbol().symbol(), income.timestamp())
+            return super().income_cost(income)
+        return price
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -66,15 +92,12 @@ class TaxesRussia(TaxReport):
                        "между своими счетами её не меняет",
         'cost_currency': "Расход оплачен в {}: пересчёт в рубли из этой валюты",
         'bond_price': "Цена - за одну облигацию в валюте сделки",
-        'crypto_exchange': "Каждый обмен криптовалюты на криптовалюту - реализация по рыночной стоимости",
+        'crypto_exchange': "Каждый обмен криптовалюты на криптовалюту, включая обёртывание токена, его размещение в "
+                           "протокол кредитования и вывод из него, - реализация по рыночной стоимости; полученный "
+                           "актив учтён по этой стоимости на дату обмена",
         'crypto_income_lot': "Криптовалюта, полученная как доход, учтена по стоимости на дату получения (как в разделе "
                              "«Криптодоход»)",
         'crypto_gas': "Комиссия сети за обмен уплачена в криптовалюте и в этом разделе не учтена",
-        'crypto_pending': "«Ожидает пересчёта»: сумма зависит от обмена без реализации, рыночную стоимость которого "
-                          "этот отчёт ещё не рассчитывает",
-        'pending_closed': "Ожидает пересчёта: обмен учтён без финансового результата, хотя это реализация по рыночной "
-                          "стоимости",
-        'pending_carried': "Ожидает пересчёта: стоимость приобретения унаследована через обмен без реализации",
         'income_lot': "Получено как доход в криптовалюте: стоимость по котировке на дату получения",
         'income_valued': "Доход в натуральной форме: стоимость по котировке криптовалюты на дату получения, пересчитанная "
                          "по курсу ЦБ РФ на эту дату",
@@ -475,7 +498,10 @@ class TaxesRussia(TaxReport):
             return None, None
         return price, price * self.rate(currency_id, income.timestamp())
 
-    CRYPTO_INCOMES = (AssetIncome.StakingReward, AssetIncome.Reward, AssetIncome.LendingInterest)
+    CRYPTO_INCOMES = RuPolicy.INCOMES
+
+    def basis_policy(self):
+        return RuPolicy(self.missing_quote)
 
     # Every crypto deal: sold for money, or disposed of by a swap or a wrapping - each of them a disposal in RU
     def prepare_crypto(self):
@@ -483,7 +509,6 @@ class TaxesRussia(TaxReport):
         self.add_header(self.texts['crypto_exchange'])
         self.add_header(self.texts['crypto_income_lot'])
         self.add_header(self.texts['crypto_gas'])
-        self.add_header(self.texts['crypto_pending'])
         self.add_header(self.texts['crypto_codes'])
         country = self.account.country()
         crypto_report = []
@@ -492,36 +517,17 @@ class TaxesRussia(TaxReport):
             open_op, close_op = trade.open_operation(), trade.close_operation()
             rates = self._deal_rates(trade)
             notes = []
-            o_qty = abs(trade.open_qty())
             if open_op.type() == LedgerTransaction.AssetIncome and open_op.subtype() in self.CRYPTO_INCOMES:
-                price, unit_rub = self._income_unit_value(open_op)   # re-priced, or the income would be taxed twice
-                if price is None:
-                    continue
-                o_amount, o_amount_rub = o_qty * price, round(o_qty * unit_rub, 2)
-                a_open = o_amount * trade.fx_adjustment()
-                rates['os_rate'] = self.rate(open_op.account().currency(), open_op.timestamp())
-                notes.append(self.texts['income_lot'])
-            else:
-                o_amount = trade.native_open_amount()
-                o_amount_rub = round(o_amount * rates['os_rate'], 2)
-                a_open = trade.open_amount()
+                notes.append(self.texts['income_lot'])   # the policy opened it at its quote
             # o_amount is in the cost currency, a_open in the account currency - the one 'income' and 'profit' use
+            o_amount = trade.native_open_amount()
+            o_amount_rub = round(o_amount * rates['os_rate'], 2)
+            a_open = trade.open_amount()
             o_fee, a_open_fee = trade.native_open_fee(), trade.open_fee()
             c_amount, c_fee = trade.close_amount(), trade.close_fee()
             c_price = trade.close_price()
             c_amount_rub = round(c_amount * rates['cs_rate'], 2)
-            pending = False
-            if close_op.type() in (LedgerTransaction.Swap, LedgerTransaction.Conversion) and close_op.price() is None:
-                # JAL's own figure: no result, the lot moved on at its cost - its fee stays with the deal that sells it
-                c_amount_rub, o_fee, a_open_fee = o_amount_rub, Decimal('0'), Decimal('0')
-                c_amount = a_open                # the stored close price is the lot's unadjusted open price
-                c_price = c_amount / abs(trade.qty())
-                pending = True
-                notes.insert(0, self.texts['pending_closed'])
             fee_rub = round(o_fee * rates['o_rate'] + c_fee * rates['c_rate'], 2)
-            if self.carried_through(trade, (LedgerTransaction.Swap, LedgerTransaction.Conversion)):
-                pending = True
-                notes.insert(0, self.texts['pending_carried'])
             if rates['open_currency'] != self.account_currency.id():
                 notes.append(self.texts['cost_currency'].format(JalAsset(rates['open_currency']).symbol()))
             notes += self._modifier_notes(trade)
@@ -565,8 +571,6 @@ class TaxesRussia(TaxReport):
                 'profit_rub': income_rub - spending_rub,
                 'note': "\n".join(notes)
             }
-            if pending:
-                line['pending_replay'] = True
             crypto_report.append(line)
             self.mark_printed(close_op)
         self.insert_totals(crypto_report, ["income_rub", "spending_rub", "profit_rub", "profit"])

@@ -88,20 +88,22 @@ def test_two_hop_lot_in_tax_reports(prepare_db_taxes):
             'profit_eur': Decimal('18.47'), 'note': "Cost paid in RUB: the EUR figures convert it from that currency"}
 
 
-# The rest of that lot wrapped on the EUR exchange: the no-result row closes at JAL's cost in EUR, not at the RUB price
-def test_two_hop_lot_wrapped_is_closed_at_its_cost(prepare_db_taxes):
+# The rest of that lot wrapped on the EUR exchange: a disposal in RU at USDT's market value (1 USD at 0.88), with its
+# share of the purchase fee
+def test_two_hop_lot_wrapped_is_a_disposal(prepare_db_taxes):
     create_two_hop_lot()
     create_assets([("WUSDT", "Wrapped USDT", "", USD, PredefinedAsset.Crypto, 0)])                          # 5
     create_conversions(4, [(d2t(250601), 4, 20, 5, 20)])
     Ledger().rebuild(from_timestamp=0)
 
-    wrap = [x for x in TaxesRussia().prepare_tax_report(2025, 4)["Криптовалюты"] if x.get('pending_replay')]
+    wrap = [x for x in TaxesRussia().prepare_tax_report(2025, 4)["Криптовалюты"] if x.get('qty') == Decimal('20')]
     assert len(wrap) == 1
-    assert {k: wrap[0][k] for k in ('qty', 'o_amount', 'o_amount_rub', 'c_price', 'c_amount', 'c_amount_rub',
+    assert {k: wrap[0][k] for k in ('qty', 'o_amount', 'o_amount_rub', 'o_fee', 'c_price', 'c_amount', 'c_amount_rub',
                                     'income', 'profit', 'profit_rub')} == \
            {'qty': Decimal('20'), 'o_amount': Decimal('1671.80'), 'o_amount_rub': Decimal('1671.80'),
-            'c_price': Decimal('0.92'), 'c_amount': Decimal('18.40'), 'c_amount_rub': Decimal('1671.80'),
-            'income': Decimal('18.40'), 'profit': Decimal('0.00'), 'profit_rub': Decimal('0.00')}
+            'o_fee': Decimal('2'), 'c_price': Decimal('0.88'), 'c_amount': Decimal('17.60'),
+            'c_amount_rub': Decimal('1619.20'), 'income': Decimal('17.60'), 'profit': Decimal('-0.82'),
+            'profit_rub': Decimal('-54.60')}
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -124,6 +126,7 @@ def create_crypto_scenario():
     create_quotes(USD, EUR, [(d2t(x), 0.90 + i / 100) for i, x in enumerate(days)])
     create_quotes(6, USD, [(d2t(250310), 12.0), (d2t(250320), 13.0)])
     create_quotes(7, USD, [(d2t(250201), 220.0)])
+    create_quotes(4, USD, [(d2t(250301), 3100.0)])
     create_trades(1, [(d2t(250110), d2t(250110), 4, 2, 3000, 2, "buy-ETH"),
                       (d2t(250115), d2t(250115), 6, 100, 10, 1, "buy-UNI"),
                       (d2t(241201), d2t(241203), 8, 10, 50, 1, "buy-STK"),
@@ -163,9 +166,7 @@ def test_crypto_scenario_deals(prepare_db_taxes):
         (LedgerTransaction.Swap, "UNI", Decimal('50'), Decimal('149.5000'))]      # sale swap: 650 - 500 - 0.5
 
 
-# Today's reports of that account: frozen whole, so each later change shows as a fixture diff.
-# Known wrong in RU crypto: the ETH lot the conversion swap carried costs 2 (UNI's price x ETH qty), not 500;
-# PT has no crypto section; the STK sale with settlement 0 is in neither report.
+# Today's reports of that account: frozen whole, so each later change shows as a fixture diff
 def test_crypto_scenario_tax_reports(data_path, prepare_db_taxes):
     with open(data_path + 'taxes_crypto.json', 'r', encoding='utf-8') as json_file:
         expected = json.load(json_file)

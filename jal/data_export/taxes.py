@@ -63,7 +63,6 @@ class TaxReport:
     # source's. An empty name leaves every stored timestamp read as it is.
     report_timezone = ''
     asset_source_override = False   # True if the report reads TaxOverride.AssetSource
-    policy = JalPolicy              # The BasisPolicy class the report replays the lots of the whole history by
     REPLAY_SHARE = 90               # Percent of the progress the replay takes, the sections the rest
 
     def __init__(self):
@@ -218,11 +217,15 @@ class TaxReport:
                 self._show_progress(percent, text)
 
         try:
-            replay(self.lots, self.policy(), progress=progress if self._progress is not None else None)
+            replay(self.lots, self.basis_policy(), progress=progress if self._progress is not None else None)
         except LedgerError as e:
             raise TaxReportStop([], replay=str(e))
 
     # Reports the progress; a stop asked for meanwhile ends the report here, as the events are processed in 'progress'
+    # The BasisPolicy the report replays the lots by: the jurisdiction's rules where they differ from JAL's
+    def basis_policy(self):
+        return JalPolicy()
+
     def _show_progress(self, percent: float, text: str):
         if self._progress is not None:
             self._progress(percent, text)
