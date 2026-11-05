@@ -105,8 +105,6 @@ def test_ru_crypto(prepare_db_taxes):
     assert totals['profit_rub'] == Decimal('135100.00')
     income, = [x for x in report["Криптодоход"] if x['report_template'] == "income"]
     assert (income['value'], income['value_rub']) == (Decimal('400.00'), Decimal('40800.00'))
-    pending, = [x for x in report["Сводка"] if x.get('label') == TaxesRussia.texts['pending_total']]
-    assert pending['count'] == 0
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -119,7 +117,7 @@ PT_RATES = {230110: 0.93, 230301: 0.94, 230601: 0.92, 240301: 0.92, 240601: 0.93
             241101: 0.92, 241201: 0.95, 250101: 0.96, 250201: 0.97, 250401: 0.91}
 
 
-def create_pt_scenario():
+def create_pt_scenario(new_country='ru'):
     create_assets([("ETH", "Ether", "", USD, PredefinedAsset.Crypto, 0),
                    ("UNI", "Uniswap", "", USD, PredefinedAsset.Crypto, 0),
                    ("SOL", "Solana", "", USD, PredefinedAsset.Crypto, 0),
@@ -127,7 +125,7 @@ def create_pt_scenario():
                    ("USDC", "USD Coin", "", USD, PredefinedAsset.Crypto, 0),
                    ("aUSDC", "Aave USDC", "", USD, PredefinedAsset.Crypto, 0),
                    ("OLD", "Old Holding N.V.", "NL0000000101", USD, PredefinedAsset.Stock, 'nl'),
-                   ("NEW", "New Holding PJSC", "RU0000000102", USD, PredefinedAsset.Stock, 'ru')])
+                   ("NEW", "New Holding PJSC", "RU0000000102", USD, PredefinedAsset.Stock, new_country)])
     for datatype, value in ((AssetData.Rebasing, '1'), (AssetData.Protocol, 'Aave v3')):
         JalDB._exec("INSERT INTO asset_data(asset_id, datatype, value) VALUES(9, :dt, :v)",
                     [(":dt", datatype), (":v", value)], commit=True)
@@ -159,49 +157,71 @@ def create_pt_scenario():
 PT_FIELDS = DEAL_FIELDS + ('o_amount_eur', 'c_amount_eur', 'profit_eur', 'days')
 
 
-# Today: the sale swap reset the UNI cost to the swap's value, the conversion swap and the lending legs kept cost and
-# date, all of them marked pending; the merger carried the date and 0.8 of the cost into NEW, sold on Shares
-def test_pt_2024_today(prepare_db_taxes):
+# Each exchange carried the purchase's cost and restarted the holding period, so AVAX moves under 365 days; the merger
+# into a non-EU issuer is a disposal on Shares at 51.2 per NEW share (32 x 0.8 / 0.5, above its first quote of 50)
+def test_pt_2024(prepare_db_taxes):
     create_pt_scenario()
 
-    report = TaxesPortugal().prepare_tax_report(2024, 1)
-    short = [pick(x, PT_FIELDS) | {'pending': 'pending_replay' in x} for x in deal_rows(report["Crypto < 365 days"])]
-    assert short == [
-        {'symbol': "UNI", 'qty': Decimal('200'), 'o_number': '', 'o_date': d2t(240301), 'o_amount': Decimal('3500.00'),
-         'c_number': "sell-UNI-1", 'c_date': d2t(241201), 'c_amount': Decimal('4000.00'), 'profit': Decimal('500.00'),
-         'o_amount_eur': Decimal('3325.00'), 'c_amount_eur': Decimal('3800.00'), 'profit_eur': Decimal('475.00'),
-         'days': 275, 'pending': True}]
-    long = [pick(x, PT_FIELDS) | {'pending': 'pending_replay' in x} for x in deal_rows(report["Crypto ≥ 365 days"])]
-    assert long == [
-        {'symbol': "AVAX", 'qty': Decimal('20'), 'o_number': "buy-SOL", 'o_date': d2t(230110),
+    taxes = TaxesPortugal()
+    report = taxes.prepare_tax_report(2024, 1)
+    assert [pick(x, PT_FIELDS) for x in deal_rows(report["Crypto < 365 days"])] == [
+        {'symbol': "UNI", 'qty': Decimal('200'), 'o_number': "buy-ETH", 'o_date': d2t(240301),
+         'o_amount': Decimal('1500.00'), 'c_number': "sell-UNI-1", 'c_date': d2t(241201), 'c_amount': Decimal('4000.00'),
+         'profit': Decimal('2500.00'), 'o_amount_eur': Decimal('1425.00'), 'c_amount_eur': Decimal('3800.00'),
+         'profit_eur': Decimal('2375.00'), 'days': 275},
+        {'symbol': "AVAX", 'qty': Decimal('20'), 'o_number': "buy-SOL", 'o_date': d2t(240301),
          'o_amount': Decimal('200.00'), 'c_number': "sell-AVAX", 'c_date': d2t(241201), 'c_amount': Decimal('600.00'),
          'profit': Decimal('400.00'), 'o_amount_eur': Decimal('190.00'), 'c_amount_eur': Decimal('570.00'),
-         'profit_eur': Decimal('380.00'), 'days': 691, 'pending': True}]
-    shares = [pick(x, DEAL_FIELDS + ('o_amount_eur', 'c_amount_eur', 'profit_eur')) for x in deal_rows(report["Shares"])]
-    assert shares == [
-        {'symbol': "NEW", 'qty': Decimal('50'), 'o_number': "buy-OLD", 'o_date': d2t(230301),
-         'o_amount': Decimal('2400.00'), 'c_number': "sell-NEW", 'c_date': d2t(241101), 'c_amount': Decimal('3500.00'),
-         'profit': Decimal('1100.00'), 'o_amount_eur': Decimal('2208.00'), 'c_amount_eur': Decimal('3220.00'),
-         'profit_eur': Decimal('1012.00')}]
-    pending, = [x for x in report["Summary"] if x.get('label') == TaxesPortugal.texts['pending_total']]
-    assert pending['count'] == 2
+         'profit_eur': Decimal('380.00'), 'days': 275}]
+    assert deal_rows(report["Crypto ≥ 365 days"]) == []
+    assert taxes.texts['crypto_carried'] in taxes.section_headers("Crypto < 365 days")
+    shares = deal_rows(report["Shares"])
+    assert [pick(x, DEAL_FIELDS + ('o_amount_eur', 'c_amount_eur', 'profit_eur', 'c_type', 'code')) for x in shares] == [
+        {'symbol': "NEW", 'qty': Decimal('50'), 'o_number': '', 'o_date': d2t(240829),
+         'o_amount': Decimal('2560.00'), 'c_number': "sell-NEW", 'c_date': d2t(241101), 'c_amount': Decimal('3500.00'),
+         'profit': Decimal('940.00'), 'o_amount_eur': Decimal('2355.20'), 'c_amount_eur': Decimal('3220.00'),
+         'profit_eur': Decimal('864.80'), 'c_type': "Venda", 'code': "G01"},
+        {'symbol': "OLD", 'qty': Decimal('100'), 'o_number': "buy-OLD", 'o_date': d2t(230301),   # 0.8 of 3 000
+         'o_amount': Decimal('2400.00'), 'c_number': '', 'c_date': d2t(240829), 'c_amount': Decimal('2560.00'),
+         'profit': Decimal('160.00'), 'o_amount_eur': Decimal('2160.00'), 'c_amount_eur': Decimal('2304.00'),
+         'profit_eur': Decimal('144.00'), 'c_type': "Permuta", 'code': "G01"}]
+    assert shares[1]['note'].startswith(taxes.texts['exchange'])
 
 
-def test_pt_2025_today(prepare_db_taxes):
+# The withdrawal restarted the clock of the USDC lot; UNI keeps the ETH cost through its sale swap
+def test_pt_2025(prepare_db_taxes):
     create_pt_scenario()
 
     report = TaxesPortugal().prepare_tax_report(2025, 1)
-    assert deal_rows(report["Crypto < 365 days"]) == []
-    long = [pick(x, PT_FIELDS) | {'pending': 'pending_replay' in x} for x in deal_rows(report["Crypto ≥ 365 days"])]
-    assert long == [
-        {'symbol': "USDC", 'qty': Decimal('1000'), 'o_number': "buy-USDC", 'o_date': d2t(230601),
+    assert [pick(x, PT_FIELDS) for x in deal_rows(report["Crypto < 365 days"])] == [
+        {'symbol': "USDC", 'qty': Decimal('1000'), 'o_number': "buy-USDC", 'o_date': d2t(250101),
          'o_amount': Decimal('1000.00'), 'c_number': "sell-USDC", 'c_date': d2t(250201), 'c_amount': Decimal('1001.00'),
          'profit': Decimal('1.00'), 'o_amount_eur': Decimal('970.00'), 'c_amount_eur': Decimal('970.97'),
-         'profit_eur': Decimal('0.97'), 'days': 611, 'pending': True},
-        {'symbol': "UNI", 'qty': Decimal('200'), 'o_number': '', 'o_date': d2t(240301), 'o_amount': Decimal('3500.00'),
-         'c_number': "sell-UNI-2", 'c_date': d2t(250401), 'c_amount': Decimal('5000.00'), 'profit': Decimal('1500.00'),
-         'o_amount_eur': Decimal('3185.00'), 'c_amount_eur': Decimal('4550.00'), 'profit_eur': Decimal('1365.00'),
-         'days': 396, 'pending': True}]
+         'profit_eur': Decimal('0.97'), 'days': 31}]
+    assert [pick(x, PT_FIELDS) for x in deal_rows(report["Crypto ≥ 365 days"])] == [
+        {'symbol': "UNI", 'qty': Decimal('200'), 'o_number': "buy-ETH", 'o_date': d2t(240301),
+         'o_amount': Decimal('1500.00'), 'c_number': "sell-UNI-2", 'c_date': d2t(250401), 'c_amount': Decimal('5000.00'),
+         'profit': Decimal('3500.00'), 'o_amount_eur': Decimal('1365.00'), 'c_amount_eur': Decimal('4550.00'),
+         'profit_eur': Decimal('3185.00'), 'days': 396}]
+
+
+# A merger into an EU issuer is carried as JAL books it; a new asset without a country stops the report
+def test_pt_merger_into_an_eu_issuer(prepare_db_taxes):
+    create_pt_scenario(new_country='de')
+
+    report = TaxesPortugal().prepare_tax_report(2024, 1)
+    fields = ('symbol', 'o_number', 'o_date', 'o_amount', 'c_number', 'profit')
+    assert [pick(x, fields) for x in deal_rows(report["Shares"])] == [
+        {'symbol': "NEW", 'o_number': "buy-OLD", 'o_date': d2t(230301), 'o_amount': Decimal('2400.00'),
+         'c_number': "sell-NEW", 'profit': Decimal('1100.00')}]
+
+
+def test_pt_merger_into_an_asset_without_country(prepare_db_taxes):
+    create_pt_scenario(new_country=0)
+
+    with pytest.raises(TaxReportStop) as stop:
+        TaxesPortugal().prepare_tax_report(2024, 1)
+    assert stop.value.no_country == ["NEW (New Holding PJSC)"]
 
 
 # ----------------------------------------------------------------------------------------------------------------------

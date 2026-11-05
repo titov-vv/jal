@@ -155,12 +155,6 @@
         "label": "Не отражено ни в одном разделе",
         "count": 0,
         "link": ""
-      },
-      {
-        "report_template": "count",
-        "label": "Строк «ожидает пересчёта»",
-        "count": 0,
-        "link": ""
       }
     ],
     "Акции": [
@@ -582,7 +576,7 @@
       {
         "report_template": "figure",
         "figure": "Acquisition cost and expenses",
-        "amount": 7047.93
+        "amount": 6899.92
       },
       {
         "report_template": "figure",
@@ -592,12 +586,12 @@
       {
         "report_template": "figure",
         "figure": "Gain/loss",
-        "amount": 1648.07
+        "amount": 1796.08
       },
       {
         "report_template": "base_total",
         "figure": "Total of the category: Acquisition cost and expenses",
-        "amount": 7554.95
+        "amount": 7406.94
       },
       {
         "report_template": "base_total",
@@ -607,7 +601,7 @@
       {
         "report_template": "base_total",
         "figure": "Total of the category: Gain/loss",
-        "amount": 1747.05
+        "amount": 1895.06
       },
       {
         "report_template": "base",
@@ -658,18 +652,11 @@
         "label": "Not included in any section",
         "count": 0,
         "link": ""
-      },
-      {
-        "report_template": "count",
-        "label": "Rows marked 'pending replay'",
-        "count": 3,
-        "link": ""
       }
     ],
     "Shares": [
       {
         "report_template": "trade",
-        "kind": "stock",
         "symbol": "STK",
         "isin": "US0000000201",
         "qty": 10.0,
@@ -696,7 +683,8 @@
         "profit": 98.0,
         "profit_eur": 98.98,
         "note": "",
-        "code": "G01"
+        "code": "G01",
+        "kind": "stock"
       },
       {
         "report_template": "totals",
@@ -746,7 +734,7 @@
         "qty": 0.2,
         "o_type": "Aquisição",
         "o_number": "buy-UNI",
-        "o_date": 1736899200,
+        "o_date": 1741564800,
         "o_rate": 0.98,
         "o_price": 2500.0,
         "o_fee": 0.5,
@@ -766,9 +754,8 @@
         "spending_eur": 490.65,
         "profit": 199.33,
         "profit_eur": 195.35,
-        "note": "Pending replay: the lot passed through a crypto-for-crypto exchange\n50 UNI -> 0.2 ETH",
-        "days": 76,
-        "pending_replay": true
+        "note": "50 UNI -> 0.2 ETH",
+        "days": 22
       },
       {
         "report_template": "trade",
@@ -777,7 +764,7 @@
         "qty": 1.0,
         "o_type": "Aquisição",
         "o_number": "buy-ETH",
-        "o_date": 1736467200,
+        "o_date": 1740787200,
         "o_rate": 0.99,
         "o_price": 3000.0,
         "o_fee": 1.0,
@@ -797,9 +784,8 @@
         "spending_eur": 2971.78,
         "profit": 598.2,
         "profit_eur": 592.22,
-        "note": "Pending replay: the lot passed through a crypto-for-crypto exchange\n1 ETH -> 1 WETH",
-        "days": 90,
-        "pending_replay": true
+        "note": "1 ETH -> 1 WETH",
+        "days": 40
       },
       {
         "report_template": "trade",
@@ -807,14 +793,14 @@
         "isin": "",
         "qty": 0.25,
         "o_type": "Aquisição",
-        "o_number": "",
+        "o_number": "buy-UNI",
         "o_date": 1742428800,
         "o_rate": 0.99,
-        "o_price": 2600.0,
-        "o_fee": 0.0,
-        "o_fee_eur": 0.0,
-        "o_amount": 650.0,
-        "o_amount_eur": 643.5,
+        "o_price": 2000.0,
+        "o_fee": 0.5,
+        "o_fee_eur": 0.495,
+        "o_amount": 500.0,
+        "o_amount_eur": 495.0,
         "c_type": "Venda",
         "c_number": "sell-WETH",
         "c_date": 1744243200,
@@ -825,12 +811,11 @@
         "c_amount": 900.0,
         "c_amount_eur": 891.0,
         "income_eur": 891.0,
-        "spending_eur": 643.7,
-        "profit": 249.8,
-        "profit_eur": 247.3,
-        "note": "Pending replay: the lot passed through a crypto-for-crypto exchange",
-        "days": 21,
-        "pending_replay": true
+        "spending_eur": 495.69,
+        "profit": 399.3,
+        "profit_eur": 395.31,
+        "note": "50 UNI -> 0.25 WETH",
+        "days": 21
       },
       {
         "report_template": "trade",
@@ -865,9 +850,9 @@
       {
         "report_template": "totals",
         "income_eur": 8696.0,
-        "spending_eur": 7047.93,
-        "profit_eur": 1648.07,
-        "profit": 1670.5
+        "spending_eur": 6899.92,
+        "profit_eur": 1796.08,
+        "profit": 1820.0
       }
     ],
     "Dividends": [],

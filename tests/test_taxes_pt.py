@@ -31,6 +31,8 @@ def create_pt_scenario():
         (d2t(241015), 0.9180), (d2t(241104), 0.9230), (d2t(241230), 0.9600)
     ]
     create_quotes(2, 3, usd_eur)
+    create_quotes(8, 2, [(d2t(241101), 32.0)])   # the merger is a disposal in PT, valued from these
+    create_quotes(9, 2, [(d2t(241105), 61.0)])
     create_actions([
         (d2t(230101), 1, 1, [(PredefinedCategory.StartingBalance, 20000.0)]),
         (dt2t(2312011430), 1, 1, [(PredefinedCategory.Interest, 2.0, "USD CREDIT INT FOR NOV-2023")]),  # other year
@@ -99,7 +101,8 @@ def test_modelo3_lines_follow_the_shares_rows(prepare_db_taxes):
         line.format("G20", 2024, 7, 8, "508.20", 2024, 1, 10, "462.00", "1.39"),     # an ETF
         line.format("G01", 2024, 4, 2, "463.50", 2024, 9, 3, "417.15", "1.85"),      # short: realized by its opening sale
         line.format("G01", 2024, 10, 15, "2019.60", 2024, 2, 1, "1836.00", "1.84"),
-        line.format("G20", 2024, 12, 30, "576.00", 2024, 1, 10, "480.00", "1.44")
+        line.format("G20", 2024, 12, 30, "576.00", 2024, 1, 10, "480.00", "1.44"),
+        line.format("G01", 2024, 11, 4, "295.36", 2024, 1, 10, "276.90", "0.00")      # the merger into NEWCO
     ]
 
 

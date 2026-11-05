@@ -3,6 +3,8 @@
   "tax_treaty": {
     "2022": ["ad", "ae", "ao", "at", "bb", "be", "bg", "bh", "br", "ca", "ch", "ci", "cl", "cn", "co", "cu", "cv", "cy", "cz", "de", "dk", "dz", "ee", "es", "et", "fr", "gb", "ge", "gr", "gw", "hk", "hr", "hu", "id", "ie", "il", "in", "is", "it", "jp", "kr", "kw", "lt", "lu", "lv", "ma", "md", "me", "mo", "mt", "mx", "mz", "nl", "no", "om", "pa", "pe", "pk", "pl", "qa", "ro", "ru", "sa", "sg", "si", "sk", "sm", "sn", "st", "tl", "tn", "tr", "ua", "us", "uy", "ve", "vn", "za"]
   },
+  "eu_members": {"2013": ["at", "be", "bg", "cy", "cz", "de", "dk", "ee", "es", "fi", "fr", "gb", "gr", "hr", "hu", "ie", "it", "lt", "lu", "lv", "mt", "nl", "pl", "pt", "ro", "se", "si", "sk"],
+                 "2020": ["at", "be", "bg", "cy", "cz", "de", "dk", "ee", "es", "fi", "fr", "gr", "hr", "hu", "ie", "it", "lt", "lu", "lv", "mt", "nl", "pl", "pt", "ro", "se", "si", "sk"]},
   "rate_capital_gain": {"2022": "0.28"},
   "code_stock": {"2022": ["G01"]},
   "code_etf": {"2022": ["G20"]},

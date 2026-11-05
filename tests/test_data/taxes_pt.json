@@ -8,22 +8,22 @@
       {
         "report_template": "section",
         "section": "Shares",
-        "rows": 5
+        "rows": 6
       },
       {
         "report_template": "figure",
         "figure": "Acquisition cost and expenses",
-        "amount": 4576.18
+        "amount": 4853.08
       },
       {
         "report_template": "figure",
         "figure": "Disposal value",
-        "amount": 5214.3
+        "amount": 5509.66
       },
       {
         "report_template": "figure",
         "figure": "Gain/loss",
-        "amount": 638.12
+        "amount": 656.58
       },
       {
         "report_template": "section",
@@ -43,17 +43,17 @@
       {
         "report_template": "base_total",
         "figure": "Total of the category: Acquisition cost and expenses",
-        "amount": 4576.18
+        "amount": 4853.08
       },
       {
         "report_template": "base_total",
         "figure": "Total of the category: Disposal value",
-        "amount": 5214.3
+        "amount": 5509.66
       },
       {
         "report_template": "base_total",
         "figure": "Total of the category: Gain/loss",
-        "amount": 638.12
+        "amount": 656.58
       },
       {
         "report_template": "base",
@@ -114,12 +114,6 @@
         "label": "Not included in any section",
         "count": 1,
         "link": "Not covered"
-      },
-      {
-        "report_template": "count",
-        "label": "Rows marked 'pending replay'",
-        "count": 0,
-        "link": ""
       }
     ],
     "Shares": [
@@ -279,11 +273,42 @@
         "kind": "etf"
       },
       {
+        "report_template": "trade",
+        "symbol": "MRG",
+        "isin": "US0000000003",
+        "qty": 10.0,
+        "o_type": "Aquisi\u00e7\u00e3o",
+        "o_number": "T10",
+        "o_date": 1704898800,
+        "o_rate": 0.923,
+        "o_price": 30.0,
+        "o_fee": 0.0,
+        "o_fee_eur": 0.0,
+        "o_amount": 300.0,
+        "o_amount_eur": 276.9,
+        "c_type": "Permuta",
+        "c_number": "",
+        "c_date": 1730730600,
+        "c_rate": 0.923,
+        "c_price": 32.0,
+        "c_fee": 0.0,
+        "c_fee_eur": 0.0,
+        "c_amount": 320.0,
+        "c_amount_eur": 295.36,
+        "income_eur": 295.36,
+        "spending_eur": 276.9,
+        "profit": 20.0,
+        "profit_eur": 18.46,
+        "note": "Exchange into shares of an issuer outside the EU (CIRS art. 10.\u00ba, n.\u00ba 8 covers EU companies only): a disposal at market value - the higher of the last quote of the old shares times their cost share and the first quote of the new ones\nMerger: Merger MRG->NEWCO + cash\nNew Corp\n\u0414\u043e\u043b\u043b\u0430\u0440 \u0421\u0428\u0410 (0 %)",
+        "code": "G01",
+        "kind": "stock"
+      },
+      {
         "report_template": "totals",
-        "income_eur": 5214.3,
-        "spending_eur": 4576.18,
-        "profit_eur": 638.12,
-        "profit": 690.8
+        "income_eur": 5509.66,
+        "spending_eur": 4853.08,
+        "profit_eur": 656.58,
+        "profit": 710.8
       }
     ],
     "Bonds": [],
@@ -550,11 +575,42 @@
       "kind": "etf"
     },
     {
+      "report_template": "trade",
+      "symbol": "MRG",
+      "isin": "US0000000003",
+      "qty": 10.0,
+      "o_type": "Aquisi\u00e7\u00e3o",
+      "o_number": "T10",
+      "o_date": 1704898800,
+      "o_rate": 0.91,
+      "o_price": 30.0,
+      "o_fee": 0.0,
+      "o_fee_eur": 0.0,
+      "o_amount": 300.0,
+      "o_amount_eur": 273.0,
+      "c_type": "Permuta",
+      "c_number": "",
+      "c_date": 1730730600,
+      "c_rate": 0.923,
+      "c_price": 32.0,
+      "c_fee": 0.0,
+      "c_fee_eur": 0.0,
+      "c_amount": 320.0,
+      "c_amount_eur": 295.36,
+      "income_eur": 295.36,
+      "spending_eur": 273.0,
+      "profit": 20.0,
+      "profit_eur": 22.36,
+      "note": "Exchange into shares of an issuer outside the EU (CIRS art. 10.\u00ba, n.\u00ba 8 covers EU companies only): a disposal at market value - the higher of the last quote of the old shares times their cost share and the first quote of the new ones\nMerger: Merger MRG->NEWCO + cash\nNew Corp\n\u0414\u043e\u043b\u043b\u0430\u0440 \u0421\u0428\u0410 (0 %)",
+      "code": "G01",
+      "kind": "stock"
+    },
+    {
       "report_template": "totals",
-      "income_eur": 5214.3,
-      "spending_eur": 4551.74,
-      "profit_eur": 662.56,
-      "profit": 690.8
+      "income_eur": 5509.66,
+      "spending_eur": 4824.74,
+      "profit_eur": 684.92,
+      "profit": 710.8
     }
   ]
 }

@@ -318,10 +318,6 @@ class TaxReport:
             modifiers.append(operation)
         return modifiers
 
-    # True if one of 'otypes' (swap, wrapping) brought this deal's lot into the deal's asset
-    def carried_through(self, deal, otypes) -> bool:
-        return any(x.type() in otypes for x in self.deal_modifiers(deal))
-
     # Why the jurisdiction's rule takes this operation out of the report, None if it doesn't
     def skip_reason(self, operation):
         if operation.type() == LedgerTransaction.AssetIncome and operation.subtype() == AssetIncome.TokenRentReturn:
@@ -379,7 +375,7 @@ class TaxReport:
                 'number': operation.number(), 'description': operation.description(), 'reason': reason}
 
     # Each base with its sections and its total, then the sections outside every base, listed and not totalled; then
-    # the counts of what is not covered and of the figures a later replay may still change
+    # the counts of what is not covered
     def prepare_summary(self, sections: dict, skipped: dict, uncovered: list) -> list:
         rows = []
         totals = {}   # {base title: {figure: amount}}
@@ -400,12 +396,10 @@ class TaxReport:
         rows.append({'report_template': "base", 'title': self.texts['outside']})
         for name in self.outside:
             rows += self._section_rows(name, sections[name], self._section_figures(sections[name]))
-        pending = len([x for section in sections.values() for x in section if x.get('pending_replay')])
         for label, count in ((self.texts['skipped_total'], sum(skipped.values()) + len(self._carried)),
                              (self.texts['uncovered_total'], len(uncovered))):
             link = self.uncovered_section[0] if count else ''   # an empty section makes no sheet to link to
             rows.append({'report_template': "count", 'label': label, 'count': count, 'link': link})
-        rows.append({'report_template': "count", 'label': self.texts['pending_total'], 'count': pending, 'link': ''})
         rows += self._estimate_rows(sections)
         day = lambda x: datetime.fromtimestamp(x, tz=timezone.utc).strftime('%d.%m.%Y')
         if self.parameters.value(TAX_TREATY) is None:

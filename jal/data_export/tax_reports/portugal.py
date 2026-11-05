@@ -1,9 +1,58 @@
+from datetime import datetime, timezone
 from decimal import Decimal
-from jal.constants import PredefinedAsset, PredefinedCategory, SymbolId
+from jal.constants import PredefinedAsset, PredefinedCategory, SymbolId, Setup
 from jal.db.asset import JalAsset
-from jal.db.operations import LedgerTransaction, AssetPayment, AssetIncome, CorporateAction
+from jal.db.symbol import JalSymbol
+from jal.db.operations import LedgerTransaction, AssetPayment, AssetIncome, CorporateAction, Swap, Conversion
+from jal.db.basis_policy import Basis, Clock, Treatment, JalPolicy
 from jal.data_export.taxes import TaxReport, GAIN, INCOME
 from jal.data_export.tax_parameters import TaxParameters
+
+
+# PT: a crypto-for-crypto exchange or a wrapping carries the cost with the holding period restarted (CIRS art. 10.º,
+# n.º 20); a merger into the shares of an issuer outside the EU is a disposal at market value (n.º 8 covers EU companies
+# only). 'missing_quote(symbol, timestamp)' and 'missing_country(name)' collect what such a disposal lacks.
+class PtPolicy(JalPolicy):
+    def __init__(self, missing_quote, missing_country):
+        self._missing_quote = missing_quote
+        self._missing_country = missing_country
+
+    def treatment(self, operation) -> Treatment:
+        if isinstance(operation, (Swap, Conversion)):
+            return Treatment(Basis.CARRY, Clock.RESTART)
+        return super().treatment(operation)
+
+    def action_result(self, action, result: dict) -> Treatment:
+        treatment = super().action_result(action, result)
+        if not self.exchange_outside_eu(action, result):
+            return treatment
+        return Treatment(Basis.DISPOSAL, Clock.RESTART, treatment.share, self.exchange_value(action, result))
+
+    # True for a merger result into another asset whose issuer is outside the EU in the year of the action
+    def exchange_outside_eu(self, action, result: dict) -> bool:
+        asset = JalSymbol(result['symbol_id']).asset()
+        if action.subtype() != CorporateAction.Merger or asset.id() == action.asset().id() \
+                or asset.type() == PredefinedAsset.Money:
+            return False
+        if not asset.country().id():
+            self._missing_country(f"{asset.symbol()} ({asset.name()})")
+            return False
+        year = datetime.fromtimestamp(action.timestamp(), tz=timezone.utc).year
+        return not TaxParameters('pt', year).eu_member(asset.country().code())
+
+    # The market value of a result: per received share, the higher of the old shares' last non-zero quote before the
+    # action times their cost share, and the new shares' first non-zero quote after it; in the account currency
+    def exchange_value(self, action, result: dict) -> Decimal:
+        currency_id = action.account().currency()
+        asset = JalSymbol(result['symbol_id']).asset()
+        qty = abs(Decimal(result['qty']))
+        before = [q for _, q in action.asset().quotes(0, action.timestamp() - 1, currency_id) if q]
+        after = [q for _, q in asset.quotes(action.timestamp() + 1, Setup.MAX_TIMESTAMP, currency_id) if q]
+        prices = ([before[-1] * Decimal(result['value_share']) * abs(action.qty()) / qty] if before else []) + after[:1]
+        if not prices:
+            self._missing_quote(asset.symbol(), action.timestamp())
+            return Decimal('0')
+        return max(prices) * qty
 
 
 class TaxesPortugal(TaxReport):
@@ -23,7 +72,6 @@ class TaxesPortugal(TaxReport):
         'uncovered': "No section of this report includes this operation",
         'skipped_total': "Skipped by the jurisdiction's rule",
         'uncovered_total': "Not included in any section",
-        'pending_total': "Rows marked 'pending replay'",
         'excluded': "Your decision - not a tax event in Portugal: {}",
         'decisions': "Your decisions applied in this report (tax treatment overrides)",
         'override_excluded': "Not a tax event",
@@ -60,9 +108,12 @@ class TaxesPortugal(TaxReport):
         'crypto_fiat': "Only disposals for money are here; crypto-for-crypto exchanges and wrappings are on "
                        "'Not covered' (CIRS art. 10.º, n.º 20)",
         'crypto_365': "Held 365 days or more: excluded from tax, still to be declared",
-        'crypto_pending': "'Pending replay': the lot passed through a crypto-for-crypto exchange, so its cost or holding "
-                          "period may still change",
-        'pending': "Pending replay: the lot passed through a crypto-for-crypto exchange",
+        'crypto_carried': "Cost is carried through crypto-for-crypto exchanges and wrappings, the holding period "
+                          "restarted at each (CIRS art. 10.º, n.º 20)",
+        'exchange': "Exchange into shares of an issuer outside the EU (CIRS art. 10.º, n.º 8 covers EU companies only): "
+                    "a disposal at market value - the higher of the last quote of the old shares times their cost "
+                    "share and the first quote of the new ones",
+        'spin_off': "A spin-off is no disposal: the cost is split between the shares as the corporate action states",
         'reward_lot': "Received as crypto income: zero cost, taxed on disposal only (CIRS art. 5.º, n.º 11)",
         'income_not_taxed': "Crypto received as income is not taxed at receipt: it opens a lot at zero cost, taxed when "
                             "disposed of (CIRS art. 5.º, n.º 11). Values are for information",
@@ -104,6 +155,9 @@ class TaxesPortugal(TaxReport):
         (LedgerTransaction.AssetIncome, AssetIncome.LendingInterest): "Lending interest",
         (LedgerTransaction.AssetIncome, AssetIncome.TokenRentReturn): "Token account rent returned"
     }
+
+    def basis_policy(self):
+        return PtPolicy(self.missing_quote, self.missing_country)
 
     def __init__(self):
         super().__init__()
@@ -245,9 +299,27 @@ class TaxesPortugal(TaxReport):
             kind = TaxParameters.ETF if trade.asset().type() == PredefinedAsset.ETF else TaxParameters.STOCK
             deals_report.append(self._deal_row(trade, kind))
             self.mark_printed(trade.close_operation())
+            if any(x.type() == LedgerTransaction.CorporateAction and x.subtype() == CorporateAction.SpinOff
+                   for x in self.deal_modifiers(trade)):
+                self.add_header(self.texts['spin_off'])
+        for trade in self.exchanges_list([PredefinedAsset.Stock, PredefinedAsset.ETF]):
+            kind = TaxParameters.ETF if trade.asset().type() == PredefinedAsset.ETF else TaxParameters.STOCK
+            line = self._deal_row(trade, kind)
+            line['c_type'] = "Permuta"
+            line['c_price'] = trade.close_price()
+            line['note'] = "\n".join([self.texts['exchange']] + ([line['note']] if line['note'] else []))
+            deals_report.append(line)
+            self.mark_printed(trade.close_operation())
         deals_report += [self._short_open_row(x) for x in self.stock_year_end_shorts()]
         self.insert_totals(deals_report, ["income_eur", "spending_eur", "profit_eur", "profit"])
         return deals_report
+
+    # Deals the policy realized at an exchange by a corporate action in the year, less those the user excluded
+    def exchanges_list(self, asset_type) -> list:
+        trades = self.account.closed_trades_list(close_otypes=(LedgerTransaction.CorporateAction,), store=self.lots,
+                                                 realized=True)
+        trades = [x for x in trades if x.asset().type() in asset_type and self.in_year(self.deal_date(x))]
+        return [x for x in trades if not self.excluded(x.close_operation())]
 
     # A stock short sold in the year and open on 31 December: the proceeds and the fee at the rate of the sale, no
     # acquisition cost; the Modelo 3 file leaves it out
@@ -313,7 +385,7 @@ class TaxesPortugal(TaxReport):
     def _crypto_headers(self):
         self._deal_headers()
         self.add_header(self.texts['crypto_fiat'])
-        self.add_header(self.texts['crypto_pending'])
+        self.add_header(self.texts['crypto_carried'])
 
     # The crypto deals on one side of the 365 days, with the holding period
     def _crypto_deals(self, long_held: bool) -> list:
@@ -327,11 +399,6 @@ class TaxesPortugal(TaxReport):
             notes = [line['note']] if line['note'] else []
             if trade.open_operation().type() == LedgerTransaction.AssetIncome:
                 notes.insert(0, self.texts['reward_lot'])
-            through_swap = trade.open_operation().type() == LedgerTransaction.Swap or \
-                self.carried_through(trade, (LedgerTransaction.Swap, LedgerTransaction.Conversion))
-            if through_swap:
-                line['pending_replay'] = True
-                notes.insert(0, self.texts['pending'])
             line['note'] = "\n".join(notes)
             deals_report.append(line)
             self.mark_printed(trade.close_operation())

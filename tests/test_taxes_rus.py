@@ -565,7 +565,8 @@ def test_lost_position_stays_out_of_tax_reports(prepare_db_taxes, action):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# A swap is a disposal at market value in RU and is skipped by rule in PT; the lot it opens is sold at that value
+# A swap is a disposal at market value in RU, where the lot it opens is sold at that value; skipped by rule in PT,
+# where that lot carries the purchase's cost
 def test_swap_is_a_disposal_in_ru_and_skipped_in_pt(prepare_db_taxes):
     create_assets([("AAA", "Coin A", "", 2, PredefinedAsset.Crypto, 0),     # ID 4
                    ("BBB", "Coin B", "", 2, PredefinedAsset.Crypto, 0)])    # ID 5
@@ -601,8 +602,12 @@ def test_swap_is_a_disposal_in_ru_and_skipped_in_pt(prepare_db_taxes):
     skipped, = report["Not covered"]
     assert (skipped['reason'], skipped['count']) == \
            ("Crypto-for-crypto exchange: not taxed until exit to fiat (CIRS art. 10.º, n.º 20)", "Skipped by rule: 1")
-    sale, _totals = report["Crypto < 365 days"]
-    assert (sale['c_number'], sale['pending_replay']) == ("sell-B", True)   # its lot was opened by the swap
+    sale, _totals = report["Crypto < 365 days"]   # the purchase's cost carried through the swap, its clock restarted
+    assert {k: sale[k] for k in ('c_number', 'o_number', 'o_date', 'o_amount', 'o_amount_eur', 'c_amount_eur',
+                                 'spending_eur', 'profit_eur')} == \
+           {'c_number': "sell-B", 'o_number': "buy-A", 'o_date': t_swap, 'o_amount': Decimal('100.00'),
+            'o_amount_eur': Decimal('81.00'), 'c_amount_eur': Decimal('145.80'), 'spending_eur': Decimal('82.22'),
+            'profit_eur': Decimal('63.58')}
 
 
 # Crypto income is valued at its quote on receipt: without one the RU report stops and names it
