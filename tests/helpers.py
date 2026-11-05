@@ -269,12 +269,14 @@ def create_cross_chain_swaps(swaps) -> list:
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Create corporate actions for given account_id in database: actions is a list of tuples
-# (timestamp, type, asset_old, qty_old, note, [(asset_new1, qty_new1, share1), (asset_new2, qty_new2, share2), ...])
+# (timestamp, type, asset_old, qty_old, note, [(asset_new1, qty_new1, share1, [keep_date1]), ...])
 def create_corporate_actions(account_id, actions):
     for action in actions:
         outcomes = []
         for result in action[5]:
             outcomes.append({"symbol_id": symbol_id_for(result[0]), "qty": result[1], "value_share": result[2]})
+            if len(result) > 3:
+                outcomes[-1]['keep_date'] = int(result[3])
         data = {'timestamp': action[0], 'account_id': account_id, 'type': action[1],
                 'symbol_id': symbol_id_for(action[2]), 'qty': action[3], 'note': action[4], 'outcome': outcomes}
         LedgerTransaction.create_new(LedgerTransaction.CorporateAction, data)
