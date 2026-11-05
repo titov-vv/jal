@@ -5,17 +5,24 @@ from jal.db.helpers import format_decimal
 import jal.db.operations
 import jal.db.closed_trade
 import jal.db.basis_policy
+import jal.db.account
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# Where lots and deals live: every statement on 'trades_opened' / 'trades_closed' of the ledger rebuild.
+# Where lots and deals live: every statement on 'trades_opened' / 'trades_closed' of the ledger rebuild, in the main
+# database or in the attached 'schema' of a ScratchLotStore.
 # Works on ids and decimals and returns rows; LotEngine builds the lot objects and orders them.
 class LedgerLotStore(JalDB):
+    def __init__(self, schema=None):
+        super().__init__()
+        self._opened = 'trades_opened' if schema is None else f'{schema}.trades_opened'
+        self._closed = 'trades_closed' if schema is None else f'{schema}.trades_closed'
+
     # Stores a state of a lot; a NULL 'slice_id' makes the trades_opened_set_slice trigger give it the row's own id
     def open(self, timestamp: int, otype: int, oid: int, m_otype: int, m_oid: int, account_id: int, asset_id: int,
              price: Decimal, qty: Decimal, c_price: Decimal, c_qty: Decimal, c_fx: Decimal, slice_id, acquired: int):
         _ = self._exec(
-            "INSERT INTO trades_opened(timestamp, otype, oid, m_otype, m_oid, account_id, asset_id, "
+            f"INSERT INTO {self._opened}(timestamp, otype, oid, m_otype, m_oid, account_id, asset_id, "
             "price, remaining_qty, c_price, c_qty, c_fx, slice_id, acquired) "
             "VALUES(:timestamp, :otype, :oid, :m_otype, :m_oid, :account_id, :asset_id, :price, "
             ":remaining_qty, :c_price, :c_qty, :c_fx, :slice_id, :acquired)",
@@ -32,7 +39,7 @@ class LedgerLotStore(JalDB):
         query = self._exec("WITH open_trades_numbered AS "
                            "(SELECT timestamp, otype, oid, price, remaining_qty, c_price, c_qty, c_fx, slice_id, acquired, "
                            "ROW_NUMBER() OVER (PARTITION BY slice_id ORDER BY timestamp DESC, id DESC) AS row_no "
-                           "FROM trades_opened WHERE account_id=:account AND asset_id=:asset AND timestamp<=:timestamp) "
+                           f"FROM {self._opened} WHERE account_id=:account AND asset_id=:asset AND timestamp<=:timestamp) "
                            "SELECT otype, oid, price, remaining_qty, c_price, c_qty, c_fx, slice_id, acquired "
                            "FROM open_trades_numbered WHERE row_no=1 AND remaining_qty!=:zero ",
                            [(":account", account_id), (":asset", asset_id),
@@ -47,12 +54,12 @@ class LedgerLotStore(JalDB):
                       "(SELECT o.account_id, o.asset_id, o.remaining_qty, "
                       "CASE WHEN o.otype=:trade AND CAST(t.qty AS REAL)<0 THEN -1 ELSE 1 END AS side, "
                       "ROW_NUMBER() OVER (PARTITION BY o.slice_id ORDER BY o.timestamp DESC, o.id DESC) AS row_no "
-                      "FROM trades_opened AS o LEFT JOIN trades AS t ON o.otype=:trade AND t.oid=o.oid {where}) "
+                      "FROM {opened} AS o LEFT JOIN trades AS t ON o.otype=:trade AND t.oid=o.oid {where}) "
                       "SELECT account_id, asset_id, remaining_qty, side FROM open_trades_numbered WHERE row_no=1")
 
     # (account_id, asset_id, signed qty) of the latest state of every slice of every position
     def slices(self) -> list:
-        query = self._exec(self._SIGNED_SLICES.format(where=""),
+        query = self._exec(self._SIGNED_SLICES.format(opened=self._opened, where=""),
                            [(":trade", jal.db.operations.LedgerTransaction.Trade)])
         slices = []
         while query.next():
@@ -62,7 +69,8 @@ class LedgerLotStore(JalDB):
 
     # What the lots of a position hold now, negative for a short one
     def position(self, account_id: int, asset_id: int) -> Decimal:
-        query = self._exec(self._SIGNED_SLICES.format(where="WHERE o.account_id=:account AND o.asset_id=:asset"),
+        query = self._exec(self._SIGNED_SLICES.format(opened=self._opened,
+                                                     where="WHERE o.account_id=:account AND o.asset_id=:asset"),
                            [(":trade", jal.db.operations.LedgerTransaction.Trade), (":account", account_id),
                             (":asset", asset_id)])
         position = Decimal('0')
@@ -76,7 +84,7 @@ class LedgerLotStore(JalDB):
               open_price: Decimal, open_qty: Decimal, close_otype: int, close_oid: int, close_timestamp: int,
               close_price: Decimal, close_qty: Decimal, c_price: Decimal, c_qty: Decimal, c_fx: Decimal):
         _ = self._exec(
-            "INSERT INTO trades_closed(account_id, asset_id, open_otype, open_oid, open_timestamp, open_price, "
+            f"INSERT INTO {self._closed}(account_id, asset_id, open_otype, open_oid, open_timestamp, open_price, "
             "open_qty, close_otype, close_oid, close_timestamp, close_price, close_qty, c_price, c_qty, c_fx) "
             "VALUES(:account_id, :asset_id, :open_otype, :open_oid, :open_timestamp, :open_price, :open_qty, "
             ":close_otype, :close_oid, :close_timestamp, :close_price, :close_qty, :c_price, :c_qty, :c_fx)",
@@ -91,29 +99,29 @@ class LedgerLotStore(JalDB):
     def deal(self, deal_id: int):
         return self._read("SELECT account_id, asset_id, open_otype, open_oid, open_timestamp, open_price, "
                           "open_qty, close_otype, close_oid, close_timestamp, close_price, close_qty, c_price, c_qty, "
-                          "c_fx FROM trades_closed WHERE id=:id", [(":id", deal_id)], named=True)
+                          f"c_fx FROM {self._closed} WHERE id=:id", [(":id", deal_id)], named=True)
 
     # Ids of the deals of an account (of one asset if given) closed by operations of 'close_otypes'
     def deals(self, account_id: int, asset_id, close_otypes) -> list:
         otypes = ','.join(str(int(x)) for x in close_otypes)
         if asset_id is None:
-            query = self._exec(f"SELECT id FROM trades_closed WHERE close_otype IN ({otypes}) AND account_id=:account",
+            query = self._exec(f"SELECT id FROM {self._closed} WHERE close_otype IN ({otypes}) AND account_id=:account",
                                [(":account", account_id)])
         else:
-            query = self._exec(f"SELECT id FROM trades_closed WHERE close_otype IN ({otypes}) AND account_id=:account AND asset_id=:asset",
+            query = self._exec(f"SELECT id FROM {self._closed} WHERE close_otype IN ({otypes}) AND account_id=:account AND asset_id=:asset",
                                [(":account", account_id), (":asset", asset_id)])
         return self._ids(query)
 
     # Ids of the deals operation (otype, oid) closed in a position
     def deals_closed_by(self, otype: int, oid: int, account_id: int, asset_id: int) -> list:
-        query = self._exec("SELECT id FROM trades_closed WHERE close_otype=:otype AND close_oid=:oid "
+        query = self._exec(f"SELECT id FROM {self._closed} WHERE close_otype=:otype AND close_oid=:oid "
                            "AND account_id=:account AND asset_id=:asset",
                            [(":otype", otype), (":oid", oid), (":account", account_id), (":asset", asset_id)])
         return self._ids(query)
 
     # (otype, oid) of the operations other than trades that stored a state of the lots opened by (otype, oid)
     def modifiers(self, otype: int, oid: int) -> list:
-        query = self._exec("SELECT DISTINCT m_otype, m_oid FROM trades_opened "
+        query = self._exec(f"SELECT DISTINCT m_otype, m_oid FROM {self._opened} "
                            "WHERE otype=:otype AND oid=:oid AND m_otype!=:trade",
                            [(":otype", otype), (":oid", oid), (":trade", jal.db.operations.LedgerTransaction.Trade)])
         modifiers = []
@@ -123,8 +131,8 @@ class LedgerLotStore(JalDB):
 
     # Removes the deals closed and the lot states stored at or after 'frontier'
     def wipe_from(self, frontier: int):
-        _ = self._exec("DELETE FROM trades_closed WHERE close_timestamp >= :frontier", [(":frontier", frontier)])
-        _ = self._exec("DELETE FROM trades_opened WHERE timestamp >= :frontier", [(":frontier", frontier)])
+        _ = self._exec(f"DELETE FROM {self._closed} WHERE close_timestamp >= :frontier", [(":frontier", frontier)])
+        _ = self._exec(f"DELETE FROM {self._opened} WHERE timestamp >= :frontier", [(":frontier", frontier)])
 
     def _ids(self, query) -> list:
         ids = []
@@ -141,6 +149,7 @@ class LotEngine:
     def __init__(self, store=None, policy=None):
         self.store = LedgerLotStore() if store is None else store
         self.policy = jal.db.basis_policy.JalPolicy() if policy is None else policy
+        self._parked = {}
 
     # Open lots of a position at 'timestamp' (latest if None) in the order the policy takes them
     def lots(self, account, asset, timestamp=None) -> list:
@@ -174,7 +183,16 @@ class LotEngine:
     # The deals 'operation' closed in a position, as carry_in() takes them
     def carried(self, operation, account, asset) -> list:
         deals = self.store.deals_closed_by(operation.type(), operation.id(), account.id(), asset.id())
-        return [jal.db.closed_trade.JalClosedTrade(x) for x in deals]
+        return [jal.db.closed_trade.JalClosedTrade(x, store=self.store) for x in deals]
+
+    # Keeps the value a sending leg leaves in transit, rounded as its ledger posting is, for parked() to give back
+    def park(self, operation, value: Decimal):
+        precision = jal.db.account.JalAccount(operation.account_id()).precision()
+        self._parked[(operation.type(), operation.id())] = round(value, precision)
+
+    # What the sending leg of 'operation' parked in this engine, None if it didn't run here
+    def parked(self, operation):
+        return self._parked.get((operation.type(), operation.id()))
 
     # Re-opens 'deals' as lots of 'asset' on 'account'. Each keeps its quantity when 'qty' is None, otherwise 'qty' is
     # allocated over them; their price takes 'price_factor', c_fx takes 'fx_factor'; 'acquired' restarts the date.
@@ -252,3 +270,49 @@ class LotEngine:
         self.store.close(account.id(), asset.id(), opened_by.type(), opened_by.id(), lot.acquired(), lot.open_price(),
                          qty / lot.q_adjustment(), operation.type(), operation.id(), operation.timestamp(), close_price,
                          qty, lot.p_adjustment(), lot.q_adjustment(), lot.fx_adjustment())
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# A lot store of its own for a replay: the two lot tables in an in-memory database attached to JAL's connection as
+# 'schema'. ATTACH is refused inside a transaction, so it is created and dropped outside one.
+class ScratchLotStore(LedgerLotStore):
+    def __init__(self, schema: str = 'lots_replay'):
+        super().__init__(schema)
+        self._schema = schema
+        self._exec(f"ATTACH DATABASE :file AS {schema}", [(":file", ':memory:')])
+        self._exec(f"CREATE TABLE {schema}.trades_opened (id INTEGER PRIMARY KEY UNIQUE NOT NULL, "
+                   "timestamp INTEGER NOT NULL, otype INTEGER NOT NULL, oid INTEGER NOT NULL, m_otype INTEGER NOT NULL, "
+                   "m_oid INTEGER NOT NULL, account_id INTEGER NOT NULL, asset_id INTEGER NOT NULL, price TEXT NOT NULL, "
+                   "remaining_qty TEXT NOT NULL, c_price TEXT NOT NULL DEFAULT ('1'), c_fx TEXT NOT NULL DEFAULT ('1'), "
+                   "c_qty TEXT NOT NULL DEFAULT ('1'), slice_id INTEGER, acquired INTEGER NOT NULL DEFAULT (0))")
+        self._exec(f"CREATE INDEX {schema}.open_trades_by_position ON trades_opened (account_id, asset_id, timestamp)")
+        self._exec(f"CREATE TRIGGER {schema}.trades_opened_set_slice AFTER INSERT ON trades_opened "
+                   "WHEN NEW.slice_id IS NULL BEGIN UPDATE trades_opened SET slice_id = NEW.id WHERE id = NEW.id; END")
+        self._exec(f"CREATE TABLE {schema}.trades_closed (id INTEGER PRIMARY KEY UNIQUE NOT NULL, "
+                   "account_id INTEGER NOT NULL, asset_id INTEGER NOT NULL, open_otype INTEGER NOT NULL, "
+                   "open_oid INTEGER NOT NULL, open_timestamp INTEGER NOT NULL, open_price TEXT NOT NULL, "
+                   "open_qty TEXT NOT NULL, close_otype INTEGER NOT NULL, close_oid INTEGER NOT NULL, "
+                   "close_timestamp INTEGER NOT NULL, close_price TEXT NOT NULL, close_qty TEXT NOT NULL, "
+                   "c_price TEXT NOT NULL DEFAULT ('1'), c_qty TEXT NOT NULL DEFAULT ('1'), "
+                   "c_fx TEXT NOT NULL DEFAULT ('1'))")
+
+    def schema(self) -> str:
+        return self._schema
+
+    def detach(self):
+        self._exec(f"DETACH DATABASE {self._schema}")
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Replays the lot half of every operation of the built ledger sequence up to 'until' into 'store' by 'policy', reading
+# and writing nothing of the ledger itself. Returns the engine, whose store holds the lots and deals.
+def replay(store, policy=None, until=None) -> LotEngine:
+    engine = LotEngine(store, policy)
+    until = Setup.MAX_TIMESTAMP if until is None else until
+    query = JalDB._exec("SELECT o.otype, s.operation_id AS oid, s.opart FROM ledger_sequence AS s "
+                        "JOIN operations AS o ON o.id=s.operation_id WHERE s.timestamp <= :until ORDER BY s.seq_no",
+                        [(":until", until)])
+    while query.next():
+        otype, oid, opart = JalDB._read_record(query)
+        jal.db.operations.LedgerTransaction.get_operation(otype, oid, opart).process_lots(engine)
+    return engine

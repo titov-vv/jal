@@ -80,10 +80,10 @@ class JalOpenTrade(JalDB):
 
 # ----------------------------------------------------------------------------------------------------------------------
 class JalClosedTrade(JalDB):
-    def __init__(self, id: int = 0) -> None:
+    def __init__(self, id: int = 0, store=None) -> None:
         super().__init__()
         self._id = id
-        self._data = jal.db.lots.LedgerLotStore().deal(self._id)
+        self._data = (jal.db.lots.LedgerLotStore() if store is None else store).deal(self._id)
         if self._data:
             self._account = jal.db.account.JalAccount(self._data['account_id'])
             self._asset = JalAsset(self._data['asset_id'])

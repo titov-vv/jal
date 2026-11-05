@@ -399,7 +399,8 @@ class LedgerTransaction(JalDB):
         raise NotImplementedError(f"processLedger() method is not defined in {type(self).__name__} class")
 
     # The lot half of this part on 'engine': what both the ledger rebuild and a lot replay do, reading no ledger.
-    # 'parked' is the value the sending leg left in transit, for an arriving leg. Returns what the postings need.
+    # 'parked' is the value the sending leg left in transit, for an arriving leg; None takes what the sending leg
+    # parked in the same engine (a replay). Returns what the postings need.
     def process_lots(self, engine, parked=None):
         return None
 
@@ -1786,6 +1787,7 @@ class Swap(FeeCarrier, LedgerTransaction):
                 if rate == Decimal('0'):
                     raise LedgerError(LedgerTransaction.tr("There is no FX rate to convert swap proceeds. Date: ")
                                       + f"{ts2dt(self._in_timestamp)}, Operation: {self.dump()}")
+            parked = engine.parked(self) if parked is None else parked
             in_value = rate * parked
             if conversion:
                 self._reopen_lots(engine, self._in_account, rate, treatment.clock)
@@ -1802,11 +1804,12 @@ class Swap(FeeCarrier, LedgerTransaction):
             raise LedgerError(LedgerTransaction.tr("Processed asset amount is less than swap amount. Date: ")
                               + f"{ts2dt(self._timestamp)}, Processed amount: {processed_qty}, "
                               + f"Required: {self._out_qty}, Operation: {self.dump()}")
-        if not self._cross_chain:
-            if conversion:
-                self._reopen_lots(engine, self._account, Decimal('1'), treatment.clock)
-            else:
-                engine.acquire(self._account, self._in_asset, self, value / self._in_qty, self._in_qty)
+        if self._cross_chain:   # the asset at its basis, or the proceeds, travel to the receiving leg
+            engine.park(self, basis if conversion else value)
+        elif conversion:
+            self._reopen_lots(engine, self._account, Decimal('1'), treatment.clock)
+        else:
+            engine.acquire(self._account, self._in_asset, self, value / self._in_qty, self._in_qty)
         return processed_qty, basis, value
 
     # Re-opens the out lots this swap closed on 'account' as the in asset - each keeping its opening operation and cost,
@@ -2450,10 +2453,12 @@ class Transfer(FeeCarrier, LedgerTransaction):
                 raise LedgerError(LedgerTransaction.tr("Processed asset amount is less than transfer amount. Date: ")
                                   + f"{ts2dt(self._withdrawal_timestamp)}, Processed amount: {processed_qty}, "
                                   + f"Required: {transfer_amount}, Operation: {self.dump()}")
+            engine.park(self, processed_value)
             return processed_qty, processed_value
         if not self._has_out:
             engine.acquire(self._deposit_account, self._asset, self, Decimal('0'), transfer_amount)
             return Decimal('0')
+        parked = engine.parked(self) if parked is None else parked
         transfer_trades = engine.carried(self, self._account, self._asset)
         # A zero withdrawn value is treated like the same-currency case: there is no rate that rescales zero to
         # the destination value, and a zero-cost lot stays zero-cost whatever it is multiplied by. This happens
@@ -3262,7 +3267,9 @@ class Bridge(FeeCarrier, LedgerTransaction):
                 raise LedgerError(LedgerTransaction.tr("Processed asset amount is less than bridge amount. Date: ")
                                   + f"{ts2dt(self._out_timestamp)}, Processed amount: {processed_qty}, "
                                   + f"Required: {self._out_qty}, Operation: {self.dump()}")
+            engine.park(self, processed_value)
             return processed_qty, processed_value
+        parked = engine.parked(self) if parked is None else parked
         transfer_value = self._arrive_lots(engine, parked)
         if self._in_qty < self._out_qty:
             self._consume_lots(engine, self._out_qty - self._in_qty, self._asset, self._in_account)
