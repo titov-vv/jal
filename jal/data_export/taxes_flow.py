@@ -5,16 +5,21 @@ from jal.constants import AccountStatus
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.clock import stored_reading
-from jal.data_export.ru_ndfl3 import Ru_NDFL3
+from jal.data_export.taxes import TaxReport
+from jal.data_export.tax_parameters import TaxParameters
 
 
+# The yearly report of money and assets moved through the accounts abroad, a part of the RU tax report: every account
+# but those of the jurisdiction's own country and those of no known country
 class TaxesFlowRus:
-    # The zone whose wall clock this report counts its year on, named the way TaxReport.report_timezone names it for
-    # the tax report itself. Here it is the WINDOW that is re-read and not each row: the flows are summed by the
-    # database and the balances are taken from the ledger, both on stored timestamps - see prepare_flow_report().
-    report_timezone = 'Europe/Moscow'
+    jurisdiction = 'ru'
 
     def __init__(self):
+        self.parameters = None
+        # The zone whose wall clock the year is counted on, the tax report's. Here it is the WINDOW that is re-read and
+        # not each row: the flows are summed by the database and the balances are taken from the ledger, both on stored
+        # timestamps - see prepare_flow_report().
+        self.report_timezone = TaxReport.report_class(self.jurisdiction).report_timezone
         self.year_begin = 0
         self.year_end = 0
         self.flows = {}
@@ -36,6 +41,7 @@ class TaxesFlowRus:
 
     def prepare_flow_report(self, year):
         self.flows = {}
+        self.parameters = TaxParameters(self.jurisdiction, year)
         # The year is a half-open window [year_begin, year_end): 'year_end' is the FIRST second of the next year,
         # so an operation stamped at midnight on 1 January belongs to that next year and to no other.
         self.year_begin = int(datetime.strptime(f"{year}", "%Y").replace(tzinfo=timezone.utc).timestamp())
@@ -51,9 +57,8 @@ class TaxesFlowRus:
         # collect data for start and end of the period
         values_begin = []
         values_end = []
+        accounts = [x for x in accounts if x.country().id() and not TaxReport.home_account(x, self.jurisdiction)]
         for account in accounts:
-            if account.country().code() == 'xx' or account.country().code() == 'ru':
-                continue
             values_begin += self.get_account_values(account, begin)
             values_end += self.get_account_values(account, end)
         values_begin = sorted(values_begin, key=lambda x: (JalAccount(account_id=x['account']).number(), x['is_currency'], x['currency']))
@@ -71,8 +76,6 @@ class TaxesFlowRus:
             {'type': JalAccount.ASSETS_FLOW, 'direction': 'out'}
         ]
         for account in accounts:
-            if account.country().code() == 'xx' or account.country().code() == 'ru':
-                continue
             for flow in flows:
                 value = account.get_flow(begin, end, flow['type'], flow['direction'])
                 if value != Decimal('0'):
@@ -114,11 +117,8 @@ class TaxesFlowRus:
         try:
             f_currency = f_account[currency]
         except KeyError:
-            try:
-                currency_code = Ru_NDFL3.currencies[currency]['code']
-            except KeyError:
-                currency_code = 'XXX'  # currency code isn't known
-            f_currency = f_account[currency] = {'money': {}, 'assets': {}, 'code': currency_code}
+            listed = self.parameters.currency(currency)
+            f_currency = f_account[currency] = {'money': {}, 'assets': {}, 'code': listed['code'] if listed else 'XXX'}
         if values['is_currency'] == 0:
             try:
                 f_currency['assets'][name] += values['value']

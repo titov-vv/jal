@@ -21,7 +21,6 @@ from jal.db.settings import JalSettings, FolderFor
 from jal.constants import PredefinedAgents
 from jal.data_export.taxes import TaxReport, TaxReportStop, TaxReportCancelled
 from jal.data_export.tax_parameters import TAX_TREATY
-from jal.data_export.taxes_flow import TaxesFlowRus
 from jal.data_export.xlsx import XLSX
 from jal.data_export.ru_ndfl3 import Ru_NDFL3
 from jal.data_export.irs_modelo3 import IRS_Modelo3
@@ -309,7 +308,7 @@ class MoneyFlowWidget(MdiWidget):
 
     @Slot()
     def SaveReport(self):
-        taxes_flow = TaxesFlowRus()
+        taxes_flow = TaxReport.create_flow_report('ru')
         flow_report = taxes_flow.prepare_flow_report(self.year)
 
         reports_xls = XLSX(self.xls_filename)

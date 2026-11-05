@@ -108,7 +108,8 @@ class TaxReport:
     # Every jurisdiction a report exists for, keyed by its ISO 3166-1 alpha-2 code; the name is in its own language
     jurisdictions = {
         'pt': {"name": "Portugal", "module": "jal.data_export.tax_reports.portugal", "class": "TaxesPortugal"},
-        'ru': {"name": "Россия", "module": "jal.data_export.tax_reports.russia", "class": "TaxesRussia"}
+        'ru': {"name": "Россия", "module": "jal.data_export.tax_reports.russia", "class": "TaxesRussia",
+               "flow": {"module": "jal.data_export.taxes_flow", "class": "TaxesFlowRus"}}
     }
     jurisdiction = ''   # ISO 3166-1 alpha-2 code of the jurisdiction, names its parameter file
     currency_name = ''  # The name of the currency for tax values calculation
@@ -198,6 +199,19 @@ class TaxReport:
     @staticmethod
     def create_report(code: str):
         return TaxReport.report_class(code)()
+
+    # The money-flow report of a jurisdiction that asks for one, None for the others
+    @staticmethod
+    def create_flow_report(code: str):
+        flow = TaxReport.jurisdictions.get(code, {}).get('flow')
+        if flow is None:
+            return None
+        return getattr(importlib.import_module(flow['module']), flow['class'])()
+
+    # True for an account in the jurisdiction's own country, whose income the authority gets reported by the bank
+    @staticmethod
+    def home_account(account, jurisdiction: str) -> bool:
+        return account.country().code() == jurisdiction
 
     def report_template(self, report_name):
         if report_name == self.summary_section[0]:
@@ -576,7 +590,7 @@ class TaxReport:
     # The form codes of a kind of row (TaxParameters.STOCK, ...) as (income, expense); none for an account of the
     # jurisdiction's own country, whose income the authority gets pre-filled
     def code(self, kind: str) -> tuple:
-        if self.account.country().code() == self.jurisdiction:
+        if self.home_account(self.account, self.jurisdiction):
             return '', ''
         codes = self.parameters.code(kind)
         return ('', '') if codes is None else codes
@@ -589,7 +603,7 @@ class TaxReport:
     # The codes of a kind of row as printed: "income / expense", or the income code alone; the section being prepared
     # states why when the account's own country leaves them out
     def code_text(self, kind: str) -> str:
-        if self.account.country().code() == self.jurisdiction:
+        if self.home_account(self.account, self.jurisdiction):
             self.add_header(self.texts['home_codes'])
         income, expense = self.code(kind)
         return f"{income} / {expense}" if expense else income

@@ -8,6 +8,7 @@ from jal.db.settings import JalSettings
 REVIEWED_THROUGH = "reviewed_through"
 TAX_TREATY = "tax_treaty"
 EU_MEMBERS = "eu_members"
+CURRENCIES = "currencies"
 
 
 # The tax parameters of one jurisdiction for one year, read from tax_reports/<code>.json. Every key but
@@ -62,6 +63,10 @@ class TaxParameters:
     # True if the country (2-letter code) is a member of the European Union in this year, as the file lists them
     def eu_member(self, country_code: str) -> bool:
         return country_code in (self.value(EU_MEMBERS) or [])
+
+    # A currency as the jurisdiction's forms name it in this year: {'code', 'name', 'multiplier'}, None if not listed
+    def currency(self, symbol: str):
+        return (self.value(CURRENCIES) or {}).get(symbol)
 
     # The base tax rate of a kind of income in this year, None if the file gives none
     def rate(self, kind: str):

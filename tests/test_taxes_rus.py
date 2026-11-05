@@ -9,11 +9,12 @@ from tests.helpers import d2t, create_assets, create_quotes, create_dividends, c
     create_actions, create_corporate_actions, create_stock_dividends, json_decimal2float, save_test_xls_report, \
     nth_operation, symbol_id_for, create_swaps, check_ndfl3_export
 from jal.constants import PredefinedAsset, PredefinedCategory, AssetLocation, SymbolId
+from jal.db.db import JalDB
 from jal.db.ledger import Ledger
 from jal.db.account import JalAccount, JalAccountCreator
-from jal.db.asset import JalAsset
+from jal.db.asset import JalAsset, JalAssetCreator
 from jal.db.operations import LedgerTransaction, CorporateAction, AssetPayment, AssetIncome
-from jal.data_export.taxes import TaxReportStop
+from jal.data_export.taxes import TaxReport, TaxReportStop
 from jal.data_export.tax_reports.russia import TaxesRussia
 from jal.data_export.tax_reports.portugal import TaxesPortugal
 from jal.data_export.taxes_flow import TaxesFlowRus
@@ -640,3 +641,22 @@ def test_missing_cbr_rate_stops_the_report(prepare_db_taxes):
     with pytest.raises(TaxReportStop) as stop:
         TaxesRussia().prepare_tax_report(2025, 1)
     assert ("USD/RUB", d2t(250604)) in stop.value.missing
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The flow report is a part of the RU report only; it prints the code the RU parameters give the account currency,
+# XXX for a currency they don't list
+def test_flow_report_registered_for_ru(prepare_db):
+    assert isinstance(TaxReport.create_flow_report('ru'), TaxesFlowRus)
+    assert TaxReport.create_flow_report('pt') is None
+
+
+def test_flow_report_currency_code(prepare_db):
+    lari = JalAssetCreator(PredefinedAsset.Money, "Georgian lari").commit()
+    lari.add_symbol('GEL', lari.id(), location_id=AssetLocation.BANK_ACCOUNT)
+    for currency_id, number in ((3, 'E1'), (lari.id(), 'G1')):
+        account = JalAccountCreator(currency_id=currency_id, number=number, name=number, investing=1,
+                                    country='de').commit()
+        create_actions([(d2t(200601), account.id(), 1, [(PredefinedCategory.Interest, Decimal('100'))])])
+    Ledger().rebuild(from_timestamp=0)
+    assert [x['currency'] for x in TaxesFlowRus().prepare_flow_report(2020)] == ["EUR (978)", "GEL (XXX)"]
