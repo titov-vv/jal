@@ -295,6 +295,7 @@ def test_a_payment_at_new_year_midnight_belongs_to_one_year_only(prepare_db_taxe
     for year, expected in [(2024, []), (2025, [midnight])]:
         report.year_begin = d2t(year % 100 * 10000 + 101)
         report.year_end = d2t((year + 1) % 100 * 10000 + 101)
+        report.period_begin, report.period_end = report.year_begin, report.year_end
         assert [x.timestamp() for x in report.dividends_list()] == expected
 
 
@@ -416,12 +417,13 @@ def test_a_trade_of_the_same_statement_is_converted_out_of_the_source_zone(fixed
 # country's - a stored reading is the user's own wall clock and has to be re-read on the clock of the jurisdiction
 # before it is printed as a date or bucketed into a year.
 
-# Gives a report the account and the year window that prepare_tax_report() would set up for it
+# Gives a report the account and the year and period windows that prepare_tax_report() would set up for it
 def _report_for(report, year: int):
     report.account = JalAccount(1)
     report.account_currency = JalAsset(report.account.currency())
     report.year_begin = d2t(year % 100 * 10000 + 101)
     report.year_end = d2t((year + 1) % 100 * 10000 + 101)
+    report.period_begin, report.period_end = report.year_begin, report.year_end
     return report
 
 

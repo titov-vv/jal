@@ -138,8 +138,10 @@ class TaxReport:
             return
         self.account = None           # Account for reporting
         self.account_currency = None  # Currency of the account for reporting
-        self.year_begin = 0
+        self.year_begin = 0           # the calendar tax year, read by every year-keyed rule
         self.year_end = 0
+        self.period_begin = 0         # the window of the events printed, inside the year
+        self.period_end = 0
         self.use_settlement = True
         self.one_currency_rate = False
         self.parameters = None
@@ -236,7 +238,8 @@ class TaxReport:
             totals[field] = sum(values) if values else None   # a figure no row has, as a base rate that's missing
         list_of_values.append(totals)
 
-    def prepare_tax_report(self, year: int, account_id: int, **kwargs) -> dict:
+    # 'period' is a half-open (begin, end) inside the year, the whole year if None
+    def prepare_tax_report(self, year: int, account_id: int, period=None, **kwargs) -> dict:
         tax_report = {}
         self.account = JalAccount(account_id)
         self.account_currency = JalAsset(self.account.currency())
@@ -244,6 +247,9 @@ class TaxReport:
         # so an operation stamped at midnight on 1 January belongs to that next year and to no other.
         self.year_begin = int(datetime.strptime(f"{year}", "%Y").replace(tzinfo=timezone.utc).timestamp())
         self.year_end = int(datetime.strptime(f"{year + 1}", "%Y").replace(tzinfo=timezone.utc).timestamp())
+        self.period_begin, self.period_end = (self.year_begin, self.year_end) if period is None else period
+        if not self.year_begin <= self.period_begin < self.period_end <= self.year_end:
+            raise ValueError(f"Tax report period {self.period_begin}-{self.period_end} is outside the year {year}")
         if 'use_settlement' in kwargs:
             self.use_settlement = kwargs['use_settlement']
         if 'use_one_currency_rate' in kwargs:
@@ -407,15 +413,15 @@ class TaxReport:
             return self.texts['rent_return']
         return None
 
-    # Every taxable or base-impacting operation of the account in the report's year that no section printed:
+    # Every taxable or base-impacting operation of the account in the report's period that no section printed:
     # returns ({reason: count} of those the jurisdiction skips, [operations] no section claimed)
     def _not_covered(self):
         skipped, uncovered = {}, []
         query = JalDB._exec("SELECT o.otype, o.id FROM ledger_sequence AS s JOIN operations AS o ON o.id=s.operation_id "
                             "WHERE s.account_id=:account AND s.timestamp>=:begin AND s.timestamp<:end "
                             "GROUP BY o.id ORDER BY MIN(s.seq_no)",
-                            [(":account", self.account.id()), (":begin", self.year_begin - ZONE_SPAN),
-                             (":end", self.year_end + ZONE_SPAN)])
+                            [(":account", self.account.id()), (":begin", self.period_begin - ZONE_SPAN),
+                             (":end", self.period_end + ZONE_SPAN)])
         while query.next():
             otype, oid = query.value(0), query.value(1)
             if (otype, oid) in self._printed:
@@ -423,7 +429,7 @@ class TaxReport:
             operation = LedgerTransaction.get_operation(otype, oid)
             if operation.account().id() != self.account.id() or operation.taxable() == TaxStatus.NotTaxable:
                 continue
-            if not self.in_year(self.operation_date(operation)):
+            if not self.in_period(self.operation_date(operation)):
                 continue
             if self.excluded(operation):
                 continue
@@ -449,7 +455,7 @@ class TaxReport:
             rows.append(self._operation_row(operation, self.texts['short_carried'].format(year=year)))
         for (oid, kind), operation in self._applied.items():   # the replay applies those of every account and year
             if kind == TaxOverride.NotTaxEvent and operation.account().id() == self.account.id() \
-                    and self.in_year(self.operation_date(operation)):
+                    and self.in_period(self.operation_date(operation)):
                 rows.append(self._operation_row(operation, self.texts['excluded'].format(self._overrides[(oid, kind)][1])))
         return rows
 
@@ -629,20 +635,20 @@ class TaxReport:
         self._applied[key] = operation
         return True
 
-    # Returns a list of dividends that should be included into the report for given year, less those the user excluded
+    # Returns a list of dividends that should be included into the report for given period, less those the user excluded
     def dividends_list(self) -> list:
         dividends = AssetPayment.get_list(self.account.id(), subtype=AssetPayment.Dividend)
         dividends += AssetIncome.get_list(self.account.id(), subtype=AssetIncome.StockDividend)
         dividends += AssetIncome.get_list(self.account.id(), subtype=AssetIncome.StockVesting)
-        dividends = [x for x in dividends if self.year_begin <= self._moment(x.timestamp()) < self.year_end]
+        dividends = [x for x in dividends if self.in_period(self._moment(x.timestamp()))]
         return [x for x in dividends if not self.excluded(x)]
 
-    # Returns operations of the given category that belong to the report's year. The database is asked for a wider
-    # window than the year, because an operation stamped just outside it may well be inside it on the report's clock;
+    # Returns operations of the given category that belong to the report's period. The database is asked for a wider
+    # window than the period, because an operation stamped just outside it may well be inside it on the report's clock;
     # what is inside is then decided on that clock alone.
     def category_operations(self, category_id: int) -> list:
-        operations = JalCategory(category_id).get_operations(self.year_begin - ZONE_SPAN, self.year_end + ZONE_SPAN)
-        return [x for x in operations if self.year_begin <= self._moment(x.timestamp()) < self.year_end]
+        operations = JalCategory(category_id).get_operations(self.period_begin - ZONE_SPAN, self.period_end + ZONE_SPAN)
+        return [x for x in operations if self.in_period(self._moment(x.timestamp()))]
 
     # The day that puts a trade into a year: its settlement, or its trade date where the source gave no settlement.
     # A jurisdiction that reads the trade date overrides this.
@@ -677,15 +683,15 @@ class TaxReport:
             return self._date(settlement)
         return self._moment(operation.timestamp(), operation.timestamp_is_day())
 
-    def in_year(self, timestamp: int) -> bool:
-        return self.year_begin <= timestamp < self.year_end
+    def in_period(self, timestamp: int) -> bool:
+        return self.period_begin <= timestamp < self.period_end
 
-    # Closed deals of the asset types in the report's year, less those the user excluded and the stock shorts reported
+    # Closed deals of the asset types in the report's period, less those the user excluded and the stock shorts reported
     # in the year of their sale (listed on "Not covered"); 'close_otypes' as in JalAccount.closed_trades_list()
     def trades_list(self, asset_type, close_otypes=None) -> list:
         trades = self.account.closed_trades_list(close_otypes=close_otypes, store=self.lots)
         trades = [x for x in trades if x.asset().type() in asset_type]
-        trades = [x for x in trades if self.in_year(self.deal_date(x))]
+        trades = [x for x in trades if self.in_period(self.deal_date(x))]
         trades = [x for x in trades if not self.excluded(x.close_operation())]
         deals = []
         for deal in trades:
@@ -699,11 +705,11 @@ class TaxReport:
             deals.append(deal)
         return deals
 
-    # Deals the replay realized at an exchange by a corporate action in the year, less those the user excluded
+    # Deals the replay realized at an exchange by a corporate action in the period, less those the user excluded
     def exchanges_list(self, asset_type) -> list:
         trades = self.account.closed_trades_list(close_otypes=(LedgerTransaction.CorporateAction,), store=self.lots,
                                                  realized=True)
-        trades = [x for x in trades if x.asset().type() in asset_type and self.in_year(self.deal_date(x))]
+        trades = [x for x in trades if x.asset().type() in asset_type and self.in_period(self.deal_date(x))]
         return [x for x in trades if not self.excluded(x.close_operation())]
 
     # The note of a realized exchange: the user's price, the user's decision, or the jurisdiction's rule
@@ -716,12 +722,12 @@ class TaxReport:
 
     SHORT_HANDLED = (PredefinedAsset.Stock,)   # asset kinds whose shorts follow the year-of-sale rule
 
-    # Slices of a short sold in the report's year and not bought back in it (later, or not yet), as
+    # Slices of a short sold in the report's period and not bought back in its year (later, or not yet), as
     # {'open': sale, 'qty', 'p_adj', 'q_adj', 'close': buy-back or None}
     def year_end_shorts(self) -> list:
         pieces = []
         for deal in self.account.closed_trades_list(store=self.lots):
-            if deal.qty() < Decimal('0') and self.in_year(self.trade_date(deal.open_operation())) \
+            if deal.qty() < Decimal('0') and self.in_period(self.trade_date(deal.open_operation())) \
                     and self.trade_date(deal.close_operation()) >= self.year_end:
                 pieces.append({'open': deal.open_operation(), 'qty': deal.qty(), 'p_adj': deal.p_adjustment(),
                                'q_adj': deal.q_adjustment(), 'close': deal.close_operation()})
@@ -729,7 +735,7 @@ class TaxReport:
             for lot in self.account.open_trades_list(JalAsset(asset_id), store=self.lots):   # a short as a positive qty
                 sale = lot.open_operation()
                 if sale.type() == LedgerTransaction.Trade and sale.qty() < Decimal('0') \
-                        and self.in_year(self.trade_date(sale)):
+                        and self.in_period(self.trade_date(sale)):
                     pieces.append({'open': sale, 'qty': -lot.open_qty(), 'p_adj': lot.p_adjustment(),
                                    'q_adj': lot.q_adjustment(), 'close': None})
         return sorted(pieces, key=lambda x: x['open'].timestamp())

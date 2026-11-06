@@ -219,7 +219,7 @@ class TaxWidget(MdiWidget):
 
         reports_xls = XLSX(self.xls_filename)
         parameters = {
-            "period": f"{reading2d(taxes.year_begin)} - {reading2d(taxes.year_end - 1)}",
+            "period": f"{reading2d(taxes.period_begin)} - {reading2d(taxes.period_end - 1)}",
             "account": f"{taxes.account.number()} ({JalAsset(taxes.account.currency()).symbol()})",
             "account_name": taxes.account.name(),
             "currency": JalAsset(taxes.account.currency()).symbol(),

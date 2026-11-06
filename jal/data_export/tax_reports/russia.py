@@ -253,7 +253,7 @@ class TaxesRussia(TaxReport):
         deals_report = []
         # Prepare list of dividends withdrawn from account (due to short trades)
         dividends_withdrawn = AssetPayment.get_list(self.account.id(), subtype=AssetPayment.Dividend)
-        dividends_withdrawn = [x for x in dividends_withdrawn if self.year_begin <= self._moment(x.timestamp(), x.timestamp_is_day()) < self.year_end]
+        dividends_withdrawn = [x for x in dividends_withdrawn if self.in_period(self._moment(x.timestamp(), x.timestamp_is_day()))]
         dividends_withdrawn = [x for x in dividends_withdrawn if x.amount() < Decimal('0') and not self.excluded(x)]
         for trade in trades_list:
             corporate_actions = trade.modified_by()
@@ -466,7 +466,7 @@ class TaxesRussia(TaxReport):
                     self.mark_printed(operation.accrued_interest_payment())
         # Second - take all bond interest payments not linked with buy/sell transactions
         interests = AssetPayment.get_list(self.account.id(), subtype=AssetPayment.BondInterest, skip_accrued=True)
-        interests = [x for x in interests if self.year_begin <= self._moment(x.timestamp(), x.timestamp_is_day()) < self.year_end]  # Only in given range
+        interests = [x for x in interests if self.in_period(self._moment(x.timestamp(), x.timestamp_is_day()))]  # Only in given range
         interests = [x for x in interests if not self.excluded(x)]
         for interest in interests:
             amount = interest.amount()
@@ -599,7 +599,7 @@ class TaxesRussia(TaxReport):
         incomes = []
         for subtype in self.CRYPTO_INCOMES:
             incomes += AssetIncome.get_list(self.account.id(), subtype=subtype)
-        incomes = [x for x in incomes if self.in_year(self._moment(x.timestamp(), x.timestamp_is_day()))]
+        incomes = [x for x in incomes if self.in_period(self._moment(x.timestamp(), x.timestamp_is_day()))]
         for income in sorted(incomes, key=lambda x: x.timestamp()):
             if self.excluded(income):
                 continue
@@ -632,7 +632,7 @@ class TaxesRussia(TaxReport):
                  (AssetPayment.AssetFee, 'fee_asset'))
         for subtype, kind in kinds:
             payments = AssetPayment.get_list(self.account.id(), subtype=subtype)
-            payments = [x for x in payments if self.in_year(self._moment(x.timestamp(), x.timestamp_is_day()))]
+            payments = [x for x in payments if self.in_period(self._moment(x.timestamp(), x.timestamp_is_day()))]
             for payment in sorted(payments, key=lambda x: x.timestamp()):
                 if self.excluded(payment):
                     continue
@@ -722,7 +722,7 @@ class TaxesRussia(TaxReport):
                 self.mark_printed(operation)
         # Process cash payments out of corporate actions
         payments = CorporateAction.get_payments(self.account)
-        payments = [x for x in payments if self.year_begin <= self._moment(x['timestamp'], x['day_only']) < self.year_end]
+        payments = [x for x in payments if self.in_period(self._moment(x['timestamp'], x['day_only']))]
         for payment in payments:
             if self.excluded_id(LedgerTransaction.CorporateAction, payment['oid']):
                 continue

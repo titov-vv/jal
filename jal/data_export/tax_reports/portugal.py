@@ -416,7 +416,7 @@ class TaxesPortugal(TaxReport):
         incomes = []
         for subtype in (AssetIncome.StakingReward, AssetIncome.Reward, AssetIncome.LendingInterest):
             incomes += AssetIncome.get_list(self.account.id(), subtype=subtype)
-        incomes = [x for x in incomes if self.in_year(self._moment(x.timestamp(), x.timestamp_is_day()))]
+        incomes = [x for x in incomes if self.in_period(self._moment(x.timestamp(), x.timestamp_is_day()))]
         for income in sorted(incomes, key=lambda x: x.timestamp()):
             if self.excluded(income):
                 continue
@@ -450,7 +450,7 @@ class TaxesPortugal(TaxReport):
                  (AssetPayment.AssetFee, 'fee_asset'))
         for subtype, kind in kinds:
             payments = AssetPayment.get_list(self.account.id(), subtype=subtype)
-            payments = [x for x in payments if self.in_year(self._moment(x.timestamp(), x.timestamp_is_day()))]
+            payments = [x for x in payments if self.in_period(self._moment(x.timestamp(), x.timestamp_is_day()))]
             for payment in sorted(payments, key=lambda x: x.timestamp()):
                 if self.excluded(payment):
                     continue
@@ -514,7 +514,7 @@ class TaxesPortugal(TaxReport):
                 self.mark_printed(operation)
         # Process cash payments out of corporate actions
         payments = CorporateAction.get_payments(self.account)
-        payments = [x for x in payments if self.year_begin <= self._moment(x['timestamp'], x['day_only']) < self.year_end]
+        payments = [x for x in payments if self.in_period(self._moment(x['timestamp'], x['day_only']))]
         for payment in payments:
             if self.excluded_id(LedgerTransaction.CorporateAction, payment['oid']):
                 continue
@@ -533,7 +533,7 @@ class TaxesPortugal(TaxReport):
             self.mark_printed_id(LedgerTransaction.CorporateAction, payment['oid'])
         # Bond coupons and the accrued interest received on a sale; that paid on a purchase is skipped by rule
         coupons = AssetPayment.get_list(self.account.id(), subtype=AssetPayment.BondInterest)
-        coupons = [x for x in coupons if self.in_year(self._moment(x.timestamp(), x.timestamp_is_day()))]
+        coupons = [x for x in coupons if self.in_period(self._moment(x.timestamp(), x.timestamp_is_day()))]
         for coupon in sorted(coupons, key=lambda x: x.timestamp()):
             if coupon.amount() <= Decimal('0') or self.excluded(coupon):
                 continue
