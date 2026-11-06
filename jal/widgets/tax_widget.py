@@ -45,6 +45,7 @@ class TaxWidget(MdiWidget):
         self.ui = Ui_TaxWidget()
         self.ui.setupUi(self)
         self._report = None    # the report being prepared, see _prepare()
+        self._derived = {}     # {jurisdiction: [periods]} each derives from the residence table for the year
 
         self._option_boxes = {'pt': self.ui.PtBox, 'ru': self.ui.RuBox}
         self.ui.Country.clear()
@@ -80,11 +81,12 @@ class TaxWidget(MdiWidget):
         self._propose_period()
 
     # The period is held inside the year and reset to the first period the jurisdiction derives from the residence
-    # table, or to the whole year; the label names every derived period
+    # table, or to the whole year
     def _propose_period(self):
         if self.country is None:
             return
-        periods = TaxReport.create_report(self.country).resident_periods(self.year) or []
+        self._derived = {x: TaxReport.create_report(x).resident_periods(self.year) or [] for x in TaxReport.jurisdictions}
+        periods = self._derived[self.country]
         begin, end = periods[0] if periods else TaxReport.year_window(self.year)
         first, last = QDate(self.year, 1, 1), QDate(self.year, 12, 31)
         for edit, moment in ((self.ui.PeriodFrom, begin), (self.ui.PeriodTo, end - 86400)):
@@ -92,15 +94,28 @@ class TaxWidget(MdiWidget):
             edit.setDateRange(first, last)
             edit.setDate(self._day(moment))
             edit.blockSignals(False)
-        text = ", ".join(f"{reading2d(x)} - {reading2d(y - 1)}" for x, y in periods)
-        self.ui.ResidenceLbl.setText(self.tr("Resident by the residence table:") + "\n" + text if periods else '')
-        self.ui.ResidenceLbl.setVisible(bool(periods))
         self.OnPeriodChange()
 
-    # Keeps From <= To and loads the accounts with a tax event in the period, keeping the one selected
+    # Names the periods the jurisdiction derives, then those of any other jurisdiction that overlap the chosen period
+    def _show_residence(self):
+        periods = lambda spans: ", ".join(f"{reading2d(x)} - {reading2d(y - 1)}" for x, y in spans)
+        lines = []
+        if self._derived.get(self.country):
+            lines += [self.tr("Resident by the residence table:"), periods(self._derived[self.country])]
+        for code, spans in self._derived.items():
+            overlap = [(x, y) for x, y in spans if x < self.period_end and self.period_begin < y]
+            if code != self.country and overlap:
+                lines.append(self.tr("Also resident in {country}: ").format(
+                    country=TaxReport.jurisdictions[code]['name']) + periods(overlap))
+        self.ui.ResidenceLbl.setText("\n".join(lines))
+        self.ui.ResidenceLbl.setVisible(bool(lines))
+
+    # Keeps From <= To, names the residences and loads the accounts with a tax event in the period, keeping the one
+    # selected
     def OnPeriodChange(self, _date=None):
         self.ui.PeriodTo.setMinimumDate(self.ui.PeriodFrom.date())
         self.ui.PeriodFrom.setMaximumDate(self.ui.PeriodTo.date())
+        self._show_residence()
         selected = self.ui.Account.currentData()
         self.ui.Account.clear()
         for account in JalAccount.get_taxable_accounts(self.period_begin, self.period_end):

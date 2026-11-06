@@ -123,31 +123,38 @@ def test_pt_resident_by_date(prepare_db_taxes, rows, year, periods):
 
 
 # The dialog proposes the first period the jurisdiction derives and names all of them; the user's edit stays until the
-# country or the year changes; with nothing derived it offers the whole year and names nothing
+# country or the year changes; with nothing derived it offers the whole year. Another jurisdiction's periods that
+# overlap the chosen one are named too.
 def test_dialog_proposes_the_resident_period(prepare_db_taxes):
     _residence([(200101, 'ru'), (250301, 'pt'), (250601, 'ru'), (250911, 'pt')])   # RU 161 days in 2025
     JalIcon()
     parent = QWidget()
     widget = TaxWidget(parent)
     dates = lambda: (widget.ui.PeriodFrom.date(), widget.ui.PeriodTo.date())
+    label = lambda: widget.ui.ResidenceLbl.text().split("\n")
+    span = lambda x, y: f"{reading2d(d2t(x))} - {reading2d(d2t(y))}"
     widget.ui.Year.setValue(2025)
     widget.ui.Country.setCurrentIndex(widget.ui.Country.findData('pt'))
     assert dates() == (QDate(2025, 3, 1), QDate(2025, 5, 31))
-    assert widget.ui.ResidenceLbl.text().endswith(f"{reading2d(d2t(250301))} - {reading2d(d2t(250531))}, "
-                                                  f"{reading2d(d2t(250911))} - {reading2d(d2t(251231))}")
+    assert label()[1:] == [f"{span(250301, 250531)}, {span(250911, 251231)}"]
     widget.ui.PeriodFrom.setDate(QDate(2025, 1, 1))
     widget.ui.PeriodTo.setDate(QDate(2025, 12, 31))
     assert dates() == (QDate(2025, 1, 1), QDate(2025, 12, 31))   # the user's choice
 
     widget.ui.Country.setCurrentIndex(widget.ui.Country.findData('ru'))
-    assert dates() == (QDate(2025, 1, 1), QDate(2025, 12, 31))
-    assert widget.ui.ResidenceLbl.text() == '' and widget.ui.ResidenceLbl.isHidden()
+    assert dates() == (QDate(2025, 1, 1), QDate(2025, 12, 31))   # nothing derived
+    assert label() == [f"Also resident in Portugal: {span(250301, 250531)}, {span(250911, 251231)}"]
+    widget.ui.PeriodFrom.setDate(QDate(2025, 6, 1))
+    widget.ui.PeriodTo.setDate(QDate(2025, 9, 10))
+    assert widget.ui.ResidenceLbl.isHidden()                     # no overlap left in the period
+    widget.ui.PeriodTo.setDate(QDate(2025, 9, 11))
+    assert label() == [f"Also resident in Portugal: {span(250911, 251231)}"]
+
     widget.ui.Year.setValue(2024)
     assert dates() == (QDate(2024, 1, 1), QDate(2024, 12, 31))
-    assert widget.ui.ResidenceLbl.text().endswith(f"{reading2d(d2t(240101))} - {reading2d(d2t(241231))}")
-
+    assert label()[1:] == [span(240101, 241231)]
     widget.ui.Country.setCurrentIndex(widget.ui.Country.findData('pt'))
     assert dates() == (QDate(2024, 1, 1), QDate(2024, 12, 31))   # nothing derived
-    assert widget.ui.ResidenceLbl.text() == ''
+    assert label() == [f"Also resident in Россия: {span(240101, 241231)}"]
     widget.ui.Year.setValue(2025)
     assert dates() == (QDate(2025, 3, 1), QDate(2025, 5, 31))
