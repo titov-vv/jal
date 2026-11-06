@@ -70,3 +70,17 @@ class JalResidence(JalDB):
     @classmethod
     def timezone(cls, timestamp: int = None) -> str:
         return cls._at(timestamp)[2]
+
+    # The timeline as (since, until, country id) spans of one country each, with the carried-forward country; rows
+    # that change only the currency or the clock merge into the span they continue; 'until' is None for the last one
+    @classmethod
+    def spans(cls) -> list:
+        dates, rows = cls._timeline()
+        spans = []
+        for since, (_currency, country, _zone) in zip(dates, rows):
+            if spans and spans[-1][2] == country:
+                continue
+            if spans:
+                spans[-1] = (spans[-1][0], since, spans[-1][2])
+            spans.append((since, None, country))
+        return spans

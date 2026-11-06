@@ -15,6 +15,8 @@ from jal.db.basis_policy import Basis, Clock, Treatment, BasisPolicy, JalPolicy
 from jal.db.symbol import JalSymbol
 from jal.db.operations import LedgerTransaction, LedgerError, TaxStatus, AssetPayment, AssetIncome, Transfer
 from jal.db.clock import ZONE_SPAN, wall_clock_reading
+from jal.db.country import JalCountry
+from jal.db.residence import JalResidence
 from jal.db.tax_override import JalTaxOverride, TaxOverride
 from jal.data_export.tax_parameters import TaxParameters, TAX_TREATY
 
@@ -243,10 +245,7 @@ class TaxReport:
         tax_report = {}
         self.account = JalAccount(account_id)
         self.account_currency = JalAsset(self.account.currency())
-        # The year is a half-open window [year_begin, year_end): 'year_end' is the FIRST second of the next year,
-        # so an operation stamped at midnight on 1 January belongs to that next year and to no other.
-        self.year_begin = int(datetime.strptime(f"{year}", "%Y").replace(tzinfo=timezone.utc).timestamp())
-        self.year_end = int(datetime.strptime(f"{year + 1}", "%Y").replace(tzinfo=timezone.utc).timestamp())
+        self.year_begin, self.year_end = self.year_window(year)
         self.period_begin, self.period_end = (self.year_begin, self.year_end) if period is None else period
         if not self.year_begin <= self.period_begin < self.period_end <= self.year_end:
             raise ValueError(f"Tax report period {self.period_begin}-{self.period_end} is outside the year {year}")
@@ -682,6 +681,29 @@ class TaxReport:
         if settlement:
             return self._date(settlement)
         return self._moment(operation.timestamp(), operation.timestamp_is_day())
+
+    # The year as a half-open window [begin, end): 'end' is the FIRST second of the next year, so an operation stamped
+    # at midnight on 1 January belongs to that next year and to no other.
+    @staticmethod
+    def year_window(year: int) -> tuple:
+        return (int(datetime(year, 1, 1, tzinfo=timezone.utc).timestamp()),
+                int(datetime(year + 1, 1, 1, tzinfo=timezone.utc).timestamp()))
+
+    # The half-open spans of the year in which the residence table puts the user in the jurisdiction's country
+    def resident_spans(self, year: int) -> list:
+        country_id = JalCountry(data={'code': self.jurisdiction}, search=True).id()
+        begin, end = self.year_window(year)
+        spans = []
+        for since, until, country in JalResidence.spans():
+            since, until = max(since, begin), end if until is None else min(until, end)
+            if country == country_id and since < until:
+                spans.append((since, until))
+        return spans
+
+    # The half-open periods of the year the jurisdiction holds the user resident in, by its own rule from the
+    # residence table; None if the jurisdiction derives none
+    def resident_periods(self, year: int):
+        return None
 
     def in_period(self, timestamp: int) -> bool:
         return self.period_begin <= timestamp < self.period_end

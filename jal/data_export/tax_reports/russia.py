@@ -84,6 +84,8 @@ class TaxesRussia(TaxReport):
         'value': "Стоимость на дату получения",
         'base_total': "Итого по базе",
         'outside': "Вне налоговых баз - для сведения, без итога",
+        'residence_rule': "Налоговое резидентство - по таблице проживания JAL вместо фактического пребывания: 183 дня и "
+                          "более в календарном году дают весь год, меньше - ни одного дня (ст. 207 п. 2 НК РФ)",
         'rate_sum': "Сумма баз по ставке 13/15 % (ст. 224 п. 1.1 НК РФ): ценные бумаги, ПФИ, дивиденды, криптовалюта и "
                     "проценты российских плательщиков; убыток - со своим знаком; не налог",
         'parameters_unreviewed': "Внимание: налоговые параметры (соглашения, базовые ставки) проверены по {reviewed} год; "
@@ -517,6 +519,13 @@ class TaxesRussia(TaxReport):
 
     def basis_policy(self):
         return RuPolicy(self.missing_quote)
+
+    RESIDENCE_DAYS = 183   # НК РФ ст. 207 п. 2
+
+    # The whole year with 183 days or more in Russia by the residence table, nothing with fewer
+    def resident_periods(self, year: int):
+        days = sum(until - since for since, until in self.resident_spans(year)) // 86400
+        return [self.year_window(year)] if days >= self.RESIDENCE_DAYS else []
 
     # Every crypto deal: sold for money, or disposed of by a swap or a wrapping - each of them a disposal in RU
     def prepare_crypto(self):

@@ -138,3 +138,17 @@ def test_a_timezone_is_picked_from_the_ones_the_system_knows(parent):
     delegate.setModelData(editor, model, index)
     assert model.data(index) == ''
     assert model.submitAll(), model.lastError().databaseText()
+
+
+# Spans follow the country only: a row that leaves it blank, or changes just the currency, continues the span before it
+def test_spans_follow_the_country(prepare_db):
+    _timeline([(946684800, 1, 1, 'Europe/Moscow'), (1500000000, 2, 0, ''), (1662854400, 3, 5, 'Europe/Lisbon'),
+               (1700000000, 3, 5, ''), (1750000000, 3, 1, 'Europe/Moscow')])
+
+    assert JalResidence.spans() == [(946684800, 1662854400, 1), (1662854400, 1750000000, 5), (1750000000, None, 1)]
+
+
+def test_no_rows_no_spans(prepare_db):
+    _timeline([])
+
+    assert JalResidence.spans() == []

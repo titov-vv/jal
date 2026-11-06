@@ -77,6 +77,8 @@ class TaxesPortugal(TaxReport):
         'value': "Value at receipt (information)",
         'base_total': "Total of the category",
         'outside': "Outside both categories - for information, not totalled",
+        'residence_rule': "Residence by JAL's residence table: a row's date is the first day of presence, residence "
+                          "in part of the year counts from that day (CIRS art. 16.º)",
         'parameters_unreviewed': "Warning: the tax parameters (treaties, base rates) were last reviewed for {reviewed}; "
                                  "{year} uses the latest values known",
         'parameters_missing': "Warning: there are no tax parameters for {year}; no tax treaty is assumed",
@@ -160,6 +162,10 @@ class TaxesPortugal(TaxReport):
 
     def basis_policy(self):
         return PtPolicy(self.missing_quote, self.missing_country)
+
+    # The days of the year in Portugal by the residence table, as one span per stay
+    def resident_periods(self, year: int):
+        return self.resident_spans(year)
 
     def __init__(self):
         super().__init__()

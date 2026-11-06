@@ -6,8 +6,10 @@ from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from tests.helpers import d2t, dt2t, create_assets, create_dividends
 from tests.test_taxes_pt import create_pt_scenario
 from tests.test_tax_replay import create_ru_scenario
+from tests.test_residence import _timeline
 from jal.constants import PredefinedAsset
 from jal.db.ledger import Ledger
+from jal.db.country import JalCountry
 from jal.data_export.taxes import TaxReport, TaxReportCancelled
 from jal.data_export.tax_reports.russia import TaxesRussia
 from jal.data_export.tax_reports.portugal import TaxesPortugal
@@ -78,3 +80,42 @@ def test_dialog_period_follows_the_year(prepare_db_taxes, monkeypatch):
     widget.ui.Year.setValue(2024)
     assert (widget.ui.PeriodFrom.date(), widget.ui.PeriodTo.date()) == (QDate(2024, 1, 1), QDate(2024, 12, 31))
     assert widget.account is None
+
+
+# Residence rows as (YYMMDD since, country code), currency 1, no zone; a None code leaves the country blank
+def _residence(rows):
+    _timeline([(d2t(since), 1, JalCountry(data={'code': code}, search=True).id() if code else 0, '')
+               for since, code in rows])
+
+
+# RU knows no part of a year: 183 days of it or more give the whole year, fewer give nothing
+@pytest.mark.parametrize("rows, year, resident", [
+    ([(240101, 'ru')], 2025, True),
+    ([(250702, 'ru')], 2025, True),                   # 2 Jul - 31 Dec 2025: 183 days
+    ([(250703, 'ru')], 2025, False),                  # 182 days
+    ([(200101, 'ru'), (250702, 'pt')], 2025, False),  # 1 Jan - 1 Jul 2025: 182 days
+    ([(200101, 'ru'), (240702, 'pt')], 2024, True),   # 1 Jan - 1 Jul 2024: 183 days, 29 February counted
+    ([(200101, 'ru'), (250301, None), (250801, 'pt')], 2025, True),   # a blank row carries Russia on to 31 July
+    ([(200101, 'pt'), (250301, 'ru'), (250601, 'pt'), (250801, 'ru')], 2025, True),   # 92 + 153 days
+    ([(250101, 'pt')], 2025, False)])
+def test_ru_resident_by_183_days(prepare_db_taxes, rows, year, resident):
+    _residence(rows)
+    taxes = TaxesRussia()
+
+    assert taxes.resident_periods(year) == ([TaxReport.year_window(year)] if resident else [])
+
+
+# PT splits a year by date: one period per stay, each from the first day of presence
+@pytest.mark.parametrize("rows, year, periods", [
+    ([(200101, 'pt')], 2025, [(250101, 260101)]),
+    ([(200101, 'ru'), (250911, 'pt')], 2025, [(250911, 260101)]),                    # entry
+    ([(200101, 'pt'), (250415, 'ru')], 2025, [(250101, 250415)]),                    # exit
+    ([(200101, 'pt'), (250301, 'ru'), (250601, 'pt')], 2025, [(250101, 250301), (250601, 260101)]),   # and return
+    ([(200101, 'ru'), (250301, 'pt'), (250601, None)], 2025, [(250301, 260101)]),    # a blank row carries Portugal on
+    ([(200101, 'ru'), (240229, 'pt')], 2024, [(240229, 250101)]),                    # leap day
+    ([(200101, 'ru')], 2025, []),
+    ([], 2025, [])])
+def test_pt_resident_by_date(prepare_db_taxes, rows, year, periods):
+    _residence(rows)
+
+    assert TaxesPortugal().resident_periods(year) == [(d2t(x), d2t(y)) for x, y in periods]
