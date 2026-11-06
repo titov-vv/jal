@@ -3,13 +3,16 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 from decimal import Decimal
 
 from tests.fixtures import project_root, data_path, prepare_db
-from tests.helpers import d2t, create_dividends, create_trades, symbol_id_for
-from tests.test_account_holdings import wallet, WALLET, LINK
+from tests.helpers import d2t, create_dividends, create_trades, create_transfers, symbol_id_for
+from tests.test_account_holdings import wallet, WALLET, LINK, USD
+from jal.constants import PredefinedAccountType, AssetLocation
+from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.ledger import Ledger
 from jal.db.operations import LedgerTransaction, AssetIncome
 from jal.reports.account_balance import AccountBalanceHistoryReportWindow
 from jal.reports.assets_payments import AssetsPaymentsReportWindow
 from jal.reports.deals import DealsReportWindow
+from jal.reports.profit_loss import ProfitLossReportWindow
 from jal.reports.reports import Reports
 
 BEGIN = d2t(210101)
@@ -79,3 +82,16 @@ def test_balance_history_chart_is_emptied_with_the_account(wallet):
     window.ui.ReportAccountEdit.selection_done(WALLET)    # and it draws again
     assert len(chart.series()) == 1
     assert len(chart.axes()) == 2
+
+
+def test_pl_in_out_counts_money_not_coins_moved(wallet):
+    other = JalAccountCreator(currency_id=USD, number='', name='Other wallet', investing=1, organization=1, precision=18,
+                              account_type=PredefinedAccountType.Wallet, address='0x' + '3' * 40,
+                              chain=AssetLocation.ETH_BLOCKCHAIN).commit()
+    create_transfers([(d2t(210201), WALLET, Decimal('500'), other.id(), Decimal('500'), None),
+                      (d2t(210202), WALLET, Decimal('40'), other.id(), Decimal('0'), LINK)])
+    Ledger().rebuild(from_timestamp=0)
+    window = ProfitLossReportWindow(Reports(None, None))
+    model = window.pl_model
+    in_out = model.data4period(d2t(210201), d2t(210228), JalAccount(WALLET))['transfers']
+    assert in_out == Decimal('-500')            # the 40 LINK sent are not 40 dollars

@@ -524,10 +524,15 @@ class JalAccount(JalDB):
             total += self._read_record(query, cast=[Decimal])
         return total
 
-    def get_book_turnover(self, book, begin, end) -> Decimal:
-        return self._sum_column("SELECT amount FROM ledger WHERE account_id=:account_id AND book_account=:book "
-                                "AND timestamp>=:begin AND timestamp<=:end AND amount IS NOT NULL",
-                                [(":account_id", self._id), (":book", book), (":begin", begin), (":end", end)])
+    # Sum of book's amounts over the period; 'asset_id' keeps rows of that asset only, as amounts of different assets don't add up
+    def get_book_turnover(self, book, begin, end, asset_id: int = 0) -> Decimal:
+        query = "SELECT amount FROM ledger WHERE account_id=:account_id AND book_account=:book " \
+                "AND timestamp>=:begin AND timestamp<=:end AND amount IS NOT NULL"
+        params = [(":account_id", self._id), (":book", book), (":begin", begin), (":end", end)]
+        if asset_id:
+            query += " AND asset_id=:asset_id"
+            params.append((":asset_id", asset_id))
+        return self._sum_column(query, params)
 
     def get_category_turnover(self, category_id, begin, end) -> Decimal:
         return self._sum_column("SELECT amount FROM ledger WHERE account_id=:account_id AND category_id=:category "

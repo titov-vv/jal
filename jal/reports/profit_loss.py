@@ -83,7 +83,7 @@ class ProfitLossModel(QAbstractTableModel):
             asset_value += asset_data['amount'] * asset.quote(end, account.currency())[1]
         data = {
             'money': account.get_asset_amount(end, account.currency()),
-            'transfers': -account.get_book_turnover(BookAccount.Transfers, begin, end),
+            'transfers': -account.get_book_turnover(BookAccount.Transfers, begin, end, account.currency()),
             'dividends': -account.get_category_turnover(PredefinedCategory.Dividends, begin, end),
             'interest': -account.get_category_turnover(PredefinedCategory.Interest, begin, end),
             'fees': -account.get_category_turnover(PredefinedCategory.Fees, begin, end),
