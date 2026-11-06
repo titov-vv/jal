@@ -1260,45 +1260,50 @@ Do you want to delete the account anyway?</source>
 <context>
     <name>AssetsPaymentsModel</name>
     <message>
-        <location filename="../reports/assets_payments.py" line="23"/>
+        <location filename="../reports/assets_payments.py" line="25"/>
         <source>Date</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="23"/>
+        <location filename="../reports/assets_payments.py" line="25"/>
         <source>Symbol</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="23"/>
+        <location filename="../reports/assets_payments.py" line="25"/>
         <source>Asset</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="23"/>
+        <location filename="../reports/assets_payments.py" line="25"/>
         <source>Type</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="24"/>
+        <location filename="../reports/assets_payments.py" line="26"/>
         <source>Amount</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="24"/>
+        <location filename="../reports/assets_payments.py" line="26"/>
         <source>Tax</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="24"/>
+        <location filename="../reports/assets_payments.py" line="26"/>
         <source>Note</source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="../reports/assets_payments.py" line="78"/>
+        <source>Total of payments in {}:</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>AssetsPaymentsReport</name>
     <message>
-        <location filename="../reports/assets_payments.py" line="127"/>
+        <location filename="../reports/assets_payments.py" line="134"/>
         <source>Assets&apos; pay&amp;ments</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1324,7 +1329,7 @@ Do you want to delete the account anyway?</source>
 <context>
     <name>AssetsPaymentsReportWindow</name>
     <message>
-        <location filename="../reports/assets_payments.py" line="139"/>
+        <location filename="../reports/assets_payments.py" line="146"/>
         <source>Assets&apos; payments</source>
         <translation type="unfinished"></translation>
     </message>
@@ -4756,42 +4761,42 @@ Application will be terminated now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="617"/>
+        <location filename="../db/account.py" line="622"/>
         <source>The account is closed already</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="620"/>
+        <location filename="../db/account.py" line="625"/>
         <source>The account has operations at or after the closure date</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="622"/>
+        <location filename="../db/account.py" line="627"/>
         <source>The ledger isn&apos;t up to date, rebuild it first</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="625"/>
+        <location filename="../db/account.py" line="630"/>
         <source>The account has a debt: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="629"/>
+        <location filename="../db/account.py" line="634"/>
         <source>The account holds money in another currency: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="631"/>
+        <location filename="../db/account.py" line="636"/>
         <source>The account has a negative balance: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="639"/>
+        <location filename="../db/account.py" line="644"/>
         <source>The account has a short position: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="646"/>
+        <location filename="../db/account.py" line="651"/>
         <source>The account is still owed: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -8199,22 +8204,22 @@ Unchecked: it is acquired on the date of this corporate action.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="89"/>
+        <location filename="../data_export/ru_ndfl3.py" line="97"/>
         <source>Account country is not set, dividend isn&apos;t exported into 3-NDFL </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="96"/>
+        <location filename="../data_export/ru_ndfl3.py" line="104"/>
         <source>Country is not set for asset, dividend isn&apos;t exported into 3-NDFL </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="262"/>
+        <location filename="../data_export/ru_ndfl3.py" line="270"/>
         <source>Failed to read de5 file: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="264"/>
+        <location filename="../data_export/ru_ndfl3.py" line="272"/>
         <source>Unsupported de5 file format: </source>
         <translation type="unfinished"></translation>
     </message>

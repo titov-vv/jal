@@ -1261,45 +1261,50 @@ Do you want to delete the account anyway?</source>
 <context>
     <name>AssetsPaymentsModel</name>
     <message>
-        <location filename="../reports/assets_payments.py" line="23"/>
+        <location filename="../reports/assets_payments.py" line="25"/>
         <source>Date</source>
         <translation>Дата</translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="23"/>
+        <location filename="../reports/assets_payments.py" line="25"/>
         <source>Symbol</source>
         <translation>Символ</translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="23"/>
+        <location filename="../reports/assets_payments.py" line="25"/>
         <source>Asset</source>
         <translation>Актив</translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="23"/>
+        <location filename="../reports/assets_payments.py" line="25"/>
         <source>Type</source>
         <translation>Тип</translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="24"/>
+        <location filename="../reports/assets_payments.py" line="26"/>
         <source>Amount</source>
         <translation>Сумма</translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="24"/>
+        <location filename="../reports/assets_payments.py" line="26"/>
         <source>Tax</source>
         <translation>Налог</translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="24"/>
+        <location filename="../reports/assets_payments.py" line="26"/>
         <source>Note</source>
         <translation>Описание</translation>
+    </message>
+    <message>
+        <location filename="../reports/assets_payments.py" line="78"/>
+        <source>Total of payments in {}:</source>
+        <translation>Итого выплат в {}:</translation>
     </message>
 </context>
 <context>
     <name>AssetsPaymentsReport</name>
     <message>
-        <location filename="../reports/assets_payments.py" line="127"/>
+        <location filename="../reports/assets_payments.py" line="134"/>
         <source>Assets&apos; pay&amp;ments</source>
         <translation>П&amp;латежи по активам</translation>
     </message>
@@ -1325,7 +1330,7 @@ Do you want to delete the account anyway?</source>
 <context>
     <name>AssetsPaymentsReportWindow</name>
     <message>
-        <location filename="../reports/assets_payments.py" line="139"/>
+        <location filename="../reports/assets_payments.py" line="146"/>
         <source>Assets&apos; payments</source>
         <translation>Платежи по активам</translation>
     </message>
@@ -4762,42 +4767,42 @@ Application will be terminated now</source>
         <translation>Невозможно добавить идентификатор для пустого символа: </translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="617"/>
+        <location filename="../db/account.py" line="622"/>
         <source>The account is closed already</source>
         <translation>Счет уже закрыт</translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="620"/>
+        <location filename="../db/account.py" line="625"/>
         <source>The account has operations at or after the closure date</source>
         <translation>По счету есть операции в дату закрытия или позже</translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="622"/>
+        <location filename="../db/account.py" line="627"/>
         <source>The ledger isn&apos;t up to date, rebuild it first</source>
         <translation>Итоги не актуальны, сначала пересчитайте их</translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="625"/>
+        <location filename="../db/account.py" line="630"/>
         <source>The account has a debt: </source>
         <translation>На счете есть долг: </translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="629"/>
+        <location filename="../db/account.py" line="634"/>
         <source>The account holds money in another currency: </source>
         <translation>На счете есть деньги в другой валюте: </translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="631"/>
+        <location filename="../db/account.py" line="636"/>
         <source>The account has a negative balance: </source>
         <translation>На счете отрицательный остаток: </translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="639"/>
+        <location filename="../db/account.py" line="644"/>
         <source>The account has a short position: </source>
         <translation>На счете есть короткая позиция: </translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="646"/>
+        <location filename="../db/account.py" line="651"/>
         <source>The account is still owed: </source>
         <translation>Счету еще причитается: </translation>
     </message>
@@ -8219,22 +8224,22 @@ Unchecked: it is acquired on the date of this corporate action.</source>
         <translation>Нет кода 3-НДФЛ для этого вида дохода: </translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="89"/>
+        <location filename="../data_export/ru_ndfl3.py" line="97"/>
         <source>Account country is not set, dividend isn&apos;t exported into 3-NDFL </source>
         <translation>Не указана страна счёта, дивиденд не будет экспортирован в 3-НДФЛ.</translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="96"/>
+        <location filename="../data_export/ru_ndfl3.py" line="104"/>
         <source>Country is not set for asset, dividend isn&apos;t exported into 3-NDFL </source>
         <translation>Страна не указана для ЦБ, дивиденд не экспортирован в 3-НДФЛ </translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="262"/>
+        <location filename="../data_export/ru_ndfl3.py" line="270"/>
         <source>Failed to read de5 file: </source>
         <translation>Ошибка чтения de5-файла: </translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="264"/>
+        <location filename="../data_export/ru_ndfl3.py" line="272"/>
         <source>Unsupported de5 file format: </source>
         <translation>Неподдерживаемый формат de5-файла: </translation>
     </message>
