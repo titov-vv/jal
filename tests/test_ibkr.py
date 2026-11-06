@@ -866,7 +866,7 @@ def test_ibkr_split_quantity_is_exact(ratio, delta, held, result):
 # ----------------------------------------------------------------------------------------------------------------------
 # A reversed dividend is dropped together with its reversal. The match is exact first, then ignoring the description,
 # then ignoring the report date; a reversal that matches nothing stops the import
-def test_ibkr_dividend_reversal_is_matched_in_three_ways():
+def test_ibkr_dividend_reversal_is_matched_in_three_ways(prepare_db):
     ibkr = StatementIBKR()
     paid = lambda symbol, description, reported: {
         'type': 'Dividends', 'account': 1, 'symbol': symbol, 'currency': 1, 'timestamp': 1720210800,
