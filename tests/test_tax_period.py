@@ -295,8 +295,9 @@ def test_ndfl3_of_two_accounts(prepare_db_taxes, tmp_path, broker_as_income):
     line = lambda x: json.dumps(x, sort_keys=True, ensure_ascii=False)
     assert sorted(map(line, combined[FOREIGN_SECTION])) == sorted(map(line, merged[FOREIGN_SECTION]))
     assert {(x['CountryCode2'], x['CurrencyCode']) for x in combined[FOREIGN_SECTION]} == {('840', '840'), ('276', '978')}
-    assert {k: v for k, v in combined.items() if k not in (FOREIGN_SECTION, 'CurrencyQuantity')} == \
-           {k: v for k, v in merged.items() if k not in (FOREIGN_SECTION, 'CurrencyQuantity')}
+    assert {k: v for k, v in combined.items() if k != FOREIGN_SECTION} == \
+           {k: v for k, v in merged.items() if k != FOREIGN_SECTION}
+    assert combined['CurrencyQuantity'] == len(combined[FOREIGN_SECTION]) > 0
 
 
 def test_modelo3_of_two_accounts(prepare_db_taxes):

@@ -78,8 +78,16 @@ class Ru_NDFL3:
 
     # Save tax form in file format of russian tax software "Декларация 2.0" with given filename
     def save(self, filename):
+        self._set_quantities(self._tax_form)
         with open(filename, 'w', encoding='utf-8') as f:
             json.dump(self._tax_form, f, indent=2, ensure_ascii=False)
+
+    # The counts "Декларация 2.0" reads beside its two lists
+    @staticmethod
+    def _set_quantities(form: dict):
+        form['CurrencyQuantity'] = len(form.get(FOREIGN_SECTION, []))
+        if isinstance(form.get('SourseInfoList'), list):
+            form['SourseInfoQuantity'] = len(form['SourseInfoList'])
 
     def append_dividend(self, dividend):
         if self._broker_as_income:
@@ -276,9 +284,7 @@ class Ru_NDFL3:
                 continue
             merged[key] = deepcopy(max(files_data, key=lambda item: Ru_NDFL3._de5_completeness(item.get(key)) ).get(key))
 
-        merged['CurrencyQuantity'] = len(merged.get('CurrencyIncomeList', []))
-        if isinstance(merged.get('SourseInfoList'), list):
-            merged['SourseInfoQuantity'] = len(merged['SourseInfoList'])
+        Ru_NDFL3._set_quantities(merged)
         return merged
 
     @staticmethod
