@@ -7,6 +7,8 @@ from jal.constants import Setup
 from jal.reports.reports import Reports
 from jal.db.operations import AssetPayment, AssetIncome
 from jal.db.helpers import localize_decimal
+from jal.db.account import JalAccount
+from jal.db.asset import JalAsset
 from jal.db.common_models import AccountListModel
 from jal.ui.reports.ui_assets_payments_report import Ui_AssetsPaymentsReportWidget
 from jal.widgets.delegates import FloatDelegate
@@ -29,6 +31,7 @@ class AssetsPaymentsModel(QAbstractTableModel):
         self._float_delegate = None
         self._total = Decimal('0')
         self._total_tax = Decimal('0')
+        self._currency = ''
 
     def rowCount(self, parent=None):
         return len(self._data)
@@ -71,6 +74,8 @@ class AssetsPaymentsModel(QAbstractTableModel):
 
     def footerData(self, section: int, role=Qt.DisplayRole):
         if role == Qt.DisplayRole:
+            if section == 3 and self._currency:
+                return self.tr("Total of payments in {}:").format(self._currency)
             if section == 4:
                 return localize_decimal(self._total, precision=2)
             if section == 5:
@@ -106,8 +111,10 @@ class AssetsPaymentsModel(QAbstractTableModel):
         dividends = AssetPayment.get_list(self._account_id) + AssetIncome.get_list(self._account_id)
         dividends.sort(key=lambda x: x.timestamp())
         self._data = [x for x in dividends if self._begin <= x.timestamp() <= self._end]
-        self._total = sum([x.amount() for x in self._data])
-        self._total_tax = sum([x.tax() for x in self._data])
+        # An asset income's amount is a quantity of that asset, so only payments in money are totalled
+        self._total = sum([x.amount() for x in self._data if isinstance(x, AssetPayment)], Decimal('0'))
+        self._total_tax = sum([x.tax() for x in self._data], Decimal('0'))
+        self._currency = JalAsset(JalAccount(self._account_id).currency()).symbol() if self._account_id else ''
         self.endResetModel()
 
     def configureView(self):

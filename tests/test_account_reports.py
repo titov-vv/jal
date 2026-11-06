@@ -3,9 +3,10 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 from decimal import Decimal
 
 from tests.fixtures import project_root, data_path, prepare_db
-from tests.helpers import d2t, create_dividends, create_trades
+from tests.helpers import d2t, create_dividends, create_trades, symbol_id_for
 from tests.test_account_holdings import wallet, WALLET, LINK
 from jal.db.ledger import Ledger
+from jal.db.operations import LedgerTransaction, AssetIncome
 from jal.reports.account_balance import AccountBalanceHistoryReportWindow
 from jal.reports.assets_payments import AssetsPaymentsReportWindow
 from jal.reports.deals import DealsReportWindow
@@ -38,6 +39,21 @@ def test_payments_follow_the_chosen_account(wallet):
     assert window.payments_model.rowCount() == 1
     assert window.payments_model._total == Decimal('7')
     assert window.payments_model._total_tax == Decimal('1')
+
+
+def test_payments_total_leaves_out_assets_received(wallet):
+    create_dividends([(d2t(210210), WALLET, LINK, Decimal('7'), Decimal('1'), 'dividend')])
+    LedgerTransaction.create_new(LedgerTransaction.AssetIncome, {
+        'timestamp': d2t(210211), 'type': AssetIncome.StakingReward, 'account_id': WALLET,
+        'symbol_id': symbol_id_for(LINK), 'amount': '3', 'tax': '0', 'number': '', 'note': 'reward'})
+    window = AssetsPaymentsReportWindow(Reports(None, None))
+    window.ui.ReportRange.setRange(BEGIN, END)
+    window.ui.ReportAccountEdit.selection_done(WALLET)
+    model = window.payments_model
+    assert model.rowCount() == 2
+    assert model._total == Decimal('7')         # 3 LINK are not 3 dollars
+    assert model._total_tax == Decimal('1')
+    assert model.footerData(3) == "Total of payments in USD:"
 
 
 def test_balance_history_opens_on_the_account_it_was_asked_for(wallet):
