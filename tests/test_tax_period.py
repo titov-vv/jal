@@ -1,7 +1,9 @@
+import json
 import openpyxl
 import pytest
+from copy import deepcopy
 from PySide6.QtCore import QDate, Qt
-from PySide6.QtWidgets import QWidget, QMessageBox
+from PySide6.QtWidgets import QWidget
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from tests.helpers import d2t, dt2t, create_assets, create_dividends, create_quotes, create_trades, create_actions
@@ -15,6 +17,8 @@ from jal.db.ledger import Ledger
 from jal.db.country import JalCountry
 from jal.data_export.taxes import TaxReport, TaxReportCancelled
 from jal.data_export.xlsx import XLSX
+from jal.data_export.ru_ndfl3 import Ru_NDFL3, FOREIGN_SECTION
+from jal.data_export.irs_modelo3 import IRS_Modelo3
 from jal.data_export.tax_reports.russia import TaxesRussia
 from jal.data_export.tax_reports.portugal import TaxesPortugal
 from jal.widgets.icons import JalIcon
@@ -166,12 +170,12 @@ def test_dialog_proposes_the_resident_period(prepare_db_taxes):
 
 # ----------------------------------------------------------------------------------------------------------------------
 # The PT scenario on account 1 (USD) and a second account in 'currency' with a dividend, a sale and an interest
-def _second_account(currency: int) -> int:
+def _second_account(currency: int, country: str = 'us') -> int:
     create_pt_scenario()
     create_quotes(2, 1, [(d2t(230101), 90.0)])     # USD/RUB
     create_quotes(3, 1, [(d2t(230101), 100.0)])    # EUR/RUB
     account = JalAccountCreator(currency_id=currency, number='X2', name='Second', investing=1, organization=1,
-                                country='us').commit().id()
+                                country=country).commit().id()
     create_actions([(d2t(230101), account, 1, [(PredefinedCategory.StartingBalance, 5000.0)]),
                     (dt2t(2406031430), account, 1, [(PredefinedCategory.Interest, 1.5, "CREDIT INT")])])
     create_trades(account, [(dt2t(2402011430), d2t(240205), 4, 10, 100.0, 1.0, "B1"),
@@ -258,11 +262,9 @@ def test_one_account_in_a_list_is_the_single_report(prepare_db_taxes):
     assert TaxesPortugal().prepare_tax_report(2024, [1]) == TaxesPortugal().prepare_tax_report(2024, 1)
 
 
-# Every taxable account is ticked; an untick survives a period change; a form isn't made for two accounts
-def test_dialog_ticks_accounts(prepare_db_taxes, tmp_path, monkeypatch):
+# Every taxable account is ticked; an untick survives a period change
+def test_dialog_ticks_accounts(prepare_db_taxes):
     second = _second_account(2)
-    warnings = []
-    monkeypatch.setattr(QMessageBox, "warning", lambda _self, _parent, title, text, *args: warnings.append(text) or QMessageBox.Ok)
     JalIcon()
     parent = QWidget()
     widget = TaxWidget(parent)
@@ -272,11 +274,38 @@ def test_dialog_ticks_accounts(prepare_db_taxes, tmp_path, monkeypatch):
     widget.ui.Accounts.item(0).setCheckState(Qt.Unchecked)
     widget.ui.PeriodFrom.setDate(QDate(2024, 2, 1))
     assert widget.accounts == [second]
-    widget.ui.Accounts.item(0).setCheckState(Qt.Checked)
 
-    widget.ui.XlsFileName.setText(str(tmp_path / "report.xlsx"))
-    widget.ui.Ndfl3Group.setChecked(True)
-    widget.ui.Ndfl3FileName.setText(str(tmp_path / "form.de4"))
-    widget.SaveReport()
-    assert (tmp_path / "report.xlsx").exists() and not (tmp_path / "form.de4").exists()
-    assert any("one account" in x for x in warnings)
+
+# The forms of a report over two accounts file each row under its own account's broker country and currency: the
+# 3-NDFL lines are those merge_de5() makes of the two single-account files, the Modelo 3 lines those of the two files
+@pytest.mark.parametrize("broker_as_income", [False, True])
+def test_ndfl3_of_two_accounts(prepare_db_taxes, tmp_path, broker_as_income):
+    second = _second_account(3, country='de')
+    taxes = TaxesRussia()
+    files = []
+    for accounts in (1, second, [1, second]):
+        report = taxes.prepare_tax_report(2024, accounts)
+        form = Ru_NDFL3(2025, broker_as_income=broker_as_income)
+        form.update_taxes(deepcopy(report), taxes.sheet_parameters())
+        files.append(str(tmp_path / f"{len(files)}.de5"))
+        form.save(files[-1])
+    merged = Ru_NDFL3.merge_de5(files[:2])
+    with open(files[2], 'r', encoding='utf-8') as file:
+        combined = json.load(file)
+    line = lambda x: json.dumps(x, sort_keys=True, ensure_ascii=False)
+    assert sorted(map(line, combined[FOREIGN_SECTION])) == sorted(map(line, merged[FOREIGN_SECTION]))
+    assert {(x['CountryCode2'], x['CurrencyCode']) for x in combined[FOREIGN_SECTION]} == {('840', '840'), ('276', '978')}
+    assert {k: v for k, v in combined.items() if k not in (FOREIGN_SECTION, 'CurrencyQuantity')} == \
+           {k: v for k, v in merged.items() if k not in (FOREIGN_SECTION, 'CurrencyQuantity')}
+
+
+def test_modelo3_of_two_accounts(prepare_db_taxes):
+    second = _second_account(3, country='de')
+    taxes = TaxesPortugal()
+    lines = []
+    for accounts in (1, second, [1, second]):
+        form = IRS_Modelo3(2024)
+        form.update_taxes(taxes.prepare_tax_report(2024, accounts), taxes.sheet_parameters())
+        lines.append(form._tax_form.splitlines())
+    assert sorted(lines[2]) == sorted(lines[0] + lines[1])
+    assert {x[x.index("<CodPais>") + 9:x.index("</CodPais>")] for x in lines[2]} == {'840', '276'}

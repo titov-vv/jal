@@ -41,14 +41,25 @@ class IRS_Modelo3:
             raise ValueError(self.tr("No Anexo J code for this kind of income: ") + row['kind'])
         return codes[0]
 
+    # 'parameters' are those of the report's account; with several accounts each account's header row carries its own
     def update_taxes(self, tax_report, parameters):
-        country = parameters['broker_iso_country']
         for section in self.SECURITIES:
-            for row in [x for x in tax_report.get(section, []) if x['report_template'] == "trade"]:
+            for row, country in self._trades(tax_report.get(section, []), parameters):
                 self._tax_form += self._sale_line(row, country) + "\n"
-        for row in [x for x in tax_report.get(self.DERIVATIVES, []) if x['report_template'] == "trade"]:
+        for row, country in self._trades(tax_report.get(self.DERIVATIVES, []), parameters):
             self._tax_form += AnexoJ_9_2B_template.format(cc=country, code=self._code(row),
                                                           income=round(row['profit_eur'], 2)) + "\n"
+
+    # The trade rows of a section, each with the broker country of its account
+    @staticmethod
+    def _trades(rows: list, parameters: dict) -> list:
+        country, trades = parameters['broker_iso_country'], []
+        for row in rows:
+            if row['report_template'] == "account":
+                country = row['broker_iso_country']
+            elif row['report_template'] == "trade":
+                trades.append((row, country))
+        return trades
 
     # A short sale is realized by its opening sale and acquired by its closing purchase
     def _sale_line(self, row, country) -> str:

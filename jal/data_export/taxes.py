@@ -322,11 +322,13 @@ class TaxReport:
         totals = self._grand_totals([x for part in parts for x in part if x['report_template'] == "totals"])
         return rows + ([totals] if totals else [])
 
+    # The header row of an account's rows; it carries the account's values the forms read for them
     def _account_row(self, account) -> dict:
         broker = JalPeer(account.organization()).name() \
             if account.organization() not in (0, PredefinedAgents.Empty) else ''
         text = self.texts['account_block'].format(number=account.number(), currency=JalAsset(account.currency()).symbol())
-        return {'report_template': "account", 'account': f"{text}, {broker}" if broker else text}
+        return dict(self.account_parameters(account), report_template="account",
+                    account=f"{text}, {broker}" if broker else text)
 
     # The sum of the accounts' totals; a figure in the account currency is left empty if the accounts' currencies differ
     def _grand_totals(self, rows: list):
@@ -344,17 +346,19 @@ class TaxReport:
     def fifo_header(self) -> str:
         return self.texts['fifo'] if len(self.accounts) == 1 else self.texts['fifo_netted']
 
-    # The values the sheets' headers and the forms read: the accounts, and the currency where they share one
+    # The values of an account the forms file its rows under
+    @staticmethod
+    def account_parameters(account) -> dict:
+        return {"account_name": account.name(), "currency": JalAsset(account.currency()).symbol(),
+                "broker_name": JalPeer(account.organization()).name(), "broker_iso_country": account.country().iso_code()}
+
+    # The values the sheets' headers and the forms read: the accounts, the first one's values and the currency where
+    # the accounts share one
     def sheet_parameters(self) -> dict:
         currencies = {JalAsset(x.currency()).symbol() for x in self.accounts}
-        first = self.accounts[0]
-        return {
-            "account": ", ".join(f"{x.number()} ({JalAsset(x.currency()).symbol()})" for x in self.accounts),
-            "account_name": first.name(),
-            "currency": currencies.pop() if len(currencies) == 1 else self.texts['account_currency'],
-            "broker_name": JalPeer(first.organization()).name(),
-            "broker_iso_country": first.country().iso_code()
-        }
+        return dict(self.account_parameters(self.accounts[0]),
+                    account=", ".join(f"{x.number()} ({JalAsset(x.currency()).symbol()})" for x in self.accounts),
+                    currency=currencies.pop() if len(currencies) == 1 else self.texts['account_currency'])
 
     # The lots of the whole history replayed into the report's store by its jurisdiction's policy: the buy-backs of
     # the year's shorts come after the year, and lots arrive from other accounts

@@ -302,12 +302,7 @@ class TaxWidget(MdiWidget):
             QMessageBox().warning(self, self.tr("Shorts not handled"), message, QMessageBox.Ok)
 
         if self.update_ndfl3 or self.update_modelo3:
-            if len(taxes.accounts) > 1:
-                message = self.tr("The tax form is made for one account only: tick one account to export it")
-                logging.warning(message)
-                QMessageBox().warning(self, self.tr("Tax form"), message, QMessageBox.Ok)
-                return
-            if self.update_ndfl3 and not self._warn_missing_broker(taxes.accounts[0]):
+            if self.update_ndfl3 and not all(self._warn_missing_broker(x) for x in taxes.accounts):
                 return
             tax_forms = None
             try:
