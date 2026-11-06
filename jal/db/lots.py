@@ -286,7 +286,7 @@ class LotEngine:
             lot.set_qty(left)
             self._store(account, asset, lot, operation)
             if record_deals:
-                deal_price = lot.open_price() if close_price is None else close_price
+                deal_price = lot.open_price(adjusted=True) if close_price is None else close_price   # a carry, no result
                 self._close(account, asset, lot, operation, sign * taken, deal_price)
             matched += taken
             basis += taken * lot.open_price(adjusted=True)

@@ -8,7 +8,8 @@ from tests.helpers import d2t, symbol_id_for, operation_id, create_assets, creat
     create_stock_dividends
 from jal.constants import PredefinedAsset, PredefinedCategory, PredefinedAccountType, SwapTreatment
 from jal.db.db import JalDB
-from jal.db.account import JalAccountCreator
+from jal.db.account import JalAccount, JalAccountCreator
+from jal.db.asset import JalAsset
 from jal.db.ledger import Ledger
 from jal.db.operations import LedgerTransaction, AssetIncome, CorporateAction
 
@@ -57,7 +58,7 @@ def _oid(otype, n=1) -> int:
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# a trade closes at its own price, a transfer at the lot's unadjusted open price
+# a trade closes at its own price, a transfer at the lot's open price
 def test_close_price_of_a_sale_and_of_a_transfer(lots):
     create_trades(USD_ACC, [(T2, T2, A, -4, 150, 0, "sell-A")])
     create_transfers([(T3, USD_ACC, 6, EUR_ACC, 540, A)])
@@ -88,7 +89,7 @@ def test_swap_sale_or_conversion(lots, treatment):
     assert (_closed(USD_ACC, A), _opened(USD_ACC, B)) == expected[treatment]
 
 
-# a wrapping and a bridge carry the lot, its date and its cost
+# a wrapping and a bridge carry the lot, its date and its cost; the bridge closes at the lot's adjusted price, no result
 def test_wrapping_and_bridge_carry_the_lot(lots):
     create_conversions(USD_ACC, [(T2, A, 10, B, 20)])
     create_bridges([{'asset': B, 'out_ts': T3, 'out_acc': USD_ACC, 'out_qty': 20,
@@ -97,8 +98,10 @@ def test_wrapping_and_bridge_carry_the_lot(lots):
 
     buy, wrap, bridge = _oid(TRADE, 1), _oid(CONV, 1), _oid(LedgerTransaction.Bridge, 1)
     assert _closed(USD_ACC, A) == [[TRADE, buy, T1, '1E+2', '1E+1', CONV, wrap, T2, '1E+2', '1E+1', '1', '1', '1']]
-    assert _closed(USD_ACC, B) == [[TRADE, buy, T1, '1E+2', '1E+1', LedgerTransaction.Bridge, bridge, T3, '1E+2',
+    assert _closed(USD_ACC, B) == [[TRADE, buy, T1, '1E+2', '1E+1', LedgerTransaction.Bridge, bridge, T3, '5E+1',
                                     '2E+1', '0.5', '2', '1']]
+    deal = JalAccount(USD_ACC).closed_trades_list(asset=JalAsset(B), close_otypes=[LedgerTransaction.Bridge])[0]
+    assert deal.profit() == -deal.fee() == Decimal('-10')    # the purchase fee only, as for a plain transfer
     assert _opened(EUR_ACC, B) == [[T4, TRADE, buy, LedgerTransaction.Bridge, bridge, T1, '1E+2', '2E+1', '0.5', '2',
                                     '0.9']]
 
