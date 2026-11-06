@@ -88,7 +88,8 @@ A reminder to yourself; JAL colours balances that have not been confirmed lately
 **Reporting currency** — the currency your totals are shown in. It comes from your *residence*.
 
 **Residence** — where and when you live: the country, the reporting currency and the time zone, as a
-timeline. Set in *Data → Residence*.
+timeline. Set in *Data → Residence*. A tax report proposes its period from it
+([chapter 11](11-taxes.md#part-of-a-year-and-residence)).
 
 **Settlement date** — when a trade actually clears, usually a day or two after it was executed. Some
 tax calculations use it rather than the trade date.

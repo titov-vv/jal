@@ -4756,42 +4756,42 @@ Application will be terminated now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="618"/>
+        <location filename="../db/account.py" line="617"/>
         <source>The account is closed already</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="621"/>
+        <location filename="../db/account.py" line="620"/>
         <source>The account has operations at or after the closure date</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="623"/>
+        <location filename="../db/account.py" line="622"/>
         <source>The ledger isn&apos;t up to date, rebuild it first</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="626"/>
+        <location filename="../db/account.py" line="625"/>
         <source>The account has a debt: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="630"/>
+        <location filename="../db/account.py" line="629"/>
         <source>The account holds money in another currency: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="632"/>
+        <location filename="../db/account.py" line="631"/>
         <source>The account has a negative balance: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="640"/>
+        <location filename="../db/account.py" line="639"/>
         <source>The account has a short position: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="647"/>
+        <location filename="../db/account.py" line="646"/>
         <source>The account is still owed: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -5914,17 +5914,17 @@ This looks like the quantity a rebasing position gained without reporting it, wh
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="290"/>
+        <location filename="../widgets/tax_widget.py" line="346"/>
         <source>Excel files (*.xlsx)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="290"/>
+        <location filename="../widgets/tax_widget.py" line="346"/>
         <source>Save money flow report to:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="320"/>
+        <location filename="../widgets/tax_widget.py" line="376"/>
         <source>Excel money flow report was saved to file </source>
         <translation></translation>
     </message>
@@ -8189,32 +8189,32 @@ Unchecked: it is acquired on the date of this corporate action.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="52"/>
+        <location filename="../data_export/ru_ndfl3.py" line="55"/>
         <source>Currency is not supported for 3-NDFL: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="68"/>
+        <location filename="../data_export/ru_ndfl3.py" line="76"/>
         <source>No 3-NDFL code for this kind of income: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="81"/>
+        <location filename="../data_export/ru_ndfl3.py" line="89"/>
         <source>Account country is not set, dividend isn&apos;t exported into 3-NDFL </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="88"/>
+        <location filename="../data_export/ru_ndfl3.py" line="96"/>
         <source>Country is not set for asset, dividend isn&apos;t exported into 3-NDFL </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="254"/>
+        <location filename="../data_export/ru_ndfl3.py" line="262"/>
         <source>Failed to read de5 file: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="256"/>
+        <location filename="../data_export/ru_ndfl3.py" line="264"/>
         <source>Unsupported de5 file format: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -11402,28 +11402,28 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
 <context>
     <name>TaxMergeDialog</name>
     <message>
-        <location filename="../widgets/tax_widget.py" line="341"/>
+        <location filename="../widgets/tax_widget.py" line="397"/>
         <source>Select tax file to merge</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="342"/>
-        <location filename="../widgets/tax_widget.py" line="357"/>
+        <location filename="../widgets/tax_widget.py" line="398"/>
+        <location filename="../widgets/tax_widget.py" line="413"/>
         <source>Declaration files (*.de5)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="356"/>
+        <location filename="../widgets/tax_widget.py" line="412"/>
         <source>Select file to save merged result</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="369"/>
+        <location filename="../widgets/tax_widget.py" line="425"/>
         <source>de5 files merged successfully: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="371"/>
+        <location filename="../widgets/tax_widget.py" line="427"/>
         <source>Merge de5</source>
         <translation></translation>
     </message>
@@ -11510,22 +11510,22 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
 <context>
     <name>TaxReport</name>
     <message>
-        <location filename="../data_export/taxes.py" line="137"/>
+        <location filename="../data_export/taxes.py" line="140"/>
         <source>Currency is not defined: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/taxes.py" line="222"/>
+        <location filename="../data_export/taxes.py" line="228"/>
         <source>No report template found for section: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/taxes.py" line="255"/>
+        <location filename="../data_export/taxes.py" line="265"/>
         <source>There are no parameters found for tax report year: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/taxes.py" line="288"/>
+        <location filename="../data_export/taxes.py" line="366"/>
         <source>Tax replay</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11548,39 +11548,45 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="145"/>
-        <source>&amp;Account:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../ui/tax_export_widget.ui" line="155"/>
+        <location filename="../ui/tax_export_widget.ui" line="158"/>
         <source>&amp;Excel file:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="216"/>
+        <location filename="../ui/tax_export_widget.ui" line="219"/>
         <source>Output &amp;file:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="252"/>
+        <location filename="../ui/tax_export_widget.ui" line="255"/>
         <source>&amp;Country:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="262"/>
+        <location filename="../ui/tax_export_widget.ui" line="265"/>
         <source>&amp;Year:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="272"/>
+        <location filename="../ui/tax_export_widget.ui" line="275"/>
+        <source>&amp;Period:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/tax_export_widget.ui" line="287"/>
+        <location filename="../ui/tax_export_widget.ui" line="304"/>
+        <source>dd/MM/yyyy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/tax_export_widget.ui" line="330"/>
         <source>Save Report</source>
         <translation></translation>
     </message>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="32"/>
         <location filename="../ui/tax_export_widget.ui" line="129"/>
-        <location filename="../ui/tax_export_widget.ui" line="226"/>
+        <location filename="../ui/tax_export_widget.ui" line="229"/>
         <source>Select file</source>
         <translation></translation>
     </message>
@@ -11590,13 +11596,13 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="204"/>
+        <location filename="../ui/tax_export_widget.ui" line="207"/>
         <source>Create tax form in &quot;Декларация 2.0&quot; program format</source>
         <translation></translation>
     </message>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="122"/>
-        <location filename="../ui/tax_export_widget.ui" line="236"/>
+        <location filename="../ui/tax_export_widget.ui" line="239"/>
         <source>File where to store russian tax form</source>
         <translation></translation>
     </message>
@@ -11621,173 +11627,188 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="165"/>
+        <location filename="../ui/tax_export_widget.ui" line="145"/>
+        <source>&amp;Accounts:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/tax_export_widget.ui" line="168"/>
         <source>Additional parameters (Russia)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="178"/>
+        <location filename="../ui/tax_export_widget.ui" line="181"/>
         <source>Update only information about dividends</source>
         <translation></translation>
     </message>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="132"/>
-        <location filename="../ui/tax_export_widget.ui" line="229"/>
+        <location filename="../ui/tax_export_widget.ui" line="232"/>
         <source> ... </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="185"/>
+        <location filename="../ui/tax_export_widget.ui" line="188"/>
         <source>Use broker name as income source</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../ui/tax_export_widget.ui" line="171"/>
+        <location filename="../ui/tax_export_widget.ui" line="174"/>
         <source>Do not use settlement date for currency rates</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="98"/>
+        <location filename="../widgets/tax_widget.py" line="104"/>
+        <source>Resident by the residence table:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/tax_widget.py" line="108"/>
+        <source>Also resident in {country}: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/tax_widget.py" line="146"/>
         <source>Save tax reports to:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="98"/>
+        <location filename="../widgets/tax_widget.py" line="146"/>
         <source>Excel files (*.xlsx)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="101"/>
+        <location filename="../widgets/tax_widget.py" line="149"/>
         <source>Save tax form to:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="101"/>
+        <location filename="../widgets/tax_widget.py" line="149"/>
         <source>Tax form (*.de{last_digit})</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="103"/>
+        <location filename="../widgets/tax_widget.py" line="151"/>
         <source>Save IRS Modelo 3 tax data to:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="103"/>
+        <location filename="../widgets/tax_widget.py" line="151"/>
         <source>XML files (*.xml)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="167"/>
+        <location filename="../widgets/tax_widget.py" line="229"/>
         <source>Selected account isn&apos;t bound to a broker or broker name isn&apos;t set. Tax form export may be incomplete.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="170"/>
+        <location filename="../widgets/tax_widget.py" line="232"/>
         <source>Warning</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="176"/>
+        <location filename="../widgets/tax_widget.py" line="238"/>
         <source>There are no tax parameters for {year}: no tax treaty is assumed and no tax is estimated</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="179"/>
+        <location filename="../widgets/tax_widget.py" line="241"/>
         <source>The tax parameters (treaties, base rates) were last reviewed for {reviewed}; {year} uses the latest values known - check them against the law</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="185"/>
+        <location filename="../widgets/tax_widget.py" line="247"/>
         <source>Tax parameters</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="190"/>
+        <location filename="../widgets/tax_widget.py" line="252"/>
         <source>Data are incomplete</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="191"/>
+        <location filename="../widgets/tax_widget.py" line="253"/>
         <source>You haven&apos;t selected an account for tax report</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="197"/>
+        <location filename="../widgets/tax_widget.py" line="259"/>
         <source>Interrupted by user</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="201"/>
+        <location filename="../widgets/tax_widget.py" line="263"/>
         <source>The tax replay of the lots stopped, correct the operation and save the report again:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="204"/>
+        <location filename="../widgets/tax_widget.py" line="266"/>
         <source>Tax replay stopped</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="207"/>
+        <location filename="../widgets/tax_widget.py" line="269"/>
         <source>The report needs these quotes or official currency rates, add them and save it again:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="209"/>
+        <location filename="../widgets/tax_widget.py" line="271"/>
         <source>Quotes are missing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="211"/>
+        <location filename="../widgets/tax_widget.py" line="273"/>
         <source>The report needs the country of these assets, set it and save the report again:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="214"/>
+        <location filename="../widgets/tax_widget.py" line="276"/>
         <source>Countries are missing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="217"/>
+        <location filename="../widgets/tax_widget.py" line="279"/>
         <source>Tax report is empty</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="233"/>
+        <location filename="../widgets/tax_widget.py" line="289"/>
         <source>Excel tax report was saved to file </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="236"/>
+        <location filename="../widgets/tax_widget.py" line="292"/>
         <source>Official currency rates look missing in the database; these operations were converted at an older rate (pair: rate date - latest operation):</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="238"/>
+        <location filename="../widgets/tax_widget.py" line="294"/>
         <source>Download the rates and save the report again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="240"/>
+        <location filename="../widgets/tax_widget.py" line="296"/>
         <source>Currency rates are not up to date</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="243"/>
+        <location filename="../widgets/tax_widget.py" line="299"/>
         <source>The report doesn&apos;t handle a short of these assets across the end of a year, check them by hand:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="246"/>
+        <location filename="../widgets/tax_widget.py" line="302"/>
         <source>Shorts not handled</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="265"/>
+        <location filename="../widgets/tax_widget.py" line="321"/>
         <source>Tax report saved to file </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/tax_widget.py" line="267"/>
+        <location filename="../widgets/tax_widget.py" line="323"/>
         <source>Can&apos;t write tax form into file </source>
         <translation></translation>
     </message>

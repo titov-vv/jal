@@ -199,6 +199,7 @@ class Ui_TaxWidget(object):
 
         self.PeriodDash = QLabel(TaxWidget)
         self.PeriodDash.setObjectName(u"PeriodDash")
+        self.PeriodDash.setText(u"-")
 
         self.PeriodLayout.addWidget(self.PeriodDash)
 
@@ -305,7 +306,6 @@ class Ui_TaxWidget(object):
         self.YearLbl.setText(QCoreApplication.translate("TaxWidget", u"&Year:", None))
         self.PeriodLbl.setText(QCoreApplication.translate("TaxWidget", u"&Period:", None))
         self.PeriodFrom.setDisplayFormat(QCoreApplication.translate("TaxWidget", u"dd/MM/yyyy", None))
-        self.PeriodDash.setText(QCoreApplication.translate("TaxWidget", u"-", None))
         self.PeriodTo.setDisplayFormat(QCoreApplication.translate("TaxWidget", u"dd/MM/yyyy", None))
         self.SaveButton.setText(QCoreApplication.translate("TaxWidget", u"Save Report", None))
     # retranslateUi

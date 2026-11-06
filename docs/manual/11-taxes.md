@@ -6,8 +6,8 @@
 > files they produce. Whether the figures are the ones your tax office wants, and how they should be
 > declared, is between you and the rules of your country — check the result before you file it.
 
-JAL can prepare investment tax figures for **Portugal** and **Russia**, from the operations on one
-investment account for one calendar year.
+JAL can prepare investment tax figures for **Portugal** and **Russia**, from the operations on one or
+several investment accounts, for a calendar year or a part of one.
 
 ![The Tax menu](img/menu_tax.png)
 
@@ -21,7 +21,8 @@ investment account for one calendar year.
 |---|---|
 | **Country** | Portugal or Russia |
 | **Year** | The tax year. Defaults to last year, which is usually the one being declared. |
-| **Account** | The investment account. Only investment accounts with something taxable in that year — a sale, a swap, an income, a fee — are offered. |
+| **Period** | The days of the year the report covers — the whole year unless your [residence](#part-of-a-year-and-residence) says otherwise. You can type other dates; they stay inside the year. |
+| **Accounts** | The investment accounts to report on, all ticked. Only investment accounts with something taxable in the period — a sale, a swap, an income, a fee — are listed. Untick an account to leave it out, for example one with a bank of the report's own country whose figures the tax office already has. See [Several accounts](#several-accounts). |
 | **Excel file** | Where to write the detailed report. |
 
 Press **Save Report** and JAL writes a spreadsheet with one sheet per kind of income — shares,
@@ -31,6 +32,48 @@ code the declaration asks for. It is meant to be readable: an inspector (or you,
 every figure back to the operation it came from. A sheet with nothing on it is left out, and lines
 under a sheet's title state the rules it was built on: how deals are matched, which rate is used,
 what counts as the cost, what JAL assumed about the law.
+
+### Part of a year and residence
+
+A report covers the days between **From** and **To**: an operation dated outside them is left out,
+while the rules of the year — its [parameters](#tax-parameters), its codes, the treatment of
+[short sales](#short-sales) — stay those of the whole year. The header of every sheet states the
+period.
+
+When you choose a country or a year, the dialog proposes the period in which that country holds you
+resident, worked out from the **residence** table (**Data → Residence**, see [chapter 3](03-first-steps.md)), and names it under the
+dates:
+
+* **Russia** knows no part of a year: 183 days or more in Russia make the whole year, fewer make none.
+* **Portugal** counts from the date of each row: a move to Portugal on 11 September gives
+  11 September – 31 December. Leaving and coming back gives two periods; the dates are set to the first.
+
+The table stands in for where you really were: JAL counts its rows, not your days of presence. If the
+table gives nothing for the year, the whole year is proposed. Your own dates stay until you change the
+country or the year.
+
+If another country holds you resident in the same days — a move from Russia to Portugal in September
+leaves Russia the whole year and gives Portugal the autumn — the dialog names it too (*Also resident
+in …*). Both countries' reports are then legitimately made on the same operations, each by its own
+rules; JAL does not decide which country's claim wins under a tax treaty, nor credit one tax against
+the other.
+
+A change of residence does not change what your holdings cost: every deal keeps its **historical
+acquisition cost** and date, and the sheets of sales say so.
+
+### Several accounts
+
+With more than one account ticked, one report covers them all, and the replay of the lots is done once:
+
+* every sheet shows each account's lines under a line naming the account, its currency and its broker,
+  with the account's own total after them, then a **total of all the accounts**;
+* if the accounts' currencies differ, that total leaves the account-currency columns empty and the
+  column headers say *account currency* — only the figures in euros or roubles are added up;
+* deals are still matched within each account, never across accounts (the line under the sheet's
+  title says so), and the results of the accounts are **netted** on the Summary sheet — a loss on one
+  account reduces a gain on another within a tax base, and the [base estimation](#base-estimation) is
+  made on that netted total;
+* the declaration files take every account's lines, each under its own broker, country and currency.
 
 ### Tax bases
 
@@ -197,7 +240,8 @@ Summary sheet; and the tax column of the
 estimation**: the base rate of the year from the [parameters](#tax-parameters), applied to the income
 and nothing more —
 
-* no progressive bracket, no deduction, no netting with other sheets or other accounts;
+* no progressive bracket, no deduction, no netting with other sheets — only the accounts ticked
+  together in one report are netted;
 * for a dividend, the tax withheld abroad is subtracted only where a tax treaty applies, and never
   below zero;
 * for sales, one estimate per base, on its total: in **Russia** securities (shares and bonds together),
@@ -288,7 +332,8 @@ Choose the year, choose where to save the spreadsheet, press **Save Report**.
 
 **Tax → Merge Russian tax files (\*.de5)** joins several `.de5` declaration files into one — for when
 different sources of income were prepared separately and have to be filed together. Add the files
-with **+**, name the output file, press OK.
+with **+**, name the output file, press OK. For JAL's own accounts it is simpler to tick them all in one
+report ([Several accounts](#several-accounts)): its file already holds every account's lines.
 
 ## Before you file anything
 
