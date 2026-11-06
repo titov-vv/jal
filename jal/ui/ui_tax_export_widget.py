@@ -17,8 +17,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateEdit,
     QGridLayout, QGroupBox, QHBoxLayout, QLabel,
-    QLineEdit, QPushButton, QSizePolicy, QSpacerItem,
-    QSpinBox, QVBoxLayout, QWidget)
+    QLineEdit, QListWidget, QListWidgetItem, QPushButton,
+    QSizePolicy, QSpacerItem, QSpinBox, QVBoxLayout,
+    QWidget)
 
 class Ui_TaxWidget(object):
     def setupUi(self, TaxWidget):
@@ -106,6 +107,7 @@ class Ui_TaxWidget(object):
 
         self.AccountLbl = QLabel(TaxWidget)
         self.AccountLbl.setObjectName(u"AccountLbl")
+        self.AccountLbl.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignTop)
 
         self.MainLayout.addWidget(self.AccountLbl, 4, 0, 1, 1)
 
@@ -224,14 +226,15 @@ class Ui_TaxWidget(object):
 
         self.MainLayout.addWidget(self.SaveButton, 11, 2, 1, 1)
 
-        self.Account = QComboBox(TaxWidget)
-        self.Account.setObjectName(u"Account")
+        self.Accounts = QListWidget(TaxWidget)
+        self.Accounts.setObjectName(u"Accounts")
+        self.Accounts.setMaximumSize(QSize(16777215, 100))
 
-        self.MainLayout.addWidget(self.Account, 4, 1, 1, 2)
+        self.MainLayout.addWidget(self.Accounts, 4, 1, 1, 2)
 
 #if QT_CONFIG(shortcut)
         self.IRS_Modelo3FileLbl.setBuddy(self.IRS_Modelo3Filename)
-        self.AccountLbl.setBuddy(self.Account)
+        self.AccountLbl.setBuddy(self.Accounts)
         self.XlsFileLbl.setBuddy(self.XlsFileName)
         self.Ndfl3FileLbl.setBuddy(self.Ndfl3FileName)
         self.CountryLbl.setBuddy(self.Country)
@@ -241,8 +244,8 @@ class Ui_TaxWidget(object):
         QWidget.setTabOrder(self.Country, self.Year)
         QWidget.setTabOrder(self.Year, self.PeriodFrom)
         QWidget.setTabOrder(self.PeriodFrom, self.PeriodTo)
-        QWidget.setTabOrder(self.PeriodTo, self.Account)
-        QWidget.setTabOrder(self.Account, self.XlsFileName)
+        QWidget.setTabOrder(self.PeriodTo, self.Accounts)
+        QWidget.setTabOrder(self.Accounts, self.XlsFileName)
         QWidget.setTabOrder(self.XlsFileName, self.XlsSelectBtn)
         QWidget.setTabOrder(self.XlsSelectBtn, self.Pt_OneCurrencyRate)
         QWidget.setTabOrder(self.Pt_OneCurrencyRate, self.IRS_Modelo3Group)
@@ -283,7 +286,7 @@ class Ui_TaxWidget(object):
         self.IRS_Modelo3SelectBtn.setToolTip(QCoreApplication.translate("TaxWidget", u"Select file", None))
 #endif // QT_CONFIG(tooltip)
         self.IRS_Modelo3SelectBtn.setText(QCoreApplication.translate("TaxWidget", u" ... ", None))
-        self.AccountLbl.setText(QCoreApplication.translate("TaxWidget", u"&Account:", None))
+        self.AccountLbl.setText(QCoreApplication.translate("TaxWidget", u"&Accounts:", None))
         self.XlsFileLbl.setText(QCoreApplication.translate("TaxWidget", u"&Excel file:", None))
         self.RuBox.setTitle(QCoreApplication.translate("TaxWidget", u"Additional parameters (Russia)", None))
         self.Ru_NoSettlement.setText(QCoreApplication.translate("TaxWidget", u"Do not use settlement date for currency rates", None))

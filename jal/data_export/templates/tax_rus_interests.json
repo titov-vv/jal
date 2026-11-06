@@ -36,6 +36,19 @@
       [null, null, "F", "F", "F", "Fe", null, null, null, null]
     ]
   },
+  "subtotals": {
+    "rows": [
+      [null, null, "Итого по счёту", "amount", "amount_rub", "tax2pay", null, null, null, null]
+    ],
+    "formats": [
+      [null, null, "F", "F", "F", "Fe", null, null, null, null]
+    ]
+  },
+  "account": {
+    "rows": [["account", null, null, null, null, null, null, null, null, null]],
+    "formats": [["T:B", null, null, null, null, null, null, null, null, null]],
+    "span": [[{"h": 9, "v": 0}, null, null, null, null, null, null, null, null, null]]
+  },
   "footers": [
     "Описание данных в столбцах таблицы",
     "1 - Описание платежа",

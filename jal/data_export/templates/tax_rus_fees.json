@@ -33,6 +33,19 @@
       [null, null, null, "F", "F", "F", null]
     ]
   },
+  "subtotals": {
+    "rows": [
+      [null, null, null, "Итого по счёту", "amount", "amount_rub", null]
+    ],
+    "formats": [
+      [null, null, null, "F", "F", "F", null]
+    ]
+  },
+  "account": {
+    "rows": [["account", null, null, null, null, null, null]],
+    "formats": [["T:B", null, null, null, null, null, null]],
+    "span": [[{"h": 6, "v": 0}, null, null, null, null, null, null]]
+  },
   "footers": [
     "Описание данных в столбцах таблицы",
     "1 - Вид расхода: депозитарная комиссия, финансирование позиции, прочая комиссия по активу, комиссия брокера",

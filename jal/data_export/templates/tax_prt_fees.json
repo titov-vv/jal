@@ -24,5 +24,14 @@
     "rows": [[null, null, null, "TOTAL", "amount", "amount_eur", null]],
     "formats": [[null, null, null, "F", "F", "F", null]]
   },
+  "subtotals": {
+    "rows": [[null, null, null, "Account total", "amount", "amount_eur", null]],
+    "formats": [[null, null, null, "F", "F", "F", null]]
+  },
+  "account": {
+    "rows": [["account", null, null, null, null, null, null]],
+    "formats": [["T:B", null, null, null, null, null, null]],
+    "span": [[{"h": 6, "v": 0}, null, null, null, null, null, null]]
+  },
   "footers": []
 }

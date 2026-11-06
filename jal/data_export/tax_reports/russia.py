@@ -93,6 +93,9 @@ class TaxesRussia(TaxReport):
         'rates_missing': "Внимание: курса ЦБ РФ {pair} нет в базе после {rate}; операции по {latest} пересчитаны по "
                          "курсу на {rate} - загрузите курсы и сформируйте отчёт заново",
         'fifo': "Сделки сопоставлены по FIFO внутри этого счёта; сделки других счетов здесь не учтены",
+        'fifo_netted': "Сделки сопоставлены по FIFO внутри каждого счёта; результаты счетов сложены",
+        'account_block': "Счёт {number} ({currency})",
+        'account_currency': "валюта счёта",
         'rate_settlement': "Пересчёт в рубли по курсу ЦБ РФ на дату расчётов (поставки); комиссии - на дату сделки; "
                            "где дата расчётов не указана источником - на дату сделки",
         'rate_trade': "Пересчёт в рубли по курсу ЦБ РФ на дату сделки",
@@ -226,7 +229,7 @@ class TaxesRussia(TaxReport):
 
     # The headers every deals section states: the matching rule, the rate rule and the cost
     def _deal_headers(self):
-        self.add_header(self.texts['fifo'])
+        self.add_header(self.fifo_header())
         self.add_header(self.texts['rate_settlement'] if self.use_settlement else self.texts['rate_trade'])
         self.add_header(self.texts['native_cost'])
         self.add_header(self.texts['historical_cost'])

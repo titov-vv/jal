@@ -83,6 +83,9 @@ class TaxesPortugal(TaxReport):
         'rates_missing': "Warning: the database has no ECB rate {pair} after {rate}; operations up to {latest} use the "
                          "rate of {rate} - download the rates and make the report again",
         'fifo': "Deals are matched FIFO within this account; deals of other accounts are not netted here",
+        'fifo_netted': "Deals are matched FIFO within each account; the accounts' results are netted",
+        'account_block': "Account {number} ({currency})",
+        'account_currency': "account currency",
         'one_rate': "Cost, proceeds and expenses are converted at the EUR rate of the disposal date (CIRS art. 23.º)",
         'two_rates': "Each leg is converted at the EUR rate of its own trade date - not the one-rate reading of CIRS art. 23.º",
         'trade_date': "A sale belongs to the year of its trade date (CIRS art. 44.º); the settlement date is not used",
@@ -232,7 +235,7 @@ class TaxesPortugal(TaxReport):
 
     # The headers every deals section states: the matching rule, the rate rule, the year and the cost
     def _deal_headers(self):
-        self.add_header(self.texts['fifo'])
+        self.add_header(self.fifo_header())
         self.add_header(self.texts['one_rate'] if self.one_currency_rate else self.texts['two_rates'])
         self.add_header(self.texts['trade_date'])
         self.add_header(self.texts['native_cost'])

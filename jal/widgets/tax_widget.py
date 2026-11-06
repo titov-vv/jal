@@ -6,7 +6,7 @@ import json
 
 from PySide6.QtCore import Property, Slot, Signal, Qt, QDate
 from PySide6.QtGui import QShortcut, QKeySequence
-from PySide6.QtWidgets import QFileDialog, QMessageBox, QApplication, QDialog
+from PySide6.QtWidgets import QFileDialog, QMessageBox, QApplication, QDialog, QListWidgetItem
 
 from jal.ui.ui_tax_export_widget import Ui_TaxWidget
 from jal.ui.ui_flow_export_widget import Ui_MoneyFlowWidget
@@ -15,7 +15,6 @@ from jal.widgets.mdi import MdiWidget
 from jal.widgets.helpers import reading2d
 from jal.widgets.icons import JalIcon
 from jal.db.account import JalAccount
-from jal.db.asset import JalAsset
 from jal.db.peer import JalPeer
 from jal.db.settings import JalSettings, FolderFor
 from jal.constants import PredefinedAgents
@@ -46,6 +45,7 @@ class TaxWidget(MdiWidget):
         self.ui.setupUi(self)
         self._report = None    # the report being prepared, see _prepare()
         self._derived = {}     # {jurisdiction: [periods]} each derives from the residence table for the year
+        self._unticked = set()  # ids of the accounts the user unticked
 
         self._option_boxes = {'pt': self.ui.PtBox, 'ru': self.ui.RuBox}
         self.ui.Country.clear()
@@ -110,18 +110,23 @@ class TaxWidget(MdiWidget):
         self.ui.ResidenceLbl.setText("\n".join(lines))
         self.ui.ResidenceLbl.setVisible(bool(lines))
 
-    # Keeps From <= To, names the residences and loads the accounts with a tax event in the period, keeping the one
-    # selected
+    # Keeps From <= To, names the residences and lists the accounts with a tax event in the period, all ticked but those
+    # the user unticked
     def OnPeriodChange(self, _date=None):
         self.ui.PeriodTo.setMinimumDate(self.ui.PeriodFrom.date())
         self.ui.PeriodFrom.setMaximumDate(self.ui.PeriodTo.date())
         self._show_residence()
-        selected = self.ui.Account.currentData()
-        self.ui.Account.clear()
+        for i in range(self.ui.Accounts.count()):
+            item = self.ui.Accounts.item(i)
+            if item.checkState() == Qt.Unchecked:
+                self._unticked.add(item.data(Qt.UserRole))
+            else:
+                self._unticked.discard(item.data(Qt.UserRole))
+        self.ui.Accounts.clear()
         for account in JalAccount.get_taxable_accounts(self.period_begin, self.period_end):
-            self.ui.Account.addItem(account.name(), account.id())
-        if selected is not None and self.ui.Account.findData(selected) >= 0:
-            self.ui.Account.setCurrentIndex(self.ui.Account.findData(selected))
+            item = QListWidgetItem(account.name(), self.ui.Accounts)
+            item.setData(Qt.UserRole, account.id())
+            item.setCheckState(Qt.Unchecked if account.id() in self._unticked else Qt.Checked)
 
     # Displays tax widget in a given window area, its progress on 'main_window' if given.
     # It is implemented as a separate static method in order to prevent unexpected object deletion
@@ -169,7 +174,9 @@ class TaxWidget(MdiWidget):
     period_end = Property(int, fget=lambda self: self._midnight(self.ui.PeriodTo.date().addDays(1)))   # half-open
     country = Property(str, fget=lambda self: self.ui.Country.currentData())
     xls_filename = Property(str, fget=lambda self: self.ui.XlsFileName.text())
-    account = Property(int, fget=lambda self: self.ui.Account.currentData())
+    accounts = Property(list, fget=lambda self: [self.ui.Accounts.item(i).data(Qt.UserRole)
+                                                 for i in range(self.ui.Accounts.count())
+                                                 if self.ui.Accounts.item(i).checkState() == Qt.Checked])
     update_ndfl3 = Property(bool, fget=lambda self: self.ui.Ndfl3Group.isChecked())
     ndfl3_filename = Property(str, fget=lambda self: self.ui.Ndfl3FileName.text())
     ndfl3_broker_as_income = Property(bool, fget=lambda self: self.ui.Ru_IncomeSourceBroker.isChecked())
@@ -192,7 +199,7 @@ class TaxWidget(MdiWidget):
         self._report = taxes
         self.show_progress.emit(True)
         try:
-            return taxes.prepare_tax_report(self.year, self.account, period=(self.period_begin, self.period_end),
+            return taxes.prepare_tax_report(self.year, self.accounts, period=(self.period_begin, self.period_end),
                                             use_one_currency_rate=self.use_one_rate,
                                             use_settlement=(not self.no_settlement), progress=progress)
         finally:
@@ -241,7 +248,7 @@ class TaxWidget(MdiWidget):
 
     @Slot()
     def SaveReport(self):
-        if not self.account:
+        if not self.accounts:
             QMessageBox().warning(self, self.tr("Data are incomplete"),
                                   self.tr("You haven't selected an account for tax report"), QMessageBox.Ok)
             return
@@ -273,14 +280,8 @@ class TaxWidget(MdiWidget):
             return
 
         reports_xls = XLSX(self.xls_filename)
-        parameters = {
-            "period": f"{reading2d(taxes.period_begin)} - {reading2d(taxes.period_end - 1)}",
-            "account": f"{taxes.account.number()} ({JalAsset(taxes.account.currency()).symbol()})",
-            "account_name": taxes.account.name(),
-            "currency": JalAsset(taxes.account.currency()).symbol(),
-            "broker_name": JalPeer(taxes.account.organization()).name(),
-            "broker_iso_country": taxes.account.country().iso_code()
-        }
+        parameters = taxes.sheet_parameters()
+        parameters["period"] = f"{reading2d(taxes.period_begin)} - {reading2d(taxes.period_end - 1)}"
         for section in tax_report:
             reports_xls.output_data(tax_report[section], taxes.report_template(section), parameters,
                                     headers=taxes.section_headers(section))
@@ -301,7 +302,12 @@ class TaxWidget(MdiWidget):
             QMessageBox().warning(self, self.tr("Shorts not handled"), message, QMessageBox.Ok)
 
         if self.update_ndfl3 or self.update_modelo3:
-            if self.update_ndfl3 and not self._warn_missing_broker(taxes.account):
+            if len(taxes.accounts) > 1:
+                message = self.tr("The tax form is made for one account only: tick one account to export it")
+                logging.warning(message)
+                QMessageBox().warning(self, self.tr("Tax form"), message, QMessageBox.Ok)
+                return
+            if self.update_ndfl3 and not self._warn_missing_broker(taxes.accounts[0]):
                 return
             tax_forms = None
             try:

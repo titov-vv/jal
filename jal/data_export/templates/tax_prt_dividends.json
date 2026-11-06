@@ -38,5 +38,18 @@
       [null, null, null, null, "F", "F", "F", "F", "F", null, null, null, null]
     ]
   },
+  "subtotals": {
+    "rows": [
+      [null, null, null, null, "Account total", "amount", "amount_eur", "tax", "tax_eur", null, null, null, null]
+    ],
+    "formats": [
+      [null, null, null, null, "F", "F", "F", "F", "F", null, null, null, null]
+    ]
+  },
+  "account": {
+    "rows": [["account", null, null, null, null, null, null, null, null, null, null, null, null]],
+    "formats": [["T:B", null, null, null, null, null, null, null, null, null, null, null, null]],
+    "span": [[{"h": 12, "v": 0}, null, null, null, null, null, null, null, null, null, null, null, null]]
+  },
   "footers": []
 }

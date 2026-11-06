@@ -23,5 +23,10 @@
     "rows": [["date", "operation", "symbol", "number", "description", "reason"]],
     "formats": [["D", "T", "T", "T", "T", "T"]]
   },
+  "account": {
+    "rows": [["account", null, null, null, null, null]],
+    "formats": [["T:B", null, null, null, null, null]],
+    "span": [[{"h": 5, "v": 0}, null, null, null, null, null]]
+  },
   "footers": []
 }

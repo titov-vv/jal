@@ -4,10 +4,11 @@ from decimal import Decimal
 from datetime import datetime, timezone
 from PySide6.QtWidgets import QApplication
 
-from jal.constants import PredefinedAsset, Setup
+from jal.constants import PredefinedAsset, PredefinedAgents, Setup
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.category import JalCategory
+from jal.db.peer import JalPeer
 from jal.db.db import JalDB
 from jal.db.helpers import is_day_marker
 from jal.db.lots import LedgerLotStore, ScratchLotStore, replay
@@ -138,8 +139,9 @@ class TaxReport:
             self.reports = {}
             logging.error(self.tr("Currency is not defined: ") + self.currency_name)
             return
-        self.account = None           # Account for reporting
-        self.account_currency = None  # Currency of the account for reporting
+        self.accounts = []            # Accounts of the report, each section is prepared for each of them in turn
+        self.account = None           # The account a section is being prepared for
+        self.account_currency = None  # Currency of that account
         self.year_begin = 0           # the calendar tax year, read by every year-keyed rule
         self.year_end = 0
         self.period_begin = 0         # the window of the events printed, inside the year
@@ -240,11 +242,14 @@ class TaxReport:
             totals[field] = sum(values) if values else None   # a figure no row has, as a base rate that's missing
         list_of_values.append(totals)
 
-    # 'period' is a half-open (begin, end) inside the year, the whole year if None
-    def prepare_tax_report(self, year: int, account_id: int, period=None, **kwargs) -> dict:
+    # 'accounts' is an account id or a list of them; 'period' is a half-open (begin, end) inside the year, the whole
+    # year if None
+    def prepare_tax_report(self, year: int, accounts, period=None, **kwargs) -> dict:
         tax_report = {}
-        self.account = JalAccount(account_id)
-        self.account_currency = JalAsset(self.account.currency())
+        self.accounts = [JalAccount(x) for x in ([accounts] if isinstance(accounts, int) else accounts)]
+        if not self.accounts:
+            raise ValueError("Tax report has no account")
+        self._use(self.accounts[0])
         self.year_begin, self.year_end = self.year_window(year)
         self.period_begin, self.period_end = (self.year_begin, self.year_end) if period is None else period
         if not self.year_begin <= self.period_begin < self.period_end <= self.year_end:
@@ -267,18 +272,30 @@ class TaxReport:
         self.lots = ScratchLotStore()
         try:
             self._replay()
-            for piece in self.year_end_shorts():
-                if piece['open'].asset().type() not in self.SHORT_HANDLED:
-                    self._warn_short(piece['open'].asset(), piece['open'])
+            for account in self.accounts:
+                self._use(account)
+                for piece in self.year_end_shorts():
+                    if piece['open'].asset().type() not in self.SHORT_HANDLED:
+                        self._warn_short(piece['open'].asset(), piece['open'])
             sections = {}
             for i, report in enumerate(self.reports):
                 self._show_progress(self.REPLAY_SHARE + (100 - self.REPLAY_SHARE) * i / len(self.reports),
                                     f"{report}: %p%")
                 self._section = report
-                sections[report] = self.reports[report][REPORT_METHOD]()
+                parts = []
+                for account in self.accounts:
+                    self._use(account)
+                    parts.append(self.reports[report][REPORT_METHOD]())
+                sections[report] = self._combine(parts)
             if self._missing or self._no_country:
                 raise TaxReportStop(self._missing, self._no_country)
-            skipped, uncovered = self._not_covered()
+            skipped, uncovered = {}, []
+            for account in self.accounts:
+                self._use(account)
+                account_skipped, account_uncovered = self._not_covered()
+                for reason, count in account_skipped.items():
+                    skipped[reason] = skipped.get(reason, 0) + count
+                uncovered += account_uncovered
             tax_report[self.summary_section[0]] = self.prepare_summary(sections, skipped, uncovered)
             tax_report.update(sections)
             tax_report[self.uncovered_section[0]] = self.prepare_not_covered(skipped, uncovered)
@@ -286,6 +303,58 @@ class TaxReport:
             self.lots.detach()
             self.lots = LedgerLotStore()
         return tax_report
+
+    def _use(self, account):
+        self.account = account
+        self.account_currency = JalAsset(account.currency())
+
+    # A section of several accounts: each account's rows under its own header row, its totals as a subtotal, then the
+    # grand total; one account's rows as they are
+    def _combine(self, parts: list) -> list:
+        if len(parts) == 1:
+            return parts[0]
+        rows = []
+        for account, part in zip(self.accounts, parts):
+            if not part:
+                continue
+            rows.append(self._account_row(account))
+            rows += [dict(x, report_template="subtotals") if x['report_template'] == "totals" else x for x in part]
+        totals = self._grand_totals([x for part in parts for x in part if x['report_template'] == "totals"])
+        return rows + ([totals] if totals else [])
+
+    def _account_row(self, account) -> dict:
+        broker = JalPeer(account.organization()).name() \
+            if account.organization() not in (0, PredefinedAgents.Empty) else ''
+        text = self.texts['account_block'].format(number=account.number(), currency=JalAsset(account.currency()).symbol())
+        return {'report_template': "account", 'account': f"{text}, {broker}" if broker else text}
+
+    # The sum of the accounts' totals; a figure in the account currency is left empty if the accounts' currencies differ
+    def _grand_totals(self, rows: list):
+        if not rows:
+            return None
+        same_currency = len({x.currency() for x in self.accounts}) == 1
+        totals = {"report_template": "totals"}
+        for field in dict.fromkeys(k for x in rows for k in x if k != 'report_template'):
+            values = [x[field] for x in rows if x.get(field) is not None]
+            in_report_currency = field.endswith(self.currency_suffix) or field == ESTIMATE
+            totals[field] = sum(values) if values and (same_currency or in_report_currency) else None
+        return totals
+
+    # The FIFO header of a deals section, saying the results are netted when there are several accounts
+    def fifo_header(self) -> str:
+        return self.texts['fifo'] if len(self.accounts) == 1 else self.texts['fifo_netted']
+
+    # The values the sheets' headers and the forms read: the accounts, and the currency where they share one
+    def sheet_parameters(self) -> dict:
+        currencies = {JalAsset(x.currency()).symbol() for x in self.accounts}
+        first = self.accounts[0]
+        return {
+            "account": ", ".join(f"{x.number()} ({JalAsset(x.currency()).symbol()})" for x in self.accounts),
+            "account_name": first.name(),
+            "currency": currencies.pop() if len(currencies) == 1 else self.texts['account_currency'],
+            "broker_name": JalPeer(first.organization()).name(),
+            "broker_iso_country": first.country().iso_code()
+        }
 
     # The lots of the whole history replayed into the report's store by its jurisdiction's policy: the buy-backs of
     # the year's shorts come after the year, and lots arrive from other accounts
@@ -445,17 +514,22 @@ class TaxReport:
             return self.operation_labels[key]
         return self.operation_labels.get((operation.type(), None), operation.name())
 
+    # The counts skipped by rule, then each account's operations: not covered, closing a carried short, excluded
     def prepare_not_covered(self, skipped: dict, uncovered: list) -> list:
         rows = [{'report_template': "skipped", 'reason': reason, 'count': self.texts['skipped_count'].format(count)}
                 for reason, count in skipped.items()]
-        for operation in uncovered:
-            rows.append(self._operation_row(operation, self.texts['uncovered']))
-        for operation, year in self._carried:
-            rows.append(self._operation_row(operation, self.texts['short_carried'].format(year=year)))
-        for (oid, kind), operation in self._applied.items():   # the replay applies those of every account and year
-            if kind == TaxOverride.NotTaxEvent and operation.account().id() == self.account.id() \
-                    and self.in_period(self.operation_date(operation)):
-                rows.append(self._operation_row(operation, self.texts['excluded'].format(self._overrides[(oid, kind)][1])))
+        for account in self.accounts:
+            part = [self._operation_row(x, self.texts['uncovered']) for x in uncovered if x.account().id() == account.id()]
+            part += [self._operation_row(x, self.texts['short_carried'].format(year=year))
+                     for x, year in self._carried if x.account().id() == account.id()]
+            for (oid, kind), operation in self._applied.items():   # the replay applies those of every account and year
+                if kind == TaxOverride.NotTaxEvent and operation.account().id() == account.id() \
+                        and self.in_period(self.operation_date(operation)):
+                    part.append(self._operation_row(operation,
+                                                    self.texts['excluded'].format(self._overrides[(oid, kind)][1])))
+            if part and len(self.accounts) > 1:
+                rows.append(self._account_row(account))
+            rows += part
         return rows
 
     def _operation_row(self, operation, reason: str) -> dict:
@@ -523,7 +597,7 @@ class TaxReport:
 
     def _section_rows(self, name: str, section: list, figures: dict) -> list:
         rows = [{'report_template': "section", 'section': name,
-                 'rows': len([x for x in section if x['report_template'] != "totals"])}]
+                 'rows': len([x for x in section if x['report_template'] not in ("totals", "subtotals", "account")])}]
         return rows + [{'report_template': "figure", 'figure': self.texts[x], 'amount': v} for x, v in figures.items()]
 
     # Lines the jurisdiction adds after its bases; 'totals' is {base title: {figure: amount}}

@@ -142,10 +142,13 @@
    <item row="4" column="0">
     <widget class="QLabel" name="AccountLbl">
      <property name="text">
-      <string>&amp;Account:</string>
+      <string>&amp;Accounts:</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
      </property>
      <property name="buddy">
-      <cstring>Account</cstring>
+      <cstring>Accounts</cstring>
      </property>
     </widget>
    </item>
@@ -329,7 +332,14 @@
     </widget>
    </item>
    <item row="4" column="1" colspan="2">
-    <widget class="QComboBox" name="Account"/>
+    <widget class="QListWidget" name="Accounts">
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>100</height>
+      </size>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
@@ -338,7 +348,7 @@
   <tabstop>Year</tabstop>
   <tabstop>PeriodFrom</tabstop>
   <tabstop>PeriodTo</tabstop>
-  <tabstop>Account</tabstop>
+  <tabstop>Accounts</tabstop>
   <tabstop>XlsFileName</tabstop>
   <tabstop>XlsSelectBtn</tabstop>
   <tabstop>Pt_OneCurrencyRate</tabstop>

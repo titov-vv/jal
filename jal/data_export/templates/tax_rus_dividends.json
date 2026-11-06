@@ -40,6 +40,19 @@
       [null, null, null, null, "F", "F", "F", "F", "F", "Fe", null, null, null, null]
     ]
   },
+  "subtotals": {
+    "rows": [
+      [null, null, null, null, "Итого по счёту", "amount", "amount_rub", "tax", "tax_rub", "tax2pay", null, null, null, null]
+    ],
+    "formats": [
+      [null, null, null, null, "F", "F", "F", "F", "F", "Fe", null, null, null, null]
+    ]
+  },
+  "account": {
+    "rows": [["account", null, null, null, null, null, null, null, null, null, null, null, null, null]],
+    "formats": [["T:B", null, null, null, null, null, null, null, null, null, null, null, null, null]],
+    "span": [[{"h": 13, "v": 0}, null, null, null, null, null, null, null, null, null, null, null, null, null]]
+  },
   "footers": [
     "Описание данных в столбцах таблицы",
     "1 - Дата, в которую дивиденд был зачислен на счет согласно отчету брокера",

@@ -1,16 +1,20 @@
+import openpyxl
 import pytest
-from PySide6.QtCore import QDate
-from PySide6.QtWidgets import QWidget
+from PySide6.QtCore import QDate, Qt
+from PySide6.QtWidgets import QWidget, QMessageBox
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
-from tests.helpers import d2t, dt2t, create_assets, create_dividends
+from tests.helpers import d2t, dt2t, create_assets, create_dividends, create_quotes, create_trades, create_actions
 from tests.test_taxes_pt import create_pt_scenario
 from tests.test_tax_replay import create_ru_scenario
 from tests.test_residence import _timeline
-from jal.constants import PredefinedAsset
+from jal.constants import PredefinedAsset, PredefinedCategory
+from jal.db.account import JalAccountCreator
+from jal.db.asset import JalAsset
 from jal.db.ledger import Ledger
 from jal.db.country import JalCountry
 from jal.data_export.taxes import TaxReport, TaxReportCancelled
+from jal.data_export.xlsx import XLSX
 from jal.data_export.tax_reports.russia import TaxesRussia
 from jal.data_export.tax_reports.portugal import TaxesPortugal
 from jal.widgets.icons import JalIcon
@@ -56,7 +60,7 @@ def test_dialog_period_follows_the_year(prepare_db_taxes, monkeypatch):
     widget.ui.Year.setValue(2025)
     assert (widget.ui.PeriodFrom.date(), widget.ui.PeriodTo.date()) == (QDate(2025, 1, 1), QDate(2025, 12, 31))
     assert (widget.period_begin, widget.period_end) == (d2t(250101), d2t(260101))
-    assert widget.account == 1
+    assert widget.accounts == [1]
 
     widget.ui.PeriodFrom.setDate(QDate(2024, 6, 1))     # before the year
     widget.ui.PeriodTo.setDate(QDate(2026, 2, 1))       # after it
@@ -64,23 +68,23 @@ def test_dialog_period_follows_the_year(prepare_db_taxes, monkeypatch):
     widget.ui.PeriodTo.setDate(QDate(2025, 3, 31))
     widget.ui.PeriodFrom.setDate(QDate(2025, 4, 15))    # past To
     assert widget.ui.PeriodFrom.date() == QDate(2025, 3, 31)
-    assert widget.account is None                       # the May dividend is outside the period
+    assert widget.accounts == []                        # the May dividend is outside the period
 
     widget.ui.PeriodTo.setDate(QDate(2025, 6, 30))
     widget.ui.PeriodFrom.setDate(QDate(2025, 5, 15))
-    assert (widget.period_begin, widget.period_end, widget.account) == (d2t(250515), d2t(250701), 1)
+    assert (widget.period_begin, widget.period_end, widget.accounts) == (d2t(250515), d2t(250701), [1])
     periods = []
 
-    def prepare(_self, year, account_id, period=None, **kwargs):
-        periods.append((year, account_id, period))
+    def prepare(_self, year, accounts, period=None, **kwargs):
+        periods.append((year, accounts, period))
         raise TaxReportCancelled()
     monkeypatch.setattr(TaxReport, "prepare_tax_report", prepare)
     widget.SaveReport()
-    assert periods == [(2025, 1, (d2t(250515), d2t(250701)))]
+    assert periods == [(2025, [1], (d2t(250515), d2t(250701)))]
 
     widget.ui.Year.setValue(2024)
     assert (widget.ui.PeriodFrom.date(), widget.ui.PeriodTo.date()) == (QDate(2024, 1, 1), QDate(2024, 12, 31))
-    assert widget.account is None
+    assert widget.accounts == []
 
 
 # Residence rows as (YYMMDD since, country code), currency 1, no zone; a None code leaves the country blank
@@ -158,3 +162,121 @@ def test_dialog_proposes_the_resident_period(prepare_db_taxes):
     assert label() == [f"Also resident in Россия: {span(240101, 241231)}"]
     widget.ui.Year.setValue(2025)
     assert dates() == (QDate(2025, 3, 1), QDate(2025, 5, 31))
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The PT scenario on account 1 (USD) and a second account in 'currency' with a dividend, a sale and an interest
+def _second_account(currency: int) -> int:
+    create_pt_scenario()
+    create_quotes(2, 1, [(d2t(230101), 90.0)])     # USD/RUB
+    create_quotes(3, 1, [(d2t(230101), 100.0)])    # EUR/RUB
+    account = JalAccountCreator(currency_id=currency, number='X2', name='Second', investing=1, organization=1,
+                                country='us').commit().id()
+    create_actions([(d2t(230101), account, 1, [(PredefinedCategory.StartingBalance, 5000.0)]),
+                    (dt2t(2406031430), account, 1, [(PredefinedCategory.Interest, 1.5, "CREDIT INT")])])
+    create_trades(account, [(dt2t(2402011430), d2t(240205), 4, 10, 100.0, 1.0, "B1"),
+                            (dt2t(2405021430), d2t(240506), 4, -10, 120.0, 1.0, "S1")])
+    create_dividends([(dt2t(2403011430), account, 4, 5.0, 0.75, "AAPL CASH DIVIDEND")])
+    Ledger().rebuild(from_timestamp=0)
+    return account
+
+
+def _data(rows: list) -> list:
+    return [x for x in rows if x['report_template'] not in ("account", "subtotals", "totals")]
+
+
+# {(section, label): amount} of the Summary's figures and counts, a figure keyed by the section above it; the estimates
+# are left out, as one made on the netted bases is not the sum of two
+def _summary(rows: list) -> dict:
+    figures, section = {}, ''
+    for row in rows:
+        section = row.get('section', section) if row['report_template'] == "section" else section
+        if row['report_template'] in ("section", "count"):
+            figures[(row['report_template'], row.get('section') or row.get('label'))] = row.get('rows', row.get('count'))
+        elif 'amount' in row and row['report_template'] != "estimate":
+            figures[(section, row.get('figure') or row.get('label'))] = row['amount']
+    return figures
+
+
+# A report over two accounts: each section shows each account's rows under its header with its own subtotal, then the
+# grand total of both; the Summary is the sum of the two single-account reports
+@pytest.mark.parametrize("report_class", [TaxesRussia, TaxesPortugal])
+@pytest.mark.parametrize("currency", [3, 2])
+def test_two_accounts_are_netted(prepare_db_taxes, tmp_path, report_class, currency):
+    second = _second_account(currency)
+    taxes = report_class()
+    singles = [taxes.prepare_tax_report(2024, x) for x in (1, second)]
+    combined = taxes.prepare_tax_report(2024, [1, second])
+    summary, uncovered = taxes.summary_section[0], taxes.uncovered_section[0]
+    both = 0
+    for name, rows in combined.items():
+        if name in (summary, uncovered):
+            continue
+        parts = [x[name] for x in singles]
+        assert _data(rows) == _data(parts[0]) + _data(parts[1])
+        assert [x['account'] for x in rows if x['report_template'] == "account"] == \
+               [taxes.texts['account_block'].format(number=number, currency=symbol)   # the test broker has no name
+                for number, symbol, part in (("U7654321", "USD", parts[0]), ("X2", JalAsset(currency).symbol(), parts[1]))
+                if part]
+        totals = [x for part in parts for x in part if x['report_template'] == "totals"]
+        assert [dict(x, report_template="totals") for x in rows if x['report_template'] == "subtotals"] == totals
+        if not totals:
+            continue
+        both += len(totals) == 2
+        grand, = [x for x in rows if x['report_template'] == "totals"]
+        for field in grand:
+            values = [x[field] for x in totals if x.get(field) is not None]
+            in_report_currency = field.endswith(taxes.currency_suffix) or field == "tax2pay"
+            if field != 'report_template':
+                assert grand[field] == (sum(values) if values and (currency == 2 or in_report_currency) else None), field
+    assert both >= 3     # dividends, shares and interest come from both accounts
+    expected = {}
+    for single in singles:
+        for key, value in _summary(single[summary]).items():
+            expected[key] = expected.get(key, 0) + value
+    assert {k: v for k, v in _summary(combined[summary]).items() if v} == {k: v for k, v in expected.items() if v}
+    assert taxes.sheet_parameters()['account'] == f"U7654321 (USD), X2 ({JalAsset(currency).symbol()})"
+    assert taxes.sheet_parameters()['currency'] == ("USD" if currency == 2 else taxes.texts['account_currency'])
+    assert any(taxes.texts['fifo_netted'] in taxes.section_headers(x) for x in taxes.reports)
+    assert not any(taxes.texts['fifo'] in taxes.section_headers(x) for x in taxes.reports)
+
+    file = str(tmp_path / "report.xlsx")
+    xlsx = XLSX(file)
+    for section in combined:
+        xlsx.output_data(combined[section], taxes.report_template(section),
+                         dict(taxes.sheet_parameters(), period="01/01/2024 - 31/12/2024"),
+                         headers=taxes.section_headers(section))
+    assert xlsx.save()
+    cells = {c.value for sheet in openpyxl.load_workbook(file) for row in sheet.iter_rows() for c in row}
+    assert {f"{taxes.texts['account_block'].format(number='X2', currency=JalAsset(currency).symbol())}",
+            "Итого по счёту" if report_class is TaxesRussia else "Account total"} <= cells
+
+
+# One ticked account gives the report of that account as it was: no header row, no subtotal
+def test_one_account_in_a_list_is_the_single_report(prepare_db_taxes):
+    create_pt_scenario()
+    assert TaxesPortugal().prepare_tax_report(2024, [1]) == TaxesPortugal().prepare_tax_report(2024, 1)
+
+
+# Every taxable account is ticked; an untick survives a period change; a form isn't made for two accounts
+def test_dialog_ticks_accounts(prepare_db_taxes, tmp_path, monkeypatch):
+    second = _second_account(2)
+    warnings = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda _self, _parent, title, text, *args: warnings.append(text) or QMessageBox.Ok)
+    JalIcon()
+    parent = QWidget()
+    widget = TaxWidget(parent)
+    widget.ui.Country.setCurrentIndex(widget.ui.Country.findData('ru'))
+    widget.ui.Year.setValue(2024)
+    assert widget.accounts == [1, second]
+    widget.ui.Accounts.item(0).setCheckState(Qt.Unchecked)
+    widget.ui.PeriodFrom.setDate(QDate(2024, 2, 1))
+    assert widget.accounts == [second]
+    widget.ui.Accounts.item(0).setCheckState(Qt.Checked)
+
+    widget.ui.XlsFileName.setText(str(tmp_path / "report.xlsx"))
+    widget.ui.Ndfl3Group.setChecked(True)
+    widget.ui.Ndfl3FileName.setText(str(tmp_path / "form.de4"))
+    widget.SaveReport()
+    assert (tmp_path / "report.xlsx").exists() and not (tmp_path / "form.de4").exists()
+    assert any("one account" in x for x in warnings)

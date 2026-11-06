@@ -28,6 +28,15 @@
     "rows": [[null, null, null, null, "ИТОГО", "value", "", "value_rub", null]],
     "formats": [[null, null, null, null, "F", "F", "F", "F", null]]
   },
+  "subtotals": {
+    "rows": [[null, null, null, null, "Итого по счёту", "value", "", "value_rub", null]],
+    "formats": [[null, null, null, null, "F", "F", "F", "F", null]]
+  },
+  "account": {
+    "rows": [["account", null, null, null, null, null, null, null, null, null]],
+    "formats": [["T:B", null, null, null, null, null, null, null, null, null]],
+    "span": [[{"h": 9, "v": 0}, null, null, null, null, null, null, null, null, null]]
+  },
   "footers": [
     "Описание данных в столбцах таблицы",
     "5 - Котировка криптовалюты на дату получения в валюте счёта",
