@@ -303,7 +303,8 @@ Summary sheet.
   Annex J: table 9.2A for shares, funds and bonds, each with its code, and table 9.2B for derivatives.
   A short sale is written as realized by the sale that opened it; a stock short open at the end of
   the year is left out of the file — enter it by hand (see [Short sales](#short-sales)). The 9.2B
-  lines are a first draft — check them against the form before loading them.
+  lines are a first draft — check them against the form before loading them. Crypto is not in the
+  file yet: enter it from the crypto sheets.
 
 **Russia**
 
@@ -352,6 +353,10 @@ report ([Several accounts](#several-accounts)): its file already holds every acc
   spin-off and merger with the figures the company published —
   see [chapter 6](06-investments.md#corporate-actions).
 * **Read the log** after producing the report.
+* **Keep the files you file.** A report is worked out afresh every time from what the database holds
+  now: a rate downloaded later, a statement imported again or a rebuild of the ledger can change the
+  figures of a year already declared, and JAL keeps no copy of what it produced. Store the spreadsheet
+  and the declaration file you filed, and compare a later report with them yourself.
 
 For Interactive Brokers there is a detailed, step-by-step example (in Russian) of preparing a Russian
 declaration, in the project repository:

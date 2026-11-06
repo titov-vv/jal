@@ -135,8 +135,9 @@ class TaxesPortugal(TaxReport):
         'quadro_94a': "Declared in Anexo J, quadro 9.4A: no code, the quadro is the classification",
         'quadro_g1': "Declared for information in Anexo G1, quadro 7: no code",
         'bond_accrued': "Accrued interest is not in the price: received, it is category E income on the Interest sheet; "
-                        "paid with a purchase, it is not deducted (category E has no expenses)",
-        'accrued_paid': "Accrued interest paid with a bond purchase: not deducted, category E has no expenses",
+                        "paid with a purchase, it is not deducted here and may be netted against the bond's first coupon",
+        'accrued_paid': "Accrued interest paid with a bond purchase: not deducted by JAL, may be netted against "
+                        "the bond's first coupon",
         'no_40a': "The 50% exclusion of art. 40.º-A is assumed not to apply",
         'coupon': "Bond interest"
     }
