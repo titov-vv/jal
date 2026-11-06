@@ -189,4 +189,4 @@ def test_swap_only_account_is_taxable(prepare_db_taxes):
     create_swaps(2, [(d2t(250320), 6, 10, 4, 0.05)], treatment=SwapTreatment.Sale)
     Ledger().rebuild(from_timestamp=0)
 
-    assert [x.id() for x in JalAccount.get_taxable_accounts(2025)] == [1, 2]
+    assert [x.id() for x in JalAccount.get_taxable_accounts(d2t(250101), d2t(260101))] == [1, 2]

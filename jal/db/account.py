@@ -1,5 +1,4 @@
 import re
-from datetime import datetime, timezone
 from decimal import Decimal
 from jal.db.db import JalDB
 from jal.db.asset import JalAsset
@@ -199,16 +198,16 @@ class JalAccount(JalDB):
                    and normalize_address(location_id, x.address()) == address]
         return matched[0] if len(matched) == 1 else None
 
-    # Investing accounts with an operation of the year that is a tax event or a base-impacting cost - the SQL twin of
+    # Investing accounts with an operation in [begin, end) that is a tax event or a base-impacting cost - the SQL twin of
     # LedgerTransaction.taxable(), kept in step with it by tests/test_tax_status.py. Trades are read from the deals
     # they closed, so the ledger has to be built. The window is widened by ZONE_SPAN at each end because it is put to
-    # the database in stored instants while a report counts its year on its jurisdiction's clock: offering an account
-    # too many is harmless, the report itself decides which year each operation falls in.
+    # the database in stored instants while a report counts its period on its jurisdiction's clock: offering an account
+    # too many is harmless, the report itself decides which period each operation falls in.
     @classmethod
-    def get_taxable_accounts(cls, year: int) -> list:
+    def get_taxable_accounts(cls, begin: int, end: int) -> list:
         operations = jal.db.operations
-        begin = int(datetime(year, 1, 1, tzinfo=timezone.utc).timestamp()) - ZONE_SPAN
-        end = int(datetime(year + 1, 1, 1, tzinfo=timezone.utc).timestamp()) + ZONE_SPAN
+        begin -= ZONE_SPAN
+        end += ZONE_SPAN
         no_event_incomes = ','.join(str(x) for x in (operations.AssetIncome.DustAttack,
                                                      operations.AssetIncome.RebaseAdjustment))
         lost_positions = ','.join(str(x) for x in operations.CorporateAction.NoResults)

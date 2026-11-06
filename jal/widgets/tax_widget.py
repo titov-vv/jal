@@ -1,10 +1,10 @@
 from functools import partial
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 import traceback
 import json
 
-from PySide6.QtCore import Property, Slot, Signal, Qt
+from PySide6.QtCore import Property, Slot, Signal, Qt, QDate
 from PySide6.QtGui import QShortcut, QKeySequence
 from PySide6.QtWidgets import QFileDialog, QMessageBox, QApplication, QDialog
 
@@ -52,6 +52,8 @@ class TaxWidget(MdiWidget):
             self.ui.Country.addItem(JalIcon.country_flag(code), jurisdiction['name'], code)
         self.ui.Country.currentIndexChanged.connect(self.OnCountryChange)
         self.ui.Year.valueChanged.connect(self.OnYearChange)
+        self.ui.PeriodFrom.dateChanged.connect(self.OnPeriodChange)
+        self.ui.PeriodTo.dateChanged.connect(self.OnPeriodChange)
         self.ui.Year.setValue(datetime.now().year - 1)   # Set previous year by default
         self.ui.XlsSelectBtn.pressed.connect(partial(self.OnFileBtn, FileType.XLS))
         self.ui.Ndfl3SelectBtn.pressed.connect(partial(self.OnFileBtn, FileType.RU_Declaration_DE))
@@ -73,12 +75,26 @@ class TaxWidget(MdiWidget):
             QApplication.processEvents()
             self.adjustSize()
 
-    # Load account combobox with account names relevant for the given year
+    # The period is reset to the whole year and held inside it
     def OnYearChange(self, year):
+        first, last = QDate(year, 1, 1), QDate(year, 12, 31)
+        for edit, day in ((self.ui.PeriodFrom, first), (self.ui.PeriodTo, last)):
+            edit.blockSignals(True)
+            edit.setDateRange(first, last)
+            edit.setDate(day)
+            edit.blockSignals(False)
+        self.OnPeriodChange()
+
+    # Keeps From <= To and loads the accounts with a tax event in the period, keeping the one selected
+    def OnPeriodChange(self, _date=None):
+        self.ui.PeriodTo.setMinimumDate(self.ui.PeriodFrom.date())
+        self.ui.PeriodFrom.setMaximumDate(self.ui.PeriodTo.date())
+        selected = self.ui.Account.currentData()
         self.ui.Account.clear()
-        accounts = JalAccount.get_taxable_accounts(year)
-        for account in accounts:
+        for account in JalAccount.get_taxable_accounts(self.period_begin, self.period_end):
             self.ui.Account.addItem(account.name(), account.id())
+        if selected is not None and self.ui.Account.findData(selected) >= 0:
+            self.ui.Account.setCurrentIndex(self.ui.Account.findData(selected))
 
     # Displays tax widget in a given window area, its progress on 'main_window' if given.
     # It is implemented as a separate static method in order to prevent unexpected object deletion
@@ -112,7 +128,13 @@ class TaxWidget(MdiWidget):
                 selector[3].setText(filename[0])
             JalSettings().setRecentFolder(FolderFor.Report, filename[0])
 
+    @staticmethod
+    def _midnight(day: QDate) -> int:
+        return int(datetime(day.year(), day.month(), day.day(), tzinfo=timezone.utc).timestamp())
+
     year = Property(int, fget=lambda self: self.ui.Year.value())
+    period_begin = Property(int, fget=lambda self: self._midnight(self.ui.PeriodFrom.date()))
+    period_end = Property(int, fget=lambda self: self._midnight(self.ui.PeriodTo.date().addDays(1)))   # half-open
     country = Property(str, fget=lambda self: self.ui.Country.currentData())
     xls_filename = Property(str, fget=lambda self: self.ui.XlsFileName.text())
     account = Property(int, fget=lambda self: self.ui.Account.currentData())
@@ -138,7 +160,8 @@ class TaxWidget(MdiWidget):
         self._report = taxes
         self.show_progress.emit(True)
         try:
-            return taxes.prepare_tax_report(self.year, self.account, use_one_currency_rate=self.use_one_rate,
+            return taxes.prepare_tax_report(self.year, self.account, period=(self.period_begin, self.period_end),
+                                            use_one_currency_rate=self.use_one_rate,
                                             use_settlement=(not self.no_settlement), progress=progress)
         finally:
             self.show_progress.emit(False)

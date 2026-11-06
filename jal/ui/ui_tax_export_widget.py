@@ -15,9 +15,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QGridLayout,
-    QGroupBox, QLabel, QLineEdit, QPushButton,
-    QSizePolicy, QSpinBox, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateEdit,
+    QGridLayout, QGroupBox, QHBoxLayout, QLabel,
+    QLineEdit, QPushButton, QSizePolicy, QSpacerItem,
+    QSpinBox, QVBoxLayout, QWidget)
 
 class Ui_TaxWidget(object):
     def setupUi(self, TaxWidget):
@@ -39,7 +40,7 @@ class Ui_TaxWidget(object):
         sizePolicy1.setHeightForWidth(self.XlsSelectBtn.sizePolicy().hasHeightForWidth())
         self.XlsSelectBtn.setSizePolicy(sizePolicy1)
 
-        self.MainLayout.addWidget(self.XlsSelectBtn, 3, 2, 1, 1)
+        self.MainLayout.addWidget(self.XlsSelectBtn, 4, 2, 1, 1)
 
         self.Year = QSpinBox(TaxWidget)
         self.Year.setObjectName(u"Year")
@@ -58,7 +59,7 @@ class Ui_TaxWidget(object):
         sizePolicy2.setHeightForWidth(self.XlsFileName.sizePolicy().hasHeightForWidth())
         self.XlsFileName.setSizePolicy(sizePolicy2)
 
-        self.MainLayout.addWidget(self.XlsFileName, 3, 1, 1, 1)
+        self.MainLayout.addWidget(self.XlsFileName, 4, 1, 1, 1)
 
         self.PtBox = QGroupBox(TaxWidget)
         self.PtBox.setObjectName(u"PtBox")
@@ -106,12 +107,12 @@ class Ui_TaxWidget(object):
         self.AccountLbl = QLabel(TaxWidget)
         self.AccountLbl.setObjectName(u"AccountLbl")
 
-        self.MainLayout.addWidget(self.AccountLbl, 2, 0, 1, 1)
+        self.MainLayout.addWidget(self.AccountLbl, 3, 0, 1, 1)
 
         self.XlsFileLbl = QLabel(TaxWidget)
         self.XlsFileLbl.setObjectName(u"XlsFileLbl")
 
-        self.MainLayout.addWidget(self.XlsFileLbl, 3, 0, 1, 1)
+        self.MainLayout.addWidget(self.XlsFileLbl, 4, 0, 1, 1)
 
         self.RuBox = QGroupBox(TaxWidget)
         self.RuBox.setObjectName(u"RuBox")
@@ -181,6 +182,37 @@ class Ui_TaxWidget(object):
 
         self.MainLayout.addWidget(self.YearLbl, 1, 0, 1, 1)
 
+        self.PeriodLbl = QLabel(TaxWidget)
+        self.PeriodLbl.setObjectName(u"PeriodLbl")
+
+        self.MainLayout.addWidget(self.PeriodLbl, 2, 0, 1, 1)
+
+        self.PeriodLayout = QHBoxLayout()
+        self.PeriodLayout.setObjectName(u"PeriodLayout")
+        self.PeriodFrom = QDateEdit(TaxWidget)
+        self.PeriodFrom.setObjectName(u"PeriodFrom")
+        self.PeriodFrom.setCalendarPopup(True)
+
+        self.PeriodLayout.addWidget(self.PeriodFrom)
+
+        self.PeriodDash = QLabel(TaxWidget)
+        self.PeriodDash.setObjectName(u"PeriodDash")
+
+        self.PeriodLayout.addWidget(self.PeriodDash)
+
+        self.PeriodTo = QDateEdit(TaxWidget)
+        self.PeriodTo.setObjectName(u"PeriodTo")
+        self.PeriodTo.setCalendarPopup(True)
+
+        self.PeriodLayout.addWidget(self.PeriodTo)
+
+        self.PeriodSpacer = QSpacerItem(0, 0, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.PeriodLayout.addItem(self.PeriodSpacer)
+
+
+        self.MainLayout.addLayout(self.PeriodLayout, 2, 1, 1, 2)
+
         self.SaveButton = QPushButton(TaxWidget)
         self.SaveButton.setObjectName(u"SaveButton")
 
@@ -189,7 +221,7 @@ class Ui_TaxWidget(object):
         self.Account = QComboBox(TaxWidget)
         self.Account.setObjectName(u"Account")
 
-        self.MainLayout.addWidget(self.Account, 2, 1, 1, 2)
+        self.MainLayout.addWidget(self.Account, 3, 1, 1, 2)
 
 #if QT_CONFIG(shortcut)
         self.IRS_Modelo3FileLbl.setBuddy(self.IRS_Modelo3Filename)
@@ -198,9 +230,12 @@ class Ui_TaxWidget(object):
         self.Ndfl3FileLbl.setBuddy(self.Ndfl3FileName)
         self.CountryLbl.setBuddy(self.Country)
         self.YearLbl.setBuddy(self.Year)
+        self.PeriodLbl.setBuddy(self.PeriodFrom)
 #endif // QT_CONFIG(shortcut)
         QWidget.setTabOrder(self.Country, self.Year)
-        QWidget.setTabOrder(self.Year, self.Account)
+        QWidget.setTabOrder(self.Year, self.PeriodFrom)
+        QWidget.setTabOrder(self.PeriodFrom, self.PeriodTo)
+        QWidget.setTabOrder(self.PeriodTo, self.Account)
         QWidget.setTabOrder(self.Account, self.XlsFileName)
         QWidget.setTabOrder(self.XlsFileName, self.XlsSelectBtn)
         QWidget.setTabOrder(self.XlsSelectBtn, self.Pt_OneCurrencyRate)
@@ -259,6 +294,10 @@ class Ui_TaxWidget(object):
 #endif // QT_CONFIG(tooltip)
         self.CountryLbl.setText(QCoreApplication.translate("TaxWidget", u"&Country:", None))
         self.YearLbl.setText(QCoreApplication.translate("TaxWidget", u"&Year:", None))
+        self.PeriodLbl.setText(QCoreApplication.translate("TaxWidget", u"&Period:", None))
+        self.PeriodFrom.setDisplayFormat(QCoreApplication.translate("TaxWidget", u"dd/MM/yyyy", None))
+        self.PeriodDash.setText(QCoreApplication.translate("TaxWidget", u"-", None))
+        self.PeriodTo.setDisplayFormat(QCoreApplication.translate("TaxWidget", u"dd/MM/yyyy", None))
         self.SaveButton.setText(QCoreApplication.translate("TaxWidget", u"Save Report", None))
     # retranslateUi
 

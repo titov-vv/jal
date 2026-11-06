@@ -20,7 +20,7 @@
    <string>Select parameters of investment tax report</string>
   </property>
   <layout class="QGridLayout" name="MainLayout">
-   <item row="3" column="2">
+   <item row="4" column="2">
     <widget class="QPushButton" name="XlsSelectBtn">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -55,7 +55,7 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="1">
+   <item row="4" column="1">
     <widget class="QLineEdit" name="XlsFileName">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -139,7 +139,7 @@
      </layout>
     </widget>
    </item>
-   <item row="2" column="0">
+   <item row="3" column="0">
     <widget class="QLabel" name="AccountLbl">
      <property name="text">
       <string>&amp;Account:</string>
@@ -149,7 +149,7 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="0">
+   <item row="4" column="0">
     <widget class="QLabel" name="XlsFileLbl">
      <property name="text">
       <string>&amp;Excel file:</string>
@@ -266,6 +266,54 @@
      </property>
     </widget>
    </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="PeriodLbl">
+     <property name="text">
+      <string>&amp;Period:</string>
+     </property>
+     <property name="buddy">
+      <cstring>PeriodFrom</cstring>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1" colspan="2">
+    <layout class="QHBoxLayout" name="PeriodLayout">
+     <item>
+      <widget class="QDateEdit" name="PeriodFrom">
+       <property name="displayFormat">
+        <string>dd/MM/yyyy</string>
+       </property>
+       <property name="calendarPopup">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="PeriodDash">
+       <property name="text">
+        <string>-</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QDateEdit" name="PeriodTo">
+       <property name="displayFormat">
+        <string>dd/MM/yyyy</string>
+       </property>
+       <property name="calendarPopup">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="PeriodSpacer">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
    <item row="11" column="2">
     <widget class="QPushButton" name="SaveButton">
      <property name="text">
@@ -273,7 +321,7 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="1" colspan="2">
+   <item row="3" column="1" colspan="2">
     <widget class="QComboBox" name="Account"/>
    </item>
   </layout>
@@ -281,6 +329,8 @@
  <tabstops>
   <tabstop>Country</tabstop>
   <tabstop>Year</tabstop>
+  <tabstop>PeriodFrom</tabstop>
+  <tabstop>PeriodTo</tabstop>
   <tabstop>Account</tabstop>
   <tabstop>XlsFileName</tabstop>
   <tabstop>XlsSelectBtn</tabstop>

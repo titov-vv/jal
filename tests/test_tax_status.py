@@ -149,4 +149,4 @@ def test_taxable_accounts_follow_taxable(prepare_db_taxes):
         if operation.taxable() != NOT and d2t(250101) <= operation.timestamp() < d2t(260101) and investing:
             expected.add(operation.account().id())
     assert expected == {1, 4}
-    assert [x.id() for x in JalAccount.get_taxable_accounts(2025)] == sorted(expected)
+    assert [x.id() for x in JalAccount.get_taxable_accounts(d2t(250101), d2t(260101))] == sorted(expected)
