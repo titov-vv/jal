@@ -69,20 +69,32 @@ class TaxWidget(MdiWidget):
     def OnCountryChange(self, _index):
         for code, box in self._option_boxes.items():
             box.setVisible(code == self.country)
+        self._propose_period()
         # A window of its own may follow the size of the country block it shows, a tab may not
         if self.isWindow():
             self.update()
             QApplication.processEvents()
             self.adjustSize()
 
-    # The period is reset to the whole year and held inside it
-    def OnYearChange(self, year):
-        first, last = QDate(year, 1, 1), QDate(year, 12, 31)
-        for edit, day in ((self.ui.PeriodFrom, first), (self.ui.PeriodTo, last)):
+    def OnYearChange(self, _year):
+        self._propose_period()
+
+    # The period is held inside the year and reset to the first period the jurisdiction derives from the residence
+    # table, or to the whole year; the label names every derived period
+    def _propose_period(self):
+        if self.country is None:
+            return
+        periods = TaxReport.create_report(self.country).resident_periods(self.year) or []
+        begin, end = periods[0] if periods else TaxReport.year_window(self.year)
+        first, last = QDate(self.year, 1, 1), QDate(self.year, 12, 31)
+        for edit, moment in ((self.ui.PeriodFrom, begin), (self.ui.PeriodTo, end - 86400)):
             edit.blockSignals(True)
             edit.setDateRange(first, last)
-            edit.setDate(day)
+            edit.setDate(self._day(moment))
             edit.blockSignals(False)
+        text = ", ".join(f"{reading2d(x)} - {reading2d(y - 1)}" for x, y in periods)
+        self.ui.ResidenceLbl.setText(self.tr("Resident by the residence table:") + "\n" + text if periods else '')
+        self.ui.ResidenceLbl.setVisible(bool(periods))
         self.OnPeriodChange()
 
     # Keeps From <= To and loads the accounts with a tax event in the period, keeping the one selected
@@ -131,6 +143,11 @@ class TaxWidget(MdiWidget):
     @staticmethod
     def _midnight(day: QDate) -> int:
         return int(datetime(day.year(), day.month(), day.day(), tzinfo=timezone.utc).timestamp())
+
+    @staticmethod
+    def _day(timestamp: int) -> QDate:
+        day = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+        return QDate(day.year, day.month, day.day)
 
     year = Property(int, fget=lambda self: self.ui.Year.value())
     period_begin = Property(int, fget=lambda self: self._midnight(self.ui.PeriodFrom.date()))

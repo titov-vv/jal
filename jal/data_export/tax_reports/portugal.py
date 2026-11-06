@@ -77,8 +77,6 @@ class TaxesPortugal(TaxReport):
         'value': "Value at receipt (information)",
         'base_total': "Total of the category",
         'outside': "Outside both categories - for information, not totalled",
-        'residence_rule': "Residence by JAL's residence table: a row's date is the first day of presence, residence "
-                          "in part of the year counts from that day (CIRS art. 16.º)",
         'parameters_unreviewed': "Warning: the tax parameters (treaties, base rates) were last reviewed for {reviewed}; "
                                  "{year} uses the latest values known",
         'parameters_missing': "Warning: there are no tax parameters for {year}; no tax treaty is assumed",
@@ -97,6 +95,7 @@ class TaxesPortugal(TaxReport):
                          "is not deducted",
         'short_unhandled': "Warning: the short of {symbol} sold {date} crosses the end of a year - the rule for this kind "
                            "of asset is not handled, check it by hand",
+        'historical_cost': "Cost is the historical acquisition cost: a change of tax residence doesn't revalue it",
         'cost_currency': "Cost paid in {}: the EUR figures convert it from that currency",
         'crypto_fiat': "Only disposals for money are here; crypto-for-crypto exchanges and wrappings are on "
                        "'Not covered' (CIRS art. 10.º, n.º 20)",
@@ -237,6 +236,7 @@ class TaxesPortugal(TaxReport):
         self.add_header(self.texts['one_rate'] if self.one_currency_rate else self.texts['two_rates'])
         self.add_header(self.texts['trade_date'])
         self.add_header(self.texts['native_cost'])
+        self.add_header(self.texts['historical_cost'])
 
     # One deal: the account-currency columns are JAL's own view, the EUR ones the tax figures - the native cost converted
     # from the currency it was paid in, at the rate of the disposal (a short's opening sale) or of each leg's own date

@@ -15,6 +15,7 @@ from jal.data_export.tax_reports.russia import TaxesRussia
 from jal.data_export.tax_reports.portugal import TaxesPortugal
 from jal.widgets.icons import JalIcon
 from jal.widgets.tax_widget import TaxWidget
+from jal.widgets.helpers import reading2d
 
 
 # The dated rows of every section but the Summary, as comparable texts
@@ -119,3 +120,34 @@ def test_pt_resident_by_date(prepare_db_taxes, rows, year, periods):
     _residence(rows)
 
     assert TaxesPortugal().resident_periods(year) == [(d2t(x), d2t(y)) for x, y in periods]
+
+
+# The dialog proposes the first period the jurisdiction derives and names all of them; the user's edit stays until the
+# country or the year changes; with nothing derived it offers the whole year and names nothing
+def test_dialog_proposes_the_resident_period(prepare_db_taxes):
+    _residence([(200101, 'ru'), (250301, 'pt'), (250601, 'ru'), (250911, 'pt')])   # RU 161 days in 2025
+    JalIcon()
+    parent = QWidget()
+    widget = TaxWidget(parent)
+    dates = lambda: (widget.ui.PeriodFrom.date(), widget.ui.PeriodTo.date())
+    widget.ui.Year.setValue(2025)
+    widget.ui.Country.setCurrentIndex(widget.ui.Country.findData('pt'))
+    assert dates() == (QDate(2025, 3, 1), QDate(2025, 5, 31))
+    assert widget.ui.ResidenceLbl.text().endswith(f"{reading2d(d2t(250301))} - {reading2d(d2t(250531))}, "
+                                                  f"{reading2d(d2t(250911))} - {reading2d(d2t(251231))}")
+    widget.ui.PeriodFrom.setDate(QDate(2025, 1, 1))
+    widget.ui.PeriodTo.setDate(QDate(2025, 12, 31))
+    assert dates() == (QDate(2025, 1, 1), QDate(2025, 12, 31))   # the user's choice
+
+    widget.ui.Country.setCurrentIndex(widget.ui.Country.findData('ru'))
+    assert dates() == (QDate(2025, 1, 1), QDate(2025, 12, 31))
+    assert widget.ui.ResidenceLbl.text() == '' and widget.ui.ResidenceLbl.isHidden()
+    widget.ui.Year.setValue(2024)
+    assert dates() == (QDate(2024, 1, 1), QDate(2024, 12, 31))
+    assert widget.ui.ResidenceLbl.text().endswith(f"{reading2d(d2t(240101))} - {reading2d(d2t(241231))}")
+
+    widget.ui.Country.setCurrentIndex(widget.ui.Country.findData('pt'))
+    assert dates() == (QDate(2024, 1, 1), QDate(2024, 12, 31))   # nothing derived
+    assert widget.ui.ResidenceLbl.text() == ''
+    widget.ui.Year.setValue(2025)
+    assert dates() == (QDate(2025, 3, 1), QDate(2025, 5, 31))

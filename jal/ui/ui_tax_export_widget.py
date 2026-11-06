@@ -40,7 +40,7 @@ class Ui_TaxWidget(object):
         sizePolicy1.setHeightForWidth(self.XlsSelectBtn.sizePolicy().hasHeightForWidth())
         self.XlsSelectBtn.setSizePolicy(sizePolicy1)
 
-        self.MainLayout.addWidget(self.XlsSelectBtn, 4, 2, 1, 1)
+        self.MainLayout.addWidget(self.XlsSelectBtn, 5, 2, 1, 1)
 
         self.Year = QSpinBox(TaxWidget)
         self.Year.setObjectName(u"Year")
@@ -59,7 +59,7 @@ class Ui_TaxWidget(object):
         sizePolicy2.setHeightForWidth(self.XlsFileName.sizePolicy().hasHeightForWidth())
         self.XlsFileName.setSizePolicy(sizePolicy2)
 
-        self.MainLayout.addWidget(self.XlsFileName, 4, 1, 1, 1)
+        self.MainLayout.addWidget(self.XlsFileName, 5, 1, 1, 1)
 
         self.PtBox = QGroupBox(TaxWidget)
         self.PtBox.setObjectName(u"PtBox")
@@ -107,12 +107,12 @@ class Ui_TaxWidget(object):
         self.AccountLbl = QLabel(TaxWidget)
         self.AccountLbl.setObjectName(u"AccountLbl")
 
-        self.MainLayout.addWidget(self.AccountLbl, 3, 0, 1, 1)
+        self.MainLayout.addWidget(self.AccountLbl, 4, 0, 1, 1)
 
         self.XlsFileLbl = QLabel(TaxWidget)
         self.XlsFileLbl.setObjectName(u"XlsFileLbl")
 
-        self.MainLayout.addWidget(self.XlsFileLbl, 4, 0, 1, 1)
+        self.MainLayout.addWidget(self.XlsFileLbl, 5, 0, 1, 1)
 
         self.RuBox = QGroupBox(TaxWidget)
         self.RuBox.setObjectName(u"RuBox")
@@ -213,6 +213,12 @@ class Ui_TaxWidget(object):
 
         self.MainLayout.addLayout(self.PeriodLayout, 2, 1, 1, 2)
 
+        self.ResidenceLbl = QLabel(TaxWidget)
+        self.ResidenceLbl.setObjectName(u"ResidenceLbl")
+        self.ResidenceLbl.setWordWrap(True)
+
+        self.MainLayout.addWidget(self.ResidenceLbl, 3, 1, 1, 2)
+
         self.SaveButton = QPushButton(TaxWidget)
         self.SaveButton.setObjectName(u"SaveButton")
 
@@ -221,7 +227,7 @@ class Ui_TaxWidget(object):
         self.Account = QComboBox(TaxWidget)
         self.Account.setObjectName(u"Account")
 
-        self.MainLayout.addWidget(self.Account, 3, 1, 1, 2)
+        self.MainLayout.addWidget(self.Account, 4, 1, 1, 2)
 
 #if QT_CONFIG(shortcut)
         self.IRS_Modelo3FileLbl.setBuddy(self.IRS_Modelo3Filename)

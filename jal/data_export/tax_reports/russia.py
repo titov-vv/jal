@@ -84,8 +84,6 @@ class TaxesRussia(TaxReport):
         'value': "Стоимость на дату получения",
         'base_total': "Итого по базе",
         'outside': "Вне налоговых баз - для сведения, без итога",
-        'residence_rule': "Налоговое резидентство - по таблице проживания JAL вместо фактического пребывания: 183 дня и "
-                          "более в календарном году дают весь год, меньше - ни одного дня (ст. 207 п. 2 НК РФ)",
         'rate_sum': "Сумма баз по ставке 13/15 % (ст. 224 п. 1.1 НК РФ): ценные бумаги, ПФИ, дивиденды, криптовалюта и "
                     "проценты российских плательщиков; убыток - со своим знаком; не налог",
         'parameters_unreviewed': "Внимание: налоговые параметры (соглашения, базовые ставки) проверены по {reviewed} год; "
@@ -100,6 +98,7 @@ class TaxesRussia(TaxReport):
         'rate_trade': "Пересчёт в рубли по курсу ЦБ РФ на дату сделки",
         'native_cost': "Расход - фактически уплаченная сумма в валюте оплаты, по курсу на дату её оплаты; перевод "
                        "между своими счетами её не меняет",
+        'historical_cost': "Расход - историческая стоимость приобретения: смена налогового резидентства её не меняет",
         'cost_currency': "Расход оплачен в {}: пересчёт в рубли из этой валюты",
         'bond_price': "Цена - за одну облигацию в валюте сделки",
         'crypto_exchange': "Каждый обмен криптовалюты на криптовалюту, включая обёртывание токена, его размещение в "
@@ -230,6 +229,7 @@ class TaxesRussia(TaxReport):
         self.add_header(self.texts['fifo'])
         self.add_header(self.texts['rate_settlement'] if self.use_settlement else self.texts['rate_trade'])
         self.add_header(self.texts['native_cost'])
+        self.add_header(self.texts['historical_cost'])
 
     # The rates of a deal's two legs, official ones only: each leg's amount at its settlement (or trade date when
     # asked for or when there is none), each fee at its trade date. The opening leg is in the currency it was paid in.

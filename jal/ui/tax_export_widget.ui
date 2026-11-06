@@ -20,7 +20,7 @@
    <string>Select parameters of investment tax report</string>
   </property>
   <layout class="QGridLayout" name="MainLayout">
-   <item row="4" column="2">
+   <item row="5" column="2">
     <widget class="QPushButton" name="XlsSelectBtn">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -55,7 +55,7 @@
      </property>
     </widget>
    </item>
-   <item row="4" column="1">
+   <item row="5" column="1">
     <widget class="QLineEdit" name="XlsFileName">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -139,7 +139,7 @@
      </layout>
     </widget>
    </item>
-   <item row="3" column="0">
+   <item row="4" column="0">
     <widget class="QLabel" name="AccountLbl">
      <property name="text">
       <string>&amp;Account:</string>
@@ -149,7 +149,7 @@
      </property>
     </widget>
    </item>
-   <item row="4" column="0">
+   <item row="5" column="0">
     <widget class="QLabel" name="XlsFileLbl">
      <property name="text">
       <string>&amp;Excel file:</string>
@@ -314,6 +314,13 @@
      </item>
     </layout>
    </item>
+   <item row="3" column="1" colspan="2">
+    <widget class="QLabel" name="ResidenceLbl">
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
    <item row="11" column="2">
     <widget class="QPushButton" name="SaveButton">
      <property name="text">
@@ -321,7 +328,7 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="1" colspan="2">
+   <item row="4" column="1" colspan="2">
     <widget class="QComboBox" name="Account"/>
    </item>
   </layout>
