@@ -289,6 +289,42 @@ def test_statement_t212_transfers(tmp_path, prepare_db_t212):
 
 
 # ----------------------------------------------------------------------------------------------------------------------
+# A refund is a card row with a positive amount: reviewed like a purchase, stored as an income, matched to one typed in
+def test_statement_t212_card_refund(tmp_path, prepare_db_t212):
+    account_id = prepare_db_t212
+    store_card_operation(account_id, dt2t(2603031200), '-145.41', 'Clothes shop')   # the purchase - never a match
+    store_card_operation(account_id, dt2t(2603050500), '20.00', 'Book corner', category_id=PredefinedCategory.Spending)
+    path = str(tmp_path / "from_2026-03-01_to_2026-03-31_x.csv")
+    with open(path, 'w', encoding='utf-8') as f:
+        f.write('\n'.join(['Action,Time (UTC),ISIN,Ticker,Name,Notes,ID,No. of shares,Price / share,'
+                           'Currency (Price / share),Exchange rate,Total,Currency (Total),Merchant name,Merchant category',
+                           'Card credit,2026-03-05 04:01:58+00:00,,,,,ID1,,,,,145.41,"EUR","CLOTHES","CLOTHING_STORES"',
+                           'Card credit,2026-03-05 04:30:00+00:00,,,,,ID2,,,,,20.00,"EUR","BOOKS","MISCELLANEOUS"']))
+    statement = StatementTrading212()
+    statement.load(path)
+    assert [x['amount'] for x in statement._card_rows] == [Decimal('145.41'), Decimal('20.00')]
+
+    shop = JalPeer(data={'name': 'Clothes shop'}, search=True).id()
+    proposals = []
+
+    def decide(proposal):
+        proposals.extend(proposal)
+        return [{'import': True, 'peer': shop, 'category': PredefinedCategory.Spending, 'description': 'Refund'},
+                {'import': False, 'peer': 0, 'category': 0, 'description': ''}]
+    statement._card_decisions = decide
+    statement.validate_format()
+    statement.match_db_ids()
+    assert proposals[0] is None and proposals[1]['amount'] == Decimal('20')
+    stored_before = JalDB._read("SELECT COUNT(*) FROM actions")
+    statement.import_into_db()
+
+    assert JalDB._read("SELECT COUNT(*) FROM actions") == stored_before + 1
+    refund = JalDB._read("SELECT oid FROM actions WHERE note='Refund'")
+    assert stored_row(refund)[1:] == [shop, 'Refund', '', PredefinedCategory.Spending, '145.41', '']
+    Ledger().rebuild(from_timestamp=0)
+    assert JalAccount(account_id).get_asset_amount(dt2t(2603060000), EUR) == Decimal('20')
+
+
 def test_statement_t212_sell(prepare_db_t212):
     statement = StatementTrading212()
     statement.load(data_path_of(SECOND))

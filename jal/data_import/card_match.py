@@ -30,9 +30,8 @@ class CardMatcher(JalDB):
     # such a column as a float - which turns -18.40 into a value that is not equal to -18.40 any more, and the
     # whole of this matching rests on amounts being equal to the cent.
     #
-    # 'incomes' keeps the money that came IN as a candidate too. A Trading 212 statement asks only about card
-    # debits, so it leaves them out - an interest or a cashback row of that account is never what a debit pairs
-    # with. A Revolut statement asks about refunds and rewards as well, and those are stored as incomes.
+    # 'incomes' keeps the money that came IN as a candidate too: a card refund (and a Revolut reward) is stored as
+    # an income. Only equal amounts pair, so an income is never a candidate for a debit.
     @classmethod
     def stored_operations(cls, account_id: int, begin: int, end: int, incomes: bool = False) -> list:
         operations = {}

@@ -111,7 +111,7 @@ class StatementTrading212(Statement):
         self._load_period(filename, rows)
         loaders = {"Market buy": self._load_trade, "Market sell": self._load_trade,
                    "Interest on cash": self._load_interest, "Spending cashback": self._load_cashback,
-                   "Card debit": self._load_card, "Deposit": self._load_transfer,
+                   "Card debit": self._load_card, "Card credit": self._load_card, "Deposit": self._load_transfer,
                    "Withdrawal": self._load_transfer}
         for row in rows:
             action = row["Action"].strip()
@@ -154,7 +154,7 @@ class StatementTrading212(Statement):
             mandatory += self.InstrumentColumns
         if any(x.startswith(self.DividendAction) for x in actions):
             mandatory += self.DividendColumns
-        if "Card debit" in actions:
+        if actions & {"Card debit", "Card credit"}:
             mandatory += self.CardColumns
         missing = [x for x in dict.fromkeys(mandatory) if x not in columns]
         if missing:
@@ -301,7 +301,8 @@ class StatementTrading212(Statement):
     # A card purchase carries no peer and no category of its own - the merchant string the acquirer sent is not a
     # peer of this ledger ("PASTELARIA NILO LDA" is a bakery the user calls something else), and Trading 212's
     # merchant category is an acquirer's code rather than a spending category. Both are chosen by the user in
-    # CardImportDialog, for the rows that are not in the database already.
+    # CardImportDialog, for the rows that are not in the database already. A refund ('Card credit') is the same row
+    # with a positive 'Total'.
     #
     # The merchant string describes the operation and is kept as its note; a line note names a purchased item,
     # which the statement doesn't report, so it stays empty.
@@ -404,15 +405,15 @@ class StatementTrading212(Statement):
                 raise Statement_ImportError(self.tr("Statement import was cancelled"))
 
     # ------------------------------------------------------------------------------------------------------------------
-    # Shows the card purchases of the statement next to the ones the database holds already and imports what the
-    # user confirms. Everything else about this import is decided by the data; this is decided by the user, because
-    # a hand-typed purchase and a statement row can only be recognized as one and the same purchase by resemblance.
+    # Shows the card purchases and refunds of the statement next to the ones the database holds already and imports
+    # what the user confirms. Everything else about this import is decided by the data; this is decided by the user,
+    # because a hand-typed purchase and a statement row can only be recognized as one and the same by resemblance.
     def _review_card_operations(self) -> None:
         if not self._card_rows:
             return
         account_id = self.mapped_id(JSF.ACCOUNTS, self._account_id)
         begin, end = self.period()
-        stored = CardMatcher.stored_operations(account_id, begin, end)
+        stored = CardMatcher.stored_operations(account_id, begin, end, incomes=True)   # a refund is an income
         proposal = CardMatcher.propose(self._card_rows, stored)
         decisions = self._card_decisions(proposal)
         if decisions is None:
