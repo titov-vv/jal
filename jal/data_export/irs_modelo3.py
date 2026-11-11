@@ -4,6 +4,9 @@ from PySide6.QtCore import QT_TRANSLATE_NOOP
 from PySide6.QtWidgets import QApplication
 
 from jal.data_export.tax_parameters import TaxParameters
+from jal.data_export.tax_options import TaxOption
+from jal.data_export.tax_grouping import Grouping, merge_deals
+from jal.data_export.tax_reports.portugal import TaxesPortugal
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Basic template for AnexoJq092AT01-Linha that represents one sale of foreign asset taxable as Category G
@@ -31,15 +34,19 @@ class IRS_Modelo3:
     title = QT_TRANSLATE_NOOP("TaxWidget", "Create XML records to introduce in Modelo-3 form")
     file_prompt = QT_TRANSLATE_NOOP("TaxWidget", "Save IRS Modelo 3 tax data to:")
     needs_broker = False
-    options = []
+    options = [
+        TaxOption('merge_lots', QT_TRANSLATE_NOOP("TaxWidget",
+                                                  "Merge lots of one security bought on one day and sold on one day"))
+    ]
 
     # The (filter, extension) of the file of a year
     @staticmethod
     def file_type(year: int) -> tuple:
         return QT_TRANSLATE_NOOP("TaxWidget", "XML files (*.xml)"), ".xml"
 
-    def __init__(self, year: int):
+    def __init__(self, year: int, merge_lots=False):
         self._tax_form = ""
+        self._merge_lots = merge_lots
         self._parameters = TaxParameters('pt', year)
 
     def tr(self, text):
@@ -55,7 +62,10 @@ class IRS_Modelo3:
     # 'parameters' are those of the report's account; with several accounts each account's header row carries its own
     def update_taxes(self, tax_report, parameters):
         for section in self.SECURITIES:
-            for row, country in self._trades(tax_report.get(section, []), parameters):
+            rows = tax_report.get(section, [])
+            if self._merge_lots:   # a line has one date of acquisition and one of realization
+                rows = merge_deals(rows, TaxesPortugal.deal_fields, Grouping.Days)
+            for row, country in self._trades(rows, parameters):
                 self._tax_form += self._sale_line(row, country) + "\n"
         for row, country in self._trades(tax_report.get(self.DERIVATIVES, []), parameters):
             self._tax_form += AnexoJ_9_2B_template.format(cc=country, code=self._code(row),
@@ -72,16 +82,17 @@ class IRS_Modelo3:
                 trades.append((row, country))
         return trades
 
-    # A short sale is realized by its opening sale and acquired by its closing purchase
+    # A short sale is realized by its opening sale and acquired by its closing purchase; the expenses are rounded
+    # for each deal, as its cost on the sheet is
     def _sale_line(self, row, country) -> str:
+        fee = sum(round(x['o_fee_eur'] + x['c_fee_eur'], 2) for x in row.get('merged', [row]))
         if row['qty'] < Decimal('0'):
             c_date, c_amount, o_date, o_amount = row['o_date'], row['o_amount_eur'], row['c_date'], row['c_amount_eur']
         else:
             c_date, c_amount, o_date, o_amount = row['c_date'], row['c_amount_eur'], row['o_date'], row['o_amount_eur']
         c_date = datetime.fromtimestamp(c_date, tz=timezone.utc)
         o_date = datetime.fromtimestamp(o_date, tz=timezone.utc)
-        return AnexoJ_catG_template.format(cc=country, code=self._code(row), stock='S',
-                                           fee=round(row['o_fee_eur'] + row['c_fee_eur'], 2),
+        return AnexoJ_catG_template.format(cc=country, code=self._code(row), stock='S', fee=fee,
                                            c_y=c_date.year, c_m=c_date.month, c_d=c_date.day,
                                            o_y=o_date.year, o_m=o_date.month, o_d=o_date.day,
                                            c_amount=round(c_amount, 2), o_amount=round(o_amount, 2))

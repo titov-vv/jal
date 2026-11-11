@@ -9,6 +9,8 @@ from jal.constants import Setup
 from jal.db.settings import JalSettings
 from jal.data_export.tax_parameters import TaxParameters
 from jal.data_export.tax_options import TaxOption
+from jal.data_export.tax_grouping import Grouping, merge_deals
+from jal.data_export.tax_reports.russia import TaxesRussia
 
 
 FOREIGN_SECTION = "CurrencyIncomeList"
@@ -20,7 +22,8 @@ class Ru_NDFL3:
     needs_broker = True   # a row is filed under the broker of its account
     options = [
         TaxOption('only_dividends', QT_TRANSLATE_NOOP("TaxWidget", "Update only information about dividends")),
-        TaxOption('broker_as_income', QT_TRANSLATE_NOOP("TaxWidget", "Use broker name as income source"), default=True)
+        TaxOption('broker_as_income', QT_TRANSLATE_NOOP("TaxWidget", "Use broker name as income source"), default=True),
+        TaxOption('merge_lots', QT_TRANSLATE_NOOP("TaxWidget", "Merge lots of one security sold on one day"))
     ]
 
     # The (filter, extension) of the file of a year
@@ -28,7 +31,7 @@ class Ru_NDFL3:
     def file_type(year: int) -> tuple:
         return f"Tax form (*.de{year % 10})", f".de{year % 10}"
 
-    def __init__(self, year, broker_as_income=False, only_dividends=False):
+    def __init__(self, year, broker_as_income=False, only_dividends=False, merge_lots=False):
         template_path = JalSettings.path(JalSettings.PATH_TEMPLATES) + Setup.NDFL3_TEMPLATE_PATH
         template_file = template_path + os.sep + f"{year}.json"
         try:
@@ -38,6 +41,7 @@ class Ru_NDFL3:
             raise ValueError(self.tr("3-NDFL template not found for given year: ") + f"{year}")
         self._only_dividends = only_dividends
         self._broker_as_income = broker_as_income
+        self._merge_lots = merge_lots
         self._year = year
         self._parameters = TaxParameters('ru', year)
         self.currency = None
@@ -70,9 +74,12 @@ class Ru_NDFL3:
             if self._parameters.currency(currency) is None:
                 logging.error(self.tr("Currency is not supported for 3-NDFL: ") + currency)
         for section in sections:
+            rows = tax_report[section]
+            if self._merge_lots:   # a line has one date of income and one rate
+                rows = merge_deals(rows, TaxesRussia.deal_fields, Grouping.SaleDay)
             for template in self.stored_data[section]:
                 self._file_under(parameters)
-                for item in tax_report[section]:
+                for item in rows:
                     if item['report_template'] == "account":
                         self._file_under(item)
                     elif item['report_template'] == template and self.currency is not None:

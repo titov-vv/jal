@@ -33,8 +33,8 @@ def _dialog(code: str, year: int = 2024):
 
 # The dialog builds an editor for each option a jurisdiction's report and form file declare, set to its default
 @pytest.mark.parametrize("code, report, form", [
-    ('ru', {'no_settlement': False}, {'only_dividends': False, 'broker_as_income': True}),
-    ('pt', {'use_one_currency_rate': True}, {})
+    ('ru', {'no_settlement': False}, {'only_dividends': False, 'broker_as_income': True, 'merge_lots': False}),
+    ('pt', {'use_one_currency_rate': True}, {'merge_lots': False})
 ])
 def test_dialog_builds_declared_options(prepare_db_taxes, code, report, form):
     parent, widget = _dialog(code)

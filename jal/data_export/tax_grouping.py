@@ -83,3 +83,11 @@ def group_deals(section: list, key, fields: DealFields) -> list:
         if isinstance(item, DealGroup):
             item.summary = summarize(item.rows, fields)
     return items
+
+
+# The rows of a section with the deals of each group of a level as one row: the group's summary, with its deals
+# under 'merged'
+def merge_deals(section: list, fields: DealFields, level: int) -> list:
+    items = group_deals(section, deal_key(fields, level), fields)
+    return [dict(x.summary, report_template=x.rows[0]['report_template'], merged=x.rows) if isinstance(x, DealGroup)
+            else x for x in items]

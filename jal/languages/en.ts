@@ -3803,7 +3803,7 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>IRS_Modelo3</name>
     <message>
-        <location filename="../data_export/irs_modelo3.py" line="52"/>
+        <location filename="../data_export/irs_modelo3.py" line="59"/>
         <source>No Anexo J code for this kind of income: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -8189,37 +8189,37 @@ Unchecked: it is acquired on the date of this corporate action.</source>
 <context>
     <name>Ru_NDFL3</name>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="38"/>
+        <location filename="../data_export/ru_ndfl3.py" line="41"/>
         <source>3-NDFL template not found for given year: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="71"/>
+        <location filename="../data_export/ru_ndfl3.py" line="75"/>
         <source>Currency is not supported for 3-NDFL: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="92"/>
+        <location filename="../data_export/ru_ndfl3.py" line="99"/>
         <source>No 3-NDFL code for this kind of income: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="113"/>
+        <location filename="../data_export/ru_ndfl3.py" line="120"/>
         <source>Account country is not set, dividend isn&apos;t exported into 3-NDFL </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="120"/>
+        <location filename="../data_export/ru_ndfl3.py" line="127"/>
         <source>Country is not set for asset, dividend isn&apos;t exported into 3-NDFL </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="286"/>
+        <location filename="../data_export/ru_ndfl3.py" line="293"/>
         <source>Failed to read de5 file: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="288"/>
+        <location filename="../data_export/ru_ndfl3.py" line="295"/>
         <source>Unsupported de5 file format: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -11515,22 +11515,22 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
 <context>
     <name>TaxReport</name>
     <message>
-        <location filename="../data_export/taxes.py" line="144"/>
+        <location filename="../data_export/taxes.py" line="145"/>
         <source>Currency is not defined: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/taxes.py" line="239"/>
+        <location filename="../data_export/taxes.py" line="240"/>
         <source>No report template found for section: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/taxes.py" line="271"/>
+        <location filename="../data_export/taxes.py" line="272"/>
         <source>There are no parameters found for tax report year: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/taxes.py" line="372"/>
+        <location filename="../data_export/taxes.py" line="373"/>
         <source>Tax replay</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11543,7 +11543,7 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/irs_modelo3.py" line="31"/>
+        <location filename="../data_export/irs_modelo3.py" line="34"/>
         <source>Create XML records to introduce in Modelo-3 form</source>
         <translation></translation>
     </message>
@@ -11605,9 +11605,14 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="18"/>
+        <location filename="../data_export/ru_ndfl3.py" line="20"/>
         <source>Create tax form in &quot;Декларация 2.0&quot; program format</source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="../data_export/ru_ndfl3.py" line="26"/>
+        <source>Merge lots of one security sold on one day</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../ui/tax_export_widget.ui" line="20"/>
@@ -11615,12 +11620,12 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/tax_reports/portugal.py" line="57"/>
+        <location filename="../data_export/tax_reports/portugal.py" line="58"/>
         <source>Convert at the rate of the disposal date only (CIRS art. 23)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_export/tax_reports/portugal.py" line="59"/>
+        <location filename="../data_export/tax_reports/portugal.py" line="60"/>
         <source>     (unchecked: each leg at the rate of its own trade date)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -11630,7 +11635,7 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="22"/>
+        <location filename="../data_export/ru_ndfl3.py" line="24"/>
         <source>Update only information about dividends</source>
         <translation></translation>
     </message>
@@ -11640,12 +11645,12 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="23"/>
+        <location filename="../data_export/ru_ndfl3.py" line="25"/>
         <source>Use broker name as income source</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/tax_reports/russia.py" line="44"/>
+        <location filename="../data_export/tax_reports/russia.py" line="45"/>
         <source>Do not use settlement date for currency rates</source>
         <translation></translation>
     </message>
@@ -11670,17 +11675,22 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/ru_ndfl3.py" line="19"/>
+        <location filename="../data_export/ru_ndfl3.py" line="21"/>
         <source>Save tax form to:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/irs_modelo3.py" line="32"/>
+        <location filename="../data_export/irs_modelo3.py" line="35"/>
         <source>Save IRS Modelo 3 tax data to:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_export/irs_modelo3.py" line="39"/>
+        <location filename="../data_export/irs_modelo3.py" line="38"/>
+        <source>Merge lots of one security bought on one day and sold on one day</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_export/irs_modelo3.py" line="45"/>
         <source>XML files (*.xml)</source>
         <translation></translation>
     </message>

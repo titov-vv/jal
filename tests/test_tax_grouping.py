@@ -1,4 +1,6 @@
+import json
 import pytest
+from copy import deepcopy
 from decimal import Decimal
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
@@ -8,6 +10,8 @@ from jal.db.ledger import Ledger
 from jal.data_export.tax_grouping import Grouping, DealFields, DealGroup, DAY, deal_key, summarize, group_deals
 from jal.data_export.tax_reports.russia import TaxesRussia
 from jal.data_export.tax_reports.portugal import TaxesPortugal
+from jal.data_export.ru_ndfl3 import Ru_NDFL3, FOREIGN_SECTION
+from jal.data_export.irs_modelo3 import IRS_Modelo3
 
 FIELDS = DealFields(security=('symbol',), qty='qty', opened=('o_date',), closed=('c_date',), figures=('qty', 'amount'))
 
@@ -111,3 +115,66 @@ def test_groups_add_up_to_the_totals(prepare_db_taxes, report_class, section, to
         assert dated(long) == set(fields.closed) and dated(short) == set(fields.dates())
     else:
         assert all(dated(x.summary) == set(fields.dates()) for x in groups)
+
+
+def _modelo3_lines(report: dict, **options) -> list:
+    form = IRS_Modelo3(2024, **options)
+    form.update_taxes(report, {'broker_iso_country': '840'})
+    values = lambda line: {x: line[line.index(f"<{x}>") + len(x) + 2:line.index(f"</{x}>")] for x in (
+        "Codigo", "AnoRealizacao", "MesRealizacao", "DiaRealizacao", "ValorRealizacao", "AnoAquisicao", "MesAquisicao",
+        "DiaAquisicao", "ValorAquisicao", "DespesasEncargos")}
+    return [values(x) for x in form._tax_form.splitlines()]
+
+
+# Modelo 3 with the lots merged: a line for the deals of a security acquired on one day and realized on one day. The
+# figures are worked out by hand: each lot's amounts and its expenses converted and rounded on their own, then added.
+def test_modelo3_merges_lots(prepare_db_taxes):
+    _partial_fills()
+    report = TaxesPortugal().prepare_tax_report(2024, 1)
+    lots, merged = _modelo3_lines(report), _modelo3_lines(report, merge_lots=True)
+    assert len(lots) == 7 and len(merged) == 4
+    for figure in ("ValorRealizacao", "ValorAquisicao", "DespesasEncargos"):
+        assert sum(Decimal(x[figure]) for x in merged) == sum(Decimal(x[figure]) for x in lots)
+    line = lambda *x: dict(zip(("Codigo", "AnoRealizacao", "MesRealizacao", "DiaRealizacao", "ValorRealizacao",
+                                "AnoAquisicao", "MesAquisicao", "DiaAquisicao", "ValorAquisicao", "DespesasEncargos"), x))
+    assert merged == [
+        # 10 + 2 + 3 bought on 10 Jan and sold on 4 Mar, at 0.94: 1692.00 + 338.40 + 510.42 less 1410.00 + 283.88 + 425.82
+        line("G01", "2024", "3", "4", "2540.82", "2024", "1", "10", "2119.70", "2.82"),
+        line("G01", "2024", "3", "4", "850.70", "2024", "1", "15", "752.00", "0.94"),     # 5 of B3 in S2
+        line("G01", "2024", "3", "11", "912.00", "2024", "1", "15", "768.00", "0.96"),    # 5 of B3 in S3, at 0.96
+        # the short: sold on 10 Jan at 0.90, bought back in two trades on 2 Apr
+        line("G01", "2024", "1", "10", "450.00", "2024", "4", "2", "410.40", "1.80")
+    ]
+
+
+def _ndfl3_records(report: dict, **options) -> list:
+    form = Ru_NDFL3(2025, **options)
+    form.update_taxes(deepcopy(report), {'currency': 'USD', 'broker_name': 'IBKR', 'broker_iso_country': '840',
+                                         'account_name': 'TEST'})
+    return json.loads(json.dumps(form._tax_form[FOREIGN_SECTION], ensure_ascii=False))
+
+
+# 3-NDFL with the lots merged: a record for the deals of a security sold on one day, with the one date of income and
+# rate they share. The figures are worked out by hand, each lot converted and rounded on its own.
+def test_ndfl3_merges_lots(prepare_db_taxes):
+    _partial_fills()
+    report = TaxesRussia().prepare_tax_report(2024, 1)
+    lots, merged = _ndfl3_records(report), _ndfl3_records(report, merge_lots=True)
+    assert len(lots) == 7 and len(merged) == 3
+    for figure in ("IncomeSum", "IncomeRoubleSum", "SubtractSum"):
+        assert sum(Decimal(str(x[figure])) for x in merged) == sum(Decimal(str(x[figure])) for x in lots)
+    figures = lambda x: (x['SourseName'], x['IncomeGetDate'], x['CurrencyExchange'], x['IncomeSum'],
+                         x['IncomeRoubleSum'], x['SubtractSum'], x['IncomeCod'], x['SubtractCod'])
+    assert [figures(x) for x in merged] == [
+        # S1 and S2 of 4 Mar, settled on 6 Mar at 95: 20 shares for 3608 USD. The cost at the rates of the purchases'
+        # settlements (91, 91, 91, 93) is 279605, the fees at the rates of the trade dates 369
+        ("Доход от сделки с AAPL (US0378331005)", "2024-03-06T00:00:00", 9500.0, 3608.0, 342760.0, 279974.0,
+         "1530", "201"),
+        # S3: 5 shares for 950 USD at 97; cost 800 USD at 93, fees 0.5 at 92 and 0.5 at 96
+        ("Доход от сделки с AAPL (US0378331005)", "2024-03-13T00:00:00", 9700.0, 950.0, 92150.0, 74494.0,
+         "1530", "201"),
+        # the short: the income is the sale of 10 Jan, settled on 12 Jan at 91; bought back for 180 + 276 USD at 99,
+        # fees 1.0 at 90 and 1.0 at 98
+        ("Доход от сделки с XYZ (KYG000000001)", "2024-01-12T00:00:00", 9100.0, 500.0, 45500.0, 45332.0,
+         "1530", "201")
+    ]
