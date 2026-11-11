@@ -1,4 +1,5 @@
 import json
+import openpyxl
 import pytest
 from copy import deepcopy
 from decimal import Decimal
@@ -7,7 +8,9 @@ from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from tests.helpers import d2t, dt2t, create_assets, create_quotes, create_trades, create_actions
 from jal.constants import PredefinedAsset, PredefinedCategory
 from jal.db.ledger import Ledger
-from jal.data_export.tax_grouping import Grouping, DealFields, DealGroup, DAY, deal_key, summarize, group_deals
+from jal.data_export.tax_grouping import Grouping, DealFields, DealGroup, DAY, deal_key, summarize, group_deals, \
+    outline_deals
+from jal.data_export.xlsx import XLSX
 from jal.data_export.tax_reports.russia import TaxesRussia
 from jal.data_export.tax_reports.portugal import TaxesPortugal
 from jal.data_export.ru_ndfl3 import Ru_NDFL3, FOREIGN_SECTION
@@ -178,3 +181,77 @@ def test_ndfl3_merges_lots(prepare_db_taxes):
         ("Доход от сделки с XYZ (KYG000000001)", "2024-01-12T00:00:00", 9100.0, 500.0, 45500.0, 45332.0,
          "1530", "201")
     ]
+
+
+# A group of several deals gets a row of what they share, laid out as its first deal, and its deals folded under it;
+# a deal alone in its group and a row that is no deal stay as they are
+def test_outline_of_a_section():
+    a1 = _row("A", 1, DAY, 5 * DAY, 10, o_number="B1", c_number="S1")
+    a2 = _row("A", 2, 2 * DAY, 5 * DAY + 60, 30, o_number="B2", c_number="S1")
+    b1, totals = _row("B", 1, DAY, 5 * DAY, 20, o_number="B3", c_number="S2"), {'report_template': "totals"}
+    rows = outline_deals([a1, b1, a2, totals], FIELDS, Grouping.Security, "{} trades")
+    assert rows == [
+        {'report_template': "group", 'layout': "trade", 'outline_head': True, 'symbol': "A", 'qty': Decimal('3'),
+         'o_date': None, 'c_date': 5 * DAY, 'amount': Decimal('40'), 'o_number': "2 trades", 'c_number': "S1"},
+        dict(a1, outline_level=1), dict(a2, outline_level=1), b1, totals]
+    assert 'outline_level' not in a1
+    assert outline_deals([a1, b1, a2, totals], FIELDS, Grouping.Days, "{} trades") == [a1, b1, a2, totals]
+
+
+def _deal_sheet(report_class):
+    return {TaxesRussia: ("Акции", "tax_rus_trades.json"), TaxesPortugal: ("Shares", "tax_prt_shares.json")}[report_class]
+
+
+# The report with its deals grouped holds the same deals and totals as without, and gives the same form files
+@pytest.mark.parametrize("report_class", [TaxesRussia, TaxesPortugal])
+@pytest.mark.parametrize("level, heads", [(Grouping.Security, 2), (Grouping.SaleDay, 2), (Grouping.Days, 2)])
+def test_grouped_report_holds_the_same_deals(prepare_db_taxes, report_class, level, heads):
+    _partial_fills()
+    section = _deal_sheet(report_class)[0]
+    taxes = report_class()
+    plain, grouped = taxes.prepare_tax_report(2024, 1), taxes.prepare_tax_report(2024, 1, grouping=level)
+    assert {k: v for k, v in grouped.items() if k != section} == {k: v for k, v in plain.items() if k != section}
+    rows = grouped[section]
+    assert len([x for x in rows if x['report_template'] == "group"]) == heads
+    deals = [{k: v for k, v in x.items() if k != 'outline_level'} for x in rows if x['report_template'] != "group"]
+    key = lambda x: json.dumps(x, sort_keys=True, default=str)
+    assert sorted(deals, key=key) == sorted(plain[section], key=key)
+    assert rows[-1] == plain[section][-1]   # the totals
+    for options in ({}, {'merge_lots': True}):
+        if report_class is TaxesRussia:
+            assert _ndfl3_records(grouped, **options) == _ndfl3_records(plain, **options)
+        else:
+            assert _modelo3_lines(grouped, **options) == _modelo3_lines(plain, **options)
+
+
+# On the sheet a group is a bold row of sums with its lots folded under it; the figures are worked out by hand
+@pytest.mark.parametrize("report_class, cells", [
+    # the sale of 4 Mar: income 342760 RUB, cost and fees 279974 RUB, 3608 - 3055 - 4 USD of profit
+    (TaxesRussia, {'A': "AAPL", 'C': "Покупка", 'D': 20, 'F': "сделок: 3", 'P': 342760, 'Q': 279974, 'R': 62786,
+                   'S': 549}),
+    # the lots of 10 Jan sold on 4 Mar: bought for 2255 USD = 2119.70 EUR, sold for 2703 USD = 2540.82 EUR
+    (TaxesPortugal, {'A': "AAPL", 'C': "Aquisição", 'D': "2 trades", 'E': "10/01/2024", 'F': 15, 'H': 2255,
+                     'L': 2119.70, 'N': 418.30})
+])
+def test_grouped_sheet(prepare_db_taxes, tmp_path, report_class, cells):
+    _partial_fills()
+    section, template = _deal_sheet(report_class)
+    taxes = report_class()
+    level = Grouping.SaleDay if report_class is TaxesRussia else Grouping.Days
+    report = taxes.prepare_tax_report(2024, 1, grouping=level)
+    workbook = XLSX(str(tmp_path / "report.xlsx"))
+    workbook.output_data(report[section], template, dict(taxes.sheet_parameters(), period=""),
+                         headers=taxes.section_headers(section))
+    assert workbook.save()
+    sheet = openpyxl.load_workbook(tmp_path / "report.xlsx").active
+    head = next(x for x in range(1, sheet.max_row + 1) if sheet.cell(x, 1).value == "AAPL")
+    for column, value in cells.items():
+        cell = sheet[f"{column}{head}"]
+        assert cell.value == pytest.approx(value) if isinstance(value, (int, float)) else cell.value == value, column
+        assert cell.font.bold
+    lots = 4 if report_class is TaxesRussia else 3
+    folded = range(head + 2, head + 2 + 2 * lots)   # a group and a lot take two rows each
+    assert all(sheet.row_dimensions[x].outlineLevel == 1 and sheet.row_dimensions[x].hidden for x in folded)
+    assert not sheet.row_dimensions[head].hidden and sheet.row_dimensions[head + 1].collapsed
+    assert sheet.row_dimensions[head + 2 + 2 * lots].outlineLevel == 0
+    assert not sheet.cell(head + 2, 1).font.bold

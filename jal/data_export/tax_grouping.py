@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+from PySide6.QtCore import QT_TRANSLATE_NOOP
+from jal.data_export.tax_options import TaxOption, OptionType
 
 DEAL_TEMPLATES = ("trade", "corporate_action")   # the rows of a section that are deals
 DAY = 86400
@@ -12,6 +14,15 @@ class Grouping:
     Days = 3        # deals of a security acquired on one day and disposed of on one day: a line of a tax form
 
 
+# The option of a report that groups the deals on its sheets
+GROUPING_OPTION = TaxOption(
+    'grouping', QT_TRANSLATE_NOOP("TaxWidget", "Group deals in Excel:"), type=OptionType.Choice, default=Grouping.Nothing,
+    choices=((Grouping.Nothing, QT_TRANSLATE_NOOP("TaxWidget", "No grouping")),
+             (Grouping.SaleDay, QT_TRANSLATE_NOOP("TaxWidget", "Security and sale day")),
+             (Grouping.Security, QT_TRANSLATE_NOOP("TaxWidget", "Security")),
+             (Grouping.Days, QT_TRANSLATE_NOOP("TaxWidget", "Security, purchase day and sale day"))))
+
+
 # The names a jurisdiction's deal rows keep their values under
 @dataclass
 class DealFields:
@@ -20,6 +31,7 @@ class DealFields:
     opened: tuple     # dates of the opening leg
     closed: tuple     # dates of the closing leg
     figures: tuple    # the additive values: quantities and amounts
+    numbers: tuple = ('o_number', 'c_number')   # the trade numbers of the two legs
 
     def dates(self) -> tuple:
         return self.opened + self.closed
@@ -91,3 +103,24 @@ def merge_deals(section: list, fields: DealFields, level: int) -> list:
     items = group_deals(section, deal_key(fields, level), fields)
     return [dict(x.summary, report_template=x.rows[0]['report_template'], merged=x.rows) if isinstance(x, DealGroup)
             else x for x in items]
+
+
+# The rows of a section with its deals grouped at a level for the sheet's outline: over each group of several deals
+# a row of what they have in common, in the layout of the first of them, and the deals folded under it. A leg of
+# several trades says how many in 'several', e.g. "{} trades".
+def outline_deals(section: list, fields: DealFields, level: int, several: str) -> list:
+    rows = []
+    for item in group_deals(section, deal_key(fields, level), fields):
+        if not isinstance(item, DealGroup):
+            rows.append(item)
+        elif len(item.rows) == 1:
+            rows += item.rows
+        else:
+            head = {x: item.summary.get(x) for x in item.rows[0]}
+            for name in fields.numbers:
+                if name not in item.summary:
+                    head[name] = several.format(len({x[name] for x in item.rows}))
+            head.update(report_template="group", layout=item.rows[0]['report_template'], outline_head=True)
+            rows.append(head)
+            rows += [dict(x, outline_level=1) for x in item.rows]
+    return rows

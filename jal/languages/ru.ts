@@ -11543,22 +11543,22 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
 <context>
     <name>TaxReport</name>
     <message>
-        <location filename="../data_export/taxes.py" line="145"/>
+        <location filename="../data_export/taxes.py" line="147"/>
         <source>Currency is not defined: </source>
         <translation>Неизвестная валюта: </translation>
     </message>
     <message>
-        <location filename="../data_export/taxes.py" line="240"/>
+        <location filename="../data_export/taxes.py" line="242"/>
         <source>No report template found for section: </source>
         <translation>Не указан шаблон отчета для раздела: </translation>
     </message>
     <message>
-        <location filename="../data_export/taxes.py" line="272"/>
+        <location filename="../data_export/taxes.py" line="274"/>
         <source>There are no parameters found for tax report year: </source>
         <translation>Не заданы параметры налогового отчёта для года: </translation>
     </message>
     <message>
-        <location filename="../data_export/taxes.py" line="373"/>
+        <location filename="../data_export/taxes.py" line="379"/>
         <source>Tax replay</source>
         <translation>Пересчёт лотов для налогов</translation>
     </message>
@@ -11836,6 +11836,31 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <location filename="../widgets/tax_widget.py" line="369"/>
         <source>Can&apos;t write tax form into file </source>
         <translation>Невозможно записать 3-НДФЛ в файл </translation>
+    </message>
+    <message>
+        <location filename="../data_export/tax_grouping.py" line="19"/>
+        <source>Group deals in Excel:</source>
+        <translation>Группировать сделки в Excel:</translation>
+    </message>
+    <message>
+        <location filename="../data_export/tax_grouping.py" line="20"/>
+        <source>No grouping</source>
+        <translation>Без группировки</translation>
+    </message>
+    <message>
+        <location filename="../data_export/tax_grouping.py" line="21"/>
+        <source>Security and sale day</source>
+        <translation>Бумага и день продажи</translation>
+    </message>
+    <message>
+        <location filename="../data_export/tax_grouping.py" line="22"/>
+        <source>Security</source>
+        <translation>Бумага</translation>
+    </message>
+    <message>
+        <location filename="../data_export/tax_grouping.py" line="23"/>
+        <source>Security, purchase day and sale day</source>
+        <translation>Бумага, день покупки и день продажи</translation>
     </message>
 </context>
 <context>
@@ -13198,22 +13223,22 @@ A zero may well be right. If it isn&apos;t, open this transfer in the operations
         <translation>Невозможно прочитать шаблон отчёта из файла </translation>
     </message>
     <message>
-        <location filename="../data_export/xlsx.py" line="73"/>
+        <location filename="../data_export/xlsx.py" line="75"/>
         <source>No report row template set</source>
         <translation>Не задан шаблон для данных отчёта</translation>
     </message>
     <message>
-        <location filename="../data_export/xlsx.py" line="77"/>
+        <location filename="../data_export/xlsx.py" line="79"/>
         <source>Report row template not found: </source>
         <translation>Шаблон для данных не найден: </translation>
     </message>
     <message>
-        <location filename="../data_export/xlsx.py" line="144"/>
+        <location filename="../data_export/xlsx.py" line="153"/>
         <source>Format is missing for report field: </source>
         <translation>Не указан формат для поля отчёта: </translation>
     </message>
     <message>
-        <location filename="../data_export/xlsx.py" line="183"/>
+        <location filename="../data_export/xlsx.py" line="193"/>
         <source>Unrecognized format string: </source>
         <translation>Неизвестная строка форматирования: </translation>
     </message>

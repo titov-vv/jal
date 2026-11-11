@@ -10,7 +10,7 @@ from jal.data_export.taxes import TaxReport, GAIN, INCOME, exchange_estimate
 from jal.db.tax_override import TaxOverride
 from jal.data_export.tax_parameters import TaxParameters
 from jal.data_export.tax_options import TaxOption
-from jal.data_export.tax_grouping import DealFields
+from jal.data_export.tax_grouping import DealFields, GROUPING_OPTION
 
 
 # PT: a crypto-for-crypto exchange or a wrapping carries the cost with the holding period restarted (CIRS art. 10.º,
@@ -57,8 +57,10 @@ class TaxesPortugal(TaxReport):
         TaxOption('use_one_currency_rate',
                   QT_TRANSLATE_NOOP("TaxWidget", "Convert at the rate of the disposal date only (CIRS art. 23)"),
                   default=True,
-                  comment=QT_TRANSLATE_NOOP("TaxWidget", "     (unchecked: each leg at the rate of its own trade date)"))
+                  comment=QT_TRANSLATE_NOOP("TaxWidget", "     (unchecked: each leg at the rate of its own trade date)")),
+        GROUPING_OPTION
     ]
+    grouped_sections = ("Shares", "Bonds", "Derivatives")
     deal_fields = DealFields(
         security=('symbol', 'isin'), qty='qty', opened=('o_date',), closed=('c_date',),
         figures=('qty', 'o_amount', 'o_amount_eur', 'o_fee', 'o_fee_eur', 'c_amount', 'c_amount_eur', 'c_fee', 'c_fee_eur',
@@ -95,6 +97,7 @@ class TaxesPortugal(TaxReport):
         'parameters_missing': "Warning: there are no tax parameters for {year}; no tax treaty is assumed",
         'rates_missing': "Warning: the database has no ECB rate {pair} after {rate}; operations up to {latest} use the "
                          "rate of {rate} - download the rates and make the report again",
+        'several_trades': "{} trades",
         'fifo': "Deals are matched FIFO within this account; deals of other accounts are not netted here",
         'fifo_netted': "Deals are matched FIFO within each account; the accounts' results are netted",
         'account_block': "Account {number} ({currency})",

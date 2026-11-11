@@ -56,7 +56,9 @@ class XLSX:
             logging.error(self.tr("Can't load report template from file ") + f"'{file_path}' ({type(e).__name__} {e})")
         return template
 
-    # 'headers' are lines the section states under the template's own, e.g. the treatment it assumed
+    # 'headers' are lines the section states under the template's own, e.g. the treatment it assumed.
+    # A row with 'outline_level' is folded under the row with 'outline_head' above it, which is bold; a row is laid
+    # out by the template its 'layout' names instead of its own.
     def output_data(self, data, template_file, parameters, headers=()):
         template = self.load_template(template_file)
         if template is None or not data:
@@ -68,7 +70,7 @@ class XLSX:
         row = self.add_column_headers(sheet, template['columns'], parameters, start_row=row + 1, numbered=numbered)
         for i, values in enumerate(data):
             try:
-                row_template_name = values['report_template']
+                row_template_name = values['layout'] if 'layout' in values else values['report_template']
             except KeyError:
                 raise RuntimeError(self.tr("No report row template set"))
             try:
@@ -76,7 +78,14 @@ class XLSX:
             except KeyError:
                 raise RuntimeError(self.tr("Report row template not found: ") + row_template_name + f" ({template_file})")
             even_odd = values['report_group'] if "report_group" in values else (i + 1)
-            row += self.add_data_row(sheet, row, values, row_template, even_odd=even_odd)
+            height = self.add_data_row(sheet, row, values, row_template, even_odd=even_odd,
+                                       bold=values.get('outline_head', False))
+            if values.get('outline_head'):
+                sheet.outline_settings(True, False, True, False)   # the folded rows are below their head
+                sheet.set_row(row + height - 1, None, None, {'collapsed': True})
+            for line in range(height if values.get('outline_level') else 0):
+                sheet.set_row(row + line, None, None, {'level': values['outline_level'], 'hidden': True})
+            row += height
         self.add_report_footers(sheet, template['footers'], start_row=row + 1)
 
     def output_model(self, report_name, model):
@@ -129,7 +138,7 @@ class XLSX:
         last_row = start_row+2 if numbered else start_row+1
         return last_row
 
-    def add_data_row(self, sheet, start_row, values, template, even_odd=1):
+    def add_data_row(self, sheet, start_row, values, template, even_odd=1, bold=False):
         for row, row_template in enumerate(template['rows']):
             for col, column_key in enumerate(row_template):
                 if column_key is None:
@@ -139,7 +148,7 @@ class XLSX:
                 except KeyError:
                     value = column_key   # Use original text if there are no such key
                 try:
-                    value, value_format = self.apply_format(value, template['formats'][row][col], even_odd)
+                    value, value_format = self.apply_format(value, template['formats'][row][col], even_odd, bold)
                 except KeyError:
                     logging.warning(self.tr("Format is missing for report field: ") + column_key)
                     value_format = self.formats.Text(even_odd)
@@ -152,25 +161,26 @@ class XLSX:
                     sheet.write(start_row+row, col, value, value_format)
         return len(template['rows'])
 
-    def apply_format(self, value, format_string, even_odd=1):
+    def apply_format(self, value, format_string, even_odd=1, bold=False):
         if format_string is None:
-            return value, self.formats.Text(even_odd)
+            return value, self.formats.Text(even_odd, bold)
         if format_string[0] == 'T':
             if format_string[2:] == 'B':
                 return value, self.formats.Bold()
             else:
-                return value, self.formats.Text(even_odd)
+                return value, self.formats.Text(even_odd, bold)
         elif format_string[0] == 'D':
             # Deliberately not the date layout the user has chosen for the interface: the 'D' format is used by the
             # tax report templates alone, and the form a tax authority reads is a property of the jurisdiction the
             # report is filed in (day-first in both Russia and Portugal), not of the reader's preference. The value
             # itself reaches here already read on that jurisdiction's clock - see TaxReport._moment().
-            value = datetime.fromtimestamp(value, tz=timezone.utc).strftime(TAX_REPORT_DATE_FORMAT)
-            return value, self.formats.Text(even_odd)
+            if value is not None:   # a group of deals of several days has none
+                value = datetime.fromtimestamp(value, tz=timezone.utc).strftime(TAX_REPORT_DATE_FORMAT)
+            return value, self.formats.Text(even_odd, bold)
         elif format_string.startswith('Ne'):   # 'e' marks a base estimation
             return value, self.formats.Number(tolerance=int(format_string[3:]), estimate=True)
         elif format_string[0] == 'N':
-            return value, self.formats.Number(even_odd, tolerance=int(format_string[2:]))
+            return value, self.formats.Number(even_odd, tolerance=int(format_string[2:]), bold=bold)
         elif format_string == 'Fe':
             return value, self.formats.ColumnFooter(estimate=True)
         elif format_string[0] == 'F':
@@ -225,12 +235,13 @@ class xslxFormat:
     def NoFormat(self):
         return self.wbk.add_format({'font_size': self.text_font_size})
 
-    def Text(self, even_odd_value=1):
+    def Text(self, even_odd_value=1, bold=False):
         if even_odd_value % 2:
             bg_color = self.odd_color_bg
         else:
             bg_color = self.even_color_bg
         return self.wbk.add_format({'font_size': self.text_font_size,
+                                    'bold': bold,
                                     'border': 1,
                                     'valign': 'vcenter',
                                     'bg_color': bg_color,
@@ -240,7 +251,7 @@ class xslxFormat:
         return self.wbk.add_format({'font_size': self.text_font_size, 'valign': 'vcenter'})
 
     # 'estimate' marks a base estimation: italic on its own pale fill, whatever the row's stripe
-    def Number(self, even_odd_value=1, tolerance=2, center=False, estimate=False):
+    def Number(self, even_odd_value=1, tolerance=2, center=False, estimate=False, bold=False):
         if estimate:
             bg_color = self.estimate_color_bg
         elif even_odd_value % 2:
@@ -257,6 +268,7 @@ class xslxFormat:
         else:
             align = 'right'
         return self.wbk.add_format({'font_size': self.text_font_size,
+                                    'bold': bold,
                                     'italic': estimate,
                                     'num_format': num_format,
                                     'border': 1,

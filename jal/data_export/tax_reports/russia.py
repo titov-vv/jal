@@ -8,7 +8,7 @@ from jal.db.peer import JalPeer
 from jal.data_export.taxes import TaxReport, GAIN, INCOME
 from jal.data_export.tax_parameters import TaxParameters
 from jal.data_export.tax_options import TaxOption
-from jal.data_export.tax_grouping import DealFields
+from jal.data_export.tax_grouping import DealFields, GROUPING_OPTION
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -42,8 +42,10 @@ class TaxesRussia(TaxReport):
     currency_name = 'RUB'
     report_timezone = 'Europe/Moscow'
     options = [
-        TaxOption('no_settlement', QT_TRANSLATE_NOOP("TaxWidget", "Do not use settlement date for currency rates"))
+        TaxOption('no_settlement', QT_TRANSLATE_NOOP("TaxWidget", "Do not use settlement date for currency rates")),
+        GROUPING_OPTION
     ]
+    grouped_sections = ("Акции", "ПФИ")
     deal_fields = DealFields(
         security=('c_symbol', 'c_isin'), qty='c_qty', opened=('o_date', 'os_date'), closed=('c_date', 'cs_date'),
         figures=('c_qty', 'o_qty', 'o_amount', 'o_amount_rub', 'o_fee', 'o_fee_rub', 'c_amount', 'c_amount_rub', 'c_fee',
@@ -102,6 +104,7 @@ class TaxesRussia(TaxReport):
                               "налогообложения не учтены, базовая оценка налога не рассчитана",
         'rates_missing': "Внимание: курса ЦБ РФ {pair} нет в базе после {rate}; операции по {latest} пересчитаны по "
                          "курсу на {rate} - загрузите курсы и сформируйте отчёт заново",
+        'several_trades': "сделок: {}",
         'fifo': "Сделки сопоставлены по FIFO внутри этого счёта; сделки других счетов здесь не учтены",
         'fifo_netted': "Сделки сопоставлены по FIFO внутри каждого счёта; результаты счетов сложены",
         'account_block': "Счёт {number} ({currency})",

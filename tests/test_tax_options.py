@@ -1,13 +1,14 @@
 import json
 import pytest
 from PySide6.QtCore import QT_TRANSLATE_NOOP
-from PySide6.QtWidgets import QWidget, QMessageBox, QComboBox
+from PySide6.QtWidgets import QWidget, QMessageBox, QComboBox, QCheckBox
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
 from tests.helpers import d2t, create_quotes
 from tests.test_taxes_pt import create_pt_scenario
 from jal.data_export.taxes import TaxReport
 from jal.data_export.tax_options import TaxOption, OptionType
+from jal.data_export.tax_grouping import Grouping
 from jal.data_export.ru_ndfl3 import Ru_NDFL3, FOREIGN_SECTION
 from jal.data_export.irs_modelo3 import IRS_Modelo3
 from jal.data_export.tax_reports.russia import TaxesRussia
@@ -33,8 +34,8 @@ def _dialog(code: str, year: int = 2024):
 
 # The dialog builds an editor for each option a jurisdiction's report and form file declare, set to its default
 @pytest.mark.parametrize("code, report, form", [
-    ('ru', {'no_settlement': False}, {'only_dividends': False, 'broker_as_income': True, 'merge_lots': False}),
-    ('pt', {'use_one_currency_rate': True}, {'merge_lots': False})
+    ('ru', {'no_settlement': False, 'grouping': Grouping.Nothing}, {'only_dividends': False, 'broker_as_income': True, 'merge_lots': False}),
+    ('pt', {'use_one_currency_rate': True, 'grouping': Grouping.Nothing}, {'merge_lots': False})
 ])
 def test_dialog_builds_declared_options(prepare_db_taxes, code, report, form):
     parent, widget = _dialog(code)
@@ -43,9 +44,10 @@ def test_dialog_builds_declared_options(prepare_db_taxes, code, report, form):
     assert list(report) == [x.key for x in TaxReport.report_class(code).options]
     assert list(form) == [x.key for x in TaxReport.form_class(code).options]
     for (country, group, key), editor in widget._editors.items():
-        if country == code:
+        if country == code and isinstance(editor, QCheckBox):
             editor.setChecked(not editor.isChecked())
-    assert widget.option_values(REPORT) == {k: not v for k, v in report.items()}
+    widget._editors[(code, REPORT, 'grouping')].setCurrentIndex(3)
+    assert widget.option_values(REPORT) == dict({k: not v for k, v in report.items()}, grouping=Grouping.Days)
     assert widget.option_values(FORM) == {k: not v for k, v in form.items()}
     assert not widget.ui.FormGroup.isHidden() and not widget.ui.FormGroup.isChecked()
 
@@ -59,7 +61,7 @@ def test_dialog_builds_a_choice(prepare_db_taxes, monkeypatch):
     editor = widget._editors[('pt', REPORT, 'level')]
     assert isinstance(editor, QComboBox)
     assert [editor.itemText(i) for i in range(editor.count())] == ["First", "Second", "Third"]
-    assert widget.option_values(REPORT) == {'use_one_currency_rate': True, 'level': 'b'}
+    assert widget.option_values(REPORT) == {'use_one_currency_rate': True, 'grouping': Grouping.Nothing, 'level': 'b'}
     editor.setCurrentIndex(2)
     assert widget.option_values(REPORT)['level'] == 'c'
     widget.ui.Country.setCurrentIndex(widget.ui.Country.findData('ru'))
@@ -70,11 +72,11 @@ def test_dialog_builds_a_choice(prepare_db_taxes, monkeypatch):
 def test_report_reads_declared_options(prepare_db_taxes):
     _scenario()
     taxes = TaxesPortugal()
-    assert taxes.option == {'use_one_currency_rate': True}
+    assert taxes.option == {'use_one_currency_rate': True, 'grouping': Grouping.Nothing}
     two_rates = taxes.prepare_tax_report(2024, 1, use_one_currency_rate=False)
-    assert taxes.option == {'use_one_currency_rate': False}
+    assert taxes.option['use_one_currency_rate'] is False
     one_rate = taxes.prepare_tax_report(2024, 1)
-    assert taxes.option == {'use_one_currency_rate': True}
+    assert taxes.option['use_one_currency_rate'] is True
     assert one_rate["Shares"] != two_rates["Shares"]
     taxes = TaxesRussia()
     taxes.prepare_tax_report(2024, 1)

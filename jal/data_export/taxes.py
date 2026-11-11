@@ -21,6 +21,7 @@ from jal.db.residence import JalResidence
 from jal.db.tax_override import JalTaxOverride, TaxOverride
 from jal.data_export.tax_parameters import TaxParameters, TAX_TREATY
 from jal.data_export.tax_options import option_values
+from jal.data_export.tax_grouping import Grouping, outline_deals
 
 REPORT_METHOD = 0
 REPORT_TEMPLATE = 1
@@ -136,6 +137,7 @@ class TaxReport:
     asset_source_override = False   # True if the report reads TaxOverride.AssetSource
     options = []                    # [TaxOption] the report reads from 'self.option', given to prepare_tax_report()
     deal_fields = None              # DealFields of the report's deal rows, for grouping them
+    grouped_sections = ()           # the sections the 'grouping' option groups the deals of
     REPLAY_SHARE = 90               # Percent of the progress the replay takes, the sections the rest
 
     def __init__(self):
@@ -304,6 +306,10 @@ class TaxReport:
                     skipped[reason] = skipped.get(reason, 0) + count
                 uncovered += account_uncovered
             tax_report[self.summary_section[0]] = self.prepare_summary(sections, skipped, uncovered)
+            level = self.option.get('grouping', Grouping.Nothing)
+            if level != Grouping.Nothing:   # after the summary, which counts the deals
+                for name in self.grouped_sections:
+                    sections[name] = outline_deals(sections[name], self.deal_fields, level, self.texts['several_trades'])
             tax_report.update(sections)
             tax_report[self.uncovered_section[0]] = self.prepare_not_covered(skipped, uncovered)
         finally:
