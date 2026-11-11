@@ -8,6 +8,7 @@ from jal.db.peer import JalPeer
 from jal.data_export.taxes import TaxReport, GAIN, INCOME
 from jal.data_export.tax_parameters import TaxParameters
 from jal.data_export.tax_options import TaxOption
+from jal.data_export.tax_grouping import DealFields
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -43,6 +44,10 @@ class TaxesRussia(TaxReport):
     options = [
         TaxOption('no_settlement', QT_TRANSLATE_NOOP("TaxWidget", "Do not use settlement date for currency rates"))
     ]
+    deal_fields = DealFields(
+        security=('c_symbol', 'c_isin'), qty='c_qty', opened=('o_date', 'os_date'), closed=('c_date', 'cs_date'),
+        figures=('c_qty', 'o_qty', 'o_amount', 'o_amount_rub', 'o_fee', 'o_fee_rub', 'c_amount', 'c_amount_rub', 'c_fee',
+                 'c_fee_rub', 'income', 'income_rub', 'spending_rub', 'profit', 'profit_rub'))
     asset_source_override = True
     currency_suffix = '_rub'
     summary_section = ("Сводка", "tax_rus_summary.json")

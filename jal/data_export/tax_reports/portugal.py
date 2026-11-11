@@ -10,6 +10,7 @@ from jal.data_export.taxes import TaxReport, GAIN, INCOME, exchange_estimate
 from jal.db.tax_override import TaxOverride
 from jal.data_export.tax_parameters import TaxParameters
 from jal.data_export.tax_options import TaxOption
+from jal.data_export.tax_grouping import DealFields
 
 
 # PT: a crypto-for-crypto exchange or a wrapping carries the cost with the holding period restarted (CIRS art. 10.º,
@@ -58,6 +59,10 @@ class TaxesPortugal(TaxReport):
                   default=True,
                   comment=QT_TRANSLATE_NOOP("TaxWidget", "     (unchecked: each leg at the rate of its own trade date)"))
     ]
+    deal_fields = DealFields(
+        security=('symbol', 'isin'), qty='qty', opened=('o_date',), closed=('c_date',),
+        figures=('qty', 'o_amount', 'o_amount_eur', 'o_fee', 'o_fee_eur', 'c_amount', 'c_amount_eur', 'c_fee', 'c_fee_eur',
+                 'income_eur', 'spending_eur', 'profit', 'profit_eur'))
     currency_suffix = '_eur'
     summary_section = ("Summary", "tax_prt_summary.json")
     uncovered_section = ("Not covered", "tax_prt_uncovered.json")

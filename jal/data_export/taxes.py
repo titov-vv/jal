@@ -135,6 +135,7 @@ class TaxReport:
     report_timezone = ''
     asset_source_override = False   # True if the report reads TaxOverride.AssetSource
     options = []                    # [TaxOption] the report reads from 'self.option', given to prepare_tax_report()
+    deal_fields = None              # DealFields of the report's deal rows, for grouping them
     REPLAY_SHARE = 90               # Percent of the progress the replay takes, the sections the rest
 
     def __init__(self):
