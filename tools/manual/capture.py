@@ -313,18 +313,25 @@ def capture_edit_dialogs(window):
     symbol.reject()
 
 
-def capture_tax_windows(window):
-    from jal.widgets.tax_widget import TaxWidget, MoneyFlowWidget
+# The tax report dialog of each country, its form file ticked so that the file's options read as enabled
+def capture_tax_forms(window):
+    from jal.widgets.tax_widget import TaxWidget
     for country, name in (('pt', "tax_forms_pt"), ('ru', "tax_forms_ru")):
         widget = TaxWidget(window.ui.windowArea)
         widget.ui.Year.setValue(2025)
         widget.ui.Country.setCurrentIndex(widget.ui.Country.findData(country))
+        widget.ui.FormGroup.setChecked(True)
         widget.show()
         QApplication.processEvents()
         widget.resize(720, widget.sizeHint().height())
         QApplication.processEvents()
         save(widget, name)
         widget.close()
+
+
+def capture_tax_windows(window):
+    from jal.widgets.tax_widget import MoneyFlowWidget
+    capture_tax_forms(window)
     capture_tax_treatment(window)
     flow = MoneyFlowWidget(window.ui.windowArea)
     flow.resize(720, 200)

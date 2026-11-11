@@ -75,6 +75,42 @@ With more than one account ticked, one report covers them all, and the replay of
   made on that netted total;
 * the declaration files take every account's lines, each under its own broker, country and currency.
 
+### Grouping the deals
+
+A sale is reported lot by lot: one line for each purchase it closed, matched first in, first out. An
+order filled in several trades, or a position built over many purchases, turns into many lines for
+what the declaration sees as one sale. Two options shorten that without changing a figure — every
+total, the Summary and the [base estimations](#base-estimation) stay the same to the cent. Both are
+off unless you turn them on.
+
+**Group deals in Excel** folds the lots on the sheet:
+
+| Choice | One group is |
+|---|---|
+| **No grouping** | — every lot is a line, as before |
+| **Security and sale day** | the lots of one security sold on one day |
+| **Security** | all the lots of one security |
+| **Security, purchase day and sale day** | the lots of one security bought on one day and sold on one day |
+
+A group of several lots gets a **bold line of sums** above it — quantity, amounts and fees of the
+purchases and of the sales, income, cost and result — and its lots are folded under that line: the
+sheet opens with the groups closed, and prints that way. Click **+** in the left margin to see the
+lots of one group, or the **2** above the margin to open them all. Nothing is removed: every lot is
+still on the sheet with its trade numbers, so it can be checked against the broker's statement. On
+the bold line a date, a rate or a price is shown only where all its lots share it; where a leg was
+made of several trades, the number column says how many. A lot alone in its group stays an ordinary
+line. A short sale is grouped apart from the purchases and sales of the same security, by the sale
+that opened it.
+
+Shares, funds and derivatives are grouped in both reports, bonds in the Portuguese one only; the
+Russian bond sheet and the crypto sheets are not.
+
+**Merge lots**, in the box of the declaration file (see [The country options](#the-country-options)),
+writes one line of the file for a group instead of one per lot. The spreadsheet is not affected by
+it, so the detailed sheet stays as the proof behind the shorter file. Choose the matching level in
+Excel — *Security, purchase day and sale day* for Portugal, *Security and sale day* for Russia — and
+each bold line of the sheet is a line of the file.
+
 ### Tax bases
 
 The law declares some kinds of income apart from others, and a loss on one kind does not reduce a
@@ -292,6 +328,9 @@ Summary sheet.
 
 ### The country options
 
+The options under **Additional parameters** change with the country. Those inside the box of the
+declaration file apply to that file only and are greyed out until the box is ticked.
+
 **Portugal**
 
 * **Convert at the rate of the disposal date only (CIRS art. 23)** — on by default: the cost, the
@@ -299,12 +338,17 @@ Summary sheet.
   article 23 of the CIRS describes. Unchecked, each leg is converted at the rate of its own trade
   date. A short sale is converted at the rate of the sale that opened it; that is JAL's reading,
   not a confirmed rule, and the line says so.
+* **Group deals in Excel** — see [Grouping the deals](#grouping-the-deals).
 * **Create XML records to introduce in Modelo-3 form** — also write an XML file with the lines of
   Annex J: table 9.2A for shares, funds and bonds, each with its code, and table 9.2B for derivatives.
   A short sale is written as realized by the sale that opened it; a stock short open at the end of
   the year is left out of the file — enter it by hand (see [Short sales](#short-sales)). The 9.2B
   lines are a first draft — check them against the form before loading them. Crypto is not in the
   file yet: enter it from the crypto sheets.
+  * **Merge lots of one security bought on one day and sold on one day** — one 9.2A line for such
+    lots, with the sums of their acquisition values, realization values and expenses. A line of the
+    form has one date of acquisition and one of realization, so nothing it asks for is lost. The
+    9.2B lines are not merged.
 
 **Russia**
 
@@ -312,13 +356,19 @@ Summary sheet.
 
 * **Do not use settlement date for currency rates** — take rates from the trade date instead of the
   settlement date.
-* **Update only information about dividends** — fill in the dividend sections of the declaration only.
-* **Use broker name as income source** — name the broker, rather than the issuer, as the source of
-  income.
+* **Group deals in Excel** — see [Grouping the deals](#grouping-the-deals).
 * **Create tax form in "Декларация 2.0" program format** — also write a declaration file for the
   official program (its extension carries the year: `.de5` for 2025, `.de6` for 2026), with the codes
   of the parameter file. It holds dividends, securities, derivatives and interest; crypto is not in it
   yet.
+  * **Update only information about dividends** — fill in the dividend sections of the declaration only.
+  * **Use broker name as income source** — name the broker, rather than the issuer, as the source of
+    income.
+  * **Merge lots of one security sold on one day** — one record for the shares, funds or derivatives
+    of one security sold on one day, with the sums of their income and deductions. Such lots share the
+    date of income and the rate, which is all a record holds of a sale; the purchase dates are on the
+    sheet. Bonds are not merged. Load a merged file into the program once and compare its totals with
+    the sheet before you rely on it.
 
 ## Money flow report *(Russia)*
 
