@@ -665,9 +665,9 @@ class JalAsset(JalDB):
             if new_country.id():
                 _ = self._exec("UPDATE assets SET country_id=:new_country_id WHERE id=:asset_id",
                                [(":new_country_id", new_country.id()), (":asset_id", self._id)])
-                self._country_id = new_country.id()
                 logging.info(JalDB.tr("Country updated for ")
                              + f"{self.symbol()}: {self._country.name()} -> {new_country.name()}")
+                self._country = new_country
 
     def _update_expiration(self, new_expiration: int) -> None:
         _ = self._exec("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "

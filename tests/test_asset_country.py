@@ -37,6 +37,16 @@ def test_the_country_of_an_asset_is_stored(prepare_db):
     assert JalAsset(asset_id).country().code() == 'us'   # a second object reads it through the shared cache
 
 
+def test_a_country_code_from_a_statement_updates_the_asset(prepare_db):
+    asset = JalAsset(_stock())
+    asset.update_data({'country': 'US'})
+    assert _stored_country(asset.id()) == JalCountry(data={'code': 'us'}, search=True).id()
+    assert asset.country().code() == 'us'                  # the updated object itself
+    assert JalAsset(asset.id()).country().code() == 'us'   # and a second one through the shared cache
+    asset.update_data({'country': 'zz'})                   # an unknown code changes nothing
+    assert asset.country().code() == 'us'
+
+
 def test_the_country_list_names_every_country_once(prepare_db):
     names = JalCountry.names()
     assert len(names) == JalDB._read("SELECT COUNT(*) FROM countries")
