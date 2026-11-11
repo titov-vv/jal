@@ -21,6 +21,18 @@ one). They need no desktop session: Qt runs on the `offscreen` platform.
 | `make_demo_db.py` | Builds the demo database from nothing: residence, peers, categories, tags, accounts, assets, quotes, twenty months of household operations, a trading account, a crypto wallet and a term deposit. |
 | `capture.py` | Opens the real main window against that database and saves each picture the manual uses, then `capture_readme()` adds the two the project README needs on top of them. `capture_first_run.py` does the same against an empty database. |
 
+## The Russian 3-NDFL guide
+
+```bash
+python tools/manual/capture_ru_guide.py   # docs/ru-tax-3ndfl: 4 pictures + 3ndfl_tax_report.xlsx
+```
+
+The report half of `docs/ru-tax-3ndfl/taxes.md` is illustrated from the same demo ledger. The script works on a
+copy of it (`tools/manual/demo/ru_guide/`), adds invented rouble rates and a year of deals to the demo trading
+account, and saves the tax dialog in the Russian interface, the sample workbook and three of its sheets as
+pictures. The sheets are printed by LibreOffice, so `soffice` and `pdftoppm` have to be installed. The pictures
+of the guide's import steps and of the "Декларация" program are older hand-made screenshots.
+
 `docs/manual/img/jal_logo.png` is the only picture that is not generated - it is a copy of
 `docs/img/jal_logo.png` and has to be copied again if the images folder is ever emptied.
 
