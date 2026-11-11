@@ -56,10 +56,6 @@ class Ui_IncomeSpendingOperation(object):
 
         self.layout.addWidget(self.date_label, 1, 0, 1, 1)
 
-        self.vertical_spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-
-        self.layout.addItem(self.vertical_spacer, 4, 0, 1, 1)
-
         self.add_button = QPushButton(IncomeSpendingOperation)
         self.add_button.setObjectName(u"add_button")
 

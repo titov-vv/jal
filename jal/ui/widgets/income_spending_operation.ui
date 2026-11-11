@@ -54,19 +54,6 @@
      </property>
     </widget>
    </item>
-   <item row="4" column="0">
-    <spacer name="vertical_spacer">
-     <property name="orientation">
-      <enum>Qt::Orientation::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
    <item row="2" column="1">
     <widget class="QPushButton" name="add_button">
      <property name="toolTip">
