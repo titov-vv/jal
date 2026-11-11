@@ -4,9 +4,10 @@ import logging
 import traceback
 import json
 
-from PySide6.QtCore import Property, Slot, Signal, Qt, QDate
+from PySide6.QtCore import Property, Slot, Signal, Qt, QDate, QCoreApplication
 from PySide6.QtGui import QShortcut, QKeySequence
-from PySide6.QtWidgets import QFileDialog, QMessageBox, QApplication, QDialog, QListWidgetItem
+from PySide6.QtWidgets import QFileDialog, QMessageBox, QApplication, QDialog, QListWidgetItem, QWidget, \
+    QCheckBox, QComboBox, QLabel
 
 from jal.ui.ui_tax_export_widget import Ui_TaxWidget
 from jal.ui.ui_flow_export_widget import Ui_MoneyFlowWidget
@@ -20,17 +21,19 @@ from jal.db.settings import JalSettings, FolderFor
 from jal.constants import PredefinedAgents
 from jal.data_export.taxes import TaxReport, TaxReportStop, TaxReportCancelled
 from jal.data_export.tax_parameters import TAX_TREATY
+from jal.data_export.tax_options import OptionType, TR_CONTEXT
 from jal.data_export.xlsx import XLSX
 from jal.data_export.ru_ndfl3 import Ru_NDFL3
-from jal.data_export.irs_modelo3 import IRS_Modelo3
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Export file types
 class FileType:
     XLS = 0
-    RU_Declaration_DE = 1
-    PT_Modelo3_XML = 2
+    FORM = 1   # the tax form file of the jurisdiction
+
+
+REPORT, FORM = "report", "form"   # what an option of the dialog belongs to
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -47,18 +50,19 @@ class TaxWidget(MdiWidget):
         self._derived = {}     # {jurisdiction: [periods]} each derives from the residence table for the year
         self._unticked = set()  # ids of the accounts the user unticked
 
-        self._option_boxes = {'pt': self.ui.PtBox, 'ru': self.ui.RuBox}
+        self._editors = {}     # {(jurisdiction, REPORT or FORM, key): editor} of every declared option
+        self._rows = {}        # {jurisdiction: [widgets]} of its options, shown for it alone
         self.ui.Country.clear()
         for code, jurisdiction in TaxReport.jurisdictions.items():
             self.ui.Country.addItem(JalIcon.country_flag(code), jurisdiction['name'], code)
+            self._build_options(code)
         self.ui.Country.currentIndexChanged.connect(self.OnCountryChange)
         self.ui.Year.valueChanged.connect(self.OnYearChange)
         self.ui.PeriodFrom.dateChanged.connect(self.OnPeriodChange)
         self.ui.PeriodTo.dateChanged.connect(self.OnPeriodChange)
         self.ui.Year.setValue(datetime.now().year - 1)   # Set previous year by default
         self.ui.XlsSelectBtn.pressed.connect(partial(self.OnFileBtn, FileType.XLS))
-        self.ui.Ndfl3SelectBtn.pressed.connect(partial(self.OnFileBtn, FileType.RU_Declaration_DE))
-        self.ui.IRS_Modelo3SelectBtn.pressed.connect(partial(self.OnFileBtn, FileType.PT_Modelo3_XML))
+        self.ui.FormSelectBtn.pressed.connect(partial(self.OnFileBtn, FileType.FORM))
         self.ui.SaveButton.pressed.connect(self.SaveReport)
         self.ui.Country.setCurrentIndex(self.ui.Country.findData('ru'))
         self.OnYearChange(self.ui.Year.value())
@@ -66,16 +70,69 @@ class TaxWidget(MdiWidget):
         self._close_shortcut.setContext(Qt.WidgetWithChildrenShortcut)
         self._close_shortcut.activated.connect(self.close)
 
-    # Shows the option box of the selected jurisdiction; one without options shows none
+    # Builds the editors of the options a jurisdiction's report and form file declare
+    def _build_options(self, code: str):
+        self._rows[code] = []
+        form = TaxReport.form_class(code)
+        for option in TaxReport.report_class(code).options:
+            self._add_option(self.ui.ReportOptionsLayout, self.ui.OptionsBox, code, REPORT, option)
+        for option in ([] if form is None else form.options):
+            self._add_option(self.ui.FormLayout, self.ui.FormGroup, code, FORM, option)
+
+    # An option as the next row of a 3-column grid: a check box, or a label and a list; its comment under it
+    def _add_option(self, layout, parent: QWidget, code: str, group: str, option):
+        row = layout.rowCount() if layout.count() else 0   # an empty grid counts one row
+        if option.type == OptionType.Choice:
+            label, editor = QLabel(option.translated_label(), parent), QComboBox(parent)
+            for value, text in option.translated_choices():
+                editor.addItem(text, userData=value)
+            editor.setCurrentIndex(max(editor.findData(option.default), 0))
+            label.setBuddy(editor)
+            layout.addWidget(label, row, 0)
+            layout.addWidget(editor, row, 1, 1, 2)
+            widgets = [label, editor]
+        else:
+            editor = QCheckBox(option.translated_label(), parent)
+            editor.setChecked(option.default)
+            layout.addWidget(editor, row, 0, 1, 3)
+            widgets = [editor]
+        if option.comment:
+            widgets.append(QLabel(option.translated_comment(), parent))
+            layout.addWidget(widgets[-1], row + 1, 0, 1, 3)
+        self._editors[(code, group, option.key)] = editor
+        self._rows[code] += widgets
+
+    # {key: value} of the selected jurisdiction's options of a group
+    def option_values(self, group: str) -> dict:
+        return {key: editor.currentData() if isinstance(editor, QComboBox) else editor.isChecked()
+                for (code, kind, key), editor in self._editors.items() if code == self.country and kind == group}
+
+    # Shows the options of the selected jurisdiction and its form file, unticked; one without either shows no box
     def OnCountryChange(self, _index):
-        for code, box in self._option_boxes.items():
-            box.setVisible(code == self.country)
+        form = TaxReport.form_class(self.country)
+        for code, widgets in self._rows.items():
+            for widget in widgets:
+                widget.setVisible(code == self.country)
+        self.ui.FormGroup.setVisible(form is not None)
+        self.ui.FormGroup.setChecked(False)
+        self.ui.FormFileName.clear()
+        if form is not None:
+            self.ui.FormGroup.setTitle(QCoreApplication.translate(TR_CONTEXT, form.title))
+        self.ui.OptionsBox.setVisible(form is not None or bool(self._rows[self.country]))
+        chain = [self.ui.XlsSelectBtn] + self._shown_editors(REPORT) + \
+                [self.ui.FormGroup, self.ui.FormFileName, self.ui.FormSelectBtn] + self._shown_editors(FORM) + \
+                [self.ui.SaveButton]
+        for previous, following in zip(chain, chain[1:]):
+            QWidget.setTabOrder(previous, following)
         self._propose_period()
         # A window of its own may follow the size of the country block it shows, a tab may not
         if self.isWindow():
             self.update()
             QApplication.processEvents()
             self.adjustSize()
+
+    def _shown_editors(self, group: str) -> list:
+        return [editor for (code, kind, _), editor in self._editors.items() if code == self.country and kind == group]
 
     def OnYearChange(self, _year):
         self._propose_period()
@@ -144,11 +201,11 @@ class TaxWidget(MdiWidget):
     def OnFileBtn(self, type):
         if type == FileType.XLS:
             selector = (self.tr("Save tax reports to:"), self.tr("Excel files (*.xlsx)"), '.xlsx', self.ui.XlsFileName)
-        elif type == FileType.RU_Declaration_DE:
-            last_digit = self.year % 10
-            selector = (self.tr("Save tax form to:"), self.tr(f"Tax form (*.de{last_digit})"), f".de{last_digit}", self.ui.Ndfl3FileName)
-        elif type == FileType.PT_Modelo3_XML:
-            selector = (self.tr("Save IRS Modelo 3 tax data to:"), self.tr("XML files (*.xml)"), '.xml', self.ui.IRS_Modelo3Filename)
+        elif type == FileType.FORM:
+            form = TaxReport.form_class(self.country)
+            file_filter, extension = form.file_type(self.year)
+            selector = (QCoreApplication.translate(TR_CONTEXT, form.file_prompt),
+                        QCoreApplication.translate(TR_CONTEXT, file_filter), extension, self.ui.FormFileName)
         else:
             raise ValueError
         folder = JalSettings().getRecentFolder(FolderFor.Report, '.')
@@ -177,14 +234,8 @@ class TaxWidget(MdiWidget):
     accounts = Property(list, fget=lambda self: [self.ui.Accounts.item(i).data(Qt.UserRole)
                                                  for i in range(self.ui.Accounts.count())
                                                  if self.ui.Accounts.item(i).checkState() == Qt.Checked])
-    update_ndfl3 = Property(bool, fget=lambda self: self.ui.Ndfl3Group.isChecked())
-    ndfl3_filename = Property(str, fget=lambda self: self.ui.Ndfl3FileName.text())
-    ndfl3_broker_as_income = Property(bool, fget=lambda self: self.ui.Ru_IncomeSourceBroker.isChecked())
-    ndfl3_dividends_only = Property(bool, fget=lambda self: self.ui.Ru_DividendsOnly.isChecked())
-    use_one_rate = Property(bool, fget=lambda self: self.ui.Pt_OneCurrencyRate.isChecked())
-    update_modelo3 = Property(bool, fget=lambda self: self.ui.IRS_Modelo3Group.isChecked())
-    modelo3_filename = Property(str, fget=lambda self: self.ui.IRS_Modelo3Filename.text())
-    no_settlement = Property(bool, fget=lambda self: self.ui.Ru_NoSettlement.isChecked())
+    update_form = Property(bool, fget=lambda self: self.ui.FormGroup.isVisibleTo(self) and self.ui.FormGroup.isChecked())
+    form_filename = Property(str, fget=lambda self: self.ui.FormFileName.text())
 
     # The report with a busy cursor and the progress shown; the window is disabled meanwhile, as the main window
     # disables itself, since the events processed during the replay would let a second report start beside it
@@ -200,8 +251,7 @@ class TaxWidget(MdiWidget):
         self.show_progress.emit(True)
         try:
             return taxes.prepare_tax_report(self.year, self.accounts, period=(self.period_begin, self.period_end),
-                                            use_one_currency_rate=self.use_one_rate,
-                                            use_settlement=(not self.no_settlement), progress=progress)
+                                            progress=progress, **self.option_values(REPORT))
         finally:
             self.show_progress.emit(False)
             self._report = None
@@ -301,17 +351,13 @@ class TaxWidget(MdiWidget):
             logging.warning(message)
             QMessageBox().warning(self, self.tr("Shorts not handled"), message, QMessageBox.Ok)
 
-        if self.update_ndfl3 or self.update_modelo3:
-            if self.update_ndfl3 and not all(self._warn_missing_broker(x) for x in taxes.accounts):
+        if self.update_form:
+            form = TaxReport.form_class(self.country)
+            if form.needs_broker and not all(self._warn_missing_broker(x) for x in taxes.accounts):
                 return
-            tax_forms = None
+            filename = self.form_filename
             try:
-                if self.update_ndfl3:
-                    tax_forms = Ru_NDFL3(self.year, broker_as_income=self.ndfl3_broker_as_income, only_dividends=self.ndfl3_dividends_only)
-                    filename = self.ndfl3_filename
-                if self.update_modelo3:
-                    tax_forms = IRS_Modelo3(self.year)
-                    filename = self.modelo3_filename
+                tax_forms = form(self.year, **self.option_values(FORM))
                 tax_forms.update_taxes(tax_report, parameters)
             except ValueError as e:   # no form template or no code for the year
                 logging.error(str(e))

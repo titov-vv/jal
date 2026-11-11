@@ -3,15 +3,31 @@ import os
 import json
 from copy import deepcopy
 from datetime import datetime, timezone
+from PySide6.QtCore import QT_TRANSLATE_NOOP
 from PySide6.QtWidgets import QApplication
 from jal.constants import Setup
 from jal.db.settings import JalSettings
 from jal.data_export.tax_parameters import TaxParameters
+from jal.data_export.tax_options import TaxOption
 
 
 FOREIGN_SECTION = "CurrencyIncomeList"
 # ----------------------------------------------------------------------------------------------------------------------
 class Ru_NDFL3:
+    # What the tax dialog shows for the file; the options are the keyword arguments of the class
+    title = QT_TRANSLATE_NOOP("TaxWidget", "Create tax form in \"Декларация 2.0\" program format")
+    file_prompt = QT_TRANSLATE_NOOP("TaxWidget", "Save tax form to:")
+    needs_broker = True   # a row is filed under the broker of its account
+    options = [
+        TaxOption('only_dividends', QT_TRANSLATE_NOOP("TaxWidget", "Update only information about dividends")),
+        TaxOption('broker_as_income', QT_TRANSLATE_NOOP("TaxWidget", "Use broker name as income source"), default=True)
+    ]
+
+    # The (filter, extension) of the file of a year
+    @staticmethod
+    def file_type(year: int) -> tuple:
+        return f"Tax form (*.de{year % 10})", f".de{year % 10}"
+
     def __init__(self, year, broker_as_income=False, only_dividends=False):
         template_path = JalSettings.path(JalSettings.PATH_TEMPLATES) + Setup.NDFL3_TEMPLATE_PATH
         template_file = template_path + os.sep + f"{year}.json"

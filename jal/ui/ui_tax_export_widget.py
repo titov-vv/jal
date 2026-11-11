@@ -15,11 +15,10 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateEdit,
-    QGridLayout, QGroupBox, QHBoxLayout, QLabel,
-    QLineEdit, QListWidget, QListWidgetItem, QPushButton,
-    QSizePolicy, QSpacerItem, QSpinBox, QVBoxLayout,
-    QWidget)
+from PySide6.QtWidgets import (QApplication, QComboBox, QDateEdit, QGridLayout,
+    QGroupBox, QHBoxLayout, QLabel, QLineEdit,
+    QListWidget, QListWidgetItem, QPushButton, QSizePolicy,
+    QSpacerItem, QSpinBox, QVBoxLayout, QWidget)
 
 class Ui_TaxWidget(object):
     def setupUi(self, TaxWidget):
@@ -62,49 +61,6 @@ class Ui_TaxWidget(object):
 
         self.MainLayout.addWidget(self.XlsFileName, 5, 1, 1, 1)
 
-        self.PtBox = QGroupBox(TaxWidget)
-        self.PtBox.setObjectName(u"PtBox")
-        self.PtLayout = QVBoxLayout(self.PtBox)
-        self.PtLayout.setObjectName(u"PtLayout")
-        self.Pt_OneCurrencyRate = QCheckBox(self.PtBox)
-        self.Pt_OneCurrencyRate.setObjectName(u"Pt_OneCurrencyRate")
-        self.Pt_OneCurrencyRate.setChecked(True)
-
-        self.PtLayout.addWidget(self.Pt_OneCurrencyRate)
-
-        self.Pt_RateComment = QLabel(self.PtBox)
-        self.Pt_RateComment.setObjectName(u"Pt_RateComment")
-        self.Pt_RateComment.setEnabled(True)
-
-        self.PtLayout.addWidget(self.Pt_RateComment)
-
-        self.IRS_Modelo3Group = QGroupBox(self.PtBox)
-        self.IRS_Modelo3Group.setObjectName(u"IRS_Modelo3Group")
-        self.IRS_Modelo3Group.setCheckable(True)
-        self.IRS_Modelo3Group.setChecked(False)
-        self.gridLayout = QGridLayout(self.IRS_Modelo3Group)
-        self.gridLayout.setObjectName(u"gridLayout")
-        self.IRS_Modelo3FileLbl = QLabel(self.IRS_Modelo3Group)
-        self.IRS_Modelo3FileLbl.setObjectName(u"IRS_Modelo3FileLbl")
-
-        self.gridLayout.addWidget(self.IRS_Modelo3FileLbl, 0, 0, 1, 1)
-
-        self.IRS_Modelo3Filename = QLineEdit(self.IRS_Modelo3Group)
-        self.IRS_Modelo3Filename.setObjectName(u"IRS_Modelo3Filename")
-
-        self.gridLayout.addWidget(self.IRS_Modelo3Filename, 0, 1, 1, 1)
-
-        self.IRS_Modelo3SelectBtn = QPushButton(self.IRS_Modelo3Group)
-        self.IRS_Modelo3SelectBtn.setObjectName(u"IRS_Modelo3SelectBtn")
-
-        self.gridLayout.addWidget(self.IRS_Modelo3SelectBtn, 0, 2, 1, 1)
-
-
-        self.PtLayout.addWidget(self.IRS_Modelo3Group)
-
-
-        self.MainLayout.addWidget(self.PtBox, 8, 0, 1, 3)
-
         self.AccountLbl = QLabel(TaxWidget)
         self.AccountLbl.setObjectName(u"AccountLbl")
         self.AccountLbl.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignTop)
@@ -116,58 +72,41 @@ class Ui_TaxWidget(object):
 
         self.MainLayout.addWidget(self.XlsFileLbl, 5, 0, 1, 1)
 
-        self.RuBox = QGroupBox(TaxWidget)
-        self.RuBox.setObjectName(u"RuBox")
-        self.verticalLayout = QVBoxLayout(self.RuBox)
-        self.verticalLayout.setObjectName(u"verticalLayout")
-        self.Ru_NoSettlement = QCheckBox(self.RuBox)
-        self.Ru_NoSettlement.setObjectName(u"Ru_NoSettlement")
+        self.OptionsBox = QGroupBox(TaxWidget)
+        self.OptionsBox.setObjectName(u"OptionsBox")
+        self.OptionsLayout = QVBoxLayout(self.OptionsBox)
+        self.OptionsLayout.setObjectName(u"OptionsLayout")
+        self.ReportOptionsLayout = QGridLayout()
+        self.ReportOptionsLayout.setObjectName(u"ReportOptionsLayout")
 
-        self.verticalLayout.addWidget(self.Ru_NoSettlement)
+        self.OptionsLayout.addLayout(self.ReportOptionsLayout)
 
-        self.Ru_DividendsOnly = QCheckBox(self.RuBox)
-        self.Ru_DividendsOnly.setObjectName(u"Ru_DividendsOnly")
+        self.FormGroup = QGroupBox(self.OptionsBox)
+        self.FormGroup.setObjectName(u"FormGroup")
+        self.FormGroup.setCheckable(True)
+        self.FormGroup.setChecked(False)
+        self.FormLayout = QGridLayout(self.FormGroup)
+        self.FormLayout.setObjectName(u"FormLayout")
+        self.FormFileLbl = QLabel(self.FormGroup)
+        self.FormFileLbl.setObjectName(u"FormFileLbl")
 
-        self.verticalLayout.addWidget(self.Ru_DividendsOnly)
+        self.FormLayout.addWidget(self.FormFileLbl, 0, 0, 1, 1)
 
-        self.Ru_IncomeSourceBroker = QCheckBox(self.RuBox)
-        self.Ru_IncomeSourceBroker.setObjectName(u"Ru_IncomeSourceBroker")
-        self.Ru_IncomeSourceBroker.setChecked(True)
+        self.FormFileName = QLineEdit(self.FormGroup)
+        self.FormFileName.setObjectName(u"FormFileName")
 
-        self.verticalLayout.addWidget(self.Ru_IncomeSourceBroker)
+        self.FormLayout.addWidget(self.FormFileName, 0, 1, 1, 1)
 
-        self.Ndfl3Group = QGroupBox(self.RuBox)
-        self.Ndfl3Group.setObjectName(u"Ndfl3Group")
-        self.Ndfl3Group.setEnabled(True)
-        sizePolicy3 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
-        sizePolicy3.setHorizontalStretch(0)
-        sizePolicy3.setVerticalStretch(0)
-        sizePolicy3.setHeightForWidth(self.Ndfl3Group.sizePolicy().hasHeightForWidth())
-        self.Ndfl3Group.setSizePolicy(sizePolicy3)
-        self.Ndfl3Group.setCheckable(True)
-        self.Ndfl3Group.setChecked(False)
-        self.gridLayout_2 = QGridLayout(self.Ndfl3Group)
-        self.gridLayout_2.setObjectName(u"gridLayout_2")
-        self.Ndfl3FileLbl = QLabel(self.Ndfl3Group)
-        self.Ndfl3FileLbl.setObjectName(u"Ndfl3FileLbl")
+        self.FormSelectBtn = QPushButton(self.FormGroup)
+        self.FormSelectBtn.setObjectName(u"FormSelectBtn")
 
-        self.gridLayout_2.addWidget(self.Ndfl3FileLbl, 1, 0, 1, 1)
-
-        self.Ndfl3SelectBtn = QPushButton(self.Ndfl3Group)
-        self.Ndfl3SelectBtn.setObjectName(u"Ndfl3SelectBtn")
-
-        self.gridLayout_2.addWidget(self.Ndfl3SelectBtn, 1, 2, 1, 1)
-
-        self.Ndfl3FileName = QLineEdit(self.Ndfl3Group)
-        self.Ndfl3FileName.setObjectName(u"Ndfl3FileName")
-
-        self.gridLayout_2.addWidget(self.Ndfl3FileName, 1, 1, 1, 1)
+        self.FormLayout.addWidget(self.FormSelectBtn, 0, 2, 1, 1)
 
 
-        self.verticalLayout.addWidget(self.Ndfl3Group)
+        self.OptionsLayout.addWidget(self.FormGroup)
 
 
-        self.MainLayout.addWidget(self.RuBox, 7, 0, 1, 3)
+        self.MainLayout.addWidget(self.OptionsBox, 7, 0, 1, 3)
 
         self.Country = QComboBox(TaxWidget)
         self.Country.setObjectName(u"Country")
@@ -234,10 +173,9 @@ class Ui_TaxWidget(object):
         self.MainLayout.addWidget(self.Accounts, 4, 1, 1, 2)
 
 #if QT_CONFIG(shortcut)
-        self.IRS_Modelo3FileLbl.setBuddy(self.IRS_Modelo3Filename)
         self.AccountLbl.setBuddy(self.Accounts)
         self.XlsFileLbl.setBuddy(self.XlsFileName)
-        self.Ndfl3FileLbl.setBuddy(self.Ndfl3FileName)
+        self.FormFileLbl.setBuddy(self.FormFileName)
         self.CountryLbl.setBuddy(self.Country)
         self.YearLbl.setBuddy(self.Year)
         self.PeriodLbl.setBuddy(self.PeriodFrom)
@@ -248,17 +186,10 @@ class Ui_TaxWidget(object):
         QWidget.setTabOrder(self.PeriodTo, self.Accounts)
         QWidget.setTabOrder(self.Accounts, self.XlsFileName)
         QWidget.setTabOrder(self.XlsFileName, self.XlsSelectBtn)
-        QWidget.setTabOrder(self.XlsSelectBtn, self.Pt_OneCurrencyRate)
-        QWidget.setTabOrder(self.Pt_OneCurrencyRate, self.IRS_Modelo3Group)
-        QWidget.setTabOrder(self.IRS_Modelo3Group, self.IRS_Modelo3Filename)
-        QWidget.setTabOrder(self.IRS_Modelo3Filename, self.IRS_Modelo3SelectBtn)
-        QWidget.setTabOrder(self.IRS_Modelo3SelectBtn, self.Ru_NoSettlement)
-        QWidget.setTabOrder(self.Ru_NoSettlement, self.Ru_DividendsOnly)
-        QWidget.setTabOrder(self.Ru_DividendsOnly, self.Ru_IncomeSourceBroker)
-        QWidget.setTabOrder(self.Ru_IncomeSourceBroker, self.Ndfl3Group)
-        QWidget.setTabOrder(self.Ndfl3Group, self.Ndfl3FileName)
-        QWidget.setTabOrder(self.Ndfl3FileName, self.Ndfl3SelectBtn)
-        QWidget.setTabOrder(self.Ndfl3SelectBtn, self.SaveButton)
+        QWidget.setTabOrder(self.XlsSelectBtn, self.FormGroup)
+        QWidget.setTabOrder(self.FormGroup, self.FormFileName)
+        QWidget.setTabOrder(self.FormFileName, self.FormSelectBtn)
+        QWidget.setTabOrder(self.FormSelectBtn, self.SaveButton)
 
         self.retranslateUi(TaxWidget)
 
@@ -275,33 +206,17 @@ class Ui_TaxWidget(object):
 #if QT_CONFIG(tooltip)
         self.XlsFileName.setToolTip(QCoreApplication.translate("TaxWidget", u"File where to store tax report in Excel format", None))
 #endif // QT_CONFIG(tooltip)
-        self.PtBox.setTitle(QCoreApplication.translate("TaxWidget", u"Additional parameters (Portugal)", None))
-        self.Pt_OneCurrencyRate.setText(QCoreApplication.translate("TaxWidget", u"Convert at the rate of the disposal date only (CIRS art. 23)", None))
-        self.Pt_RateComment.setText(QCoreApplication.translate("TaxWidget", u"     (unchecked: each leg at the rate of its own trade date)", None))
-        self.IRS_Modelo3Group.setTitle(QCoreApplication.translate("TaxWidget", u"Create XML records to introduce in Modelo-3 form", None))
-        self.IRS_Modelo3FileLbl.setText(QCoreApplication.translate("TaxWidget", u"&Output file:", None))
-#if QT_CONFIG(tooltip)
-        self.IRS_Modelo3Filename.setToolTip(QCoreApplication.translate("TaxWidget", u"File where to store russian tax form", None))
-#endif // QT_CONFIG(tooltip)
-#if QT_CONFIG(tooltip)
-        self.IRS_Modelo3SelectBtn.setToolTip(QCoreApplication.translate("TaxWidget", u"Select file", None))
-#endif // QT_CONFIG(tooltip)
-        self.IRS_Modelo3SelectBtn.setText(QCoreApplication.translate("TaxWidget", u" ... ", None))
         self.AccountLbl.setText(QCoreApplication.translate("TaxWidget", u"&Accounts:", None))
         self.XlsFileLbl.setText(QCoreApplication.translate("TaxWidget", u"&Excel file:", None))
-        self.RuBox.setTitle(QCoreApplication.translate("TaxWidget", u"Additional parameters (Russia)", None))
-        self.Ru_NoSettlement.setText(QCoreApplication.translate("TaxWidget", u"Do not use settlement date for currency rates", None))
-        self.Ru_DividendsOnly.setText(QCoreApplication.translate("TaxWidget", u"Update only information about dividends", None))
-        self.Ru_IncomeSourceBroker.setText(QCoreApplication.translate("TaxWidget", u"Use broker name as income source", None))
-        self.Ndfl3Group.setTitle(QCoreApplication.translate("TaxWidget", u"Create tax form in \"\u0414\u0435\u043a\u043b\u0430\u0440\u0430\u0446\u0438\u044f 2.0\" program format", None))
-        self.Ndfl3FileLbl.setText(QCoreApplication.translate("TaxWidget", u"Output &file:", None))
+        self.OptionsBox.setTitle(QCoreApplication.translate("TaxWidget", u"Additional parameters", None))
+        self.FormFileLbl.setText(QCoreApplication.translate("TaxWidget", u"Output &file:", None))
 #if QT_CONFIG(tooltip)
-        self.Ndfl3SelectBtn.setToolTip(QCoreApplication.translate("TaxWidget", u"Select file", None))
+        self.FormFileName.setToolTip(QCoreApplication.translate("TaxWidget", u"File where to store tax form", None))
 #endif // QT_CONFIG(tooltip)
-        self.Ndfl3SelectBtn.setText(QCoreApplication.translate("TaxWidget", u" ... ", None))
 #if QT_CONFIG(tooltip)
-        self.Ndfl3FileName.setToolTip(QCoreApplication.translate("TaxWidget", u"File where to store russian tax form", None))
+        self.FormSelectBtn.setToolTip(QCoreApplication.translate("TaxWidget", u"Select file", None))
 #endif // QT_CONFIG(tooltip)
+        self.FormSelectBtn.setText(QCoreApplication.translate("TaxWidget", u" ... ", None))
         self.CountryLbl.setText(QCoreApplication.translate("TaxWidget", u"&Country:", None))
         self.YearLbl.setText(QCoreApplication.translate("TaxWidget", u"&Year:", None))
         self.PeriodLbl.setText(QCoreApplication.translate("TaxWidget", u"&Period:", None))

@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from decimal import Decimal
+from PySide6.QtCore import QT_TRANSLATE_NOOP
 from jal.constants import PredefinedAsset, PredefinedCategory, SymbolId
 from jal.db.asset import JalAsset
 from jal.db.symbol import JalSymbol
@@ -8,6 +9,7 @@ from jal.db.basis_policy import Basis, Clock, Treatment, JalPolicy
 from jal.data_export.taxes import TaxReport, GAIN, INCOME, exchange_estimate
 from jal.db.tax_override import TaxOverride
 from jal.data_export.tax_parameters import TaxParameters
+from jal.data_export.tax_options import TaxOption
 
 
 # PT: a crypto-for-crypto exchange or a wrapping carries the cost with the holding period restarted (CIRS art. 10.º,
@@ -50,6 +52,12 @@ class TaxesPortugal(TaxReport):
     jurisdiction = 'pt'
     currency_name = 'EUR'
     report_timezone = 'Europe/Lisbon'
+    options = [   # CIRS a.23: cost, proceeds and fees at the rate of the disposal
+        TaxOption('use_one_currency_rate',
+                  QT_TRANSLATE_NOOP("TaxWidget", "Convert at the rate of the disposal date only (CIRS art. 23)"),
+                  default=True,
+                  comment=QT_TRANSLATE_NOOP("TaxWidget", "     (unchecked: each leg at the rate of its own trade date)"))
+    ]
     currency_suffix = '_eur'
     summary_section = ("Summary", "tax_prt_summary.json")
     uncovered_section = ("Not covered", "tax_prt_uncovered.json")
@@ -173,7 +181,6 @@ class TaxesPortugal(TaxReport):
     def __init__(self):
         super().__init__()
         self._processed_trade_qty = {}  # It will handle {trade_id: qty} records to keep track of already processed qty
-        self.one_currency_rate = True   # CIRS a.23: cost, proceeds and fees at the rate of the disposal
         self.reports = {
             "Shares": (self.prepare_stocks_and_etf, "tax_prt_shares.json"),
             "Bonds": (self.prepare_bonds, "tax_prt_bonds.json"),
@@ -237,7 +244,7 @@ class TaxesPortugal(TaxReport):
     # The headers every deals section states: the matching rule, the rate rule, the year and the cost
     def _deal_headers(self):
         self.add_header(self.fifo_header())
-        self.add_header(self.texts['one_rate'] if self.one_currency_rate else self.texts['two_rates'])
+        self.add_header(self.texts['one_rate'] if self.option['use_one_currency_rate'] else self.texts['two_rates'])
         self.add_header(self.texts['trade_date'])
         self.add_header(self.texts['native_cost'])
         self.add_header(self.texts['historical_cost'])
@@ -248,8 +255,8 @@ class TaxesPortugal(TaxReport):
         open_op, close_op = trade.open_operation(), trade.close_operation()
         long = trade.qty() >= Decimal('0')
         disposal = close_op if long else open_op
-        o_ts = disposal.timestamp() if self.one_currency_rate else open_op.timestamp()
-        c_ts = disposal.timestamp() if self.one_currency_rate else close_op.timestamp()
+        o_ts = disposal.timestamp() if self.option['use_one_currency_rate'] else open_op.timestamp()
+        c_ts = disposal.timestamp() if self.option['use_one_currency_rate'] else close_op.timestamp()
         open_currency = open_op.account().currency()
         o_rate = self.rate(open_currency, o_ts)
         c_rate = self.rate(self.account_currency.id(), c_ts)
@@ -270,7 +277,7 @@ class TaxesPortugal(TaxReport):
         notes = []
         if open_currency != self.account_currency.id():
             notes.append(self.texts['cost_currency'].format(JalAsset(open_currency).symbol()))
-        if not long and self.one_currency_rate:
+        if not long and self.option['use_one_currency_rate']:
             notes.append(self.texts['short_rate'])
         notes += [x.description().strip() for x in self.deal_modifiers(trade) if x.description().strip()]
         return {

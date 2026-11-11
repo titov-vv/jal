@@ -20,6 +20,7 @@ from jal.db.country import JalCountry
 from jal.db.residence import JalResidence
 from jal.db.tax_override import JalTaxOverride, TaxOverride
 from jal.data_export.tax_parameters import TaxParameters, TAX_TREATY
+from jal.data_export.tax_options import option_values
 
 REPORT_METHOD = 0
 REPORT_TEMPLATE = 1
@@ -110,8 +111,10 @@ class DecidedPolicy(BasisPolicy):
 class TaxReport:
     # Every jurisdiction a report exists for, keyed by its ISO 3166-1 alpha-2 code; the name is in its own language
     jurisdictions = {
-        'pt': {"name": "Portugal", "module": "jal.data_export.tax_reports.portugal", "class": "TaxesPortugal"},
+        'pt': {"name": "Portugal", "module": "jal.data_export.tax_reports.portugal", "class": "TaxesPortugal",
+               "form": {"module": "jal.data_export.irs_modelo3", "class": "IRS_Modelo3"}},
         'ru': {"name": "Россия", "module": "jal.data_export.tax_reports.russia", "class": "TaxesRussia",
+               "form": {"module": "jal.data_export.ru_ndfl3", "class": "Ru_NDFL3"},
                "flow": {"module": "jal.data_export.taxes_flow", "class": "TaxesFlowRus"}}
     }
     jurisdiction = ''   # ISO 3166-1 alpha-2 code of the jurisdiction, names its parameter file
@@ -131,6 +134,7 @@ class TaxReport:
     # source's. An empty name leaves every stored timestamp read as it is.
     report_timezone = ''
     asset_source_override = False   # True if the report reads TaxOverride.AssetSource
+    options = []                    # [TaxOption] the report reads from 'self.option', given to prepare_tax_report()
     REPLAY_SHARE = 90               # Percent of the progress the replay takes, the sections the rest
 
     def __init__(self):
@@ -146,8 +150,7 @@ class TaxReport:
         self.year_end = 0
         self.period_begin = 0         # the window of the events printed, inside the year
         self.period_end = 0
-        self.use_settlement = True
-        self.one_currency_rate = False
+        self.option = option_values(self.options, {})   # {key: value} of the report's options
         self.parameters = None
         self._section = ''
         self.section_notes = {}   # {section: [header lines]} a section states under its title
@@ -206,6 +209,14 @@ class TaxReport:
     def create_report(code: str):
         return TaxReport.report_class(code)()
 
+    # The class that writes the tax form file of a jurisdiction, None if it has none
+    @staticmethod
+    def form_class(code: str):
+        form = TaxReport.jurisdictions.get(code, {}).get('form')
+        if form is None:
+            return None
+        return getattr(importlib.import_module(form['module']), form['class'])
+
     # The money-flow report of a jurisdiction that asks for one, None for the others
     @staticmethod
     def create_flow_report(code: str):
@@ -243,7 +254,7 @@ class TaxReport:
         list_of_values.append(totals)
 
     # 'accounts' is an account id or a list of them; 'period' is a half-open (begin, end) inside the year, the whole
-    # year if None
+    # year if None; 'kwargs' are the report's options by their keys and 'progress'
     def prepare_tax_report(self, year: int, accounts, period=None, **kwargs) -> dict:
         tax_report = {}
         self.accounts = [JalAccount(x) for x in ([accounts] if isinstance(accounts, int) else accounts)]
@@ -254,12 +265,7 @@ class TaxReport:
         self.period_begin, self.period_end = (self.year_begin, self.year_end) if period is None else period
         if not self.year_begin <= self.period_begin < self.period_end <= self.year_end:
             raise ValueError(f"Tax report period {self.period_begin}-{self.period_end} is outside the year {year}")
-        if 'use_settlement' in kwargs:
-            self.use_settlement = kwargs['use_settlement']
-        if 'use_one_currency_rate' in kwargs:
-            self.one_currency_rate = kwargs['use_one_currency_rate']
-        if 'generate_modelo3' in kwargs:
-            self.generate_modelo3 = kwargs['generate_modelo3']
+        self.option = option_values(self.options, kwargs)
         self.parameters = TaxParameters(self.jurisdiction, year)
         if self.parameters.value(TAX_TREATY) is None:
             logging.warning(self.tr("There are no parameters found for tax report year: ") + str(year))

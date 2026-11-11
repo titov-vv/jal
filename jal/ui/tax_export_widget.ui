@@ -68,77 +68,6 @@
      </property>
     </widget>
    </item>
-   <item row="8" column="0" colspan="3">
-    <widget class="QGroupBox" name="PtBox">
-     <property name="title">
-      <string>Additional parameters (Portugal)</string>
-     </property>
-     <layout class="QVBoxLayout" name="PtLayout">
-      <item>
-       <widget class="QCheckBox" name="Pt_OneCurrencyRate">
-        <property name="text">
-         <string>Convert at the rate of the disposal date only (CIRS art. 23)</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="Pt_RateComment">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="text">
-         <string>     (unchecked: each leg at the rate of its own trade date)</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QGroupBox" name="IRS_Modelo3Group">
-        <property name="title">
-         <string>Create XML records to introduce in Modelo-3 form</string>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-        <layout class="QGridLayout" name="gridLayout">
-         <item row="0" column="0">
-          <widget class="QLabel" name="IRS_Modelo3FileLbl">
-           <property name="text">
-            <string>&amp;Output file:</string>
-           </property>
-           <property name="buddy">
-            <cstring>IRS_Modelo3Filename</cstring>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="1">
-          <widget class="QLineEdit" name="IRS_Modelo3Filename">
-           <property name="toolTip">
-            <string>File where to store russian tax form</string>
-           </property>
-          </widget>
-         </item>
-         <item row="0" column="2">
-          <widget class="QPushButton" name="IRS_Modelo3SelectBtn">
-           <property name="toolTip">
-            <string>Select file</string>
-           </property>
-           <property name="text">
-            <string> ... </string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
    <item row="4" column="0">
     <widget class="QLabel" name="AccountLbl">
      <property name="text">
@@ -163,80 +92,47 @@
     </widget>
    </item>
    <item row="7" column="0" colspan="3">
-    <widget class="QGroupBox" name="RuBox">
+    <widget class="QGroupBox" name="OptionsBox">
      <property name="title">
-      <string>Additional parameters (Russia)</string>
+      <string>Additional parameters</string>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout">
+     <layout class="QVBoxLayout" name="OptionsLayout">
       <item>
-       <widget class="QCheckBox" name="Ru_NoSettlement">
-        <property name="text">
-         <string>Do not use settlement date for currency rates</string>
-        </property>
-       </widget>
+       <layout class="QGridLayout" name="ReportOptionsLayout"/>
       </item>
       <item>
-       <widget class="QCheckBox" name="Ru_DividendsOnly">
-        <property name="text">
-         <string>Update only information about dividends</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="Ru_IncomeSourceBroker">
-        <property name="text">
-         <string>Use broker name as income source</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QGroupBox" name="Ndfl3Group">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="title">
-         <string>Create tax form in &quot;Декларация 2.0&quot; program format</string>
-        </property>
+       <widget class="QGroupBox" name="FormGroup">
         <property name="checkable">
          <bool>true</bool>
         </property>
         <property name="checked">
          <bool>false</bool>
         </property>
-        <layout class="QGridLayout" name="gridLayout_2">
-         <item row="1" column="0">
-          <widget class="QLabel" name="Ndfl3FileLbl">
+        <layout class="QGridLayout" name="FormLayout">
+         <item row="0" column="0">
+          <widget class="QLabel" name="FormFileLbl">
            <property name="text">
             <string>Output &amp;file:</string>
            </property>
            <property name="buddy">
-            <cstring>Ndfl3FileName</cstring>
+            <cstring>FormFileName</cstring>
            </property>
           </widget>
          </item>
-         <item row="1" column="2">
-          <widget class="QPushButton" name="Ndfl3SelectBtn">
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="FormFileName">
+           <property name="toolTip">
+            <string>File where to store tax form</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
+          <widget class="QPushButton" name="FormSelectBtn">
            <property name="toolTip">
             <string>Select file</string>
            </property>
            <property name="text">
             <string> ... </string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QLineEdit" name="Ndfl3FileName">
-           <property name="toolTip">
-            <string>File where to store russian tax form</string>
            </property>
           </widget>
          </item>
@@ -351,16 +247,9 @@
   <tabstop>Accounts</tabstop>
   <tabstop>XlsFileName</tabstop>
   <tabstop>XlsSelectBtn</tabstop>
-  <tabstop>Pt_OneCurrencyRate</tabstop>
-  <tabstop>IRS_Modelo3Group</tabstop>
-  <tabstop>IRS_Modelo3Filename</tabstop>
-  <tabstop>IRS_Modelo3SelectBtn</tabstop>
-  <tabstop>Ru_NoSettlement</tabstop>
-  <tabstop>Ru_DividendsOnly</tabstop>
-  <tabstop>Ru_IncomeSourceBroker</tabstop>
-  <tabstop>Ndfl3Group</tabstop>
-  <tabstop>Ndfl3FileName</tabstop>
-  <tabstop>Ndfl3SelectBtn</tabstop>
+  <tabstop>FormGroup</tabstop>
+  <tabstop>FormFileName</tabstop>
+  <tabstop>FormSelectBtn</tabstop>
   <tabstop>SaveButton</tabstop>
  </tabstops>
  <resources/>

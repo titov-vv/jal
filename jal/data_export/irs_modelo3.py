@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from decimal import Decimal
+from PySide6.QtCore import QT_TRANSLATE_NOOP
 from PySide6.QtWidgets import QApplication
 
 from jal.data_export.tax_parameters import TaxParameters
@@ -26,6 +27,16 @@ AnexoJ_9_2B_template = "<AnexoJq092BT01-Linha><CodPais>{cc}</CodPais><Codigo>{co
 class IRS_Modelo3:
     SECURITIES = ("Shares", "Bonds")   # report sections written as quadro 9.2A lines
     DERIVATIVES = "Derivatives"        # report section written as quadro 9.2B lines
+    # What the tax dialog shows for the file; the options are the keyword arguments of the class
+    title = QT_TRANSLATE_NOOP("TaxWidget", "Create XML records to introduce in Modelo-3 form")
+    file_prompt = QT_TRANSLATE_NOOP("TaxWidget", "Save IRS Modelo 3 tax data to:")
+    needs_broker = False
+    options = []
+
+    # The (filter, extension) of the file of a year
+    @staticmethod
+    def file_type(year: int) -> tuple:
+        return QT_TRANSLATE_NOOP("TaxWidget", "XML files (*.xml)"), ".xml"
 
     def __init__(self, year: int):
         self._tax_form = ""

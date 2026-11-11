@@ -1,4 +1,5 @@
 from decimal import Decimal
+from PySide6.QtCore import QT_TRANSLATE_NOOP
 from jal.constants import PredefinedAsset, PredefinedCategory, SymbolId
 from jal.db.operations import LedgerTransaction, AssetPayment, AssetIncome, CorporateAction, Swap, Conversion
 from jal.db.basis_policy import Basis, Clock, Treatment, JalPolicy
@@ -6,6 +7,7 @@ from jal.db.asset import JalAsset
 from jal.db.peer import JalPeer
 from jal.data_export.taxes import TaxReport, GAIN, INCOME
 from jal.data_export.tax_parameters import TaxParameters
+from jal.data_export.tax_options import TaxOption
 
 
 # -----------------------------------------------------------------------------------------------------------------------
@@ -38,6 +40,9 @@ class TaxesRussia(TaxReport):
     jurisdiction = 'ru'
     currency_name = 'RUB'
     report_timezone = 'Europe/Moscow'
+    options = [
+        TaxOption('no_settlement', QT_TRANSLATE_NOOP("TaxWidget", "Do not use settlement date for currency rates"))
+    ]
     asset_source_override = True
     currency_suffix = '_rub'
     summary_section = ("Сводка", "tax_rus_summary.json")
@@ -230,14 +235,14 @@ class TaxesRussia(TaxReport):
     # The headers every deals section states: the matching rule, the rate rule and the cost
     def _deal_headers(self):
         self.add_header(self.fifo_header())
-        self.add_header(self.texts['rate_settlement'] if self.use_settlement else self.texts['rate_trade'])
+        self.add_header(self.texts['rate_trade'] if self.option['no_settlement'] else self.texts['rate_settlement'])
         self.add_header(self.texts['native_cost'])
         self.add_header(self.texts['historical_cost'])
 
     # The rates of a deal's two legs, official ones only: each leg's amount at its settlement (or trade date when
     # asked for or when there is none), each fee at its trade date. The opening leg is in the currency it was paid in.
     def _deal_rates(self, trade) -> dict:
-        ns = not self.use_settlement
+        ns = self.option['no_settlement']
         open_op, close_op = trade.open_operation(), trade.close_operation()
         open_currency = open_op.account().currency()
         return {
@@ -364,7 +369,7 @@ class TaxesRussia(TaxReport):
         sale = piece['open']
         currency = sale.account().currency()
         o_rate = self.rate(currency, sale.timestamp())
-        os_rate = self.rate(currency, self.rate_moment(sale, not self.use_settlement))
+        os_rate = self.rate(currency, self.rate_moment(sale, self.option['no_settlement']))
         income, fee = round(piece['amount'], 2), piece['fee']
         income_rub, spending_rub = round(piece['amount'] * os_rate, 2), round(fee * o_rate, 2)
         return {

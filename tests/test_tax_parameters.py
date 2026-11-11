@@ -70,18 +70,17 @@ def test_pt_dividend_treaty_by_parameter_year(prepare_db_taxes, year, treaty, wa
     assert (len(found) == 1 and warning in found[0]) if warning else found == []
 
 
-# Every jurisdiction the tax dialog lists builds a report and shows exactly one option box of its own
+# Every jurisdiction the tax dialog lists builds a report and shows the options of its own alone
 def test_every_listed_jurisdiction_builds_a_report(prepare_db_taxes):
     JalIcon()   # loads the icon cache the country flags come from
     parent = QWidget()
     widget = TaxWidget(parent)
     assert widget.ui.Country.currentData() == 'ru'
     assert [widget.ui.Country.itemData(i) for i in range(widget.ui.Country.count())] == list(TaxReport.jurisdictions)
-    boxes = {'pt': widget.ui.PtBox, 'ru': widget.ui.RuBox}
     for index in range(widget.ui.Country.count()):
         widget.ui.Country.setCurrentIndex(index)
         code = widget.country
-        assert [x for x, box in boxes.items() if not box.isHidden()] == [code]
+        assert {x for x, rows in widget._rows.items() for row in rows if not row.isHidden()} == {code}
         report = TaxReport.create_report(code)
         assert type(report).__name__ == TaxReport.jurisdictions[code]['class']
         assert report.jurisdiction == code
