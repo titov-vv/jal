@@ -18,25 +18,41 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
 from PySide6.QtWidgets import (QAbstractButton, QAbstractItemView, QApplication, QDateTimeEdit,
     QDialog, QDialogButtonBox, QGridLayout, QGroupBox,
     QHBoxLayout, QHeaderView, QLabel, QLineEdit,
-    QPushButton, QSizePolicy, QSpacerItem, QTableView,
-    QTableWidget, QTableWidgetItem, QVBoxLayout, QWidget)
+    QPushButton, QSizePolicy, QSpacerItem, QSplitter,
+    QTableView, QTableWidget, QTableWidgetItem, QVBoxLayout,
+    QWidget)
 
+from jal.widgets.receipt_scan_view import ReceiptScanView
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 
 class Ui_ImportShopReceiptDlg(object):
     def setupUi(self, ImportShopReceiptDlg):
         if not ImportShopReceiptDlg.objectName():
             ImportShopReceiptDlg.setObjectName(u"ImportShopReceiptDlg")
-        ImportShopReceiptDlg.resize(850, 760)
+        ImportShopReceiptDlg.resize(1250, 760)
         self.verticalLayout = QVBoxLayout(ImportShopReceiptDlg)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.InboxGroup = QGroupBox(ImportShopReceiptDlg)
-        self.InboxGroup.setObjectName(u"InboxGroup")
-        sizePolicy = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
-        sizePolicy.setHorizontalStretch(0)
+        self.ScanSplitter = QSplitter(ImportShopReceiptDlg)
+        self.ScanSplitter.setObjectName(u"ScanSplitter")
+        self.ScanSplitter.setOrientation(Qt.Orientation.Horizontal)
+        self.ScanSplitter.setChildrenCollapsible(False)
+        self.FormPane = QWidget(self.ScanSplitter)
+        self.FormPane.setObjectName(u"FormPane")
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        sizePolicy.setHorizontalStretch(2)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.InboxGroup.sizePolicy().hasHeightForWidth())
-        self.InboxGroup.setSizePolicy(sizePolicy)
+        sizePolicy.setHeightForWidth(self.FormPane.sizePolicy().hasHeightForWidth())
+        self.FormPane.setSizePolicy(sizePolicy)
+        self.FormLayout = QVBoxLayout(self.FormPane)
+        self.FormLayout.setObjectName(u"FormLayout")
+        self.FormLayout.setContentsMargins(0, 0, 0, 0)
+        self.InboxGroup = QGroupBox(self.FormPane)
+        self.InboxGroup.setObjectName(u"InboxGroup")
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.InboxGroup.sizePolicy().hasHeightForWidth())
+        self.InboxGroup.setSizePolicy(sizePolicy1)
         self.gridLayout_3 = QGridLayout(self.InboxGroup)
         self.gridLayout_3.setObjectName(u"gridLayout_3")
         self.InboxList = QTableWidget(self.InboxGroup)
@@ -89,15 +105,15 @@ class Ui_ImportShopReceiptDlg(object):
         self.gridLayout_3.addWidget(self.InboxFolderLbl, 5, 0, 1, 2)
 
 
-        self.verticalLayout.addWidget(self.InboxGroup)
+        self.FormLayout.addWidget(self.InboxGroup)
 
-        self.ReceiptGroup = QGroupBox(ImportShopReceiptDlg)
+        self.ReceiptGroup = QGroupBox(self.FormPane)
         self.ReceiptGroup.setObjectName(u"ReceiptGroup")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.ReceiptGroup.sizePolicy().hasHeightForWidth())
-        self.ReceiptGroup.setSizePolicy(sizePolicy1)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.ReceiptGroup.sizePolicy().hasHeightForWidth())
+        self.ReceiptGroup.setSizePolicy(sizePolicy2)
         self.gridLayout = QGridLayout(self.ReceiptGroup)
         self.gridLayout.setObjectName(u"gridLayout")
         self.SlipDateTime = QDateTimeEdit(self.ReceiptGroup)
@@ -214,7 +230,20 @@ class Ui_ImportShopReceiptDlg(object):
         self.gridLayout.addItem(self.accountGroupSpacer, 1, 2, 1, 1)
 
 
-        self.verticalLayout.addWidget(self.ReceiptGroup)
+        self.FormLayout.addWidget(self.ReceiptGroup)
+
+        self.ScanSplitter.addWidget(self.FormPane)
+        self.ScanView = ReceiptScanView(self.ScanSplitter)
+        self.ScanView.setObjectName(u"ScanView")
+        sizePolicy3 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        sizePolicy3.setHorizontalStretch(1)
+        sizePolicy3.setVerticalStretch(0)
+        sizePolicy3.setHeightForWidth(self.ScanView.sizePolicy().hasHeightForWidth())
+        self.ScanView.setSizePolicy(sizePolicy3)
+        self.ScanView.setMinimumSize(QSize(250, 0))
+        self.ScanSplitter.addWidget(self.ScanView)
+
+        self.verticalLayout.addWidget(self.ScanSplitter)
 
         self.DialogButtonBox = QDialogButtonBox(ImportShopReceiptDlg)
         self.DialogButtonBox.setObjectName(u"DialogButtonBox")
@@ -242,7 +271,8 @@ class Ui_ImportShopReceiptDlg(object):
         QWidget.setTabOrder(self.AssignCategoryBtn, self.AssignTagBtn)
         QWidget.setTabOrder(self.AssignTagBtn, self.AddLineBtn)
         QWidget.setTabOrder(self.AddLineBtn, self.DeleteLineBtn)
-        QWidget.setTabOrder(self.DeleteLineBtn, self.DialogButtonBox)
+        QWidget.setTabOrder(self.DeleteLineBtn, self.ScanView)
+        QWidget.setTabOrder(self.ScanView, self.DialogButtonBox)
 
         self.retranslateUi(ImportShopReceiptDlg)
 
@@ -289,5 +319,8 @@ class Ui_ImportShopReceiptDlg(object):
         self.AssignTagBtn.setToolTip(QCoreApplication.translate("ImportShopReceiptDlg", u"Lines that have a tag already keep it", None))
 #endif // QT_CONFIG(tooltip)
         self.AssignTagBtn.setText(QCoreApplication.translate("ImportShopReceiptDlg", u"Assign Tag", None))
+#if QT_CONFIG(tooltip)
+        self.ScanView.setToolTip(QCoreApplication.translate("ImportShopReceiptDlg", u"The scan of the loaded receipt: the selected line is marked on it. A double click on an outlined row adds it as a line.", None))
+#endif // QT_CONFIG(tooltip)
     # retranslateUi
 

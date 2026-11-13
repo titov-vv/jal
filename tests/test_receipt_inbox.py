@@ -17,7 +17,7 @@ FNS = "t=20240115T1830&s=1234.50&fn=7380440700000000&i=12345&fp=1234567890&n=1"
 
 # Writes a container the way the ReceiptScan app does (see receipt.schema.json 'jal.receipt/1')
 def make_jalr(folder, name, kind="paper_scan", codes=(), schema="jal.receipt/1",
-              captured_at="2026-08-14T18:42:00+01:00", extra=None, pdf=b"%PDF-1.4 fake") -> str:
+              captured_at="2026-08-14T18:42:00+01:00", extra=None, pdf=b"%PDF-1.4 fake", image=b"fake") -> str:
     data = {
         "schema": schema,
         "id": "8f2a1c44-6b3e-4d19-9a7c-2e5f0b81d3a6",
@@ -37,7 +37,7 @@ def make_jalr(folder, name, kind="paper_scan", codes=(), schema="jal.receipt/1",
         if kind == "pdf_import":
             container.writestr("original.pdf", pdf)
         else:
-            container.writestr("scan-1.jpg", b"fake")
+            container.writestr("scan-1.jpg", image)
     return path
 
 
@@ -279,3 +279,28 @@ def test_wrapped_pdf_with_a_russian_code_goes_to_fns(tmp_path):
     result = route(jalr)
     assert result.kind == Route.FNS and result.code == FNS
     assert route(JalrFile.open(wrap_pdf(str(tmp_path), b"%PDF-1.4 fake", [], 1, captured_at))).kind == Route.PDF
+
+
+# The rows of the body that no item cites are those the phone read as nothing
+def test_body_rows_that_are_no_item(tmp_path):
+    extra = paper_scan([{"role": "item", "text": "LEITE", "amount": "1.00", "sign_printed": "positive",
+                         "source_lines": [1, 2]}], status="amber")
+    extra["ocr"] = {"lines": [{"page": 1, "text": x, "bbox": [10, 20 * i, 80, 15]} for i, x in
+                              enumerate(("SHOP", "LEITE", "2 x 0,50", "PAO 0,60", "SACO", "TOTAL 1,60"))]}
+    extra["ocr"]["lines"][4].pop("bbox")
+    jalr = JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[LIDL], extra=extra))
+    assert jalr.unread_body_rows == []                              # a file that doesn't tell where the body is
+    assert jalr.ocr_boxes[3] == (1, [10.0, 60.0, 80.0, 15.0]) and jalr.ocr_boxes[4] is None
+    extra["paper"]["layout"] = {"body": [1, 4], "total": 5}
+    jalr = JalrFile.open(make_jalr(tmp_path, "b.jalr", codes=[LIDL], extra=extra))
+    assert jalr.unread_body_rows == [3, 4]
+    extra["paper"]["layout"] = {"body": [1, 40]}                    # a body that runs past the rows
+    assert JalrFile.open(make_jalr(tmp_path, "c.jalr", codes=[LIDL], extra=extra)).unread_body_rows == [3, 4, 5]
+    extra["paper"]["layout"] = {"body": "1-4"}
+    assert JalrFile.open(make_jalr(tmp_path, "d.jalr", codes=[LIDL], extra=extra)).unread_body_rows == []
+
+
+def test_page_images_come_in_page_order(tmp_path):
+    jalr = JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[LIDL], image=b"pixels"))
+    assert jalr.page_images() == [(1, b"pixels")]
+    assert JalrFile.open(make_jalr(tmp_path, "b.jalr", kind="pdf_import")).page_images() == []

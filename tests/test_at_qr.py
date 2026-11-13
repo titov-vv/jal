@@ -49,3 +49,10 @@ def test_malformed_codes_are_refused():
     assert AtQr.parse(LIDL.replace("F:20260814", "F:20261314")) is None      # no such date
     assert AtQr.parse(LIDL + "*O:12.00") is None                             # repeated field
     assert AtQr.parse(LIDL.replace("*I1:PT*", "*I1PT*")) is None             # field without a separator
+
+
+def test_tax_lines_are_the_buckets_of_every_fiscal_space():
+    assert AtQr.parse(LIDL).tax_lines == [(Decimal('6.92'), Decimal('0.42')), (Decimal('3.74'), Decimal('0.86'))]
+    exempt = AtQr.parse(LIDL.replace("I3:6.92*I4:0.42", "I2:7.34").replace("I7:", "J7:").replace("I8:", "J8:"))
+    assert exempt.tax_lines == [(Decimal('7.34'), Decimal('0')), (Decimal('3.74'), Decimal('0.86'))]
+    assert AtQr.parse(LIDL.replace("I4:0.42", "I4:x").replace("I7:3.74", "I7:0.00")).tax_lines == []

@@ -71,6 +71,19 @@ class AtQr:
     def total(self) -> Decimal:
         return Decimal(self._fields['O'])
 
+    # (base, tax) of every VAT bucket of the document, in any fiscal space (I, J, K); the exempt one has no tax.
+    # A bucket whose amounts aren't readable is left out.
+    @property
+    def tax_lines(self) -> list:
+        lines = []
+        for space in 'IJK':
+            for base_key, tax_key in ((2, None), (3, 4), (5, 6), (7, 8)):
+                base = self._fields.get(f"{space}{base_key}", '')
+                tax = self._fields.get(f"{space}{tax_key}", '') if tax_key else '0.00'
+                if self._money.match(base) and self._money.match(tax) and Decimal(base):
+                    lines.append((Decimal(base), Decimal(tax)))
+        return lines
+
     # Document identity for the duplicate check: the document id is unique per issuer only
     @property
     def number(self) -> str:

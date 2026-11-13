@@ -3901,213 +3901,218 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>ImportReceiptDialog</name>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="235"/>
+        <location filename="../data_import/shop_receipt.py" line="257"/>
         <source>Add</source>
         <translation>Добавить</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="236"/>
+        <location filename="../data_import/shop_receipt.py" line="258"/>
         <source>Clear</source>
         <translation>Очистить</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="279"/>
+        <location filename="../data_import/shop_receipt.py" line="308"/>
         <source>Set the phone receipt inbox folder in Preferences</source>
         <translation>Укажите папку входящих чеков с телефона в Параметрах</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="292"/>
+        <location filename="../data_import/shop_receipt.py" line="321"/>
         <source>Paper scan</source>
         <translation>Скан бумажного чека</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="293"/>
+        <location filename="../data_import/shop_receipt.py" line="322"/>
         <source>Image</source>
         <translation>Изображение</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="294"/>
+        <location filename="../data_import/shop_receipt.py" line="323"/>
         <source>PDF</source>
         <translation>PDF</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="301"/>
+        <location filename="../data_import/shop_receipt.py" line="330"/>
         <source>Portuguese QR</source>
         <translation>Португальский QR-код</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="304"/>
+        <location filename="../data_import/shop_receipt.py" line="333"/>
         <source>Portuguese QR and items</source>
         <translation>Португальский QR-код и позиции</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="307"/>
+        <location filename="../data_import/shop_receipt.py" line="336"/>
         <source>Not verified, no fiscal code</source>
         <translation>Не проверен, нет фискального кода</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="309"/>
+        <location filename="../data_import/shop_receipt.py" line="338"/>
         <source>Not verified, Portuguese QR</source>
         <translation>Не проверен, португальский QR</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="311"/>
+        <location filename="../data_import/shop_receipt.py" line="340"/>
         <source>Russian QR</source>
         <translation>Российский QR-код</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="313"/>
+        <location filename="../data_import/shop_receipt.py" line="342"/>
         <source>PDF document</source>
         <translation>PDF-документ</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="315"/>
+        <location filename="../data_import/shop_receipt.py" line="344"/>
         <source>no QR code found</source>
         <translation>QR-код не найден</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="316"/>
+        <location filename="../data_import/shop_receipt.py" line="345"/>
         <source>QR code isn&apos;t recognized</source>
         <translation>QR-код не распознан</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="317"/>
+        <location filename="../data_import/shop_receipt.py" line="346"/>
         <source>document type isn&apos;t a sale or a return</source>
         <translation>тип документа - не продажа и не возврат</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="318"/>
+        <location filename="../data_import/shop_receipt.py" line="347"/>
         <source>document is annulled or not final</source>
         <translation>документ аннулирован или не окончательный</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="319"/>
+        <location filename="../data_import/shop_receipt.py" line="348"/>
         <source>no money moved (signed total 0.00)</source>
         <translation>движения денег нет (итог с учётом знака 0.00)</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="321"/>
+        <location filename="../data_import/shop_receipt.py" line="350"/>
         <source>Unsupported</source>
         <translation>Не поддерживается</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="337"/>
+        <location filename="../data_import/shop_receipt.py" line="367"/>
         <source>Receipt without a usable fiscal code</source>
         <translation>Чек без пригодного фискального кода</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="338"/>
+        <location filename="../data_import/shop_receipt.py" line="368"/>
         <source>The scan has no fiscal code that could be relied on, so nothing proves its lines. A rescan is recommended. Load it anyway?</source>
         <translation>В скане нет фискального кода, на который можно положиться, поэтому его позиции ничем не подтверждены. Рекомендуется отсканировать чек заново. Всё равно загрузить?</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="358"/>
+        <location filename="../data_import/shop_receipt.py" line="388"/>
         <source>Receipt file can&apos;t be read</source>
         <translation>Невозможно прочитать файл чека</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="365"/>
+        <location filename="../data_import/shop_receipt.py" line="395"/>
         <source>Receipt can&apos;t be imported</source>
         <translation>Невозможно импортировать чек</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="389"/>
+        <location filename="../data_import/shop_receipt.py" line="423"/>
         <source>Select PDF receipts</source>
         <translation>Выберите PDF файлы чеков</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="390"/>
+        <location filename="../data_import/shop_receipt.py" line="424"/>
         <source>PDF files (*.pdf)</source>
         <translation>Файлы PDF (*.pdf)</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="398"/>
+        <location filename="../data_import/shop_receipt.py" line="432"/>
         <source>File isn&apos;t a readable PDF</source>
         <translation>Файл не является читаемым PDF</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="403"/>
+        <location filename="../data_import/shop_receipt.py" line="437"/>
         <source>PDF receipt can&apos;t be put into the inbox</source>
         <translation>Не удалось поместить PDF чек в папку входящих</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="439"/>
+        <location filename="../data_import/shop_receipt.py" line="473"/>
         <source>Receipt wasn&apos;t loaded</source>
         <translation>Чек не загружен</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="482"/>
+        <location filename="../data_import/shop_receipt.py" line="521"/>
         <source>Reconciled automatically</source>
         <translation>Сверен автоматически</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="483"/>
+        <location filename="../data_import/shop_receipt.py" line="522"/>
         <source>Not reconciled, check the lines</source>
         <translation>Не сверен, проверьте позиции</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="484"/>
+        <location filename="../data_import/shop_receipt.py" line="523"/>
         <source>No usable fiscal code, rescan recommended</source>
         <translation>Нет пригодного фискального кода, рекомендуется отсканировать заново</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="517"/>
+        <location filename="../data_import/shop_receipt.py" line="556"/>
         <source>Lines</source>
         <translation>Позиции</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="522"/>
+        <location filename="../data_import/shop_receipt.py" line="561"/>
         <source>Receipt total</source>
         <translation>Итог чека</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="523"/>
+        <location filename="../data_import/shop_receipt.py" line="562"/>
         <source>Difference</source>
         <translation>Разница</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="565"/>
+        <location filename="../data_import/shop_receipt.py" line="636"/>
         <source>Not possible to import receipt: it has no lines</source>
         <translation>Невозможно импортировать чек: в нём нет позиций</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="568"/>
+        <location filename="../data_import/shop_receipt.py" line="639"/>
         <source>Not possible to import receipt: no account set for import</source>
         <translation>Невозможно импортировать чек: не выбран счёт для импорта</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="571"/>
+        <location filename="../data_import/shop_receipt.py" line="642"/>
         <source>Not possible to import receipt: can&apos;t import: no peer set for import</source>
         <translation>Невозможно импортировать чек: не выбран контрагент для импорта</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="574"/>
+        <location filename="../data_import/shop_receipt.py" line="645"/>
         <source>Not possible to import receipt: some categories are not set</source>
         <translation>Невозможно импортировать чек: некоторые категории не выбраны</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="579"/>
+        <location filename="../data_import/shop_receipt.py" line="648"/>
+        <source>Not possible to import receipt: some lines have no amount, set it or delete the line</source>
+        <translation>Невозможно импортировать чек: у некоторых позиций нет суммы, укажите её или удалите позицию</translation>
+    </message>
+    <message>
+        <location filename="../data_import/shop_receipt.py" line="654"/>
         <source>Not possible to import receipt: it is imported already</source>
         <translation>Невозможно импортировать чек: он уже импортирован</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="586"/>
+        <location filename="../data_import/shop_receipt.py" line="661"/>
         <source>Lines don&apos;t add up</source>
         <translation>Позиции не сходятся с итогом</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="587"/>
+        <location filename="../data_import/shop_receipt.py" line="662"/>
         <source>The lines differ from the receipt&apos;s total by</source>
         <translation>Сумма позиций отличается от итога чека на</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="588"/>
+        <location filename="../data_import/shop_receipt.py" line="663"/>
         <source>Add the operation anyway?</source>
         <translation>Всё равно добавить операцию?</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="421"/>
-        <location filename="../data_import/shop_receipt.py" line="621"/>
+        <location filename="../data_import/shop_receipt.py" line="455"/>
+        <location filename="../data_import/shop_receipt.py" line="696"/>
         <source>Receipt file can&apos;t be moved out of the inbox</source>
         <translation>Невозможно переместить файл чека из папки входящих</translation>
     </message>
@@ -4120,124 +4125,129 @@ one for ParentCo and second for Subsidiary</source>
         <translation>Импорт чека из магазина</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="131"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="159"/>
         <source>Operation data</source>
         <translation>Данные операции</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="137"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="165"/>
         <source>dd/MM/yyyy hh:mm:ss</source>
         <translation>dd/MM/yyyy hh:mm:ss</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="164"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="192"/>
         <source>&amp;Peer:</source>
         <translation>&amp;Контрагент:</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="246"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="274"/>
         <source>&amp;Lines:</source>
         <translation>&amp;Позиции:</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="26"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="54"/>
         <source>Get receipt from phone inbox</source>
         <translation>Получить чек из папки входящих с телефона</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="54"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="82"/>
         <source>Captured</source>
         <translation>Создан</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="59"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="87"/>
         <source>Source</source>
         <translation>Источник</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="64"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="92"/>
         <source>Import as</source>
         <translation>Импорт как</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="72"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="100"/>
         <source>L&amp;oad</source>
         <translation>&amp;Загрузить</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="79"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="107"/>
         <source>Re&amp;fresh</source>
         <translation>О&amp;бновить</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="86"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="114"/>
         <source>Move the selected file into the &apos;done&apos; folder without importing it</source>
         <translation>Переместить выбранный файл в папку &apos;done&apos; без импорта</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="89"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="117"/>
         <source>S&amp;kip</source>
         <translation>Пропу&amp;стить</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="96"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="124"/>
         <source>Put PDF receipts of this computer into the inbox</source>
         <translation>Поместить PDF чеки с этого компьютера в папку входящих</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="99"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="127"/>
         <source>Add P&amp;DF...</source>
         <translation>Добавить P&amp;DF...</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="147"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="175"/>
         <source>Date / Time:</source>
         <translation>Дата / Время:</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="154"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="182"/>
         <source> ➜ </source>
         <translation> ➜ </translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="181"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="209"/>
         <source>&amp;Note:</source>
         <translation>П&amp;римечание:</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="203"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="231"/>
         <source>Add line</source>
         <translation>Добавить позицию</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="210"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="238"/>
         <source>Delete line</source>
         <translation>Удалить позицию</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="259"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="287"/>
         <source>Account:</source>
         <translation>Счет:</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="279"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="307"/>
         <source>Lines that have a category already keep it</source>
         <translation>Позиции, у которых категория уже есть, сохраняют её</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="282"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="310"/>
         <source>Assign Category</source>
         <translation>Назначить категорию</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="289"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="317"/>
         <source>Lines that have a tag already keep it</source>
         <translation>Позиции, у которых тэг уже есть, сохраняют его</translation>
     </message>
     <message>
-        <location filename="../ui/receipt_import_dlg.ui" line="292"/>
+        <location filename="../ui/receipt_import_dlg.ui" line="320"/>
         <source>Assign Tag</source>
         <translation>Назначить тэг</translation>
+    </message>
+    <message>
+        <location filename="../ui/receipt_import_dlg.ui" line="359"/>
+        <source>The scan of the loaded receipt: the selected line is marked on it. A double click on an outlined row adds it as a line.</source>
+        <translation>Скан загруженного чека: на нём отмечена выбранная позиция. Двойной щелчок по обведённой строке скана добавляет её как позицию.</translation>
     </message>
 </context>
 <context>
@@ -4248,27 +4258,27 @@ one for ParentCo and second for Subsidiary</source>
         <translation>Форма</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/income_spending_operation.ui" line="73"/>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="60"/>
         <source>Add detail</source>
         <translation>Добавить детальную запись</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/income_spending_operation.ui" line="83"/>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="70"/>
         <source>Remove detail</source>
         <translation>Удалить детальную запись</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/income_spending_operation.ui" line="183"/>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="170"/>
         <source>Income / Spending</source>
         <translation>Доход / Расход</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/income_spending_operation.ui" line="203"/>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="190"/>
         <source>Cancel changes</source>
         <translation>Отменить изменения</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/income_spending_operation.ui" line="123"/>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="110"/>
         <source>CUR</source>
         <translation>ВАЛ</translation>
     </message>
@@ -4288,32 +4298,32 @@ one for ParentCo and second for Subsidiary</source>
         <translation>Дата/&amp;Время</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/income_spending_operation.ui" line="93"/>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="80"/>
         <source>Copy detail</source>
         <translation>Скопировать детальную запись</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/income_spending_operation.ui" line="132"/>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="119"/>
         <source>&amp;Note</source>
         <translation>&amp;Примечание</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/income_spending_operation.ui" line="155"/>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="142"/>
         <source>&amp;Peer</source>
         <translation>&amp;Контрагент</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/income_spending_operation.ui" line="165"/>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="152"/>
         <source>dd/MM/yyyy hh:mm:ss</source>
         <translation>dd/MM/yyyy hh:mm:ss</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/income_spending_operation.ui" line="190"/>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="177"/>
         <source>Details</source>
         <translation>Детали</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/income_spending_operation.ui" line="145"/>
+        <location filename="../ui/widgets/income_spending_operation.ui" line="132"/>
         <source>Commit changes</source>
         <translation>Сохранить изменения</translation>
     </message>
@@ -4757,7 +4767,7 @@ Application will be terminated now</source>
         <translation>это активы разных типов</translation>
     </message>
     <message>
-        <location filename="../db/asset.py" line="669"/>
+        <location filename="../db/asset.py" line="668"/>
         <source>Country updated for </source>
         <translation>Страна обновлёна для </translation>
     </message>
@@ -6308,37 +6318,42 @@ This looks like the quantity a rebasing position gained without reporting it, wh
 <context>
     <name>PandasLinesModel</name>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="91"/>
+        <location filename="../data_import/shop_receipt.py" line="105"/>
         <source>Reconciled: the lines add up to the receipt&apos;s total</source>
         <translation>Сверено: позиции сходятся с итогом чека</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="92"/>
+        <location filename="../data_import/shop_receipt.py" line="106"/>
         <source>Read confidently, but the lines don&apos;t add up to the receipt&apos;s total</source>
         <translation>Прочитано уверенно, но позиции не сходятся с итогом чека</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="93"/>
+        <location filename="../data_import/shop_receipt.py" line="107"/>
         <source>Unreliable: read poorly or without a fiscal code to check against</source>
         <translation>Ненадёжно: прочитано плохо или нет фискального кода для сверки</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="124"/>
+        <location filename="../data_import/shop_receipt.py" line="108"/>
+        <source>The amount wasn&apos;t read: set it, or delete the line</source>
+        <translation>Сумма не прочитана: укажите её или удалите позицию</translation>
+    </message>
+    <message>
+        <location filename="../data_import/shop_receipt.py" line="140"/>
         <source>Product name</source>
         <translation>Название продукта</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="126"/>
+        <location filename="../data_import/shop_receipt.py" line="142"/>
         <source>Category</source>
         <translation>Категория</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="128"/>
+        <location filename="../data_import/shop_receipt.py" line="144"/>
         <source>Tag</source>
         <translation>Метка</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="130"/>
+        <location filename="../data_import/shop_receipt.py" line="146"/>
         <source>Amount</source>
         <translation>Сумма</translation>
     </message>
@@ -7873,15 +7888,20 @@ Its other record is found by the transaction, but the two accounts are kept in d
         <translation>В PDF чека не удалось прочитать дату, использовано время создания файла</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/offline_receipt.py" line="92"/>
+        <location filename="../data_import/receipt_api/offline_receipt.py" line="99"/>
         <source>Receipt voucher can&apos;t be read, add it by hand</source>
         <translation>Не удалось прочитать ваучер в чеке, добавьте его вручную</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/offline_receipt.py" line="107"/>
+        <location filename="../data_import/receipt_api/offline_receipt.py" line="114"/>
         <location filename="../data_import/receipt_pdf.py" line="373"/>
         <source>Receipt items don&apos;t add up, check the lines</source>
         <translation>Позиции чека не сходятся с итогом, проверьте позиции</translation>
+    </message>
+    <message>
+        <location filename="../data_import/receipt_api/offline_receipt.py" line="208"/>
+        <source>The receipt is priced net of VAT: the VAT was added to its lines</source>
+        <translation>Цены в чеке указаны без НДС: НДС добавлен к его позициям</translation>
     </message>
 </context>
 <context>
@@ -10308,53 +10328,53 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation>Удержанный налог в другой валюте: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="361"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="362"/>
         <source>No account is set for Trading 212 import - choose one in Settings, Preferences, Import</source>
         <translation>Не задан счёт для импорта Trading 212 - укажите его в Настройки, Параметры, Импорт</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="364"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="365"/>
         <source>The account set for Trading 212 import doesn&apos;t exist: </source>
         <translation>Счёт, заданный для импорта Trading 212, не существует: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="368"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="369"/>
         <source>The account set for Trading 212 import is in another currency: </source>
         <translation>Счёт, заданный для импорта Trading 212, ведётся в другой валюте: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="393"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="394"/>
         <source>Statement period is invalid</source>
         <translation>Неверный период отчёта</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="399"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="400"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="400"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="401"/>
         <source>This statement is older than what is recorded for the account </source>
         <translation>Этот отчёт старше, чем записи по счёту </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="402"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="403"/>
         <source>Interest and cashback rows will be stored a second time. Continue?</source>
         <translation>Строки процентов и кэшбэка будут записаны повторно. Продолжить?</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="404"/>
-        <location filename="../data_import/broker_statements/trading212.py" line="419"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="405"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="420"/>
         <source>Statement import was cancelled</source>
         <translation>Импорт отчёта прерван</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="433"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="434"/>
         <source>Card purchases to import: </source>
         <translation>Покупок по карте к импорту: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/trading212.py" line="444"/>
+        <location filename="../data_import/broker_statements/trading212.py" line="445"/>
         <source>Trading 212 card purchases</source>
         <translation>Покупки по карте Trading 212</translation>
     </message>

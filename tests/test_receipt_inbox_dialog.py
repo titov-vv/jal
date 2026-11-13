@@ -5,7 +5,8 @@ from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
 import pytest
-from PySide6.QtCore import Qt, QDateTime, QDate, QTime
+from PySide6.QtCore import Qt, QDateTime, QDate, QTime, QBuffer, QByteArray
+from PySide6.QtGui import QImage
 from PySide6.QtWidgets import QWidget, QFileDialog, QHeaderView, QLineEdit, QMessageBox
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_ledger
@@ -22,7 +23,7 @@ from jal.db.operations import IncomeSpending
 from jal.data_import.receipt_api.pt_at_qr import AtQr
 from jal.data_import.receipt import LineTrust, Verdict
 from jal.data_import.receipt_inbox import JalrFile
-from jal.data_import.receipt_api.offline_receipt import ReceiptOffline, paper_lines
+from jal.data_import.receipt_api.offline_receipt import ReceiptOffline, paper_lines, line_of_row
 from jal.data_import.receipt_api.ru_fns import ReceiptRuFNS
 from jal.data_import.shop_receipt import ImportReceiptDialog, RECEIPT_INBOX_SETTING
 from jal.widgets.reference_dialogs import CategoryListDialog, TagsListDialog
@@ -108,7 +109,7 @@ def test_paper_voucher_is_a_discount_line(owner, inbox):
     make_jalr(inbox, "20260814-184300-00000002.jalr", codes=[PINGO_DOCE.replace("G:", "G:X")], extra=PAYMENTS)
     dialog = _dialog(owner)
     voucher = {'name': "V. Deposito Volta", 'category': PredefinedCategory.Discounts, 'tag': None,
-               'amount': Decimal('0.60'), 'trust': ''}
+               'amount': Decimal('0.60'), 'trust': '', 'source': ()}
     for row, first in ((0, "LEITE"), (1, "NIF 500829993")):     # with items, and a QR alone
         dialog.ui.InboxList.setCurrentCell(row, 0)
         dialog.loadInboxReceipt()
@@ -142,6 +143,34 @@ def test_items_net_of_vat_need_their_vat_table_row(prepare_db, tmp_path):
         assert not result[1] and _amounts(result) == net
 
 
+# Each item's own VAT rounding puts net items a cent off the signed base (the phone passes half a cent an item):
+# 10.95 at 6% against the QR's 10.94 + 0.66; the cent goes to the largest line. One VAT row holds a misread code too.
+ROUNDED_QR = PHARMACY.replace("I3:6.92*I4:0.42*I7:3.74*I8:0.86*N:1.28", "I3:10.94*I4:0.66*N:0.66")
+ROUNDED_TAX_TABLE = [{"code": "6%", "rate": "6.00", "base": "10.94", "tax": "0.66", "total": "11.60"}]
+
+
+def _rounded_scan(tmp_path, amounts=("1.75", "2.64", "3.02", "3.54"), total="11.60") -> tuple:
+    items = [dict(role="item", text=f"ITEM{i}", amount=amount, sign_printed="positive", tax_code=code)
+             for i, (amount, code) in enumerate(zip(amounts, ("1,75%", "6%", "6%", "6%")))]
+    return _proven(tmp_path, ROUNDED_QR, items, total=total, tax_table=ROUNDED_TAX_TABLE)
+
+
+def test_items_net_of_vat_within_the_rounding_allowance_are_proven(prepare_db, tmp_path):
+    result = _rounded_scan(tmp_path)
+    assert result[1] and _amounts(result) == [Decimal('-1.86'), Decimal('-2.80'), Decimal('-3.20'), Decimal('-3.74')]
+
+
+def test_items_net_of_vat_beyond_the_rounding_allowance_are_not_proven(prepare_db, tmp_path):
+    result = _rounded_scan(tmp_path, amounts=("1.75", "2.64", "3.02", "3.56"))     # 3 cents over, 2 allowed for 4 items
+    assert not result[1] and _amounts(result) == [Decimal('-1.75'), Decimal('-2.64'), Decimal('-3.02'), Decimal('-3.56')]
+
+
+# Items priced with VAT get no allowance: a cent off the QR's total isn't proven
+def test_items_with_vat_must_add_up_to_the_cent(prepare_db, tmp_path):
+    result = _rounded_scan(tmp_path, amounts=("1.86", "2.80", "3.20", "3.73"))
+    assert not result[1]
+
+
 # A fabricated shop that prints a discount off the whole receipt: A = 5.00 - 0.60, C = 7.00 - 0.40
 def _receipt_discount(qr=PHARMACY, vat=("4.40", "6.60")) -> tuple:
     items = [dict(role="item", text="LEITE", amount="5.00", sign_printed="positive", tax_code="A", source_lines=[1]),
@@ -162,8 +191,8 @@ def _receipt_discount_scan(tmp_path, **kwargs) -> tuple:
 
 def test_receipt_discount_is_a_line_of_its_own(prepare_db, tmp_path):
     assert _receipt_discount_scan(tmp_path) == ([
-        _proven_line("LEITE", '-5.00'), _proven_line("SALMAO", '-7.00'),
-        _proven_line("Desconto Cartao", '1.00', category=PredefinedCategory.Discounts)], True)
+        _proven_line("LEITE", '-5.00', source=(1,)), _proven_line("SALMAO", '-7.00', source=(2,)),
+        _proven_line("Desconto Cartao", '1.00', category=PredefinedCategory.Discounts, source=(4,))], True)
     result = _receipt_discount_scan(tmp_path, qr=PHARMACY.replace("D:FS", "D:NC"))
     assert result[1] and _amounts(result) == [Decimal('5.00'), Decimal('7.00'), Decimal('-1.00')]
 
@@ -216,8 +245,9 @@ def test_effect_folds_item_deductions_and_keeps_receipt_ones(prepare_db, tmp_pat
              ("item", "TARA", "0.30", "deduction", None),               # money back on an item line
              ("discount", "Desconto Global", "1.00", "deduction", "receipt")]
     assert _effect_scan(tmp_path, PHARMACY, lines, "10.20") == ([
-        _proven_line("LEITE", '-4.50'), _proven_line("SALMAO", '-7.00'), _proven_line("TARA", '0.30'),
-        _proven_line("Desconto Global", '1.00', category=PredefinedCategory.Discounts)], True)
+        _proven_line("LEITE", '-4.50', source=(0, 1)), _proven_line("SALMAO", '-7.00', source=(2,)),      # LEITE with Promo
+        _proven_line("TARA", '0.30', source=(4,)),
+        _proven_line("Desconto Global", '1.00', category=PredefinedCategory.Discounts, source=(5,))], True)
     result = _effect_scan(tmp_path, PHARMACY, lines, "10.42")     # lines that don't give the QR total: all six as read
     assert not result[1] and _amounts(result) == [Decimal('-5.00'), Decimal('0.50'), Decimal('-7.00'), Decimal('0.22'),
                                                   Decimal('0.30'), Decimal('1.00')]
@@ -231,7 +261,7 @@ def test_effect_is_taken_over_the_shop_profile(prepare_db, tmp_path):
     lines = [("item", "LEITE", "5.00", "charge", None), ("discount", "POUPANCA", "0.22", "deduction", "item"),
              ("item", "SALMAO", "7.00", "charge", None)]
     assert _effect_scan(tmp_path, CONTINENTE, lines, "11.78") == (          # Continente's profile wouldn't net it
-        [_proven_line("LEITE", '-4.78'), _proven_line("SALMAO", '-7.00')], True)
+        [_proven_line("LEITE", '-4.78', source=(0, 1)), _proven_line("SALMAO", '-7.00', source=(2,))], True)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -287,6 +317,55 @@ def test_red_scan_lines_are_unreliable(prepare_db, tmp_path):
         lines, proven = _as_read(tmp_path, qr, items, status="red")
         assert not proven and [x['amount'] for x in lines] == [Decimal('-12.94'), Decimal('1.00')]
         assert {x['trust'] for x in lines} == {LineTrust.UNRELIABLE}
+
+
+# An AMBER scan priced net of VAT: its lines give the QR's base, so the VAT is added and they give what was paid.
+# One bucket takes the QR's own tax to base: 18.16 + 1.09 = 19.25
+NET_QR = PHARMACY.replace("I3:6.92*I4:0.42*I7:3.74*I8:0.86*N:1.28", "I3:18.16*I4:1.09*N:1.09").replace("O:11.94", "O:19.25")
+NET_AMOUNTS = ("3.02", "2.64", "1.75", "3.54", "2.64", "1.93", "2.64")
+
+
+def test_unproven_lines_net_of_vat_get_it_added(prepare_db, tmp_path):
+    items = [_read_item("item", f"ITEM{i}", amount, 0.9) for i, amount in enumerate(NET_AMOUNTS)]
+    lines, proven = _as_read(tmp_path, NET_QR, items)
+    assert not proven and {x['trust'] for x in lines} == {LineTrust.READ}
+    assert [x['amount'] for x in lines] == [Decimal(x) for x in ("-3.20", "-2.80", "-1.86", "-3.74", "-2.80", "-2.05",
+                                                                 "-2.80")]     # lines' own VAT 1.10: 3.54 gives a cent
+    assert sum(x['amount'] for x in lines) == Decimal('-19.25')
+
+
+# Lines that are neither the QR's base nor its total, and those of a scan nothing proves, stay as read
+def test_unproven_lines_that_are_not_the_base_get_no_vat(prepare_db, tmp_path):
+    items = [_read_item("item", f"ITEM{i}", amount, 0.9) for i, amount in enumerate(NET_AMOUNTS[:-1])]
+    assert sum(_amounts(_as_read(tmp_path, NET_QR, items))) == Decimal('-15.52')
+    items = [_read_item("item", f"ITEM{i}", amount, 0.9) for i, amount in enumerate(NET_AMOUNTS)]
+    assert sum(_amounts(_as_read(tmp_path, NET_QR, items, status="red"))) == Decimal('-18.16')
+
+
+# A document of several VAT buckets needs the VAT table and each line's row in it
+def test_unproven_lines_net_of_vat_of_two_buckets_need_the_vat_table(prepare_db, tmp_path):
+    qr = PHARMACY                 # 6.92 + 0.42 and 3.74 + 0.86
+    items = [dict(_read_item("item", text, amount, 0.9), tax_code=code) for text, amount, code in
+             zip(("LEITE", "VINHO", "CERVEJA", "SUMO"), ("6.92", "1.25", "1.24", "1.25"), ("6%", "23%", "23%", "23%"))]
+    net = [Decimal('-6.92'), Decimal('-1.25'), Decimal('-1.24'), Decimal('-1.25')]
+    assert _amounts(_as_read(tmp_path, qr, items)) == net                     # no VAT table
+    extra = paper_scan(items, status="amber", tax_table=NET_TAX_TABLE)
+    result = paper_lines(JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[qr], extra=extra)), AtQr.parse(qr))
+    assert _amounts(result) == [Decimal('-7.34'), Decimal('-1.53'), Decimal('-1.53'), Decimal('-1.54')]
+    items[1]['tax_code'] = ''
+    extra = paper_scan(items, status="amber", tax_table=NET_TAX_TABLE)
+    result = paper_lines(JalrFile.open(make_jalr(tmp_path, "a.jalr", codes=[qr], extra=extra)), AtQr.parse(qr))
+    assert _amounts(result) == net                                            # a line without its row
+
+
+# A line the phone named without reading its amount comes as 0 and is marked so, however well its name was read
+def test_line_with_unread_amount_is_marked_missing(prepare_db, tmp_path):
+    items = [_read_item("item", "LEITE", "10.00", 0.9),
+             dict(_read_item("item", "PAO", "0.00", 0.9), amount_source="unread"),
+             dict(_read_item("item", "SUMO", "1.00", 0.9), amount_source="quantity")]
+    lines, proven = _as_read(tmp_path, PHARMACY, items)
+    assert not proven and [(x['amount'], x['trust']) for x in lines] == [
+        (Decimal('-10.00'), LineTrust.READ), (Decimal('0.00'), LineTrust.MISSING), (Decimal('-1.00'), LineTrust.READ)]
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -677,7 +756,7 @@ def test_lines_are_fixed_by_hand_until_they_add_up(owner, inbox):
     assert dialog.slip_lines['name'].tolist() == ["LEITE", "PAO DE FORMA"]
 
     dialog.addLine()                                          # an item the phone missed
-    assert model.rowCount() == 3 and dialog.slip_lines.iloc[2].tolist() == ['', 0, None, Decimal('0'), '']
+    assert model.rowCount() == 3 and dialog.slip_lines.iloc[2].tolist() == ['', 0, None, Decimal('0'), '', ()]
     assert dialog.slip_lines['category'].dtype == int
     model.setData(model.index(2, 0), "SACO")
     model.setData(model.index(2, 3), Decimal('-0.60'))
@@ -691,6 +770,115 @@ def test_lines_are_fixed_by_hand_until_they_add_up(owner, inbox):
     dialog.deleteLine()
     model.setData(model.index(0, 3), Decimal('-10.50'))
     assert dialog.ui.DifferenceLbl.text() == "Difference: 0.00"
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def _jpeg(width=200, height=300) -> bytes:
+    image, data = QImage(width, height, QImage.Format_RGB32), QByteArray()
+    image.fill(Qt.white)
+    buffer = QBuffer(data)
+    buffer.open(QBuffer.WriteOnly)
+    assert image.save(buffer, "JPG")
+    return bytes(data)
+
+
+SCAN_ROWS = ("SHOP", "LEITE 10,00", "PAO DE FORMA", "SACO 0,10 A", "Desc. cupao -0,50", "TOTAL 11,94")
+
+
+# An AMBER scan with its page image: LEITE was read, PAO only by name, SACO and the coupon as no item
+def _scan_with_picture(inbox, items=None, status="amber") -> str:
+    items = items or [dict(_read_item("item", "LEITE", "10.00", 0.9), source_lines=[1]),
+                      dict(_read_item("item", "PAO DE FORMA", "0.00", 0.9), source_lines=[2], amount_source="unread")]
+    extra = paper_scan(items, status=status)
+    extra["paper"]["layout"] = {"body": [1, 4], "total": 5}
+    extra["ocr"] = {"engine": "test", "lines": [{"page": 1, "text": x, "bbox": [10, 40 * i, 150, 30]}
+                                                for i, x in enumerate(SCAN_ROWS)]}
+    return make_jalr(inbox, "20260814-184200-8f2a1c44.jalr", codes=[LIDL], extra=extra, image=_jpeg())
+
+
+def test_scan_is_shown_beside_the_lines_and_the_selected_line_is_marked(owner, inbox):
+    _scan_with_picture(inbox)
+    dialog = _dialog(owner)
+    view = dialog.ui.ScanView
+    assert view.isHidden() and not view.has_pages()
+    _load(dialog)
+    assert not view.isHidden() and view.has_pages()
+    assert view.scene().sceneRect().size().toTuple() == (200, 300)
+    assert view.offered_rows() == [3, 4]                               # the body rows that are no line
+    dialog.ui.LinesTableView.setCurrentIndex(dialog.model.index(0, 0))
+    assert [x.rect().getRect() for x in view._marks] == [(10, 40, 150, 30)]
+    dialog.ui.LinesTableView.setCurrentIndex(dialog.model.index(1, 0))
+    assert [x.rect().getRect() for x in view._marks] == [(10, 80, 150, 30)]
+    dialog.clearSlipData()
+    assert view.isHidden() and not view.has_pages()
+
+
+def test_scan_without_a_readable_picture_and_a_pdf_show_no_pane(owner, inbox):
+    make_jalr(inbox, "20260814-184200-8f2a1c44.jalr", codes=[LIDL], extra=paper_scan([("item", "LEITE", "11.94")]))
+    make_jalr(inbox, "20260814-190000-ab12cd34.jalr", kind="pdf_import", pdf=make_pdf(lidl_receipt()))
+    dialog = _dialog(owner)
+    for row in (0, 1):
+        _load(dialog, row)
+        assert dialog.slip_lines is not None and dialog.ui.ScanView.isHidden()
+
+
+def test_proven_scan_offers_no_rows(owner, inbox):
+    _scan_with_picture(inbox, items=[dict(role="item", text="LEITE", amount="11.94", sign_printed="positive",
+                                          effect="charge", source_lines=[1])], status="green")
+    dialog = _dialog(owner)
+    _load(dialog)
+    assert dialog.ui.VerdictLbl.text() == "Reconciled automatically"
+    assert dialog.ui.ScanView.has_pages() and dialog.ui.ScanView.offered_rows() == []
+
+
+def test_row_of_the_scan_becomes_a_line(owner, inbox):
+    _scan_with_picture(inbox)
+    dialog = _dialog(owner)
+    _load(dialog)
+    view = dialog.ui.ScanView
+    view.row_activated.emit(3)
+    view.row_activated.emit(4)
+    assert dialog.slip_lines[['name', 'amount', 'trust', 'source']].values.tolist()[2:] == [
+        ["SACO", Decimal('-0.10'), LineTrust.UNRELIABLE, (3,)],
+        ["Desc. cupao", Decimal('0.50'), LineTrust.UNRELIABLE, (4,)]]
+    assert dialog.slip_lines['category'].dtype == int
+    assert view.offered_rows() == [] and dialog.ui.LinesTableView.currentIndex().row() == 3
+    assert [x.rect().getRect() for x in view._marks] == [(10, 160, 150, 30)]
+
+
+def test_row_of_the_scan_is_read_for_its_amount():
+    minus = Decimal('-1')
+    assert line_of_row("SACO 0,10 A", minus) == {'name': "SACO", 'amount': Decimal('-0.10'), 'trust': LineTrust.UNRELIABLE}
+    assert line_of_row("Desc. cupao - 0.50", minus)['amount'] == Decimal('0.50')
+    assert line_of_row("SACO 0,10", Decimal('1'))['amount'] == Decimal('0.10')             # a credit note
+    for text in ("PAO DE FORMA", "IVA 23, 00%", "2 x 0,50 LEITE", "0,10"):                 # no amount at the row's end
+        assert line_of_row(text, minus) == {'name': text, 'amount': Decimal('0'), 'trust': LineTrust.MISSING}
+
+
+# The line of an amount the phone couldn't read: it is offered what makes the lines add up, and stops the import
+def test_missing_amount_is_offered_the_difference(owner, inbox):
+    _scan_with_picture(inbox)
+    dialog = _dialog(owner)
+    _load(dialog)
+    model, delegate, editor = dialog.model, dialog.delegate, QLineEdit(dialog)
+    assert dialog.slip_lines['trust'].tolist() == [LineTrust.READ, LineTrust.MISSING]
+    assert dialog.ui.DifferenceLbl.text() == "Difference: 1.94"
+    assert "wasn't read" in model.data(model.index(1, 3), Qt.ToolTipRole)
+    operations = _operations()
+    dialog.ui.AccountEdit.selected_id = 1
+    dialog.ui.PeerEdit.selected_id = 1
+    dialog.slip_lines['category'] = PredefinedCategory.Fees
+    dialog.addOperation()
+    assert _operations() == operations and dialog.slip_lines is not None      # refused with an amount missing
+    delegate.setEditorData(editor, model.index(0, 3))
+    assert editor.text() == "-10.00"                                          # a read line keeps its own amount
+    delegate.setEditorData(editor, model.index(1, 3))
+    assert editor.text() == "-1.94"
+    delegate.setModelData(editor, model, model.index(1, 3))
+    assert dialog.slip_lines['trust'].tolist() == [LineTrust.READ, '']
+    assert dialog.ui.DifferenceLbl.text() == "Difference: 0.00"
+    dialog.addOperation()
+    assert _operations() == operations + 1
 
 
 def test_lines_that_dont_add_up_are_added_on_confirmation_only(owner, inbox, monkeypatch):

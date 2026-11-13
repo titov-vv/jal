@@ -30,6 +30,7 @@ class PaperItem:
     CHARGE = "charge"            # 'effect' values, written by the phone on GREEN files only
     DEDUCTION = "deduction"
     NO_EFFECT = "none"
+    UNREAD = "unread"            # 'amount_source' of a named line whose amount wasn't read: it comes as 0.00
 
     role: str
     text: str
@@ -44,6 +45,7 @@ class PaperItem:
     scope: str = ''              # of a discount: 'item' or 'receipt'; '' in files written before the phone told
     effect: str = ''             # what the line did to the total, proven by the phone; '' unless the file is GREEN
     confidence: Optional[Decimal] = None     # of the OCR, 0..1; None where the recognizer gave none
+    amount_source: str = ''      # '' for an amount as printed, else how the phone came by it
 
 
 def _money(value) -> Optional[Decimal]:
@@ -83,7 +85,8 @@ class JalrFile:
                                unit_price=_money(x.get('unit_price')), unit=x.get('unit') or '',
                                tax_code=x.get('tax_code') or '', department=x.get('department') or '',
                                source_lines=tuple(x.get('source_lines') or ()), scope=x.get('scope') or '',
-                               effect=x.get('effect') or '', confidence=_money(x.get('confidence')))
+                               effect=x.get('effect') or '', confidence=_money(x.get('confidence')),
+                               amount_source=x.get('amount_source') or '')
                      for x in paper.get('items') or []]
             tax_table = [{'code': x['code'], 'rate': _money(x.get('rate')), 'base': _money(x.get('base')),
                           'tax': _money(x.get('tax')), 'total': _money(x.get('total'))}
@@ -169,6 +172,42 @@ class JalrFile:
     @property
     def ocr_texts(self) -> list:
         return [x.get('text', '') for x in (self._data.get('ocr') or {}).get('lines') or []]
+
+    # (page, [x, y, width, height]) of every row of 'ocr.lines' in the pixels of its page image; None for a row
+    # without a usable box
+    @property
+    def ocr_boxes(self) -> list:
+        boxes = []
+        for x in (self._data.get('ocr') or {}).get('lines') or []:
+            box = x.get('bbox')
+            usable = isinstance(x.get('page'), int) and isinstance(box, list) and len(box) == 4 \
+                and all(isinstance(v, (int, Decimal)) for v in box)
+            boxes.append((x['page'], [float(v) for v in box]) if usable else None)
+        return boxes
+
+    # Indexes in 'ocr.lines' of the rows of the receipt's body that the phone read as no item ('paper.layout');
+    # empty in files written before the phone told the body
+    @property
+    def unread_body_rows(self) -> list:
+        body = ((self._data.get('paper') or {}).get('layout') or {}).get('body')
+        if not isinstance(body, list) or len(body) != 2 or not all(isinstance(x, int) for x in body):
+            return []
+        used = {i for x in self._paper_items for i in x.source_lines}
+        return [i for i in range(max(body[0], 0), min(body[1] + 1, len(self.ocr_texts))) if i not in used]
+
+    # (page, bytes) of the page images, in page order; an image that can't be read is left out
+    def page_images(self) -> list:
+        images = []
+        try:
+            with zipfile.ZipFile(self._path) as container:
+                for x in sorted(self._data['source'].get('images', []), key=lambda x: x.get('page', 0)):
+                    try:
+                        images.append((x.get('page', 0), container.read(x['file'])))
+                    except KeyError:
+                        logging.warning(f"Receipt file has no page image '{x.get('file')}': {self._path}")
+        except (OSError, zipfile.BadZipFile) as e:
+            logging.warning(f"Receipt file can't be read, {self._path}: {e}")
+        return images
 
     # Shop name as printed in the header of a paper receipt
     @property

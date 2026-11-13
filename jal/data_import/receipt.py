@@ -175,6 +175,7 @@ class LineTrust:
     PROVEN = "proven"             # the receipt's lines add up to its total
     READ = "read"                 # read well, but the receipt's lines don't add up
     UNRELIABLE = "unreliable"     # read poorly, or the receipt has no usable fiscal code
+    MISSING = "missing"           # the line was read but its amount wasn't: it is 0 until the user sets it
 
 
 # What the import dialog says about a loaded receipt as a whole
@@ -193,6 +194,7 @@ class ReceiptItem:
     price: Optional[Decimal] = None
     department: str = ''
     discounts: list = field(default_factory=list)   # (label, amount) pairs, amount > 0 as money off
+    source_lines: tuple = ()              # rows of a scan's 'ocr.lines' the item and its discounts were read from
 
 
 # Name of the item's line in the import dialog

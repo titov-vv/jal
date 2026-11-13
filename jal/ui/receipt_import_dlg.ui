@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>850</width>
+    <width>1250</width>
     <height>760</height>
    </rect>
   </property>
@@ -15,301 +15,350 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QGroupBox" name="InboxGroup">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
+    <widget class="QSplitter" name="ScanSplitter">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
      </property>
-     <property name="title">
-      <string>Get receipt from phone inbox</string>
+     <property name="childrenCollapsible">
+      <bool>false</bool>
      </property>
-     <layout class="QGridLayout" name="gridLayout_3">
-      <item row="0" column="0" rowspan="5">
-       <widget class="QTableWidget" name="InboxList">
-        <property name="editTriggers">
-         <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
-        </property>
-        <property name="selectionMode">
-         <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
-        </property>
-        <property name="selectionBehavior">
-         <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
-        </property>
-        <property name="columnCount">
-         <number>3</number>
-        </property>
-        <attribute name="horizontalHeaderStretchLastSection">
-         <bool>true</bool>
-        </attribute>
-        <attribute name="verticalHeaderVisible">
-         <bool>false</bool>
-        </attribute>
-        <attribute name="verticalHeaderMinimumSectionSize">
-         <number>20</number>
-        </attribute>
-        <column>
-         <property name="text">
-          <string>Captured</string>
+     <widget class="QWidget" name="FormPane" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+        <horstretch>2</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <layout class="QVBoxLayout" name="FormLayout">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QGroupBox" name="InboxGroup">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
          </property>
-        </column>
-        <column>
-         <property name="text">
-          <string>Source</string>
+         <property name="title">
+          <string>Get receipt from phone inbox</string>
          </property>
-        </column>
-        <column>
-         <property name="text">
-          <string>Import as</string>
+         <layout class="QGridLayout" name="gridLayout_3">
+          <item row="0" column="0" rowspan="5">
+           <widget class="QTableWidget" name="InboxList">
+            <property name="editTriggers">
+             <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+            </property>
+            <property name="selectionMode">
+             <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
+            </property>
+            <property name="selectionBehavior">
+             <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
+            </property>
+            <property name="columnCount">
+             <number>3</number>
+            </property>
+            <attribute name="horizontalHeaderStretchLastSection">
+             <bool>true</bool>
+            </attribute>
+            <attribute name="verticalHeaderVisible">
+             <bool>false</bool>
+            </attribute>
+            <attribute name="verticalHeaderMinimumSectionSize">
+             <number>20</number>
+            </attribute>
+            <column>
+             <property name="text">
+              <string>Captured</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Source</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Import as</string>
+             </property>
+            </column>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QPushButton" name="InboxLoadBtn">
+            <property name="text">
+             <string>L&amp;oad</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QPushButton" name="InboxRefreshBtn">
+            <property name="text">
+             <string>Re&amp;fresh</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QPushButton" name="InboxSkipBtn">
+            <property name="toolTip">
+             <string>Move the selected file into the 'done' folder without importing it</string>
+            </property>
+            <property name="text">
+             <string>S&amp;kip</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QPushButton" name="InboxAddPdfBtn">
+            <property name="toolTip">
+             <string>Put PDF receipts of this computer into the inbox</string>
+            </property>
+            <property name="text">
+             <string>Add P&amp;DF...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <spacer name="inboxButtonsSpacer">
+            <property name="orientation">
+             <enum>Qt::Orientation::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="5" column="0" colspan="2">
+           <widget class="QLabel" name="InboxFolderLbl"/>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="ReceiptGroup">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
          </property>
-        </column>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QPushButton" name="InboxLoadBtn">
-        <property name="text">
-         <string>L&amp;oad</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QPushButton" name="InboxRefreshBtn">
-        <property name="text">
-         <string>Re&amp;fresh</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QPushButton" name="InboxSkipBtn">
-        <property name="toolTip">
-         <string>Move the selected file into the 'done' folder without importing it</string>
-        </property>
-        <property name="text">
-         <string>S&amp;kip</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QPushButton" name="InboxAddPdfBtn">
-        <property name="toolTip">
-         <string>Put PDF receipts of this computer into the inbox</string>
-        </property>
-        <property name="text">
-         <string>Add P&amp;DF...</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1">
-       <spacer name="inboxButtonsSpacer">
-        <property name="orientation">
-         <enum>Qt::Orientation::Vertical</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>40</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="5" column="0" colspan="2">
-       <widget class="QLabel" name="InboxFolderLbl"/>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QGroupBox" name="ReceiptGroup">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="title">
-      <string>Operation data</string>
-     </property>
-     <layout class="QGridLayout" name="gridLayout">
-      <item row="2" column="1">
-       <widget class="QDateTimeEdit" name="SlipDateTime">
-        <property name="displayFormat">
-         <string>dd/MM/yyyy hh:mm:ss</string>
-        </property>
-        <property name="timeSpec">
-         <enum>Qt::TimeSpec::UTC</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLabel" name="DateTimeLbl">
-        <property name="text">
-         <string>Date / Time:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="3">
-       <widget class="QLabel" name="CorrespondenceLbl">
-        <property name="text">
-         <string> ➜ </string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="4">
-       <widget class="ReferenceSelectorWidget" name="PeerEdit"/>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="PeerLbl">
-        <property name="text">
-         <string>&amp;Peer:</string>
-        </property>
-        <property name="buddy">
-         <cstring>SlipShopName</cstring>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QLineEdit" name="SlipShopName">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="NoteLbl">
-        <property name="text">
-         <string>&amp;Note:</string>
-        </property>
-        <property name="buddy">
-         <cstring>NoteEdit</cstring>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1" colspan="5">
-       <widget class="QLineEdit" name="NoteEdit"/>
-      </item>
-      <item row="5" column="1" colspan="5">
-       <widget class="QLabel" name="VerdictLbl">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="1" colspan="5">
-       <layout class="QHBoxLayout" name="LinesFooterLayout">
-        <item>
-         <widget class="QPushButton" name="AddLineBtn">
-          <property name="text">
-           <string>Add line</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="DeleteLineBtn">
-          <property name="text">
-           <string>Delete line</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="linesFooterSpacer">
-          <property name="orientation">
-           <enum>Qt::Orientation::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="QLabel" name="TotalsLbl">
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="DifferenceLbl">
-          <property name="text">
-           <string/>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item row="6" column="0">
-       <widget class="QLabel" name="LinesLbl">
-        <property name="text">
-         <string>&amp;Lines:</string>
-        </property>
-        <property name="alignment">
-         <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
-        </property>
-        <property name="buddy">
-         <cstring>LinesTableView</cstring>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="4">
-       <widget class="QLabel" name="AccountLbl">
-        <property name="text">
-         <string>Account:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="4">
-       <widget class="ReferenceSelectorWidget" name="AccountEdit"/>
-      </item>
-      <item row="6" column="1" colspan="5">
-       <widget class="QTableView" name="LinesTableView">
-        <attribute name="verticalHeaderVisible">
-         <bool>false</bool>
-        </attribute>
-        <attribute name="verticalHeaderMinimumSectionSize">
-         <number>20</number>
-        </attribute>
-       </widget>
-      </item>
-      <item row="2" column="5">
-       <widget class="QPushButton" name="AssignCategoryBtn">
-        <property name="toolTip">
-         <string>Lines that have a category already keep it</string>
-        </property>
-        <property name="text">
-         <string>Assign Category</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="5">
-       <widget class="QPushButton" name="AssignTagBtn">
-        <property name="toolTip">
-         <string>Lines that have a tag already keep it</string>
-        </property>
-        <property name="text">
-         <string>Assign Tag</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="2">
-       <spacer name="accountGroupSpacer">
-        <property name="orientation">
-         <enum>Qt::Orientation::Horizontal</enum>
-        </property>
-        <property name="sizeType">
-         <enum>QSizePolicy::Fixed</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>0</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-     </layout>
+         <property name="title">
+          <string>Operation data</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout">
+          <item row="2" column="1">
+           <widget class="QDateTimeEdit" name="SlipDateTime">
+            <property name="displayFormat">
+             <string>dd/MM/yyyy hh:mm:ss</string>
+            </property>
+            <property name="timeSpec">
+             <enum>Qt::TimeSpec::UTC</enum>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLabel" name="DateTimeLbl">
+            <property name="text">
+             <string>Date / Time:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="3">
+           <widget class="QLabel" name="CorrespondenceLbl">
+            <property name="text">
+             <string> ➜ </string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="4">
+           <widget class="ReferenceSelectorWidget" name="PeerEdit"/>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="PeerLbl">
+            <property name="text">
+             <string>&amp;Peer:</string>
+            </property>
+            <property name="buddy">
+             <cstring>SlipShopName</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLineEdit" name="SlipShopName">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="NoteLbl">
+            <property name="text">
+             <string>&amp;Note:</string>
+            </property>
+            <property name="buddy">
+             <cstring>NoteEdit</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1" colspan="5">
+           <widget class="QLineEdit" name="NoteEdit"/>
+          </item>
+          <item row="5" column="1" colspan="5">
+           <widget class="QLabel" name="VerdictLbl">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="1" colspan="5">
+           <layout class="QHBoxLayout" name="LinesFooterLayout">
+            <item>
+             <widget class="QPushButton" name="AddLineBtn">
+              <property name="text">
+               <string>Add line</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="DeleteLineBtn">
+              <property name="text">
+               <string>Delete line</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="linesFooterSpacer">
+              <property name="orientation">
+               <enum>Qt::Orientation::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QLabel" name="TotalsLbl">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="DifferenceLbl">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="LinesLbl">
+            <property name="text">
+             <string>&amp;Lines:</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
+            </property>
+            <property name="buddy">
+             <cstring>LinesTableView</cstring>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="4">
+           <widget class="QLabel" name="AccountLbl">
+            <property name="text">
+             <string>Account:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="4">
+           <widget class="ReferenceSelectorWidget" name="AccountEdit"/>
+          </item>
+          <item row="6" column="1" colspan="5">
+           <widget class="QTableView" name="LinesTableView">
+            <attribute name="verticalHeaderVisible">
+             <bool>false</bool>
+            </attribute>
+            <attribute name="verticalHeaderMinimumSectionSize">
+             <number>20</number>
+            </attribute>
+           </widget>
+          </item>
+          <item row="2" column="5">
+           <widget class="QPushButton" name="AssignCategoryBtn">
+            <property name="toolTip">
+             <string>Lines that have a category already keep it</string>
+            </property>
+            <property name="text">
+             <string>Assign Category</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="5">
+           <widget class="QPushButton" name="AssignTagBtn">
+            <property name="toolTip">
+             <string>Lines that have a tag already keep it</string>
+            </property>
+            <property name="text">
+             <string>Assign Tag</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <spacer name="accountGroupSpacer">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Fixed</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>0</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="ReceiptScanView" name="ScanView">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>1</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>250</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="toolTip">
+       <string>The scan of the loaded receipt: the selected line is marked on it. A double click on an outlined row adds it as a line.</string>
+      </property>
+     </widget>
     </widget>
    </item>
    <item>
@@ -340,9 +389,15 @@
   <tabstop>AssignTagBtn</tabstop>
   <tabstop>AddLineBtn</tabstop>
   <tabstop>DeleteLineBtn</tabstop>
+  <tabstop>ScanView</tabstop>
   <tabstop>DialogButtonBox</tabstop>
  </tabstops>
  <customwidgets>
+  <customwidget>
+   <class>ReceiptScanView</class>
+   <extends>QGraphicsView</extends>
+   <header>jal/widgets/receipt_scan_view.h</header>
+  </customwidget>
   <customwidget>
    <class>ReferenceSelectorWidget</class>
    <extends>QWidget</extends>

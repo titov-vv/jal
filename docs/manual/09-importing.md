@@ -190,6 +190,13 @@ mark of its own, and the footer compares the sum of the lines with the receipt's
 be edited, added and deleted; **Assign Category** and **Assign Tag** fill the lines that have none
 yet. A discount off the whole receipt becomes a line of its own in the *Discounts* category.
 
+A paper scan is shown beside its lines: selecting a line marks the rows it was read from, and
+**Ctrl** with the mouse wheel zooms in. Where the lines are not reconciled, the rows of the receipt
+that were read as no item are outlined, and a double click on one adds it as a line. A line whose
+amount could not be read shows **?**: editing its amount offers what makes the lines add up to the
+receipt's total, and the receipt is not added while such a line is left. A receipt that prints its
+prices without VAT gets the VAT added to its lines, so they add up to what was paid.
+
 Choose the account and the peer and press **Add**. The account is chosen for you when the receipt
 names a card whose last four digits are recorded in an account's details (*Card (last 4 digits)*).
 The imported file moves into the inbox's `done` subfolder, as does one you dismiss with **Skip**.
