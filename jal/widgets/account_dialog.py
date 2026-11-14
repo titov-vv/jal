@@ -246,7 +246,7 @@ class AccountDialog(QDialog):
     # Opens the dialog to edit an existing account. Starts a database transaction committed on OK / rolled back on
     # Cancel (see class docstring for why the whole session is transactional).
     def setSelectedId(self, account_id):
-        self._model.database().transaction()
+        JalDB().start_transaction()
         self._account_id = account_id
         self._model.setFilter(f"id={self._account_id}")
         self._mapper.toFirst()
@@ -257,7 +257,7 @@ class AccountDialog(QDialog):
     # Creates a new account. The row is written to the database immediately (inside a fresh transaction) so that
     # attributes added below already have a real account_id to refer to.
     def createNewRecord(self):
-        self._model.database().transaction()
+        JalDB().start_transaction()
         new_record = self._model.record()
         new_record.setNull("id")
         new_record.setValue("name", '')
@@ -271,8 +271,7 @@ class AccountDialog(QDialog):
         self._model.setRecord(0, new_record)
         if not self._model.submitAll():
             logging.fatal(self.tr("Failed to create new account: ") + self._model.lastError().text())
-            self._model.database().rollback()
-            JalDB.invalidate_cache()   # a cache may hold rows that were rolled back
+            JalDB().rollback_transaction()
             return
         self._account_id = self._model.last_insert_id()
         self._model.setFilter(f"id={self._account_id}")
@@ -369,13 +368,12 @@ class AccountDialog(QDialog):
         if not self._model.submitAll():
             logging.fatal(self.tr("Account submit failed: ") + self._model.lastError().text())
             return
-        self._model.database().commit()
+        JalDB().commit_transaction()
         self._model.invalidate_cache()
         super().accept()
 
     def reject(self) -> None:
-        self._model.database().rollback()
-        JalDB.invalidate_cache()   # a cache may hold rows that were rolled back
+        JalDB().rollback_transaction()
         for _, model in reversed(self._grid_models):
             model.revertAll()
         self._model.revertAll()

@@ -234,7 +234,7 @@ class SymbolDialog(QDialog):
     # Opens the dialog to edit an existing asset. Starts a database transaction that is committed on OK / rolled
     # back on Cancel (see class docstring for why this is needed for the asset -> symbol -> identifier hierarchy).
     def setSelectedId(self, asset_id):
-        self._model.database().transaction()
+        JalDB().start_transaction()
         self._asset_id = asset_id
         self._model.setFilter(f"id={self._asset_id}")
         self._mapper.toFirst()
@@ -248,7 +248,7 @@ class SymbolDialog(QDialog):
     # Creates a new asset. The row is written to the database immediately (inside a fresh transaction) so that
     # symbols added below already have a real asset_id to refer to.
     def createNewRecord(self):
-        self._model.database().transaction()
+        JalDB().start_transaction()
         new_record = self._model.record()
         new_record.setNull("id")
         new_record.setValue("type_id", PredefinedAsset.Stock)
@@ -258,8 +258,7 @@ class SymbolDialog(QDialog):
         self._model.setRecord(0, new_record)
         if not self._model.submitAll():
             logging.fatal(self.tr("Failed to create new asset: ") + self._model.lastError().text())
-            self._model.database().rollback()
-            JalDB.invalidate_cache()   # a cache may hold rows that were rolled back
+            JalDB().rollback_transaction()
             return
         self._asset_id = self._model.last_insert_id()
         self._model.setFilter(f"id={self._asset_id}")
@@ -388,7 +387,7 @@ class SymbolDialog(QDialog):
         if not self._model.submitAll():
             logging.fatal(self.tr("Asset submit failed: ") + self._model.lastError().text())
             return
-        self._model.database().commit()
+        JalDB().commit_transaction()
         self._offer_interest_split()
         super().accept()
 
@@ -411,8 +410,7 @@ class SymbolDialog(QDialog):
             Ledger().rebuild()
 
     def reject(self) -> None:
-        self._model.database().rollback()
-        JalDB.invalidate_cache()   # a cache may hold rows that were rolled back
+        JalDB().rollback_transaction()
         for _, model in reversed(self._grid_models):
             model.revertAll()
         self._model.revertAll()
