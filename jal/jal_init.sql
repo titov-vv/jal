@@ -337,6 +337,18 @@ CREATE INDEX ledger_totals_by_timestamp ON ledger_totals (timestamp);
 DROP INDEX IF EXISTS ledger_totals_by_operation_book;
 CREATE INDEX ledger_totals_by_operation_book ON ledger_totals (otype, oid, book_account);
 
+-- Table: receipt_items - what the user made of the items a shop prints on its receipts
+DROP TABLE IF EXISTS receipt_items;
+CREATE TABLE receipt_items (
+    id          INTEGER PRIMARY KEY UNIQUE NOT NULL,
+    peer_id     INTEGER REFERENCES agents (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,      -- the shop
+    printed     TEXT    NOT NULL,                                                                 -- item text as the receipt prints it
+    name        TEXT    NOT NULL DEFAULT (''),                                                    -- name given by the user, empty if the printed one was kept
+    category_id INTEGER REFERENCES categories (id) ON DELETE CASCADE ON UPDATE CASCADE NOT NULL,
+    tag_id      INTEGER REFERENCES tags (id) ON DELETE SET NULL ON UPDATE CASCADE,
+    UNIQUE (peer_id, printed)
+);
+
 -- Table: map_peer
 DROP TABLE IF EXISTS map_peer;
 CREATE TABLE map_peer (
@@ -1091,7 +1103,7 @@ BEGIN
 END;
 ------------------------------------------------------------------------------------------------------------------------
 -- Initialize default values for settings
-INSERT INTO settings(name, value) VALUES('SchemaVersion', 87);
+INSERT INTO settings(name, value) VALUES('SchemaVersion', 88);
 INSERT INTO settings(name, value) VALUES('Language', 1);
 INSERT INTO settings(name, value) VALUES('RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
 INSERT INTO settings(name, value) VALUES('RuTaxSessionId', '');

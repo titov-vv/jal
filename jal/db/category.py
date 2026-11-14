@@ -78,5 +78,7 @@ class JalCategory(JalDB):
     def replace_with(self, new_id):
         self._exec("UPDATE action_details SET category_id=:new_id WHERE category_id=:old_id",
                    [(":new_id", new_id), (":old_id", self._id)])
+        self._exec("UPDATE receipt_items SET category_id=:new_id WHERE category_id=:old_id",
+                   [(":new_id", new_id), (":old_id", self._id)])
         self._exec("DELETE FROM categories WHERE id=:old_id", [(":old_id", self._id)], commit=True)
         self._id = 0

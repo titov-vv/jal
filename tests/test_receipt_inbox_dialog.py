@@ -17,6 +17,7 @@ from jal.constants import PredefinedCategory, PredefinedAccountType, AccountData
 from jal.db.account import JalAccountCreator
 from jal.db.db import JalDB
 from jal.db.peer import JalPeer
+from jal.db.receipt_memory import JalReceiptMemory
 from jal.db.clock import local_zone
 from jal.db.settings import JalSettings
 from jal.db.operations import IncomeSpending
@@ -109,7 +110,7 @@ def test_paper_voucher_is_a_discount_line(owner, inbox):
     make_jalr(inbox, "20260814-184300-00000002.jalr", codes=[PINGO_DOCE.replace("G:", "G:X")], extra=PAYMENTS)
     dialog = _dialog(owner)
     voucher = {'name': "V. Deposito Volta", 'category': PredefinedCategory.Discounts, 'tag': None,
-               'amount': Decimal('0.60'), 'trust': '', 'source': ()}
+               'amount': Decimal('0.60'), 'trust': '', 'source': (), 'printed': "V. Deposito Volta", 'memory': ''}
     for row, first in ((0, "LEITE"), (1, "NIF 500829993")):     # with items, and a QR alone
         dialog.ui.InboxList.setCurrentCell(row, 0)
         dialog.loadInboxReceipt()
@@ -756,7 +757,7 @@ def test_lines_are_fixed_by_hand_until_they_add_up(owner, inbox):
     assert dialog.slip_lines['name'].tolist() == ["LEITE", "PAO DE FORMA"]
 
     dialog.addLine()                                          # an item the phone missed
-    assert model.rowCount() == 3 and dialog.slip_lines.iloc[2].tolist() == ['', 0, None, Decimal('0'), '', ()]
+    assert model.rowCount() == 3 and dialog.slip_lines.iloc[2].tolist() == ['', 0, None, Decimal('0'), '', (), '', '']
     assert dialog.slip_lines['category'].dtype == int
     model.setData(model.index(2, 0), "SACO")
     model.setData(model.index(2, 3), Decimal('-0.60'))
@@ -879,6 +880,72 @@ def test_missing_amount_is_offered_the_difference(owner, inbox):
     assert dialog.ui.DifferenceLbl.text() == "Difference: 0.00"
     dialog.addOperation()
     assert _operations() == operations + 1
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# What a receipt's lines became is remembered per peer and comes back with the shop's next receipt
+def _visit(inbox, name, number, items) -> str:
+    qr = LIDL.replace("G:FS 0421/000317", f"G:FS 0421/{number}")
+    return make_jalr(inbox, name, codes=[qr], extra=paper_scan(items, effect=True))
+
+
+def test_item_names_and_categories_are_remembered_per_peer(owner, inbox):
+    banana = {"role": "item", "text": "BANANA KG", "amount": "1.41", "sign_printed": "positive", "quantity": "0.705",
+              "unit_price": "2.00", "tax_code": "A"}
+    _visit(inbox, "20260814-184200-00000001.jalr", "000317", [banana, ("item", "HUGGS CUECAS T5 24U", "10.53")])
+    dialog = _dialog(owner)
+    _load(dialog)
+    assert dialog.slip_lines['category'].tolist() == [0, 0] and dialog.slip_lines['memory'].tolist() == ['', '']
+    model = dialog.model
+    model.setData(model.index(0, 1), PredefinedCategory.Fees)          # the banana keeps its printed name
+    model.setData(model.index(1, 0), "diapers")
+    model.setData(model.index(1, 1), PredefinedCategory.Taxes)
+    model.setData(model.index(1, 2), 1)
+    dialog.ui.AccountEdit.selected_id = 1
+    dialog.ui.PeerEdit.selected_id = 1
+    dialog.addOperation()
+    assert _operations() == 1
+
+    # the next visit: another weight of bananas, the diapers read a letter off, and a new item
+    banana = dict(banana, amount="3.00", quantity="1.500")
+    _visit(inbox, "20260821-184200-00000002.jalr", "000400",
+           [banana, ("item", "HUGS CUECAS T5 24U", "8.44"), ("item", "LEITE", "0.50")])
+    dialog.refreshInbox()
+    _load(dialog)                                                      # the peer is known by the shop's name
+    assert dialog.slip_lines[['name', 'category', 'tag', 'memory']].values.tolist() == [
+        ["BANANA KG (1.5 x 2.00)", PredefinedCategory.Fees, None, JalReceiptMemory.EXACT],
+        ["diapers", PredefinedCategory.Taxes, 1, JalReceiptMemory.GUESS],
+        ["LEITE", 0, None, '']]
+    assert "printed as 'BANANA KG (1.5 x 2.00)'" in dialog.model.data(dialog.model.index(0, 0), Qt.ToolTipRole)
+    assert "A guess" in dialog.model.data(dialog.model.index(1, 1), Qt.ToolTipRole)
+    assert "printed as" not in dialog.model.data(dialog.model.index(2, 0), Qt.ToolTipRole)
+    dialog.model.setData(dialog.model.index(1, 1), PredefinedCategory.Fees)     # the guess is corrected
+    assert dialog.slip_lines['memory'].tolist() == [JalReceiptMemory.EXACT, '', '']
+    dialog.model.setData(dialog.model.index(2, 1), PredefinedCategory.Fees)
+    dialog.ui.AccountEdit.selected_id = 1
+    dialog.addOperation()
+    assert _operations() == 2
+    memory = JalReceiptMemory(1)
+    assert memory.find("HUGS CUECAS T5 24U") == (
+        {'printed': "HUGS CUECAS T5 24U", 'name': "diapers", 'category_id': PredefinedCategory.Fees, 'tag_id': 1},
+        JalReceiptMemory.EXACT)
+    assert memory.find("LEITE")[0]['name'] == ''                       # kept as printed
+    assert JalReceiptMemory(2).find("LEITE") == (None, '')             # another peer remembers nothing
+
+
+# A receipt of a shop met for the first time is recalled once its peer is chosen; lines with a category keep it
+def test_lines_are_recalled_when_the_peer_is_chosen(owner, inbox):
+    JalReceiptMemory(1).remember("LEITE", "milk", PredefinedCategory.Taxes, None)
+    JalReceiptMemory(1).remember("PAO", "", PredefinedCategory.Taxes, None)
+    _visit(inbox, "20260814-184200-00000001.jalr", "000317", [("item", "LEITE", "1.41"), ("item", "PAO", "10.53")])
+    dialog = _dialog(owner)
+    _load(dialog)
+    assert dialog.ui.PeerEdit.selected_id == 0 and dialog.slip_lines['category'].tolist() == [0, 0]
+    dialog.model.setData(dialog.model.index(1, 1), PredefinedCategory.Fees)
+    dialog.ui.PeerEdit.selected_id = 1
+    dialog.ui.PeerEdit.changed.emit()                                  # as the selector does on the user's choice
+    assert dialog.slip_lines[['name', 'category', 'memory']].values.tolist() == [
+        ["milk", PredefinedCategory.Taxes, JalReceiptMemory.EXACT], ["PAO", PredefinedCategory.Fees, '']]
 
 
 def test_lines_that_dont_add_up_are_added_on_confirmation_only(owner, inbox, monkeypatch):

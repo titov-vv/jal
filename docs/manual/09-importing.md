@@ -197,6 +197,12 @@ amount could not be read shows **?**: editing its amount offers what makes the l
 receipt's total, and the receipt is not added while such a line is left. A receipt that prints its
 prices without VAT gets the VAT added to its lines, so they add up to what was paid.
 
+JAL remembers, per peer, what you made of each printed item: its name if you changed it, its
+category and its tag. The next receipt of that shop comes with these filled in. A remembered
+category is shown in colour, a different one where the printed text only resembles a remembered
+item and the line is a guess to check; the tooltip shows the text as printed. Changing a line makes
+it yours, and what you add is what is remembered next time.
+
 Choose the account and the peer and press **Add**. The account is chosen for you when the receipt
 names a card whose last four digits are recorded in an account's details (*Card (last 4 digits)*).
 The imported file moves into the inbox's `done` subfolder, as does one you dismiss with **Skip**.

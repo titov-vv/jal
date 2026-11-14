@@ -16,6 +16,7 @@ from jal.widgets.helpers import (set_grids_metrics, set_date_formats, restore_co
 from jal.widgets.theme import Theme, Meaning
 from jal.db.helpers import localize_decimal
 from jal.db.peer import JalPeer
+from jal.db.receipt_memory import JalReceiptMemory
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
 from jal.db.clock import local_zone
@@ -47,8 +48,10 @@ SettingsRegistry.register(SettingDescriptor(
 # Custom model to display and edit slip lines
 class PandasLinesModel(QAbstractTableModel):
     COLUMNS = ['name', 'category', 'tag', 'amount']     # of the view; the data has HIDDEN_COLUMNS after them
-    HIDDEN_COLUMNS = ['trust', 'source']                # LineTrust and the rows of the scan the line was read from
-    NAME, CATEGORY, TAG, AMOUNT, TRUST, SOURCE = 0, 1, 2, 3, 4, 5
+    # LineTrust, the rows of the scan the line was read from, the name the line was loaded with and how the line
+    # was recalled from the shop's earlier receipts (JalReceiptMemory.EXACT or GUESS)
+    HIDDEN_COLUMNS = ['trust', 'source', 'printed', 'memory']
+    NAME, CATEGORY, TAG, AMOUNT, TRUST, SOURCE, PRINTED, MEMORY = range(8)
 
     # 'expected_total' is what the lines should add up to, None if nothing tells it
     def __init__(self, data, parent=None, expected_total=None):
@@ -72,7 +75,8 @@ class PandasLinesModel(QAbstractTableModel):
             if role == Qt.DisplayRole or role == Qt.EditRole:
                 return self._data.iloc[index.row(), index.column()]
             if role == Qt.ToolTipRole:
-                return self._trust_text(self.trust(index.row()))
+                texts = [self._trust_text(self.trust(index.row())), self._memory_text(index.row())]
+                return "\n".join(x for x in texts if x) or None
         return None
 
     def setData(self, index, value, role=Qt.EditRole):
@@ -81,6 +85,8 @@ class PandasLinesModel(QAbstractTableModel):
                 self._data.iloc[index.row(), index.column()] = value
                 if index.column() == self.AMOUNT:     # an amount the user has set is nobody's reading any more
                     self._data.iloc[index.row(), self.TRUST] = ''
+                else:                                 # nor is a line the user has changed a recalled one
+                    self._data.iloc[index.row(), self.MEMORY] = ''
                 self.dataChanged.emit(self.index(index.row(), 0), self.index(index.row(), self.AMOUNT))
                 return True
         return False
@@ -88,6 +94,34 @@ class PandasLinesModel(QAbstractTableModel):
     # LineTrust of the line, '' for a line without a mark
     def trust(self, row: int) -> str:
         return self._data.iloc[row, self.TRUST]
+
+    # How the line was recalled: JalReceiptMemory.EXACT, GUESS or '' for a line that wasn't
+    def memory(self, row: int) -> str:
+        return self._data.iat[row, self.MEMORY]
+
+    def _memory_text(self, row: int):
+        texts = {
+            JalReceiptMemory.EXACT: self.tr("Remembered from the shop's earlier receipts, printed as"),
+            JalReceiptMemory.GUESS: self.tr("A guess by a similar item of the shop's earlier receipts, check it; "
+                                            "printed as")
+        }
+        text = texts.get(self.memory(row))
+        return f"{text} '{self._data.iat[row, self.PRINTED]}'" if text else None
+
+    # Gives the lines without a category what the shop's earlier receipts made of the same printed items
+    def recall(self, memory: JalReceiptMemory):
+        for row in range(self.rowCount()):
+            if self._data.iat[row, self.CATEGORY] or not self._data.iat[row, self.PRINTED]:
+                continue
+            item, how = memory.find(self._data.iat[row, self.PRINTED])
+            if item is None:
+                continue
+            if item['name']:
+                self._data.iat[row, self.NAME] = item['name']
+            self._data.iat[row, self.CATEGORY] = int(item['category_id'])
+            self._data.iat[row, self.TAG] = int(item['tag_id']) if item['tag_id'] else None
+            self._data.iat[row, self.MEMORY] = how
+            self.dataChanged.emit(self.index(row, 0), self.index(row, self.AMOUNT))
 
     # Rows of the scan's 'ocr.lines' the line was read from, () for a line that has none
     def source(self, row: int) -> tuple:
@@ -113,8 +147,8 @@ class PandasLinesModel(QAbstractTableModel):
     def add_line(self, name: str = '', amount: Decimal = Decimal('0'), trust: str = '', source: tuple = ()) -> int:
         row = self.rowCount()
         self.beginInsertRows(QModelIndex(), row, row)
-        self._data.loc[row] = pd.Series([name, 0, None, amount, trust, tuple(source)], index=self._data.columns,
-                                        dtype=object)
+        self._data.loc[row] = pd.Series([name, 0, None, amount, trust, tuple(source), name, ''],
+                                        index=self._data.columns, dtype=object)
         self.endInsertRows()
         return row
 
@@ -150,6 +184,7 @@ class PandasLinesModel(QAbstractTableModel):
 class SlipLinesDelegate(KbSafeItemDelegate):
     TRUST_MEANING = {LineTrust.PROVEN: Meaning.POSITIVE, LineTrust.READ: Meaning.WARNING,
                      LineTrust.UNRELIABLE: Meaning.NEGATIVE, LineTrust.MISSING: Meaning.NEGATIVE}
+    MEMORY_MEANING = {JalReceiptMemory.EXACT: Meaning.INFO, JalReceiptMemory.GUESS: Meaning.WARNING}
     MARK_WIDTH = 4
 
     def __init__(self, parent=None):
@@ -176,6 +211,9 @@ class SlipLinesDelegate(KbSafeItemDelegate):
             painter.drawText(rect.adjusted(2 * self.MARK_WIDTH, 0, 0, 0), Qt.AlignLeft | Qt.AlignVCenter, text)
         if index.column() == 1:
             text = JalCategory(int(model.data(index, Qt.DisplayRole))).name()
+            meaning = self.MEMORY_MEANING.get(model.memory(index.row()))
+            if meaning is not None and not selected:     # a recalled category is told by its colour
+                painter.setPen(Theme.text(meaning))
             painter.drawText(option.rect, Qt.AlignLeft | Qt.AlignVCenter, text)
         elif index.column() == 2:
             tag_id = model.data(index, Qt.DisplayRole)
@@ -270,6 +308,7 @@ class ImportReceiptDialog(QDialog):
         self.ui.AssignCategoryBtn.clicked.connect(self.assignCategory)
         self.ui.AssignTagBtn.clicked.connect(self.assignTag)
         self.ui.ScanView.row_activated.connect(self.addScanRow)
+        self.ui.PeerEdit.changed.connect(self._recall_lines)
         self.ui.ScanView.hide()
         self.ui.InboxList.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
         self.ui.InboxList.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeToContents)
@@ -491,12 +530,15 @@ class ImportReceiptDialog(QDialog):
         # A line may come with the rows of the scan it was read from, the others have none
         sources = self.slip_lines['source'] if 'source' in self.slip_lines else [()] * len(self.slip_lines)
         self.slip_lines['source'] = [x if isinstance(x, tuple) else () for x in sources]
+        self.slip_lines['printed'] = self.slip_lines['name']
+        self.slip_lines['memory'] = ''
         self.slip_lines = self.slip_lines[PandasLinesModel.COLUMNS + PandasLinesModel.HIDDEN_COLUMNS]
 
         self.model = PandasLinesModel(self.slip_lines, self, self.receipt_api.total())
         self.ui.LinesTableView.setModel(self.model)
         self.ui.LinesTableView.selectionModel().currentRowChanged.connect(self._show_line_on_scan)
         self._show_scan()
+        self._recall_lines()
         self.model.dataChanged.connect(self._show_totals)
         self.model.rowsInserted.connect(self._show_totals)
         self.model.rowsRemoved.connect(self._show_totals)
@@ -561,6 +603,12 @@ class ImportReceiptDialog(QDialog):
         self.ui.TotalsLbl.setText(text + "    " + self.tr("Receipt total") + f": {localize_decimal(expected, 2)}")
         self.ui.DifferenceLbl.setText(self.tr("Difference") + f": {localize_decimal(total - expected, 2)}")
         self._color_label(self.ui.DifferenceLbl, Meaning.NEGATIVE if total != expected else None)
+
+    # Lines without a category get what the peer's earlier receipts made of the same items
+    @Slot()
+    def _recall_lines(self):
+        if self.model is not None and self.slip_lines is not None and self.ui.PeerEdit.selected_id:
+            self.model.recall(JalReceiptMemory(self.ui.PeerEdit.selected_id))
 
     # The page images of the loaded receipt beside its lines, with the body rows that are no line offered for adding
     def _show_scan(self):
@@ -683,6 +731,11 @@ class ImportReceiptDialog(QDialog):
             operation["note"] = self.ui.NoteEdit.text().strip()
         LedgerTransaction.create_new(LedgerTransaction.IncomeSpending, operation)
         JalPeer(self.ui.PeerEdit.selected_id).add_or_update_mapped_name(self.ui.SlipShopName.text(), )
+        memory = JalReceiptMemory(self.ui.PeerEdit.selected_id)
+        for index, row in self.slip_lines.iterrows():
+            if row['printed']:
+                memory.remember(row['printed'], row['name'] if row['name'] != row['printed'] else '',
+                                int(row['category']), row['tag'] or None)
         self._finish_inbox_file()
         self.clearSlipData()
 

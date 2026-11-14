@@ -3897,218 +3897,218 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>ImportReceiptDialog</name>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="257"/>
+        <location filename="../data_import/shop_receipt.py" line="295"/>
         <source>Add</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="258"/>
+        <location filename="../data_import/shop_receipt.py" line="296"/>
         <source>Clear</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="308"/>
+        <location filename="../data_import/shop_receipt.py" line="347"/>
         <source>Set the phone receipt inbox folder in Preferences</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="321"/>
+        <location filename="../data_import/shop_receipt.py" line="360"/>
         <source>Paper scan</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="322"/>
+        <location filename="../data_import/shop_receipt.py" line="361"/>
         <source>Image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="323"/>
+        <location filename="../data_import/shop_receipt.py" line="362"/>
         <source>PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="330"/>
+        <location filename="../data_import/shop_receipt.py" line="369"/>
         <source>Portuguese QR</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="333"/>
+        <location filename="../data_import/shop_receipt.py" line="372"/>
         <source>Portuguese QR and items</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="336"/>
+        <location filename="../data_import/shop_receipt.py" line="375"/>
         <source>Not verified, no fiscal code</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="338"/>
+        <location filename="../data_import/shop_receipt.py" line="377"/>
         <source>Not verified, Portuguese QR</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="340"/>
+        <location filename="../data_import/shop_receipt.py" line="379"/>
         <source>Russian QR</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="342"/>
+        <location filename="../data_import/shop_receipt.py" line="381"/>
         <source>PDF document</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="344"/>
+        <location filename="../data_import/shop_receipt.py" line="383"/>
         <source>no QR code found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="345"/>
+        <location filename="../data_import/shop_receipt.py" line="384"/>
         <source>QR code isn&apos;t recognized</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="346"/>
+        <location filename="../data_import/shop_receipt.py" line="385"/>
         <source>document type isn&apos;t a sale or a return</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="347"/>
+        <location filename="../data_import/shop_receipt.py" line="386"/>
         <source>document is annulled or not final</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="348"/>
+        <location filename="../data_import/shop_receipt.py" line="387"/>
         <source>no money moved (signed total 0.00)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="350"/>
+        <location filename="../data_import/shop_receipt.py" line="389"/>
         <source>Unsupported</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="367"/>
+        <location filename="../data_import/shop_receipt.py" line="406"/>
         <source>Receipt without a usable fiscal code</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="368"/>
+        <location filename="../data_import/shop_receipt.py" line="407"/>
         <source>The scan has no fiscal code that could be relied on, so nothing proves its lines. A rescan is recommended. Load it anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="388"/>
+        <location filename="../data_import/shop_receipt.py" line="427"/>
         <source>Receipt file can&apos;t be read</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="395"/>
+        <location filename="../data_import/shop_receipt.py" line="434"/>
         <source>Receipt can&apos;t be imported</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="423"/>
+        <location filename="../data_import/shop_receipt.py" line="462"/>
         <source>Select PDF receipts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="424"/>
+        <location filename="../data_import/shop_receipt.py" line="463"/>
         <source>PDF files (*.pdf)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="432"/>
+        <location filename="../data_import/shop_receipt.py" line="471"/>
         <source>File isn&apos;t a readable PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="437"/>
+        <location filename="../data_import/shop_receipt.py" line="476"/>
         <source>PDF receipt can&apos;t be put into the inbox</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="473"/>
+        <location filename="../data_import/shop_receipt.py" line="512"/>
         <source>Receipt wasn&apos;t loaded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="521"/>
+        <location filename="../data_import/shop_receipt.py" line="563"/>
         <source>Reconciled automatically</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="522"/>
+        <location filename="../data_import/shop_receipt.py" line="564"/>
         <source>Not reconciled, check the lines</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="523"/>
+        <location filename="../data_import/shop_receipt.py" line="565"/>
         <source>No usable fiscal code, rescan recommended</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="556"/>
+        <location filename="../data_import/shop_receipt.py" line="598"/>
         <source>Lines</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="561"/>
+        <location filename="../data_import/shop_receipt.py" line="603"/>
         <source>Receipt total</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="562"/>
+        <location filename="../data_import/shop_receipt.py" line="604"/>
         <source>Difference</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="636"/>
+        <location filename="../data_import/shop_receipt.py" line="684"/>
         <source>Not possible to import receipt: it has no lines</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="639"/>
+        <location filename="../data_import/shop_receipt.py" line="687"/>
         <source>Not possible to import receipt: no account set for import</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="642"/>
+        <location filename="../data_import/shop_receipt.py" line="690"/>
         <source>Not possible to import receipt: can&apos;t import: no peer set for import</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="645"/>
+        <location filename="../data_import/shop_receipt.py" line="693"/>
         <source>Not possible to import receipt: some categories are not set</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="648"/>
+        <location filename="../data_import/shop_receipt.py" line="696"/>
         <source>Not possible to import receipt: some lines have no amount, set it or delete the line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="654"/>
+        <location filename="../data_import/shop_receipt.py" line="702"/>
         <source>Not possible to import receipt: it is imported already</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="661"/>
+        <location filename="../data_import/shop_receipt.py" line="709"/>
         <source>Lines don&apos;t add up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="662"/>
+        <location filename="../data_import/shop_receipt.py" line="710"/>
         <source>The lines differ from the receipt&apos;s total by</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="663"/>
+        <location filename="../data_import/shop_receipt.py" line="711"/>
         <source>Add the operation anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="455"/>
-        <location filename="../data_import/shop_receipt.py" line="696"/>
+        <location filename="../data_import/shop_receipt.py" line="494"/>
+        <location filename="../data_import/shop_receipt.py" line="749"/>
         <source>Receipt file can&apos;t be moved out of the inbox</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6304,42 +6304,52 @@ This looks like the quantity a rebasing position gained without reporting it, wh
 <context>
     <name>PandasLinesModel</name>
     <message>
+        <location filename="../data_import/shop_receipt.py" line="104"/>
+        <source>Remembered from the shop&apos;s earlier receipts, printed as</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../data_import/shop_receipt.py" line="105"/>
+        <source>A guess by a similar item of the shop&apos;s earlier receipts, check it; printed as</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../data_import/shop_receipt.py" line="139"/>
         <source>Reconciled: the lines add up to the receipt&apos;s total</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="106"/>
+        <location filename="../data_import/shop_receipt.py" line="140"/>
         <source>Read confidently, but the lines don&apos;t add up to the receipt&apos;s total</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="107"/>
+        <location filename="../data_import/shop_receipt.py" line="141"/>
         <source>Unreliable: read poorly or without a fiscal code to check against</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="108"/>
+        <location filename="../data_import/shop_receipt.py" line="142"/>
         <source>The amount wasn&apos;t read: set it, or delete the line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="140"/>
+        <location filename="../data_import/shop_receipt.py" line="174"/>
         <source>Product name</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="142"/>
+        <location filename="../data_import/shop_receipt.py" line="176"/>
         <source>Category</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="144"/>
+        <location filename="../data_import/shop_receipt.py" line="178"/>
         <source>Tag</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="146"/>
+        <location filename="../data_import/shop_receipt.py" line="180"/>
         <source>Amount</source>
         <translation></translation>
     </message>
@@ -7226,7 +7236,7 @@ Its other record is found by the transaction, but the two accounts are kept in d
         <location filename="../data_import/broker_statements/revolut.py" line="30"/>
         <location filename="../data_import/broker_statements/revolut.py" line="39"/>
         <location filename="../data_import/broker_statements/trading212.py" line="31"/>
-        <location filename="../data_import/shop_receipt.py" line="41"/>
+        <location filename="../data_import/shop_receipt.py" line="42"/>
         <source>Import</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7261,12 +7271,12 @@ Its other record is found by the transaction, but the two accounts are kept in d
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="42"/>
+        <location filename="../data_import/shop_receipt.py" line="43"/>
         <source>Phone receipt inbox folder</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="43"/>
+        <location filename="../data_import/shop_receipt.py" line="44"/>
         <source>The folder the phone app&apos;s receipt files arrive in. An imported file is moved into its &apos;done&apos; subfolder.</source>
         <translation type="unfinished"></translation>
     </message>

@@ -98,5 +98,9 @@ class JalPeer(JalDB):
                    [(":new_id", new_id), (":old_id", self._id)])
         self._exec("UPDATE map_peer SET mapped_to=:new_id WHERE mapped_to=:old_id",
                    [(":new_id", new_id), (":old_id", self._id)])
+        # an item both peers remember stays as the new peer has it
+        self._exec("UPDATE OR IGNORE receipt_items SET peer_id=:new_id WHERE peer_id=:old_id",
+                   [(":new_id", new_id), (":old_id", self._id)])
+        self._exec("DELETE FROM receipt_items WHERE peer_id=:old_id", [(":old_id", self._id)])
         self._exec("DELETE FROM agents WHERE id=:old_id", [(":old_id", self._id)], commit=True)
         self._id = 0
