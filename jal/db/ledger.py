@@ -247,7 +247,7 @@ class Ledger(QObject, JalDB):
                         (":amount", format_decimal(amount)), (":value", format_decimal(value)),
                         (":amount_acc", format_decimal(self.amounts[(book, operation.account_id(), asset_id)])),
                         (":value_acc", format_decimal(self.values[(book, operation.account_id(), asset_id)])),
-                        (":peer_id", peer), (":category_id", category), (":tag_id", tag)])
+                        (":peer_id", peer), (":category_id", category), (":tag_id", tag)], reuse=True)
         return rounding_error
 
     # Returns Amount measured in current account currency or asset that 'book' has at current ledger frontier
@@ -317,6 +317,7 @@ class Ledger(QObject, JalDB):
         start_time = datetime.now()
         own_transaction = not JalDB._in_transaction   # an editor's pending edits are joined, not committed
         self.start_transaction()
+        self.start_statement_reuse()
         try:
             LedgerLotStore().wipe_from(frontier)
             _ = self._exec("DELETE FROM ledger WHERE timestamp >= :frontier", [(":frontier", frontier)])
@@ -364,6 +365,7 @@ class Ledger(QObject, JalDB):
                 "GROUP BY otype, oid, book_account, account_id, asset_id)", [(":frontier", frontier)])
             JalSettings().setValue('RebuildDB', 0)
         finally:   # what was written is kept in every outcome, as it was in autocommit
+            self.stop_statement_reuse()
             if own_transaction:
                 self.commit_transaction()
         if exception_happened:

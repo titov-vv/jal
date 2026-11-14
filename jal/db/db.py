@@ -112,6 +112,8 @@ class JalDB:
     _trace_sql_requests = os.environ.get('TRACE_SQL', '').upper() == 'YES'
     _in_transaction = False   # True while an explicit transaction is open (see start_transaction())
     _operation_tally = None   # {table: [stored, skipped]} while a statement import counts what it does
+    _statements = None        # {(sql_text, forward_only): prepared query} while statements are reused
+    _statements_users = 0     # nesting depth of start_statement_reuse()
     PATH_APP = auto()
     PATH_DB_FILE = auto()
     PATH_LANG = auto()
@@ -258,18 +260,25 @@ class JalDB:
     # Current transaction will be committed if 'commit' set to true
     # Parameter 'forward_only' may be used for optimization
     # return value - QSqlQuery object (to allow iteration through result)
+    # 'reuse' takes a prepared query from the statement cache, if one is active; only for a caller that doesn't
+    # iterate the returned query, as the next call with the same text re-binds it
     @classmethod
-    def _exec(cls, sql_text, params=None, forward_only=True, commit=False):
+    def _exec(cls, sql_text, params=None, forward_only=True, commit=False, reuse=False):
         if params is None:
             params = []
         db = cls.connection()
-        query = QSqlQuery(db)
-        query.setForwardOnly(forward_only)
-        if not query.prepare(sql_text):
-            logging.error(f"SQL query preparation failure: '{query.lastError().text()}' for query '{sql_text}'")
-            return None
-        query_params = set(re.findall(r":(\w+)", sql_text, re.IGNORECASE))  # get all parameter names in query text
-        assert len(query_params) == len(params), f"SQL: wrong number of parameters {params} for '{sql_text}'"
+        key = (sql_text, forward_only) if reuse and JalDB._statements is not None else None
+        query = JalDB._statements.get(key) if key else None
+        if query is None:
+            query = QSqlQuery(db)
+            query.setForwardOnly(forward_only)
+            if not query.prepare(sql_text):
+                logging.error(f"SQL query preparation failure: '{query.lastError().text()}' for query '{sql_text}'")
+                return None
+            if key:
+                JalDB._statements[key] = query
+        assert len(cls._param_names(sql_text)) == len(params), \
+            f"SQL: wrong number of parameters {params} for '{sql_text}'"
         for param in params:
             # SQLite has no decimal type, so exact amounts live in TEXT columns and Qt has no binding for Decimal.
             # The conversion belongs here, at the single point every query binds through.
@@ -286,6 +295,8 @@ class JalDB:
         if JalDB._trace_sql_requests:
             cls._log_query(query)
         if not query.exec():
+            if key:
+                del JalDB._statements[key]
             error = JalSqlError(query.lastError().text())
             if error.custom():
                 error.show()
@@ -295,6 +306,28 @@ class JalDB:
         if commit and not cls._in_transaction:
             db.commit()
         return query
+
+    @staticmethod
+    @functools.lru_cache(maxsize=1024)
+    def _param_names(sql_text) -> set:
+        return set(re.findall(r":(\w+)", sql_text, re.IGNORECASE))
+
+    # Between start and stop, _read(), _read_to_list() and _exec(reuse=True) keep their prepared queries and
+    # re-bind them; the cache is dropped by the outermost stop, so no query outlives the connection.
+    # Set on JalDB itself: an assignment through a subclass would shadow it for that subclass only
+    @staticmethod
+    def start_statement_reuse():
+        if JalDB._statements_users == 0:
+            JalDB._statements = {}
+        JalDB._statements_users += 1
+
+    @staticmethod
+    def stop_statement_reuse():
+        JalDB._statements_users -= 1
+        if JalDB._statements_users == 0:
+            for query in JalDB._statements.values():
+                query.finish()
+            JalDB._statements = None
 
     # -------------------------------------------------------------------------------------------------------------------
     # Logs given query as SQL statement with parameters
@@ -315,14 +348,17 @@ class JalDB:
     # check_unique = True: checks that only 1 record was returned by query, otherwise returns None
     @classmethod
     def _read(cls, sql_text, params=None, named=False, check_unique=False):
-        query = cls._exec(sql_text, params)
-        if query.next():
-            res = cls._read_record(query, named=named)
-            if check_unique and query.next():
-                return None  # More than one record in result when only one expected
-            return res
-        else:
-            return None
+        query = cls._exec(sql_text, params, reuse=True)
+        try:
+            if query.next():
+                res = cls._read_record(query, named=named)
+                if check_unique and query.next():
+                    return None  # More than one record in result when only one expected
+                return res
+            else:
+                return None
+        finally:
+            query.finish()   # a reused query must not stay an active SELECT
 
     # ------------------------------------------------------------------------------------------------------------------
     # Method takes current active record of given query and returns its values as:
@@ -353,9 +389,10 @@ class JalDB:
     @classmethod
     def _read_to_list(cls, sql_text, params=None, named=False) -> list:
         result = []
-        query = cls._exec(sql_text, params)
+        query = cls._exec(sql_text, params, reuse=True)
         while query.next():
             result.append(cls._read_record(query, named=named))
+        query.finish()
         return result
 
     # ------------------------------------------------------------------------------------------------------------------

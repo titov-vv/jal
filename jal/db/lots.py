@@ -31,7 +31,7 @@ class LedgerLotStore(JalDB):
              (":account_id", account_id), (":asset_id", asset_id), (":price", format_decimal(price)),
              (":remaining_qty", format_decimal(qty)), (":c_price", format_decimal(c_price)),
              (":c_qty", format_decimal(c_qty)), (":c_fx", format_decimal(c_fx)),
-             (":slice_id", slice_id), (":acquired", acquired)])
+             (":slice_id", slice_id), (":acquired", acquired)], reuse=True)
 
     # The latest state of every non-empty slice of a position at 'timestamp', unordered:
     # (otype, oid, price, qty, c_price, c_qty, c_fx, slice_id, acquired)
@@ -98,7 +98,7 @@ class LedgerLotStore(JalDB):
              (":open_qty", format_decimal(open_qty)), (":close_otype", close_otype), (":close_oid", close_oid),
              (":close_timestamp", close_timestamp), (":close_price", format_decimal(close_price)),
              (":close_qty", format_decimal(close_qty)), (":c_price", format_decimal(c_price)),
-             (":c_qty", format_decimal(c_qty)), (":c_fx", format_decimal(c_fx))])
+             (":c_qty", format_decimal(c_qty)), (":c_fx", format_decimal(c_fx))], reuse=True)
 
     # The stored deal 'deal_id' as a dict of its columns, None if there is none
     def deal(self, deal_id: int):
@@ -357,6 +357,7 @@ def replay(store, policy=None, until=None, progress=None) -> LotEngine:
                         "JOIN operations AS o ON o.id=s.operation_id WHERE s.timestamp <= :until ORDER BY s.seq_no",
                         [(":until", until)])
     done = 0
+    JalDB.start_statement_reuse()
     try:
         while query.next():
             otype, oid, opart = JalDB._read_record(query)
@@ -365,5 +366,6 @@ def replay(store, policy=None, until=None, progress=None) -> LotEngine:
             if progress is not None:
                 progress(done, total)
     finally:
+        JalDB.stop_statement_reuse()
         query.finish()   # an active statement on the store would keep it from being detached after a stop
     return engine
