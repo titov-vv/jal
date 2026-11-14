@@ -181,6 +181,7 @@ class LotEngine:
         self.store = LedgerLotStore() if store is None else store
         self.policy = jal.db.basis_policy.JalPolicy() if policy is None else policy
         self._parked = {}
+        self._operations = {}   # {(otype, oid, opart): operation} lots and deals refer to; read only, see forget()
 
     # Open lots of a position at 'timestamp' (latest if None) in the order the policy takes them
     def lots(self, account, asset, timestamp=None) -> list:
@@ -188,11 +189,21 @@ class LotEngine:
             timestamp = Setup.MAX_TIMESTAMP
         lots = []
         for otype, oid, price, qty, p, q, fx, slice_id, acquired in self.store.lots(account.id(), asset.id(), timestamp):
-            operation = jal.db.operations.LedgerTransaction().get_operation(otype, oid,
-                                                                            jal.db.operations.Transfer.Incoming)
+            operation = self._operation(otype, oid, jal.db.operations.Transfer.Incoming)
             lots.append(jal.db.closed_trade.JalOpenTrade(operation, price, qty, adjustments=(p, q), fx=fx,
                                                          slice_id=slice_id, acquired=acquired))
         return self.policy.order(lots)
+
+    # The operation a lot or a deal refers to, loaded once for as long as the engine remembers it
+    def _operation(self, otype: int, oid: int, opart: int = 0):
+        key = (otype, oid, opart)
+        if key not in self._operations:
+            self._operations[key] = jal.db.operations.LedgerTransaction.get_operation(otype, oid, opart)
+        return self._operations[key]
+
+    # Drops the operations loaded so far: they are source data the user may edit once the run is over
+    def forget(self):
+        self._operations.clear()
 
     # What the lots of a position hold now, negative for a short one
     def position(self, account, asset) -> Decimal:
@@ -214,7 +225,7 @@ class LotEngine:
     # The deals 'operation' closed in a position, as carry_in() takes them
     def carried(self, operation, account, asset) -> list:
         deals = self.store.deals_closed_by(operation.type(), operation.id(), account.id(), asset.id())
-        return [jal.db.closed_trade.JalClosedTrade(x, store=self.store) for x in deals]
+        return [jal.db.closed_trade.JalClosedTrade(x, store=self.store, loader=self._operation) for x in deals]
 
     # Keeps the value a sending leg leaves in transit, rounded as its ledger posting is, for parked() to give back
     def park(self, operation, value: Decimal):
@@ -367,5 +378,6 @@ def replay(store, policy=None, until=None, progress=None) -> LotEngine:
                 progress(done, total)
     finally:
         JalDB.stop_statement_reuse()
+        engine.forget()
         query.finish()   # an active statement on the store would keep it from being detached after a stop
     return engine

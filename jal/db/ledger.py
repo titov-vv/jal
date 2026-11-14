@@ -291,6 +291,7 @@ class Ledger(QObject, JalDB):
         last_timestamp = 0
         self.amounts.clear()
         self.values.clear()
+        self.lots.forget()
         # First, build the sequence of operations (it takes <<1 sec, so it is fine here). Nothing is deleted yet,
         # so a sequence that can't be built leaves the existing ledger as it was.
         if not self.refresh_sequence():
@@ -367,6 +368,7 @@ class Ledger(QObject, JalDB):
             JalSettings().setValue('RebuildDB', 0)
         finally:   # what was written is kept in every outcome, as it was in autocommit
             self.stop_statement_reuse()
+            self.lots.forget()
             if own_transaction:
                 self.commit_transaction()
         if exception_happened:
