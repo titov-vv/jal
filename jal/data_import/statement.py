@@ -762,8 +762,6 @@ class Statement(QObject):   # derived from QObject to have proper string transla
                 TransferSettlement().settle_all()
         except Exception:
             db.rollback_transaction()
-            JalAsset.db_cache.clear_cache()   # Caches may reference rolled back rows
-            JalAccount.db_cache.clear_cache()
             raise
         finally:
             JalDB._operation_tally = None

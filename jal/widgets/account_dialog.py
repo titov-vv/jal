@@ -4,6 +4,7 @@ from PySide6.QtCore import Qt, Slot, QLocale, QDate, QDateTime, QTime, QTimeZone
 from PySide6.QtWidgets import QDialog, QDataWidgetMapper, QComboBox, QLineEdit, QMessageBox, QHeaderView
 from jal.ui.ui_account_edit_dlg import Ui_AccountDialog
 from jal.constants import AccountData, IconOwner, PredefinedAccountType, AccountStatus, PredefinedAgents, AssetLocation
+from jal.db.db import JalDB
 from jal.db.helpers import localize_decimal
 from jal.db.clock import local_datetime
 from jal.db.account import JalAccountCreator
@@ -271,6 +272,7 @@ class AccountDialog(QDialog):
         if not self._model.submitAll():
             logging.fatal(self.tr("Failed to create new account: ") + self._model.lastError().text())
             self._model.database().rollback()
+            JalDB.invalidate_cache()   # a cache may hold rows that were rolled back
             return
         self._account_id = self._model.last_insert_id()
         self._model.setFilter(f"id={self._account_id}")
@@ -373,6 +375,7 @@ class AccountDialog(QDialog):
 
     def reject(self) -> None:
         self._model.database().rollback()
+        JalDB.invalidate_cache()   # a cache may hold rows that were rolled back
         for _, model in reversed(self._grid_models):
             model.revertAll()
         self._model.revertAll()

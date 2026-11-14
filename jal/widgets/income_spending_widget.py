@@ -10,6 +10,7 @@ from jal.widgets.abstract_operation_details import AbstractOperationDetails
 from jal.constants import Setup
 from jal.widgets.helpers import restore_columns
 from jal.widgets.icons import JalIcon
+from jal.db.db import JalDB
 from jal.db.view_model import JalViewModel
 from jal.db.helpers import localize_decimal, db_row2dict, now_ts
 from jal.db.operations import LedgerTransaction
@@ -145,6 +146,7 @@ class IncomeSpendingWidget(AbstractOperationDetails):
                 raise RuntimeError(self.tr("Operation details submit failed: ") + self.details_model.lastError().text())
         except Exception as e:
             self.model.database().rollback()
+            JalDB.invalidate_cache()   # a cache may hold rows that were rolled back
             logging.fatal(e)
             return
         self.model.database().commit()

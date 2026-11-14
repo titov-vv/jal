@@ -180,6 +180,7 @@ class JalDB:
             db.close()
             return JalDBError(JalDBError.OutdatedSqlite)
         JalDB._in_transaction = False   # a freshly opened database has nothing pending, whatever was left behind
+        self.invalidate_cache()         # ... and nothing cached from the one that was open before
         JalDB._tables = db.tables(QSql.Tables) + db.tables(QSql.Views)  # Bitwise 'OR' somehow doesn't work here :(
         if not JalDB._tables:
             logging.info("Loading DB initialization script")
@@ -509,6 +510,7 @@ class JalDB:
         JalDB._in_transaction = False
         if not self.connection().rollback():
             logging.warning(f"Failed to rollback transaction: '{self.connection().lastError().text()}'")
+        self.invalidate_cache()   # a cache may hold rows that were rolled back
 
     def commit(self):
         if not JalDB._in_transaction:

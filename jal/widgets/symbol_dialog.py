@@ -259,6 +259,7 @@ class SymbolDialog(QDialog):
         if not self._model.submitAll():
             logging.fatal(self.tr("Failed to create new asset: ") + self._model.lastError().text())
             self._model.database().rollback()
+            JalDB.invalidate_cache()   # a cache may hold rows that were rolled back
             return
         self._asset_id = self._model.last_insert_id()
         self._model.setFilter(f"id={self._asset_id}")
@@ -411,6 +412,7 @@ class SymbolDialog(QDialog):
 
     def reject(self) -> None:
         self._model.database().rollback()
+        JalDB.invalidate_cache()   # a cache may hold rows that were rolled back
         for _, model in reversed(self._grid_models):
             model.revertAll()
         self._model.revertAll()

@@ -1,5 +1,5 @@
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_taxes
-from jal.db.db import JalDB
+from jal.db.db import JalDB, JalDBError
 from jal.db.cache import DbCache, UniversalCache
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
@@ -46,3 +46,24 @@ def test_owner_cache_is_not_registered(prepare_db):
     JalDB.invalidate_cache()
     assert cache not in DbCache._all
     assert cache._cache
+
+
+# A row written inside a transaction and cached is gone from the cache once the transaction is rolled back
+def test_rollback_empties_the_caches(prepare_db_taxes):
+    name = JalAccount(1).name()
+    JalDB().start_transaction()
+    JalDB._exec("UPDATE accounts SET name='Pending' WHERE id=1")
+    JalAccount.db_cache.clear_cache()
+    assert JalAccount(1).name() == 'Pending'
+    JalDB().rollback_transaction()
+    assert JalAccount(1).name() == name
+
+
+# Opening a database leaves nothing cached from the one that was open before
+def test_opening_a_database_empties_the_caches(prepare_db_taxes):
+    name = JalAccount(1).name()
+    JalDB._exec("UPDATE accounts SET name='Renamed' WHERE id=1", commit=True)
+    assert JalAccount(1).name() == name
+    JalDB.connection().close()
+    assert JalDB().init_db().code == JalDBError.NoError
+    assert JalAccount(1).name() == 'Renamed'

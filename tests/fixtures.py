@@ -47,9 +47,7 @@ def prepare_db(project_root, tmp_path, data_path):
         app = QApplication.instance()
 
     # Activate db connection
-    # Each test gets a fresh db file - stale cache entries would leak stale rows in
-    JalDB.invalidate_cache()
-    forget_columns()          # ... and so are the column widths of the tables that were open
+    forget_columns()          # the column widths of the tables that were open before
     error = JalDB().init_db()
     assert error.code == JalDBError.NoError
     db = QSqlDatabase.database(Setup.DB_CONNECTION)
