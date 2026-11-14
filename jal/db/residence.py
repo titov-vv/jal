@@ -1,7 +1,7 @@
 from bisect import bisect_right
 from jal.db.db import JalDB
 from jal.db.helpers import day_begin, now_ts
-from jal.universal_cache import UniversalCache
+from jal.db.cache import DbCache
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -16,11 +16,7 @@ from jal.universal_cache import UniversalCache
 # place only, the residence dialog, which drops the cache when it commits; restoring a database asks for a restart,
 # so nothing else can leave the cache stale.
 class JalResidence(JalDB):
-    db_cache = UniversalCache()
-
-    @classmethod
-    def invalidate_cache(cls) -> None:
-        cls.db_cache.clear_cache()
+    db_cache = DbCache()
 
     # Returns the timeline as two parallel lists: the dates rows are in force from, and the (currency, country,
     # timezone) each of them states - with the facts of the earlier rows already carried forward.

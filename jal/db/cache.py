@@ -1,3 +1,7 @@
+# Rules for cached database data:
+# 1. A copy of source data kept for the life of the process lives in a DbCache, owned by the class that owns the table.
+# 2. A writer reloads its own key with update_data(); a write that crosses classes calls JalDB.invalidate_cache().
+# 3. A memo that dies with its owner (a rebuild, a model, a fetch) is a plain dict or a UniversalCache on that owner.
 import inspect
 from typing import Any, Callable, Hashable, Tuple
 
@@ -74,3 +78,25 @@ class UniversalCache:
             hash(args)
         except TypeError:
             raise ValueError("All elements must be hashable")
+
+
+class DbCache(UniversalCache):
+    """A cache of database data, emptied together with all the others by clear_all()."""
+    _all = []        # every DbCache of the application
+    _also = []       # what else clear_all() calls: caches of database data that are kept outside a DbCache
+
+    def __init__(self):
+        super().__init__()
+        DbCache._all.append(self)
+
+    @staticmethod
+    def also_clear(func: Callable) -> None:
+        """Register a function for clear_all() to call"""
+        DbCache._also.append(func)
+
+    @staticmethod
+    def clear_all() -> None:
+        for cache in DbCache._all:
+            cache.clear_cache()
+        for func in DbCache._also:
+            func()

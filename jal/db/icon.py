@@ -3,6 +3,7 @@ from PySide6.QtCore import Qt, QByteArray, QRectF, QSize
 from PySide6.QtGui import QColor, QFontMetrics, QIcon, QPainter, QPainterPath, QPixmap
 from PySide6.QtWidgets import QApplication
 from jal.constants import IconOwner, IconSource, PredefinedAsset
+from jal.db.cache import DbCache
 from jal.db.db import JalDB
 from jal.db.settings import JalSettings
 from jal.widgets.icons import JalIcon
@@ -38,10 +39,8 @@ def _contrast(first: QColor, second: QColor) -> float:
 #   bytes + <source>    here it is
 #
 # Everything here is a classmethod: there is one store, not one per element, and a caller that paints a grid must
-# not pay for an object per row. The single instance behind _cached exists only to put this class into the list
-# JalDB.invalidate_cache() walks, which is kept by instance and not by class.
+# not pay for an object per row.
 class JalIcons(JalDB):
-    _cached = None      # the one instance that carries this class into JalDB's cache invalidation
     _present = None     # {(entity, item_id)} of the elements that have an image, read in one query
     _blank = None       # {(entity, item_id)} of the elements the user decided show no picture at all
     _currencies = None  # {listing id: ticker} of every listing of a currency, read in one query
@@ -80,9 +79,9 @@ class JalIcons(JalDB):
     def entity_of_table(cls, table: str):
         return cls._ENTITY_OF_TABLE.get(table)
 
-    # A classmethod so that it can be called on the class as well as on the instance JalDB.invalidate_cache() holds
+    # Drops everything read from the database; called through JalDB.invalidate_cache()
     @classmethod
-    def invalidate_cache(cls) -> None:
+    def _forget(cls) -> None:
         cls._present = None
         cls._blank = None
         cls._currencies = None
@@ -104,24 +103,12 @@ class JalIcons(JalDB):
                 return cls.INDENT_DEFAULT   # No database open yet - a view may be built before it is
         return cls._indent
 
-    # JalIcons maintains single cache available for all instances
-    @classmethod
-    def class_cache(cls) -> True:
-        return True
-
-    # Puts this class into the list JalDB.invalidate_cache() walks, once - everything cached below is dropped by it
-    @classmethod
-    def _register(cls) -> None:
-        if cls._cached is None:
-            cls._cached = cls(cached=True)
-
     # The set of elements that have an image to paint. One query for the whole application, so the answer that
     # nearly every row gets - "this one has none" - never reaches the database. The elements the user asked to
     # show nothing at all are separated out by the same pass: they are the same rows, told apart by 'source'.
     @classmethod
     def _known(cls) -> set:
         if cls._present is None:
-            cls._register()
             cls._present, cls._blank = set(), set()
             query = cls._exec("SELECT entity, item_id, length(image), source FROM icons")
             while query.next():
@@ -143,7 +130,6 @@ class JalIcons(JalDB):
     @classmethod
     def _currency_tickers(cls) -> dict:
         if cls._currencies is None:
-            cls._register()
             cls._currencies = {}
             query = cls._exec("SELECT s.id, s.symbol FROM asset_symbol AS s "
                               "LEFT JOIN assets AS a ON a.id=s.asset_id WHERE a.type_id=:money",
@@ -351,3 +337,6 @@ class JalIcons(JalDB):
             pixmap.fill(Qt.transparent)
             cls._pixmaps[key] = pixmap
         return QIcon(cls._pixmaps[key])
+
+
+DbCache.also_clear(JalIcons._forget)

@@ -6,6 +6,7 @@ from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtWidgets import (QApplication, QAbstractItemView, QDialog, QTableView, QTreeView, QDateTimeEdit,
                                QStyle, QSplitter, QStyledItemDelegate)
 from jal.constants import Setup
+from jal.db.cache import DbCache
 from jal.db.clock import local_moment, local_reading, local_time, window_bound
 from jal.db.icon import JalIcons
 from jal.db.settings import JalSettings
@@ -101,6 +102,8 @@ class RowPadding:
     @classmethod
     def invalidate(cls) -> None:
         cls._current = None
+
+DbCache.also_clear(RowPadding.invalidate)
 
 # The height a row of the given view gets: the font the view actually uses plus the padding chosen above.
 # A row that shows several lines of text pays for the lines, not for the padding again.
@@ -413,6 +416,8 @@ class DateFormat:
             if qt_format in display_format:
                 return display_format.replace(qt_format, cls.date(qt=True))
         return display_format
+
+DbCache.also_clear(DateFormat.invalidate)
 
 
 # -----------------------------------------------------------------------------------------------------------------------

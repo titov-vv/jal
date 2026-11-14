@@ -11,7 +11,7 @@ from jal.widgets.helpers import ts2dt, restore_columns, grid_row_height
 from jal.widgets.delegates import ColoredAmountsDelegate, TickerIconsDelegate, TransactionTieDelegate, \
     long_fraction, ROW_LINES_ROLE, TRANSACTION_ROLE, TAX_OVERRIDE_ROLE
 from jal.widgets.theme import Theme, Meaning
-from jal.universal_cache import UniversalCache
+from jal.db.cache import UniversalCache
 
 #-----------------------------------------------------------------------------------------------------------------------
 

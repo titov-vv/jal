@@ -3,7 +3,7 @@ from hashlib import sha256
 from jal.constants import AssetLocation
 from jal.db.db import JalDB
 from jal.db.helpers import now_ts
-from jal.universal_cache import UniversalCache
+from jal.db.cache import DbCache
 
 
 # Chains where an address is a hex string and its case carries no meaning (EIP-55 checksum casing is
@@ -225,10 +225,10 @@ def is_valid_address(location_id: int, address: str) -> bool:
 # out of the asset tables entirely. Removing a row un-blacklists the token, so the next fetch imports it.
 # The object is addressed by the chain + contract address pair, as there is no id known before the first import.
 class JalTokenBlacklist(JalDB):
-    db_cache = UniversalCache()
+    db_cache = DbCache()
 
     def __init__(self, location_id: int = 0, address: str = '') -> None:
-        super().__init__(cached=True)
+        super().__init__()
         try:
             self._location_id = int(location_id)
         except (TypeError, ValueError):
@@ -239,16 +239,8 @@ class JalTokenBlacklist(JalDB):
             self._data = {}
         self._id = self._data.get('id', 0)
 
-    def invalidate_cache(self):
-        self.db_cache.clear_cache()
-
-    # JalTokenBlacklist maintains single cache available for all instances
-    @classmethod
-    def class_cache(cls) -> True:
-        return True
-
     # Loads a single 'token_blacklist' row (as a dict) or None if the token isn't blacklisted.
-    # Used as the loader function behind the shared UniversalCache (keyed by chain + address).
+    # Used as the loader function behind the shared DbCache (keyed by chain + address).
     @classmethod
     def _load_entry(cls, location_id: int, address: str) -> dict:
         return cls._read("SELECT * FROM token_blacklist WHERE location_id=:location_id AND address=:address",

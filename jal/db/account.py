@@ -14,11 +14,11 @@ from jal.db.country import JalCountry
 from jal.db.tag import JalTag
 from jal.db.token_blacklist import normalize_address, is_valid_address
 from jal.db.helpers import localize_amount, now_ts
-from jal.universal_cache import UniversalCache
+from jal.db.cache import DbCache
 
 
 class JalAccount(JalDB):
-    db_cache = UniversalCache()
+    db_cache = DbCache()
     MONEY_FLOW = 1
     ASSETS_FLOW = 2
 
@@ -41,7 +41,7 @@ class JalAccount(JalDB):
     _ADDRESSED_TYPES = [PredefinedAccountType.Wallet, PredefinedAccountType.Staking]
 
     def __init__(self, account_id: int = 0) -> None:
-        super().__init__(cached=True)
+        super().__init__()
         self._id = account_id
         self._data = self.db_cache.get_data(self._load_account_data, (self._id,))  # Load account data from cache or DB
         self._name = self._data['name'] if self._data is not None else None
@@ -91,17 +91,9 @@ class JalAccount(JalDB):
         except (KeyError, TypeError, ValueError):
             self._closed_on = 0
 
-    def invalidate_cache(self):
-        self.db_cache.clear_cache()
-
-    # JalAccount maintains single cache available for all instances
-    @classmethod
-    def class_cache(cls) -> True:
-        return True
-
     # Loads a single account row (as a dict) from the DB by its id, or None if there is no such account.
     # The per-account attributes from 'account_data' are attached under the 'data' key as {datatype: value}.
-    # Used as the loader function behind the shared UniversalCache (keyed by account id).
+    # Used as the loader function behind the shared DbCache (keyed by account id).
     @classmethod
     def _load_account_data(cls, account_id: int) -> dict:
         data = cls._read("SELECT * FROM accounts WHERE id=:id", [(":id", account_id)], named=True)
@@ -702,7 +694,7 @@ class JalAccountCreator(JalDB):
                  precision: int = Setup.DEFAULT_ACCOUNT_PRECISION,
                  account_type: int = PredefinedAccountType.Cash,
                  address: str = '', chain: int = AssetLocation.UNDEFINED) -> None:
-        super().__init__(cached=False)
+        super().__init__()
         # Chain and address are checked before anything is written: the account row is inserted and committed
         # below, so a failure raised later would leave a half-created account behind.
         address = self._validated_address(account_type, address, chain)

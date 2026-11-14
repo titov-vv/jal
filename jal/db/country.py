@@ -1,13 +1,13 @@
 from jal.db.db import JalDB
 from jal.db.settings import JalSettings
-from jal.universal_cache import UniversalCache
+from jal.db.cache import DbCache
 
 
 class JalCountry(JalDB):
-    db_cache = UniversalCache()
+    db_cache = DbCache()
 
     def __init__(self, country_id: int = 0, data: dict = None, search=False) -> None:
-        super().__init__(cached=True)
+        super().__init__()
         self._id = country_id
         if self._valid_data(data):
             if search:
@@ -17,23 +17,15 @@ class JalCountry(JalDB):
         self._code = self._data['code'] if self._data is not None else None
         self._iso_code = self._data['iso_code'] if self._data is not None else None
 
-    def invalidate_cache(self):
-        self.db_cache.clear_cache()
-
-    # JalCountry maintains single cache available for all instances
-    @classmethod
-    def class_cache(cls) -> True:
-        return True
-
     # Loads a single country row (as a dict) from the DB by its id, or None if there is no such country.
     # 'name' comes from the countries_ext view already localized to the current interface language.
-    # Used as the loader function behind the shared UniversalCache (keyed by country id).
+    # Used as the loader function behind the shared DbCache (keyed by country id).
     @classmethod
     def _load_country_data(cls, country_id: int) -> dict:
         return cls._read("SELECT * FROM countries_ext WHERE id=:id", [(":id", country_id)], named=True)
 
     # Loads a country name in a specific (non-interface) language, or None if not translated.
-    # Cached in the same shared UniversalCache (keyed by country id + language), so it is dropped
+    # Cached in the same shared DbCache (keyed by country id + language), so it is dropped
     # together with the rest of the cache on invalidate_cache() - e.g. on an interface language change.
     @classmethod
     def _load_country_name(cls, country_id: int, language: str) -> str:

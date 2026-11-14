@@ -10,7 +10,7 @@ from os.path import dirname, abspath, join
 JAL_SUBMODULES = {
     'compile_ui', 'constants', 'create_pro', 'data_export', 'data_import', 'db',
     'img', 'languages', 'net', 'reports', 'run_designer', 'ui',
-    'universal_cache', 'updates', 'widgets',
+    'updates', 'widgets',
 }
 
 ROOT_DIR = dirname(dirname(abspath(__file__)))

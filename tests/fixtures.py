@@ -48,12 +48,7 @@ def prepare_db(project_root, tmp_path, data_path):
 
     # Activate db connection
     # Each test gets a fresh db file - stale cache entries would leak stale rows in
-    JalAsset.db_cache.clear_cache()
-    JalSymbol.db_cache.clear_cache()
-    JalTokenBlacklist.db_cache.clear_cache()
-    JalResidence.invalidate_cache()
-    JalIcons.invalidate_cache()
-    DateFormat.invalidate()   # the date layout is cached from the settings of the database that was open before
+    JalDB.invalidate_cache()
     forget_columns()          # ... and so are the column widths of the tables that were open
     error = JalDB().init_db()
     assert error.code == JalDBError.NoError

@@ -9,7 +9,7 @@ from jal.db.country import JalCountry
 from jal.db.residence import JalResidence
 from jal.db.tag import JalTag
 from jal.widgets.helpers import ts2d
-from jal.universal_cache import UniversalCache
+from jal.db.cache import DbCache
 
 
 # Helper function to convert db timestamp string into an integer and replace it as 0 if error happens
@@ -22,14 +22,14 @@ def db_timestamp2int(timestamp_string: str) -> int:
 
 
 class JalAsset(JalDB):
-    db_cache = UniversalCache()
+    db_cache = DbCache()
     # Quotes already reported as missing, as the texts that were logged - see _report_missing_quote().
     # Emptied whenever quotes are stored, as that is the only thing that may turn a missing quote into a present one
     # and thus the only moment when a repeat of the message could carry new information.
     _missing_quotes = set()
 
     def __init__(self, asset_id: int = 0) -> None:
-        super().__init__(cached=True)
+        super().__init__()
         try:
             self._id = int(asset_id)
         except (TypeError, ValueError):
@@ -96,15 +96,6 @@ class JalAsset(JalDB):
     # returns a list of IDs of given type that are defined for this asset
     def _get_id(self, id_type: int) -> list:
         return [value for (key, value) in self._data['ID'].items() if key[1] == id_type]
-
-    def invalidate_cache(self):
-        self.db_cache.clear_cache()
-        JalAsset._missing_quotes.clear()   # the data behind the reported misses is being re-read as well
-
-    # JalAsset maintains single cache available for all instances
-    @classmethod
-    def class_cache(cls) -> True:
-        return True
 
     # Creates a JalAsset object from a symbol id by resolving the owning asset (see also JalSymbol.asset())
     @classmethod
@@ -844,15 +835,17 @@ class JalAsset(JalDB):
         return JalResidence.currency(timestamp)
 
 
+DbCache.also_clear(JalAsset._missing_quotes.clear)   # the data behind the reported misses is re-read as well
+
 # ----------------------------------------------------------------------------------------------------------------------
 # Stages a brand-new asset (assets row + symbol(s) + identifiers) before it becomes a real JalAsset.
 # Deliberately NOT a JalAsset subclass: JalAsset carries a shared, class-level cache keyed by asset id
-# (db_cache / class_cache()), and touching that cache mid-assembly would risk handing an incomplete asset
+# (db_cache), and touching that cache mid-assembly would risk handing an incomplete asset
 # to unrelated code that just does JalAsset(id) for some other purpose. This class talks to the DB directly
 # and only ever creates a real, cacheable JalAsset once commit() is called.
 class JalAssetCreator(JalDB):
     def __init__(self, type_id: int, name: str, country: str = '') -> None:
-        super().__init__(cached=False)
+        super().__init__()
         query = self._exec(
             "INSERT INTO assets (type_id, full_name, country_id) "
             "VALUES (:type, :full_name, coalesce((SELECT id FROM countries WHERE code=:country), 0))",

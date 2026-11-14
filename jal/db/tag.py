@@ -1,26 +1,18 @@
 from jal.db.db import JalDB
 from jal.constants import AccountData, AssetData
-from jal.universal_cache import UniversalCache
+from jal.db.cache import DbCache
 
 class JalTag(JalDB):
-    db_cache = UniversalCache()
+    db_cache = DbCache()
 
     def __init__(self, tag_id: int = 0) -> None:
-        super().__init__(cached=True)
+        super().__init__()
         self._id = tag_id
         self._data = self.db_cache.get_data(self._load_tag_data, (self._id,))  # Load tag data from cache or DB
         self._name = self._data['tag'] if self._data is not None else ''
 
-    def invalidate_cache(self):
-        self.db_cache.clear_cache()
-
-    # JalTag maintains single cache available for all instances
-    @classmethod
-    def class_cache(cls) -> True:
-        return True
-
     # Loads a single tag row (as a dict) from the DB by its id, or None if there is no such tag.
-    # Used as the loader function behind the shared UniversalCache (keyed by tag id).
+    # Used as the loader function behind the shared DbCache (keyed by tag id).
     @classmethod
     def _load_tag_data(cls, tag_id: int) -> dict:
         return cls._read("SELECT * FROM tags WHERE id=:id", [(":id", tag_id)], named=True)

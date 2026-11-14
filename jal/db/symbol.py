@@ -3,7 +3,7 @@ from jal.constants import SymbolId, BookAccount, AssetLocation
 from jal.db.db import JalDB
 from jal.db.asset import JalAsset
 from jal.db.receivable import JalReceivable
-from jal.universal_cache import UniversalCache
+from jal.db.cache import DbCache
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -13,10 +13,10 @@ from jal.universal_cache import UniversalCache
 # the owning asset is available via asset(). An empty object (id 0, or an unknown/None id) has no asset - asset()
 # returns JalAsset(0) - which keeps callers that pass a NULL symbol_id (e.g. cash transfers) working.
 class JalSymbol(JalDB):
-    db_cache = UniversalCache()
+    db_cache = DbCache()
 
     def __init__(self, symbol_id: int = 0) -> None:
-        super().__init__(cached=True)
+        super().__init__()
         try:
             self._id = int(symbol_id)
         except (TypeError, ValueError):
@@ -27,14 +27,6 @@ class JalSymbol(JalDB):
         self._currency = self._data.get('currency_id', None)
         self._location = self._data.get('location_id', 0)
         self._active = self._data.get('active', 0)
-
-    def invalidate_cache(self):
-        self.db_cache.clear_cache()
-
-    # JalSymbol maintains single cache available for all instances
-    @classmethod
-    def class_cache(cls) -> True:
-        return True
 
     # Returns a list of {"symbol": JalSymbol, "currency": currency_id} that describes symbols involved into ledger
     # operations between begin and end timestamps or that have non-zero value in ledger, together with the symbols of
@@ -145,7 +137,7 @@ class JalSymbol(JalDB):
         return pairs
 
     # Loads a single asset_symbol row (as a dict) plus its identifiers (in ['ID'] keyed by id_type), or an empty
-    # dict if there is no such symbol. Used as the loader behind the shared UniversalCache (keyed by symbol id).
+    # dict if there is no such symbol. Used as the loader behind the shared DbCache (keyed by symbol id).
     @classmethod
     def _load_symbol_data(cls, symbol_id: int) -> dict:
         data = {}

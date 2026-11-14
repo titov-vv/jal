@@ -7,7 +7,6 @@ import re
 import logging
 import functools
 import importlib
-import weakref
 import sqlparse
 from configparser import ConfigParser, Error as ConfigError
 from packaging.version import Version
@@ -15,6 +14,7 @@ from PySide6.QtCore import QStandardPaths
 from PySide6.QtWidgets import QApplication, QMessageBox
 from PySide6.QtSql import QSql, QSqlDatabase, QSqlQuery, QSqlTableModel
 from jal.constants import Setup, PredefinedAgents, PredefinedCategory
+from jal.db.cache import DbCache
 from jal.db.helpers import format_decimal
 
 
@@ -106,8 +106,6 @@ class JalDB:
         "UNION ALL SELECT f.symbol_id, f.account_id, o.timestamp FROM fees AS f " \
         "LEFT JOIN operations AS o ON o.id=f.operation_id"
     _tables = []
-    _class_caches = {}                               # {class with a class-level cache: its first instance}
-    _instance_caches = weakref.WeakValueDictionary()  # {id: instance with a cache of its own}, while alive
     _sql_call_count = 0
     _trace_sql_requests = os.environ.get('TRACE_SQL', '').upper() == 'YES'
     _in_transaction = False   # True while an explicit transaction is open (see start_transaction())
@@ -122,14 +120,7 @@ class JalDB:
     PATH_TAX_REPORT_TEMPLATE = auto()
     PATH_TEMPLATES = auto()
 
-    # By default, db objects don't cache data. But if and object may cache db data we need to track it so parameter
-    # 'cached' to be set to True. Such objects should implement invalidate_cache(), class_cache() methods also.
-    def __init__(self, cached=False, **kwargs):
-        if cached:   # one instance reaches a class-level cache, so only the first is kept
-            if self.class_cache():
-                JalDB._class_caches.setdefault(type(self), self)
-            else:
-                JalDB._instance_caches[id(self)] = self
+    def __init__(self, **kwargs):
         super().__init__()
 
     @staticmethod
@@ -396,14 +387,10 @@ class JalDB:
         return result
 
     # ------------------------------------------------------------------------------------------------------------------
-    def invalidate_cache(self):
-        for item in list(JalDB._class_caches.values()) + list(JalDB._instance_caches.values()):
-            item.invalidate_cache()
-
-    # Method returns true if data are cached on a class level, not in every instance
-    @classmethod
-    def class_cache(cls) -> True:
-        return False
+    # Empties every cache of database data (see jal/db/cache.py), whichever class it is called on
+    @staticmethod
+    def invalidate_cache():
+        DbCache.clear_all()
 
     # ------------------------------------------------------------------------------------------------------------------
     # Set synchronous mode NORMAL if synchronous == True and OFF it otherwise
