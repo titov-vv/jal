@@ -836,3 +836,28 @@ def test_every_operation_class_declares_its_rank():
     payment_family = {name for name, rank in ranks.items() if rank == AssetPayment.LedgerRank}
     assert payment_family == {'AssetPayment', 'AssetIncome', 'ChainAction'}
     assert len(set(ranks.values())) == len(ranks) - len(payment_family) + 1
+
+
+#-----------------------------------------------------------------------------------------------------------------------
+# A rebuild runs in one transaction of its own and leaves none open behind it
+def test_a_rebuild_commits_its_own_transaction(two_accounts_and_an_asset):
+    create_trades(1, [(_EARLIER, _EARLIER, 4, Decimal('10'), Decimal('100'), Decimal('0'))])
+
+    Ledger().rebuild(from_timestamp=0)
+
+    assert not JalDB._in_transaction
+    assert JalDB._read("SELECT COUNT(*) FROM ledger") > 0
+
+
+# An editor's pending edits are joined: the rebuild leaves the transaction open and commits nothing of it
+def test_a_rebuild_inside_an_open_transaction_leaves_it_undecided(two_accounts_and_an_asset):
+    JalDB().start_transaction()
+    create_trades(1, [(_EARLIER, _EARLIER, 4, Decimal('10'), Decimal('100'), Decimal('0'))])
+
+    Ledger().rebuild(from_timestamp=0)
+
+    assert JalDB._in_transaction
+    assert JalDB._read("SELECT COUNT(*) FROM ledger") > 0
+    JalDB().rollback_transaction()
+    assert JalDB._read("SELECT COUNT(*) FROM trades") == 0
+    assert JalDB._read("SELECT COUNT(*) FROM ledger") == 0

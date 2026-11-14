@@ -315,51 +315,57 @@ class Ledger(QObject, JalDB):
         self.show_progress.emit(True)
         logging.info(self.tr("Re-building ledger since: ") + f"{ts2dt(frontier)}")
         start_time = datetime.now()
-        LedgerLotStore().wipe_from(frontier)
-        _ = self._exec("DELETE FROM ledger WHERE timestamp >= :frontier", [(":frontier", frontier)])
-        _ = self._exec("DELETE FROM ledger_totals WHERE timestamp >= :frontier", [(":frontier", frontier)])
+        own_transaction = not JalDB._in_transaction   # an editor's pending edits are joined, not committed
+        self.start_transaction()
         try:
-            # 'seq_no' is the processing order itself, assigned when the rows were stored above
-            query = self._exec("SELECT o.otype, s.operation_id AS oid, s.opart, s.timestamp, s.account_id "
-                               "FROM ledger_sequence AS s JOIN operations AS o ON o.id=s.operation_id "
-                               "WHERE s.timestamp >= :frontier ORDER BY s.seq_no", [(":frontier", frontier)])
-            while query.next():
-                data = self._read_record(query, named=True)
-                last_timestamp = data['timestamp']
-                operation = LedgerTransaction().get_operation(data['otype'], data['oid'], data['opart'])
-                operation.processLedger(self)
-                self.update_progress.emit(100.0 * query.at() / operations_count)
-                QApplication.processEvents()
-                if self._cancelled:
-                    exception_happened = True
-                    logging.warning(self.tr("Interrupted by user"))
-                    break
-        except LedgerError as e:
-            # An expected stop: the data is sound but something the ledger needs isn't there yet (a quote to value
-            # an operation, a setting that isn't filled in, ...). The ledger simply ends earlier than it might, so
-            # the user gets the reason and what to do about it - not a traceback of a crash.
-            self.stopped_by = e
-            if "pytest" in sys.modules:  # Throw exception if we are in test mode or handle it if we are live
-                raise e
-            incomplete_reason = str(e)
-        except Exception as e:
-            if "pytest" in sys.modules:  # Throw exception if we are in test mode or handle it if we are live
-                raise e
-            exception_happened = True
-            logging.error(f"{traceback.format_exc()}")  # Full log for anything unexpected
-        finally:
-            self.show_progress.emit(False)
-        # Fill ledger totals values
-        # NOFIXME: Table 'ledger_totals' may be replaced by a view. But it will impact performance heavily as
-        # this view won't have indices for optimal performance
-        _ = self._exec(
-            "INSERT INTO ledger_totals"
-            "(otype, oid, timestamp, book_account, asset_id, account_id, amount_acc, value_acc) "
-            "SELECT otype, oid, timestamp, book_account, asset_id, account_id, amount_acc, value_acc "
-            "FROM ledger "
-            "WHERE id IN (SELECT MAX(id) FROM ledger WHERE timestamp >= :frontier "
-            "GROUP BY otype, oid, book_account, account_id, asset_id)", [(":frontier", frontier)])
-        JalSettings().setValue('RebuildDB', 0)
+            LedgerLotStore().wipe_from(frontier)
+            _ = self._exec("DELETE FROM ledger WHERE timestamp >= :frontier", [(":frontier", frontier)])
+            _ = self._exec("DELETE FROM ledger_totals WHERE timestamp >= :frontier", [(":frontier", frontier)])
+            try:
+                # 'seq_no' is the processing order itself, assigned when the rows were stored above
+                query = self._exec("SELECT o.otype, s.operation_id AS oid, s.opart, s.timestamp, s.account_id "
+                                   "FROM ledger_sequence AS s JOIN operations AS o ON o.id=s.operation_id "
+                                   "WHERE s.timestamp >= :frontier ORDER BY s.seq_no", [(":frontier", frontier)])
+                while query.next():
+                    data = self._read_record(query, named=True)
+                    last_timestamp = data['timestamp']
+                    operation = LedgerTransaction().get_operation(data['otype'], data['oid'], data['opart'])
+                    operation.processLedger(self)
+                    self.update_progress.emit(100.0 * query.at() / operations_count)
+                    QApplication.processEvents()
+                    if self._cancelled:
+                        exception_happened = True
+                        logging.warning(self.tr("Interrupted by user"))
+                        break
+            except LedgerError as e:
+                # An expected stop: the data is sound but something the ledger needs isn't there yet (a quote to value
+                # an operation, a setting that isn't filled in, ...). The ledger simply ends earlier than it might, so
+                # the user gets the reason and what to do about it - not a traceback of a crash.
+                self.stopped_by = e
+                if "pytest" in sys.modules:  # Throw exception if we are in test mode or handle it if we are live
+                    raise e
+                incomplete_reason = str(e)
+            except Exception as e:
+                if "pytest" in sys.modules:  # Throw exception if we are in test mode or handle it if we are live
+                    raise e
+                exception_happened = True
+                logging.error(f"{traceback.format_exc()}")  # Full log for anything unexpected
+            finally:
+                self.show_progress.emit(False)
+            # Fill ledger totals values
+            # NOFIXME: Table 'ledger_totals' may be replaced by a view. But it will impact performance heavily as
+            # this view won't have indices for optimal performance
+            _ = self._exec(
+                "INSERT INTO ledger_totals"
+                "(otype, oid, timestamp, book_account, asset_id, account_id, amount_acc, value_acc) "
+                "SELECT otype, oid, timestamp, book_account, asset_id, account_id, amount_acc, value_acc "
+                "FROM ledger "
+                "WHERE id IN (SELECT MAX(id) FROM ledger WHERE timestamp >= :frontier "
+                "GROUP BY otype, oid, book_account, account_id, asset_id)", [(":frontier", frontier)])
+            JalSettings().setValue('RebuildDB', 0)
+        finally:   # what was written is kept in every outcome, as it was in autocommit
+            if own_transaction:
+                self.commit_transaction()
         if exception_happened:
             logging.error(self.tr("Exception happened. Ledger is incomplete. Please correct errors listed in log"))
         elif incomplete_reason:
