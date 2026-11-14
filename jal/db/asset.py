@@ -1,6 +1,7 @@
 import logging
 import math
 from decimal import Decimal, InvalidOperation
+from types import SimpleNamespace
 from jal.constants import AssetLocation, AssetData, BookAccount, PredefinedAsset, SymbolId, IconOwner, CorporateActionType
 from jal.db.db import JalDB
 from jal.db.clock import local_moment, local_reading
@@ -34,36 +35,51 @@ class JalAsset(JalDB):
             self._id = int(asset_id)
         except (TypeError, ValueError):
             self._id = 0
-        self._data = self.db_cache.get_data(self._load_asset_data, (self._id,))  # Load asset data from cache or DB
-        self._type = self._data.get('type_id', None)
-        self._name = self._data.get('full_name', '')
-        self._country = JalCountry(self._data.get('country_id', 0))
-        self._expiry = int(self._data.get('data', {}).get(AssetData.ExpiryDate, 0))
-        self._principal = self._data.get('data', {}).get(AssetData.PrincipalValue, '')
-        self._principal = Decimal(self._principal) if self._principal else Decimal('0')
-        self._coin_id = self._data.get('data', {}).get(AssetData.CoinGeckoId, '')
-        self._protocol = self._data.get('data', {}).get(AssetData.Protocol, '')
+        self._attach()
+
+    # Takes the cached record of this asset, read from the database again first if 'reload' is set
+    def _attach(self, reload: bool = False) -> None:
+        read = self.db_cache.update_data if reload else self.db_cache.get_data
+        self._record = read(self._load_asset_data, (self._id,))
+        self._data = self._record.row
+
+    # The asset as it is cached, parsed once: 'row' is its 'assets' row with the listings, identifiers and
+    # 'asset_data' attributes attached (an empty dict if there is no such asset), the rest are the values read
+    # from it. Read-only. Keyed by asset id.
+    def _load_asset_data(self, asset_id: int) -> SimpleNamespace:
+        row = self._load_asset_row(asset_id)
+        attributes = row.get('data', {})
+        record = SimpleNamespace(row=row)
+        record.type = row.get('type_id', None)
+        record.name = row.get('full_name', '')
+        record.country_id = row.get('country_id', 0)
+        record.expiry = int(attributes.get(AssetData.ExpiryDate, 0))
+        principal = attributes.get(AssetData.PrincipalValue, '')
+        record.principal = Decimal(principal) if principal else Decimal('0')
+        record.coin_id = attributes.get(AssetData.CoinGeckoId, '')
+        record.protocol = attributes.get(AssetData.Protocol, '')
         try:
-            self._pegged_to = int(self._data.get('data', {}).get(AssetData.PeggedTo, 0))
+            record.pegged_to = int(attributes.get(AssetData.PeggedTo, 0))
         except (ValueError, TypeError):
-            self._pegged_to = 0
+            record.pegged_to = 0
         # Anything unreadable is taken as "not rebasing": the flag adds quantity to a position, so the safe reading
         # of a value nobody can make sense of is the one that changes nothing.
         try:
-            self._rebasing = int(self._data.get('data', {}).get(AssetData.Rebasing, 0)) != 0
+            record.rebasing = int(attributes.get(AssetData.Rebasing, 0)) != 0
         except (ValueError, TypeError):
-            self._rebasing = False
+            record.rebasing = False
         # Left as None when absent or unreadable - "not known" rather than "zero", see decimals()
         try:
-            self._decimals = int(self._data['data'][AssetData.Decimals])
+            record.decimals = int(attributes[AssetData.Decimals])
         except (KeyError, ValueError, TypeError):
-            self._decimals = None
+            record.decimals = None
         try:
-            self._tag = JalTag(int(self._data.get('data', {}).get(AssetData.Tag, 0)))
-        except (AttributeError, ValueError, TypeError):
-            self._tag = JalTag(0)
+            record.tag_id = int(attributes.get(AssetData.Tag, 0))
+        except (ValueError, TypeError):
+            record.tag_id = 0
+        return record
 
-    def _load_asset_data(self, asset_id: int) -> dict:
+    def _load_asset_row(self, asset_id: int) -> dict:
         asset_data = {}
         query = self._exec("SELECT * FROM assets WHERE id=:id", [(":id", asset_id)])
         if query.next():
@@ -110,10 +126,10 @@ class JalAsset(JalDB):
         return self._id
 
     def type(self) -> int:
-        return self._type
+        return self._record.type
 
     def name(self) -> str:
-        return self._name
+        return self._record.name
 
     # Returns the first identifier of given type found across any of the asset's symbols ('' if not present).
     # For an identifier scoped to a specific listing use JalSymbol.identifier().
@@ -143,7 +159,7 @@ class JalAsset(JalDB):
     # what it gets back has to ask tickers() instead and refuse an answer that names more than one.
     def symbol(self, currency: int = None, location: int = None) -> str:
         tickers = self.tickers(currency, location)
-        if currency is not None and self._type != PredefinedAsset.Money and len(tickers) > 1:
+        if currency is not None and self._record.type != PredefinedAsset.Money and len(tickers) > 1:
             logging.warning(JalDB.tr("Asset is listed under several tickers in one currency, "
                                     "the listing has to be named to get one of them: ") + f"{tickers}")
         return ','.join(tickers)   # return symbol or empty string
@@ -162,7 +178,7 @@ class JalAsset(JalDB):
     def _active_listings(self, currency: int = None, location: int = None) -> list:
         if not self._data:
             return []
-        currency = None if self._type == PredefinedAsset.Money else currency  # Money have one unique symbol
+        currency = None if self._record.type == PredefinedAsset.Money else currency  # Money have one unique symbol
         listings = self._data['symbols']
         if currency is not None:   # a crypto listing is kept in its venue's currency whatever the account's is
             listings = [x for x in listings
@@ -192,7 +208,7 @@ class JalAsset(JalDB):
     # JalDB cache at once (mirrors JalTag.replace_with); this asset's data is then reloaded for continued use.
     def _refresh_after_symbol_write(self) -> None:
         JalDB().invalidate_cache()
-        self._data = self.db_cache.get_data(self._load_asset_data, (self._id,))
+        self._attach()
 
     # The currency a listing at 'location_id' is kept in: a crypto venue's quote currency (0 if the ledger has no such
     # currency), 'currency_id' anywhere else
@@ -286,10 +302,10 @@ class JalAsset(JalDB):
 
     # Returns country object for the asset
     def country(self) -> JalCountry:
-        return self._country
+        return JalCountry(self._record.country_id)
 
     def country_name(self) -> str:
-        return self._country.name()
+        return self.country().name()
 
     # Returns tuple in form of (timestamp:int, quote:Decimal) that contains last found quotation in given currency.
     # Returns (timestamp, 1) if quotation is requested relative to itself
@@ -311,12 +327,12 @@ class JalAsset(JalDB):
                 self._report_missing_quote(timestamp, currency_id)
             return 0, Decimal('0')
         if quote is None:
-            if self._type == PredefinedAsset.Money and currency_id != self.get_base_currency(timestamp):  # find a cross-rate
+            if self._record.type == PredefinedAsset.Money and currency_id != self.get_base_currency(timestamp):  # find a cross-rate
                 rate1 = self.quote(timestamp, self.get_base_currency(timestamp))[1]
                 rate2 = JalAsset(currency_id).quote(timestamp, self.get_base_currency(timestamp))[1]
                 rate = 0 if rate2 == Decimal('0') else rate1 / rate2
                 return timestamp, rate
-            if self._type != PredefinedAsset.Money:
+            if self._record.type != PredefinedAsset.Money:
                 cross_quote = self._cross_currency_quote(timestamp, currency_id)
                 if cross_quote is not None:
                     return cross_quote
@@ -355,7 +371,7 @@ class JalAsset(JalDB):
     # doesn't: crypto is listed in USD only while the value of a portfolio is asked for in the base currency, so the
     # currency-scoped name of the asset that is missing its quotes is empty exactly when it is needed most.
     def _report_missing_quote(self, timestamp: int, currency_id: int) -> None:
-        name = self.symbol(currency_id) or self.symbol() or self._name or f"id={self._id}"
+        name = self.symbol(currency_id) or self.symbol() or self._record.name or f"id={self._id}"
         reported = f"{name} ({JalAsset(currency_id).symbol()}) {ts2d(timestamp)}"
         if reported in self._missing_quotes:
             return
@@ -387,7 +403,7 @@ class JalAsset(JalDB):
         while query.next():
             timestamp, quote = self._read_record(query, cast=[int, Decimal])
             quotes.append((local_moment(timestamp), quote))
-        if not quotes and self._type != PredefinedAsset.Money:
+        if not quotes and self._record.type != PredefinedAsset.Money:
             quotes = self._cross_currency_quotes(begin, end, currency_id)
         quotes = [(t_q, q * math.prod([splits[t_s] for t_s in splits if day_begin(t_s) > t_q])) for t_q, q in quotes]
         return quotes
@@ -479,38 +495,38 @@ class JalAsset(JalDB):
 
     # returns expiration timestamp
     def expiry(self) -> int:
-        return self._expiry
+        return self._record.expiry
 
     # Returns number of days before expiration (negative value if asset is expired)
     def days2expiration(self) -> int:
-        if self._expiry == 0:
+        if self._record.expiry == 0:
             return 0
-        return int((self._expiry - local_reading(now_ts())) / 86400)
+        return int((self._record.expiry - local_reading(now_ts())) / 86400)
 
     def principal(self) -> Decimal:
-        return self._principal
+        return self._record.principal
 
     # CoinGecko id of this coin ('polkadot', 'algorand', ...) or '' if none is recorded. It is the identity of a
     # coin that has no contract address on a chain JAL supports (see AssetData.CoinGeckoId) and is what the crypto
     # quote source is keyed by in that case - llama_coin_keys() in the downloader.
     def coin_id(self) -> str:
-        return self._coin_id
+        return self._record.coin_id
 
     # The protocol whose receipt token this is ('Aave v3', 'Fluid', ...) or '' if the asset isn't marked as one
     # (see AssetData.Protocol). A wrapping names its own row from the marked side of the pair.
     def protocol(self) -> str:
-        return self._protocol
+        return self._record.protocol
 
     # Id of the currency the asset is pegged to (see AssetData.PeggedTo), 0 if it isn't marked as pegged
     def pegged_to(self) -> int:
-        return self._pegged_to
+        return self._record.pegged_to
 
     # True for a rebasing receipt token - one whose on-chain balance grows with no transfer and no event behind it,
     # so that the ledger is structurally short of the real quantity (see AssetData.Rebasing). It is what decides
     # whether a balance is read from the chain and kept in 'chain_balances' at all: an asset that cannot grow gets no
     # row, which is what keeps that table free of zero deltas.
     def rebasing(self) -> bool:
-        return self._rebasing
+        return self._record.rebasing
 
     # Decimal places of this token's on-chain integer amount, or None when JAL has never had to ask.
     #
@@ -518,39 +534,36 @@ class JalAsset(JalDB):
     # while None means "unknown" - and treating unknown as 0 would read a raw integer as a whole quantity, inflating a
     # balance by up to 10^18. Every caller has to handle the None.
     def decimals(self):
-        return self._decimals
+        return self._record.decimals
 
     # Records the decimals of this token, which is learned rather than entered: the first balance read that needs
     # them asks the contract and stores the answer here, so the question is asked once per token ever.
     def set_decimals(self, decimals: int) -> None:
-        if self._decimals is not None:
+        if self._record.decimals is not None:
             return
         _ = self._exec("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
                        "VALUES(:asset_id, :datatype, :value)",
                        [(":asset_id", self._id), (":datatype", AssetData.Decimals), (":value", str(int(decimals)))],
                        commit=True)
-        self._decimals = int(decimals)
-        self._data = self.db_cache.update_data(self._load_asset_data, (self._id,))
+        self._attach(reload=True)
 
     def tag(self) -> JalTag:
-        return self._tag
+        return JalTag(self._record.tag_id)
 
     def set_tag(self, tag_id: int) -> None:
-        if self._tag.id() == tag_id:
+        if self._record.tag_id == tag_id:
             return
         _ = self._exec("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
                        "VALUES(:asset_id, :datatype, :expiry)",
                        [(":asset_id", self._id), (":datatype", AssetData.Tag), (":expiry", str(tag_id))])
-        self._tag = JalTag(tag_id)
-        self._data = self.db_cache.update_data(self._load_asset_data, (self._id,))  # Reload asset data from DB
+        self._attach(reload=True)
 
     def set_country(self, country_id: int) -> None:
-        if self._country.id() == country_id:
+        if self._record.country_id == country_id:
             return
         _ = self._exec("UPDATE assets SET country_id=:country_id WHERE id=:asset_id",
                        [(":country_id", country_id), (":asset_id", self._id)])
-        self._country = JalCountry(country_id)
-        self._data = self.db_cache.update_data(self._load_asset_data, (self._id,))  # Reload asset data from DB
+        self._attach(reload=True)
 
     # Updates asset-level data fields with information provided in data dictionary. Per-symbol identifiers
     # (isin/reg_number/cusip) are NOT handled here - they belong to a listing and are written via JalSymbol.
@@ -572,7 +585,7 @@ class JalAsset(JalDB):
         for key in data:
             if data[key]:   # An empty value means 'not known' and is skipped
                 updaters[key](data[key])
-        self._data = self.db_cache.update_data(self._load_asset_data, (self._id,))  # Reload asset data from DB
+        self._attach(reload=True)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Folds this asset into 'new_id', which is kept, and reports '' when it did or why it did not.
@@ -616,7 +629,7 @@ class JalAsset(JalDB):
         for table in ("trades_closed", "trades_opened", "ledger_totals"):
             self._exec(f"DELETE FROM {table}")
         self._exec("DELETE FROM ledger", commit=True)
-        logging.info(JalDB.tr("Assets merged: ") + f"{self._name} -> {JalAsset(new_id).name()}")
+        logging.info(JalDB.tr("Assets merged: ") + f"{self._record.name} -> {JalAsset(new_id).name()}")
         JalDB().invalidate_cache()   # listings moved, so both assets' and both symbols' cached rows are stale
         self._id = 0
         return ''
@@ -634,58 +647,52 @@ class JalAsset(JalDB):
         # A currency is what accounts, quotes and the base currency are KEPT IN, not something operations hold, so
         # folding one into another rewrites what every balance is denominated in - a different operation from this
         # one, and not one to reach by way of a token that shares its ticker.
-        if self._type == PredefinedAsset.Money or target.type() == PredefinedAsset.Money:
+        if self._record.type == PredefinedAsset.Money or target.type() == PredefinedAsset.Money:
             return JalDB.tr("a currency can't be merged")
-        if self._type != target.type():
+        if self._record.type != target.type():
             return JalDB.tr("the two are assets of different types")
         return ''
 
     def rename(self, new_name: str) -> None:
         _ = self._exec("UPDATE assets SET full_name=:new_name WHERE id=:id", [(":new_name", new_name), (":id", self._id)])
-        self._name = new_name
+        self._attach(reload=True)
 
     def _update_name(self, new_name: str) -> None:
-        if not self._name:
+        if not self._record.name:
             _ = self._exec("UPDATE assets SET full_name=:new_name WHERE id=:id",
                            [(":new_name", new_name), (":id", self._id)])
-            self._name = new_name
 
     def _update_country(self, new_code: str) -> None:
-        if new_code.lower() != self._country.code().lower():
+        if new_code.lower() != self.country().code().lower():
             new_country = JalCountry(data={'code': new_code.lower()}, search=True)
             if new_country.id():
                 _ = self._exec("UPDATE assets SET country_id=:new_country_id WHERE id=:asset_id",
                                [(":new_country_id", new_country.id()), (":asset_id", self._id)])
                 logging.info(JalDB.tr("Country updated for ")
-                             + f"{self.symbol()}: {self._country.name()} -> {new_country.name()}")
-                self._country = new_country
+                             + f"{self.symbol()}: {self.country().name()} -> {new_country.name()}")
 
     def _update_expiration(self, new_expiration: int) -> None:
         _ = self._exec("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
                        "VALUES(:asset_id, :datatype, :expiry)",
                        [(":asset_id", self._id), (":datatype", AssetData.ExpiryDate), (":expiry", str(new_expiration))])
-        self._expiry = new_expiration
 
     # Records the CoinGecko id of this coin (see AssetData.CoinGeckoId). Unlike a name or a country it is
     # overwritten when a new value is given: it is not descriptive data but the key a price is downloaded by, so a
     # correction has to take effect.
     def _update_coin_id(self, coin_id: str) -> None:
-        if self._type != PredefinedAsset.Crypto:
+        if self._record.type != PredefinedAsset.Crypto:
             return
         _ = self._exec("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
                        "VALUES(:asset_id, :datatype, :coin_id)",
                        [(":asset_id", self._id), (":datatype", AssetData.CoinGeckoId), (":coin_id", coin_id)])
-        self._coin_id = coin_id
 
     # Marks the asset as a rebasing receipt token (see AssetData.Rebasing)
     def _update_rebasing(self, _rebasing) -> None:
         self._set_data(AssetData.Rebasing, '1')
-        self._rebasing = True
 
     # Names the protocol whose receipt token the asset is (see AssetData.Protocol)
     def _update_protocol(self, protocol: str) -> None:
         self._set_data(AssetData.Protocol, protocol)
-        self._protocol = protocol
 
     def _set_data(self, datatype: int, value: str) -> None:
         _ = self._exec("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
@@ -693,7 +700,7 @@ class JalAsset(JalDB):
                        [(":asset_id", self._id), (":datatype", datatype), (":value", value)])
 
     def _update_principal(self, principal: str) -> None:
-        if self._type != PredefinedAsset.Bond:
+        if self._record.type != PredefinedAsset.Bond:
             return
         try:
             principal = Decimal(principal)

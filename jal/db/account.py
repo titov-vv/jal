@@ -1,5 +1,6 @@
 import re
 from decimal import Decimal
+from types import SimpleNamespace
 from jal.db.db import JalDB
 from jal.db.asset import JalAsset
 import jal.db.operations
@@ -43,70 +44,65 @@ class JalAccount(JalDB):
     def __init__(self, account_id: int = 0) -> None:
         super().__init__()
         self._id = account_id
-        self._data = self.db_cache.get_data(self._load_account_data, (self._id,))  # Load account data from cache or DB
-        self._name = self._data['name'] if self._data is not None else None
-        self._currency_id = self._data['currency_id'] if self._data is not None else None
+        self._record = self.db_cache.get_data(self._load_account_data, (self._id,))
+
+    # The account as it is cached, parsed once: 'row' is its 'accounts' row with the 'account_data' attributes
+    # attached under the 'data' key as {datatype: value}, None if there is no such account; the rest are the values
+    # read from it, a default standing in for an absent attribute. Read-only. Keyed by account id.
+    @classmethod
+    def _load_account_data(cls, account_id: int) -> SimpleNamespace:
+        row = cls._read("SELECT * FROM accounts WHERE id=:id", [(":id", account_id)], named=True)
+        attributes = {}
+        if row is not None:
+            query = cls._exec("SELECT datatype, value FROM account_data WHERE account_id=:id ORDER BY datatype",
+                              [(":id", account_id)])
+            while query.next():
+                datatype, value = cls._read_record(query, cast=[int, str])
+                attributes[datatype] = value
+            row['data'] = attributes
+        record = SimpleNamespace(row=row)
+        record.name = row['name'] if row is not None else None
+        record.currency_id = row['currency_id'] if row is not None else None
         # An account that does not exist is Closed, not Active: JalAccount(0) is the "no such account"
         # sentinel that is passed around all over the application, and it must answer is_active() with False.
-        self._status = int(self._data['status']) if self._data is not None else AccountStatus.Closed
-        self._investing = bool(self._data['investing']) if self._data is not None else False
-        self._organization_id = int(self._data['organization_id']) if self._data is not None else PredefinedAgents.Empty
-        self._reconciled = int(self._data['reconciled_on']) if self._data is not None else 0
-        self._type = int(self._data['account_type']) if self._data is not None else PredefinedAccountType.Cash
-        self._apply_account_data()
-
-    # Resolves the fields stored in the 'account_data' table, applying a default when an attribute row is absent
-    def _apply_account_data(self) -> None:
-        attributes = self._data['data'] if self._data is not None else {}
-        self._number = attributes.get(AccountData.Number, '')
-        self._country = JalCountry(int(attributes[AccountData.Country])) if AccountData.Country in attributes else JalCountry(0)
-        self._precision = int(attributes[AccountData.Precision]) if AccountData.Precision in attributes else Setup.DEFAULT_ACCOUNT_PRECISION
+        record.status = int(row['status']) if row is not None else AccountStatus.Closed
+        record.investing = bool(row['investing']) if row is not None else False
+        record.organization_id = int(row['organization_id']) if row is not None else PredefinedAgents.Empty
+        record.reconciled = int(row['reconciled_on']) if row is not None else 0
+        record.type = int(row['account_type']) if row is not None else PredefinedAccountType.Cash
+        record.number = attributes.get(AccountData.Number, '')
+        record.country_id = int(attributes[AccountData.Country]) if AccountData.Country in attributes else 0
+        record.precision = int(attributes[AccountData.Precision]) if AccountData.Precision in attributes else Setup.DEFAULT_ACCOUNT_PRECISION
         credit = attributes.get(AccountData.Credit, '0')
-        self._credit_limit = Decimal(credit) if credit else Decimal('0')
-        self._address = attributes.get(AccountData.Address, '')
+        record.credit_limit = Decimal(credit) if credit else Decimal('0')
+        record.address = attributes.get(AccountData.Address, '')
         try:
-            self._chain = int(attributes[AccountData.Chain])
+            record.chain = int(attributes[AccountData.Chain])
         except (KeyError, TypeError, ValueError):
-            self._chain = AssetLocation.UNDEFINED
+            record.chain = AssetLocation.UNDEFINED
         try:
-            self._deposit_end = int(attributes[AccountData.DepositEnd])
+            record.deposit_end = int(attributes[AccountData.DepositEnd])
         except (KeyError, TypeError, ValueError):
-            self._deposit_end = 0
+            record.deposit_end = 0
         try:
-            self._deposit_rate = Decimal(attributes[AccountData.DepositRate])
+            record.deposit_rate = Decimal(attributes[AccountData.DepositRate])
         except (KeyError, TypeError, ArithmeticError):
-            self._deposit_rate = Decimal('0')
+            record.deposit_rate = Decimal('0')
         try:
-            self._tag = JalTag(int(attributes[AccountData.Tag]))
+            record.tag_id = int(attributes[AccountData.Tag])
         except (KeyError, TypeError, ValueError):
-            self._tag = JalTag(0)
+            record.tag_id = 0
         # 0 stands for "not known", which is what every account created before these attributes existed carries.
         # It is not the same as "opened at the epoch" and no reader may treat it as a date.
         try:
-            self._opened_on = int(attributes[AccountData.OpenDate])
+            record.opened_on = int(attributes[AccountData.OpenDate])
         except (KeyError, TypeError, ValueError):
-            self._opened_on = 0
+            record.opened_on = 0
         try:
-            self._closed_on = int(attributes[AccountData.CloseDate])
+            record.closed_on = int(attributes[AccountData.CloseDate])
         except (KeyError, TypeError, ValueError):
-            self._closed_on = 0
-
-    # Loads a single account row (as a dict) from the DB by its id, or None if there is no such account.
-    # The per-account attributes from 'account_data' are attached under the 'data' key as {datatype: value}.
-    # Used as the loader function behind the shared DbCache (keyed by account id).
-    @classmethod
-    def _load_account_data(cls, account_id: int) -> dict:
-        data = cls._read("SELECT * FROM accounts WHERE id=:id", [(":id", account_id)], named=True)
-        if data is None:
-            return None
-        attributes = {}
-        query = cls._exec("SELECT datatype, value FROM account_data WHERE account_id=:id ORDER BY datatype",
-                          [(":id", account_id)])
-        while query.next():
-            datatype, value = cls._read_record(query, cast=[int, str])
-            attributes[datatype] = value
-        data['data'] = attributes
-        return data
+            record.closed_on = 0
+        return record
 
     # Returns a JalAccount matching 'number'+'currency' in 'data', or an empty JalAccount (id()==0) if not found
     @classmethod
@@ -230,7 +226,7 @@ class JalAccount(JalDB):
         return accounts
 
     def dump(self):
-        return self._data
+        return self._record.row
 
     def dump_actions(self):
         actions = []
@@ -303,31 +299,31 @@ class JalAccount(JalDB):
 
     # Returns the account type (one of PredefinedAccountType values)
     def account_type(self) -> int:
-        return self._type
+        return self._record.type
 
     # Returns the translated name of the account type
     def type_name(self) -> str:
-        return PredefinedAccountType().get_name(self._type)
+        return PredefinedAccountType().get_name(self._record.type)
 
     # Returns the icon filename (a JalIcon key) for this account's type
     def type_icon(self) -> str:
-        return self._TYPE_ICONS.get(self._type, '')
+        return self._TYPE_ICONS.get(self._record.type, '')
 
     # Returns the on-chain address of a wallet account ('' if the account has none)
     def address(self) -> str:
-        return self._address
+        return self._record.address
 
     # Returns the blockchain of a wallet account as one of AssetLocation.BLOCKCHAINS (UNDEFINED if not set)
     def chain(self) -> int:
-        return self._chain
+        return self._record.chain
 
     # Maturity date of a deposit box (0 if it isn't known)
     def deposit_end(self) -> int:
-        return self._deposit_end
+        return self._record.deposit_end
 
     # Nominal interest rate of a deposit box, per cent per annum (0 if it isn't known)
     def deposit_rate(self) -> Decimal:
-        return self._deposit_rate
+        return self._record.deposit_rate
 
     # How much attention the account is due, and whether it is still in use at all - one of AccountStatus.
     # A deposit box that was emptied is set to Closed, which is what keeps the pile of past deposits out of every
@@ -337,8 +333,7 @@ class JalAccount(JalDB):
             return
         _ = self._exec("UPDATE accounts SET status=:status WHERE id=:id",
                        [(":status", int(status)), (":id", self._id)])
-        self._data = self.db_cache.update_data(self._load_account_data, (self._id,))  # Refresh cached row from DB
-        self._status = int(status)
+        self._record = self.db_cache.update_data(self._load_account_data, (self._id,))
 
     # Returns the icon filename (a JalIcon key) for a given account type
     @classmethod
@@ -358,82 +353,81 @@ class JalAccount(JalDB):
 
     # Returns name of the account
     def name(self) -> str:
-        return self._name
+        return self._record.name
 
     # Returns number of the account, empty ('') for an account that has none
     def number(self) -> str:
-        return self._number
+        return self._record.number
 
     # Returns currency id of the account
     def currency(self) -> int:
-        return self._currency_id
+        return self._record.currency_id
 
     # Returns the account status, one of AccountStatus
     def status(self) -> int:
-        return self._status
+        return self._record.status
 
     # Returns True if the account is still in use - i.e. anything but closed. This is the test that decides whether
     # an account may take new operations and whether it is counted at all, and it is deliberately NOT the test for
     # how prominently it is shown - that one is is_foreground() below.
     def is_active(self) -> bool:
-        return self._status > AccountStatus.Closed
+        return self._record.status > AccountStatus.Closed
 
     # Returns True if the account is one of those the user works with day to day, so it earns a row of its own in
     # the balances and holdings views. A background account is active but folded away into a single summary row.
     def is_foreground(self) -> bool:
-        return self._status >= AccountStatus.Active
+        return self._record.status >= AccountStatus.Active
 
     # Date the account was opened, 0 if it isn't known
     def opened_on(self) -> int:
-        return self._opened_on
+        return self._record.opened_on
 
     # Date the account was closed, 0 if it isn't known (which includes every account that is still open)
     def closed_on(self) -> int:
-        return self._closed_on
+        return self._record.closed_on
 
     def organization(self) -> int:
-        return self._organization_id
+        return self._record.organization_id
 
     # Returns country object for the account
     def country(self) -> JalCountry:
-        return self._country
+        return JalCountry(self._record.country_id)
 
     def set_organization(self, peer_id: int) -> None:
         if not peer_id:
             peer_id = PredefinedAgents.Empty   # 'organization_id' is NOT NULL DEFAULT (1)
         _ = self._exec("UPDATE accounts SET organization_id=:peer_id WHERE id=:id",
                        [(":id", self._id), (":peer_id", peer_id)])
-        self._data = self.db_cache.update_data(self._load_account_data, (self._id,))  # Refresh cached row from DB
-        self._organization_id = peer_id
+        self._record = self.db_cache.update_data(self._load_account_data, (self._id,))
 
     def reconciled_at(self) -> int:
-        return self._reconciled
+        return self._record.reconciled
 
     def reconcile(self, timestamp: int):
         _ = self._exec("UPDATE accounts SET reconciled_on=:timestamp WHERE id = :account_id",
                        [(":timestamp", timestamp), (":account_id", self._id)])
-        self._data = self.db_cache.update_data(self._load_account_data, (self._id,))  # Refresh cached row from DB
+        self._record = self.db_cache.update_data(self._load_account_data, (self._id,))
 
     def precision(self) -> int:
-        return self._precision
+        return self._record.precision
 
     def credit_limit(self) -> Decimal:
-        return self._credit_limit
+        return self._record.credit_limit
 
     # The tag put on the account by the user. JalTag(0) if the account carries none.
     def tag(self) -> JalTag:
-        return self._tag
+        return JalTag(self._record.tag_id)
 
     def set_tag(self, tag_id: int) -> None:
-        if self._tag.id() == tag_id:
+        if self._record.tag_id == tag_id:
             return
         self.set_data(AccountData.Tag, tag_id if tag_id else None)
 
     # Returns a raw per-account attribute value from 'account_data' (or 'default' if it is not set)
     def get_data(self, datatype: int, default=None):
-        if self._data is None:
+        if self._record.row is None:
             return default
-        return self._data['data'].get(datatype, default)
+        return self._record.row['data'].get(datatype, default)
 
     # Writes (or, when 'value' is None, removes) a per-account attribute in 'account_data' and refreshes the cache
     def set_data(self, datatype: int, value) -> None:
@@ -446,8 +440,7 @@ class JalAccount(JalDB):
             _ = self._exec("INSERT OR REPLACE INTO account_data(account_id, datatype, value) "
                            "VALUES(:id, :datatype, :value)",
                            [(":id", self._id), (":datatype", datatype), (":value", str(value))])
-        self._data = self.db_cache.update_data(self._load_account_data, (self._id,))  # Refresh cached row from DB
-        self._apply_account_data()
+        self._record = self.db_cache.update_data(self._load_account_data, (self._id,))
 
     # Returns timestamp of last operation recorded for the account
     # If future=True then include future operations
@@ -557,7 +550,7 @@ class JalAccount(JalDB):
         payments += jal.db.operations.AssetIncome.get_list(self._id, asset.id())
         payments = [x for x in payments if (start_ts <= x.ex_date() <= end_ts) or (x.ex_date() == 0 and (start_ts <= x.timestamp() <= end_ts))]
         if payments:
-            amount = sum([x.amount(currency_id=self._currency_id) for x in payments])
+            amount = sum([x.amount(currency_id=self._record.currency_id) for x in payments])
         else:
             amount = Decimal('0')
         return amount
@@ -622,20 +615,20 @@ class JalAccount(JalDB):
             refusals.append(JalDB.tr("The account has a debt: ") + f"{localize_amount(-amount)} {JalAsset(asset_id).symbol()}")
         for asset_id, amount in self._book_amounts(BookAccount.Money, timestamp):
             symbol = JalAsset(asset_id).symbol()
-            if asset_id != self._currency_id:
+            if asset_id != self._record.currency_id:
                 refusals.append(JalDB.tr("The account holds money in another currency: ") + f"{localize_amount(amount)} {symbol}")
             elif amount < Decimal('0'):
                 refusals.append(JalDB.tr("The account has a negative balance: ") + f"{localize_amount(amount)} {symbol}")
             else:
                 records.append((jal.db.operations.LedgerTransaction.IncomeSpending, {
-                    'timestamp': timestamp, 'account_id': self._id, 'peer_id': self._organization_id, 'note': note,
+                    'timestamp': timestamp, 'account_id': self._id, 'peer_id': self._record.organization_id, 'note': note,
                     'lines': [{'category_id': PredefinedCategory.Losses, 'amount': -amount, 'note': note}]}))
         for position in self.assets_list(timestamp):
             asset, amount = position['asset'], position['amount']
             if amount < Decimal('0'):
                 refusals.append(JalDB.tr("The account has a short position: ") + f"{localize_amount(amount)} {asset.symbol()}")
                 continue
-            symbol_id = asset.listing_id(self._currency_id) or asset.active_symbol_ids()[0]
+            symbol_id = asset.listing_id(self._record.currency_id) or asset.active_symbol_ids()[0]
             records.append((jal.db.operations.LedgerTransaction.CorporateAction, {
                 'timestamp': timestamp, 'account_id': self._id, 'type': jal.db.operations.CorporateAction.WriteOff,
                 'symbol_id': symbol_id, 'qty': amount, 'note': note, 'outcome': []}))

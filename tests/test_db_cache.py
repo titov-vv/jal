@@ -67,3 +67,27 @@ def test_opening_a_database_empties_the_caches(prepare_db_taxes):
     JalDB.connection().close()
     assert JalDB().init_db().code == JalDBError.NoError
     assert JalAccount(1).name() == 'Renamed'
+
+
+# Every object of one account shares the record that was parsed when the account was first asked for
+def test_account_record_is_parsed_once(prepare_db_taxes):
+    first, second = JalAccount(1), JalAccount(1)
+    assert first._record is second._record
+    assert first.country().id() == second.country().id()
+    assert first.tag().id() == 0
+
+
+# A setter re-reads the record: the object that wrote and every object made after it see the new value
+def test_account_setter_refreshes_the_record(prepare_db_taxes):
+    account, before = JalAccount(1), JalAccount(1)
+    account.reconcile(1700000000)
+    assert account.reconciled_at() == 1700000000
+    assert JalAccount(1).reconciled_at() == 1700000000
+    assert before.reconciled_at() != 1700000000    # an object made earlier keeps what it was made with
+
+
+def test_asset_rename_refreshes_the_record(prepare_db_taxes):
+    asset = JalAsset(2)
+    asset.rename('Renamed')
+    assert asset.name() == 'Renamed'
+    assert JalAsset(2).name() == 'Renamed'

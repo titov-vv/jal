@@ -217,15 +217,16 @@ class Ledger(QObject, JalDB):
         rounding_error = Decimal('0')
         if book == BookAccount.Assets and asset_id is None:
             raise ValueError(self.tr("No asset defined for: ") + f"{operation.dump()}")
+        account = JalAccount(operation.account_id())
         if asset_id is None:
-            asset_id = JalAccount(operation.account_id()).currency()
+            asset_id = account.currency()
         if (book == BookAccount.Costs or book == BookAccount.Incomes) and category is None:
             raise ValueError(self.tr("No category set for: ") + f"{operation.dump()}")
         if (book == BookAccount.Costs or book == BookAccount.Incomes) and peer is None:
             raise ValueError(self.tr("No peer set for: ") + f"{operation.dump()}")
         tag = tag if tag else None  # Get rid of possible empty values
         # Round values according to account decimal precision
-        precision = JalAccount(operation.account_id()).precision()
+        precision = account.precision()
         amount = round(amount, precision)
         value = Decimal('0') if value is None else round(value, precision)
         self.amounts[(book, operation.account_id(), asset_id)] += amount
