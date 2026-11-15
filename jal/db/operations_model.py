@@ -14,6 +14,20 @@ from jal.widgets.theme import Theme, Meaning
 from jal.db.cache import UniversalCache
 
 #-----------------------------------------------------------------------------------------------------------------------
+# Moves each part right under the first part of its operation within the same second, for display only: the
+# sequence orders parts before operations, so fees of simultaneous operations would follow all of them.
+def group_operation_parts(sequence: list) -> list:
+    grouped = []
+    run = {}   # (otype, oid) -> its parts, in the order of the operations' first parts in this second
+    for row in sequence:
+        if run and row['timestamp'] != next(iter(run.values()))[0]['timestamp']:
+            grouped += [x for parts in run.values() for x in parts]
+            run = {}
+        run.setdefault((row['otype'], row['oid']), []).append(row)
+    grouped += [x for parts in run.values() for x in parts]
+    return grouped
+
+#-----------------------------------------------------------------------------------------------------------------------
 
 class OperationsModel(QAbstractTableModel):
     def __init__(self, parent_view):
@@ -185,7 +199,7 @@ class OperationsModel(QAbstractTableModel):
     def prepareData(self):
         self.beginResetModel()
         self._data = []
-        self._data = Ledger.get_operations_sequence(self._begin, self._end, self._account)
+        self._data = group_operation_parts(Ledger.get_operations_sequence(self._begin, self._end, self._account))
         self._overridden = JalTaxOverride.operation_ids()
         self._cache.clear_cache()
         self.endResetModel()

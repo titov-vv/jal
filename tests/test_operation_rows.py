@@ -17,7 +17,7 @@ from tests.helpers import d2t, create_stocks, create_trades, create_quotes, crea
 from jal.db.ledger import Ledger
 from jal.db.account import JalAccountCreator
 from jal.db.operations import LedgerTransaction, AssetPayment, ChainAction, Swap, Conversion, Transfer, Bridge
-from jal.db.operations_model import OperationsModel
+from jal.db.operations_model import OperationsModel, group_operation_parts
 from jal.widgets.delegates import transaction_link
 
 
@@ -213,10 +213,9 @@ def test_a_hidden_row_breaks_the_tie(every_fee):
     assert ((LedgerTransaction.Transfer, Transfer.Incoming), (True, False, False)) in links
 
 
-# Operations of one kind in one second list their parts one kind of part after another (A, B, A's fee, B's fee), so
-# a fee may stand beside another operation's row. The numbers differ and nothing is tied - the rows read as they did
-# before there were groups, instead of the fee being drawn under an operation it doesn't belong to.
-def test_interleaved_parts_stay_apart(prepare_db_fifo):
+# Operations of one kind in one second are sequenced part by part (A, B, A's fee, B's fee); the table shows each fee
+# under its own operation and ties it there.
+def test_interleaved_parts_are_regrouped(prepare_db_fifo):
     JalAccountCreator(currency_id=2, number='U2', name='Other', investing=1, organization=1).commit()
     create_stocks([('A', 'Asset A'), ('B', 'Asset B'), ('GAS', 'Native coin')], currency_id=2)
     second = d2t(220207)
@@ -225,8 +224,8 @@ def test_interleaved_parts_stay_apart(prepare_db_fifo):
                                'fee_asset': 6, 'fee_qty': 0.5} for x in ('a', 'b')])
     Ledger.refresh_sequence()
     view, model, _ = _table(d2t(220207))
-    assert [x[0][1] for x in _links(view, model)[1:]] == [Swap.Outgoing, Swap.Outgoing, Swap.Fee, Swap.Fee]
-    assert [x[1] for x in _links(view, model)] == [_ALONE] * 5
+    assert [x[0][1] for x in _links(view, model)[1:]] == [Swap.Outgoing, Swap.Fee, Swap.Outgoing, Swap.Fee]
+    assert [x[1] for x in _links(view, model)][1:] == [_LEADS, (True, False, True), _LEADS, (True, False, True)]
 
 
 # The number of a broker statement groups as a hash does - the accrued interest paid with a bond sits above the
@@ -289,3 +288,14 @@ def test_a_fractional_quantity_keeps_its_digits(prepare_db_fifo):
              for x in model._data]
     assert any([x.startswith("0.5 A -> 1234000 B") for x in texts])
     assert any(["[" + LedgerTransaction.tr("In-kind fee:") + " 10 A]" in x for x in texts])
+
+
+# Two swaps of one second: the sequence lists both main parts before both fee parts, the table shows each fee
+# under its own swap. Other seconds keep their order.
+def test_fees_of_simultaneous_operations_stay_under_their_own_operation():
+    row = lambda oid, opart, ts: {'otype': LedgerTransaction.Swap, 'oid': oid, 'opart': opart, 'timestamp': ts}
+    sequence = [row(1, 0, 10), row(1, 2, 10), row(2, 0, 20), row(3, 0, 20), row(2, 2, 20), row(3, 2, 20),
+                row(4, 0, 30)]
+    assert [(x['oid'], x['opart']) for x in group_operation_parts(sequence)] == \
+           [(1, 0), (1, 2), (2, 0), (2, 2), (3, 0), (3, 2), (4, 0)]
+    assert group_operation_parts([]) == []
