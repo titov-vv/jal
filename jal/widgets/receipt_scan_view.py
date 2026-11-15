@@ -21,6 +21,7 @@ class ReceiptScanView(QGraphicsView):
         super().__init__(parent)
         self.setScene(QGraphicsScene(self))
         self.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)   # a bar that comes and goes refits the width endlessly
         self._zoom = 1.0
         self._tops = {}             # page -> y of its image in the scene
         self._marks = []            # items of the rows shown by show_rows()

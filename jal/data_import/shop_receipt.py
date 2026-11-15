@@ -5,7 +5,8 @@ import zipfile
 import pandas as pd
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
-from PySide6.QtCore import Qt, Slot, QAbstractTableModel, QModelIndex, QRect, QT_TRANSLATE_NOOP
+from PySide6.QtCore import Qt, Slot, QAbstractTableModel, QCoreApplication, QEvent, QModelIndex, QRect, \
+    QT_TRANSLATE_NOOP
 from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QDialog, QDialogButtonBox, QFileDialog, QHeaderView, QLineEdit, QMessageBox, QStyle, \
     QTableWidgetItem
@@ -266,7 +267,7 @@ class SlipLinesDelegate(KbSafeItemDelegate):
 #-----------------------------------------------------------------------------------------------------------------------
 class ImportReceiptDialog(QDialog):
     GEOMETRY_KEY = "DlgGeometry_ImportReceipt"
-    SPLITTER_KEY = "DlgSplitter_ImportReceipt"
+    SCAN_WIDTH_KEY = "DlgScanWidth_ImportReceipt"
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -288,6 +289,8 @@ class ImportReceiptDialog(QDialog):
         self._scan = None             # JalrFile of the loaded receipt if it has page images
         self._scan_sign = Decimal('-1')     # of a line added from the scan: spent, or money back for a credit note
         self._scan_offers = False     # the rows of the scan's body that are no line are offered for adding
+        self._scan_width = JalSettings().getInt(self.SCAN_WIDTH_KEY, self.ui.ScanView.sizeHint().width())
+        self._scan_borrowed = 0       # of the scan pane's width, what was taken from the form as the screen had no room
 
         # 'Clear' and 'Add' join the button box rather than sit next to it: neither ends the dialog - one throws the
         # loaded receipt away, the other writes an operation and leaves the window open for the next receipt - so
@@ -318,15 +321,12 @@ class ImportReceiptDialog(QDialog):
         stored = JalSettings().getStr(self.GEOMETRY_KEY)
         if stored:
             self.restoreGeometry(base64.decodebytes(stored.encode('utf-8')))
-        stored = JalSettings().getStr(self.SPLITTER_KEY)
-        if stored:
-            self.ui.ScanSplitter.restoreState(base64.decodebytes(stored.encode('utf-8')))
 
     # Every exit (Close, window X, Esc) ends here; closeEvent() alone misses Esc
     def done(self, result):
+        self._set_scan_pane(False)      # the stored geometry is that of the form alone
         JalSettings().setValue(self.GEOMETRY_KEY, base64.encodebytes(self.saveGeometry().data()).decode('utf-8'))
-        JalSettings().setValue(self.SPLITTER_KEY,
-                               base64.encodebytes(self.ui.ScanSplitter.saveState().data()).decode('utf-8'))
+        JalSettings().setValue(self.SCAN_WIDTH_KEY, self._scan_width)
         self._save_lines_columns()
         super().done(result)
 
@@ -614,10 +614,34 @@ class ImportReceiptDialog(QDialog):
     def _show_scan(self):
         pages = self._scan.page_images() if self._scan is not None else []
         self.ui.ScanView.set_pages(pages)
-        self.ui.ScanView.setVisible(self.ui.ScanView.has_pages())
+        self._set_scan_pane(self.ui.ScanView.has_pages())
         if self._scan is not None and self._scan_offers:
             boxes = self._scan.ocr_boxes
             self.ui.ScanView.offer_rows({i: boxes[i] for i in self._scan.unread_body_rows if boxes[i] is not None})
+
+    # The scan pane widens the window by its own width instead of taking it from the form
+    def _set_scan_pane(self, shown: bool):
+        view = self.ui.ScanView
+        if shown == (not view.isHidden()):
+            return
+        if self.isMaximized() or self.isFullScreen():
+            view.setVisible(shown)
+            return
+        pane = self.ui.ScanSplitter.handleWidth() + self._scan_width
+        if shown:
+            room = self.screen().availableGeometry().width() - (self.frameGeometry().width() - self.width())
+            self._scan_borrowed = max(0, min(pane, self.width() + pane - room))    # what the screen can't fit
+            view.show()
+            self.resize(self.width() + pane - self._scan_borrowed, self.height())
+            QCoreApplication.sendPostedEvents(self.ui.ScanSplitter, QEvent.LayoutRequest)   # shows the handle
+            self.layout().activate()    # sizes that don't add up to the present ones are scaled to them
+            self.ui.ScanSplitter.setSizes([sum(self.ui.ScanSplitter.sizes()) - self._scan_width, self._scan_width])
+        else:
+            if self.isVisible():        # a widget never shown has no width of its own
+                self._scan_width = view.width()
+                pane = self.ui.ScanSplitter.handleWidth() + self._scan_width
+            view.hide()
+            self.resize(self.width() - max(0, pane - self._scan_borrowed), self.height())
 
     # The rows the line was read from are marked on the scan
     @Slot(QModelIndex, QModelIndex)
@@ -756,7 +780,7 @@ class ImportReceiptDialog(QDialog):
         self._inbox_file = ''
         self._scan = None
         self.ui.ScanView.clear()
-        self.ui.ScanView.hide()
+        self._set_scan_pane(False)
         self.ui.NoteEdit.clear()
         self._save_lines_columns()
         self.ui.LinesTableView.setModel(None)

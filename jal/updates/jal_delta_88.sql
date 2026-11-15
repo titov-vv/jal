@@ -12,6 +12,9 @@ CREATE TABLE receipt_items (
     UNIQUE (peer_id, printed)
 );
 --------------------------------------------------------------------------------
+-- Receipt import dialog keeps the width of its scan pane instead of the splitter state
+DELETE FROM settings WHERE name='DlgSplitter_ImportReceipt';
+--------------------------------------------------------------------------------
 -- Set new DB schema version
 UPDATE settings SET value=88 WHERE name='SchemaVersion';
 COMMIT;

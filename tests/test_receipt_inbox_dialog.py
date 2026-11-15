@@ -5,9 +5,10 @@ from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 
 import pytest
-from PySide6.QtCore import Qt, QDateTime, QDate, QTime, QBuffer, QByteArray
+from PySide6.QtCore import Qt, QDateTime, QDate, QTime, QBuffer, QByteArray, QRect
 from PySide6.QtGui import QImage
-from PySide6.QtWidgets import QWidget, QFileDialog, QHeaderView, QLineEdit, QMessageBox
+from PySide6.QtWidgets import QApplication, QWidget, QFileDialog, QHeaderView, QLineEdit, QMessageBox
+from PySide6.QtTest import QTest
 
 from tests.fixtures import project_root, data_path, prepare_db, prepare_db_ledger
 from tests.test_at_qr import LIDL
@@ -28,6 +29,7 @@ from jal.data_import.receipt_api.offline_receipt import ReceiptOffline, paper_li
 from jal.data_import.receipt_api.ru_fns import ReceiptRuFNS
 from jal.data_import.shop_receipt import ImportReceiptDialog, RECEIPT_INBOX_SETTING
 from jal.widgets.reference_dialogs import CategoryListDialog, TagsListDialog
+from jal.widgets.receipt_scan_view import ReceiptScanView
 
 LISBON_SUMMER = timezone(timedelta(hours=1))
 RUB, USD, EUR = 1, 2, 3       # currency ids of the test database
@@ -812,6 +814,79 @@ def test_scan_is_shown_beside_the_lines_and_the_selected_line_is_marked(owner, i
     assert [x.rect().getRect() for x in view._marks] == [(10, 80, 150, 30)]
     dialog.clearSlipData()
     assert view.isHidden() and not view.has_pages()
+
+
+# The scan pane widens the window and gives the width back; the form keeps its width, the pane's is remembered
+def test_scan_pane_widens_the_window(owner, inbox, monkeypatch):
+    _scan_with_picture(inbox)
+    monkeypatch.setattr(ImportReceiptDialog, "screen", lambda _self: _WideScreen())    # the test screen is 800 wide
+    JalSettings().setValue(ImportReceiptDialog.SCAN_WIDTH_KEY, 260)
+    dialog = _shown_dialog(owner)
+    window, form = dialog.width(), dialog.ui.FormPane.width()
+    _load(dialog)
+    QTest.qWait(200)
+    assert dialog.ui.ScanView.width() == 260 and abs(dialog.ui.FormPane.width() - form) <= 3
+    assert dialog.width() == window + dialog.ui.ScanSplitter.handleWidth() + 260
+    dialog.ui.ScanSplitter.setSizes([form - 20, 280])
+    QTest.qWait(200)
+    dialog.clearSlipData()
+    QTest.qWait(200)
+    assert dialog.ui.ScanView.isHidden() and dialog.width() == window - 20
+    _load(dialog)
+    dialog.close()      # with the pane shown, and its geometry is stored without it
+    assert dialog.width() == window - 20 and JalSettings().getInt(ImportReceiptDialog.SCAN_WIDTH_KEY) == 280
+    reopened = _shown_dialog(owner)
+    _load(reopened)
+    QTest.qWait(200)
+    assert reopened.ui.ScanView.width() == 280
+    reopened.close()
+
+
+# A window the screen has no room to widen takes the scan pane from the form, and gives it back
+def test_scan_pane_of_a_window_as_wide_as_the_screen(owner, inbox):
+    _scan_with_picture(inbox)
+    dialog = _shown_dialog(owner, width=dialog_screen_width(owner))
+    window, form = dialog.width(), dialog.ui.FormPane.width()
+    _load(dialog)
+    QTest.qWait(200)
+    assert dialog.width() == window and dialog.ui.FormPane.width() < form
+    dialog.clearSlipData()
+    QTest.qWait(200)
+    assert dialog.width() == window and abs(dialog.ui.FormPane.width() - form) <= 3
+    dialog.close()
+
+
+class _WideScreen:
+    def availableGeometry(self):
+        return QRect(0, 0, 3000, 1000)
+
+
+def dialog_screen_width(owner) -> int:
+    return owner.screen().availableGeometry().width()
+
+
+def _shown_dialog(owner, width=None) -> ImportReceiptDialog:
+    dialog = _dialog(owner)
+    if width is not None:
+        dialog.resize(width, dialog.height())
+    dialog.show()
+    QTest.qWait(200)
+    return dialog
+
+
+# A fitted picture about as tall as the view used to toggle the scroll bar on every resize, forever
+def test_scan_view_width_does_not_depend_on_the_picture(owner):
+    owner.resize(400, 600)
+    view = ReceiptScanView(owner)
+    view.resize(400, 600)
+    owner.show()
+    QTest.qWait(200)
+    widths = []
+    for height in (100, 5000):
+        view.set_pages([(1, _jpeg(200, height))])
+        QApplication.processEvents()
+        widths.append(view.viewport().width())
+    assert widths[0] == widths[1]
 
 
 def test_scan_without_a_readable_picture_and_a_pdf_show_no_pane(owner, inbox):

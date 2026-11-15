@@ -29,7 +29,7 @@ class Ui_ImportShopReceiptDlg(object):
     def setupUi(self, ImportShopReceiptDlg):
         if not ImportShopReceiptDlg.objectName():
             ImportShopReceiptDlg.setObjectName(u"ImportShopReceiptDlg")
-        ImportShopReceiptDlg.resize(1250, 760)
+        ImportShopReceiptDlg.resize(1000, 760)
         self.verticalLayout = QVBoxLayout(ImportShopReceiptDlg)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.ScanSplitter = QSplitter(ImportShopReceiptDlg)
