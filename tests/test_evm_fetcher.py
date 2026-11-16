@@ -1953,3 +1953,61 @@ def test_eth_call_tells_a_revert_from_a_failure(eth_wallet, monkeypatch):
         _capture_query(monkeypatch, failure)
         with pytest.raises(Statement_ImportError):
             fetcher._eth_call(A_TOKEN, _UNDERLYING)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Lido: staking ETH mints stETH, a rebasing receipt token, and wrapping stETH mints wstETH, a share token
+STETH = "0xae7ab96520de3a18e5e111b5eaab095312d7fe84"
+WSTETH = "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0"
+
+
+def _steth_tx(tx_hash, block, frm, to, value):
+    return _token_tx(tx_hash, block, frm, to, value, contract=STETH, symbol='stETH', name='stETH', decimals='18')
+
+
+# The shape of a real stake.lido.fi submit(): 0.29 ETH out, stETH minted back 2 wei short
+def _lido_stake_and_wrap() -> dict:
+    s1, s2 = "0x51" + "0" * 62, "0x52" + "0" * 62
+    return {
+        "txlist": [_tx(s1, 100, WALLET, STETH, value=29 * 10 ** 16, gas_used='94083', gas_price='150000000',
+                       method='0xa1903eab', function='submit(address id)'),
+                   _tx(s2, 200, WALLET, WSTETH, value=0, method='0xea598cb0', function='wrap(uint256 _stETHAmount)')],
+        "tokentx": [_steth_tx(s1, 100, ZERO, WALLET, 289999999999999998),
+                    _steth_tx(s2, 200, WALLET, WSTETH, 10 ** 17),
+                    _token_tx(s2, 200, ZERO, WALLET, 8 * 10 ** 16, contract=WSTETH, symbol='wstETH',
+                              name='Wrapped liquid staked Ether 2.0', decimals='18')],
+        "txlistinternal": [],
+    }
+
+
+def _symbol_ids_of(data, contract) -> list:
+    return [s['id'] for a in data[JSF.ASSETS] for s in a[JSF.SYMBOLS] if s.get('address') == contract]
+
+
+# Staking keeps the position and only changes its shape, so it is a Conversion with the gas as its fee
+def test_a_lido_stake_is_a_conversion_into_steth(eth_wallet, monkeypatch):
+    fetcher, data = _drive(eth_wallet, monkeypatch, _lido_stake_and_wrap())
+
+    assert fetcher.skipped() == {} and _transfers(data) == [] and _swaps(data) == []
+    stake, wrap = _conversions(data)
+    assert stake['out_symbol'] in _eth_symbol_ids(data) and stake['out_qty'] == Decimal('0.29')
+    assert stake['in_symbol'] in _symbol_ids_of(data, STETH) and stake['in_qty'] == Decimal('0.289999999999999998')
+    assert stake['fee_qty'] == Decimal('94083') * Decimal('150000000') / Decimal('10') ** 18
+    assert stake['description'] == 'Lido stETH'
+    assert wrap['out_symbol'] in _symbol_ids_of(data, STETH) and wrap['out_qty'] == Decimal('0.1')
+    assert wrap['in_symbol'] in _symbol_ids_of(data, WSTETH) and wrap['in_qty'] == Decimal('0.08')
+    assert wrap['description'] == 'Lido wstETH'
+    assert _interest(data) == []
+
+
+# stETH is marked rebasing and wstETH is not, both name Lido, and neither is asked about on the chain
+def test_lido_tokens_are_marked_at_first_import(eth_wallet, monkeypatch):
+    fetcher, data = _drive(eth_wallet, monkeypatch, _lido_stake_and_wrap())
+    fetcher.match_db_ids()
+    fetcher.import_into_db()
+
+    steth = JalSymbol.find_by_identifier(SymbolId.ETH_ADDRESS, STETH).asset()
+    assert steth.rebasing() and steth.protocol() == 'Lido'
+    wsteth = JalSymbol.find_by_identifier(SymbolId.ETH_ADDRESS, WSTETH).asset()
+    assert not wsteth.rebasing() and wsteth.protocol() == 'Lido'
+    assert [c for c in _chain_calls if c[0] in (STETH, WSTETH)] == []

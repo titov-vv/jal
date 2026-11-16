@@ -17,7 +17,7 @@ from jal.db.token_blacklist import normalize_address, is_evm_address
 from jal.net.chain_fetchers.fetcher import ChainFetcher
 from jal.net.chain_fetchers.protocols import protocol_category, protocol_name, ProtocolCategory
 from jal.net.web_request import WebRequest
-from jal.net import aave
+from jal.net import aave, lido
 
 # This module has no JAL_FETCHER_CLASS on purpose: it is the shared base of the EVM chains, not a selectable chain
 # itself. Each concrete chain (Ethereum, Arbitrum, Avalanche, ...) is a thin subclass in its own module that only
@@ -598,6 +598,9 @@ class EVMFetcher(ChainFetcher):
         symbol = JalSymbol.find_by_identifier(AssetLocation.address_id_of(self.location_id), contract)
         if symbol.id():
             return symbol.asset().protocol() if symbol.asset().rebasing() else None
+        marks = lido.receipt_marks(self.location_id, contract)
+        if marks is not None:
+            return marks[1] if marks[0] else None
         return aave.V3_PROTOCOL if self._is_new_aave_token(contract) else None
 
     # True for a token JAL doesn't hold yet that the Aave v3 Pool of this chain names as the aToken of the underlying
@@ -637,12 +640,17 @@ class EVMFetcher(ChainFetcher):
                 return ''
         raise Statement_ImportError(self.tr("Blockchain API request failed: ") + f"{self.api_name}: {answer}")
 
-    # A token met for the first time is marked as rebasing when it is an aToken, so its first import is already right
+    # A token met for the first time is marked when it is an aToken or a Lido token, so its first import is already right
     def _token_asset_id(self, symbol: str, name: str, address: str = '') -> int:
         asset_id = super()._token_asset_id(symbol, name, address=address)
-        if address and self._is_new_aave_token(address):
+        marks = lido.receipt_marks(self.location_id, address)
+        if marks is None and address and self._is_new_aave_token(address):
+            marks = True, aave.V3_PROTOCOL
+        if marks is not None:
             asset = next(x for x in self._data[JSF.ASSETS] if x['id'] == asset_id)
-            asset['rebasing'], asset['protocol'] = True, aave.V3_PROTOCOL
+            if marks[0]:
+                asset['rebasing'] = True
+            asset['protocol'] = marks[1]
         return asset_id
 
     # Pulls the native coin's entry out of 'deltas' and records it as a DustAttack payment instead, when it is

@@ -469,6 +469,21 @@ def test_the_realized_accrual_is_lending_interest_at_zero_cost(prepare_db_fifo):
     assert income.amount(2) == _ACCRUED * Decimal('1')
 
 
+# A Lido stETH rebase is staking yield, so the same accrual is realized as a staking reward
+def test_the_realized_accrual_of_lido_is_a_staking_reward(prepare_db_fifo):
+    _rebasing_position(Decimal('7700'))
+    _mark_protocol(5, 'Lido')
+    with pytest.raises(LedgerAssetShortage) as stop:
+        Ledger().rebuild(from_timestamp=0)
+    RebaseResidue().absorb(stop.value)
+    Ledger().rebuild(from_timestamp=0)
+
+    payments = JalDB()._read_to_list(
+        "SELECT type, amount FROM asset_incomes WHERE account_id=1 AND symbol_id=:s",
+        [(":s", symbol_id_for(5, 2))], named=True)
+    assert [(int(x['type']), Decimal(x['amount'])) for x in payments] == [(AssetIncome.StakingReward, _ACCRUED)]
+
+
 # CASE 3 - the full close. Everything the chain holds comes out, so the whole accrual is realized and the position
 # ends at exactly zero on both sides.
 def test_a_full_close_realizes_the_accrual_and_empties_the_position(prepare_db_fifo):

@@ -60,6 +60,8 @@ _REGISTRY = {
         '0xd833484b198d3d05707832cc1c2d62b520d95b8a': (ProtocolCategory.REWARD, 'FluidMerkleDistributor'),
         '0x94e7a5dcbe816e498b89ab752661904e2f56c485': (ProtocolCategory.DEPOSIT, 'Aave v4 Main Spoke'),
         '0xcca852bc40e560adc3b1cc58ca5b55638ce826c9': (ProtocolCategory.HUB, 'Aave v4 Core Hub'),
+        '0xae7ab96520de3a18e5e111b5eaab095312d7fe84': (ProtocolCategory.LENDING, 'Lido stETH'),
+        '0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0': (ProtocolCategory.LENDING, 'Lido wstETH'),
     },
     AssetLocation.ARB_BLOCKCHAIN: {
         '0xa51afafe0263b40edaef0df8781ea9aa03e381a3': (ProtocolCategory.SWAP, 'Uniswap Universal Router (V4)'),

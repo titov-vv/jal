@@ -8,6 +8,7 @@ from jal.db.db import JalDB
 from jal.db.helpers import remove_exponent, now_ts
 from jal.db.operations import AssetIncome, LedgerAssetShortage, LedgerTransaction
 from jal.db.symbol import JalSymbol
+from jal.net import lido
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -120,6 +121,7 @@ class RebaseResidue(JalDB):
     # It is an AssetIncome.LendingInterest, the same operation the interest a movement announces is booked as (see
     # split_welded_interest()), and not the RebaseAdjustment above: both open a lot at zero cost, but a crumb is a
     # rounding artifact worth nothing while this is income that has a value to report.
+    # A Lido stETH rebase is staking yield and is booked as an AssetIncome.StakingReward instead.
     #
     # THE WHOLE tracked delta is recognized, not merely the part the withdrawal was short of. The alternative leaves
     # an orphan: booking only the shortage empties the books while the chain still holds a remainder, and since the
@@ -132,12 +134,16 @@ class RebaseResidue(JalDB):
             return False
         symbol = JalSymbol(shortage.symbol_id)
         accrued = self._tracked_delta(shortage)
+        income = AssetIncome.LendingInterest
+        note = self.tr("Interest accrued on a rebasing balance, realized on withdrawal")
+        if symbol.asset().protocol() == lido.PROTOCOL:
+            income = AssetIncome.StakingReward
+            note = self.tr("Staking reward accrued on a rebasing balance, realized on withdrawal")
         # One second before the operation that revealed it, exactly as the crumb is booked: the quantity has to be on
         # the books by the time the withdrawal is processed, and the withdrawal's own second is taken.
         payment = {'timestamp': shortage.operation.timestamp() - 1, 'number': shortage.operation.number(),
-                   'type': AssetIncome.LendingInterest, 'account_id': shortage.account_id,
-                   'symbol_id': shortage.symbol_id, 'amount': accrued,
-                   'note': self.tr("Interest accrued on a rebasing balance, realized on withdrawal")}
+                   'type': income, 'account_id': shortage.account_id,
+                   'symbol_id': shortage.symbol_id, 'amount': accrued, 'note': note}
         LedgerTransaction.create_new(LedgerTransaction.AssetIncome, payment)
         # The measurement has now been spent, and keeping it would be dangerous rather than merely stale: the books
         # have just risen by the whole delta, so the same snapshot compared against them again would report the
