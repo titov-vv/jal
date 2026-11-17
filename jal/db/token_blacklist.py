@@ -1,7 +1,7 @@
 import logging
 import re
 from hashlib import sha256
-from bip_utils import AdaShelleyStakingAddrDecoder, Bech32ChecksumError, Bech32Decoder
+from bip_utils import AdaShelleyStakingAddrDecoder, Bech32ChecksumError, Bech32Decoder, SS58ChecksumError, SS58Decoder
 from jal.constants import AssetLocation
 from jal.db.db import JalDB
 from jal.db.helpers import now_ts
@@ -241,6 +241,22 @@ def is_near_account(address: str) -> bool:
     return _NEAR_ACCOUNT.fullmatch(address) is not None
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+# Polkadot SS58 address (docs.polkadot.com, SS58 format): one key reads differently per network prefix, so only the
+# Polkadot form (prefix 0, '1...') is accepted - a generic '5...' spelling of the same wallet would never match.
+_POLKADOT_SS58_PREFIX = 0
+
+
+def is_polkadot_address(address: str) -> bool:
+    if not address:
+        return False
+    try:
+        prefix, _account_id = SS58Decoder.Decode(address)   # refuses any account id but 32 bytes
+    except (ValueError, TypeError, IndexError, SS58ChecksumError):   # IndexError: input too short to hold a prefix
+        return False
+    return prefix == _POLKADOT_SS58_PREFIX
+
+
 # True if the address may belong to the given blockchain. Only the chains that JAL is able to check are checked -
 # an address of any other chain is accepted as it is, so that a missing validator never blocks the user. Validators
 # are added here as the fetcher of each chain is implemented.
@@ -266,6 +282,8 @@ def is_valid_address(location_id: int, address: str) -> bool:
         return is_cardano_stake_address(address) or is_cardano_account_key(address)
     if location_id == AssetLocation.NEAR_BLOCKCHAIN:
         return is_near_account(address)
+    if location_id == AssetLocation.DOT_BLOCKCHAIN:
+        return is_polkadot_address(address)
     return True
 
 
