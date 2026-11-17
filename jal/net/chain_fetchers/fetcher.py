@@ -56,7 +56,7 @@ class ChainFetcher(Statement):
         super().__init__()
         self._account = JalAccount(0)
         self._filter = TokenFilter()
-        self._counterparty_accounts = {}   # db account id -> statement account id of counterparty wallets
+        self._counterparty_accounts = {}   # db account id -> statement account id of counterparty accounts
         self._page_count = 0         # pages read from the API so far during the current fetch(), see _report_page()
         self._cancelled = False      # Set by cancel() when the user presses 'Stop' - see _wait_for()
 
@@ -230,13 +230,17 @@ class ChainFetcher(Statement):
         # is not made silent here until the basis can actually be computed.
         if wallet.currency() != self._account.currency():
             return 0
-        if wallet.id() in self._counterparty_accounts:
-            return self._counterparty_accounts[wallet.id()]
+        return self._statement_account(wallet)
+
+    # Statement account id of an account that exists in the database, added to the statement on first use
+    def _statement_account(self, account: JalAccount) -> int:
+        if account.id() in self._counterparty_accounts:
+            return self._counterparty_accounts[account.id()]
         statement_id = self._next_id(JSF.ACCOUNTS)
-        self._data[JSF.ACCOUNTS].append({"id": statement_id, "name": wallet.name(),
-                                         "currency": self.currency_id(JalAsset(wallet.currency()).symbol())})
-        self.set_mapped_id(JSF.ACCOUNTS, statement_id, wallet.id())
-        self._counterparty_accounts[wallet.id()] = statement_id
+        self._data[JSF.ACCOUNTS].append({"id": statement_id, "name": account.name(),
+                                         "currency": self.currency_id(JalAsset(account.currency()).symbol())})
+        self.set_mapped_id(JSF.ACCOUNTS, statement_id, account.id())
+        self._counterparty_accounts[account.id()] = statement_id
         return statement_id
 
     # The address of an end that has no account, normalized as the database stores it, or '' when there is none to
@@ -308,14 +312,16 @@ class ChainFetcher(Statement):
     # side is left as account 0 and the transfer is stored with that end unknown - "money on the way", which the
     # address itself is then what settles. A caller that can't tell which address the movement was with (a netted
     # transaction touching several of them) passes none, and the transfer is handled as it always was.
+    # 'far_side' is the statement account of the other end when the caller knows it without an address (a box).
     def _add_transfer(self, timestamp: int, asset_id: int, amount: Decimal, incoming: bool,
                       tx_hash: str, note: str = '', fee: Decimal = Decimal('0'), fee_asset_id: int = None,
-                      counterparty: str = '') -> None:
+                      counterparty: str = '', far_side: int = 0) -> None:
         symbol_id = self._single_symbol_of(asset_id)
         # 'account' is [withdrawal, deposit, fee] and 0 means "not known to JAL": the counterparty of an on-chain
         # transfer is an address, and one that isn't a wallet of the user's own has no account for the import to
         # use. The gas is always paid by the wallet being fetched, whichever direction the assets move.
-        far_side = self._counterparty_account(counterparty)
+        if not far_side:
+            far_side = self._counterparty_account(counterparty)
         accounts = [far_side, 1, 1] if incoming else [1, far_side, 1]
         # The tx hash goes into 'number' because that is the column a Transfer has. Operations designed later for
         # crypto carry a field named 'tx_hash' instead; a Transfer predates that.

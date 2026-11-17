@@ -4,11 +4,14 @@ import pytest
 from bip_utils import Bip44Changes, CardanoIcarusSeedGenerator, CardanoShelley, Cip1852, Cip1852Coins
 
 from tests.fixtures import project_root, data_path, prepare_db
-from jal.constants import PredefinedAccountType, AssetLocation, AccountData
+from jal.constants import PredefinedAccountType, PredefinedAsset, AssetLocation, AccountData
 from jal.data_import.statement import JSF
 from jal.db.account import JalAccountCreator, JalAccount
+from jal.db.asset import JalAsset
+from jal.db.db import JalDB
 from jal.db.ledger import Ledger
 from jal.db.operations import AssetIncome
+from jal.db.staking import JalStakingBox
 from jal.net.chain_fetchers.cardano import CardanoFetcher
 
 
@@ -57,8 +60,23 @@ def registration(stake: str = OWN_STAKE) -> dict:
     return {"index": 0, "type": "stake_registration", "info": {"stake_address": stake, "deposit": "2000000"}}
 
 
+def deregistration(stake: str = OWN_STAKE) -> dict:
+    return {"index": 0, "type": "stake_deregistration", "info": {"stake_address": stake}}
+
+
+def vote_delegation(stake: str = OWN_STAKE) -> dict:
+    return {"index": 2, "type": "vote_delegation",
+            "info": {"stake_address": stake, "drep_id": "drep_always_abstain", "drep_hex": None}}
+
+
 def withdrawal(lovelace: int, stake: str = OWN_STAKE) -> dict:
     return {"amount": str(lovelace), "stake_addr": stake}
+
+
+# The first delegation of a wallet, as wallets build it: key registration, pool and vote delegation in one go
+def first_delegation(n: int, balance: int, fee: int) -> dict:
+    return transaction(n, [utxo(balance)], [utxo(balance - fee - 2_000_000)], fee=fee, deposit="2000000",
+                       certificates=[registration(), delegation(), vote_delegation()])
 
 
 @pytest.fixture
@@ -80,6 +98,18 @@ def fetch(wallet, *transactions) -> tuple:
     fetcher._get = get
     fetcher._post = lambda endpoint, body: [by_hash[x] for x in body["_tx_hashes"]]
     return fetcher, fetcher.fetch(wallet)
+
+
+# The wallet's stake key box with the deposit of an earlier registration in it
+def deposit_box(wallet) -> JalStakingBox:
+    fetcher, _ = fetch(wallet, first_delegation(0, 50_000_000, fee=176_000))
+    fetcher.import_fetched()
+    [box] = JalStakingBox.all_boxes()
+    return box
+
+
+def box_of(fetcher, transfer: dict, end: int) -> int:
+    return fetcher.mapped_id(JSF.ACCOUNTS, transfer['account'][end])
 
 
 def payments(data, payment_type) -> list:
@@ -162,6 +192,95 @@ def test_foreign_withdrawal_is_ignored(ada_wallet):
     assert data[JSF.TRANSFERS][0]['withdrawal'] == ada(12_000_000)
 
 
+def test_registration_deposit_goes_to_a_new_box(ada_wallet):
+    _, data = fetch(ada_wallet, first_delegation(1, 50_000_000, fee=176_000))
+    assert not data[JSF.ASSET_PAYMENTS]                     # the fee is carried by the deposit, not a gas record
+    [transfer] = data[JSF.TRANSFERS]
+    [box] = [x for x in data[JSF.ACCOUNTS] if x['id'] == transfer['account'][1]]
+    assert transfer['account'][0] == 1 and box['id'] != 1    # out of the wallet, into the box created at import
+    assert box['name'] == "ADA wallet: stake key deposit"
+    assert transfer['withdrawal'] == ada(2_000_000)
+    assert transfer['fee'] == ada(176_000) and 'fee_symbol' in transfer
+    assert 'counterparty_address' not in transfer
+    assert not transfer['description'].startswith('[custody] ')
+    assert not JalStakingBox.all_boxes()                     # nothing is written before the import
+
+
+# Deregistration requires the reward account emptied, so wallets withdraw the rest in the same transaction
+def test_deregistration_returns_the_deposit(ada_wallet):
+    box = deposit_box(ada_wallet)
+    fetcher, data = fetch(ada_wallet, transaction(1, [utxo(40_000_000)], [utxo(42_830_000)], fee=170_000,
+                                                  deposit="-2000000", withdrawals=[withdrawal(1_000_000)],
+                                                  certificates=[deregistration()]))
+    [reward] = payments(data, JSF.PAYMENT_STAKING_REWARD)
+    assert reward['amount'] == ada(1_000_000) and reward['fee'] == ada(170_000)
+    [transfer] = data[JSF.TRANSFERS]
+    assert box_of(fetcher, transfer, 0) == box.id() and transfer['account'][1:] == [1, 1]
+    assert transfer['withdrawal'] == ada(2_000_000) and transfer['fee'] == Decimal('0')
+
+
+def test_deregistration_alone_carries_the_fee(ada_wallet):
+    deposit_box(ada_wallet)
+    _, data = fetch(ada_wallet, transaction(1, [utxo(40_000_000)], [utxo(41_830_000)], fee=170_000,
+                                            deposit="-2000000", certificates=[deregistration()]))
+    assert not data[JSF.ASSET_PAYMENTS]
+    [transfer] = data[JSF.TRANSFERS]
+    assert transfer['withdrawal'] == ada(2_000_000) and transfer['fee'] == ada(170_000)
+
+
+# A deposit JAL never saw paid has no box to come back from; nothing is invented for it
+def test_refund_without_a_box_stays_pending(ada_wallet):
+    fetcher, data = fetch(ada_wallet, transaction(1, [utxo(40_000_000)], [utxo(41_830_000)], fee=170_000,
+                                                  deposit="-2000000", certificates=[deregistration()]))
+    [transfer] = data[JSF.TRANSFERS]
+    assert transfer['account'] == [0, 1, 1]
+    assert transfer['description'].startswith('[custody] ')
+    assert any("no box" in x for x in fetcher.skipped())
+    fetcher.import_fetched()
+    assert not JalStakingBox.all_boxes()
+
+
+def test_registration_with_a_payment(ada_wallet):
+    _, data = fetch(ada_wallet, transaction(1, [utxo(50_000_000)], [utxo(10_000_000, 'other'), utxo(37_820_000)],
+                                            fee=180_000, deposit="2000000", certificates=[registration()]))
+    sent, deposit = sorted(data[JSF.TRANSFERS], key=lambda x: x['withdrawal'], reverse=True)
+    assert sent['withdrawal'] == ada(10_000_000) and sent['fee'] == ada(180_000)
+    assert deposit['withdrawal'] == ada(2_000_000) and deposit['fee'] == Decimal('0')
+
+
+# Register, deregister, register again, each in a fetch of its own: one box, filled, emptied and filled again, and
+# the wallet short by the deposit and the fees alone
+def test_deposit_round_trip_through_one_box(ada_wallet):
+    ada_wallet.set_data(AccountData.Precision, 6)
+    for transactions in ([transaction(1, [utxo(60_000_000, 'other')], [utxo(50_000_000), utxo(9_830_000, 'other')],
+                                      fee=170_000),
+                          first_delegation(2, 50_000_000, fee=176_000)],
+                         [transaction(3, [utxo(47_824_000)], [utxo(49_654_000)], fee=170_000, deposit="-2000000",
+                                      certificates=[deregistration()])],
+                         [first_delegation(4, 49_654_000, fee=176_000)]):
+        fetcher, _ = fetch(ada_wallet, *transactions)
+        fetcher.import_fetched()
+    [box] = JalStakingBox.all_boxes()
+    assert box.protocol() == "Cardano stake key"
+    pending = JalDB._read_to_list("SELECT oid FROM transfers WHERE withdrawal_account IS NULL "
+                                  "OR deposit_account IS NULL", named=True)
+    assert len(pending) == 1                                 # only the arrival from a stranger
+    Ledger().rebuild(from_timestamp=0)
+    ada_id = JalAsset.find({'symbol': 'ADA', 'type': PredefinedAsset.Crypto}).id()
+    assert box.account().get_asset_amount(2 ** 31, ada_id) == ada(2_000_000)
+    assert ada_wallet.get_asset_amount(2 ** 31, ada_id) == ada(50_000_000 - 2 * 176_000 - 170_000 - 2_000_000)
+
+
+# A box created by an import that then failed is taken up again, not duplicated
+def test_an_empty_box_left_behind_is_reused(ada_wallet):
+    left = JalStakingBox.create(JalAccount(ada_wallet.id()), "ADA wallet: stake key deposit",
+                                protocol="Cardano stake key")
+    fetcher, data = fetch(ada_wallet, first_delegation(1, 50_000_000, fee=176_000))
+    assert box_of(fetcher, data[JSF.TRANSFERS][0], 1) == left.id()
+    fetcher.import_fetched()
+    assert [x.id() for x in JalStakingBox.all_boxes()] == [left.id()]
+
+
 def test_dust_is_recorded_as_an_attack(ada_wallet):
     _, data = fetch(ada_wallet, transaction(1, [utxo(5_000_000, 'other')], [utxo(1_000_000), utxo(3_830_000, 'other')],
                                             fee=170_000))
@@ -170,8 +289,13 @@ def test_dust_is_recorded_as_an_attack(ada_wallet):
 
 
 @pytest.mark.parametrize("shape, reason", [
+    (dict(inputs=[utxo(600_000_000)], outputs=[utxo(99_820_000)], deposit="500000000",
+          certificates=[{"index": 0, "type": "drep_registration", "info": {"deposit": "500000000"}}]),
+     "other than the wallet's stake key"),
+    (dict(inputs=[utxo(50_000_000)], outputs=[utxo(46_820_000)], deposit="3000000",
+          certificates=[registration()]), "doesn't match"),
     (dict(inputs=[utxo(50_000_000)], outputs=[utxo(47_820_000)], deposit="2000000",
-          certificates=[registration(), delegation()]), "deposit"),
+          certificates=[registration(), delegation(OTHER_STAKE)]), "other than the wallet's stake key"),
     (dict(inputs=[utxo(10_000_000, 'other')], outputs=[utxo(1_500_000, assets=[{"policy_id": "00" * 28}]),
                                                        utxo(8_320_000, 'other')]), "tokens"),
     (dict(inputs=[utxo(50_000_000)], outputs=[utxo(49_820_000)], plutus_contracts=[{"valid_contract": True}],
