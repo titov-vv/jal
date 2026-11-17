@@ -4,7 +4,7 @@ import logging
 from decimal import Decimal
 
 import xxhash
-from bip_utils import SS58Decoder, SS58Encoder
+from bip_utils import SS58ChecksumError, SS58Decoder, SS58Encoder
 
 from jal.constants import AssetLocation
 from jal.data_import.statement import Statement_ImportError, JSF
@@ -167,12 +167,13 @@ class PolkadotFetcher(ChainFetcher):
 
     # (pool id, points) of the wallet's pool membership at the block, None if it isn't a member there
     def _pool_member(self, height: int):
-        value = self._storage(_POOL_MEMBERS + self._twox64_concat(self._account_id()), height)
+        value = self._storage(self.pool_member_key(self._account_id()), height)
         if value is None:
             return None
-        if len(value) < 20:
+        member = self.decode_pool_member(value)
+        if member is None:
             raise Statement_ImportError(self.tr("Unreadable Polkadot pool membership: ") + value.hex())
-        return int.from_bytes(value[0:4], 'little'), int.from_bytes(value[4:20], 'little')
+        return member
 
     # Plancks of the wallet's pool bond at the block, rewards that were compounded into it included
     def _pool_bond(self, height: int) -> int:
@@ -380,6 +381,30 @@ class PolkadotFetcher(ChainFetcher):
     def pool_account(pool_id: int, kind: int) -> str:
         seed = b"modl" + _POOL_PALLET_ID + bytes([kind]) + pool_id.to_bytes(4, 'little')
         return SS58Encoder.Encode(seed.ljust(32, b"\0"), _SS58_PREFIX)
+
+    # Pool id whose bonded account the address is, None for any other address
+    @staticmethod
+    def bonded_pool_id(address: str):
+        try:
+            prefix, data = SS58Decoder.Decode(address)
+        except (ValueError, TypeError, IndexError, SS58ChecksumError):
+            return None
+        seed = b"modl" + _POOL_PALLET_ID + bytes([_POOL_BONDED_ACCOUNT])
+        if prefix != _SS58_PREFIX or not data.startswith(seed) or any(data[len(seed) + 4:]):
+            return None
+        return int.from_bytes(data[len(seed):len(seed) + 4], 'little')
+
+    # Storage key of an account's NominationPools.PoolMembers entry, without '0x'
+    @classmethod
+    def pool_member_key(cls, account_id: bytes) -> str:
+        return _POOL_MEMBERS + cls._twox64_concat(account_id)
+
+    # (pool id, points) out of a PoolMembers entry, None if it is too short to be one
+    @staticmethod
+    def decode_pool_member(value: bytes):
+        if len(value) < 20:
+            return None
+        return int.from_bytes(value[0:4], 'little'), int.from_bytes(value[4:20], 'little')
 
     # ------------------------------------------------------------------------------------------------------------------
     # An extrinsic the wallet didn't sign: a transfer to it, or the wallet's own failed transfer

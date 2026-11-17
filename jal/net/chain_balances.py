@@ -4,6 +4,7 @@ import logging
 from decimal import Decimal, DecimalException
 
 from PySide6.QtWidgets import QApplication
+from bip_utils import SS58Decoder
 
 from jal.constants import AssetLocation, PredefinedAccountType, PredefinedAsset
 from jal.db.account import JalAccount
@@ -14,10 +15,11 @@ from jal.db.receivable import JalReceivable
 from jal.db.settings import JalSettings
 from jal.db.staking import JalStakingBox
 from jal.db.symbol import JalSymbol
-from jal.db.token_blacklist import normalize_address
+from jal.db.token_blacklist import normalize_address, is_polkadot_address
 from jal.net import aave, merkl, stakelink
 from jal.net.chain_fetchers.cardano_keys import stake_address
 from jal.net.chain_fetchers.near import NearFetcher, POOL_SUFFIXES, RPC_URL as NEAR_RPC_URL
+from jal.net.chain_fetchers.polkadot import PolkadotFetcher, RPC_URL as DOT_RPC_URL
 from jal.net.web_request import WebRequest
 
 # The keyless 'info' endpoint of HyperCore, the same one HyperliquidFetcher reads its history from
@@ -54,6 +56,7 @@ _KOIOS_ACCOUNT_INFO = "https://api.koios.rest/api/v1/account_info"
 _LOVELACE = Decimal('10') ** 6
 # The source of a Cardano reward: the wallet's own reward account, the same for every wallet; shown as is
 _ADA_REWARD_SOURCE = "Cardano reward account"
+_DOT_REWARD_SOURCE = "Polkadot nomination pool"
 
 # Call data of the ERC-20 views that take no arguments - the function selector alone. 'decimals()' is the only way to
 # learn the scale of a balance, which is reported as a bare integer (see _token_decimals); 'name()' and 'symbol()' are
@@ -297,6 +300,35 @@ class ChainBalanceReader(JalDB):
             logging.warning(self.tr("Unreadable staking balance in pool ") + pool)
             return None
         return asset.id(), NearFetcher._near(yocto)
+
+    # Polkadot nomination pool: the wallet's bond in the pool whose bonded account the box stands at, unbonding
+    # included. The bond is held in the wallet's own account (delegated staking), so it is asked about the wallet.
+    def _polkadot_box_balance(self, box: JalStakingBox, timestamp: int):
+        pool_id = PolkadotFetcher.bonded_pool_id(box.address())
+        wallet = self._wallet_of_box(box)
+        if pool_id is None or wallet is None or not is_polkadot_address(wallet.address()):
+            logging.warning(self.tr("On-chain balance not read - the box is not one wallet's stake in a pool: ")
+                            + box.name())
+            return None
+        asset = self._sole_asset_of(box, timestamp)
+        if asset is None:
+            return None
+        key = PolkadotFetcher.pool_member_key(SS58Decoder.Decode(wallet.address())[1])
+        value = self._polkadot_rpc("state_getStorage", ["0x" + key])
+        if value is not None:
+            try:
+                member = PolkadotFetcher.decode_pool_member(bytes.fromhex(value[2:]))
+            except (TypeError, ValueError):
+                member = None
+            if member is None or member[0] != pool_id:
+                logging.warning(self.tr("On-chain balance not read - the wallet is not a member of the pool: ")
+                                + box.name())
+                return None
+        planck = self._polkadot_u128("NominationPoolsApi_member_total_balance", wallet)
+        if planck is None:
+            logging.warning(self.tr("Unreadable staking balance in pool ") + box.address())
+            return None
+        return asset.id(), PolkadotFetcher._dot(planck)
 
     # ------------------------------------------------------------------------------------------------------------------
     # EVM CONTRACTS. What every reading of an EVM chain needs before it can ask anything: which provider serves the
@@ -640,6 +672,7 @@ class ChainBalanceReader(JalDB):
         return {AssetLocation.HL_BLOCKCHAIN: self._hyperliquid_box_balance,
                 AssetLocation.SOL_BLOCKCHAIN: self._solana_box_balance,
                 AssetLocation.NEAR_BLOCKCHAIN: self._near_box_balance,
+                AssetLocation.DOT_BLOCKCHAIN: self._polkadot_box_balance,
                 AssetLocation.ETH_BLOCKCHAIN: self._evm_box_balance}
 
     # The staking contracts of an EVM chain that can be read, as {location: {contract address: reader}}.
@@ -705,6 +738,7 @@ class ChainBalanceReader(JalDB):
         readers = {location: {merkl.DISTRIBUTOR: self._merkl_claims} for location in self._evm_chains()}
         readers[AssetLocation.ETH_BLOCKCHAIN].update({module: self._aave_claims for module in aave.SAFETY_MODULES})
         readers[AssetLocation.ADA_BLOCKCHAIN] = {_ADA_REWARD_SOURCE: self._cardano_rewards}
+        readers[AssetLocation.DOT_BLOCKCHAIN] = {_DOT_REWARD_SOURCE: self._polkadot_pool_rewards}
         return readers
 
     # Which sources may owe one wallet something, as {contract: (reader, {location: account})}.
@@ -818,7 +852,7 @@ class ChainBalanceReader(JalDB):
         except (TypeError, ValueError, AttributeError, KeyError):
             logging.warning(self.tr("Could not read the claimable rewards of ") + account.name())
             return 0
-        asset = self._native_ada(account, timestamp)
+        asset = self._native_coin(account, timestamp, AssetLocation.ADA_BLOCKCHAIN, source)
         if owed == 0 or asset is None:
             if owed:
                 logging.warning(self.tr("Claimable rewards not read - the wallet holds no ADA: ") + account.name())
@@ -828,17 +862,54 @@ class ChainBalanceReader(JalDB):
         self._forget_unreported(timestamp, account, source, {asset.id()})
         return 1
 
-    # The wallet's ADA: the native coin it holds, else the asset of an earlier reading of its rewards
-    def _native_ada(self, account: JalAccount, timestamp: int):
+    # The wallet's native coin of the chain: the one it holds, else the asset of an earlier reading of the source
+    def _native_coin(self, account: JalAccount, timestamp: int, location: int, source: str):
         for position in account.assets_list(timestamp):
-            listing = JalSymbol(position['asset'].listing_id(currency=account.currency(),
-                                                             location=AssetLocation.ADA_BLOCKCHAIN))
-            if listing.location() == AssetLocation.ADA_BLOCKCHAIN \
-                    and AssetLocation.is_native_coin(AssetLocation.ADA_BLOCKCHAIN, listing.symbol()):
+            listing = JalSymbol(position['asset'].listing_id(currency=account.currency(), location=location))
+            if listing.location() == location and AssetLocation.is_native_coin(location, listing.symbol()):
                 return position['asset']
-        known = [asset_id for asset_id, source in self._receivables.known_claims(account.id())
-                 if source == _ADA_REWARD_SOURCE]
+        known = [asset_id for asset_id, known_source in self._receivables.known_claims(account.id())
+                 if known_source == source]
         return JalAsset(known[0]) if known else None
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # POLKADOT. A nomination pool's reward waits in the pool's reward account until a claim pays it into the wallet,
+    # which the fetcher books as a StakingReward; what is read here is the part not yet claimed.
+    def _polkadot_pool_rewards(self, timestamp: int, source: str, address: str, accounts: dict) -> int:
+        account = accounts[AssetLocation.DOT_BLOCKCHAIN]
+        if account.account_type() != PredefinedAccountType.Wallet:    # a box stands at the pool's own account
+            return 0
+        planck = self._polkadot_u128("NominationPoolsApi_pending_rewards", account)
+        if planck is None:    # a failed reading, never "nothing is owed"
+            logging.warning(self.tr("Could not read the claimable rewards of ") + account.name())
+            return 0
+        owed = PolkadotFetcher._dot(planck)
+        asset = self._native_coin(account, timestamp, AssetLocation.DOT_BLOCKCHAIN, source)
+        if owed == 0 or asset is None:
+            if owed:
+                logging.warning(self.tr("Claimable rewards not read - the wallet holds no DOT: ") + account.name())
+            self._forget_unreported(timestamp, account, source, set())
+            return 0
+        self._receivables.store(timestamp, account.id(), asset.id(), source, owed)
+        self._forget_unreported(timestamp, account, source, {asset.id()})
+        return 1
+
+    # A Polkadot RPC result, None on any failure
+    def _polkadot_rpc(self, method: str, params: list):
+        answer = self._post(DOT_RPC_URL, {"jsonrpc": "2.0", "id": 1, "method": method, "params": params})
+        return answer.get('result') if isinstance(answer, dict) else None
+
+    # A wallet-keyed runtime API call answering a u128 (Balance), at the latest block; None if it can't be read
+    def _polkadot_u128(self, call: str, wallet: JalAccount):
+        if not is_polkadot_address(wallet.address()):
+            return None
+        account_id = SS58Decoder.Decode(wallet.address())[1]
+        value = self._polkadot_rpc("state_call", [call, "0x" + account_id.hex()])
+        try:
+            data = bytes.fromhex(value[2:])
+        except (TypeError, ValueError):
+            return None
+        return int.from_bytes(data, 'little') if len(data) == 16 else None
 
     # ------------------------------------------------------------------------------------------------------------------
     # MERKL, the first source and the only one with a merkle distribution behind it.
