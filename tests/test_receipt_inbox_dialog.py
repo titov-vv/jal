@@ -1210,6 +1210,28 @@ def test_window_size_and_line_columns_are_kept(owner, inbox):
     dialog.close()
 
 
+# A resize just before 'Add' captures the layout after the model is gone; the next receipt keeps all its columns
+def test_line_columns_survive_a_resize_before_add(owner, inbox):
+    make_jalr(inbox, "20260814-184200-00000001.jalr", codes=[LIDL])
+    make_jalr(inbox, "20260814-184300-00000002.jalr", codes=[PHARMACY])
+    dialog = _shown_dialog(owner)
+    dialog.ui.InboxList.setCurrentCell(0, 0)
+    dialog.loadInboxReceipt()
+    dialog.ui.LinesTableView.setColumnWidth(1, 250)
+    QTest.qWait(50)
+    header = dialog.ui.LinesTableView.horizontalHeader()
+    header.sectionResized.emit(0, 1, 2)        # as a window resize delivers it within clearSlipData()
+    _load_and_add(dialog)
+    QTest.qWait(50)
+    dialog.ui.InboxList.setCurrentCell(0, 0)
+    dialog.loadInboxReceipt()
+    QTest.qWait(50)
+    assert header.count() == 4
+    assert header.length() == sum(header.sectionSize(i) for i in range(header.count()))
+    assert header.sectionSize(1) == 250
+    dialog.close()
+
+
 def test_pdf_of_the_computer_joins_the_inbox(owner, inbox, tmp_path, monkeypatch):
     make_jalr(inbox, "20260814-184200-00000001.jalr", codes=[LIDL])
     source = tmp_path / "receipt.pdf"

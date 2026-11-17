@@ -327,13 +327,8 @@ class ImportReceiptDialog(QDialog):
         self._set_scan_pane(False)      # the stored geometry is that of the form alone
         JalSettings().setValue(self.GEOMETRY_KEY, base64.encodebytes(self.saveGeometry().data()).decode('utf-8'))
         JalSettings().setValue(self.SCAN_WIDTH_KEY, self._scan_width)
-        self._save_lines_columns()
+        save_columns(self, Setup.COLUMNS_STATE_PREFIX)
         super().done(result)
-
-    # Without a loaded receipt the header has no sections, and saving it would wipe the stored widths
-    def _save_lines_columns(self):
-        if self.ui.LinesTableView.model() is not None:
-            save_columns(self, Setup.COLUMNS_STATE_PREFIX)
 
     # -----------------------------------------------------------------------------------------------
     # Lists the receipt files that the phone app has delivered into the inbox folder
@@ -782,6 +777,6 @@ class ImportReceiptDialog(QDialog):
         self.ui.ScanView.clear()
         self._set_scan_pane(False)
         self.ui.NoteEdit.clear()
-        self._save_lines_columns()
+        save_columns(self, Setup.COLUMNS_STATE_PREFIX)
         self.ui.LinesTableView.setModel(None)
         self._show_verdict()

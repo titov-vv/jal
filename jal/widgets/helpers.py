@@ -236,7 +236,7 @@ def save_columns(widget, prefix: str):
         if isinstance(view.window(), QDialog) and view.window() is not widget.window():
             continue    # a dialog this window merely owns stores its own columns, under its own key
         header = _view_header(view)
-        if header is None:
+        if header is None or not header.count():    # an empty header restores as one that paints no columns
             continue
         key = columns_state_key(view, prefix)
         state = header.saveState()
@@ -265,7 +265,8 @@ def _columns_resized(header, key, *_args):
 def _capture_columns(header, key):
     _pending_capture.discard(key)
     try:
-        _live_columns[key] = header.saveState()
+        if header.count():      # a view without a model has no layout to keep
+            _live_columns[key] = header.saveState()
     except RuntimeError:
         pass      # the table was closed before the capture ran, and its layout was stored by that close
 
