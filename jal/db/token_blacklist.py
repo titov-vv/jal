@@ -1,5 +1,6 @@
 import logging
 from hashlib import sha256
+from bip_utils import AdaShelleyStakingAddrDecoder, Bech32ChecksumError, Bech32Decoder
 from jal.constants import AssetLocation
 from jal.db.db import JalDB
 from jal.db.helpers import now_ts
@@ -29,6 +30,9 @@ def normalize_address(location_id: int, address: str) -> str:
     # never equals the one the chain reports - and a transfer to it would be read as touching nobody's wallet.
     # Base58 addresses and extended keys are NOT folded: there case carries meaning.
     if location_id == AssetLocation.BTC_BLOCKCHAIN and address[:3].lower() == 'bc1':
+        address = address.lower()
+    # Cardano's Shelley forms are bech32 as well; a Byron address ('Ae2...', 'DdzFF...') is base58 and kept verbatim.
+    if location_id == AssetLocation.ADA_BLOCKCHAIN and address.lower().startswith(_CARDANO_BECH32_PREFIXES):
         address = address.lower()
     return address
 
@@ -194,6 +198,35 @@ def is_bitcoin_address(address: str) -> bool:
     return _is_base58check(address, _BTC_ADDRESS_VERSIONS, 21)
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+# A Cardano wallet is identified by its stake address ('stake1...'), which every address of the wallet carries, or by
+# the account public key ('acct_xvk1...') that the stake address derives from (chain_fetchers/cardano_keys.py).
+_CARDANO_BECH32_PREFIXES = ('addr1', 'stake1', 'acct_xvk1')
+_CARDANO_ACCOUNT_KEY_HRP = 'acct_xvk'
+_CARDANO_ACCOUNT_KEY_LENGTH = 64    # 32-byte Ed25519 public key + 32-byte chain code
+
+
+# True for a mainnet stake address of a key (not of a script), checksum and header byte included
+def is_cardano_stake_address(address: str) -> bool:
+    if not address:
+        return False
+    try:
+        AdaShelleyStakingAddrDecoder.DecodeAddr(address)
+    except (ValueError, TypeError, Bech32ChecksumError):
+        return False
+    return True
+
+
+# True for a bech32 account-level extended public key (CIP-1852 m/1852'/1815'/account')
+def is_cardano_account_key(key: str) -> bool:
+    if not key:
+        return False
+    try:
+        return len(Bech32Decoder.Decode(_CARDANO_ACCOUNT_KEY_HRP, key)) == _CARDANO_ACCOUNT_KEY_LENGTH
+    except (ValueError, TypeError, Bech32ChecksumError):
+        return False
+
+
 # True if the address may belong to the given blockchain. Only the chains that JAL is able to check are checked -
 # an address of any other chain is accepted as it is, so that a missing validator never blocks the user. Validators
 # are added here as the fetcher of each chain is implemented.
@@ -215,6 +248,8 @@ def is_valid_address(location_id: int, address: str) -> bool:
     # HD account - the fetcher accepts both, so both are valid here.
     if location_id == AssetLocation.BTC_BLOCKCHAIN:
         return is_bitcoin_address(address) or is_extended_public_key(address)
+    if location_id == AssetLocation.ADA_BLOCKCHAIN:
+        return is_cardano_stake_address(address) or is_cardano_account_key(address)
     return True
 
 
