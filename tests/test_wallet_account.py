@@ -15,8 +15,7 @@ from jal.widgets.account_dialog import AccountDialog
 # only in ways that a mistyped address would.
 TRX_ADDRESS = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
 ETH_ADDRESS = "0x111111111117dC0aa78b770fA6A738034120C302"
-# A Polkadot address as typed, for the chains JAL knows but has no fetcher for (not a real SS58 checksum)
-DOT_ADDRESS = "1ExampleDotAddressNotChecked"
+DOT_ADDRESS = "13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB"     # Polkadot treasury
 
 
 # AccountDialog reports invalid data with a modal QMessageBox, which would block a test run forever.
@@ -60,22 +59,20 @@ def test_wallet_account_creation(prepare_db):
     assert int(account.get_data(AccountData.Chain)) == AssetLocation.TRX_BLOCKCHAIN
 
 
-def test_wallet_on_a_chain_without_a_fetcher(prepare_db):
+def test_wallet_on_polkadot(prepare_db):
     account = JalAccountCreator(currency_id=2, number='', name='DOT wallet', organization=1,
                                 account_type=PredefinedAccountType.Wallet,
                                 address=DOT_ADDRESS, chain=AssetLocation.DOT_BLOCKCHAIN).commit()
     assert account.account_type() == PredefinedAccountType.Wallet
     assert account.chain() == AssetLocation.DOT_BLOCKCHAIN
-    # An address of a chain JAL has no validator for is stored as it was typed - see is_valid_address()
     assert account.address() == DOT_ADDRESS
-    # The chain is one of the chains JAL knows, and it is drawn like any other...
-    assert AssetLocation.DOT_BLOCKCHAIN in AssetLocation.BLOCKCHAINS
     assert AssetLocation.icon_of(AssetLocation.DOT_BLOCKCHAIN)
-    # ... while nothing offers to fetch it: the Import->Blockchain menu is built from the fetcher modules that
-    # exist, so a chain kept by hand simply never appears there.
+
+
+# The Import->Blockchain menu is built from the fetcher modules that exist; every chain JAL knows has one
+def test_every_known_chain_has_a_fetcher(prepare_db):
     fetchable = [item['location_id'] for item in ChainFetchers(None).items]
-    assert AssetLocation.DOT_BLOCKCHAIN not in fetchable
-    assert AssetLocation.ADA_BLOCKCHAIN in fetchable and AssetLocation.NEAR_BLOCKCHAIN in fetchable
+    assert set(AssetLocation.BLOCKCHAINS) <= set(fetchable)
 
 
 def test_wallet_account_mandatory_attributes(prepare_db):

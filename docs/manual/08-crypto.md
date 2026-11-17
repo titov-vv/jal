@@ -40,10 +40,10 @@ address per chain.
 > A NEAR wallet is its **account id** — a name such as `alice.near`, or the 64-character hex id of an
 > implicit account — exactly as the wallet shows it, in lower case.
 
-Polkadot wallets are kept by hand: JAL knows this chain — the account, the price of its coin and its
-logo all work — but has no reader for it, so its operations are entered manually. Put the transaction
-hash into the operation's *Number* field: a reader written for the chain one day will then recognize
-what you have already entered instead of importing it a second time.
+> A Polkadot wallet is its address in the **Polkadot format**, starting with `1`. The same wallet
+> shown in the generic Substrate format (starting with `5`) or as a Kusama address is refused; switch
+> the wallet's display to Polkadot and copy it from there. JAL reads it on **Asset Hub**, where DOT
+> balances and staking have lived since November 2025; earlier history on the relay chain is not read.
 
 ## Reading a wallet from the blockchain
 
@@ -68,8 +68,8 @@ almost every request. Put your keys in **Settings → Preferences → Blockchain
 | **Helius API key** | Solana | helius.dev |
 | **TronGrid API key** | Tron | trongrid.io |
 
-Bitcoin, Hyperliquid, Cardano and NEAR need no key. NEAR's explorer answers about ten requests a
-minute without one, so a NEAR fetch may pause for a minute and then carry on by itself.
+Bitcoin, Hyperliquid, Cardano, NEAR and Polkadot need no key. NEAR's explorer answers about ten requests
+a minute without one, so a NEAR fetch may pause for a minute and then carry on by itself.
 
 ![Preferences](img/dlg_preferences.png)
 
@@ -276,6 +276,30 @@ Until then, *Staked positions* shows what the pool holds for you, rewards includ
 **accrued** amount. Liquid staking tokens and other NEAR tokens are not read yet; a transaction with
 them stops the fetch.
 
+### Polkadot nomination pools
+
+Joining a **nomination pool** does not move your DOT anywhere: the chain locks it in your own wallet
+until you unbond it and the 28 days of unbonding have passed. JAL still records it as a staked
+position, because locked coins cannot be spent. What the fetch records:
+
+* **Joining** or **bonding more** is a transfer from the wallet to the pool. The first one is left in
+  *Unsettled transfers*: settle it with **Assign a staked position…**, and the position takes the
+  address the transfer went to (the pool's own account), so every later bond and withdrawal settles by
+  itself.
+* **Rewards** are never added by themselves: they wait in the pool until they are claimed. Each payout
+  is recorded as a **Staking reward** on its date — a claim of yours, the one made automatically when
+  you bond more or unbond, or a payout someone else triggered on your behalf (the chain allows that
+  unless you set your claim permission to *Permissioned*). Compounding is such a payout bonded at
+  once: a Staking reward and a transfer into the position.
+* **Unbonding** moves nothing yet, so it is an *Action* of type *Position command*, as is a change of
+  the claim permission; **withdrawing** after the 28 days is a transfer back to the wallet.
+
+Rewards the pool owes you but has not paid are listed as a reward waiting to be claimed (see below),
+from the *Polkadot nomination pool*. Before importing a block the fetch checks that the wallet's DOT on
+the chain changed by exactly what it found there, and stops otherwise — so a transfer arriving from
+another chain, which the history service used does not list, cannot be missed silently. Asset Hub
+tokens, swaps and direct nomination are not read yet; a transaction with them stops the fetch.
+
 ### Lending with no receipt token (Aave v4)
 
 Aave v4 hands nothing back when you supply: the coins go to one of its **Hubs** and the position is
@@ -316,8 +340,8 @@ your own and a picture.
 ### Rewards waiting to be claimed
 
 Some rewards are not paid into the wallet at all until you claim them — a
-[Merkl](https://merkl.xyz/) campaign, the rewards of Aave's Safety Module, or the reward account of a
-Cardano wallet. They are earned money
+[Merkl](https://merkl.xyz/) campaign, the rewards of Aave's Safety Module, the reward account of a
+Cardano wallet, or what a Polkadot nomination pool owes you. They are earned money
 that has not arrived, so JAL lists them in the same report, one row per wallet, asset and
 distributor, with the amount in the **Accrued** column and no position behind it.
 

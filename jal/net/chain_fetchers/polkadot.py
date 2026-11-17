@@ -4,13 +4,17 @@ import logging
 from decimal import Decimal
 
 import xxhash
+from PySide6.QtCore import QT_TRANSLATE_NOOP
 from bip_utils import SS58ChecksumError, SS58Decoder, SS58Encoder
 
 from jal.constants import AssetLocation
 from jal.data_import.statement import Statement_ImportError, JSF
+from jal.db.settings_registry import SettingsRegistry, SettingDescriptor
 from jal.db.token_blacklist import is_polkadot_address
 from jal.net.chain_fetchers.fetcher import ChainFetcher
 from jal.net.web_request import WebRequest
+
+JAL_FETCHER_CLASS = "PolkadotFetcher"
 
 # Nova Wallet's public SubQuery indexer of Polkadot Asset Hub (github.com/novasamatech/subquery-history), keyless
 INDEXER_URL = "https://subquery-history-polkadot-ah-prod.novasama-tech.org"
@@ -491,3 +495,12 @@ class PolkadotFetcher(ChainFetcher):
     @staticmethod
     def _dot(planck: int) -> Decimal:
         return Decimal(f"{planck}e-{_PLANCK_DIGITS}")
+
+
+SettingsRegistry.register(SettingDescriptor(
+    key="DustThreshold_DOT",
+    page=QT_TRANSLATE_NOOP("Preferences", "Blockchain"),
+    label=QT_TRANSLATE_NOOP("Preferences", "DOT dust threshold"), default=PolkadotFetcher.native_dust_threshold,
+    tooltip=QT_TRANSLATE_NOOP("Preferences",
+                              "An incoming DOT transfer below this amount, from an address you never dealt with, "
+                              "is recorded as a dust attack instead of an ordinary transfer.")))

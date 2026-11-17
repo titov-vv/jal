@@ -575,7 +575,7 @@ class AssetLocation(PredefinedList, QObject):
     AVAX_BLOCKCHAIN = 307
     NEAR_BLOCKCHAIN = 308
     ADA_BLOCKCHAIN = 309
-    DOT_BLOCKCHAIN = 310   # Chain that JAL knows but has no fetcher for
+    DOT_BLOCKCHAIN = 310
     CEX_BINANCE = 401
     CEX_KUCOIN = 402
     CEX_BITGET = 403
@@ -630,7 +630,7 @@ class AssetLocation(PredefinedList, QObject):
     # Identifier that holds a token's contract (or mint) address on each chain. The address is the only trustworthy
     # key for a token - tickers and names are chosen by whoever deployed the contract - so it identifies a token
     # everywhere: quote downloads, statement import and the chain fetchers. A chain whose tokens JAL doesn't deal
-    # with is absent: Bitcoin has none at all, and NEAR/Cardano/Polkadot are fetched (or kept by hand) for their coin only.
+    # with is absent: Bitcoin has none at all, and NEAR/Cardano/Polkadot are fetched for their coin only.
     _ADDRESS_IDS = {
         ETH_BLOCKCHAIN: SymbolId.ETH_ADDRESS,
         ARB_BLOCKCHAIN: SymbolId.ARB_ADDRESS,

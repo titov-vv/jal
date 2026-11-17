@@ -2205,214 +2205,227 @@ Do you want to delete the category anyway?</source>
 <context>
     <name>ChainBalanceReader</name>
     <message>
-        <location filename="../net/chain_balances.py" line="168"/>
+        <location filename="../net/chain_balances.py" line="171"/>
         <source>On-chain balance not read - the wallet has several staking boxes: </source>
         <translation>Ончейн-баланс не прочитан - у кошелька несколько позиций стейкинга: </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="203"/>
+        <location filename="../net/chain_balances.py" line="206"/>
         <source>On-chain balance not read - unexpected asset in a Hyperliquid staking box: </source>
         <translation>Ончейн-баланс не прочитан - неожиданный актив в позиции стейкинга Hyperliquid: </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="208"/>
+        <location filename="../net/chain_balances.py" line="211"/>
         <source>Unexpected answer from Hyperliquid for account </source>
         <translation>Неожиданный ответ от Hyperliquid для счёта </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="215"/>
+        <location filename="../net/chain_balances.py" line="218"/>
         <source>Hyperliquid staking balance is missing a field: </source>
         <translation>В балансе стейкинга Hyperliquid отсутствует поле: </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="220"/>
+        <location filename="../net/chain_balances.py" line="223"/>
         <source>Unreadable Hyperliquid staking balance in field: </source>
         <translation>Нечитаемый баланс стейкинга Hyperliquid в поле: </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="250"/>
+        <location filename="../net/chain_balances.py" line="253"/>
         <source>On-chain balance not read - the Helius API key isn&apos;t set</source>
         <translation>Ончейн-баланс не прочитан - не указан ключ API Helius</translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="256"/>
+        <location filename="../net/chain_balances.py" line="259"/>
         <source>Unexpected answer from Helius for stake account </source>
         <translation>Неожиданный ответ от Helius для стейкинг-счёта </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="265"/>
+        <location filename="../net/chain_balances.py" line="268"/>
         <source>Stake account no longer exists on chain: </source>
         <translation>Стейкинг-счёт больше не существует в блокчейне: </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="268"/>
+        <location filename="../net/chain_balances.py" line="271"/>
         <source>On-chain balance not read - the address is not a stake account: </source>
         <translation>Ончейн-баланс не прочитан - адрес не является стейкинг-счётом: </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="273"/>
+        <location filename="../net/chain_balances.py" line="276"/>
         <source>Unreadable balance of stake account </source>
         <translation>Нечитаемый баланс стейкинг-счёта </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="282"/>
+        <location filename="../net/chain_balances.py" line="285"/>
+        <location filename="../net/chain_balances.py" line="310"/>
         <source>On-chain balance not read - the box is not one wallet&apos;s stake in a pool: </source>
         <translation>Ончейн-баланс не прочитан - позиция стейкинга не является стейком одного кошелька в пуле: </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="297"/>
+        <location filename="../net/chain_balances.py" line="300"/>
+        <location filename="../net/chain_balances.py" line="329"/>
         <source>Unreadable staking balance in pool </source>
         <translation>Нечитаемый баланс стейкинга в пуле </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="367"/>
+        <location filename="../net/chain_balances.py" line="324"/>
+        <source>On-chain balance not read - the wallet is not a member of the pool: </source>
+        <translation>Баланс в блокчейне не прочитан - кошелёк не является участником пула: </translation>
+    </message>
+    <message>
+        <location filename="../net/chain_balances.py" line="399"/>
         <source>Could not read the decimals of token </source>
         <translation>Не удалось прочитать количество знаков после запятой токена </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="372"/>
+        <location filename="../net/chain_balances.py" line="404"/>
         <source>Unreadable decimals of token </source>
         <translation>Нечитаемое количество знаков после запятой токена </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="375"/>
-        <location filename="../net/chain_balances.py" line="999"/>
+        <location filename="../net/chain_balances.py" line="407"/>
+        <location filename="../net/chain_balances.py" line="1070"/>
         <source>Implausible decimals of token </source>
         <translation>Неправдоподобное количество знаков после запятой токена </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="438"/>
-        <location filename="../net/chain_balances.py" line="529"/>
-        <location filename="../net/chain_balances.py" line="580"/>
+        <location filename="../net/chain_balances.py" line="470"/>
+        <location filename="../net/chain_balances.py" line="561"/>
+        <location filename="../net/chain_balances.py" line="612"/>
         <source>On-chain balance not read - the API key isn&apos;t set: </source>
         <translation>Ончейн-баланс не прочитан - не указан ключ API: </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="446"/>
+        <location filename="../net/chain_balances.py" line="478"/>
         <source>On-chain balance not read - the pool does not stake this asset: </source>
         <translation>Ончейн-баланс не прочитан - пул не стейкает этот актив: </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="465"/>
+        <location filename="../net/chain_balances.py" line="497"/>
         <source>Could not read the stake.link position of </source>
         <translation>Не удалось прочитать позицию stake.link счёта </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="470"/>
+        <location filename="../net/chain_balances.py" line="502"/>
         <source>Unreadable stake.link position of </source>
         <translation>Нечитаемая позиция stake.link счёта </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="484"/>
+        <location filename="../net/chain_balances.py" line="516"/>
         <source>Could not read the stake.link distribution of </source>
         <translation>Не удалось прочитать распределение stake.link контракта </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="489"/>
-        <location filename="../net/chain_balances.py" line="497"/>
+        <location filename="../net/chain_balances.py" line="521"/>
+        <location filename="../net/chain_balances.py" line="529"/>
         <source>Unreadable stake.link distribution of </source>
         <translation>Нечитаемое распределение stake.link контракта </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="505"/>
+        <location filename="../net/chain_balances.py" line="537"/>
         <source>stake.link distribution didn&apos;t match the published root, or couldn&apos;t be read: </source>
         <translation>Распределение stake.link не совпало с опубликованным корнем или не было прочитано: </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="537"/>
+        <location filename="../net/chain_balances.py" line="569"/>
         <source>Could not read the Aave v4 position of </source>
         <translation>Не удалось прочитать позицию Aave v4: </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="589"/>
+        <location filename="../net/chain_balances.py" line="621"/>
         <source>Could not read the balance of </source>
         <translation>Не удалось прочитать баланс </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="594"/>
+        <location filename="../net/chain_balances.py" line="626"/>
         <source>Unreadable balance of </source>
         <translation>Нечитаемый баланс </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="773"/>
-        <location filename="../net/chain_balances.py" line="873"/>
+        <location filename="../net/chain_balances.py" line="807"/>
+        <location filename="../net/chain_balances.py" line="944"/>
         <source>Claimable rewards not read - the API key isn&apos;t set: </source>
         <translation>API ключ не указан, ожидающие награды не прочитаны: </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="779"/>
+        <location filename="../net/chain_balances.py" line="813"/>
         <source>Could not read the reward token of </source>
         <translation>Невозможно прочитать награду из </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="785"/>
         <location filename="../net/chain_balances.py" line="819"/>
-        <location filename="../net/chain_balances.py" line="852"/>
+        <location filename="../net/chain_balances.py" line="853"/>
+        <location filename="../net/chain_balances.py" line="884"/>
+        <location filename="../net/chain_balances.py" line="923"/>
         <source>Could not read the claimable rewards of </source>
         <translation>Невозможно прочитать накопленную награду из </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="812"/>
+        <location filename="../net/chain_balances.py" line="846"/>
         <source>Claimable rewards not read: </source>
         <translation>Ожидающие награды не прочитаны: </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="824"/>
+        <location filename="../net/chain_balances.py" line="858"/>
         <source>Claimable rewards not read - the wallet holds no ADA: </source>
         <translation>Ожидающие награды не прочитаны - в кошельке нет ADA: </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="860"/>
+        <location filename="../net/chain_balances.py" line="890"/>
+        <source>Claimable rewards not read - the wallet holds no DOT: </source>
+        <translation>Доступные к получению награды не прочитаны - в кошельке нет DOT: </translation>
+    </message>
+    <message>
+        <location filename="../net/chain_balances.py" line="931"/>
         <source>Unexpected answer from Merkl for account </source>
         <translation>Неожиданный ответ от Merkl для счёта </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="883"/>
+        <location filename="../net/chain_balances.py" line="954"/>
         <source>Could not read the Merkl distribution root on </source>
         <translation>Невозможно прочитать корневой элемент Merkl в </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="889"/>
+        <location filename="../net/chain_balances.py" line="960"/>
         <source>Unreadable claimable reward for account </source>
         <translation>Нечитаемая накопленная награда для счёта </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="934"/>
+        <location filename="../net/chain_balances.py" line="1005"/>
         <source>Could not read the token a claimable reward pays out: </source>
         <translation>Невозможно прочитать, каким токеном выплачивается накопленная награда: </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="944"/>
+        <location filename="../net/chain_balances.py" line="1015"/>
         <source>Claimable reward didn&apos;t match the published root: </source>
         <translation>Накопленная награда не совпадает с опубликованным корневым элементом: </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="950"/>
+        <location filename="../net/chain_balances.py" line="1021"/>
         <source>Could not read what has already been claimed of </source>
         <translation>Невозможно прочитать, что уже было списано с </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="971"/>
+        <location filename="../net/chain_balances.py" line="1042"/>
         <source>A claimable reward pays out a token of other decimals: </source>
         <translation>Накопленная награда выплачивается токеном с другим количеством знаков после запятой: </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="1018"/>
+        <location filename="../net/chain_balances.py" line="1089"/>
         <source>Couldn&apos;t read the ticker of a claimable reward token: </source>
         <translation>Невозможно прочитать символ списанного токена награды: </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="1024"/>
+        <location filename="../net/chain_balances.py" line="1095"/>
         <source>New asset created for a claimable reward: </source>
         <translation>Новый актив был создан для списанной награды: </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="1027"/>
+        <location filename="../net/chain_balances.py" line="1098"/>
         <source>The ledger has no currency this venue is quoted in: </source>
         <translation>В базе нет валюты, в которой котируется эта площадка: </translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="1031"/>
+        <location filename="../net/chain_balances.py" line="1102"/>
         <source>Couldn&apos;t create an asset for a claimable reward: </source>
         <translation>Невозможно создать актив для списанной награды: </translation>
     </message>
@@ -7120,6 +7133,230 @@ Its other record is found by the transaction, but the two accounts are kept in d
     </message>
 </context>
 <context>
+    <name>PolkadotFetcher</name>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="72"/>
+        <source>&amp;Polkadot</source>
+        <translation>&amp;Polkadot</translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="85"/>
+        <source>Unreadable sync position of account </source>
+        <translation>Нечитаемая позиция синхронизации счёта </translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="100"/>
+        <source>Unexpected answer from the Polkadot indexer: </source>
+        <translation>Неожиданный ответ от индексатора Polkadot: </translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="113"/>
+        <source>Unexpected history page from the Polkadot indexer</source>
+        <translation>Неожиданная страница истории от индексатора Polkadot</translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="117"/>
+        <source>Too many pages returned by the Polkadot indexer, the history is incomplete</source>
+        <translation>Индексатор Polkadot вернул слишком много страниц, история неполна</translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="123"/>
+        <source>Unexpected indexer status from the Polkadot indexer</source>
+        <translation>Неожиданное состояние индексатора Polkadot</translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="135"/>
+        <location filename="../net/chain_fetchers/polkadot.py" line="160"/>
+        <source>Unexpected answer from Polkadot RPC: </source>
+        <translation>Неожиданный ответ от Polkadot RPC: </translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="143"/>
+        <source>Unexpected final block from Polkadot RPC: </source>
+        <translation>Неожиданный финальный блок от Polkadot RPC: </translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="148"/>
+        <source>Unknown Polkadot block: </source>
+        <translation>Неизвестный блок Polkadot: </translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="169"/>
+        <source>Unreadable Polkadot account data: </source>
+        <translation>Нечитаемые данные счёта Polkadot: </translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="179"/>
+        <source>Unreadable Polkadot pool membership: </source>
+        <translation>Нечитаемые данные об участии в пуле Polkadot: </translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="201"/>
+        <source>Not a valid Polkadot address: </source>
+        <translation>Недопустимый адрес Polkadot: </translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="213"/>
+        <source>import stopped at an unsupported transaction (</source>
+        <translation>импорт остановлен на неподдерживаемой транзакции (</translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="214"/>
+        <source>); it will be retried next time</source>
+        <translation>); повтор будет выполнен при следующем импорте</translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="228"/>
+        <source>Polkadot history element without an id: </source>
+        <translation>Элемент истории Polkadot без идентификатора: </translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="251"/>
+        <source>several nomination pool transactions in one block</source>
+        <translation>несколько транзакций пула номинирования в одном блоке</translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="255"/>
+        <source>the wallet&apos;s balance changed by </source>
+        <translation>баланс кошелька изменился на </translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="256"/>
+        <source> DOT in the block, its history explains </source>
+        <translation> DOT в блоке, история объясняет </translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="288"/>
+        <source>a transfer of an Asset Hub token</source>
+        <translation>перевод токена Asset Hub</translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="289"/>
+        <source>a swap</source>
+        <translation>обмен</translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="289"/>
+        <source>a staking reward</source>
+        <translation>награда за стейкинг</translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="295"/>
+        <source>several extrinsics under one index</source>
+        <translation>несколько экстринзиков под одним индексом</translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="299"/>
+        <source>a failed extrinsic that moved coins</source>
+        <translation>неуспешный экстринзик, переместивший монеты</translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="301"/>
+        <source>Fee of a failed transaction: </source>
+        <translation>Комиссия неуспешной транзакции: </translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="312"/>
+        <source>unsupported call </source>
+        <translation>неподдерживаемый вызов </translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="314"/>
+        <source>a transfer extrinsic that isn&apos;t one transfer from the wallet</source>
+        <translation>экстринзик перевода, не являющийся одним переводом из кошелька</translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="317"/>
+        <source>Fee of a transfer to the wallet itself</source>
+        <translation>Комиссия за перевод кошелька самому себе</translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="334"/>
+        <source>a nomination pool slash</source>
+        <translation>слэшинг пула номинирования</translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="337"/>
+        <source>a nomination pool transaction without a pool membership</source>
+        <translation>транзакция пула номинирования без участия в пуле</translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="340"/>
+        <source>a reward of another nomination pool</source>
+        <translation>награда другого пула номинирования</translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="346"/>
+        <source>transfers of a nomination pool transaction don&apos;t match its payouts</source>
+        <translation>переводы транзакции пула номинирования не совпадают с её выплатами</translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="351"/>
+        <source>the pool bond changed in a transaction the wallet didn&apos;t sign</source>
+        <translation>ставка в пуле изменилась в транзакции, не подписанной кошельком</translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="353"/>
+        <source>a nomination pool payout inside call </source>
+        <translation>выплата пула номинирования внутри вызова </translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="355"/>
+        <source>unsupported nomination pool call </source>
+        <translation>неподдерживаемый вызов пула номинирования </translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="357"/>
+        <source>nomination pool call </source>
+        <translation>вызов пула номинирования </translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="357"/>
+        <source> changed the bond by </source>
+        <translation> изменил ставку на </translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="360"/>
+        <source>Nomination pool #</source>
+        <translation>Пул номинирования #</translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="364"/>
+        <source>claimed by another account</source>
+        <translation>получено другим аккаунтом</translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="367"/>
+        <source>Staked to </source>
+        <translation>Застейкано в </translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="367"/>
+        <source>Withdrawn from </source>
+        <translation>Выведено из </translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="420"/>
+        <source>a failed transfer the wallet didn&apos;t send</source>
+        <translation>неуспешный перевод, не отправленный кошельком</translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="421"/>
+        <source>Fee of a failed transfer</source>
+        <translation>Комиссия неуспешного перевода</translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="424"/>
+        <source>the wallet sent coins in an extrinsic it didn&apos;t sign</source>
+        <translation>кошелёк отправил монеты в экстринзике, который он не подписывал</translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="426"/>
+        <source>several transfers to the wallet in one extrinsic</source>
+        <translation>несколько переводов в кошелёк в одном экстринзике</translation>
+    </message>
+</context>
+<context>
     <name>PortfolioReportWindow</name>
     <message>
         <location filename="../reports/portfolio.py" line="35"/>
@@ -7494,6 +7731,7 @@ Its other record is found by the transaction, but the two accounts are kept in d
         <location filename="../net/chain_fetchers/bitcoin.py" line="381"/>
         <location filename="../net/chain_fetchers/cardano.py" line="372"/>
         <location filename="../net/chain_fetchers/evm.py" line="1087"/>
+        <location filename="../net/chain_fetchers/polkadot.py" line="502"/>
         <location filename="../net/chain_fetchers/solana.py" line="555"/>
         <location filename="../net/chain_fetchers/tron.py" line="349"/>
         <source>Blockchain</source>
@@ -7656,6 +7894,16 @@ Its other record is found by the transaction, but the two accounts are kept in d
         <location filename="../net/chain_fetchers/cardano.py" line="374"/>
         <source>An incoming ADA transfer below this amount, from an address you never dealt with, is recorded as a dust attack instead of an ordinary transfer.</source>
         <translation>Входящий перевод ADA меньше этой суммы, с адреса, с которым ранее не было операций, записывается как пылевая атака, а не как обычный перевод.</translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="503"/>
+        <source>DOT dust threshold</source>
+        <translation>Порог пыли DOT</translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/polkadot.py" line="504"/>
+        <source>An incoming DOT transfer below this amount, from an address you never dealt with, is recorded as a dust attack instead of an ordinary transfer.</source>
+        <translation>Входящий перевод DOT меньше этой суммы с адреса, с которым вы никогда не работали, записывается как пылевая атака, а не как обычный перевод.</translation>
     </message>
 </context>
 <context>
