@@ -7,9 +7,9 @@ from jal.db.db import JalDB
 # Access to 'receivables' - what a distributor owes an account and hasn't paid yet.
 #
 # It is valuation data and not an operation, exactly as a chain balance is (see the schema comment in jal_init.sql).
-# What makes it a table of its own rather than another kind of chain balance is that a receivable is denominated in
-# an asset the account holds NONE of - so there is no ledger quantity to compare it against - and that it is keyed by
-# the SOURCE that owes it, because several distributors pay the same token to the same wallet.
+# What makes it a table of its own rather than another kind of chain balance is that a receivable is not part of any
+# position the ledger holds - usually an asset the account holds NONE of, or a coin owed from outside the wallet (a
+# Cardano reward account) - and that it is keyed by the SOURCE that owes it, as several may pay one token to a wallet.
 #
 # Only one of JalChainBalance.accrual()'s three display rules carries over, and it is the important one: a reading is
 # never handed to a report dated BEFORE it was taken (latest() enforces it). The other two do not apply here - there

@@ -15,6 +15,7 @@ from jal.db.staking import JalStakingBox
 from jal.db.symbol import JalSymbol
 from jal.db.token_blacklist import normalize_address
 from jal.net import aave, merkl, stakelink
+from jal.net.chain_fetchers.cardano_keys import stake_address
 from jal.net.web_request import WebRequest
 
 # The keyless 'info' endpoint of HyperCore, the same one HyperliquidFetcher reads its history from
@@ -45,6 +46,12 @@ _LAMPORTS = Decimal('10') ** 9      # 1 SOL = 10^9 lamports, the unit a stake ac
 # balance sitting there would be read as this position's staked amount. The stake program is the one thing that
 # proves the address really is a stake account, and it costs nothing to ask for.
 _SOL_STAKE_PROGRAM = 'Stake11111111111111111111111111111111111111'
+
+# Koios, keyless, the API CardanoFetcher reads the history from; 'account_info' reports the reward account
+_KOIOS_ACCOUNT_INFO = "https://api.koios.rest/api/v1/account_info"
+_LOVELACE = Decimal('10') ** 6
+# The source of a Cardano reward: the wallet's own reward account, the same for every wallet; shown as is
+_ADA_REWARD_SOURCE = "Cardano reward account"
 
 # Call data of the ERC-20 views that take no arguments - the function selector alone. 'decimals()' is the only way to
 # learn the scale of a balance, which is reported as a bare integer (see _token_decimals); 'name()' and 'symbol()' are
@@ -669,6 +676,7 @@ class ChainBalanceReader(JalDB):
     def _receivable_readers(self) -> dict:
         readers = {location: {merkl.DISTRIBUTOR: self._merkl_claims} for location in self._evm_chains()}
         readers[AssetLocation.ETH_BLOCKCHAIN].update({module: self._aave_claims for module in aave.SAFETY_MODULES})
+        readers[AssetLocation.ADA_BLOCKCHAIN] = {_ADA_REWARD_SOURCE: self._cardano_rewards}
         return readers
 
     # Which sources may owe one wallet something, as {contract: (reader, {location: account})}.
@@ -764,6 +772,43 @@ class ChainBalanceReader(JalDB):
                                 Decimal(owed) / (Decimal('10') ** decimals))
         self._forget_unreported(timestamp, account, source, {asset.id()})
         return 1
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # CARDANO. Staking rewards accrue in the wallet's reward account and reach the wallet only by a withdrawal, which
+    # the fetcher books as a StakingReward; what is read here is the part not yet withdrawn.
+    def _cardano_rewards(self, timestamp: int, source: str, address: str, accounts: dict) -> int:
+        account = accounts[AssetLocation.ADA_BLOCKCHAIN]
+        try:
+            stake = stake_address(account.address())
+        except ValueError as error:
+            logging.warning(self.tr("Claimable rewards not read: ") + f"{account.name()}: {error}")
+            return 0
+        answer = self._post(_KOIOS_ACCOUNT_INFO, {"_stake_addresses": [stake]})
+        try:    # no record of the address is a failed reading too, never "nothing is owed"
+            [info] = [x for x in answer if x.get('stake_address') == stake]
+            owed = Decimal(int(info['rewards_available'])) / _LOVELACE
+        except (TypeError, ValueError, AttributeError, KeyError):
+            logging.warning(self.tr("Could not read the claimable rewards of ") + account.name())
+            return 0
+        asset = self._native_ada(account, timestamp)
+        if owed == 0 or asset is None:
+            if owed:
+                logging.warning(self.tr("Claimable rewards not read - the wallet holds no ADA: ") + account.name())
+            self._forget_unreported(timestamp, account, source, set())
+            return 0
+        self._receivables.store(timestamp, account.id(), asset.id(), source, owed)
+        self._forget_unreported(timestamp, account, source, {asset.id()})
+        return 1
+
+    # The wallet's ADA: the native coin it holds, else the asset of an earlier reading of its rewards
+    def _native_ada(self, account: JalAccount, timestamp: int):
+        for position in account.assets_list(timestamp):
+            listing = position['asset'].listing_id(location=AssetLocation.ADA_BLOCKCHAIN)
+            if listing and AssetLocation.is_native_coin(AssetLocation.ADA_BLOCKCHAIN, JalSymbol(listing).symbol()):
+                return position['asset']
+        known = [asset_id for asset_id, source in self._receivables.known_claims(account.id())
+                 if source == _ADA_REWARD_SOURCE]
+        return JalAsset(known[0]) if known else None
 
     # ------------------------------------------------------------------------------------------------------------------
     # MERKL, the first source and the only one with a merkle distribution behind it.
