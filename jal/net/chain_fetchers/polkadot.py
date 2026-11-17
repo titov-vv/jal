@@ -7,7 +7,7 @@ import xxhash
 from bip_utils import SS58Decoder
 
 from jal.constants import AssetLocation
-from jal.data_import.statement import Statement_ImportError
+from jal.data_import.statement import Statement_ImportError, JSF
 from jal.db.token_blacklist import is_polkadot_address
 from jal.net.chain_fetchers.fetcher import ChainFetcher
 from jal.net.web_request import WebRequest
@@ -54,6 +54,7 @@ class PolkadotFetcher(ChainFetcher):
     native_name = "Polkadot"
     display_symbol = 'DOT'
     icon_name = 'polkadot.png'
+    native_dust_threshold = '0.01'      # the existential deposit: the least a new account can be sent
 
     def __init__(self):
         super().__init__()
@@ -189,8 +190,12 @@ class PolkadotFetcher(ChainFetcher):
         self._state = self._load_state()
         top = min(self._final_height(), self._indexed_height())
         extrinsics = self._extrinsics(self._history(self._state['height'], top))
+        checked = set()
         for extrinsic in [x for x in extrinsics if self._is_new(x)]:
             try:
+                if extrinsic['height'] not in checked:
+                    self._check_block(extrinsic['height'], [x for x in extrinsics if x['height'] == extrinsic['height']])
+                    checked.add(extrinsic['height'])
                 self._classify(extrinsic)
             except _HaltImport as halt:
                 self._skip(self.tr("import stopped at an unsupported transaction (") + halt.reason
@@ -225,8 +230,105 @@ class PolkadotFetcher(ChainFetcher):
             self._state = {'height': extrinsic['height'], 'hashes': []}
         self._state['hashes'].append(extrinsic['key'])
 
+    # ------------------------------------------------------------------------------------------------------------------
+    # The indexer sees Balances.Transfer events and signed extrinsics only - an XCM arrival or a mint is not in it.
+    # So the wallet's DOT (free + held) must change in the block by exactly what its elements there add up to.
+    def _check_block(self, height: int, extrinsics: list) -> None:
+        expected = sum(self._net(x) for x in extrinsics)
+        actual = sum(self._balances(height)) - sum(self._balances(height - 1))
+        if actual != expected:
+            raise _HaltImport(self.tr("the wallet's balance changed by ") + f"{self._dot(actual)}"
+                              + self.tr(" DOT in the block, its history explains ") + f"{self._dot(expected)}")
+
+    # Plancks the extrinsic added to the wallet's DOT, free and held together
+    def _net(self, extrinsic: dict) -> int:
+        own = self._account.address()
+        net = sum(self._planck(x['amount']) * ((x.get('to') == own) - (x.get('from') == own))
+                  for x in self._transfers(extrinsic) if x.get('success') is True)
+        return net - self._fee(extrinsic)
+
+    # The wallet's fee: its own extrinsic's, or that of its failed transfer (which has no extrinsic element). A
+    # transfer to the wallet carries the sender's fee, which is never the wallet's.
+    def _fee(self, extrinsic: dict) -> int:
+        own = self._account.address()
+        signed = [x['extrinsic'] for x in extrinsic['elements'] if x.get('extrinsic')]
+        if signed:
+            return self._planck(signed[0].get('fee'))
+        failed = [x for x in self._transfers(extrinsic) if x.get('success') is not True and x.get('from') == own]
+        return self._planck(failed[0].get('fee')) if failed else 0
+
+    # Native transfers of the extrinsic, each once: a transfer to the wallet itself has a '-from' and a '-to' element
+    @staticmethod
+    def _transfers(extrinsic: dict) -> list:
+        unique = {}
+        for element in extrinsic['elements']:
+            transfer = element.get('transfer')
+            if transfer:
+                key = (transfer.get('eventIdx'), transfer.get('from'), transfer.get('to'), transfer.get('amount'))
+                unique.setdefault(key, transfer)
+        return list(unique.values())
+
     def _classify(self, extrinsic: dict) -> None:
-        raise _HaltImport(self.tr("Polkadot transactions are not classified yet"))
+        own = self._account.address()
+        for kind, reason in (('assetTransfer', self.tr("a transfer of an Asset Hub token")),
+                             ('swap', self.tr("a swap")), ('reward', self.tr("a staking reward")),
+                             ('poolReward', self.tr("a nomination pool reward"))):
+            if any(x.get(kind) for x in extrinsic['elements']):
+                raise _HaltImport(reason)
+        signed = [x['extrinsic'] for x in extrinsic['elements'] if x.get('extrinsic')]
+        transfers = self._transfers(extrinsic)
+        if len(signed) > 1:
+            raise _HaltImport(self.tr("several extrinsics under one index"))
+        if not signed:
+            self._unsigned(extrinsic, transfers)
+            return
+        [call] = signed
+        fee = self._fee(extrinsic)
+        name = f"{call.get('module', '')}.{call.get('call', '')}"
+        if call.get('success') is not True:
+            if transfers:
+                raise _HaltImport(self.tr("a failed extrinsic that moved coins"))
+            self._fee_only(extrinsic, fee, JSF.EVENT_FAILED, self.tr("Fee of a failed transaction: ") + name)
+            return
+        if call.get('module') != 'balances' or not str(call.get('call', '')).startswith('transfer'):
+            raise _HaltImport(self.tr("unsupported call ") + name)
+        if len(transfers) != 1 or transfers[0].get('success') is not True or transfers[0].get('from') != own:
+            raise _HaltImport(self.tr("a transfer extrinsic that isn't one transfer from the wallet"))
+        [transfer] = transfers
+        if transfer.get('to') == own:
+            self._fee_only(extrinsic, fee, JSF.EVENT_NO_OP, self.tr("Fee of a transfer to the wallet itself"))
+            return
+        native = self._native_asset_id()
+        self._add_transfer(extrinsic['timestamp'], native, self._dot(self._planck(transfer['amount'])), False,
+                           extrinsic['hash'], fee=self._dot(fee), fee_asset_id=native,
+                           counterparty=transfer.get('to', ''))
+
+    # An extrinsic the wallet didn't sign: a transfer to it, or the wallet's own failed transfer
+    def _unsigned(self, extrinsic: dict, transfers: list) -> None:
+        own = self._account.address()
+        failed = [x for x in transfers if x.get('success') is not True]
+        if failed:
+            if len(failed) != len(transfers) or any(x.get('from') != own for x in failed):
+                raise _HaltImport(self.tr("a failed transfer the wallet didn't send"))
+            self._fee_only(extrinsic, self._fee(extrinsic), JSF.EVENT_FAILED, self.tr("Fee of a failed transfer"))
+            return
+        if any(x.get('from') == own for x in transfers):
+            raise _HaltImport(self.tr("the wallet sent coins in an extrinsic it didn't sign"))
+        if len(transfers) != 1:
+            raise _HaltImport(self.tr("several transfers to the wallet in one extrinsic"))
+        [transfer] = transfers
+        amount = self._dot(self._planck(transfer['amount']))
+        sender = transfer.get('from', '')
+        if self._is_native_dust(amount, self._is_own_address(sender)):
+            self._add_payment(JSF.PAYMENT_DUST_ATTACK, extrinsic['timestamp'], self._native_asset_id(), amount,
+                              extrinsic['hash'])
+            return
+        self._add_transfer(extrinsic['timestamp'], self._native_asset_id(), amount, True, extrinsic['hash'],
+                           counterparty=sender)
+
+    def _fee_only(self, extrinsic: dict, fee: int, event: str, note: str) -> None:
+        self._add_payment(JSF.PAYMENT_GAS_FEE, extrinsic['timestamp'], self._native_asset_id(), self._dot(fee),
+                          extrinsic['hash'], note=note, event=event)
 
     # ------------------------------------------------------------------------------------------------------------------
     def _account_id(self) -> bytes:

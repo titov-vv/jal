@@ -64,6 +64,7 @@ def make_fetcher():
         fetcher = PolkadotFetcher()
         fetcher._query = indexer.query
         fetcher._final_height = lambda: final
+        fetcher._check_block = lambda height, extrinsics: None
         fetcher.classified = []
 
         def classify(extrinsic):
