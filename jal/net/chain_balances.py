@@ -803,8 +803,10 @@ class ChainBalanceReader(JalDB):
     # The wallet's ADA: the native coin it holds, else the asset of an earlier reading of its rewards
     def _native_ada(self, account: JalAccount, timestamp: int):
         for position in account.assets_list(timestamp):
-            listing = position['asset'].listing_id(location=AssetLocation.ADA_BLOCKCHAIN)
-            if listing and AssetLocation.is_native_coin(AssetLocation.ADA_BLOCKCHAIN, JalSymbol(listing).symbol()):
+            listing = JalSymbol(position['asset'].listing_id(currency=account.currency(),
+                                                             location=AssetLocation.ADA_BLOCKCHAIN))
+            if listing.location() == AssetLocation.ADA_BLOCKCHAIN \
+                    and AssetLocation.is_native_coin(AssetLocation.ADA_BLOCKCHAIN, listing.symbol()):
                 return position['asset']
         known = [asset_id for asset_id, source in self._receivables.known_claims(account.id())
                  if source == _ADA_REWARD_SOURCE]
