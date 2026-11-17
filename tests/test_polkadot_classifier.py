@@ -14,6 +14,9 @@ FRIEND = SS58Encoder.Encode(bytes(range(1, 33)), 0)       # made up
 FINAL = 10_000
 DOT = 10 ** 10
 FEE = 7_858_149                                           # the real fee of a pool join
+POOL = 54
+BONDED = PolkadotFetcher.pool_account(POOL, 0)
+REWARDS = PolkadotFetcher.pool_account(POOL, 1)
 
 
 def element(height: int, element_id: str, index=2, tx_hash="0xhash", **fields) -> dict:
@@ -51,9 +54,13 @@ def dot_wallet(prepare_db):
                             chain=AssetLocation.DOT_BLOCKCHAIN).commit()
 
 
-# Fetches the given elements; the node's balance moves by 'deltas' {height: plancks}, or by what they explain
-def fetch(wallet, elements, deltas=None) -> tuple:
+# Fetches the given elements; the node's balance moves by 'deltas' {height: plancks}, or by what they explain, and
+# the pool bond by 'bonds' {height: plancks}, of pool POOL from the first of them on
+def fetch(wallet, elements, deltas=None, bonds=None) -> tuple:
+    bonds = bonds or {}
     fetcher = PolkadotFetcher()
+    fetcher._pool_bond = lambda height: sum(v for h, v in bonds.items() if h <= height)
+    fetcher._pool_member = lambda height: (POOL, 0) if bonds and height >= min(bonds) else None
     fetcher._query = lambda query, variables: {"historyElements": {"totalCount": len(elements), "nodes": elements}} \
         if "historyElements" in query else {"_metadata": {"lastProcessedHeight": FINAL}}
     fetcher._final_height = lambda: FINAL
@@ -152,16 +159,13 @@ def test_unexplained_balance_change_halts(dot_wallet):
 
 
 @pytest.mark.parametrize("elements", [
-    # a pool call (not classified yet)
-    [element(100, "100-2-extrinsic", extrinsic=call("nominationPools", "join"))],
     # any other call
     [element(100, "100-2-extrinsic", extrinsic=call("system", "remark"))],
     # an Asset Hub token
     [element(100, "100-6-to", assetTransfer=dict(transfer(FRIEND, WALLET, 5), assetId="1984"))],
-    # a swap, a staking reward, a pool reward
+    # a swap, a staking reward
     [element(100, "100-6-from", swap={"assetIdIn": "native", "amountIn": "1"})],
     [element(100, "100-6-reward", index=None, reward={"amount": "1", "isReward": True})],
-    [element(100, "100-6-reward", index=None, poolReward={"amount": "1", "isReward": True, "poolId": 54})],
     # the wallet's coins leaving in an extrinsic it didn't sign (a proxy, a multisig)
     [element(100, "100-6-from", transfer=transfer(WALLET, FRIEND, DOT))],
     # a transfer extrinsic that moved somebody else's coins
@@ -172,4 +176,91 @@ def test_unexplained_balance_change_halts(dot_wallet):
 ])
 def test_unsupported_shapes_halt(dot_wallet, elements):
     fetcher, data = fetch(dot_wallet, elements)
+    assert halted(fetcher) and not data[JSF.TRANSFERS] and not data[JSF.ASSET_PAYMENTS]
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+def pool_call(height: int, name: str, fee=FEE, signed=True, reward=0, index=2) -> list:
+    elements = [element(height, f"{height}-{index}-extrinsic", index=index,
+                        extrinsic=call("nominationPools", name, fee))] if signed else []
+    if reward:
+        elements += [element(height, f"{height}-8-to", index=index,
+                             transfer=transfer(REWARDS, WALLET, reward, fee=fee, event=8)),
+                     element(height, f"{height}-9", index=index,
+                             poolReward={"eventIdx": 9, "amount": str(reward), "isReward": True, "poolId": POOL})]
+    return elements
+
+
+# The real join of 17 Nov 2026: the bond moves into the box at the pool's bonded account, the fee with it
+def test_pool_join(dot_wallet):
+    fetcher, data = fetch(dot_wallet, pool_call(100, "join"), bonds={100: 21 * DOT})
+    [stake] = data[JSF.TRANSFERS]
+    assert stake['account'] == [1, 0, 1] and stake['withdrawal'] == Decimal(21)
+    assert stake['fee'] == Decimal("0.0007858149")
+    assert stake['counterparty_address'] == BONDED == "13UVJyLnbVp8c4FQeiGG4wgZ8fTPB4dJZ21YasxCzie2jyC3"
+    assert stake['description'].startswith("[custody] Polkadot nomination pool") and "#54" in stake['description']
+    assert not data[JSF.ASSET_PAYMENTS] and not fetcher.skipped()
+
+
+def test_pool_claim_is_income(dot_wallet):
+    fetcher, data = fetch(dot_wallet, pool_call(100, "claimPayout", reward=3 * 10 ** 8), bonds={50: 21 * DOT})
+    assert not data[JSF.TRANSFERS] and not fetcher.skipped()
+    [reward] = payments(data, JSF.PAYMENT_STAKING_REWARD)
+    assert reward['amount'] == Decimal("0.03") and "#54" in reward['description']
+    [fee] = payments(data, JSF.PAYMENT_GAS_FEE)
+    assert fee['event'] == JSF.EVENT_POSITION_COMMAND and "claimPayout" in fee['description']
+
+
+# Anyone may trigger a payout of a member whose claim permission is the default PermissionlessWithdraw
+def test_pool_claim_by_another_account(dot_wallet):
+    fetcher, data = fetch(dot_wallet, pool_call(100, "claimPayoutOther", signed=False, reward=10 ** 8),
+                          bonds={50: 21 * DOT})
+    [reward] = payments(data, JSF.PAYMENT_STAKING_REWARD)
+    assert reward['amount'] == Decimal("0.01") and "another account" in reward['description']
+    assert len(data[JSF.ASSET_PAYMENTS]) == 1 and not fetcher.skipped()
+
+
+# Compounding: the payout is income, then the same amount goes into the box; bond_extra claims first in any case
+def test_pool_bond_extra_rewards(dot_wallet):
+    fetcher, data = fetch(dot_wallet, pool_call(100, "bondExtra", reward=10 ** 8),
+                          bonds={50: 21 * DOT, 100: 10 ** 8})
+    [reward] = payments(data, JSF.PAYMENT_STAKING_REWARD)
+    [stake] = data[JSF.TRANSFERS]
+    assert reward['amount'] == stake['withdrawal'] == Decimal("0.01") and stake['account'] == [1, 0, 1]
+    assert not fetcher.skipped()
+
+
+# Unbonding leaves the coins in the box for 28 days; the withdrawal brings them back
+def test_pool_unbond_and_withdraw(dot_wallet):
+    fetcher, data = fetch(dot_wallet, pool_call(100, "unbond") + pool_call(200, "withdrawUnbonded"),
+                          bonds={50: 21 * DOT, 200: -21 * DOT})
+    [unbond] = payments(data, JSF.PAYMENT_GAS_FEE)
+    assert unbond['event'] == JSF.EVENT_POSITION_COMMAND and "unbond" in unbond['description']
+    [back] = data[JSF.TRANSFERS]
+    assert back['account'] == [0, 1, 1] and back['withdrawal'] == Decimal(21) and back['fee'] == Decimal("0.0007858149")
+    assert back['counterparty_address'] == BONDED and not fetcher.skipped()
+
+
+@pytest.mark.parametrize("elements, bonds", [
+    # a slash
+    ([element(100, "100-9", poolReward={"eventIdx": 9, "amount": "5", "isReward": False, "poolId": POOL})], {50: DOT}),
+    # a reward of another pool
+    ([dict(x, poolReward=dict(x['poolReward'], poolId=7)) if x.get('poolReward') else x
+      for x in pool_call(100, "claimPayout", reward=5)], {50: DOT}),
+    # a payout whose transfer doesn't match it
+    ([dict(x, transfer=dict(x['transfer'], amount="4")) if x.get('transfer') else x
+      for x in pool_call(100, "claimPayout", reward=5)], {50: DOT}),
+    # a pool call that changed the bond the wrong way, or not at all
+    (pool_call(100, "unbond"), {50: DOT, 100: -DOT}),
+    (pool_call(100, "join"), {50: DOT}),
+    # the bond changed in a transaction the wallet didn't sign
+    (pool_call(100, "bondExtraOther", signed=False, reward=5), {50: DOT, 100: 5}),
+    # an unknown pool call, and a call outside a pool membership
+    (pool_call(100, "chill"), {50: DOT}),
+    (pool_call(100, "unbond"), {}),
+    # two pool transactions in one block
+    (pool_call(100, "unbond") + pool_call(100, "claimPayout", index=5), {50: DOT}),
+])
+def test_unsupported_pool_shapes_halt(dot_wallet, elements, bonds):
+    fetcher, data = fetch(dot_wallet, elements, bonds=bonds)
     assert halted(fetcher) and not data[JSF.TRANSFERS] and not data[JSF.ASSET_PAYMENTS]

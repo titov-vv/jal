@@ -4,7 +4,7 @@ import logging
 from decimal import Decimal
 
 import xxhash
-from bip_utils import SS58Decoder
+from bip_utils import SS58Decoder, SS58Encoder
 
 from jal.constants import AssetLocation
 from jal.data_import.statement import Statement_ImportError, JSF
@@ -32,6 +32,13 @@ _INDEXED_QUERY = "{ _metadata { lastProcessedHeight } }"
 _SYSTEM_ACCOUNT = "26aa394eea5630e07c48ae0c9558cef7" "b99d880ec681799c0cf30e8886371da9"
 _POOL_MEMBERS = "7a6d38deaa01cb6e76ee69889f169627" "3c5f69e270d5b7a07f9996fe9e4e0488"
 _POOL_METADATA = "7a6d38deaa01cb6e76ee69889f169627" "b5f3822e35ca2f31ce3526eab1363fd2"
+_SS58_PREFIX = 0
+_POOL_PALLET_ID = b"py/nopls"
+_POOL_BONDED_ACCOUNT, _POOL_REWARD_ACCOUNT = 0, 1       # pallet-nomination-pools AccountType
+# Member calls of pallet-nomination-pools: {call: sign of the change it makes to the wallet's bond}
+_POOL_CALLS = {'join': 1, 'bondExtra': 1, 'withdrawUnbonded': -1,
+               'unbond': 0, 'claimPayout': 0, 'setClaimPermission': 0, 'poolWithdrawUnbonded': 0}
+_STAKING_PROTOCOL = "Polkadot nomination pool"     # protocol named in a pool leg's custody mark; data, not translated
 
 
 # Stops the import at an extrinsic of unsupported shape; the cursor stays before it and the next fetch retries it
@@ -233,12 +240,15 @@ class PolkadotFetcher(ChainFetcher):
     # ------------------------------------------------------------------------------------------------------------------
     # The indexer sees Balances.Transfer events and signed extrinsics only - an XCM arrival or a mint is not in it.
     # So the wallet's DOT (free + held) must change in the block by exactly what its elements there add up to.
+    # The pool bond is read per block, so one block may hold one pool extrinsic only.
     def _check_block(self, height: int, extrinsics: list) -> None:
+        if len([x for x in extrinsics if self._touches_pool(x)]) > 1:
+            raise _HaltImport(self.tr("several nomination pool transactions in one block"))
         expected = sum(self._net(x) for x in extrinsics)
         actual = sum(self._balances(height)) - sum(self._balances(height - 1))
         if actual != expected:
-            raise _HaltImport(self.tr("the wallet's balance changed by ") + f"{self._dot(actual)}"
-                              + self.tr(" DOT in the block, its history explains ") + f"{self._dot(expected)}")
+            raise _HaltImport(self.tr("the wallet's balance changed by ") + f"{self._dot(actual).normalize():f}"
+                              + self.tr(" DOT in the block, its history explains ") + f"{self._dot(expected).normalize():f}")
 
     # Plancks the extrinsic added to the wallet's DOT, free and held together
     def _net(self, extrinsic: dict) -> int:
@@ -271,25 +281,28 @@ class PolkadotFetcher(ChainFetcher):
     def _classify(self, extrinsic: dict) -> None:
         own = self._account.address()
         for kind, reason in (('assetTransfer', self.tr("a transfer of an Asset Hub token")),
-                             ('swap', self.tr("a swap")), ('reward', self.tr("a staking reward")),
-                             ('poolReward', self.tr("a nomination pool reward"))):
+                             ('swap', self.tr("a swap")), ('reward', self.tr("a staking reward"))):
             if any(x.get(kind) for x in extrinsic['elements']):
                 raise _HaltImport(reason)
         signed = [x['extrinsic'] for x in extrinsic['elements'] if x.get('extrinsic')]
         transfers = self._transfers(extrinsic)
         if len(signed) > 1:
             raise _HaltImport(self.tr("several extrinsics under one index"))
-        if not signed:
+        call = signed[0] if signed else None
+        if call is not None and call.get('success') is not True:
+            if transfers or self._pool_rewards(extrinsic):
+                raise _HaltImport(self.tr("a failed extrinsic that moved coins"))
+            self._fee_only(extrinsic, self._fee(extrinsic), JSF.EVENT_FAILED,
+                           self.tr("Fee of a failed transaction: ") + f"{call.get('module')}.{call.get('call')}")
+            return
+        if self._touches_pool(extrinsic):
+            self._pool_extrinsic(extrinsic, call)
+            return
+        if call is None:
             self._unsigned(extrinsic, transfers)
             return
-        [call] = signed
         fee = self._fee(extrinsic)
         name = f"{call.get('module', '')}.{call.get('call', '')}"
-        if call.get('success') is not True:
-            if transfers:
-                raise _HaltImport(self.tr("a failed extrinsic that moved coins"))
-            self._fee_only(extrinsic, fee, JSF.EVENT_FAILED, self.tr("Fee of a failed transaction: ") + name)
-            return
         if call.get('module') != 'balances' or not str(call.get('call', '')).startswith('transfer'):
             raise _HaltImport(self.tr("unsupported call ") + name)
         if len(transfers) != 1 or transfers[0].get('success') is not True or transfers[0].get('from') != own:
@@ -303,6 +316,72 @@ class PolkadotFetcher(ChainFetcher):
                            extrinsic['hash'], fee=self._dot(fee), fee_asset_id=native,
                            counterparty=transfer.get('to', ''))
 
+    # ------------------------------------------------------------------------------------------------------------------
+    # Nomination pool. The bond stays in the wallet's own account as a hold (delegated staking) but is booked into the
+    # staking box at the pool's bonded account; its size is read from the node, as the indexer doesn't carry it.
+    # A reward is paid as a transfer from the pool's reward account plus a PaidOut event: one StakingReward, whoever
+    # signed the claim. Compounding is such a payout bonded right away (pallet-nomination-pools do_bond_extra).
+    def _pool_extrinsic(self, extrinsic: dict, call) -> None:
+        own = self._account.address()
+        height = extrinsic['height']
+        rewards = self._pool_rewards(extrinsic)
+        if any(x.get('isReward') is not True for x in rewards):
+            raise _HaltImport(self.tr("a nomination pool slash"))
+        member = self._pool_member(height) or self._pool_member(height - 1)
+        if member is None:
+            raise _HaltImport(self.tr("a nomination pool transaction without a pool membership"))
+        pool_id = member[0]
+        if any(x.get('poolId') != pool_id for x in rewards):
+            raise _HaltImport(self.tr("a reward of another nomination pool"))
+        reward_account = self.pool_account(pool_id, _POOL_REWARD_ACCOUNT)
+        transfers = self._transfers(extrinsic)
+        paid = sum(self._planck(x.get('amount')) for x in rewards)
+        if any(x.get('success') is not True or x.get('from') != reward_account or x.get('to') != own
+               for x in transfers) or sum(self._planck(x.get('amount')) for x in transfers) != paid:
+            raise _HaltImport(self.tr("transfers of a nomination pool transaction don't match its payouts"))
+        bond = self._pool_bond(height) - self._pool_bond(height - 1)
+        name = call.get('call', '') if call else ''
+        if call is None:
+            if bond:
+                raise _HaltImport(self.tr("the pool bond changed in a transaction the wallet didn't sign"))
+        elif call.get('module') != 'nominationPools':
+            raise _HaltImport(self.tr("a nomination pool payout inside call ") + f"{call.get('module')}.{name}")
+        elif name not in _POOL_CALLS:
+            raise _HaltImport(self.tr("unsupported nomination pool call ") + name)
+        elif (bond > 0) - (bond < 0) != _POOL_CALLS[name]:
+            raise _HaltImport(self.tr("nomination pool call ") + name + self.tr(" changed the bond by ")
+                              + f"{self._dot(bond).normalize():f}")
+        native = self._native_asset_id()
+        note = self.tr("Nomination pool #") + f"{pool_id}"
+        for reward in rewards:
+            self._add_payment(JSF.PAYMENT_STAKING_REWARD, extrinsic['timestamp'], native,
+                              self._dot(self._planck(reward.get('amount'))), extrinsic['hash'],
+                              note=note if call else self._joined_note(note, self.tr("claimed by another account")))
+        fee = self._fee(extrinsic)
+        if bond:
+            direction = self.tr("Staked to ") if bond > 0 else self.tr("Withdrawn from ")
+            self._add_transfer(extrinsic['timestamp'], native, self._dot(abs(bond)), bond < 0, extrinsic['hash'],
+                               note=self._joined_note(self._custody_mark(_STAKING_PROTOCOL), direction + note),
+                               fee=self._dot(fee), fee_asset_id=native,
+                               counterparty=self.pool_account(pool_id, _POOL_BONDED_ACCOUNT))
+        elif call:
+            self._fee_only(extrinsic, fee, JSF.EVENT_POSITION_COMMAND, f"{note}: {name}")
+
+    def _touches_pool(self, extrinsic: dict) -> bool:
+        return bool(self._pool_rewards(extrinsic)) or any((x.get('extrinsic') or {}).get('module') == 'nominationPools'
+                                                          for x in extrinsic['elements'])
+
+    @staticmethod
+    def _pool_rewards(extrinsic: dict) -> list:
+        return [x['poolReward'] for x in extrinsic['elements'] if x.get('poolReward')]
+
+    # SS58 address of a pool's bonded or reward account: PalletId 'py/nopls' sub-account (AccountType, pool id)
+    @staticmethod
+    def pool_account(pool_id: int, kind: int) -> str:
+        seed = b"modl" + _POOL_PALLET_ID + bytes([kind]) + pool_id.to_bytes(4, 'little')
+        return SS58Encoder.Encode(seed.ljust(32, b"\0"), _SS58_PREFIX)
+
+    # ------------------------------------------------------------------------------------------------------------------
     # An extrinsic the wallet didn't sign: a transfer to it, or the wallet's own failed transfer
     def _unsigned(self, extrinsic: dict, transfers: list) -> None:
         own = self._account.address()
