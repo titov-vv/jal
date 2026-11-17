@@ -1,4 +1,5 @@
 import logging
+import re
 from hashlib import sha256
 from bip_utils import AdaShelleyStakingAddrDecoder, Bech32ChecksumError, Bech32Decoder
 from jal.constants import AssetLocation
@@ -227,6 +228,19 @@ def is_cardano_account_key(key: str) -> bool:
         return False
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+# NEAR account id grammar (nomicon.io/DataStructures/Account): it also covers implicit (64 hex) and ETH-implicit
+# ('0x' + 40 hex) ids. Ids are lowercase only and case-sensitive, so they are stored verbatim.
+_NEAR_ACCOUNT = re.compile(r'(([a-z\d]+[-_])*[a-z\d]+\.)*([a-z\d]+[-_])*[a-z\d]+')
+_NEAR_ACCOUNT_LENGTH = (2, 64)
+
+
+def is_near_account(address: str) -> bool:
+    if not address or not _NEAR_ACCOUNT_LENGTH[0] <= len(address) <= _NEAR_ACCOUNT_LENGTH[1]:
+        return False
+    return _NEAR_ACCOUNT.fullmatch(address) is not None
+
+
 # True if the address may belong to the given blockchain. Only the chains that JAL is able to check are checked -
 # an address of any other chain is accepted as it is, so that a missing validator never blocks the user. Validators
 # are added here as the fetcher of each chain is implemented.
@@ -250,6 +264,8 @@ def is_valid_address(location_id: int, address: str) -> bool:
         return is_bitcoin_address(address) or is_extended_public_key(address)
     if location_id == AssetLocation.ADA_BLOCKCHAIN:
         return is_cardano_stake_address(address) or is_cardano_account_key(address)
+    if location_id == AssetLocation.NEAR_BLOCKCHAIN:
+        return is_near_account(address)
     return True
 
 
