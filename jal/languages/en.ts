@@ -2202,204 +2202,214 @@ Do you want to delete the category anyway?</source>
 <context>
     <name>ChainBalanceReader</name>
     <message>
-        <location filename="../net/chain_balances.py" line="166"/>
+        <location filename="../net/chain_balances.py" line="168"/>
         <source>On-chain balance not read - the wallet has several staking boxes: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="201"/>
+        <location filename="../net/chain_balances.py" line="203"/>
         <source>On-chain balance not read - unexpected asset in a Hyperliquid staking box: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="206"/>
+        <location filename="../net/chain_balances.py" line="208"/>
         <source>Unexpected answer from Hyperliquid for account </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="213"/>
+        <location filename="../net/chain_balances.py" line="215"/>
         <source>Hyperliquid staking balance is missing a field: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="218"/>
+        <location filename="../net/chain_balances.py" line="220"/>
         <source>Unreadable Hyperliquid staking balance in field: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="248"/>
+        <location filename="../net/chain_balances.py" line="250"/>
         <source>On-chain balance not read - the Helius API key isn&apos;t set</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="254"/>
+        <location filename="../net/chain_balances.py" line="256"/>
         <source>Unexpected answer from Helius for stake account </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="263"/>
+        <location filename="../net/chain_balances.py" line="265"/>
         <source>Stake account no longer exists on chain: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="266"/>
+        <location filename="../net/chain_balances.py" line="268"/>
         <source>On-chain balance not read - the address is not a stake account: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="271"/>
+        <location filename="../net/chain_balances.py" line="273"/>
         <source>Unreadable balance of stake account </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="340"/>
+        <location filename="../net/chain_balances.py" line="282"/>
+        <source>On-chain balance not read - the box is not one wallet&apos;s stake in a pool: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_balances.py" line="297"/>
+        <source>Unreadable staking balance in pool </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_balances.py" line="367"/>
         <source>Could not read the decimals of token </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="345"/>
+        <location filename="../net/chain_balances.py" line="372"/>
         <source>Unreadable decimals of token </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="348"/>
-        <location filename="../net/chain_balances.py" line="971"/>
+        <location filename="../net/chain_balances.py" line="375"/>
+        <location filename="../net/chain_balances.py" line="999"/>
         <source>Implausible decimals of token </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="411"/>
-        <location filename="../net/chain_balances.py" line="502"/>
-        <location filename="../net/chain_balances.py" line="553"/>
+        <location filename="../net/chain_balances.py" line="438"/>
+        <location filename="../net/chain_balances.py" line="529"/>
+        <location filename="../net/chain_balances.py" line="580"/>
         <source>On-chain balance not read - the API key isn&apos;t set: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="419"/>
+        <location filename="../net/chain_balances.py" line="446"/>
         <source>On-chain balance not read - the pool does not stake this asset: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="438"/>
+        <location filename="../net/chain_balances.py" line="465"/>
         <source>Could not read the stake.link position of </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="443"/>
+        <location filename="../net/chain_balances.py" line="470"/>
         <source>Unreadable stake.link position of </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="457"/>
+        <location filename="../net/chain_balances.py" line="484"/>
         <source>Could not read the stake.link distribution of </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="462"/>
-        <location filename="../net/chain_balances.py" line="470"/>
+        <location filename="../net/chain_balances.py" line="489"/>
+        <location filename="../net/chain_balances.py" line="497"/>
         <source>Unreadable stake.link distribution of </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="478"/>
+        <location filename="../net/chain_balances.py" line="505"/>
         <source>stake.link distribution didn&apos;t match the published root, or couldn&apos;t be read: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="510"/>
+        <location filename="../net/chain_balances.py" line="537"/>
         <source>Could not read the Aave v4 position of </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="562"/>
+        <location filename="../net/chain_balances.py" line="589"/>
         <source>Could not read the balance of </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="567"/>
+        <location filename="../net/chain_balances.py" line="594"/>
         <source>Unreadable balance of </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="745"/>
-        <location filename="../net/chain_balances.py" line="845"/>
+        <location filename="../net/chain_balances.py" line="773"/>
+        <location filename="../net/chain_balances.py" line="873"/>
         <source>Claimable rewards not read - the API key isn&apos;t set: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="751"/>
+        <location filename="../net/chain_balances.py" line="779"/>
         <source>Could not read the reward token of </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="757"/>
-        <location filename="../net/chain_balances.py" line="791"/>
-        <location filename="../net/chain_balances.py" line="824"/>
+        <location filename="../net/chain_balances.py" line="785"/>
+        <location filename="../net/chain_balances.py" line="819"/>
+        <location filename="../net/chain_balances.py" line="852"/>
         <source>Could not read the claimable rewards of </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="784"/>
+        <location filename="../net/chain_balances.py" line="812"/>
         <source>Claimable rewards not read: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="796"/>
+        <location filename="../net/chain_balances.py" line="824"/>
         <source>Claimable rewards not read - the wallet holds no ADA: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="832"/>
+        <location filename="../net/chain_balances.py" line="860"/>
         <source>Unexpected answer from Merkl for account </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="855"/>
+        <location filename="../net/chain_balances.py" line="883"/>
         <source>Could not read the Merkl distribution root on </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="861"/>
+        <location filename="../net/chain_balances.py" line="889"/>
         <source>Unreadable claimable reward for account </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="906"/>
+        <location filename="../net/chain_balances.py" line="934"/>
         <source>Could not read the token a claimable reward pays out: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="916"/>
+        <location filename="../net/chain_balances.py" line="944"/>
         <source>Claimable reward didn&apos;t match the published root: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="922"/>
+        <location filename="../net/chain_balances.py" line="950"/>
         <source>Could not read what has already been claimed of </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="943"/>
+        <location filename="../net/chain_balances.py" line="971"/>
         <source>A claimable reward pays out a token of other decimals: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="990"/>
+        <location filename="../net/chain_balances.py" line="1018"/>
         <source>Couldn&apos;t read the ticker of a claimable reward token: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="996"/>
+        <location filename="../net/chain_balances.py" line="1024"/>
         <source>New asset created for a claimable reward: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="999"/>
+        <location filename="../net/chain_balances.py" line="1027"/>
         <source>The ledger has no currency this venue is quoted in: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="1003"/>
+        <location filename="../net/chain_balances.py" line="1031"/>
         <source>Couldn&apos;t create an asset for a claimable reward: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -6086,6 +6096,199 @@ This looks like the quantity a rebasing position gained without reporting it, wh
         <location filename="../widgets/tax_widget.py" line="422"/>
         <source>Excel money flow report was saved to file </source>
         <translation></translation>
+    </message>
+</context>
+<context>
+    <name>NearFetcher</name>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="68"/>
+        <source>&amp;NEAR</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="83"/>
+        <source>Unreadable sync position of account </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="98"/>
+        <source>NearBlocks rate limit reached, waiting </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="101"/>
+        <source>NearBlocks keeps refusing requests, try again later</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="108"/>
+        <source>Unexpected answer from NearBlocks: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="132"/>
+        <source>Too many pages returned by NearBlocks, the history is incomplete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="141"/>
+        <source>Unexpected final block from NEAR RPC: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="146"/>
+        <source>Not a valid NEAR account: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="155"/>
+        <source>transaction is too recent, it will be imported next time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="162"/>
+        <source>import stopped at an unsupported transaction (</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="163"/>
+        <source>); it will be retried next time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="176"/>
+        <source>NearBlocks row without a transaction hash: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="203"/>
+        <source>the wallet acted in a transaction it didn&apos;t sign</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="207"/>
+        <source>several transactions under one hash</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="212"/>
+        <source>a failed transaction with staking events</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="217"/>
+        <source>a failed transaction that kept part of its deposit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="218"/>
+        <source>Fee of a failed transaction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="222"/>
+        <source>a transaction of several actions</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="225"/>
+        <source>a receipt of the transaction failed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="228"/>
+        <source>the deposits of the transaction don&apos;t add up</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="235"/>
+        <source>staking events outside a call to a staking pool</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="237"/>
+        <source>coins came back to the wallet in its own transaction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="243"/>
+        <source>Fee of a transfer to the wallet itself</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="245"/>
+        <source>Fee of an access key change</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="247"/>
+        <source>unsupported action </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="257"/>
+        <source>a staking event of another pool</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="264"/>
+        <source>a pool deposit that doesn&apos;t match its staking event</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="268"/>
+        <source>Staked to </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="272"/>
+        <source>a pool command that moved coins</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="279"/>
+        <source>a pool withdrawal that doesn&apos;t match its staking event</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="288"/>
+        <source>stake withdrawal whose deposit predates the sync cursor - yield not separated</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="299"/>
+        <source>Withdrawn from </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="303"/>
+        <source>Staking reward</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="313"/>
+        <source>Unreadable staking state of account </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="328"/>
+        <source>a refund or a failed receipt in a transaction the wallet didn&apos;t sign</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="330"/>
+        <source>a contract call to the wallet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="333"/>
+        <source>transaction that moved nothing of the wallet&apos;s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="337"/>
+        <source>Several senders: </source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

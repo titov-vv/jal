@@ -37,10 +37,13 @@ belongs to that chain, so a typo cannot silently produce a wallet that fetches n
 The wallet's currency should be the coin's usual quote currency (USD for most). One account per
 address per chain.
 
-NEAR and Polkadot wallets are kept by hand: JAL knows these chains — the account, the price
-of its coin and its logo all work — but has no reader for them, so their operations are entered
-manually. Put the transaction hash into the operation's *Number* field: a reader written for the chain one
-day will then recognize what you have already entered instead of importing it a second time.
+> A NEAR wallet is its **account id** — a name such as `alice.near`, or the 64-character hex id of an
+> implicit account — exactly as the wallet shows it, in lower case.
+
+Polkadot wallets are kept by hand: JAL knows this chain — the account, the price of its coin and its
+logo all work — but has no reader for it, so its operations are entered manually. Put the transaction
+hash into the operation's *Number* field: a reader written for the chain one day will then recognize
+what you have already entered instead of importing it a second time.
 
 ## Reading a wallet from the blockchain
 
@@ -65,7 +68,8 @@ almost every request. Put your keys in **Settings → Preferences → Blockchain
 | **Helius API key** | Solana | helius.dev |
 | **TronGrid API key** | Tron | trongrid.io |
 
-Bitcoin, Hyperliquid and Cardano need no key.
+Bitcoin, Hyperliquid, Cardano and NEAR need no key. NEAR's explorer answers about ten requests a
+minute without one, so a NEAR fetch may pause for a minute and then carry on by itself.
 
 ![Preferences](img/dlg_preferences.png)
 
@@ -253,6 +257,24 @@ What the fetch does record:
 
 A transaction the fetch does not understand yet — native tokens, smart contracts — stops the fetch at
 that transaction, and nothing after it is imported until a version of JAL that knows it is installed.
+
+### NEAR staking pools
+
+Staking NEAR moves the coins into a **staking pool** (an account named like `…poolv1.near`), where
+they earn until you unstake and withdraw them. What the fetch records:
+
+* **Staking** is a transfer from the wallet to the pool. The first one is left in *Unsettled
+  transfers*: settle it with **Assign a staked position…**, and the position takes the pool's name as
+  its address, so every later stake into that pool and every withdrawal from it settles by itself.
+* **Unstaking** moves nothing yet — the coins stay in the pool for about two days before they can be
+  withdrawn — so it is an *Action* of type *Position command*, as is a restake.
+* **Withdrawing** brings the coins back. The rewards compound inside the pool and are never paid out on
+  their own: everything that comes back above what you put in is recorded as a **Staking reward** on
+  the day of the withdrawal, and what you put in comes back as a transfer.
+
+Until then, *Staked positions* shows what the pool holds for you, rewards included, as the position's
+**accrued** amount. Liquid staking tokens and other NEAR tokens are not read yet; a transaction with
+them stops the fetch.
 
 ### Lending with no receipt token (Aave v4)
 

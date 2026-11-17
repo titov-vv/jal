@@ -12,6 +12,8 @@ from jal.db.token_blacklist import is_near_account
 from jal.net.chain_fetchers.fetcher import ChainFetcher
 from jal.net.web_request import WebRequest
 
+JAL_FETCHER_CLASS = "NearFetcher"
+
 # NearBlocks API v3 (api.nearblocks.io/api-docs), keyless; v1/v2 are switched off on 22 Nov 2026
 _API_ROOT = "https://api.nearblocks.io/v3/accounts"
 RPC_URL = "https://rpc.mainnet.fastnear.com"     # keyless NEAR JSON-RPC
