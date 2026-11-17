@@ -74,8 +74,9 @@ def test_wallet_on_a_chain_without_a_fetcher(prepare_db):
     # ... while nothing offers to fetch it: the Import->Blockchain menu is built from the fetcher modules that
     # exist, so a chain kept by hand simply never appears there.
     fetchable = [item['location_id'] for item in ChainFetchers(None).items]
-    for chain in (AssetLocation.NEAR_BLOCKCHAIN, AssetLocation.ADA_BLOCKCHAIN, AssetLocation.DOT_BLOCKCHAIN):
+    for chain in (AssetLocation.NEAR_BLOCKCHAIN, AssetLocation.DOT_BLOCKCHAIN):
         assert chain not in fetchable
+    assert AssetLocation.ADA_BLOCKCHAIN in fetchable
 
 
 def test_wallet_account_mandatory_attributes(prepare_db):

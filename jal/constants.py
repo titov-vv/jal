@@ -574,7 +574,7 @@ class AssetLocation(PredefinedList, QObject):
     # account of this location always means the C-chain.
     AVAX_BLOCKCHAIN = 307
     NEAR_BLOCKCHAIN = 308  # Chain that JAL knows but has no fetcher for
-    ADA_BLOCKCHAIN = 309   # Chain that JAL knows but has no fetcher for
+    ADA_BLOCKCHAIN = 309
     DOT_BLOCKCHAIN = 310   # Chain that JAL knows but has no fetcher for
     CEX_BINANCE = 401
     CEX_KUCOIN = 402

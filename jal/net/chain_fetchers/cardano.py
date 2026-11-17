@@ -1,11 +1,17 @@
 import json
 import logging
+from decimal import Decimal
+
+from PySide6.QtCore import QT_TRANSLATE_NOOP
 
 from jal.constants import AssetLocation
-from jal.data_import.statement import Statement_ImportError
+from jal.data_import.statement import Statement_ImportError, JSF
+from jal.db.settings_registry import SettingsRegistry, SettingDescriptor
 from jal.net.chain_fetchers.cardano_keys import stake_address
 from jal.net.chain_fetchers.fetcher import ChainFetcher
 from jal.net.web_request import WebRequest
+
+JAL_FETCHER_CLASS = "CardanoFetcher"
 
 # Koios: a public PostgREST API over cardano-db-sync, keyless on its public tier (koios.rest)
 _API_ROOT = "https://api.koios.rest/api/v1"
@@ -17,6 +23,7 @@ _CONFIRMATIONS = 15
 # What tx_info is asked to include: everything the wallet's balance delta and its certificates are read from
 _TX_INFO_FLAGS = {"_inputs": True, "_assets": True, "_withdrawals": True, "_certs": True, "_scripts": True,
                   "_metadata": False, "_bytecode": False}
+_LOVELACE = Decimal('1000000')     # 1 ADA
 
 
 # Stops the import at a transaction of unsupported shape; the cursor stays before it and the next fetch retries it
@@ -37,6 +44,7 @@ class CardanoFetcher(ChainFetcher):
     native_name = "Cardano"
     display_symbol = 'ADA'
     icon_name = 'cardano.png'
+    native_dust_threshold = '1.5'    # an output can't hold less than ~1 ADA, so dust is sent at just about that
 
     def __init__(self):
         super().__init__()
@@ -159,6 +167,120 @@ class CardanoFetcher(ChainFetcher):
             self._state = {'height': height, 'hashes': []}
         self._state['hashes'].append(transaction['tx_hash'])
 
-    # What the transaction did to the wallet
+    # ------------------------------------------------------------------------------------------------------------------
+    # What the transaction did to the wallet, decided on its own lovelace: inputs and outputs carrying its stake
+    # address, withdrawals from its reward account. With 'sent' = spent + withdrawn - received - fee:
+    #   spent nothing -> incoming transfer;  withdrew -> staking reward;  sent > 0 -> outgoing transfer;
+    #   sent = 0 -> fee only (an own move, a delegation);  sent < 0 -> co-funded, halts
     def _classify(self, transaction: dict) -> None:
-        raise _HaltImport(self.tr("Cardano transactions are not classified yet"))
+        tx_hash = transaction['tx_hash']
+        own_inputs = [x for x in transaction.get('inputs') or [] if self._is_own(x)]
+        own_outputs = [x for x in transaction.get('outputs') or [] if self._is_own(x)]
+        self._check_shape(transaction, own_inputs + own_outputs)
+        timestamp = int(transaction.get('tx_timestamp', 0))
+        spent = sum(self._lovelace(x.get('value')) for x in own_inputs)
+        received = sum(self._lovelace(x.get('value')) for x in own_outputs)
+        withdrawn = sum(self._lovelace(x.get('amount')) for x in transaction.get('withdrawals') or []
+                        if x.get('stake_addr') == self._stake_address)
+        fee = self._lovelace(transaction.get('fee'))
+        if spent == 0:
+            if withdrawn or self._own_certificates(transaction):
+                raise _HaltImport(self.tr("the wallet's stake key acted in a transaction it didn't fund"))
+            self._incoming(transaction, received, timestamp, tx_hash)
+            return
+        if self._lovelace(transaction.get('deposit')) != 0:
+            raise _HaltImport(self.tr("a deposit is paid or refunded - not supported yet"))
+        if self._lovelace(transaction.get('treasury_donation')) != 0:
+            raise _HaltImport(self.tr("a donation to the treasury"))
+        sent = spent + withdrawn - received - fee
+        if sent < 0:
+            raise _HaltImport(self.tr("transaction funded by the wallet and by somebody else at once"))
+        native = self._native_asset_id()
+        fee_on_reward = withdrawn > 0 and sent == 0
+        if withdrawn:
+            self._add_payment(JSF.PAYMENT_STAKING_REWARD, timestamp, native, self._ada(withdrawn), tx_hash,
+                              note=self.tr("Staking rewards withdrawn"),
+                              fee=self._ada(fee) if fee_on_reward else Decimal('0'), fee_asset_id=native)
+        if sent > 0:
+            receivers = self._counterparties(transaction.get('outputs') or [])
+            self._add_transfer(timestamp, native, self._ada(sent), False, tx_hash,
+                               note=self._addresses_note(receivers), fee=self._ada(fee), fee_asset_id=native,
+                               counterparty=receivers[0] if len(receivers) == 1 else '')
+        elif not withdrawn:
+            self._fee_only(transaction, self._ada(fee), timestamp, tx_hash)
+
+    def _incoming(self, transaction: dict, received: int, timestamp: int, tx_hash: str) -> None:
+        if received <= 0:
+            self._skip(self.tr("transaction that moved nothing of the wallet's"), tx_hash)
+            return
+        senders = self._counterparties(transaction.get('inputs') or [])
+        counterparty = senders[0] if len(senders) == 1 else ''
+        note = self._addresses_note(senders)
+        amount = self._ada(received)
+        if self._is_native_dust(amount, self._is_own_address(counterparty)):
+            self._add_payment(JSF.PAYMENT_DUST_ATTACK, timestamp, self._native_asset_id(), amount, tx_hash, note=note)
+            return
+        self._add_transfer(timestamp, self._native_asset_id(), amount, True, tx_hash,
+                           note=note, counterparty=counterparty)
+
+    # Nothing left the wallet but the fee: a move between its own addresses, or a certificate (a delegation)
+    def _fee_only(self, transaction: dict, fee: Decimal, timestamp: int, tx_hash: str) -> None:
+        if transaction.get('certificates') or transaction.get('voting_procedures'):
+            note, event = self.tr("Fee of a staking or governance certificate"), JSF.EVENT_POSITION_COMMAND
+        else:
+            note, event = self.tr("Fee of a transfer between the wallet's own addresses"), JSF.EVENT_NO_OP
+        self._add_payment(JSF.PAYMENT_GAS_FEE, timestamp, self._native_asset_id(), fee, tx_hash,
+                          note=note, event=event)
+
+    # Shapes the classification above can't account for
+    def _check_shape(self, transaction: dict, own_entries: list) -> None:
+        if any(x.get('asset_list') for x in own_entries):
+            raise _HaltImport(self.tr("native tokens are not supported yet"))
+        if transaction.get('collateral_inputs') or transaction.get('plutus_contracts') \
+                or transaction.get('native_scripts'):
+            raise _HaltImport(self.tr("a script transaction"))
+
+    def _is_own(self, entry: dict) -> bool:
+        return entry.get('stake_addr') == self._stake_address
+
+    def _own_certificates(self, transaction: dict) -> list:
+        return [x for x in transaction.get('certificates') or []
+                if (x.get('info') or {}).get('stake_address') == self._stake_address]
+
+    # The other ends of the transaction, in order and without repeats: a wallet by its stake address, else the address
+    def _counterparties(self, entries: list) -> list:
+        ends = []
+        for entry in entries:
+            if self._is_own(entry):
+                continue
+            end = entry.get('stake_addr') or (entry.get('payment_addr') or {}).get('bech32', '')
+            if end and end not in ends:
+                ends.append(end)
+        return ends
+
+    def _addresses_note(self, addresses: list) -> str:
+        if len(addresses) < 2:
+            return ''
+        shown = ", ".join(addresses[:3])
+        return self.tr("Several addresses: ") + (shown + ", ..." if len(addresses) > 3 else shown)
+
+    # Koios reports every amount as a string of integer lovelace
+    @staticmethod
+    def _lovelace(value) -> int:
+        try:
+            return int(value or 0)
+        except (TypeError, ValueError):
+            raise Statement_ImportError(f"Unreadable Cardano amount: {value}")
+
+    @staticmethod
+    def _ada(lovelace: int) -> Decimal:
+        return Decimal(lovelace) / _LOVELACE
+
+
+SettingsRegistry.register(SettingDescriptor(
+    key="DustThreshold_ADA",
+    page=QT_TRANSLATE_NOOP("Preferences", "Blockchain"),
+    label=QT_TRANSLATE_NOOP("Preferences", "ADA dust threshold"), default=CardanoFetcher.native_dust_threshold,
+    tooltip=QT_TRANSLATE_NOOP("Preferences",
+                              "An incoming ADA transfer below this amount, from an address you never dealt with, "
+                              "is recorded as a dust attack instead of an ordinary transfer.")))
