@@ -7,7 +7,7 @@ from PySide6.QtCore import QThread
 from PySide6.QtWidgets import QApplication
 
 from jal.constants import AssetLocation
-from jal.data_import.statement import Statement_ImportError
+from jal.data_import.statement import Statement_ImportError, JSF
 from jal.db.token_blacklist import is_near_account
 from jal.net.chain_fetchers.fetcher import ChainFetcher
 from jal.net.web_request import WebRequest
@@ -28,6 +28,9 @@ _LOOKBACK = 100
 _YOCTO_DIGITS = 24          # 1 NEAR = 10^24 yoctoNEAR
 # The three lists a transaction is put together from: {endpoint: key of its rows in the transaction record}
 _LISTS = {"txns": "txns", "receipts": "receipts", "staking-txns": "staking"}
+_SYSTEM = 'system'          # predecessor of a gas refund, and of the deposit a failed call returns
+_TRANSFER = 'TRANSFER'
+_KEY_ACTIONS = ('ADD_KEY', 'DELETE_KEY')
 
 
 # Stops the import at a transaction of unsupported shape; the cursor stays before it and the next fetch retries it
@@ -175,9 +178,89 @@ class NearFetcher(ChainFetcher):
             self._state = {'height': transaction['height'], 'hashes': []}
         self._state['hashes'].append(transaction['hash'])
 
-    # What the transaction did to the wallet
+    # ------------------------------------------------------------------------------------------------------------------
+    # What the transaction did to the wallet. Its own transaction gives the deposit and the fee; 'system' refunds are
+    # left out, as 'transaction_fee' is already the gas net of them.
     def _classify(self, transaction: dict) -> None:
-        raise _HaltImport(self.tr("NEAR transactions are not classified yet"))
+        own = self._account.address()
+        if transaction['staking']:
+            raise _HaltImport(self.tr("staking is not supported yet"))
+        signed = [x for x in transaction['txns'] if x.get('signer_account_id') == own]
+        if not signed:
+            if any(x.get('predecessor_account_id') == own for x in transaction['receipts']):
+                raise _HaltImport(self.tr("the wallet acted in a transaction it didn't sign"))
+            self._incoming(transaction)
+            return
+        if len(transaction['txns']) != 1:
+            raise _HaltImport(self.tr("several transactions under one hash"))
+        [txn] = signed
+        fee = self._yocto((txn.get('outcomes_agg') or {}).get('transaction_fee'))
+        if (txn.get('outcomes') or {}).get('status') is not True:
+            # The runtime returns a failed deposit in a refund receipt of its own, apart from the gas refunds
+            refunds = [self._deposit(x) for x in transaction['receipts'] if x.get('predecessor_account_id') == _SYSTEM
+                       and x.get('receiver_account_id') == own]
+            if (self._deposit(txn) and self._deposit(txn) not in refunds) or self._arrived(transaction):
+                raise _HaltImport(self.tr("a failed transaction that kept part of its deposit"))
+            self._fee_only(transaction, fee, JSF.EVENT_FAILED, self.tr("Fee of a failed transaction"))
+            return
+        actions = [x.get('action') for x in txn.get('actions') or []]
+        if len(actions) != 1:
+            raise _HaltImport(self.tr("a transaction of several actions"))
+        sent = [x for x in transaction['receipts'] if x.get('predecessor_account_id') == own]
+        if any((x.get('outcome') or {}).get('status') is not True for x in sent):
+            raise _HaltImport(self.tr("a receipt of the transaction failed"))
+        deposit = self._deposit(txn)
+        if sum(self._deposit(x) for x in sent) != deposit:
+            raise _HaltImport(self.tr("the deposits of the transaction don't add up"))
+        if self._arrived(transaction):
+            raise _HaltImport(self.tr("coins came back to the wallet in its own transaction"))
+        receiver = txn.get('receiver_account_id', '')
+        if actions[0] == _TRANSFER and deposit and receiver != own:
+            native = self._native_asset_id()
+            self._add_transfer(transaction['timestamp'], native, self._near(deposit), False, transaction['hash'],
+                               fee=self._near(fee), fee_asset_id=native, counterparty=receiver)
+        elif actions[0] == _TRANSFER:
+            self._fee_only(transaction, fee, JSF.EVENT_NO_OP, self.tr("Fee of a transfer to the wallet itself"))
+        elif actions[0] in _KEY_ACTIONS and not deposit:
+            self._fee_only(transaction, fee, JSF.EVENT_AUTHORIZATION, self.tr("Fee of an access key change"))
+        else:
+            raise _HaltImport(self.tr("unsupported action ") + f"{actions[0]}")
+
+    # Coins sent to the wallet by somebody else's transaction
+    def _incoming(self, transaction: dict) -> None:
+        arrived = self._arrived(transaction)
+        if len(arrived) != len([x for x in transaction['receipts'] if x.get('receiver_account_id')
+                                == self._account.address()]):
+            raise _HaltImport(self.tr("a refund or a failed receipt in a transaction the wallet didn't sign"))
+        if any(x.get('action') != _TRANSFER for receipt in arrived for x in receipt.get('actions') or []):
+            raise _HaltImport(self.tr("a contract call to the wallet"))
+        amount = self._near(sum(self._deposit(x) for x in arrived))
+        if not amount:
+            self._skip(self.tr("transaction that moved nothing of the wallet's"), transaction['hash'])
+            return
+        senders = list(dict.fromkeys(x.get('predecessor_account_id', '') for x in arrived))
+        counterparty = senders[0] if len(senders) == 1 else ''
+        note = self.tr("Several senders: ") + ", ".join(senders) if len(senders) > 1 else ''
+        if self._is_native_dust(amount, self._is_own_address(counterparty)):
+            self._add_payment(JSF.PAYMENT_DUST_ATTACK, transaction['timestamp'], self._native_asset_id(), amount,
+                              transaction['hash'], note=note)
+            return
+        self._add_transfer(transaction['timestamp'], self._native_asset_id(), amount, True, transaction['hash'],
+                           note=note, counterparty=counterparty)
+
+    def _fee_only(self, transaction: dict, fee: int, event: str, note: str) -> None:
+        self._add_payment(JSF.PAYMENT_GAS_FEE, transaction['timestamp'], self._native_asset_id(), self._near(fee),
+                          transaction['hash'], note=note, event=event)
+
+    # Successful receipts that brought coins to the wallet from anyone but itself and 'system'
+    def _arrived(self, transaction: dict) -> list:
+        own = self._account.address()
+        return [x for x in transaction['receipts'] if x.get('receiver_account_id') == own
+                and x.get('predecessor_account_id') not in (own, _SYSTEM) and (x.get('outcome') or {}).get('status')
+                is True]
+
+    def _deposit(self, row: dict) -> int:
+        return self._yocto((row.get('actions_agg') or {}).get('deposit'))
 
     # ------------------------------------------------------------------------------------------------------------------
     # v3 gives every number as a string: heights, nanosecond timestamps and yoctoNEAR amounts
