@@ -29,10 +29,15 @@ belongs to that chain, so a typo cannot silently produce a wallet that fetches n
 > then follows every address the key generates. An extended public key cannot spend anything, but it
 > does reveal your entire wallet history to anyone who has it — keep your database to yourself.
 
+> A Cardano wallet is identified by its **stake address** (`stake1…`, shown by the wallet as the
+> reward or staking address), which stands for all of the wallet's payment addresses at once. The
+> account public key (`acct_xvk…`) is accepted as well, but only a stake address lets a transfer
+> between two of your Cardano wallets be recognised as one.
+
 The wallet's currency should be the coin's usual quote currency (USD for most). One account per
 address per chain.
 
-NEAR, Cardano and Polkadot wallets are kept by hand: JAL knows these chains — the account, the price
+NEAR and Polkadot wallets are kept by hand: JAL knows these chains — the account, the price
 of its coin and its logo all work — but has no reader for them, so their operations are entered
 manually. Put the transaction hash into the operation's *Number* field: a reader written for the chain one
 day will then recognize what you have already entered instead of importing it a second time.
@@ -60,7 +65,7 @@ almost every request. Put your keys in **Settings → Preferences → Blockchain
 | **Helius API key** | Solana | helius.dev |
 | **TronGrid API key** | Tron | trongrid.io |
 
-Bitcoin and Hyperliquid need no key.
+Bitcoin, Hyperliquid and Cardano need no key.
 
 ![Preferences](img/dlg_preferences.png)
 
@@ -229,6 +234,26 @@ venues whose balances JAL can read on chain — how much the position has **accr
 out. Rewards that *were* paid out arrive in your wallet and are recorded there as an *Asset Income*
 of type **Staking reward**.
 
+### Cardano delegation
+
+Cardano staking is liquid: delegating to a pool moves nothing, and the coins stay in the wallet and
+remain spendable. **The wallet's whole ADA balance is staked for as long as its stake key is
+registered**, whatever arrives or leaves meanwhile, so there is no staked position for the delegated
+coins and they are not listed in *Staked positions*.
+
+What the fetch does record:
+
+* **Registering the stake key** locks a 2 ADA deposit. It is a transfer into a staked position that JAL
+  creates by itself, named *<wallet>: stake key deposit*; deregistering the key brings it back. A
+  delegation made in the same transaction leaves no record of its own; its fee is on that transfer.
+* **Changing the pool** or the vote delegation later is an *Action* of type *Position command*.
+* **Rewards** collect in the wallet's reward account and stay there until withdrawn. Until then they
+  are listed as a reward waiting to be claimed (see below), from the *Cardano reward account*; a
+  withdrawal is recorded as a **Staking reward** on its date.
+
+A transaction the fetch does not understand yet — native tokens, smart contracts — stops the fetch at
+that transaction, and nothing after it is imported until a version of JAL that knows it is installed.
+
 ### Lending with no receipt token (Aave v4)
 
 Aave v4 hands nothing back when you supply: the coins go to one of its **Hubs** and the position is
@@ -269,7 +294,8 @@ your own and a picture.
 ### Rewards waiting to be claimed
 
 Some rewards are not paid into the wallet at all until you claim them — a
-[Merkl](https://merkl.xyz/) campaign, or the rewards of Aave's Safety Module. They are earned money
+[Merkl](https://merkl.xyz/) campaign, the rewards of Aave's Safety Module, or the reward account of a
+Cardano wallet. They are earned money
 that has not arrived, so JAL lists them in the same report, one row per wallet, asset and
 distributor, with the amount in the **Accrued** column and no position behind it.
 

@@ -1873,6 +1873,139 @@ Do you want to delete the account anyway?</source>
     </message>
 </context>
 <context>
+    <name>CardanoFetcher</name>
+    <message>
+        <location filename="../net/chain_fetchers/cardano.py" line="59"/>
+        <source>&amp;Cardano</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/cardano.py" line="75"/>
+        <source>Unreadable sync position of account </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/cardano.py" line="95"/>
+        <source>Unexpected answer from Koios: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/cardano.py" line="103"/>
+        <source>Unexpected chain tip from Koios: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/cardano.py" line="118"/>
+        <source>Unexpected transaction list from Koios: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/cardano.py" line="121"/>
+        <source>Too many pages returned by Koios, the history is incomplete</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/cardano.py" line="138"/>
+        <source>Koios returned no details of transaction </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/cardano.py" line="159"/>
+        <source>transaction is too recent, it will be imported next time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/cardano.py" line="166"/>
+        <source>import stopped at an unsupported transaction (</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/cardano.py" line="167"/>
+        <source>); it will be retried next time</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/cardano.py" line="201"/>
+        <source>the wallet&apos;s stake key acted in a transaction it didn&apos;t fund</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/cardano.py" line="205"/>
+        <source>a donation to the treasury</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/cardano.py" line="209"/>
+        <source>transaction funded by the wallet and by somebody else at once</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/cardano.py" line="221"/>
+        <source>Staking rewards withdrawn</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/cardano.py" line="245"/>
+        <source>a deposit for something other than the wallet&apos;s stake key</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/cardano.py" line="251"/>
+        <source>a stake key deposit that doesn&apos;t match its certificates</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/cardano.py" line="257"/>
+        <source>Stake key deposit paid</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/cardano.py" line="259"/>
+        <source>Stake key deposit returned</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/cardano.py" line="265"/>
+        <source>stake key deposit with no box to hold it - assign the leg by hand</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/cardano.py" line="292"/>
+        <source>stake key deposit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/cardano.py" line="304"/>
+        <source>transaction that moved nothing of the wallet&apos;s</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/cardano.py" line="319"/>
+        <source>Fee of a staking or governance certificate</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/cardano.py" line="321"/>
+        <source>Fee of a transfer between the wallet&apos;s own addresses</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/cardano.py" line="328"/>
+        <source>native tokens are not supported yet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/cardano.py" line="331"/>
+        <source>a script transaction</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/cardano.py" line="355"/>
+        <source>Several addresses: </source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>CategoryListDialog</name>
     <message>
         <location filename="../widgets/reference_dialogs.py" line="591"/>
@@ -2069,193 +2202,204 @@ Do you want to delete the category anyway?</source>
 <context>
     <name>ChainBalanceReader</name>
     <message>
-        <location filename="../net/chain_balances.py" line="159"/>
+        <location filename="../net/chain_balances.py" line="166"/>
         <source>On-chain balance not read - the wallet has several staking boxes: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="194"/>
+        <location filename="../net/chain_balances.py" line="201"/>
         <source>On-chain balance not read - unexpected asset in a Hyperliquid staking box: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="199"/>
+        <location filename="../net/chain_balances.py" line="206"/>
         <source>Unexpected answer from Hyperliquid for account </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="206"/>
+        <location filename="../net/chain_balances.py" line="213"/>
         <source>Hyperliquid staking balance is missing a field: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="211"/>
+        <location filename="../net/chain_balances.py" line="218"/>
         <source>Unreadable Hyperliquid staking balance in field: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="241"/>
+        <location filename="../net/chain_balances.py" line="248"/>
         <source>On-chain balance not read - the Helius API key isn&apos;t set</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="247"/>
+        <location filename="../net/chain_balances.py" line="254"/>
         <source>Unexpected answer from Helius for stake account </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="256"/>
+        <location filename="../net/chain_balances.py" line="263"/>
         <source>Stake account no longer exists on chain: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="259"/>
+        <location filename="../net/chain_balances.py" line="266"/>
         <source>On-chain balance not read - the address is not a stake account: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="264"/>
+        <location filename="../net/chain_balances.py" line="271"/>
         <source>Unreadable balance of stake account </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="333"/>
+        <location filename="../net/chain_balances.py" line="340"/>
         <source>Could not read the decimals of token </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="338"/>
+        <location filename="../net/chain_balances.py" line="345"/>
         <source>Unreadable decimals of token </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="341"/>
-        <location filename="../net/chain_balances.py" line="924"/>
+        <location filename="../net/chain_balances.py" line="348"/>
+        <location filename="../net/chain_balances.py" line="971"/>
         <source>Implausible decimals of token </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="404"/>
-        <location filename="../net/chain_balances.py" line="495"/>
-        <location filename="../net/chain_balances.py" line="546"/>
+        <location filename="../net/chain_balances.py" line="411"/>
+        <location filename="../net/chain_balances.py" line="502"/>
+        <location filename="../net/chain_balances.py" line="553"/>
         <source>On-chain balance not read - the API key isn&apos;t set: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="412"/>
+        <location filename="../net/chain_balances.py" line="419"/>
         <source>On-chain balance not read - the pool does not stake this asset: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="431"/>
+        <location filename="../net/chain_balances.py" line="438"/>
         <source>Could not read the stake.link position of </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="436"/>
+        <location filename="../net/chain_balances.py" line="443"/>
         <source>Unreadable stake.link position of </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="450"/>
+        <location filename="../net/chain_balances.py" line="457"/>
         <source>Could not read the stake.link distribution of </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="455"/>
-        <location filename="../net/chain_balances.py" line="463"/>
+        <location filename="../net/chain_balances.py" line="462"/>
+        <location filename="../net/chain_balances.py" line="470"/>
         <source>Unreadable stake.link distribution of </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="471"/>
+        <location filename="../net/chain_balances.py" line="478"/>
         <source>stake.link distribution didn&apos;t match the published root, or couldn&apos;t be read: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="503"/>
+        <location filename="../net/chain_balances.py" line="510"/>
         <source>Could not read the Aave v4 position of </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="555"/>
+        <location filename="../net/chain_balances.py" line="562"/>
         <source>Could not read the balance of </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="560"/>
+        <location filename="../net/chain_balances.py" line="567"/>
         <source>Unreadable balance of </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="737"/>
-        <location filename="../net/chain_balances.py" line="798"/>
+        <location filename="../net/chain_balances.py" line="745"/>
+        <location filename="../net/chain_balances.py" line="845"/>
         <source>Claimable rewards not read - the API key isn&apos;t set: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="743"/>
+        <location filename="../net/chain_balances.py" line="751"/>
         <source>Could not read the reward token of </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="749"/>
-        <location filename="../net/chain_balances.py" line="777"/>
+        <location filename="../net/chain_balances.py" line="757"/>
+        <location filename="../net/chain_balances.py" line="791"/>
+        <location filename="../net/chain_balances.py" line="824"/>
         <source>Could not read the claimable rewards of </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="785"/>
+        <location filename="../net/chain_balances.py" line="784"/>
+        <source>Claimable rewards not read: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_balances.py" line="796"/>
+        <source>Claimable rewards not read - the wallet holds no ADA: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_balances.py" line="832"/>
         <source>Unexpected answer from Merkl for account </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="808"/>
+        <location filename="../net/chain_balances.py" line="855"/>
         <source>Could not read the Merkl distribution root on </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="814"/>
+        <location filename="../net/chain_balances.py" line="861"/>
         <source>Unreadable claimable reward for account </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="859"/>
+        <location filename="../net/chain_balances.py" line="906"/>
         <source>Could not read the token a claimable reward pays out: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="869"/>
+        <location filename="../net/chain_balances.py" line="916"/>
         <source>Claimable reward didn&apos;t match the published root: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="875"/>
+        <location filename="../net/chain_balances.py" line="922"/>
         <source>Could not read what has already been claimed of </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="896"/>
+        <location filename="../net/chain_balances.py" line="943"/>
         <source>A claimable reward pays out a token of other decimals: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="943"/>
+        <location filename="../net/chain_balances.py" line="990"/>
         <source>Couldn&apos;t read the ticker of a claimable reward token: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="949"/>
+        <location filename="../net/chain_balances.py" line="996"/>
         <source>New asset created for a claimable reward: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="952"/>
+        <location filename="../net/chain_balances.py" line="999"/>
         <source>The ledger has no currency this venue is quoted in: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_balances.py" line="956"/>
+        <location filename="../net/chain_balances.py" line="1003"/>
         <source>Couldn&apos;t create an asset for a claimable reward: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -2278,12 +2422,12 @@ Do you want to delete the category anyway?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetcher.py" line="276"/>
+        <location filename="../net/chain_fetchers/fetcher.py" line="280"/>
         <source>held for the wallet - to be merged with its counter-leg or converted</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetcher.py" line="282"/>
+        <location filename="../net/chain_fetchers/fetcher.py" line="286"/>
         <source>arriving leg - to be merged with its pending sending half</source>
         <translation></translation>
     </message>
@@ -3907,208 +4051,208 @@ one for ParentCo and second for Subsidiary</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="347"/>
+        <location filename="../data_import/shop_receipt.py" line="342"/>
         <source>Set the phone receipt inbox folder in Preferences</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="360"/>
+        <location filename="../data_import/shop_receipt.py" line="355"/>
         <source>Paper scan</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="361"/>
+        <location filename="../data_import/shop_receipt.py" line="356"/>
         <source>Image</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="362"/>
+        <location filename="../data_import/shop_receipt.py" line="357"/>
         <source>PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="369"/>
+        <location filename="../data_import/shop_receipt.py" line="364"/>
         <source>Portuguese QR</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="372"/>
+        <location filename="../data_import/shop_receipt.py" line="367"/>
         <source>Portuguese QR and items</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="375"/>
+        <location filename="../data_import/shop_receipt.py" line="370"/>
         <source>Not verified, no fiscal code</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="377"/>
+        <location filename="../data_import/shop_receipt.py" line="372"/>
         <source>Not verified, Portuguese QR</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="379"/>
+        <location filename="../data_import/shop_receipt.py" line="374"/>
         <source>Russian QR</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="381"/>
+        <location filename="../data_import/shop_receipt.py" line="376"/>
         <source>PDF document</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="383"/>
+        <location filename="../data_import/shop_receipt.py" line="378"/>
         <source>no QR code found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="384"/>
+        <location filename="../data_import/shop_receipt.py" line="379"/>
         <source>QR code isn&apos;t recognized</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="385"/>
+        <location filename="../data_import/shop_receipt.py" line="380"/>
         <source>document type isn&apos;t a sale or a return</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="386"/>
+        <location filename="../data_import/shop_receipt.py" line="381"/>
         <source>document is annulled or not final</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="387"/>
+        <location filename="../data_import/shop_receipt.py" line="382"/>
         <source>no money moved (signed total 0.00)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="389"/>
+        <location filename="../data_import/shop_receipt.py" line="384"/>
         <source>Unsupported</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="406"/>
+        <location filename="../data_import/shop_receipt.py" line="401"/>
         <source>Receipt without a usable fiscal code</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="407"/>
+        <location filename="../data_import/shop_receipt.py" line="402"/>
         <source>The scan has no fiscal code that could be relied on, so nothing proves its lines. A rescan is recommended. Load it anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="427"/>
+        <location filename="../data_import/shop_receipt.py" line="422"/>
         <source>Receipt file can&apos;t be read</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="434"/>
+        <location filename="../data_import/shop_receipt.py" line="429"/>
         <source>Receipt can&apos;t be imported</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="462"/>
+        <location filename="../data_import/shop_receipt.py" line="457"/>
         <source>Select PDF receipts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="463"/>
+        <location filename="../data_import/shop_receipt.py" line="458"/>
         <source>PDF files (*.pdf)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="471"/>
+        <location filename="../data_import/shop_receipt.py" line="466"/>
         <source>File isn&apos;t a readable PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="476"/>
+        <location filename="../data_import/shop_receipt.py" line="471"/>
         <source>PDF receipt can&apos;t be put into the inbox</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="512"/>
+        <location filename="../data_import/shop_receipt.py" line="507"/>
         <source>Receipt wasn&apos;t loaded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="563"/>
+        <location filename="../data_import/shop_receipt.py" line="558"/>
         <source>Reconciled automatically</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="564"/>
+        <location filename="../data_import/shop_receipt.py" line="559"/>
         <source>Not reconciled, check the lines</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="565"/>
+        <location filename="../data_import/shop_receipt.py" line="560"/>
         <source>No usable fiscal code, rescan recommended</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="598"/>
+        <location filename="../data_import/shop_receipt.py" line="593"/>
         <source>Lines</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="603"/>
+        <location filename="../data_import/shop_receipt.py" line="598"/>
         <source>Receipt total</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="604"/>
+        <location filename="../data_import/shop_receipt.py" line="599"/>
         <source>Difference</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="708"/>
+        <location filename="../data_import/shop_receipt.py" line="703"/>
         <source>Not possible to import receipt: it has no lines</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="711"/>
+        <location filename="../data_import/shop_receipt.py" line="706"/>
         <source>Not possible to import receipt: no account set for import</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="714"/>
+        <location filename="../data_import/shop_receipt.py" line="709"/>
         <source>Not possible to import receipt: can&apos;t import: no peer set for import</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="717"/>
+        <location filename="../data_import/shop_receipt.py" line="712"/>
         <source>Not possible to import receipt: some categories are not set</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="720"/>
+        <location filename="../data_import/shop_receipt.py" line="715"/>
         <source>Not possible to import receipt: some lines have no amount, set it or delete the line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="726"/>
+        <location filename="../data_import/shop_receipt.py" line="721"/>
         <source>Not possible to import receipt: it is imported already</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="733"/>
+        <location filename="../data_import/shop_receipt.py" line="728"/>
         <source>Lines don&apos;t add up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="734"/>
+        <location filename="../data_import/shop_receipt.py" line="729"/>
         <source>The lines differ from the receipt&apos;s total by</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="735"/>
+        <location filename="../data_import/shop_receipt.py" line="730"/>
         <source>Add the operation anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="494"/>
-        <location filename="../data_import/shop_receipt.py" line="773"/>
+        <location filename="../data_import/shop_receipt.py" line="489"/>
+        <location filename="../data_import/shop_receipt.py" line="768"/>
         <source>Receipt file can&apos;t be moved out of the inbox</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7126,6 +7270,7 @@ Its other record is found by the transaction, but the two accounts are kept in d
         <location filename="../db/settings_registry.py" line="175"/>
         <location filename="../net/chain_fetchers/avalanche.py" line="48"/>
         <location filename="../net/chain_fetchers/bitcoin.py" line="381"/>
+        <location filename="../net/chain_fetchers/cardano.py" line="372"/>
         <location filename="../net/chain_fetchers/evm.py" line="1087"/>
         <location filename="../net/chain_fetchers/solana.py" line="555"/>
         <location filename="../net/chain_fetchers/tron.py" line="349"/>
@@ -7278,6 +7423,16 @@ Its other record is found by the transaction, but the two accounts are kept in d
     <message>
         <location filename="../data_import/shop_receipt.py" line="45"/>
         <source>The folder the phone app&apos;s receipt files arrive in. An imported file is moved into its &apos;done&apos; subfolder.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/cardano.py" line="373"/>
+        <source>ADA dust threshold</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/cardano.py" line="374"/>
+        <source>An incoming ADA transfer below this amount, from an address you never dealt with, is recorded as a dust attack instead of an ordinary transfer.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
