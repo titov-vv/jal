@@ -6,7 +6,7 @@ from decimal import Decimal
 from PySide6.QtCore import QThread
 from PySide6.QtWidgets import QApplication
 
-from jal.constants import AssetLocation
+from jal.constants import AssetLocation, AccountData
 from jal.data_import.statement import Statement_ImportError, JSF
 from jal.db.token_blacklist import is_near_account
 from jal.net.chain_fetchers.fetcher import ChainFetcher
@@ -14,7 +14,7 @@ from jal.net.web_request import WebRequest
 
 # NearBlocks API v3 (api.nearblocks.io/api-docs), keyless; v1/v2 are switched off on 22 Nov 2026
 _API_ROOT = "https://api.nearblocks.io/v3/accounts"
-_RPC = "https://rpc.mainnet.fastnear.com"     # keyless NEAR JSON-RPC
+RPC_URL = "https://rpc.mainnet.fastnear.com"     # keyless NEAR JSON-RPC
 _PAGE_SIZE = 100            # the largest 'limit' v3 accepts
 _MAX_PAGES = 100            # stops a runaway paging loop
 _CALL_SPACING = 6.5         # seconds between NearBlocks calls; the keyless tier allows ~10 a minute
@@ -30,7 +30,15 @@ _YOCTO_DIGITS = 24          # 1 NEAR = 10^24 yoctoNEAR
 _LISTS = {"txns": "txns", "receipts": "receipts", "staking-txns": "staking"}
 _SYSTEM = 'system'          # predecessor of a gas refund, and of the deposit a failed call returns
 _TRANSFER = 'TRANSFER'
+_FUNCTION_CALL = 'FUNCTION_CALL'
 _KEY_ACTIONS = ('ADD_KEY', 'DELETE_KEY')
+# Staking pools are recognized by name: the pool factories create them as sub-accounts
+POOL_SUFFIXES = ('.poolv1.near', '.pool.near')
+_DEPOSIT_METHODS = ('deposit_and_stake', 'deposit')
+_COMMAND_METHODS = ('stake', 'stake_all', 'unstake', 'unstake_all')
+_POOL_METHODS = _DEPOSIT_METHODS + _COMMAND_METHODS + ('withdraw', 'withdraw_all')
+_EVENT_DEPOSIT, _EVENT_STAKE, _EVENT_UNSTAKE, _EVENT_WITHDRAW = 'DEPOSIT', 'STAKE', 'UNSTAKE', 'WITHDRAW'
+_STAKING_PROTOCOL = "NEAR staking"     # protocol named in a pool leg's custody mark; data, so not translated
 
 
 # Stops the import at a transaction of unsupported shape; the cursor stays before it and the next fetch retries it
@@ -59,6 +67,7 @@ class NearFetcher(ChainFetcher):
         self._new_cursor = ''
         self._state = {}
         self._last_call = 0.0     # time.monotonic() of the latest NearBlocks call
+        self._stakes = None       # {pool: yocto staked there}, loaded by _fetch - see _pool_call
 
     def _load_state(self) -> dict:
         stored = self._cursor()
@@ -122,7 +131,7 @@ class NearFetcher(ChainFetcher):
 
     def _final_height(self) -> int:
         body = {"jsonrpc": "2.0", "id": "jal", "method": "block", "params": {"finality": "final"}}
-        request = WebRequest(WebRequest.POST_JSON, _RPC, params=body)
+        request = WebRequest(WebRequest.POST_JSON, RPC_URL, params=body)
         self._wait_for(request)
         try:
             return int(json.loads(request.data())['result']['header']['height'])
@@ -134,6 +143,7 @@ class NearFetcher(ChainFetcher):
         if not is_near_account(self._account.address()):
             raise Statement_ImportError(self.tr("Not a valid NEAR account: ") + self._account.address())
         self._state = self._load_state()
+        self._stakes = self._load_stakes()
         final = self._final_height()
         floor = max(self._state['height'] - _LOOKBACK, 0)
         transactions = self._transactions({endpoint: self._list(endpoint, floor) for endpoint in _LISTS})
@@ -142,9 +152,11 @@ class NearFetcher(ChainFetcher):
             if transaction['height'] > final - _REFUND_WAIT:
                 self._skip(self.tr("transaction is too recent, it will be imported next time"), transaction['hash'])
         for transaction in [x for x in listed if x['height'] <= final - _REFUND_WAIT]:
+            stakes = dict(self._stakes)
             try:
                 self._classify(transaction)
             except _HaltImport as halt:
+                self._stakes = stakes
                 self._skip(self.tr("import stopped at an unsupported transaction (") + halt.reason
                            + self.tr("); it will be retried next time"), transaction['hash'])
                 break
@@ -183,11 +195,9 @@ class NearFetcher(ChainFetcher):
     # left out, as 'transaction_fee' is already the gas net of them.
     def _classify(self, transaction: dict) -> None:
         own = self._account.address()
-        if transaction['staking']:
-            raise _HaltImport(self.tr("staking is not supported yet"))
         signed = [x for x in transaction['txns'] if x.get('signer_account_id') == own]
         if not signed:
-            if any(x.get('predecessor_account_id') == own for x in transaction['receipts']):
+            if transaction['staking'] or any(x.get('predecessor_account_id') == own for x in transaction['receipts']):
                 raise _HaltImport(self.tr("the wallet acted in a transaction it didn't sign"))
             self._incoming(transaction)
             return
@@ -196,6 +206,8 @@ class NearFetcher(ChainFetcher):
         [txn] = signed
         fee = self._yocto((txn.get('outcomes_agg') or {}).get('transaction_fee'))
         if (txn.get('outcomes') or {}).get('status') is not True:
+            if transaction['staking']:
+                raise _HaltImport(self.tr("a failed transaction with staking events"))
             # The runtime returns a failed deposit in a refund receipt of its own, apart from the gas refunds
             refunds = [self._deposit(x) for x in transaction['receipts'] if x.get('predecessor_account_id') == _SYSTEM
                        and x.get('receiver_account_id') == own]
@@ -212,9 +224,15 @@ class NearFetcher(ChainFetcher):
         deposit = self._deposit(txn)
         if sum(self._deposit(x) for x in sent) != deposit:
             raise _HaltImport(self.tr("the deposits of the transaction don't add up"))
+        receiver = txn.get('receiver_account_id', '')
+        method = ((txn.get('actions') or [{}])[0]).get('method') or ''
+        if actions[0] == _FUNCTION_CALL and receiver.endswith(POOL_SUFFIXES) and method in _POOL_METHODS:
+            self._pool_call(transaction, receiver, method, deposit, fee)
+            return
+        if transaction['staking']:
+            raise _HaltImport(self.tr("staking events outside a call to a staking pool"))
         if self._arrived(transaction):
             raise _HaltImport(self.tr("coins came back to the wallet in its own transaction"))
-        receiver = txn.get('receiver_account_id', '')
         if actions[0] == _TRANSFER and deposit and receiver != own:
             native = self._native_asset_id()
             self._add_transfer(transaction['timestamp'], native, self._near(deposit), False, transaction['hash'],
@@ -226,6 +244,80 @@ class NearFetcher(ChainFetcher):
         else:
             raise _HaltImport(self.tr("unsupported action ") + f"{actions[0]}")
 
+    # ------------------------------------------------------------------------------------------------------------------
+    # Native staking. The pool holds the wallet's coins while they earn, so a deposit and a withdrawal are transfers
+    # with the pool as counterparty, which settles them into the staking box at the pool's address. The pool's
+    # rewards compound inside it: the excess of a withdrawal over what was put in is the StakingReward, principal
+    # first, measured against the amounts remembered per pool in AccountData.StakeAccounts.
+    def _pool_call(self, transaction: dict, pool: str, method: str, deposit: int, fee: int) -> None:
+        events = transaction['staking']
+        if any(x.get('contract') != pool for x in events):
+            raise _HaltImport(self.tr("a staking event of another pool"))
+        kinds = sorted(x.get('type', '') for x in events)
+        arrived = self._arrived(transaction)
+        native = self._native_asset_id()
+        if method in _DEPOSIT_METHODS:
+            amounts = [self._yocto(x.get('amount')) for x in events if x.get('type') == _EVENT_DEPOSIT]
+            if arrived or not deposit or amounts != [deposit] or not set(kinds) <= {_EVENT_DEPOSIT, _EVENT_STAKE}:
+                raise _HaltImport(self.tr("a pool deposit that doesn't match its staking event"))
+            self._stakes[pool] = self._stakes.get(pool, 0) + deposit
+            self._add_transfer(transaction['timestamp'], native, self._near(deposit), False, transaction['hash'],
+                               note=self._joined_note(self._custody_mark(_STAKING_PROTOCOL),
+                                                      self.tr("Staked to ") + pool),
+                               fee=self._near(fee), fee_asset_id=native, counterparty=pool)
+        elif method in _COMMAND_METHODS:
+            if arrived or deposit or not set(kinds) <= {_EVENT_STAKE, _EVENT_UNSTAKE}:
+                raise _HaltImport(self.tr("a pool command that moved coins"))
+            self._fee_only(transaction, fee, JSF.EVENT_POSITION_COMMAND, f"{pool}: {method}()")
+        else:
+            returned = sum(self._deposit(x) for x in arrived)
+            amounts = [self._yocto(x.get('amount')) for x in events if x.get('type') == _EVENT_WITHDRAW]
+            if deposit or not returned or amounts != [returned] or kinds != [_EVENT_WITHDRAW] \
+                    or any(x.get('predecessor_account_id') != pool for x in arrived):
+                raise _HaltImport(self.tr("a pool withdrawal that doesn't match its staking event"))
+            self._pool_withdrawal(transaction, pool, returned, fee)
+
+    def _pool_withdrawal(self, transaction: dict, pool: str, returned: int, fee: int) -> None:
+        native = self._native_asset_id()
+        staked = self._stakes.get(pool)
+        if staked is None:
+            # Nothing to measure a yield against: all of it is principal, never income invented out of a deposit
+            principal, reward = returned, 0
+            self._skip(self.tr("stake withdrawal whose deposit predates the sync cursor - yield not separated"),
+                       transaction['hash'])
+        else:
+            principal = min(returned, staked)
+            reward = returned - principal
+            if staked > principal:
+                self._stakes[pool] = staked - principal
+            else:
+                self._stakes.pop(pool)
+        self._add_transfer(transaction['timestamp'], native, self._near(principal), True, transaction['hash'],
+                           note=self._joined_note(self._custody_mark(_STAKING_PROTOCOL),
+                                                  self.tr("Withdrawn from ") + pool),
+                           fee=self._near(fee), fee_asset_id=native, counterparty=pool)
+        if reward:
+            self._add_payment(JSF.PAYMENT_STAKING_REWARD, transaction['timestamp'], native, self._near(reward),
+                              transaction['hash'], note=self.tr("Staking reward"))
+
+    # {pool: yocto still staked there}, kept between fetches as yocto strings; stored only once the data is imported
+    def _load_stakes(self) -> dict:
+        stored = self._account.get_data(AccountData.StakeAccounts) or ''
+        if not stored:
+            return {}
+        try:
+            return {pool: int(amount) for pool, amount in json.loads(stored).items()}
+        except (json.JSONDecodeError, TypeError, ValueError, AttributeError):
+            logging.warning(self.tr("Unreadable staking state of account ") + self._account.name())
+            return {}
+
+    def _commit_state(self) -> None:
+        if self._stakes is None:      # nothing was fetched: the stored state is still valid
+            return
+        self._account.set_data(AccountData.StakeAccounts,
+                               json.dumps({pool: str(amount) for pool, amount in self._stakes.items()}))
+
+    # ------------------------------------------------------------------------------------------------------------------
     # Coins sent to the wallet by somebody else's transaction
     def _incoming(self, transaction: dict) -> None:
         arrived = self._arrived(transaction)

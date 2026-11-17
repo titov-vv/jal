@@ -134,22 +134,6 @@ def test_failed_transfer_without_its_refund_halts(near_wallet):
     assert halted(fetcher) and not data[JSF.ASSET_PAYMENTS]
 
 
-# The user's first stake in its real shape; it waits for staking support, and nothing after it is imported
-def test_stake_halts_until_supported(near_wallet):
-    deposit = 28 * NEAR
-    fetcher, data = fetch(near_wallet,
-                          txn(200, "stake", WALLET, "example.poolv1.near", "FUNCTION_CALL", deposit,
-                              531_065_291_953_700_000_000, method="deposit_and_stake"),
-                          receipt(201, "stake", WALLET, "example.poolv1.near", deposit, action="FUNCTION_CALL",
-                                  method="deposit_and_stake"), *refunds(202, "stake"),
-                          {"transaction_hash": "stake", "block": block(200), "type": "DEPOSIT",
-                           "amount": str(deposit), "contract": "example.poolv1.near"},
-                          txn(300, "later", WALLET, FRIEND, "TRANSFER", NEAR, 10 ** 21),
-                          receipt(301, "later", WALLET, FRIEND, NEAR))
-    assert halted(fetcher) and not data[JSF.TRANSFERS] and not data[JSF.ASSET_PAYMENTS]
-    assert fetcher._state == {'height': 0, 'hashes': []}
-
-
 @pytest.mark.parametrize("rows", [
     # a contract call
     [txn(100, "t", WALLET, "app.near", "FUNCTION_CALL", 0, 10 ** 21, method="ft_transfer"),

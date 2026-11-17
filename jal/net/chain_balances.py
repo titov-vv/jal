@@ -1,3 +1,4 @@
+import base64
 import json
 import logging
 from decimal import Decimal, DecimalException
@@ -16,6 +17,7 @@ from jal.db.symbol import JalSymbol
 from jal.db.token_blacklist import normalize_address
 from jal.net import aave, merkl, stakelink
 from jal.net.chain_fetchers.cardano_keys import stake_address
+from jal.net.chain_fetchers.near import NearFetcher, POOL_SUFFIXES, RPC_URL as NEAR_RPC_URL
 from jal.net.web_request import WebRequest
 
 # The keyless 'info' endpoint of HyperCore, the same one HyperliquidFetcher reads its history from
@@ -270,6 +272,31 @@ class ChainBalanceReader(JalDB):
         except (DecimalException, ValueError, KeyError, TypeError):
             logging.warning(self.tr("Unreadable balance of stake account ") + address)
             return None
+
+    # NEAR native staking: the pool's 'get_account' view for the wallet the box was filled from. Staked and unstaked
+    # (waiting to be withdrawn) are both still the wallet's coins inside the pool, so the position is their sum.
+    def _near_box_balance(self, box: JalStakingBox, timestamp: int):
+        pool = box.address()
+        wallet = self._wallet_of_box(box)
+        if not pool.endswith(POOL_SUFFIXES) or wallet is None:
+            logging.warning(self.tr("On-chain balance not read - the box is not one wallet's stake in a pool: ")
+                            + box.name())
+            return None
+        asset = self._sole_asset_of(box, timestamp)
+        if asset is None:
+            return None
+        args = base64.b64encode(json.dumps({"account_id": wallet.address()}).encode()).decode()
+        answer = self._post(NEAR_RPC_URL, {"jsonrpc": "2.0", "id": "jal", "method": "query",
+                                           "params": {"request_type": "call_function", "finality": "final",
+                                                      "account_id": pool, "method_name": "get_account",
+                                                      "args_base64": args}})
+        try:
+            view = json.loads(bytes(answer['result']['result']).decode())
+            yocto = int(view['staked_balance']) + int(view['unstaked_balance'])
+        except (json.JSONDecodeError, UnicodeDecodeError, TypeError, ValueError, KeyError):
+            logging.warning(self.tr("Unreadable staking balance in pool ") + pool)
+            return None
+        return asset.id(), NearFetcher._near(yocto)
 
     # ------------------------------------------------------------------------------------------------------------------
     # EVM CONTRACTS. What every reading of an EVM chain needs before it can ask anything: which provider serves the
@@ -612,6 +639,7 @@ class ChainBalanceReader(JalDB):
     def _box_readers(self) -> dict:
         return {AssetLocation.HL_BLOCKCHAIN: self._hyperliquid_box_balance,
                 AssetLocation.SOL_BLOCKCHAIN: self._solana_box_balance,
+                AssetLocation.NEAR_BLOCKCHAIN: self._near_box_balance,
                 AssetLocation.ETH_BLOCKCHAIN: self._evm_box_balance}
 
     # The staking contracts of an EVM chain that can be read, as {location: {contract address: reader}}.
