@@ -751,6 +751,19 @@ def test_green_paper_scan_brings_its_items(owner, inbox):
     assert dialog.ui.VerdictLbl.text() == '' and dialog.ui.TotalsLbl.text() == ''     # nothing is loaded any more
 
 
+def test_green_shared_image_brings_its_items(owner, inbox):
+    items = [("item", "LEITE", "11.94")]
+    make_jalr(inbox, "20260814-184200-00000001.jalr", kind="image_import", codes=[LIDL],
+              extra=paper_scan(items, effect=True))
+    dialog = _dialog(owner)
+    assert dialog.ui.InboxList.item(0, 2).text() == "Portuguese QR and items: NIF 503340855, 11.94"
+    dialog.ui.InboxList.setCurrentCell(0, 0)
+    dialog.loadInboxReceipt()
+    assert dialog.slip_lines['name'].tolist() == ["LEITE"]
+    assert dialog.slip_lines['trust'].tolist() == [LineTrust.PROVEN]
+    assert dialog.ui.VerdictLbl.text() == "Reconciled automatically"
+
+
 def test_receipt_discount_line_comes_with_its_category(owner, inbox):
     qr, extra = _receipt_discount()
     make_jalr(inbox, "20260814-184200-00000001.jalr", codes=[qr], extra=extra)

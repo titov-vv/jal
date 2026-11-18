@@ -317,7 +317,7 @@ def route(receipt: JalrFile) -> Route:
     at_qr = next((x for x in (AtQr.parse(c.raw) for c in receipt.codes) if x is not None), None)
     if receipt.kind == JalrFile.PDF_IMPORT:
         return Route(Route.PDF, at_qr=at_qr)
-    has_items = receipt.kind == JalrFile.PAPER_SCAN and any(x.role == PaperItem.ITEM for x in receipt.paper_items)
+    has_items = any(x.role == PaperItem.ITEM for x in receipt.paper_items)
     if at_qr is None:
         if has_items:
             return Route(Route.UNVERIFIED)

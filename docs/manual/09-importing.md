@@ -190,7 +190,7 @@ mark of its own, and the footer compares the sum of the lines with the receipt's
 be edited, added and deleted; **Assign Category** and **Assign Tag** fill the lines that have none
 yet. A discount off the whole receipt becomes a line of its own in the *Discounts* category.
 
-A paper scan is shown beside its lines: selecting a line marks the rows it was read from, and
+A paper scan or an image is shown beside its lines: selecting a line marks the rows it was read from, and
 **Ctrl** with the mouse wheel zooms in. Where the lines are not reconciled, the rows of the receipt
 that were read as no item are outlined, and a double click on one adds it as a line. A line whose
 amount could not be read shows **?**: editing its amount offers what makes the lines add up to the

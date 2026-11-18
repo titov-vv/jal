@@ -244,13 +244,13 @@ def test_malformed_paper_block_leaves_the_file_readable(tmp_path):
 
 
 # Items are routed whatever the phone's verdict: GREEN ones are proven, the others are loaded for the user to check
-def test_route_items_of_a_paper_scan(tmp_path):
+def test_route_items_of_a_paper_scan_or_an_image(tmp_path):
     items = [("item", "BANANA", "11.94")]
-    for status in ("green", "amber", "unchecked"):
-        jalr = JalrFile.open(make_jalr(tmp_path, f"{status}.jalr", codes=[LIDL], extra=paper_scan(items, status)))
-        assert route(jalr).kind == Route.PT_ITEMS and route(jalr).at_qr.total == Decimal('11.94')
-    jalr = JalrFile.open(make_jalr(tmp_path, "b.jalr", kind="image_import", codes=[LIDL], extra=paper_scan(items)))
-    assert route(jalr).kind == Route.PT_QR
+    for kind in (JalrFile.PAPER_SCAN, JalrFile.IMAGE_IMPORT):
+        for status in ("green", "amber", "unchecked"):
+            jalr = JalrFile.open(make_jalr(tmp_path, f"{kind}-{status}.jalr", kind=kind, codes=[LIDL],
+                                           extra=paper_scan(items, status)))
+            assert route(jalr).kind == Route.PT_ITEMS and route(jalr).at_qr.total == Decimal('11.94')
     jalr = JalrFile.open(make_jalr(tmp_path, "c.jalr", codes=[LIDL], extra=paper_scan([])))
     assert route(jalr).kind == Route.PT_QR
     jalr = JalrFile.open(make_jalr(tmp_path, "d.jalr", codes=[LIDL.replace("E:N", "E:A")], extra=paper_scan(items)))
@@ -268,6 +268,8 @@ def test_route_red_scan_is_unverified(tmp_path):
     for name, codes in (("c.jalr", []), ("d.jalr", ["7123529"])):
         result = route(JalrFile.open(make_jalr(tmp_path, name, codes=codes, extra=paper_scan(items, "red"))))
         assert result.kind == Route.UNVERIFIED and result.at_qr is None and result.currency == ''
+    image = make_jalr(tmp_path, "g.jalr", kind="image_import", extra=paper_scan(items, "unchecked"))
+    assert route(JalrFile.open(image)).kind == Route.UNVERIFIED     # an image is never RED, nor proven without a code
     result = route(JalrFile.open(make_jalr(tmp_path, "e.jalr", extra=paper_scan([], "red"))))
     assert (result.kind, result.reason) == (Route.UNSUPPORTED, Route.NO_CODE)
     jalr = JalrFile.open(make_jalr(tmp_path, "f.jalr", codes=[LIDL.replace("E:N", "E:A")],
