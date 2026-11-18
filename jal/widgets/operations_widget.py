@@ -257,6 +257,7 @@ class OperationsWidget(MdiWidget):
             rows.append(index.row())
         self.operations_model.delete_rows(rows)
         self.dbUpdated.emit()
+        self.refresh_operations()
 
     @Slot()
     def create_operation(self, operation_type):
@@ -375,7 +376,8 @@ class OperationsWidget(MdiWidget):
         if otype != LedgerTransaction.Bridge:
             return
         if BridgeMatchDialog(oid, self).exec() == QDialog.Accepted:
-            self.dbUpdated.emit()   # connected to the ledger rebuild + operations refresh
+            self.dbUpdated.emit()   # connected to the ledger rebuild
+            self.refresh_operations()
 
     @Slot()
     def assign_transfer_end(self):
@@ -408,6 +410,7 @@ class OperationsWidget(MdiWidget):
         dialog.exec()
         if dialog.changed:
             self.dbUpdated.emit()
+            self.refresh_operations()
 
     @Slot()
     def balances_context_menu(self, pos):
@@ -467,6 +470,10 @@ class OperationsWidget(MdiWidget):
     def refresh(self):
         self.balances_model.update()
         self.update_positions()
+
+    # Re-reads the operations list; called after a ledger rebuild that follows a change of operations
+    def refresh_operations(self):
+        self.operations_model.update()
 
     @Slot()
     def assign_tag(self):

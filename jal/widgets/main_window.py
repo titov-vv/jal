@@ -442,6 +442,9 @@ class MainWindow(QMainWindow):
                         asset = JalAsset(asset_id).symbol(account.currency())
                         logging.warning(self.tr("Statement ending balance doesn't match: ") +
                                         f"{account.name()} / {asset} / {amount} (act) <> {totals[account_id][asset_id]} (exp)")
+        for window in self.ui.windowArea.windows():
+            if isinstance(window, OperationsWidget):
+                window.refresh_operations()
 
     # Counts the operations in flight instead of following each signal directly, because they can nest.
     @Slot(bool)
