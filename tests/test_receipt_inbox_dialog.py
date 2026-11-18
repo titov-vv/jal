@@ -1240,9 +1240,12 @@ def test_pdf_of_the_computer_joins_the_inbox(owner, inbox, tmp_path, monkeypatch
     broken.write_bytes(b"not a pdf")
     os.utime(source, (1786000000, 1786000000))     # 6 Aug 2026, before the file the inbox has
     monkeypatch.setattr(QFileDialog, "getOpenFileNames", lambda *args, **kwargs: ([str(broken), str(source)], ''))
+    shown = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda box, parent, title, text, *args: shown.append(text))
     dialog = _dialog(owner)
     assert dialog.ui.InboxAddPdfBtn.isEnabled()
     dialog.addPdfReceipts()
+    assert len(shown) == 1 and f"{broken}: File isn't a readable PDF" in shown[0] and str(source) not in shown[0]
     assert dialog.ui.InboxList.rowCount() == 2 and dialog.ui.InboxList.currentRow() == 0
     assert dialog.ui.InboxList.item(0, 1).text() == "PDF"
     assert dialog.ui.InboxList.item(0, 2).text() == "PDF document"

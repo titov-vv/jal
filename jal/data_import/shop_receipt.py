@@ -456,20 +456,24 @@ class ImportReceiptDialog(QDialog):
         folder = JalSettings().getStr(RECEIPT_INBOX_SETTING)
         names, _filter = QFileDialog.getOpenFileNames(self, self.tr("Select PDF receipts"), '',
                                                       self.tr("PDF files (*.pdf)"))
-        added = ''
+        added, failed = '', []
         for name in names:
             try:
                 with open(name, 'rb') as pdf_file:
                     data = pdf_file.read()
                 codes, pages = pdf_codes(data)
                 if not pages:
-                    logging.warning(self.tr("File isn't a readable PDF") + f": {name}")
+                    failed.append(f"{name}: " + self.tr("File isn't a readable PDF"))
                     continue
                 captured_at = datetime.fromtimestamp(os.path.getmtime(name)).astimezone()
                 added = wrap_pdf(folder, data, codes, pages, captured_at)
             except OSError as e:
-                logging.warning(self.tr("PDF receipt can't be put into the inbox") + f" ({name}): {e}")
+                failed.append(f"{name}: {e}")
         self.refreshInbox()
+        if failed:
+            QMessageBox().warning(self, self.tr("PDF receipts not added"),
+                                  self.tr("These files weren't put into the inbox:") + "\n\n" + "\n".join(failed),
+                                  QMessageBox.Ok)
         row = next((i for i, (receipt, _route) in enumerate(self._inbox) if receipt.path == added), -1)
         if row >= 0:
             self.ui.InboxList.setCurrentCell(row, 0)

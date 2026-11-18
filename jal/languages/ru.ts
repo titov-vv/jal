@@ -4193,93 +4193,98 @@ one for ParentCo and second for Subsidiary</source>
         <translation>Файл не является читаемым PDF</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="471"/>
-        <source>PDF receipt can&apos;t be put into the inbox</source>
-        <translation>Не удалось поместить PDF чек в папку входящих</translation>
+        <location filename="../data_import/shop_receipt.py" line="474"/>
+        <source>PDF receipts not added</source>
+        <translation>PDF чеки не добавлены</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="507"/>
+        <location filename="../data_import/shop_receipt.py" line="475"/>
+        <source>These files weren&apos;t put into the inbox:</source>
+        <translation>Эти файлы не помещены в папку входящих:</translation>
+    </message>
+    <message>
+        <location filename="../data_import/shop_receipt.py" line="511"/>
         <source>Receipt wasn&apos;t loaded</source>
         <translation>Чек не загружен</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="558"/>
+        <location filename="../data_import/shop_receipt.py" line="562"/>
         <source>Reconciled automatically</source>
         <translation>Сверен автоматически</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="559"/>
+        <location filename="../data_import/shop_receipt.py" line="563"/>
         <source>Not reconciled, check the lines</source>
         <translation>Не сверен, проверьте позиции</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="560"/>
+        <location filename="../data_import/shop_receipt.py" line="564"/>
         <source>No usable fiscal code, rescan recommended</source>
         <translation>Нет пригодного фискального кода, рекомендуется отсканировать заново</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="593"/>
+        <location filename="../data_import/shop_receipt.py" line="597"/>
         <source>Lines</source>
         <translation>Позиции</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="598"/>
+        <location filename="../data_import/shop_receipt.py" line="602"/>
         <source>Receipt total</source>
         <translation>Итог чека</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="599"/>
+        <location filename="../data_import/shop_receipt.py" line="603"/>
         <source>Difference</source>
         <translation>Разница</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="703"/>
+        <location filename="../data_import/shop_receipt.py" line="707"/>
         <source>Not possible to import receipt: it has no lines</source>
         <translation>Невозможно импортировать чек: в нём нет позиций</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="706"/>
+        <location filename="../data_import/shop_receipt.py" line="710"/>
         <source>Not possible to import receipt: no account set for import</source>
         <translation>Невозможно импортировать чек: не выбран счёт для импорта</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="709"/>
+        <location filename="../data_import/shop_receipt.py" line="713"/>
         <source>Not possible to import receipt: can&apos;t import: no peer set for import</source>
         <translation>Невозможно импортировать чек: не выбран контрагент для импорта</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="712"/>
+        <location filename="../data_import/shop_receipt.py" line="716"/>
         <source>Not possible to import receipt: some categories are not set</source>
         <translation>Невозможно импортировать чек: некоторые категории не выбраны</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="715"/>
+        <location filename="../data_import/shop_receipt.py" line="719"/>
         <source>Not possible to import receipt: some lines have no amount, set it or delete the line</source>
         <translation>Невозможно импортировать чек: у некоторых позиций нет суммы, укажите её или удалите позицию</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="721"/>
+        <location filename="../data_import/shop_receipt.py" line="725"/>
         <source>Not possible to import receipt: it is imported already</source>
         <translation>Невозможно импортировать чек: он уже импортирован</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="728"/>
+        <location filename="../data_import/shop_receipt.py" line="732"/>
         <source>Lines don&apos;t add up</source>
         <translation>Позиции не сходятся с итогом</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="729"/>
+        <location filename="../data_import/shop_receipt.py" line="733"/>
         <source>The lines differ from the receipt&apos;s total by</source>
         <translation>Сумма позиций отличается от итога чека на</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="730"/>
+        <location filename="../data_import/shop_receipt.py" line="734"/>
         <source>Add the operation anyway?</source>
         <translation>Всё равно добавить операцию?</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="489"/>
-        <location filename="../data_import/shop_receipt.py" line="768"/>
+        <location filename="../data_import/shop_receipt.py" line="493"/>
+        <location filename="../data_import/shop_receipt.py" line="772"/>
         <source>Receipt file can&apos;t be moved out of the inbox</source>
         <translation>Невозможно переместить файл чека из папки входящих</translation>
     </message>
