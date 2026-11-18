@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import uuid
 import logging
@@ -66,6 +67,7 @@ class JalrFile:
     RED = "red"
     NO_VALUE = "no_value"
     UNCHECKED = "unchecked"
+    _PRINTED_AT = re.compile(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?')
 
     def __init__(self, path: str, data: dict):
         self._path = path
@@ -213,6 +215,17 @@ class JalrFile:
     @property
     def shop_name(self) -> str:
         return self._shop_name
+
+    # Moment printed on the receipt, on the shop's clock; None unless the phone wrote it as 'YYYY-MM-DDTHH:MM[:SS]'
+    @property
+    def printed_at(self) -> Optional[datetime]:
+        text = (self._data.get('paper') or {}).get('printed_at')
+        if not isinstance(text, str) or not self._PRINTED_AT.fullmatch(text):
+            return None
+        try:
+            return datetime.fromisoformat(text)
+        except ValueError:
+            return None
 
     def pdf_bytes(self) -> bytes:
         with zipfile.ZipFile(self._path) as container:

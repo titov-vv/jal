@@ -392,11 +392,13 @@ class ImportReceiptDialog(QDialog):
         text = receipt.ocr_texts
         proven = False
         if receipt_route.kind == Route.PT_QR:
-            receipt_api = ReceiptOffline.from_at_qr(receipt_route.at_qr, receipt.captured_at, text=text)
+            receipt_api = ReceiptOffline.from_at_qr(receipt_route.at_qr, receipt.captured_at, text=text,
+                                                    printed_at=receipt.printed_at)
         elif receipt_route.kind == Route.PT_ITEMS:
             lines, proven = paper_lines(receipt, receipt_route.at_qr)
             receipt_api = ReceiptOffline.from_at_qr(receipt_route.at_qr, receipt.captured_at, lines, text,
-                                                    Verdict.RECONCILED if proven else Verdict.NOT_RECONCILED)
+                                                    Verdict.RECONCILED if proven else Verdict.NOT_RECONCILED,
+                                                    receipt.printed_at)
         elif receipt_route.kind == Route.UNVERIFIED:
             if QMessageBox().question(self, self.tr("Receipt without a usable fiscal code"),
                                       self.tr("The scan has no fiscal code that could be relied on, so nothing proves "
@@ -408,7 +410,7 @@ class ImportReceiptDialog(QDialog):
                 receipt_api = ReceiptOffline.unverified(receipt, lines)
             else:
                 receipt_api = ReceiptOffline.from_at_qr(receipt_route.at_qr, receipt.captured_at, lines, text,
-                                                        Verdict.NO_CODE)
+                                                        Verdict.NO_CODE, receipt.printed_at)
         elif receipt_route.kind == Route.FNS:
             try:
                 receipt_api = ReceiptRuFNS(qr_text=receipt_route.code)

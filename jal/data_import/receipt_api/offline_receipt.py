@@ -36,14 +36,20 @@ class ReceiptOffline(ReceiptAPI):
         self._currency = currency
 
     # A receipt of the Portuguese fiscal QR, for the day it gives: the 'lines' given or one line of its total,
-    # then the vouchers its 'text' shows as paid
+    # then the vouchers its 'text' shows as paid. Its time is the printed one, else that of a same-day scan, else 00:00.
     @classmethod
     def from_at_qr(cls, at_qr: AtQr, captured_at: datetime, lines: Optional[list] = None,
-                   text: Optional[list] = None, verdict: str = Verdict.NOT_RECONCILED) -> 'ReceiptOffline':
+                   text: Optional[list] = None, verdict: str = Verdict.NOT_RECONCILED,
+                   printed_at: Optional[datetime] = None) -> 'ReceiptOffline':
         shop = f"NIF {at_qr.nif}"
         amount = at_qr.total if at_qr.is_return else -at_qr.total
         day = at_qr.date
-        moment = captured_at.time() if captured_at.date() == day else time(0, 0)   # a scan made later has no time
+        if printed_at is not None and printed_at.date() == day:
+            moment = printed_at.time()
+        elif captured_at.date() == day:
+            moment = captured_at.time()
+        else:
+            moment = time(0, 0)
         date_time = QDateTime(QDate(day.year, day.month, day.day),
                               QTime(moment.hour, moment.minute, moment.second), local_zone())
         vouchers = voucher_lines(text or [], at_qr.nif, at_qr.total, Decimal('1') if at_qr.is_return else Decimal('-1'))

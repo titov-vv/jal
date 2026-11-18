@@ -54,6 +54,24 @@ def test_tier0_scanned_on_a_later_day_has_no_time(prepare_db):
     assert receipt.datetime() == _local(2026, 8, 14)
 
 
+def test_tier0_printed_time_wins_over_the_scan_time(prepare_db):
+    later = datetime(2026, 8, 20, 9, 5, tzinfo=LISBON_SUMMER)
+    receipt = ReceiptOffline.from_at_qr(AtQr.parse(LIDL), later, printed_at=datetime(2026, 8, 14, 16, 25, 9))
+    assert receipt.datetime() == QDateTime(QDate(2026, 8, 14), QTime(16, 25, 9), local_zone())
+    same_day = datetime(2026, 8, 14, 18, 42, tzinfo=LISBON_SUMMER)
+    receipt = ReceiptOffline.from_at_qr(AtQr.parse(LIDL), same_day, printed_at=datetime(2026, 8, 14, 18, 37))
+    assert receipt.datetime() == _local(2026, 8, 14, 18, 37)
+
+
+def test_tier0_printed_time_of_another_day_is_ignored(prepare_db):
+    same_day = datetime(2026, 8, 14, 18, 42, tzinfo=LISBON_SUMMER)
+    receipt = ReceiptOffline.from_at_qr(AtQr.parse(LIDL), same_day, printed_at=datetime(2026, 8, 13, 16, 25))
+    assert receipt.datetime() == _local(2026, 8, 14, 18, 42)
+    later = datetime(2026, 8, 20, 9, 5, tzinfo=LISBON_SUMMER)
+    receipt = ReceiptOffline.from_at_qr(AtQr.parse(LIDL), later, printed_at=datetime(2026, 8, 13, 16, 25))
+    assert receipt.datetime() == _local(2026, 8, 14)
+
+
 def test_tier0_credit_note_is_money_back(prepare_db):
     credit_note = AtQr.parse(LIDL.replace("D:FS", "D:NC"))
     receipt = ReceiptOffline.from_at_qr(credit_note, datetime(2026, 8, 14, 18, 42, tzinfo=LISBON_SUMMER))
@@ -421,6 +439,16 @@ def test_inbox_is_listed(owner, inbox):
     assert dialog.ui.InboxList.item(0, 1).text() == "Paper scan"
     assert dialog.ui.InboxList.item(0, 2).text() == "Portuguese QR: NIF 503340855, 11.94"
     assert dialog.ui.InboxList.item(1, 2).text() == "Unsupported: no QR code found"
+
+
+def test_image_imported_days_later_takes_the_printed_time(owner, inbox):
+    extra = {"paper": {"shop_name": None, "printed_at": "2026-08-14T16:25:09", "tax_table": [], "items": []}}
+    make_jalr(inbox, "20260818-103810-00000001.jalr", kind="image_import", codes=[LIDL],
+              captured_at="2026-08-18T10:38:10+01:00", extra=extra)
+    dialog = _dialog(owner)
+    dialog.ui.InboxList.setCurrentCell(0, 0)
+    dialog.loadInboxReceipt()
+    assert dialog.ui.SlipDateTime.dateTime() == QDateTime(QDate(2026, 8, 14), QTime(16, 25, 9), local_zone())
 
 
 def test_paper_scan_is_imported_and_leaves_the_inbox(owner, inbox):

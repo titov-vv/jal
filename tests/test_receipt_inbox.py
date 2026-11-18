@@ -81,6 +81,21 @@ def test_utc_capture_time_written_as_z(tmp_path):
     assert jalr.captured_at == datetime(2026, 1, 10, 9, 5, tzinfo=timezone.utc)
 
 
+@pytest.mark.parametrize("printed_at, expected", [
+    ("2026-11-13T16:25:09", datetime(2026, 11, 13, 16, 25, 9)),
+    ("2026-11-13T16:25", datetime(2026, 11, 13, 16, 25)),
+    ("2026-11-13", None),                  # a date alone says nothing of the time
+    ("13/11/2026 16:25", None),            # as printed, before the phone normalised it
+    ("2026-11-13T16:25:09+00:00", None),   # the shop's clock has no zone
+    ("2026-13-45T16:25:09", None),
+    (None, None)])
+def test_printed_at(tmp_path, printed_at, expected):
+    extra = paper_scan([])
+    extra['paper']['printed_at'] = printed_at
+    assert JalrFile.open(make_jalr(tmp_path, "a.jalr", extra=extra)).printed_at == expected
+    assert JalrFile.open(make_jalr(tmp_path, "b.jalr")).printed_at is None     # no 'paper' block
+
+
 def test_unknown_keys_and_minor_versions_are_accepted(tmp_path):
     jalr = JalrFile.open(make_jalr(tmp_path, "a.jalr", schema="jal.receipt/1.3", extra={"ocr": {"lines": []}}))
     assert jalr is not None
