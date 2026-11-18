@@ -343,16 +343,14 @@ def generic_receipt(lines: list, captured: date):
 # Reads a receipt PDF into the lines of the import dialog. Every item that its shop profile finds, or a generic
 # reader without one, is a line, proven where they add up to the receipt's own totals; otherwise the receipt is
 # one line of its total.
-# A payment by voucher is a discount line in either case.
-def pdf_receipt(data: bytes, at_qr: Optional[AtQr], captured_at: datetime) -> Optional[ReceiptOffline]:
+# A payment by voucher is a discount line in either case. Raises ValueError with the reason a receipt can't be read.
+def pdf_receipt(data: bytes, at_qr: Optional[AtQr], captured_at: datetime) -> ReceiptOffline:
     if not dependency_present(['pypdf']):
-        logging.warning(ReceiptAPI.tr("Package pypdf not found for PDF parsing."))
-        return None
+        raise ValueError(ReceiptAPI.tr("Package pypdf not found for PDF parsing."))
     try:
         text = layout_text(data)
     except (PyPdfError, ValueError, KeyError, TypeError) as e:
-        logging.warning(ReceiptAPI.tr("Receipt PDF can't be read") + f": {e}")
-        return None
+        raise ValueError(ReceiptAPI.tr("Receipt PDF can't be read") + f": {e}") from e
     header = parse_header(text)
     nif = at_qr.nif if at_qr is not None else header.get('nif', '')
     sign = Decimal('1') if at_qr is not None and at_qr.is_return else Decimal('-1')
@@ -380,8 +378,7 @@ def pdf_receipt(data: bytes, at_qr: Optional[AtQr], captured_at: datetime) -> Op
         lines = [dict(x, trust=trust) for x in lines]
     if not lines:
         if total is None:
-            logging.warning(ReceiptAPI.tr("Receipt PDF has no total that could be read"))
-            return None
+            raise ValueError(ReceiptAPI.tr("Receipt PDF has no total that could be read"))
         lines = [{'name': shop, 'amount': sign * total}]
     vouchers = voucher_lines(text, nif, total, sign)     # the account paid that much less
     lines += vouchers

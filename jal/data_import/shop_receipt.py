@@ -413,21 +413,22 @@ class ImportReceiptDialog(QDialog):
             try:
                 receipt_api = ReceiptRuFNS(qr_text=receipt_route.code)
             except ValueError as e:
-                logging.warning(e)
+                self._load_failed(receipt, str(e))
                 return
         elif receipt_route.kind == Route.PDF:
             try:
                 data = receipt.pdf_bytes()
             except (OSError, KeyError, zipfile.BadZipFile) as e:
-                logging.warning(self.tr("Receipt file can't be read") + f" ({receipt.name}): {e}")
+                self._load_failed(receipt, self.tr("Receipt file can't be read") + f": {e}")
                 return
-            receipt_api = pdf_receipt(data, receipt_route.at_qr, receipt.captured_at)
-            if receipt_api is None:
+            try:
+                receipt_api = pdf_receipt(data, receipt_route.at_qr, receipt.captured_at)
+            except ValueError as e:
+                self._load_failed(receipt, str(e))
                 return
             text = layout_text(data)
         else:
-            logging.warning(self.tr("Receipt can't be imported") + f" ({receipt.name}): " +
-                            self._route_text(receipt_route))
+            self._load_failed(receipt, self.tr("Receipt can't be imported") + ": " + self._route_text(receipt_route))
             return
         self._select_account_by_card(text, receipt_route.currency or receipt_api.currency())
         self.receipt_api = receipt_api
@@ -439,6 +440,10 @@ class ImportReceiptDialog(QDialog):
         self.receipt_api.slip_load_ok.connect(self.slip_loaded)
         self.receipt_api.slip_load_failed.connect(self.slip_failed)
         self.downloadSlipJSON()
+
+    # A receipt loaded before stays on the form: nothing of the failed file replaced it
+    def _load_failed(self, receipt: JalrFile, reason: str):
+        QMessageBox().warning(self, self.tr("Receipt wasn't loaded"), f"{receipt.name}\n\n{reason}", QMessageBox.Ok)
 
     # The account whose card the receipt prints; none without a match, so the last receipt's account isn't reused.
     # 'currency' is a code, any currency if empty

@@ -464,8 +464,9 @@ def test_pdf_receipt_of_an_unknown_shop_without_items_is_one_line_of_its_total(p
     assert receipt.datetime() == QDateTime(QDate(2026, 8, 20), QTime(9, 5), local_zone())   # no date read: capture
 
 
-def test_pdf_receipt_of_a_broken_file_is_nothing(prepare_db):
-    assert pdf_receipt(b"%PDF-1.4 truncated", None, CAPTURED) is None
+def test_pdf_receipt_of_a_broken_file_raises(prepare_db):
+    with pytest.raises(ValueError, match="Receipt PDF can't be read"):
+        pdf_receipt(b"%PDF-1.4 truncated", None, CAPTURED)
 
 
 def test_pdf_receipt_voucher_is_a_discount_line(prepare_db):

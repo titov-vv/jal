@@ -556,12 +556,14 @@ def test_peer_of_the_last_receipt_is_not_reused(owner, inbox):
     assert dialog.ui.PeerEdit.selected_id == 0
 
 
-def test_unsupported_file_loads_nothing(owner, inbox):
+def test_unsupported_file_loads_nothing(owner, inbox, monkeypatch):
     path = make_jalr(inbox, "20260814-184300-00000002.jalr", kind="image_import")
+    shown = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda box, parent, title, text, *args: shown.append(text))
     dialog = _dialog(owner)
     dialog.ui.InboxList.setCurrentCell(0, 0)
     dialog.loadInboxReceipt()
-    assert dialog.slip_lines is None
+    assert dialog.slip_lines is None and len(shown) == 1
     assert os.path.isfile(path)
 
 
@@ -618,13 +620,35 @@ def test_failed_fns_download_is_shown_and_clears_the_form(owner, inbox, monkeypa
     assert os.path.isfile(path)
 
 
-def test_malformed_fns_code_loads_nothing(owner, inbox):
+def test_malformed_fns_code_loads_nothing(owner, inbox, monkeypatch):
     path = make_jalr(inbox, "20240115-183000-00000004.jalr", codes=["t=yesterday&s=1&fn=1&i=1&fp=1&n=1"])
+    shown = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda box, parent, title, text, *args: shown.append(text))
     dialog = _dialog(owner)
     dialog.ui.InboxList.setCurrentCell(0, 0)
     dialog.loadInboxReceipt()
     assert dialog.receipt_api is None and dialog.slip_lines is None
+    assert len(shown) == 1 and "20240115-183000-00000004.jalr" in shown[0] and "pattern isn't recognized" in shown[0]
     assert os.path.isfile(path)
+
+
+def test_file_that_fails_to_load_is_shown_and_keeps_the_form(owner, inbox, monkeypatch):
+    make_jalr(inbox, "20260814-184200-00000001.jalr", codes=[LIDL])
+    make_jalr(inbox, "20260814-184300-00000002.jalr", kind="pdf_import", pdf=b"%PDF-1.3 truncated")
+    make_jalr(inbox, "20260814-184400-00000003.jalr", kind="image_import")
+    shown = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda box, parent, title, text, *args: shown.append(text))
+    dialog = _dialog(owner)
+    dialog.ui.InboxList.setCurrentCell(0, 0)
+    dialog.loadInboxReceipt()
+    loaded = dialog.receipt_api
+    for row in (1, 2):
+        dialog.ui.InboxList.setCurrentCell(row, 0)
+        dialog.loadInboxReceipt()
+    assert len(shown) == 2
+    assert "20260814-184300-00000002.jalr" in shown[0] and "Receipt PDF can't be read" in shown[0]
+    assert "20260814-184400-00000003.jalr" in shown[1] and "Unsupported: no QR code found" in shown[1]
+    assert dialog.receipt_api is loaded and dialog._inbox_file.endswith("20260814-184200-00000001.jalr")
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -660,12 +684,15 @@ def test_paper_scan_of_a_receipt_imported_as_pdf_is_refused(owner, inbox):
     assert len(os.listdir(inbox / "done")) == 2
 
 
-def test_unreadable_pdf_loads_nothing(owner, inbox):
+def test_unreadable_pdf_loads_nothing(owner, inbox, monkeypatch):
     path = make_jalr(inbox, "20260814-190000-00000007.jalr", kind="pdf_import")
+    shown = []
+    monkeypatch.setattr(QMessageBox, "warning", lambda box, parent, title, text, *args: shown.append(text))
     dialog = _dialog(owner)
     dialog.ui.InboxList.setCurrentCell(0, 0)
     dialog.loadInboxReceipt()
     assert dialog.receipt_api is None and dialog.slip_lines is None
+    assert len(shown) == 1 and "Receipt PDF can't be read" in shown[0]
     assert os.path.isfile(path)
 
 
