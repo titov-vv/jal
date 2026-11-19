@@ -25,6 +25,11 @@ from jal.widgets.theme import Theme, Meaning
 
 # ----------------------------------------------------------------------------------------------------------------------
 OLD_QUOTE_AGE = 7   # when mark line as italic for old quote
+
+
+# A cost left by rounding of lot prices (e.g. 1E-19 after a lot is used up) counts as no cost at all
+def _cost_is_residue(cost: Decimal, value: Decimal) -> bool:
+    return abs(cost) <= abs(value) * Decimal(Setup.COST_RESIDUE_TOLERANCE)
 # ----------------------------------------------------------------------------------------------------------------------
 class AssetTreeItem(AbstractTreeItem):
     def __init__(self, data=None, parent=None, group=''):
@@ -48,7 +53,7 @@ class AssetTreeItem(AbstractTreeItem):
             self._data['value'] = self._data['quote'] * self._data['qty']
             self._data['value_common'] = self._data['quote_a'] * self._data['qty'] if self._data['quote_a'] else Decimal('0')
             self._data['p/l'] = self._data['quote'] * self._data['qty'] - self._data['value_i'] if not self._data['asset_is_currency'] else Decimal('0')
-            self._data['p/l%'] = Decimal('100') * (self._data['quote'] * self._data['qty'] / self._data['value_i'] - 1) if self._data['value_i'] != Decimal('0') else Decimal('0')
+            self._data['p/l%'] = Decimal('100') * (self._data['quote'] * self._data['qty'] / self._data['value_i'] - 1) if not _cost_is_residue(self._data['value_i'], self._data['value']) else Decimal('0')
 
     def _calculateGroupTotals(self, child_data):
         self._data['header'] = child_data.get(self._group.strip("_id"), '<none>')
@@ -62,7 +67,7 @@ class AssetTreeItem(AbstractTreeItem):
         self._data['value'] += child_data['value']
         self._data['value_common'] += child_data['value_common']
         self._data['p/l'] += child_data['p/l']
-        self._data['p/l%'] = Decimal('100') * self._data['p/l'] / (self._data['value'] - self._data['p/l']) if self._data['value'] != self._data['p/l'] else Decimal('0')
+        self._data['p/l%'] = Decimal('100') * self._data['p/l'] / (self._data['value'] - self._data['p/l']) if not _cost_is_residue(self._data['value'] - self._data['p/l'], self._data['value']) else Decimal('0')
         if self._group == 'asset_id':    # Average price and total quantity calculation for asset groups
             if not child_data['asset_is_currency']:
                 if not self._data['since'] or child_data['since'] < self._data['since']:

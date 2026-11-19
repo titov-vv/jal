@@ -327,3 +327,22 @@ def test_account_view_still_fits_its_columns(holder):
     view.setModel(model)
     model.showAccount(WALLET, EUR, DATE)
     assert view.header().sectionResizeMode(model.fieldIndex('qty')) == QHeaderView.ResizeToContents
+
+
+# The NEAR case: a priced lot used up by FIFO leaves its lot-price rounding as the cost of a zero-cost remainder
+def test_a_rounding_residue_of_cost_shows_no_profit_percent():
+    from jal.db.holdings_model import AssetTreeItem
+    position = {'header': '', 'currency': 'USD', 'account': 'NEAR wallet', 'asset': 'NEAR', 'country': '',
+                'tag': '', 'account_tag': '', 'asset_name': 'NEAR', 'asset_is_currency': False, 'since': 0,
+                'qty': Decimal('0.6370375702794606'), 'quote': Decimal('1.5'), 'quote_a': Decimal('1.5'),
+                'open_quote': Decimal('0'), 'paid': Decimal('0'), 'share': Decimal('0'), 'font': 'normal'}
+    residue = AssetTreeItem(dict(position, value_i=Decimal('1.8609E-19')))
+    negative = AssetTreeItem(dict(position, value_i=Decimal('-5E-18')))
+    real = AssetTreeItem(dict(position, value_i=Decimal('0.637037570279460600')))
+    assert residue.details()['p/l%'] == Decimal('0')
+    assert negative.details()['p/l%'] == Decimal('0')
+    assert real.details()['p/l%'] == Decimal('50')
+    group = AssetTreeItem(group='account_id')
+    group.appendChild(residue)
+    assert group.details()['p/l%'] == Decimal('0')
+    assert group.details()['p/l'] == residue.details()['p/l']

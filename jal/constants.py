@@ -67,6 +67,7 @@ class Setup:
     # can be priced at all, since an unpriced one is already held by the relative bound.
     REBASE_RESIDUE_TOLERANCE = '1E-9'                # of the quantity the operation converts
     REBASE_RESIDUE_MAX_VALUE = '0.01'                # in the account's currency
+    COST_RESIDUE_TOLERANCE = '1E-9'                  # of a position's value: a cost below it is a rounding residue
     ICON_STORED_SIZE = 64
     REPO_URL = "https://github.com/titov-vv/jal"
     DOCS_URL = "https://titov-vv.github.io/jal/"   # GitHub Pages site built from the repository's docs/ folder
