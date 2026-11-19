@@ -364,6 +364,24 @@ def test_ensure_token_lists_aborts_when_download_fails(prepare_db, monkeypatch):
     assert [e[0] for e in _RecordingBox.events] == ['info', 'warn']   # informed, then warned that it aborted
 
 
+
+# A chain no list covers can't fill its cache, so the gate lets its fetch through without downloading or asking
+@pytest.mark.parametrize('location_id', [AssetLocation.ADA_BLOCKCHAIN, AssetLocation.DOT_BLOCKCHAIN,
+                                         AssetLocation.NEAR_BLOCKCHAIN, AssetLocation.BTC_BLOCKCHAIN,
+                                         AssetLocation.HL_BLOCKCHAIN])
+def test_ensure_token_lists_passes_chain_without_lists(prepare_db, monkeypatch, location_id):
+    import jal.net.chain_fetchers.fetchers as fetchers_mod
+    _RecordingBox.events = []
+    provider = TokenListProvider()
+    assert not provider.has_source(location_id)
+    refresh_calls = []
+    monkeypatch.setattr(provider, 'refresh', lambda **kw: refresh_calls.append(kw))
+    monkeypatch.setattr(fetchers_mod, 'QMessageBox', _RecordingBox)
+
+    assert _registry(provider)._ensure_token_lists(location_id) is True
+    assert refresh_calls == []
+    assert _RecordingBox.events == []
+
 # A movement whose far side is an outside address is imported with that side left unknown - the whole quantity still
 # reaches the ledger, on the one account that is known, and the import runs through instead of stopping to ask which
 # account the outside address stands for.

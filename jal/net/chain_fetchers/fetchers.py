@@ -7,7 +7,8 @@ from PySide6.QtCore import QObject, Signal, Slot, Qt
 from PySide6.QtWidgets import QMessageBox, QDialog, QVBoxLayout, QLabel, QListWidget, QListWidgetItem, \
     QCheckBox, QDialogButtonBox
 
-from jal.constants import Setup, AssetLocation
+from jal.constants import Setup
+from jal.net.token_lists import TokenListProvider
 from jal.db.ledger import Ledger
 from jal.db.settings import JalSettings
 from jal.widgets.helpers import sort_menu_items
@@ -319,15 +320,7 @@ class ChainFetchers(QObject):
     # Returns False - aborting the fetch - if the cache is still empty afterwards, since fetching then would walk
     # straight into that trap.
     def _ensure_token_lists(self, location_id: int) -> bool:
-        # A venue that publishes the value of every transfer needs no downloaded list to tell a real token from
-        # spam - the fetcher judges by that value and resolves a token's identity from the venue's own registry
-        # (Hyperliquid: 'spotMeta'). There is no curated allow-list to download for such a chain, so the gate that
-        # protects the first fetch of a list-backed chain would only ever abort it.
-        if location_id == AssetLocation.HL_BLOCKCHAIN:
-            return True
-        # Bitcoin has no contracts at all, hence no tokens to tell apart and no list to download: everything a BTC
-        # wallet ever holds is BTC itself. The gate would abort every fetch of it over a cache that can never fill.
-        if location_id == AssetLocation.BTC_BLOCKCHAIN:
+        if not TokenListProvider.has_source(location_id):   # no list exists for this chain (BTC, ADA, DOT, NEAR, HL)
             return True
         lists = self.parent.token_lists
         if not lists.is_empty(location_id):

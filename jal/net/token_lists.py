@@ -182,7 +182,11 @@ class TokenListProvider(QObject, JalDB):
                 raise KeyboardInterrupt
         return request.data()
 
-    # True if the address is present on any allow-list that covers the given chain
+    # True if any known list covers the given chain, i.e. refresh() can ever fill its cache
+    @classmethod
+    def has_source(cls, location_id: int) -> bool:
+        return any(location_id in x['chains'] for x in cls.SOURCES.values())
+
     # True if no allow-/block-list entry is cached for the given chain (or for any chain when location_id is None).
     # A fetch started against an empty cache has nothing to tell real tokens from spam, so this gates the pre-fetch
     # download - see ChainFetchers._ensure_token_lists.
@@ -194,6 +198,7 @@ class TokenListProvider(QObject, JalDB):
                                [(":location_id", location_id)])
         return not int(count or 0)
 
+    # True if the address is present on any allow-list that covers the given chain
     def is_allowlisted(self, location_id: int, address: str) -> bool:
         return self._member(TokenListKind.Allow, location_id, address)
 
