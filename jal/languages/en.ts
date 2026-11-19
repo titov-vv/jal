@@ -2458,134 +2458,134 @@ Do you want to delete the category anyway?</source>
 <context>
     <name>ChainFetchers</name>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="133"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="134"/>
         <source>Chain fetcher module can&apos;t be imported: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="142"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="143"/>
         <source>Chain fetcher class can&apos;t be loaded: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="156"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="157"/>
         <source>No wallets</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="157"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="158"/>
         <source>There is no active wallet account for this blockchain. Create one with its Blockchain and Address attributes filled.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="180"/>
-        <location filename="../net/chain_fetchers/fetchers.py" line="205"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="181"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="206"/>
         <source>Interrupted by user</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="192"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="193"/>
         <source>Blockchain fetch failed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="202"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="203"/>
         <source>Transactions were fetched from blockchain for account: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="237"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="238"/>
         <source>Pending transfers could not be settled: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="242"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="243"/>
         <source>Settling of transfers was interrupted by user</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="245"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="246"/>
         <source>Transfers settled from the route they were sent by: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="283"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="284"/>
         <source>Cross-chain check of swaps could not be completed: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="288"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="289"/>
         <source>Check of swaps was interrupted by user</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="293"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="294"/>
         <source>Check these swaps</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="294"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="295"/>
         <source>The aggregator that routed these operations describes them differently than they are booked. Each one has to be corrected by hand - what the ledger says about them is wrong:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="301"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="302"/>
         <source>fetching page</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="306"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="307"/>
         <source>checking swaps</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="311"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="312"/>
         <source>settling transfers</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="335"/>
-        <location filename="../net/chain_fetchers/fetchers.py" line="341"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="328"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="334"/>
         <source>Token lists</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="336"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="329"/>
         <source>Token allow/block lists are not loaded yet. They are needed to tell real tokens from unsolicited spam airdrops during import, and will be downloaded now.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="342"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="335"/>
         <source>Token lists could not be loaded (see log for details). Fetching now could hide real tokens as spam, so the import was stopped. Try again later, or load the lists manually from the Import menu.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="377"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="370"/>
         <source>Tokens were hidden as dust/spam, review them in the token blacklist</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="386"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="379"/>
         <source>Some wallets could not be fetched</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="387"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="380"/>
         <source>Fetching failed for these wallets:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="366"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="359"/>
         <source>Some transactions were not imported:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="367"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="360"/>
         <source>Not everything was imported</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="368"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="361"/>
         <source>These transactions were recognized but not imported:</source>
         <translation></translation>
     </message>
@@ -4154,134 +4154,134 @@ one for ParentCo and second for Subsidiary</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="401"/>
+        <location filename="../data_import/shop_receipt.py" line="403"/>
         <source>Receipt without a usable fiscal code</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="402"/>
+        <location filename="../data_import/shop_receipt.py" line="404"/>
         <source>The scan has no fiscal code that could be relied on, so nothing proves its lines. A rescan is recommended. Load it anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="422"/>
+        <location filename="../data_import/shop_receipt.py" line="424"/>
         <source>Receipt file can&apos;t be read</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="431"/>
+        <location filename="../data_import/shop_receipt.py" line="433"/>
         <source>Receipt can&apos;t be imported</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="462"/>
+        <location filename="../data_import/shop_receipt.py" line="464"/>
         <source>Select PDF receipts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="463"/>
+        <location filename="../data_import/shop_receipt.py" line="465"/>
         <source>PDF files (*.pdf)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="471"/>
+        <location filename="../data_import/shop_receipt.py" line="473"/>
         <source>File isn&apos;t a readable PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="479"/>
+        <location filename="../data_import/shop_receipt.py" line="481"/>
         <source>PDF receipts not added</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="480"/>
+        <location filename="../data_import/shop_receipt.py" line="482"/>
         <source>These files weren&apos;t put into the inbox:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="446"/>
-        <location filename="../data_import/shop_receipt.py" line="516"/>
+        <location filename="../data_import/shop_receipt.py" line="448"/>
+        <location filename="../data_import/shop_receipt.py" line="518"/>
         <source>Receipt wasn&apos;t loaded</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="567"/>
+        <location filename="../data_import/shop_receipt.py" line="569"/>
         <source>Reconciled automatically</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="568"/>
+        <location filename="../data_import/shop_receipt.py" line="570"/>
         <source>Not reconciled, check the lines</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="569"/>
+        <location filename="../data_import/shop_receipt.py" line="571"/>
         <source>No usable fiscal code, rescan recommended</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="602"/>
+        <location filename="../data_import/shop_receipt.py" line="604"/>
         <source>Lines</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="607"/>
+        <location filename="../data_import/shop_receipt.py" line="609"/>
         <source>Receipt total</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="608"/>
+        <location filename="../data_import/shop_receipt.py" line="610"/>
         <source>Difference</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="712"/>
+        <location filename="../data_import/shop_receipt.py" line="714"/>
         <source>Not possible to import receipt: it has no lines</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="715"/>
+        <location filename="../data_import/shop_receipt.py" line="717"/>
         <source>Not possible to import receipt: no account set for import</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="718"/>
+        <location filename="../data_import/shop_receipt.py" line="720"/>
         <source>Not possible to import receipt: can&apos;t import: no peer set for import</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="721"/>
+        <location filename="../data_import/shop_receipt.py" line="723"/>
         <source>Not possible to import receipt: some categories are not set</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="724"/>
+        <location filename="../data_import/shop_receipt.py" line="726"/>
         <source>Not possible to import receipt: some lines have no amount, set it or delete the line</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="730"/>
+        <location filename="../data_import/shop_receipt.py" line="732"/>
         <source>Not possible to import receipt: it is imported already</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="737"/>
+        <location filename="../data_import/shop_receipt.py" line="739"/>
         <source>Lines don&apos;t add up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="738"/>
+        <location filename="../data_import/shop_receipt.py" line="740"/>
         <source>The lines differ from the receipt&apos;s total by</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="739"/>
+        <location filename="../data_import/shop_receipt.py" line="741"/>
         <source>Add the operation anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="498"/>
-        <location filename="../data_import/shop_receipt.py" line="777"/>
+        <location filename="../data_import/shop_receipt.py" line="500"/>
+        <location filename="../data_import/shop_receipt.py" line="779"/>
         <source>Receipt file can&apos;t be moved out of the inbox</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6120,42 +6120,42 @@ This looks like the quantity a rebasing position gained without reporting it, wh
 <context>
     <name>NearFetcher</name>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="68"/>
+        <location filename="../net/chain_fetchers/near.py" line="69"/>
         <source>&amp;NEAR</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="83"/>
+        <location filename="../net/chain_fetchers/near.py" line="84"/>
         <source>Unreadable sync position of account </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="98"/>
+        <location filename="../net/chain_fetchers/near.py" line="99"/>
         <source>NearBlocks rate limit reached, waiting </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="101"/>
+        <location filename="../net/chain_fetchers/near.py" line="102"/>
         <source>NearBlocks keeps refusing requests, try again later</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="108"/>
+        <location filename="../net/chain_fetchers/near.py" line="109"/>
         <source>Unexpected answer from NearBlocks: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="132"/>
+        <location filename="../net/chain_fetchers/near.py" line="133"/>
         <source>Too many pages returned by NearBlocks, the history is incomplete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="141"/>
+        <location filename="../net/chain_fetchers/near.py" line="142"/>
         <source>Unexpected final block from NEAR RPC: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="146"/>
+        <location filename="../net/chain_fetchers/near.py" line="147"/>
         <source>Not a valid NEAR account: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -6175,137 +6175,152 @@ This looks like the quantity a rebasing position gained without reporting it, wh
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="176"/>
+        <location filename="../net/chain_fetchers/near.py" line="190"/>
         <source>NearBlocks row without a transaction hash: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="203"/>
+        <location filename="../net/chain_fetchers/near.py" line="220"/>
         <source>the wallet acted in a transaction it didn&apos;t sign</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="207"/>
+        <location filename="../net/chain_fetchers/near.py" line="224"/>
         <source>several transactions under one hash</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="212"/>
+        <location filename="../net/chain_fetchers/near.py" line="229"/>
         <source>a failed transaction with staking events</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="217"/>
+        <location filename="../net/chain_fetchers/near.py" line="234"/>
         <source>a failed transaction that kept part of its deposit</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="218"/>
+        <location filename="../net/chain_fetchers/near.py" line="235"/>
         <source>Fee of a failed transaction</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="222"/>
+        <location filename="../net/chain_fetchers/near.py" line="239"/>
         <source>a transaction of several actions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="225"/>
+        <location filename="../net/chain_fetchers/near.py" line="242"/>
         <source>a receipt of the transaction failed</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="228"/>
+        <location filename="../net/chain_fetchers/near.py" line="245"/>
         <source>the deposits of the transaction don&apos;t add up</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="235"/>
+        <location filename="../net/chain_fetchers/near.py" line="252"/>
         <source>staking events outside a call to a staking pool</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="237"/>
+        <location filename="../net/chain_fetchers/near.py" line="254"/>
         <source>coins came back to the wallet in its own transaction</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="243"/>
+        <location filename="../net/chain_fetchers/near.py" line="260"/>
         <source>Fee of a transfer to the wallet itself</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="245"/>
+        <location filename="../net/chain_fetchers/near.py" line="262"/>
         <source>Fee of an access key change</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="247"/>
+        <location filename="../net/chain_fetchers/near.py" line="264"/>
         <source>unsupported action </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="257"/>
+        <location filename="../net/chain_fetchers/near.py" line="274"/>
         <source>a staking event of another pool</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="264"/>
+        <location filename="../net/chain_fetchers/near.py" line="281"/>
         <source>a pool deposit that doesn&apos;t match its staking event</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="268"/>
+        <location filename="../net/chain_fetchers/near.py" line="285"/>
         <source>Staked to </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="272"/>
+        <location filename="../net/chain_fetchers/near.py" line="289"/>
         <source>a pool command that moved coins</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="279"/>
+        <location filename="../net/chain_fetchers/near.py" line="296"/>
         <source>a pool withdrawal that doesn&apos;t match its staking event</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="288"/>
+        <location filename="../net/chain_fetchers/near.py" line="305"/>
         <source>stake withdrawal whose deposit predates the sync cursor - yield not separated</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="299"/>
+        <location filename="../net/chain_fetchers/near.py" line="316"/>
         <source>Withdrawn from </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="303"/>
+        <location filename="../net/chain_fetchers/near.py" line="320"/>
         <source>Staking reward</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="313"/>
+        <location filename="../net/chain_fetchers/near.py" line="330"/>
         <source>Unreadable staking state of account </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="328"/>
+        <location filename="../net/chain_fetchers/near.py" line="352"/>
+        <source>a relayed transaction with staking events</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="355"/>
+        <source>a relayed transaction that moved coins</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="356"/>
+        <source>relayed contract call that moved no NEAR (its gas was paid by the relayer)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="365"/>
         <source>a refund or a failed receipt in a transaction the wallet didn&apos;t sign</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="330"/>
+        <location filename="../net/chain_fetchers/near.py" line="367"/>
         <source>a contract call to the wallet</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="333"/>
+        <location filename="../net/chain_fetchers/near.py" line="370"/>
         <source>transaction that moved nothing of the wallet&apos;s</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="337"/>
+        <location filename="../net/chain_fetchers/near.py" line="374"/>
         <source>Several senders: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -6477,22 +6492,22 @@ This looks like the quantity a rebasing position gained without reporting it, wh
 <context>
     <name>OperationsWidget</name>
     <message>
-        <location filename="../widgets/operations_widget.py" line="291"/>
+        <location filename="../widgets/operations_widget.py" line="292"/>
         <source>Reconcile</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="293"/>
+        <location filename="../widgets/operations_widget.py" line="294"/>
         <source>Assign tag</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="297"/>
+        <location filename="../widgets/operations_widget.py" line="298"/>
         <source>Copy</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="299"/>
+        <location filename="../widgets/operations_widget.py" line="300"/>
         <source>Delete</source>
         <translation></translation>
     </message>
@@ -6517,82 +6532,82 @@ This looks like the quantity a rebasing position gained without reporting it, wh
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="295"/>
+        <location filename="../widgets/operations_widget.py" line="296"/>
         <source>Tax treatment…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="301"/>
+        <location filename="../widgets/operations_widget.py" line="302"/>
         <source>Match cross-chain legs…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="334"/>
+        <location filename="../widgets/operations_widget.py" line="335"/>
         <source>Assign an account…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="335"/>
+        <location filename="../widgets/operations_widget.py" line="336"/>
         <source>Match with another leg…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="336"/>
+        <location filename="../widgets/operations_widget.py" line="337"/>
         <source>Convert into a swap…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="337"/>
+        <location filename="../widgets/operations_widget.py" line="338"/>
         <source>Convert into a bridge…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="339"/>
+        <location filename="../widgets/operations_widget.py" line="340"/>
         <source>Record as a spending or an income…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="417"/>
+        <location filename="../widgets/operations_widget.py" line="420"/>
         <source>Choose account...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="422"/>
+        <location filename="../widgets/operations_widget.py" line="425"/>
         <source>Show accounts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="432"/>
+        <location filename="../widgets/operations_widget.py" line="435"/>
         <source>Use credit limits</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="437"/>
+        <location filename="../widgets/operations_widget.py" line="440"/>
         <source>Group by tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="443"/>
+        <location filename="../widgets/operations_widget.py" line="446"/>
         <source>Balance history chart</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="451"/>
+        <location filename="../widgets/operations_widget.py" line="454"/>
         <source>Expand all</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="454"/>
+        <location filename="../widgets/operations_widget.py" line="457"/>
         <source>Collapse all</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="476"/>
+        <location filename="../widgets/operations_widget.py" line="483"/>
         <source>Please select tag</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="477"/>
+        <location filename="../widgets/operations_widget.py" line="484"/>
         <source>Choose tag to be assigned to selected operations:</source>
         <translation></translation>
     </message>
@@ -8496,18 +8511,18 @@ Its other record is found by the transaction, but the two accounts are kept in d
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/offline_receipt.py" line="99"/>
+        <location filename="../data_import/receipt_api/offline_receipt.py" line="105"/>
         <source>Receipt voucher can&apos;t be read, add it by hand</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/offline_receipt.py" line="114"/>
+        <location filename="../data_import/receipt_api/offline_receipt.py" line="120"/>
         <location filename="../data_import/receipt_pdf.py" line="371"/>
         <source>Receipt items don&apos;t add up, check the lines</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/offline_receipt.py" line="208"/>
+        <location filename="../data_import/receipt_api/offline_receipt.py" line="214"/>
         <source>The receipt is priced net of VAT: the VAT was added to its lines</source>
         <translation type="unfinished"></translation>
     </message>
@@ -12580,7 +12595,7 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
 <context>
     <name>TokenListProvider</name>
     <message>
-        <location filename="../net/token_lists.py" line="253"/>
+        <location filename="../net/token_lists.py" line="258"/>
         <source>Interrupted by user</source>
         <translation></translation>
     </message>
@@ -13785,17 +13800,17 @@ A zero may well be right. If it isn&apos;t, open this transfer in the operations
 <context>
     <name>WalletSelectDialog</name>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="31"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="32"/>
         <source>Fetch blockchain transactions</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="35"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="36"/>
         <source>Select wallets to fetch:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="36"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="37"/>
         <source>All wallets</source>
         <translation></translation>
     </message>

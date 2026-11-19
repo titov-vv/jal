@@ -12,6 +12,8 @@ from jal.net.chain_fetchers.near import NearFetcher, _LISTS
 
 WALLET = "example.near"
 FRIEND = "friend.near"
+RELAYER = "relayer.near"
+GAME = "game.near"
 FINAL = 10_000
 NEAR = 10 ** 24
 
@@ -155,6 +157,25 @@ def test_unsupported_shapes_halt(near_wallet, rows):
 
 # All 24 decimals of a NEAR amount survive the import and the ledger of a precision-24 wallet. 9999 NEAR is the
 # largest whole part that fits: the ledger rounds in the default 28-digit Decimal context (Ledger.appendTransaction).
+# A meta-transaction: the relayer signs and pays, the wallet's call reaches it as a DELEGATE_ACTION receipt
+def relayed(height: int, tx_hash: str, deposit=0) -> list:
+    return [txn(height, tx_hash, RELAYER, WALLET, "DELEGATE_ACTION", deposit, 362_008_045_101_600_000_000),
+            receipt(height + 1, tx_hash, RELAYER, WALLET, deposit, action="DELEGATE_ACTION"),
+            receipt(height + 2, tx_hash, WALLET, GAME, deposit, action="FUNCTION_CALL", method="harvest")]
+
+
+def test_relayed_call_without_coins_is_skipped(near_wallet):
+    fetcher, data = fetch(near_wallet, *relayed(100, "harvest"))
+    assert not data[JSF.TRANSFERS] and not data[JSF.ASSET_PAYMENTS]
+    assert not halted(fetcher) and any("relayed" in x for x in fetcher.skipped())
+    assert fetcher._new_cursor == '{"height": 100, "hashes": ["harvest"]}'
+
+
+def test_relayed_call_with_coins_halts(near_wallet):
+    fetcher, data = fetch(near_wallet, *relayed(100, "paid", deposit=NEAR))
+    assert halted(fetcher) and not data[JSF.TRANSFERS]
+
+
 def test_amount_keeps_every_digit_through_import(near_wallet):
     amount = 9_999 * NEAR + 1
     fetcher, _ = fetch(near_wallet, receipt(100, "in", FRIEND, WALLET, amount))

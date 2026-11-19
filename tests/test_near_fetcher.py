@@ -20,11 +20,15 @@ def row(height: int, tx_hash: str, **fields) -> dict:
                  "block": {"block_height": str(height), "block_timestamp": str(height * 10 ** 9 + 7)}}, **fields)
 
 
-# A fake NearBlocks: {endpoint: rows}, served newest first in pages with an opaque 'next' token
+# A fake NearBlocks: {endpoint: rows}, served newest first in pages with an opaque 'next' token.
+# A transaction listed without receipts gets one at its own height, as on the chain.
 class FakeNearBlocks:
     def __init__(self, lists: dict, page_size: int = 100):
         self.lists = {x: [] for x in near._LISTS}
         self.lists.update(lists)
+        with_receipts = {x['transaction_hash'] for x in self.lists['receipts']}
+        self.lists['receipts'] = self.lists['receipts'] + [dict(x) for x in self.lists['txns']
+                                                           if x['transaction_hash'] not in with_receipts]
         self.page_size = page_size
         self.calls = []
 
@@ -76,7 +80,7 @@ def run(fetcher, wallet) -> dict:
 def test_rows_are_grouped_by_transaction(make_fetcher, near_wallet):
     nearblocks = FakeNearBlocks({
         "txns": [row(500, "stake")],
-        "receipts": [row(501, "stake", predecessor_account_id="system"),
+        "receipts": [row(501, "stake", predecessor_account_id=WALLET, receiver_account_id="meteor.poolv1.near"),
                      row(502, "stake", predecessor_account_id="system"),
                      row(498, "incoming", predecessor_account_id="friend.near")],
         "staking-txns": [row(501, "stake", type="DEPOSIT"), row(501, "stake", type="STAKE")]})
@@ -137,6 +141,26 @@ def test_paging_stops_below_lookback(make_fetcher, near_wallet):
     assert len(txns_calls) == 5
     # t800 stands at the cursor's height but isn't among the hashes imported there
     assert [x['hash'] for x in fetcher.classified] == [f"t{h}" for h in range(800, 900, 10)]
+
+
+# Only the receipts are read when none is new; the staking events only when a receipt involves a pool
+def test_lists_read_only_when_needed(make_fetcher, near_wallet):
+    nearblocks = FakeNearBlocks({"txns": [row(500, "a")]})
+    run(make_fetcher(nearblocks), near_wallet)
+    assert [x[0] for x in nearblocks.calls] == ["receipts", "txns"]
+    nearblocks.calls.clear()
+    run(make_fetcher(nearblocks), near_wallet)
+    assert [x[0] for x in nearblocks.calls] == ["receipts"]
+    nearblocks.calls.clear()
+    nearblocks.lists["receipts"].append(row(503, "a", predecessor_account_id="system"))   # a late refund
+    run(make_fetcher(nearblocks), near_wallet)
+    assert [x[0] for x in nearblocks.calls] == ["receipts", "txns"]
+    nearblocks.calls.clear()
+    nearblocks.lists["receipts"].append(row(600, "b", predecessor_account_id="meteor.poolv1.near",
+                                            receiver_account_id=WALLET))
+    fetcher = make_fetcher(nearblocks)
+    assert run(fetcher, near_wallet) == {'height': 600, 'hashes': ['b']}
+    assert [x[0] for x in nearblocks.calls] == ["receipts", "txns", "staking-txns"]
 
 
 def test_invalid_account_refused(make_fetcher, near_wallet):

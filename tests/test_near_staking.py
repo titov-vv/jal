@@ -132,11 +132,11 @@ def test_halt_restores_the_staking_state(near_wallet):
     # a staking call to an account that isn't named as a pool
     pool_call(200, "t", "deposit_and_stake", NEAR, pool="pool-lookalike.near")
     + [event(200, "t", "DEPOSIT", NEAR, pool="pool-lookalike.near")],
-    # a staking event in a plain transfer
+    # a staking event in a plain transfer; staking events are read only when a receipt involves a pool
     [txn(200, "t", WALLET, FRIEND, "TRANSFER", NEAR, FEE), receipt(201, "t", WALLET, FRIEND, NEAR),
-     event(200, "t", "DEPOSIT", NEAR)],
+     receipt(201, "t", POOL, WALLET, 0), event(200, "t", "DEPOSIT", NEAR)],
     # a staking event in somebody else's transaction
-    [receipt(200, "t", FRIEND, WALLET, NEAR), event(200, "t", "WITHDRAW", NEAR)],
+    [receipt(200, "t", FRIEND, WALLET, NEAR), receipt(201, "t", POOL, WALLET, 0), event(200, "t", "WITHDRAW", NEAR)],
 ])
 def test_unsupported_staking_shapes_halt(near_wallet, rows):
     fetcher, data = fetch(near_wallet, *rows)

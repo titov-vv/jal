@@ -2461,134 +2461,134 @@ Do you want to delete the category anyway?</source>
 <context>
     <name>ChainFetchers</name>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="133"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="134"/>
         <source>Chain fetcher module can&apos;t be imported: </source>
         <translation>Не удалось импортировать модуль загрузчика блокчейна: </translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="142"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="143"/>
         <source>Chain fetcher class can&apos;t be loaded: </source>
         <translation>Не удалось загрузить класс загрузчика блокчейна: </translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="156"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="157"/>
         <source>No wallets</source>
         <translation>Нет кошельков</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="157"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="158"/>
         <source>There is no active wallet account for this blockchain. Create one with its Blockchain and Address attributes filled.</source>
         <translation>Нет активного счёта-кошелька для этого блокчейна. Создайте его, заполнив атрибуты Блокчейн и Адрес.</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="180"/>
-        <location filename="../net/chain_fetchers/fetchers.py" line="205"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="181"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="206"/>
         <source>Interrupted by user</source>
         <translation>Прервано пользователем</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="192"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="193"/>
         <source>Blockchain fetch failed: </source>
         <translation>Загрузка из блокчейна не удалась: </translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="202"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="203"/>
         <source>Transactions were fetched from blockchain for account: </source>
         <translation>Транзакции загружены из блокчейна для счёта: </translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="237"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="238"/>
         <source>Pending transfers could not be settled: </source>
         <translation>Не удалось завершить ожидающие переводы: </translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="242"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="243"/>
         <source>Settling of transfers was interrupted by user</source>
         <translation>Сверка переводов была прервана пользователем</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="245"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="246"/>
         <source>Transfers settled from the route they were sent by: </source>
         <translation>Переводы завершены по маршруту, которым они были отправлены: </translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="283"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="284"/>
         <source>Cross-chain check of swaps could not be completed: </source>
         <translation>Не удалось завершить межсетевую проверку обменов: </translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="288"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="289"/>
         <source>Check of swaps was interrupted by user</source>
         <translation>Проверка обменов была прервана пользователем</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="293"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="294"/>
         <source>Check these swaps</source>
         <translation>Проверьте эти обмены</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="294"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="295"/>
         <source>The aggregator that routed these operations describes them differently than they are booked. Each one has to be corrected by hand - what the ledger says about them is wrong:</source>
         <translation>Агрегатор, проложивший маршрут этих операций, описывает их иначе, чем они записаны. Каждую нужно исправить вручную - то, что о них указано, неверно:</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="301"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="302"/>
         <source>fetching page</source>
         <translation>загрузка страницы</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="306"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="307"/>
         <source>checking swaps</source>
         <translation>проверка обменов</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="311"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="312"/>
         <source>settling transfers</source>
         <translation>завершение переводов</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="335"/>
-        <location filename="../net/chain_fetchers/fetchers.py" line="341"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="328"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="334"/>
         <source>Token lists</source>
         <translation>Списки токенов</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="336"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="329"/>
         <source>Token allow/block lists are not loaded yet. They are needed to tell real tokens from unsolicited spam airdrops during import, and will be downloaded now.</source>
         <translation>Списки разрешённых/заблокированных токенов ещё не загружены. Они нужны, чтобы отличать настоящие токены от нежелательных спам-airdrop при импорте, и сейчас будут загружены.</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="342"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="335"/>
         <source>Token lists could not be loaded (see log for details). Fetching now could hide real tokens as spam, so the import was stopped. Try again later, or load the lists manually from the Import menu.</source>
         <translation>Не удалось загрузить списки токенов (подробности в журнале). Загрузка сейчас могла бы скрыть настоящие токены под видом спама, поэтому импорт остановлен. Повторите попытку позже или загрузите списки вручную из меню Импорт.</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="377"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="370"/>
         <source>Tokens were hidden as dust/spam, review them in the token blacklist</source>
         <translation>Токены скрыты как пыль/спам, проверьте их в чёрном списке токенов</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="386"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="379"/>
         <source>Some wallets could not be fetched</source>
         <translation>Не удалось загрузить некоторые кошельки</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="387"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="380"/>
         <source>Fetching failed for these wallets:</source>
         <translation>Загрузка не удалась для следующих кошельков:</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="366"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="359"/>
         <source>Some transactions were not imported:</source>
         <translation>Некоторые транзакции не были импортированы:</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="367"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="360"/>
         <source>Not everything was imported</source>
         <translation>Импортировано не всё</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="368"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="361"/>
         <source>These transactions were recognized but not imported:</source>
         <translation>Эти транзакции были распознаны, но не импортированы:</translation>
     </message>
@@ -4158,134 +4158,134 @@ one for ParentCo and second for Subsidiary</source>
         <translation>Не поддерживается</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="401"/>
+        <location filename="../data_import/shop_receipt.py" line="403"/>
         <source>Receipt without a usable fiscal code</source>
         <translation>Чек без пригодного фискального кода</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="402"/>
+        <location filename="../data_import/shop_receipt.py" line="404"/>
         <source>The scan has no fiscal code that could be relied on, so nothing proves its lines. A rescan is recommended. Load it anyway?</source>
         <translation>В скане нет фискального кода, на который можно положиться, поэтому его позиции ничем не подтверждены. Рекомендуется отсканировать чек заново. Всё равно загрузить?</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="422"/>
+        <location filename="../data_import/shop_receipt.py" line="424"/>
         <source>Receipt file can&apos;t be read</source>
         <translation>Невозможно прочитать файл чека</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="431"/>
+        <location filename="../data_import/shop_receipt.py" line="433"/>
         <source>Receipt can&apos;t be imported</source>
         <translation>Невозможно импортировать чек</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="462"/>
+        <location filename="../data_import/shop_receipt.py" line="464"/>
         <source>Select PDF receipts</source>
         <translation>Выберите PDF файлы чеков</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="463"/>
+        <location filename="../data_import/shop_receipt.py" line="465"/>
         <source>PDF files (*.pdf)</source>
         <translation>Файлы PDF (*.pdf)</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="471"/>
+        <location filename="../data_import/shop_receipt.py" line="473"/>
         <source>File isn&apos;t a readable PDF</source>
         <translation>Файл не является читаемым PDF</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="479"/>
+        <location filename="../data_import/shop_receipt.py" line="481"/>
         <source>PDF receipts not added</source>
         <translation>PDF чеки не добавлены</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="480"/>
+        <location filename="../data_import/shop_receipt.py" line="482"/>
         <source>These files weren&apos;t put into the inbox:</source>
         <translation>Эти файлы не помещены в папку входящих:</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="446"/>
-        <location filename="../data_import/shop_receipt.py" line="516"/>
+        <location filename="../data_import/shop_receipt.py" line="448"/>
+        <location filename="../data_import/shop_receipt.py" line="518"/>
         <source>Receipt wasn&apos;t loaded</source>
         <translation>Чек не загружен</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="567"/>
+        <location filename="../data_import/shop_receipt.py" line="569"/>
         <source>Reconciled automatically</source>
         <translation>Сверен автоматически</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="568"/>
+        <location filename="../data_import/shop_receipt.py" line="570"/>
         <source>Not reconciled, check the lines</source>
         <translation>Не сверен, проверьте позиции</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="569"/>
+        <location filename="../data_import/shop_receipt.py" line="571"/>
         <source>No usable fiscal code, rescan recommended</source>
         <translation>Нет пригодного фискального кода, рекомендуется отсканировать заново</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="602"/>
+        <location filename="../data_import/shop_receipt.py" line="604"/>
         <source>Lines</source>
         <translation>Позиции</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="607"/>
+        <location filename="../data_import/shop_receipt.py" line="609"/>
         <source>Receipt total</source>
         <translation>Итог чека</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="608"/>
+        <location filename="../data_import/shop_receipt.py" line="610"/>
         <source>Difference</source>
         <translation>Разница</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="712"/>
+        <location filename="../data_import/shop_receipt.py" line="714"/>
         <source>Not possible to import receipt: it has no lines</source>
         <translation>Невозможно импортировать чек: в нём нет позиций</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="715"/>
+        <location filename="../data_import/shop_receipt.py" line="717"/>
         <source>Not possible to import receipt: no account set for import</source>
         <translation>Невозможно импортировать чек: не выбран счёт для импорта</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="718"/>
+        <location filename="../data_import/shop_receipt.py" line="720"/>
         <source>Not possible to import receipt: can&apos;t import: no peer set for import</source>
         <translation>Невозможно импортировать чек: не выбран контрагент для импорта</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="721"/>
+        <location filename="../data_import/shop_receipt.py" line="723"/>
         <source>Not possible to import receipt: some categories are not set</source>
         <translation>Невозможно импортировать чек: некоторые категории не выбраны</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="724"/>
+        <location filename="../data_import/shop_receipt.py" line="726"/>
         <source>Not possible to import receipt: some lines have no amount, set it or delete the line</source>
         <translation>Невозможно импортировать чек: у некоторых позиций нет суммы, укажите её или удалите позицию</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="730"/>
+        <location filename="../data_import/shop_receipt.py" line="732"/>
         <source>Not possible to import receipt: it is imported already</source>
         <translation>Невозможно импортировать чек: он уже импортирован</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="737"/>
+        <location filename="../data_import/shop_receipt.py" line="739"/>
         <source>Lines don&apos;t add up</source>
         <translation>Позиции не сходятся с итогом</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="738"/>
+        <location filename="../data_import/shop_receipt.py" line="740"/>
         <source>The lines differ from the receipt&apos;s total by</source>
         <translation>Сумма позиций отличается от итога чека на</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="739"/>
+        <location filename="../data_import/shop_receipt.py" line="741"/>
         <source>Add the operation anyway?</source>
         <translation>Всё равно добавить операцию?</translation>
     </message>
     <message>
-        <location filename="../data_import/shop_receipt.py" line="498"/>
-        <location filename="../data_import/shop_receipt.py" line="777"/>
+        <location filename="../data_import/shop_receipt.py" line="500"/>
+        <location filename="../data_import/shop_receipt.py" line="779"/>
         <source>Receipt file can&apos;t be moved out of the inbox</source>
         <translation>Невозможно переместить файл чека из папки входящих</translation>
     </message>
@@ -6134,42 +6134,42 @@ This looks like the quantity a rebasing position gained without reporting it, wh
 <context>
     <name>NearFetcher</name>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="68"/>
+        <location filename="../net/chain_fetchers/near.py" line="69"/>
         <source>&amp;NEAR</source>
         <translation>&amp;NEAR</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="83"/>
+        <location filename="../net/chain_fetchers/near.py" line="84"/>
         <source>Unreadable sync position of account </source>
         <translation>Нечитаемая позиция синхронизации счёта </translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="98"/>
+        <location filename="../net/chain_fetchers/near.py" line="99"/>
         <source>NearBlocks rate limit reached, waiting </source>
         <translation>Достигнут лимит запросов NearBlocks, ожидание </translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="101"/>
+        <location filename="../net/chain_fetchers/near.py" line="102"/>
         <source>NearBlocks keeps refusing requests, try again later</source>
         <translation>NearBlocks продолжает отклонять запросы, повторите попытку позже</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="108"/>
+        <location filename="../net/chain_fetchers/near.py" line="109"/>
         <source>Unexpected answer from NearBlocks: </source>
         <translation>Неожиданный ответ от NearBlocks: </translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="132"/>
+        <location filename="../net/chain_fetchers/near.py" line="133"/>
         <source>Too many pages returned by NearBlocks, the history is incomplete</source>
         <translation>NearBlocks вернул слишком много страниц, история неполна</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="141"/>
+        <location filename="../net/chain_fetchers/near.py" line="142"/>
         <source>Unexpected final block from NEAR RPC: </source>
         <translation>Неожиданный финальный блок от NEAR RPC: </translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="146"/>
+        <location filename="../net/chain_fetchers/near.py" line="147"/>
         <source>Not a valid NEAR account: </source>
         <translation>Недопустимый аккаунт NEAR: </translation>
     </message>
@@ -6189,137 +6189,152 @@ This looks like the quantity a rebasing position gained without reporting it, wh
         <translation>); повтор будет выполнен при следующем импорте</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="176"/>
+        <location filename="../net/chain_fetchers/near.py" line="190"/>
         <source>NearBlocks row without a transaction hash: </source>
         <translation>Строка NearBlocks без хеша транзакции: </translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="203"/>
+        <location filename="../net/chain_fetchers/near.py" line="220"/>
         <source>the wallet acted in a transaction it didn&apos;t sign</source>
         <translation>кошелёк участвовал в транзакции, которую он не подписывал</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="207"/>
+        <location filename="../net/chain_fetchers/near.py" line="224"/>
         <source>several transactions under one hash</source>
         <translation>несколько транзакций с одним хешем</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="212"/>
+        <location filename="../net/chain_fetchers/near.py" line="229"/>
         <source>a failed transaction with staking events</source>
         <translation>неудачная транзакция с событиями стейкинга</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="217"/>
+        <location filename="../net/chain_fetchers/near.py" line="234"/>
         <source>a failed transaction that kept part of its deposit</source>
         <translation>неудачная транзакция, удержавшая часть своего депозита</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="218"/>
+        <location filename="../net/chain_fetchers/near.py" line="235"/>
         <source>Fee of a failed transaction</source>
         <translation>Комиссия за неудачную транзакцию</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="222"/>
+        <location filename="../net/chain_fetchers/near.py" line="239"/>
         <source>a transaction of several actions</source>
         <translation>транзакция из нескольких действий</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="225"/>
+        <location filename="../net/chain_fetchers/near.py" line="242"/>
         <source>a receipt of the transaction failed</source>
         <translation>одна из квитанций транзакции завершилась неудачей</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="228"/>
+        <location filename="../net/chain_fetchers/near.py" line="245"/>
         <source>the deposits of the transaction don&apos;t add up</source>
         <translation>депозиты транзакции не сходятся</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="235"/>
+        <location filename="../net/chain_fetchers/near.py" line="252"/>
         <source>staking events outside a call to a staking pool</source>
         <translation>события стейкинга вне вызова стейкинг-пула</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="237"/>
+        <location filename="../net/chain_fetchers/near.py" line="254"/>
         <source>coins came back to the wallet in its own transaction</source>
         <translation>монеты вернулись в кошелёк в его собственной транзакции</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="243"/>
+        <location filename="../net/chain_fetchers/near.py" line="260"/>
         <source>Fee of a transfer to the wallet itself</source>
         <translation>Комиссия за перевод кошелька самому себе</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="245"/>
+        <location filename="../net/chain_fetchers/near.py" line="262"/>
         <source>Fee of an access key change</source>
         <translation>Комиссия за изменение ключа доступа</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="247"/>
+        <location filename="../net/chain_fetchers/near.py" line="264"/>
         <source>unsupported action </source>
         <translation>неподдерживаемое действие </translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="257"/>
+        <location filename="../net/chain_fetchers/near.py" line="274"/>
         <source>a staking event of another pool</source>
         <translation>событие стейкинга другого пула</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="264"/>
+        <location filename="../net/chain_fetchers/near.py" line="281"/>
         <source>a pool deposit that doesn&apos;t match its staking event</source>
         <translation>депозит в пул, не совпадающий со своим событием стейкинга</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="268"/>
+        <location filename="../net/chain_fetchers/near.py" line="285"/>
         <source>Staked to </source>
         <translation>Застейкано в </translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="272"/>
+        <location filename="../net/chain_fetchers/near.py" line="289"/>
         <source>a pool command that moved coins</source>
         <translation>команда пулу, переместившая монеты</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="279"/>
+        <location filename="../net/chain_fetchers/near.py" line="296"/>
         <source>a pool withdrawal that doesn&apos;t match its staking event</source>
         <translation>вывод из пула, не совпадающий со своим событием стейкинга</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="288"/>
+        <location filename="../net/chain_fetchers/near.py" line="305"/>
         <source>stake withdrawal whose deposit predates the sync cursor - yield not separated</source>
         <translation>вывод из стейкинга, чьё пополнение старше курсора синхронизации - доход не выделен отдельно</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="299"/>
+        <location filename="../net/chain_fetchers/near.py" line="316"/>
         <source>Withdrawn from </source>
         <translation>Выведено из </translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="303"/>
+        <location filename="../net/chain_fetchers/near.py" line="320"/>
         <source>Staking reward</source>
         <translation>Вознаграждение от стейкинга</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="313"/>
+        <location filename="../net/chain_fetchers/near.py" line="330"/>
         <source>Unreadable staking state of account </source>
         <translation>Нечитаемое состояние стейкинга счёта </translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="328"/>
+        <location filename="../net/chain_fetchers/near.py" line="352"/>
+        <source>a relayed transaction with staking events</source>
+        <translation>ретранслированная транзакция с событиями стейкинга</translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="355"/>
+        <source>a relayed transaction that moved coins</source>
+        <translation>ретранслированная транзакция, переместившая монеты</translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="356"/>
+        <source>relayed contract call that moved no NEAR (its gas was paid by the relayer)</source>
+        <translation>ретранслированный вызов контракта без движения NEAR (газ оплатил ретранслятор)</translation>
+    </message>
+    <message>
+        <location filename="../net/chain_fetchers/near.py" line="365"/>
         <source>a refund or a failed receipt in a transaction the wallet didn&apos;t sign</source>
         <translation>возврат или неудачная квитанция в транзакции, которую кошелёк не подписывал</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="330"/>
+        <location filename="../net/chain_fetchers/near.py" line="367"/>
         <source>a contract call to the wallet</source>
         <translation>вызов кошелька как контракта</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="333"/>
+        <location filename="../net/chain_fetchers/near.py" line="370"/>
         <source>transaction that moved nothing of the wallet&apos;s</source>
         <translation>транзакция, не затронувшая средства кошелька</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/near.py" line="337"/>
+        <location filename="../net/chain_fetchers/near.py" line="374"/>
         <source>Several senders: </source>
         <translation>Несколько отправителей: </translation>
     </message>
@@ -6491,22 +6506,22 @@ This looks like the quantity a rebasing position gained without reporting it, wh
 <context>
     <name>OperationsWidget</name>
     <message>
-        <location filename="../widgets/operations_widget.py" line="291"/>
+        <location filename="../widgets/operations_widget.py" line="292"/>
         <source>Reconcile</source>
         <translation>Сверить</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="293"/>
+        <location filename="../widgets/operations_widget.py" line="294"/>
         <source>Assign tag</source>
         <translation>Присвоить метку</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="297"/>
+        <location filename="../widgets/operations_widget.py" line="298"/>
         <source>Copy</source>
         <translation>Копировать</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="299"/>
+        <location filename="../widgets/operations_widget.py" line="300"/>
         <source>Delete</source>
         <translation>Удалить</translation>
     </message>
@@ -6531,82 +6546,82 @@ This looks like the quantity a rebasing position gained without reporting it, wh
         <translation>Вы уверены что хотите удалить выбранную транзакцию(-ии),</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="295"/>
+        <location filename="../widgets/operations_widget.py" line="296"/>
         <source>Tax treatment…</source>
         <translation>Налоговый режим…</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="301"/>
+        <location filename="../widgets/operations_widget.py" line="302"/>
         <source>Match cross-chain legs…</source>
         <translation>Сопоставить межсетевые плечи…</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="334"/>
+        <location filename="../widgets/operations_widget.py" line="335"/>
         <source>Assign an account…</source>
         <translation>Назначить счёт…</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="335"/>
+        <location filename="../widgets/operations_widget.py" line="336"/>
         <source>Match with another leg…</source>
         <translation>Сопоставить с другим плечом…</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="336"/>
+        <location filename="../widgets/operations_widget.py" line="337"/>
         <source>Convert into a swap…</source>
         <translation>Преобразовать в обмен…</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="337"/>
+        <location filename="../widgets/operations_widget.py" line="338"/>
         <source>Convert into a bridge…</source>
         <translation>Преобразовать в бридж…</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="339"/>
+        <location filename="../widgets/operations_widget.py" line="340"/>
         <source>Record as a spending or an income…</source>
         <translation>Записать как расход или приход…</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="417"/>
+        <location filename="../widgets/operations_widget.py" line="420"/>
         <source>Choose account...</source>
         <translation>Выбрать счёт...</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="422"/>
+        <location filename="../widgets/operations_widget.py" line="425"/>
         <source>Show accounts</source>
         <translation>Показывать счета</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="432"/>
+        <location filename="../widgets/operations_widget.py" line="435"/>
         <source>Use credit limits</source>
         <translation>Использовать кредитные лимиты</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="437"/>
+        <location filename="../widgets/operations_widget.py" line="440"/>
         <source>Group by tag</source>
         <translation>Сгруппировать по метке</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="443"/>
+        <location filename="../widgets/operations_widget.py" line="446"/>
         <source>Balance history chart</source>
         <translation>График истории баланса</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="451"/>
+        <location filename="../widgets/operations_widget.py" line="454"/>
         <source>Expand all</source>
         <translation>Развернуть все</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="454"/>
+        <location filename="../widgets/operations_widget.py" line="457"/>
         <source>Collapse all</source>
         <translation>Свернуть все</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="476"/>
+        <location filename="../widgets/operations_widget.py" line="483"/>
         <source>Please select tag</source>
         <translation>Выберите метку</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="477"/>
+        <location filename="../widgets/operations_widget.py" line="484"/>
         <source>Choose tag to be assigned to selected operations:</source>
         <translation>Выберите метку для присвоения выбранным операциям:</translation>
     </message>
@@ -8515,18 +8530,18 @@ Its other record is found by the transaction, but the two accounts are kept in d
         <translation>В PDF чека не удалось прочитать дату, использовано время создания файла</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/offline_receipt.py" line="99"/>
+        <location filename="../data_import/receipt_api/offline_receipt.py" line="105"/>
         <source>Receipt voucher can&apos;t be read, add it by hand</source>
         <translation>Не удалось прочитать ваучер в чеке, добавьте его вручную</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/offline_receipt.py" line="114"/>
+        <location filename="../data_import/receipt_api/offline_receipt.py" line="120"/>
         <location filename="../data_import/receipt_pdf.py" line="371"/>
         <source>Receipt items don&apos;t add up, check the lines</source>
         <translation>Позиции чека не сходятся с итогом, проверьте позиции</translation>
     </message>
     <message>
-        <location filename="../data_import/receipt_api/offline_receipt.py" line="208"/>
+        <location filename="../data_import/receipt_api/offline_receipt.py" line="214"/>
         <source>The receipt is priced net of VAT: the VAT was added to its lines</source>
         <translation>Цены в чеке указаны без НДС: НДС добавлен к его позициям</translation>
     </message>
@@ -12608,7 +12623,7 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
 <context>
     <name>TokenListProvider</name>
     <message>
-        <location filename="../net/token_lists.py" line="253"/>
+        <location filename="../net/token_lists.py" line="258"/>
         <source>Interrupted by user</source>
         <translation>Прервано пользователем</translation>
     </message>
@@ -13819,17 +13834,17 @@ A zero may well be right. If it isn&apos;t, open this transfer in the operations
 <context>
     <name>WalletSelectDialog</name>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="31"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="32"/>
         <source>Fetch blockchain transactions</source>
         <translation>Загрузить транзакции блокчейна</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="35"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="36"/>
         <source>Select wallets to fetch:</source>
         <translation>Выберите кошельки для загрузки:</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/fetchers.py" line="36"/>
+        <location filename="../net/chain_fetchers/fetchers.py" line="37"/>
         <source>All wallets</source>
         <translation>Все кошельки</translation>
     </message>

@@ -19,9 +19,9 @@ _API_ROOT = "https://api.nearblocks.io/v3/accounts"
 RPC_URL = "https://rpc.mainnet.fastnear.com"     # keyless NEAR JSON-RPC
 _PAGE_SIZE = 100            # the largest 'limit' v3 accepts
 _MAX_PAGES = 100            # stops a runaway paging loop
-_CALL_SPACING = 6.5         # seconds between NearBlocks calls; the keyless tier allows ~10 a minute
-_RATE_WAIT = 60             # seconds to wait after an HTTP 429 before the call is repeated
-_RATE_RETRIES = 3
+_CALL_SPACING = 10.5        # seconds between NearBlocks calls; the free tier allows 6 a minute
+_RATE_WAIT = 20             # seconds to wait after an HTTP 429 before the call is repeated
+_RATE_RETRIES = 6
 _TOO_MANY_REQUESTS = 429
 # Blocks a transaction must be below the final block before import, so that its gas refunds have landed
 _REFUND_WAIT = 10
@@ -34,6 +34,7 @@ _SYSTEM = 'system'          # predecessor of a gas refund, and of the deposit a 
 _TRANSFER = 'TRANSFER'
 _FUNCTION_CALL = 'FUNCTION_CALL'
 _KEY_ACTIONS = ('ADD_KEY', 'DELETE_KEY')
+_DELEGATE_ACTION = 'DELEGATE_ACTION'     # the wallet's actions in a meta-transaction signed by a relayer (NEP-366)
 # Staking pools are recognized by name: the pool factories create them as sub-accounts
 POOL_SUFFIXES = ('.poolv1.near', '.pool.near')
 _DEPOSIT_METHODS = ('deposit_and_stake', 'deposit')
@@ -147,8 +148,7 @@ class NearFetcher(ChainFetcher):
         self._state = self._load_state()
         self._stakes = self._load_stakes()
         final = self._final_height()
-        floor = max(self._state['height'] - _LOOKBACK, 0)
-        transactions = self._transactions({endpoint: self._list(endpoint, floor) for endpoint in _LISTS})
+        transactions = self._transactions(self._lists(max(self._state['height'] - _LOOKBACK, 0)))
         listed = [x for x in transactions if self._is_new(x)]
         for transaction in listed:
             if transaction['height'] > final - _REFUND_WAIT:
@@ -164,6 +164,20 @@ class NearFetcher(ChainFetcher):
                 break
             self._advance(transaction)
         return json.dumps(self._state)
+
+    # The three lists down to 'floor'. Every transaction leaves a receipt to or from the wallet, so the other lists are
+    # read only if a receipt is new, and the staking events only if a receipt involves a staking pool.
+    def _lists(self, floor: int) -> dict:
+        lists = {endpoint: [] for endpoint in _LISTS}
+        lists['receipts'] = self._list('receipts', floor)
+        if not any(self._is_new({'height': self._height(x), 'hash': x.get('transaction_hash')})
+                   for x in lists['receipts']):
+            return lists
+        lists['txns'] = self._list('txns', floor)
+        if any((x.get(side) or '').endswith(POOL_SUFFIXES) for x in lists['receipts']
+               for side in ('predecessor_account_id', 'receiver_account_id')):
+            lists['staking-txns'] = self._list('staking-txns', floor)
+        return lists
 
     # The rows of the lists grouped by transaction, oldest first. A transaction stands at the lowest height and the
     # earliest time among its rows: an incoming transfer has no row of its own in '/txns', only its receipt.
@@ -199,6 +213,9 @@ class NearFetcher(ChainFetcher):
         own = self._account.address()
         signed = [x for x in transaction['txns'] if x.get('signer_account_id') == own]
         if not signed:
+            if self._delegated(transaction):
+                self._relayed(transaction)
+                return
             if transaction['staking'] or any(x.get('predecessor_account_id') == own for x in transaction['receipts']):
                 raise _HaltImport(self.tr("the wallet acted in a transaction it didn't sign"))
             self._incoming(transaction)
@@ -318,6 +335,26 @@ class NearFetcher(ChainFetcher):
             return
         self._account.set_data(AccountData.StakeAccounts,
                                json.dumps({pool: str(amount) for pool, amount in self._stakes.items()}))
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # A meta-transaction: a relayer signed and paid the gas of actions the wallet signed off-chain; the delegated
+    # actions reach the wallet as a receipt from the relayer
+    def _delegated(self, transaction: dict) -> bool:
+        return any(x.get('receiver_account_id') == self._account.address()
+                   and x.get('predecessor_account_id') not in (self._account.address(), _SYSTEM)
+                   and ((x.get('actions') or [{}])[0]).get('action') == _DELEGATE_ACTION
+                   for x in transaction['receipts'])
+
+    # Only a relayed call that moved no NEAR is supported: it costs the wallet nothing, so nothing is recorded
+    def _relayed(self, transaction: dict) -> None:
+        own = self._account.address()
+        if transaction['staking']:
+            raise _HaltImport(self.tr("a relayed transaction with staking events"))
+        if any(self._deposit(x) for x in transaction['receipts'] if own in (x.get('predecessor_account_id'),
+                                                                             x.get('receiver_account_id'))):
+            raise _HaltImport(self.tr("a relayed transaction that moved coins"))
+        self._skip(self.tr("relayed contract call that moved no NEAR (its gas was paid by the relayer)"),
+                   transaction['hash'])
 
     # ------------------------------------------------------------------------------------------------------------------
     # Coins sent to the wallet by somebody else's transaction
