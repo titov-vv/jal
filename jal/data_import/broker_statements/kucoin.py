@@ -174,7 +174,9 @@ class StatementKuCoin(StatementCSV):
         if len(uids) != 1:
             raise Statement_ImportError(self.tr("Statement must belong to exactly one account, got UIDs: ")
                                         + f"{sorted(uids)}")
-        self._currency = self._account_currency([x['Currency'] for x in ledger])
+        # Snapshots too: a statement period with no fiat movement still lists the fiat balance there
+        coins = [x['Currency'] for x in ledger] + [x['Coin'] for x in self._rows('snapshots')]
+        self._currency = self._account_currency(coins)
         self._account_id = 1
         uid = uids.pop()
         # The name carries the exchange (an account number alone says nothing about where it is held) and the UID,
