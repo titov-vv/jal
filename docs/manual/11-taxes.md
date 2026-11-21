@@ -271,8 +271,8 @@ file says up to which year it was last **reviewed** against the official sources
 
 Some figures are JAL's estimate rather than a fact from the broker: in the Russian report, the
 dividend tax still to pay and the tax on interest; in both reports, the tax on each base of sales on the
-Summary sheet; and the tax column of the
-[tax estimate](06-investments.md#what-a-sale-would-cost-in-tax) window. Each of them is a **base
+Summary sheet; and the tax in the
+[position details](06-investments.md#what-a-sale-would-cost-in-tax) window. Each of them is a **base
 estimation**: the base rate of the year from the [parameters](#tax-parameters), applied to the income
 and nothing more —
 

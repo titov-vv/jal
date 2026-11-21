@@ -156,6 +156,16 @@ class LedgerLotStore(JalDB):
             modifiers.append(self._read_record(query))
         return modifiers
 
+    # Time of the latest state of lot (otype, oid) in 'asset_id' that one of 'm_otypes' stored at or before 'timestamp',
+    # 0 if none did
+    def last_modified_by(self, otype: int, oid: int, asset_id: int, m_otypes: tuple, timestamp: int) -> int:
+        placeholders = ", ".join(f":m{i}" for i in range(len(m_otypes)))
+        value = self._read(f"SELECT MAX(timestamp) FROM {self._opened} WHERE otype=:otype AND oid=:oid "
+                           f"AND asset_id=:asset AND timestamp<=:timestamp AND m_otype IN ({placeholders})",
+                           [(":otype", otype), (":oid", oid), (":asset", asset_id), (":timestamp", timestamp)]
+                           + [(f":m{i}", x) for i, x in enumerate(m_otypes)])
+        return int(value) if value else 0
+
     # Ids of every asset the account has held a lot of
     def assets(self, account_id: int) -> list:
         return self._ids(self._exec(f"SELECT DISTINCT asset_id FROM {self._opened} WHERE account_id=:account",

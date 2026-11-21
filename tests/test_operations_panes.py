@@ -15,6 +15,7 @@ from jal.constants import PredefinedAccountType
 from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
 from jal.db.chain_balance import JalChainBalance
+from jal.db.clock import day_finish
 from jal.db.db import JalDB
 from jal.db.ledger import Ledger
 from jal.db.operations import LedgerTransaction
@@ -353,9 +354,9 @@ def test_a_position_and_a_stake_offer_the_position_actions(wallet, owner, monkey
     window = _window(owner, WALLET)
     model = window.positions_model
     offered = list(_offers(window, model.index(0, 0), monkeypatch))
-    assert offered == ['Show Price Chart', 'Portugal', 'Russia', 'Set asset tag', 'Set asset country']
+    assert offered == ['Position details…', 'Set asset tag', 'Set asset country']
     staked = model.index(0, 0, model.index(3, 0))
-    assert list(_offers(window, staked, monkeypatch)) == ['Show Price Chart', 'Show Accrual Chart', 'Portugal', 'Russia',
+    assert list(_offers(window, staked, monkeypatch)) == ['Position details…', 'Show Accrual Chart',
                                                           'Set asset tag', 'Set asset country']
 
 
@@ -380,30 +381,25 @@ def test_a_claim_offers_its_history_only_and_shows_it(wallet, owner, monkeypatch
     window._parent.reports.area.windows[0].deleteLater()
 
 
-def test_the_price_chart_opens_from_the_list(wallet, owner, monkeypatch):
+def test_the_position_details_open_from_the_list(wallet, owner, monkeypatch):
     window = _window(owner, WALLET)
     window._parent = _MainWindow()
-    _offers(window, window.positions_model.index(0, 0), monkeypatch)['Show Price Chart'].trigger()
-    assert [type(x).__name__ for x in window._parent.reports.area.windows] == ['ChartWindow']
+    _offers(window, window.positions_model.index(0, 0), monkeypatch)['Position details…'].trigger()
+    assert [type(x).__name__ for x in window._parent.reports.area.windows] == ['PositionDetails']
     window._parent.reports.area.windows[0].deleteLater()
 
 
-def test_tax_is_estimated_for_today_only_and_for_the_box_of_a_stake(wallet, owner, monkeypatch):
+def test_position_details_open_for_the_list_date_and_the_box_of_a_stake(wallet, owner, monkeypatch):
     box = _stake()
     JalChainBalance().store(d2t(210301), box.id(), LINK, Decimal('60.5'))
-    warned, estimated = [], []
-    monkeypatch.setattr(QMessageBox, "warning", lambda *args, **kwargs: warned.append(args) or QMessageBox.Ok)
+    opened = []
     window = _window(owner, WALLET)
     window._parent = _MainWindow()
-    monkeypatch.setattr("jal.widgets.holdings_menu.TaxEstimator",
-                        lambda country, account, asset, qty: estimated.append((country, account, asset, qty)) or QWidget())
+    monkeypatch.setattr("jal.widgets.holdings_menu.PositionDetails",
+                        lambda account, asset, currency, timestamp: opened.append((account, asset, timestamp)) or QWidget())
     model = window.positions_model
-    _offers(window, model.index(0, 0, model.index(3, 0)), monkeypatch)['Portugal'].trigger()
-    assert len(warned) == 1 and estimated == []
-
-    window.ui.BalanceDate.setDate(QDate.currentDate())
-    _offers(window, model.index(0, 0, model.index(3, 0)), monkeypatch)['Portugal'].trigger()
-    assert estimated == [('pt', box.id(), LINK, Decimal('60.5'))]
+    _offers(window, model.index(0, 0, model.index(3, 0)), monkeypatch)['Position details…'].trigger()
+    assert opened == [(box.id(), LINK, day_finish(QDate(2021, 3, 1)))]
     window._parent.reports.area.windows[0].deleteLater()
 
 
@@ -430,6 +426,6 @@ def test_the_list_and_its_menu_are_translated(wallet, owner, monkeypatch):
         model = window.positions_model
         assert [x['name'] for x in model._columns][:3] == ['Актив', 'Ценная бумага', 'Кол-во']
         assert model._root.getChild(2).details()['header'] == 'На этом счёте (равно балансу)'
-        assert 'Показать график цены' in _offers(window, model.index(0, 0), monkeypatch)
+        assert 'Подробности позиции…' in _offers(window, model.index(0, 0), monkeypatch)
     finally:
         QApplication.removeTranslator(translator)

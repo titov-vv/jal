@@ -12,7 +12,7 @@ from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.asset import JalAsset
 from jal.db.ledger import Ledger, LedgerAmounts
 from jal.db.operations import LedgerTransaction, AssetIncome, ChainAction, FeeKind
-from jal.widgets.price_chart import ChartWindow
+from jal.widgets.position_details import PositionDetails
 
 WALLET, WALLET2 = 1, 2
 TRX, USDD = 4, 5
@@ -116,14 +116,15 @@ def test_the_price_chart_draws_a_reward_on_its_quote(wallets):
     Ledger().rebuild(from_timestamp=0)
 
     parent = QWidget()
-    chart = ChartWindow(WALLET, TRX, 2, d2t(210301), parent=parent)
-    assert chart.ready
-    assert sorted((x['income'], x['price']) for x in chart.trades) == [(False, Decimal('0.40')),
-                                                                       (True, Decimal('0.30'))]
-    assert chart.chart.trade_series.count() == 1
-    assert chart.chart.income_series.count() == 1
-    assert chart.chart.income_series.markerShape() == QScatterSeries.MarkerShape.MarkerShapeTriangle
-    assert chart.range[2] > 0                                 # the axis no longer reaches down to zero
+    window = PositionDetails(WALLET, TRX, 2, d2t(210301), parent=parent)
+    assert window.ready
+    chart = window.chart
+    assert sorted((x['income'], x['price']) for x in chart._trades) == [(False, Decimal('0.40')),
+                                                                        (True, Decimal('0.30'))]
+    assert chart.trade_series.count() == 1
+    assert chart.income_series.count() == 1
+    assert chart.income_series.markerShape() == QScatterSeries.MarkerShape.MarkerShapeTriangle
+    assert chart.axisY.min() > 0                              # the axis no longer reaches down to zero
 
-    chart.chart.MouseOverTrade(chart.chart.income_series.at(0), True)
-    assert chart.chart.toolTip() == "02/02/2021: +100, cost 0, quote 0.3\nStaking reward\ntest"
+    chart.MouseOverTrade(chart.income_series.at(0), True)
+    assert chart.toolTip() == "02/02/2021: +100, cost 0, quote 0.3\nStaking reward\ntest"

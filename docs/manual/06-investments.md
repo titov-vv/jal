@@ -221,11 +221,10 @@ missing one:
 
 ![The stored quotes](img/dlg_quotes.png)
 
-In the portfolio report, right-click a position and choose **Show Price Chart** to see its history
-with your own trades marked on it. Coins that came at no cost — a staking reward, lending interest —
-are marked with a triangle at the price of the day they arrived:
-
-![A price chart](img/price_chart.png)
+In the portfolio report, right-click a position and choose **Position details…** to see its history
+with your own lots marked on it ([below](#position-details-lots-chart-and-tax)). Coins that came at no
+cost — a staking reward, lending interest — are marked with a triangle at the price of the day they
+arrived.
 
 ## What your investments are worth
 
@@ -242,20 +241,38 @@ Chapter 10 describes this and the other investment reports —
 [Deals](10-reports.md#deals-by-account), [P&L](10-reports.md#pl-by-account),
 [Assets' payments](10-reports.md#assets-payments) — in detail.
 
-## What a sale would cost in tax
+## Position details: lots, chart and tax
 
-Right-click a position in the portfolio and choose **Estimate tax**, then a country — Portugal or
-Russia, the two whose rules JAL knows:
+Right-click a position in the portfolio, or in the Balances panel, and choose **Position details…**:
 
-![A tax estimate](img/tax_estimate.png)
+![Position details](img/position_details.png)
 
-JAL takes the lots you hold, the last known price and the current exchange rate, and shows what
-profit — and what tax at that country's rate — selling everything today would produce. Each lot costs
-what was paid for it, in the currency it was paid in. Portugal converts that cost and today's price at
-today's rate; Russia converts the cost at the rate of the day it was paid. The tax column is a
-[base estimation](11-taxes.md#base-estimation) — the year's base rate on the gain, nothing more — and
-the line under the table states the rate. It is a rough guide for deciding whether to sell, not a tax
-return; the real thing is in [chapter 11](11-taxes.md).
+The table lists the lots you hold on the date of the report: when each was bought, how many days it
+has been held, its quantity, the price and cost per lot (already adjusted for splits and conversions)
+and its profit at that date's price. The row under the table totals the checked lots, with their
+average price.
+
+* **Check boxes** decide which lots count: the totals, the chart and the tax estimate all follow
+  them. Click the header of the check-box column to check or uncheck all lots.
+* **The selected lot** is highlighted on the chart; clicking a marker on the chart selects its row.
+* **The dashed line** on the chart is the average cost of the checked lots.
+
+### What a sale would cost in tax
+
+Under the table, JAL estimates the tax on selling the checked lots on the date of the report. The
+**Tax residence** box starts at the country your [residence table](03-first-steps.md#step-1--tell-jal-where-you-live) gives for that
+date; switch it to see the other country's figure.
+
+Each lot costs what was paid for it, in the currency it was paid in. Portugal converts that cost and
+the sale price at the rate of the sale date; Russia converts the cost at the rate of the day it was
+paid. For Portugal, crypto held 365 days or more is left out (a crypto-for-crypto exchange restarts
+that count), and a note says how many lots are held under 365 days, as their gain may have to be
+added to your other income (*englobamento*).
+
+The tax is a [base estimation](11-taxes.md#base-estimation): the year's base rate on the gain,
+nothing more. Losses of other deals and of earlier years, deductions and the fees of the sale are not
+counted. It is a rough guide for deciding whether to sell, not a tax return; the real thing is in
+[chapter 11](11-taxes.md).
 
 ---
 

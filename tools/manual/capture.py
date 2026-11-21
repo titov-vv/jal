@@ -359,22 +359,15 @@ def capture_tax_treatment(window):
     dialog.reject()
 
 
-# The price chart and the tax estimate are opened from the portfolio report, on the row of one position.
+# The position details window is opened from the portfolio report, on the row of one position.
 def capture_position_windows(window):
-    from jal.widgets.price_chart import ChartWindow
-    from jal.db.tax_estimator import TaxEstimator
+    from jal.widgets.position_details import PositionDetails
     from jal.db.helpers import now_ts
-    chart = ChartWindow(4, 4, 2, now_ts())     # ACME held on the trading account, priced in USD
-    window.ui.windowArea.addWindow(chart, floating=True, size=(900, 500))
+    details = PositionDetails(4, 4, 2, now_ts())     # ACME held on the trading account, priced in USD
+    window.ui.windowArea.addWindow(details, floating=True, size=(1100, 560))   # as holdings_menu opens it
     QApplication.processEvents()
-    save(chart, "price_chart")
-    chart.close()
-
-    estimator = TaxEstimator('pt', 4, 4, 15)   # 15 shares of ACME held on the trading account
-    window.ui.windowArea.addWindow(estimator, floating=True, size=(1000, 300))   # as holdings_menu opens it
-    QApplication.processEvents()
-    save(estimator, "tax_estimate")
-    estimator.close()
+    save(details, "position_details")
+    details.close()
 
 
 def capture_deposit_dialogs(window):

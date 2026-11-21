@@ -150,77 +150,77 @@
 <context>
     <name>AccountData</name>
     <message>
-        <location filename="../constants.py" line="511"/>
+        <location filename="../constants.py" line="512"/>
         <source>Account #</source>
         <translation>№ счёта</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="512"/>
+        <location filename="../constants.py" line="513"/>
         <source>Credit limit</source>
         <translation>Кредитный лимит</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="513"/>
+        <location filename="../constants.py" line="514"/>
         <source>Country</source>
         <translation>Страна</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="514"/>
+        <location filename="../constants.py" line="515"/>
         <source>Precision</source>
         <translation>Точность</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="515"/>
+        <location filename="../constants.py" line="516"/>
         <source>Address</source>
         <translation>Адрес</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="516"/>
+        <location filename="../constants.py" line="517"/>
         <source>Blockchain</source>
         <translation>Блокчейн</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="517"/>
+        <location filename="../constants.py" line="518"/>
         <source>Sync cursor</source>
         <translation>Тек. курсор</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="518"/>
+        <location filename="../constants.py" line="519"/>
         <source>Deposit end date</source>
         <translation>Дата окончания депозита</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="519"/>
+        <location filename="../constants.py" line="520"/>
         <source>Interest rate, %</source>
         <translation>Ставка, %</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="520"/>
+        <location filename="../constants.py" line="521"/>
         <source>Staking state</source>
         <translation>Состояние стейкинга</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="521"/>
+        <location filename="../constants.py" line="522"/>
         <source>Staking protocol</source>
         <translation>Протокол стейкинга</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="522"/>
+        <location filename="../constants.py" line="523"/>
         <source>Tag</source>
         <translation>Метка</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="523"/>
+        <location filename="../constants.py" line="524"/>
         <source>Opened on</source>
         <translation>Дата открытия</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="524"/>
+        <location filename="../constants.py" line="525"/>
         <source>Closed on</source>
         <translation>Дата закрытия</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="525"/>
+        <location filename="../constants.py" line="526"/>
         <source>Card (last 4 digits)</source>
         <translation>Карта (последние 4 цифры)</translation>
     </message>
@@ -354,33 +354,33 @@
 <context>
     <name>AccountHoldingsModel</name>
     <message>
-        <location filename="../db/holdings_model.py" line="453"/>
+        <location filename="../db/holdings_model.py" line="458"/>
         <source>Asset</source>
         <translation>Актив</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="509"/>
-        <location filename="../db/holdings_model.py" line="511"/>
+        <location filename="../db/holdings_model.py" line="514"/>
+        <location filename="../db/holdings_model.py" line="516"/>
         <source>N/A</source>
         <translation>N/A</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="573"/>
+        <location filename="../db/holdings_model.py" line="578"/>
         <source>Claimable (earned, not yet paid)</source>
         <translation>К получению (начислено, ещё не выплачено)</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="576"/>
+        <location filename="../db/holdings_model.py" line="581"/>
         <source>On this account (equals Balance)</source>
         <translation>На этом счёте (равно балансу)</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="579"/>
+        <location filename="../db/holdings_model.py" line="584"/>
         <source>Staked from this account (separate accounts, not in Balance)</source>
         <translation>В стейкинге с этого счёта (отдельные счета, не входит в баланс)</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="583"/>
+        <location filename="../db/holdings_model.py" line="588"/>
         <source>Including staked</source>
         <translation>Включая стейкинг</translation>
     </message>
@@ -504,32 +504,32 @@ Do you want to delete the account anyway?</source>
 <context>
     <name>AccountStatus</name>
     <message>
-        <location filename="../constants.py" line="309"/>
+        <location filename="../constants.py" line="310"/>
         <source>Closed</source>
         <translation>Закрытый</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="310"/>
+        <location filename="../constants.py" line="311"/>
         <source>Background</source>
         <translation>Фоновый</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="311"/>
+        <location filename="../constants.py" line="312"/>
         <source>Active</source>
         <translation>Активный</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="315"/>
+        <location filename="../constants.py" line="316"/>
         <source>Active accounts only</source>
         <translation>Только активные счета</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="316"/>
+        <location filename="../constants.py" line="317"/>
         <source>With background accounts</source>
         <translation>Включая фоновые счета</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="317"/>
+        <location filename="../constants.py" line="318"/>
         <source>With closed accounts</source>
         <translation>Включая закрытые счета</translation>
     </message>
@@ -697,42 +697,42 @@ Do you want to delete the account anyway?</source>
 <context>
     <name>AssetData</name>
     <message>
-        <location filename="../constants.py" line="453"/>
+        <location filename="../constants.py" line="454"/>
         <source>expiry</source>
         <translation>экспирация</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="454"/>
+        <location filename="../constants.py" line="455"/>
         <source>principal</source>
         <translation>номинал</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="455"/>
+        <location filename="../constants.py" line="456"/>
         <source>CoinGecko id</source>
         <translation>CoinGecko id</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="456"/>
+        <location filename="../constants.py" line="457"/>
         <source>rebasing</source>
         <translation>переоцениваемый</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="457"/>
+        <location filename="../constants.py" line="458"/>
         <source>decimals</source>
         <translation>знаков после запятой</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="458"/>
+        <location filename="../constants.py" line="459"/>
         <source>protocol</source>
         <translation>протокол</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="459"/>
+        <location filename="../constants.py" line="460"/>
         <source>pegged to</source>
         <translation>привязан к</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="452"/>
+        <location filename="../constants.py" line="453"/>
         <source>Tag</source>
         <translation>Метка</translation>
     </message>
@@ -900,142 +900,142 @@ Do you want to delete the account anyway?</source>
 <context>
     <name>AssetLocation</name>
     <message>
-        <location filename="../constants.py" line="680"/>
+        <location filename="../constants.py" line="681"/>
         <source>Unknown</source>
         <translation>Неизвестно</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="681"/>
+        <location filename="../constants.py" line="682"/>
         <source>Cash</source>
         <translation>Наличные</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="682"/>
+        <location filename="../constants.py" line="683"/>
         <source>Bank account</source>
         <translation>Банковский счёт</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="683"/>
+        <location filename="../constants.py" line="684"/>
         <source>NYSE</source>
         <translation>NYSE</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="684"/>
+        <location filename="../constants.py" line="685"/>
         <source>Nasdaq</source>
         <translation>Nasdaq</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="685"/>
+        <location filename="../constants.py" line="686"/>
         <source>LSE</source>
         <translation>LSE</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="686"/>
+        <location filename="../constants.py" line="687"/>
         <source>Euronext</source>
         <translation>Euronext</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="687"/>
+        <location filename="../constants.py" line="688"/>
         <source>Frankfurt Borse</source>
         <translation>Франкфуртская биржа</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="688"/>
+        <location filename="../constants.py" line="689"/>
         <source>Borsa Italiana</source>
         <translation>Итальянская биржа</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="689"/>
+        <location filename="../constants.py" line="690"/>
         <source>Warsaw Stock Exchange</source>
         <translation>Польская биржа</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="690"/>
+        <location filename="../constants.py" line="691"/>
         <source>TMX TSX</source>
         <translation>TMX TSX</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="691"/>
+        <location filename="../constants.py" line="692"/>
         <source>MOEX</source>
         <translation>МосБиржа</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="692"/>
+        <location filename="../constants.py" line="693"/>
         <source>Crypto exchange</source>
         <translation>Крипто-биржа</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="693"/>
+        <location filename="../constants.py" line="694"/>
         <source>Nasdaq Helsinki</source>
         <translation>Nasdaq Helsinki</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="694"/>
+        <location filename="../constants.py" line="695"/>
         <source>Ethereum</source>
         <translation>Ethereum</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="695"/>
+        <location filename="../constants.py" line="696"/>
         <source>Arbitrum</source>
         <translation>Arbitrum</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="696"/>
+        <location filename="../constants.py" line="697"/>
         <source>Bitcoin</source>
         <translation>Bitcoin</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="697"/>
+        <location filename="../constants.py" line="698"/>
         <source>Solana</source>
         <translation>Solana</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="698"/>
+        <location filename="../constants.py" line="699"/>
         <source>Tron</source>
         <translation>Tron</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="699"/>
+        <location filename="../constants.py" line="700"/>
         <source>Hyperliquid</source>
         <translation>Hyperliquid</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="700"/>
+        <location filename="../constants.py" line="701"/>
         <source>Avalanche</source>
         <translation>Avalance</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="701"/>
+        <location filename="../constants.py" line="702"/>
         <source>NEAR</source>
         <translation>NEAR</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="702"/>
+        <location filename="../constants.py" line="703"/>
         <source>Cardano</source>
         <translation>Cardano</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="703"/>
+        <location filename="../constants.py" line="704"/>
         <source>Polkadot</source>
         <translation>Polkadot</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="704"/>
+        <location filename="../constants.py" line="705"/>
         <source>Binance</source>
         <translation>Binance</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="705"/>
+        <location filename="../constants.py" line="706"/>
         <source>KuCoin</source>
         <translation>KuCoin</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="706"/>
+        <location filename="../constants.py" line="707"/>
         <source>Bitget</source>
         <translation>Bitget</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="707"/>
+        <location filename="../constants.py" line="708"/>
         <source>Victoria Seguros</source>
         <translation>Victoria Seguros</translation>
     </message>
@@ -2596,25 +2596,27 @@ Do you want to delete the category anyway?</source>
 <context>
     <name>ChartWidget</name>
     <message>
-        <location filename="../widgets/price_chart.py" line="97"/>
+        <location filename="../widgets/price_chart.py" line="43"/>
+        <source>Date</source>
+        <translation>Дата</translation>
+    </message>
+    <message>
+        <location filename="../widgets/price_chart.py" line="48"/>
+        <source>Price, </source>
+        <translation>Цена, </translation>
+    </message>
+    <message>
+        <location filename="../widgets/price_chart.py" line="132"/>
         <source>cost 0, quote</source>
         <translation>стоимость 0, котировка</translation>
     </message>
-</context>
-<context>
-    <name>ChartWindow</name>
     <message>
-        <location filename="../widgets/price_chart.py" line="129"/>
-        <source>Price chart for </source>
-        <translation>График цены для </translation>
-    </message>
-    <message>
-        <location filename="../widgets/price_chart.py" line="140"/>
+        <location filename="../widgets/price_chart.py" line="148"/>
         <source>Buy</source>
         <translation>Покупка</translation>
     </message>
     <message>
-        <location filename="../widgets/price_chart.py" line="143"/>
+        <location filename="../widgets/price_chart.py" line="150"/>
         <source>Sell</source>
         <translation>Продажа</translation>
     </message>
@@ -3388,124 +3390,124 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>EVMFetcher</name>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="208"/>
+        <location filename="../net/chain_fetchers/evm.py" line="210"/>
         <source>Not a valid EVM address: </source>
         <translation>Недопустимый адрес EVM: </translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="236"/>
+        <location filename="../net/chain_fetchers/evm.py" line="238"/>
         <source>import stopped at an unsupported transaction (</source>
         <translation>импорт остановлен на неподдерживаемой транзакции (</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="237"/>
+        <location filename="../net/chain_fetchers/evm.py" line="239"/>
         <source>); it will be retried next time</source>
         <translation>); повтор будет выполнен при следующем импорте</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="336"/>
+        <location filename="../net/chain_fetchers/evm.py" line="340"/>
         <source>unrecognized reward-claim shape</source>
         <translation>нераспознанная форма получения вознаграждения</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="357"/>
+        <location filename="../net/chain_fetchers/evm.py" line="361"/>
         <source>unrecognized swap shape</source>
         <translation>нераспознанная форма обмена</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="402"/>
+        <location filename="../net/chain_fetchers/evm.py" line="406"/>
         <source>asset exchange through an unregistered contract </source>
         <translation>обмен активами через незарегистрированный контракт </translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="404"/>
+        <location filename="../net/chain_fetchers/evm.py" line="408"/>
         <source>unrecognized multi-asset transaction</source>
         <translation>нераспознанная мульти-активная транзакция</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="406"/>
+        <location filename="../net/chain_fetchers/evm.py" line="410"/>
         <source>incoming asset through an unregistered contract</source>
         <translation>входящий актив через незарегистрированный контракт</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="853"/>
+        <location filename="../net/chain_fetchers/evm.py" line="882"/>
         <source>unrecognized cross-chain transaction shape</source>
         <translation>нераспознанная форма межсетевой транзакции</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="748"/>
+        <location filename="../net/chain_fetchers/evm.py" line="777"/>
         <source>token with a malformed contract address</source>
         <translation>токен с некорректным адресом контракта</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="118"/>
+        <location filename="../net/chain_fetchers/evm.py" line="120"/>
         <source>API key isn&apos;t set - fill it in Settings/Preferences/Blockchain: </source>
         <translation>Не указан ключ API - заполните его в Настройки/Параметры/Блокчейн: </translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="142"/>
+        <location filename="../net/chain_fetchers/evm.py" line="144"/>
         <source>Unexpected answer from the blockchain API: </source>
         <translation>Неожиданный ответ от API блокчейна: </translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="150"/>
-        <location filename="../net/chain_fetchers/evm.py" line="641"/>
+        <location filename="../net/chain_fetchers/evm.py" line="152"/>
+        <location filename="../net/chain_fetchers/evm.py" line="668"/>
         <source>Blockchain API request failed: </source>
         <translation>Запрос к API блокчейна не удался: </translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="174"/>
+        <location filename="../net/chain_fetchers/evm.py" line="176"/>
         <source>Too many pages returned, the rest is left for the next fetch: </source>
         <translation>Возвращено слишком много страниц, остальное будет загружено в следующий раз: </translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="192"/>
+        <location filename="../net/chain_fetchers/evm.py" line="194"/>
         <source>beyond what one fetch can read - it will be fetched next time</source>
         <translation>больше, чем можно прочитать за одну загрузку - будет загружено в следующий раз</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="313"/>
+        <location filename="../net/chain_fetchers/evm.py" line="317"/>
         <source> reached through an unregistered contract </source>
         <translation> используется через незарегистрированный контракт </translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="329"/>
+        <location filename="../net/chain_fetchers/evm.py" line="333"/>
         <source>unrecognized lending/wrap shape</source>
         <translation>нераспознанная форма кредитования/обёртывания</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="345"/>
-        <location filename="../net/chain_fetchers/evm.py" line="452"/>
+        <location filename="../net/chain_fetchers/evm.py" line="349"/>
+        <location filename="../net/chain_fetchers/evm.py" line="456"/>
         <source>unrecognized custody shape</source>
         <translation>нераспознанная форма хранения (custody)</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="460"/>
+        <location filename="../net/chain_fetchers/evm.py" line="464"/>
         <source>withdrawal whose deposit predates the sync cursor - interest not separated</source>
         <translation>вывод, чьё пополнение старше курсора синхронизации - проценты не выделены отдельно</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="493"/>
+        <location filename="../net/chain_fetchers/evm.py" line="497"/>
         <source>Unreadable staking state of account </source>
         <translation>Нечитаемое состояние стейкинга счёта </translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="692"/>
+        <location filename="../net/chain_fetchers/evm.py" line="721"/>
         <source>Address poisoning, imitating </source>
         <translation>Отравление адреса, имитирующее </translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="777"/>
+        <location filename="../net/chain_fetchers/evm.py" line="806"/>
         <source>token transfer with an unreadable amount</source>
         <translation>перевод токена с нечитаемой суммой</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="780"/>
+        <location filename="../net/chain_fetchers/evm.py" line="809"/>
         <source>zero-amount token transfer</source>
         <translation>перевод токена с нулевой суммой</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="765"/>
+        <location filename="../net/chain_fetchers/evm.py" line="794"/>
         <source>token quarantined as dust/spam</source>
         <translation>токен помечен как пыль/спам</translation>
     </message>
@@ -3569,62 +3571,47 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>HoldingsMenu</name>
     <message>
-        <location filename="../widgets/holdings_menu.py" line="36"/>
+        <location filename="../widgets/holdings_menu.py" line="34"/>
         <source>Show claim history</source>
         <translation>Показать историю вознаграждений</translation>
     </message>
     <message>
-        <location filename="../widgets/holdings_menu.py" line="42"/>
-        <source>Show Price Chart</source>
-        <translation>Показать график цены</translation>
-    </message>
-    <message>
-        <location filename="../widgets/holdings_menu.py" line="50"/>
+        <location filename="../widgets/holdings_menu.py" line="46"/>
         <source>Show Accrual Chart</source>
         <translation>Показать график начислений</translation>
     </message>
     <message>
-        <location filename="../widgets/holdings_menu.py" line="53"/>
-        <source>Estimate tax</source>
-        <translation>Оценить налог</translation>
-    </message>
-    <message>
-        <location filename="../widgets/holdings_menu.py" line="61"/>
+        <location filename="../widgets/holdings_menu.py" line="51"/>
         <source>Set asset tag</source>
         <translation>Установить метку ЦБ</translation>
     </message>
     <message>
-        <location filename="../widgets/holdings_menu.py" line="64"/>
+        <location filename="../widgets/holdings_menu.py" line="54"/>
         <source>Set asset country</source>
         <translation>Установить страну ЦБ</translation>
     </message>
     <message>
-        <location filename="../widgets/holdings_menu.py" line="92"/>
-        <source>Warning</source>
-        <translation>Предупреждение</translation>
+        <location filename="../widgets/holdings_menu.py" line="40"/>
+        <source>Position details…</source>
+        <translation>Подробности позиции…</translation>
     </message>
     <message>
-        <location filename="../widgets/holdings_menu.py" line="92"/>
-        <source>Tax estimation is possible for today only. Please correct date of the report</source>
-        <translation>Оценка налога возможна только на сегодняшний день. Пожалуйста измените дату отчёта</translation>
-    </message>
-    <message>
-        <location filename="../widgets/holdings_menu.py" line="102"/>
+        <location filename="../widgets/holdings_menu.py" line="85"/>
         <source>Please select tag</source>
         <translation>Выберите метку</translation>
     </message>
     <message>
-        <location filename="../widgets/holdings_menu.py" line="103"/>
+        <location filename="../widgets/holdings_menu.py" line="86"/>
         <source>Select tag for {} ({}): </source>
         <translation>Выбрать метку для {} ({}): </translation>
     </message>
     <message>
-        <location filename="../widgets/holdings_menu.py" line="117"/>
+        <location filename="../widgets/holdings_menu.py" line="100"/>
         <source>Please select country</source>
         <translation>Выберите страну</translation>
     </message>
     <message>
-        <location filename="../widgets/holdings_menu.py" line="118"/>
+        <location filename="../widgets/holdings_menu.py" line="101"/>
         <source>Select country for {} ({}): </source>
         <translation>Выбрать страну для {} ({}): </translation>
     </message>
@@ -3632,94 +3619,94 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>HoldingsModel</name>
     <message>
-        <location filename="../db/holdings_model.py" line="144"/>
+        <location filename="../db/holdings_model.py" line="149"/>
         <source>Qty</source>
         <translation>Кол-во</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="145"/>
+        <location filename="../db/holdings_model.py" line="150"/>
         <source>Since</source>
         <translation>С</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="146"/>
+        <location filename="../db/holdings_model.py" line="151"/>
         <source>Open</source>
         <translation>Цена откр.</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="147"/>
+        <location filename="../db/holdings_model.py" line="152"/>
         <source>Last</source>
         <translation>Цена закр.</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="148"/>
+        <location filename="../db/holdings_model.py" line="153"/>
         <source>Share, %</source>
         <translation>Доля, %</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="149"/>
+        <location filename="../db/holdings_model.py" line="154"/>
         <source>P/L, %</source>
         <translation>ПиУ, %</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="150"/>
+        <location filename="../db/holdings_model.py" line="155"/>
         <source>P/L</source>
         <translation>ПиУ</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="151"/>
+        <location filename="../db/holdings_model.py" line="156"/>
         <source>Paid</source>
         <translation>Выплачено</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="152"/>
+        <location filename="../db/holdings_model.py" line="157"/>
         <source>Value</source>
         <translation>Оценка</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="153"/>
+        <location filename="../db/holdings_model.py" line="158"/>
         <source>Value, </source>
         <translation>Оценка, </translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="214"/>
+        <location filename="../db/holdings_model.py" line="219"/>
         <source>Last quote date: </source>
         <translation>Дата последней котировки: </translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="216"/>
+        <location filename="../db/holdings_model.py" line="221"/>
         <source>On-chain balance as of: </source>
         <translation>Ончейн-баланс на: </translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="279"/>
+        <location filename="../db/holdings_model.py" line="284"/>
         <source>Open position was expected but not found for (account-asset-date): </source>
         <translation>Открытая позиция ожидалась, но не была найдена для (счёт-ЦБ-дата): </translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="340"/>
-        <location filename="../db/holdings_model.py" line="342"/>
-        <location filename="../db/holdings_model.py" line="376"/>
+        <location filename="../db/holdings_model.py" line="345"/>
+        <location filename="../db/holdings_model.py" line="347"/>
+        <location filename="../db/holdings_model.py" line="381"/>
         <source>N/A</source>
         <translation>N/A</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="374"/>
+        <location filename="../db/holdings_model.py" line="379"/>
         <source>Money</source>
         <translation>Деньги</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="142"/>
+        <location filename="../db/holdings_model.py" line="147"/>
         <source>Currency/Account/Asset</source>
         <translation>Валюта/Счёт/ЦБ</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="143"/>
+        <location filename="../db/holdings_model.py" line="148"/>
         <source>Asset Name</source>
         <translation>Ценная бумага</translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="325"/>
+        <location filename="../db/holdings_model.py" line="330"/>
         <source>Exp:</source>
         <translation>Эксп:</translation>
     </message>
@@ -5879,6 +5866,54 @@ do you want to save them?</source>
     </message>
 </context>
 <context>
+    <name>LotsModel</name>
+    <message>
+        <location filename="../widgets/position_details.py" line="36"/>
+        <source>Date</source>
+        <translation>Дата</translation>
+    </message>
+    <message>
+        <location filename="../widgets/position_details.py" line="36"/>
+        <source>Held, days</source>
+        <translation>Срок, дней</translation>
+    </message>
+    <message>
+        <location filename="../widgets/position_details.py" line="36"/>
+        <source>Qty</source>
+        <translation>Кол-во</translation>
+    </message>
+    <message>
+        <location filename="../widgets/position_details.py" line="36"/>
+        <source>Price, </source>
+        <translation>Цена, </translation>
+    </message>
+    <message>
+        <location filename="../widgets/position_details.py" line="37"/>
+        <source>Cost, </source>
+        <translation>Стоимость, </translation>
+    </message>
+    <message>
+        <location filename="../widgets/position_details.py" line="37"/>
+        <source>P/L, </source>
+        <translation>ПиУ, </translation>
+    </message>
+    <message>
+        <location filename="../widgets/position_details.py" line="37"/>
+        <source>P/L, %</source>
+        <translation>ПиУ, %</translation>
+    </message>
+    <message>
+        <location filename="../widgets/position_details.py" line="51"/>
+        <source>Check or uncheck all lots</source>
+        <translation>Отметить или снять отметку со всех лотов</translation>
+    </message>
+    <message>
+        <location filename="../widgets/position_details.py" line="126"/>
+        <source>{checked} of {total} lots</source>
+        <translation>{checked} из {total} лотов</translation>
+    </message>
+</context>
+<context>
     <name>MOEX</name>
     <message>
         <location filename="../net/moex.py" line="99"/>
@@ -7479,44 +7514,125 @@ Its other record is found by the transaction, but the two accounts are kept in d
     </message>
 </context>
 <context>
+    <name>PositionDetails</name>
+    <message>
+        <location filename="../widgets/position_details.py" line="174"/>
+        <source>Position details: </source>
+        <translation>Подробности позиции: </translation>
+    </message>
+    <message>
+        <location filename="../widgets/position_details.py" line="177"/>
+        <source>Quote on {date}: {quote} {currency}</source>
+        <translation>Котировка на {date}: {quote} {currency}</translation>
+    </message>
+    <message>
+        <location filename="../widgets/position_details.py" line="236"/>
+        <source>not known for {year}</source>
+        <translation>неизвестна для {year} года</translation>
+    </message>
+    <message>
+        <location filename="../widgets/position_details.py" line="243"/>
+        <source>{rate} on {date}, cost and value</source>
+        <translation>{rate} на {date}, для стоимости покупки и продажи</translation>
+    </message>
+    <message>
+        <location filename="../widgets/position_details.py" line="246"/>
+        <source>Crypto held 365 days or more is left out: {count} lot(s).</source>
+        <translation>Криптовалюта во владении 365 дней и более не учтена: лотов - {count}.</translation>
+    </message>
+    <message>
+        <location filename="../widgets/position_details.py" line="249"/>
+        <source>{count} lot(s) held under 365 days: their gain may have to be added to other income (englobamento).</source>
+        <translation>Лотов во владении менее 365 дней - {count}: их доход может потребоваться сложить с другими доходами (englobamento).</translation>
+    </message>
+    <message>
+        <location filename="../widgets/position_details.py" line="252"/>
+        <source>{rate} on {date} for value, cost at each purchase&apos;s settlement date</source>
+        <translation>{rate} на {date} для продажи, для покупки - на дату расчётов по каждой покупке</translation>
+    </message>
+    <message>
+        <location filename="../widgets/position_details.py" line="254"/>
+        <source>Rough estimate: losses of other deals and of earlier years, deductions and fees of the sale are not taken into account.</source>
+        <translation>Грубая оценка: убытки по другим сделкам и прошлых лет, вычеты и комиссии продажи не учтены.</translation>
+    </message>
+</context>
+<context>
+    <name>PositionDetailsWindow</name>
+    <message>
+        <location filename="../ui/position_details_window.ui" line="14"/>
+        <source>Position details</source>
+        <translation>Подробности позиции</translation>
+    </message>
+    <message>
+        <location filename="../ui/position_details_window.ui" line="79"/>
+        <source>Tax estimate</source>
+        <translation>Оценка налога</translation>
+    </message>
+    <message>
+        <location filename="../ui/position_details_window.ui" line="85"/>
+        <source>Tax residence:</source>
+        <translation>Налоговое резидентство:</translation>
+    </message>
+    <message>
+        <location filename="../ui/position_details_window.ui" line="112"/>
+        <source>P/L:</source>
+        <translation>ПиУ:</translation>
+    </message>
+    <message>
+        <location filename="../ui/position_details_window.ui" line="126"/>
+        <source>Rate:</source>
+        <translation>Курс:</translation>
+    </message>
+    <message>
+        <location filename="../ui/position_details_window.ui" line="140"/>
+        <source>Base rate:</source>
+        <translation>Базовая ставка:</translation>
+    </message>
+    <message>
+        <location filename="../ui/position_details_window.ui" line="150"/>
+        <source>Tax:</source>
+        <translation>Налог:</translation>
+    </message>
+</context>
+<context>
     <name>PredefinedAccountType</name>
     <message>
-        <location filename="../constants.py" line="267"/>
+        <location filename="../constants.py" line="268"/>
         <source>Cash</source>
         <translation>Наличные</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="268"/>
+        <location filename="../constants.py" line="269"/>
         <source>Bank account</source>
         <translation>Банковский счёт</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="269"/>
+        <location filename="../constants.py" line="270"/>
         <source>Card</source>
         <translation>Карта</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="270"/>
+        <location filename="../constants.py" line="271"/>
         <source>Broker account</source>
         <translation>Брокерский счёт</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="271"/>
+        <location filename="../constants.py" line="272"/>
         <source>Wallet</source>
         <translation>Кошелёк</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="272"/>
+        <location filename="../constants.py" line="273"/>
         <source>Term deposit</source>
         <translation>Срочный депозит</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="273"/>
+        <location filename="../constants.py" line="274"/>
         <source>Crypto exchange</source>
         <translation>Криптобиржа</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="274"/>
+        <location filename="../constants.py" line="275"/>
         <source>Staking</source>
         <translation>Стейкинг</translation>
     </message>
@@ -7524,7 +7640,7 @@ Its other record is found by the transaction, but the two accounts are kept in d
 <context>
     <name>PredefinedAgents</name>
     <message>
-        <location filename="../constants.py" line="193"/>
+        <location filename="../constants.py" line="194"/>
         <source>None</source>
         <translation>Нет</translation>
     </message>
@@ -7532,47 +7648,47 @@ Its other record is found by the transaction, but the two accounts are kept in d
 <context>
     <name>PredefinedAsset</name>
     <message>
-        <location filename="../constants.py" line="354"/>
+        <location filename="../constants.py" line="355"/>
         <source>Money</source>
         <translation>Валюты</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="355"/>
+        <location filename="../constants.py" line="356"/>
         <source>Shares</source>
         <translation>Акции</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="356"/>
+        <location filename="../constants.py" line="357"/>
         <source>Bonds</source>
         <translation>Облигации</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="357"/>
+        <location filename="../constants.py" line="358"/>
         <source>ETFs</source>
         <translation>БПИФ</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="358"/>
+        <location filename="../constants.py" line="359"/>
         <source>Commodities</source>
         <translation>Товары</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="359"/>
+        <location filename="../constants.py" line="360"/>
         <source>Derivatives</source>
         <translation>Деривативы</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="360"/>
+        <location filename="../constants.py" line="361"/>
         <source>Forex</source>
         <translation>Форекс</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="361"/>
+        <location filename="../constants.py" line="362"/>
         <source>Funds</source>
         <translation>Фонды</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="362"/>
+        <location filename="../constants.py" line="363"/>
         <source>Crypto-currency</source>
         <translation>Криптовалюты</translation>
     </message>
@@ -7580,57 +7696,57 @@ Its other record is found by the transaction, but the two accounts are kept in d
 <context>
     <name>PredefinedCategory</name>
     <message>
-        <location filename="../constants.py" line="213"/>
+        <location filename="../constants.py" line="214"/>
         <source>Income</source>
         <translation>Приход</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="214"/>
+        <location filename="../constants.py" line="215"/>
         <source>Spending</source>
         <translation>Расход</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="215"/>
+        <location filename="../constants.py" line="216"/>
         <source>Profits</source>
         <translation>Прибыли</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="216"/>
+        <location filename="../constants.py" line="217"/>
         <source>Starting balance</source>
         <translation>Начальный баланс</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="217"/>
+        <location filename="../constants.py" line="218"/>
         <source>Fees</source>
         <translation>Комиссии</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="218"/>
+        <location filename="../constants.py" line="219"/>
         <source>Taxes</source>
         <translation>Налоги</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="219"/>
+        <location filename="../constants.py" line="220"/>
         <source>Dividends</source>
         <translation>Дивиденды</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="220"/>
+        <location filename="../constants.py" line="221"/>
         <source>Interest</source>
         <translation>Проценты</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="221"/>
+        <location filename="../constants.py" line="222"/>
         <source>Results of investments</source>
         <translation>Результат инвестирования</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="222"/>
+        <location filename="../constants.py" line="223"/>
         <source>Discounts</source>
         <translation>Скидки</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="223"/>
+        <location filename="../constants.py" line="224"/>
         <source>Losses</source>
         <translation>Убытки</translation>
     </message>
@@ -7638,27 +7754,27 @@ Its other record is found by the transaction, but the two accounts are kept in d
 <context>
     <name>PredefinedTags</name>
     <message>
-        <location filename="../constants.py" line="237"/>
+        <location filename="../constants.py" line="238"/>
         <source>Account type</source>
         <translation>Тип счёта</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="238"/>
+        <location filename="../constants.py" line="239"/>
         <source>Cash</source>
         <translation>Наличные</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="239"/>
+        <location filename="../constants.py" line="240"/>
         <source>Bank account</source>
         <translation>Банковский счёт</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="240"/>
+        <location filename="../constants.py" line="241"/>
         <source>Card</source>
         <translation>Карта</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="241"/>
+        <location filename="../constants.py" line="242"/>
         <source>Broker account</source>
         <translation>Брокерский счёт</translation>
     </message>
@@ -7751,7 +7867,7 @@ Its other record is found by the transaction, but the two accounts are kept in d
         <location filename="../net/chain_fetchers/avalanche.py" line="48"/>
         <location filename="../net/chain_fetchers/bitcoin.py" line="381"/>
         <location filename="../net/chain_fetchers/cardano.py" line="372"/>
-        <location filename="../net/chain_fetchers/evm.py" line="1087"/>
+        <location filename="../net/chain_fetchers/evm.py" line="1116"/>
         <location filename="../net/chain_fetchers/polkadot.py" line="502"/>
         <location filename="../net/chain_fetchers/solana.py" line="555"/>
         <location filename="../net/chain_fetchers/tron.py" line="349"/>
@@ -7829,12 +7945,12 @@ Its other record is found by the transaction, but the two accounts are kept in d
         <translation>Входящий перевод BTC меньше этой суммы, с адреса, с которым ранее не было операций, записывается как пылевая атака, а не как обычный перевод.</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="1088"/>
+        <location filename="../net/chain_fetchers/evm.py" line="1117"/>
         <source>ETH dust threshold</source>
         <translation>Порог пыли для ETH</translation>
     </message>
     <message>
-        <location filename="../net/chain_fetchers/evm.py" line="1089"/>
+        <location filename="../net/chain_fetchers/evm.py" line="1118"/>
         <source>An incoming ETH transfer below this amount, from an address you never dealt with, is recorded as a dust attack instead of an ordinary transfer. Applies to every EVM chain whose native coin is ETH (Ethereum, Arbitrum, ...); a chain with a coin of its own has a threshold of its own.</source>
         <translation>Входящий перевод ETH меньше этой суммы, с адреса, с которым ранее не было операций, записывается как пылевая атака, а не как обычный перевод. Применяется ко всем EVM-блокчейнам, чья нативная монета - ETH (Ethereum, Arbitrum, ...); блокчейн с собственной монетой имеет собственный порог.</translation>
     </message>
@@ -10520,102 +10636,102 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <translation>Отчёт должен относиться ровно к одному счёту, получены UID: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/kucoin.py" line="222"/>
+        <location filename="../data_import/broker_statements/kucoin.py" line="224"/>
         <source>Can&apos;t read trading pair: </source>
         <translation>Не удалось прочитать торговую пару: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/kucoin.py" line="232"/>
+        <location filename="../data_import/broker_statements/kucoin.py" line="234"/>
         <source>Unknown trade side: </source>
         <translation>Неизвестная сторона сделки: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/kucoin.py" line="238"/>
+        <location filename="../data_import/broker_statements/kucoin.py" line="240"/>
         <source>Trades loaded: </source>
         <translation>Сделок загружено: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/kucoin.py" line="242"/>
+        <location filename="../data_import/broker_statements/kucoin.py" line="244"/>
         <source>Trade fee isn&apos;t in the account currency: </source>
         <translation>Комиссия сделки не в валюте счёта: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/kucoin.py" line="244"/>
+        <location filename="../data_import/broker_statements/kucoin.py" line="246"/>
         <source>Trade has zero quantity: </source>
         <translation>Сделка с нулевым количеством: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/kucoin.py" line="264"/>
+        <location filename="../data_import/broker_statements/kucoin.py" line="266"/>
         <source>Swap fee is in neither coin of the pair: </source>
         <translation>Комиссия обмена не в одной из монет пары: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/kucoin.py" line="284"/>
+        <location filename="../data_import/broker_statements/kucoin.py" line="286"/>
         <source>Several fee refunds match one fill: </source>
         <translation>Несколько возвратов комиссии соответствуют одному исполнению: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/kucoin.py" line="287"/>
+        <location filename="../data_import/broker_statements/kucoin.py" line="289"/>
         <source>Fee refund is larger than the fee it belongs to: </source>
         <translation>Возврат комиссии больше самой комиссии: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/kucoin.py" line="296"/>
+        <location filename="../data_import/broker_statements/kucoin.py" line="298"/>
         <source>Unsupported KuCoin operation: </source>
         <translation>Неподдерживаемая операция KuCoin: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/kucoin.py" line="303"/>
+        <location filename="../data_import/broker_statements/kucoin.py" line="305"/>
         <source>Fee refund doesn&apos;t belong to any trade: </source>
         <translation>Возврат комиссии не относится ни к одной сделке: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/kucoin.py" line="305"/>
+        <location filename="../data_import/broker_statements/kucoin.py" line="307"/>
         <source>Ledger operations loaded: </source>
         <translation>Загружено операций в учёт: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/kucoin.py" line="315"/>
+        <location filename="../data_import/broker_statements/kucoin.py" line="317"/>
         <source>No details found for operation: </source>
         <translation>Не найдены детали операции: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/kucoin.py" line="318"/>
+        <location filename="../data_import/broker_statements/kucoin.py" line="320"/>
         <source>Several records match one operation: </source>
         <translation>Несколько записей соответствуют одной операции: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/kucoin.py" line="320"/>
+        <location filename="../data_import/broker_statements/kucoin.py" line="322"/>
         <source>Operation isn&apos;t completed: </source>
         <translation>Операция не завершена: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/kucoin.py" line="386"/>
+        <location filename="../data_import/broker_statements/kucoin.py" line="388"/>
         <source>Reward doesn&apos;t increase the balance: </source>
         <translation>Вознаграждение не увеличивает баланс: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/kucoin.py" line="418"/>
+        <location filename="../data_import/broker_statements/kucoin.py" line="420"/>
         <source>Statement has no balance snapshots - import can&apos;t be verified</source>
         <translation>В отчёте нет снимков баланса - импорт нельзя проверить</translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/kucoin.py" line="467"/>
+        <location filename="../data_import/broker_statements/kucoin.py" line="469"/>
         <source>Replaying the statement doesn&apos;t reproduce the balance KuCoin reports: </source>
         <translation>Воспроизведение отчёта не даёт баланс, который сообщает KuCoin: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/kucoin.py" line="442"/>
+        <location filename="../data_import/broker_statements/kucoin.py" line="444"/>
         <source>Held in KuCoin Earn on top of the reported balance: </source>
         <translation>Удерживается в KuCoin Earn сверх указанного баланса: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/kucoin.py" line="445"/>
+        <location filename="../data_import/broker_statements/kucoin.py" line="447"/>
         <source>Statement balances verified against exchange snapshots: </source>
         <translation>Балансы отчёта проверены по снимкам биржи: </translation>
     </message>
     <message>
-        <location filename="../data_import/broker_statements/kucoin.py" line="489"/>
+        <location filename="../data_import/broker_statements/kucoin.py" line="491"/>
         <source>Filled orders don&apos;t match the trades recorded in the account history: </source>
         <translation>Исполненные ордера не совпадают со сделками, записанными в истории счёта: </translation>
     </message>
@@ -11519,17 +11635,17 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
 <context>
     <name>SwapTreatment</name>
     <message>
-        <location filename="../constants.py" line="334"/>
+        <location filename="../constants.py" line="335"/>
         <source>Auto</source>
         <translation>Авто</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="335"/>
+        <location filename="../constants.py" line="336"/>
         <source>Sale</source>
         <translation>Продажа</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="336"/>
+        <location filename="../constants.py" line="337"/>
         <source>Conversion</source>
         <translation>Конвертация</translation>
     </message>
@@ -11731,77 +11847,77 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
 <context>
     <name>SymbolId</name>
     <message>
-        <location filename="../constants.py" line="390"/>
+        <location filename="../constants.py" line="391"/>
         <source>UUID</source>
         <translation>UUID</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="391"/>
+        <location filename="../constants.py" line="392"/>
         <source>FIGI</source>
         <translation>FIGI</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="392"/>
+        <location filename="../constants.py" line="393"/>
         <source>ISIN</source>
         <translation>ISIN</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="393"/>
+        <location filename="../constants.py" line="394"/>
         <source>ITIN</source>
         <translation>ITIN</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="394"/>
+        <location filename="../constants.py" line="395"/>
         <source>CUSIP</source>
         <translation>CUSIP</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="395"/>
+        <location filename="../constants.py" line="396"/>
         <source>Reg.code</source>
         <translation>Рег.код</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="396"/>
+        <location filename="../constants.py" line="397"/>
         <source>ISO4217 currency code</source>
         <translation>Код валюты ISO4217</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="397"/>
+        <location filename="../constants.py" line="398"/>
         <source>ETH address</source>
         <translation>ETH-адрес</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="398"/>
+        <location filename="../constants.py" line="399"/>
         <source>ARB address</source>
         <translation>ARB-адрес</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="399"/>
+        <location filename="../constants.py" line="400"/>
         <source>SOL address</source>
         <translation>Адрес SOL</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="400"/>
+        <location filename="../constants.py" line="401"/>
         <source>TRX address</source>
         <translation>Адрес TRX</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="401"/>
+        <location filename="../constants.py" line="402"/>
         <source>HL token id</source>
         <translation>Идентификатор токена HL</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="402"/>
+        <location filename="../constants.py" line="403"/>
         <source>HyperEVM address</source>
         <translation>Адрес HyperEVM</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="403"/>
+        <location filename="../constants.py" line="404"/>
         <source>AVAX address</source>
         <translation>Адрес AVAX</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="404"/>
+        <location filename="../constants.py" line="405"/>
         <source>IBKR conid</source>
         <translation>IBKR conid</translation>
     </message>
@@ -11996,102 +12112,6 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
         <location filename="../widgets/reference_dialogs.py" line="673"/>
         <source>&apos; was successfully replaced</source>
         <translation>&apos; заменена успешно</translation>
-    </message>
-</context>
-<context>
-    <name>TaxEstimationDialog</name>
-    <message>
-        <location filename="../ui/reports/tax_estimation.ui" line="14"/>
-        <source>Tax estimation</source>
-        <translation>Оценка налога</translation>
-    </message>
-    <message>
-        <location filename="../ui/reports/tax_estimation.ui" line="36"/>
-        <source>Last quote:</source>
-        <translation>Последняя котировка:</translation>
-    </message>
-    <message>
-        <location filename="../ui/reports/tax_estimation.ui" line="43"/>
-        <location filename="../ui/reports/tax_estimation.ui" line="87"/>
-        <source>X.XX</source>
-        <translation>X.XX</translation>
-    </message>
-    <message>
-        <location filename="../ui/reports/tax_estimation.ui" line="80"/>
-        <source>Current rate:</source>
-        <translation>Текущий курс:</translation>
-    </message>
-    <message>
-        <location filename="../ui/reports/tax_estimation.ui" line="125"/>
-        <source>Base estimation</source>
-        <translation>Базовая оценка</translation>
-    </message>
-</context>
-<context>
-    <name>TaxEstimator</name>
-    <message>
-        <location filename="../db/tax_estimator.py" line="105"/>
-        <source>Tax estimation for </source>
-        <translation>Оценка налога для </translation>
-    </message>
-    <message>
-        <location filename="../db/tax_estimator.py" line="129"/>
-        <source>Tax rate not found for: </source>
-        <translation>Ставка налога не найдена для: </translation>
-    </message>
-    <message>
-        <location filename="../db/tax_estimator.py" line="130"/>
-        <source>No base rate for {year}: the tax column is not estimated</source>
-        <translation>Нет базовой ставки на {year} год: налог не оценён</translation>
-    </message>
-    <message>
-        <location filename="../db/tax_estimator.py" line="132"/>
-        <source>Base estimation: {rate} % of the gain at today&apos;s quote and rate, per position and on the total; no other deals offset, no brackets, no exemptions</source>
-        <translation>Базовая оценка: {rate} % от прибыли по текущей котировке и курсу, по каждой позиции и по итогу; без учёта других сделок, прогрессивной шкалы и льгот</translation>
-    </message>
-    <message>
-        <location filename="../db/tax_estimator.py" line="180"/>
-        <source>TOTAL</source>
-        <translation>ИТОГО</translation>
-    </message>
-</context>
-<context>
-    <name>TaxEstimatorModel</name>
-    <message>
-        <location filename="../db/tax_estimator.py" line="31"/>
-        <source>Date</source>
-        <translation>Дата</translation>
-    </message>
-    <message>
-        <location filename="../db/tax_estimator.py" line="32"/>
-        <source>Qty</source>
-        <translation>Кол-во</translation>
-    </message>
-    <message>
-        <location filename="../db/tax_estimator.py" line="33"/>
-        <source>Open</source>
-        <translation>Цена откр.</translation>
-    </message>
-    <message>
-        <location filename="../db/tax_estimator.py" line="34"/>
-        <source>Rate, </source>
-        <translation>Курс, </translation>
-    </message>
-    <message>
-        <location filename="../db/tax_estimator.py" line="35"/>
-        <location filename="../db/tax_estimator.py" line="36"/>
-        <source>Profit, </source>
-        <translation>Прибыль, </translation>
-    </message>
-    <message>
-        <location filename="../db/tax_estimator.py" line="37"/>
-        <source>Tax, </source>
-        <translation>Налог, </translation>
-    </message>
-    <message>
-        <location filename="../db/tax_estimator.py" line="37"/>
-        <source> (base estimation)</source>
-        <translation> (базовая оценка)</translation>
     </message>
 </context>
 <context>
@@ -12572,37 +12592,37 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
 <context>
     <name>TokenList</name>
     <message>
-        <location filename="../constants.py" line="738"/>
+        <location filename="../constants.py" line="739"/>
         <source>Jupiter verified tokens</source>
         <translation>Проверенные токены Jupiter</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="739"/>
+        <location filename="../constants.py" line="740"/>
         <source>Uniswap default list</source>
         <translation>Список по умолчанию Uniswap</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="740"/>
+        <location filename="../constants.py" line="741"/>
         <source>CoinGecko token list</source>
         <translation>Список токенов CoinGecko</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="741"/>
+        <location filename="../constants.py" line="742"/>
         <source>DappRadar tokens blacklist</source>
         <translation>Чёрный список токенов DappRadar</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="742"/>
+        <location filename="../constants.py" line="743"/>
         <source>MyEtherWallet token list</source>
         <translation>Список токенов MyEtherWallet</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="743"/>
+        <location filename="../constants.py" line="744"/>
         <source>CoinGecko Tron token list</source>
         <translation>Список токенов Tron от CoinGecko</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="744"/>
+        <location filename="../constants.py" line="745"/>
         <source>CoinGecko Avalanche token list</source>
         <translation>Список токенов Avalanche от CoinGecko</translation>
     </message>
@@ -12610,12 +12630,12 @@ Everything it recorded stays in place - it simply stops being listed as staked.<
 <context>
     <name>TokenListKind</name>
     <message>
-        <location filename="../constants.py" line="720"/>
+        <location filename="../constants.py" line="721"/>
         <source>Allow-list</source>
         <translation>Белый список</translation>
     </message>
     <message>
-        <location filename="../constants.py" line="721"/>
+        <location filename="../constants.py" line="722"/>
         <source>Block-list</source>
         <translation>Чёрный список</translation>
     </message>

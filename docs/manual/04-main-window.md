@@ -124,8 +124,8 @@ Double-click a staking position in the Balances panel and the list shows its hol
 
 ### Right-click on a position
 
-* **Show Price Chart** and, for a position whose balance is read from a blockchain, **Show Accrual Chart**.
-* **Estimate tax** — [what a sale would cost](06-investments.md#what-a-sale-would-cost-in-tax), with the Balances date set to today.
+* **Position details…** — [lots, price chart and tax estimate](06-investments.md#position-details-lots-chart-and-tax) of the position on the Balances date.
+* **Show Accrual Chart**, for a position whose balance is read from a blockchain.
 * **Set asset tag**, **Set asset country**.
 
 A claimable reward offers **Show claim history** instead. Money and the total rows have no menu.

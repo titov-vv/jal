@@ -1,19 +1,17 @@
 from functools import partial
 
-from PySide6.QtCore import QObject, QDate, Slot
+from PySide6.QtCore import QObject, Slot
 from PySide6.QtGui import QAction
-from PySide6.QtWidgets import QDialog, QInputDialog, QMessageBox
+from PySide6.QtWidgets import QDialog, QInputDialog
 
 from jal.db.asset import JalAsset
 from jal.db.chain_balance import JalChainBalance
 from jal.db.clock import day_finish
 from jal.db.common_models import TagTreeModel
 from jal.db.country import JalCountry
-from jal.db.tax_estimator import TaxEstimator
-from jal.data_export.taxes import TaxReport
 from jal.widgets.accrual_chart import AccrualChartWindow, ReceivableChartWindow
 from jal.widgets.icons import JalIcon
-from jal.widgets.price_chart import ChartWindow
+from jal.widgets.position_details import PositionDetails
 from jal.widgets.reference_dialogs import TagsListDialog
 from jal.widgets.selection_dialog import SelectReferenceDialog
 
@@ -39,23 +37,15 @@ class HoldingsMenu(QObject):
             return
         if not model.is_position(index):
             return
-        actionShowChart = QAction(icon=JalIcon[JalIcon.CHART], text=self.tr("Show Price Chart"), parent=self._view)
-        actionShowChart.triggered.connect(partial(self.showPriceChart, index))
-        menu.addAction(actionShowChart)
-        # Offered beside the price chart because they are the two independent halves of what a position did: one
-        # draws what a unit is worth, the other how many units appeared with no operation behind them. It is
-        # shown only where there is something to draw - i.e. for the handful of positions whose balance is read
-        # from a chain at all.
+        actionDetails = QAction(icon=JalIcon[JalIcon.CHART], text=self.tr("Position details…"), parent=self._view)
+        actionDetails.triggered.connect(partial(self.showPositionDetails, index))
+        menu.addAction(actionDetails)
+        # Offered beside the position details: one draws what a unit is worth, the other how many units appeared
+        # with no operation behind them - only for positions whose balance is read from a chain.
         if self._has_accrual_history(index):
             actionAccrual = QAction(icon=JalIcon[JalIcon.CHART], text=self.tr("Show Accrual Chart"), parent=self._view)
             actionAccrual.triggered.connect(partial(self.showAccrualChart, index))
             menu.addAction(actionAccrual)
-        tax_submenu = menu.addMenu(JalIcon[JalIcon.TAX], self.tr("Estimate tax"))
-        for code in TaxReport.jurisdictions:
-            country = JalCountry(data={'code': code}, search=True)
-            action = QAction(icon=JalIcon.country_flag(code), text=country.name(), parent=self._view)
-            action.triggered.connect(partial(self.estimateSaleTax, index, code))
-            tax_submenu.addAction(action)
         menu.addSeparator()
         if model.get_data_for_tax(index)[1]:   # a group row names no asset
             actionSetTag = QAction(icon=JalIcon[JalIcon.TAG], text=self.tr("Set asset tag"), parent=self._view)
@@ -67,9 +57,10 @@ class HoldingsMenu(QObject):
             menu.addSeparator()
 
     @Slot()
-    def showPriceChart(self, index):
+    def showPositionDetails(self, index):
         account, asset, currency, _qty = index.model().get_data_for_tax(index)
-        self._add_window(ChartWindow(account, asset, currency, day_finish(self._date())), floating=True)
+        self._add_window(PositionDetails(account, asset, currency, day_finish(self._date())), floating=True,
+                         size=(1100, 560))
 
     # True when this row's position has been measured on chain more than once - anything less has no line to draw
     def _has_accrual_history(self, index) -> bool:
@@ -85,14 +76,6 @@ class HoldingsMenu(QObject):
     def showClaimHistory(self, index, source):
         account, asset, _currency, _qty = index.model().get_data_for_tax(index)
         self._add_window(ReceivableChartWindow(account, asset, source), floating=True)
-
-    @Slot()
-    def estimateSaleTax(self, index, country_code):
-        if self._date() != QDate().currentDate():
-            QMessageBox().warning(self._view, self.tr("Warning"), self.tr("Tax estimation is possible for today only. Please correct date of the report"), QMessageBox.Ok)
-            return
-        account, asset, _currency, asset_qty = index.model().get_data_for_tax(index)
-        self._add_window(TaxEstimator(country_code, account, asset, asset_qty), floating=True, size=(1000, 300))
 
     @Slot()
     def setTag(self, index):
