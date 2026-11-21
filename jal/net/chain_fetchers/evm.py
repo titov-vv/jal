@@ -17,7 +17,7 @@ from jal.db.token_blacklist import normalize_address, is_evm_address
 from jal.net.chain_fetchers.fetcher import ChainFetcher
 from jal.net.chain_fetchers.protocols import protocol_category, protocol_name, ProtocolCategory
 from jal.net.web_request import WebRequest
-from jal.net import aave, lido
+from jal.net import aave, fluid, lido
 
 # This module has no JAL_FETCHER_CLASS on purpose: it is the shared base of the EVM chains, not a selectable chain
 # itself. Each concrete chain (Ethereum, Arbitrum, Avalanche, ...) is a thin subclass in its own module that only
@@ -109,6 +109,8 @@ class EVMFetcher(ChainFetcher):
         self._window_limit = None
         self._supplied = None    # {"<container>:<token>": principal held by a DEPOSIT protocol}, loaded by _fetch
         self._aave_tokens = {}   # {contract: True if it is a new aToken}, see _is_new_aave_token()
+        self._fluid_tokens = None   # fTokens the Fluid factory lists, loaded once by _is_fluid_token()
+        self._fluid_names = {}      # {fToken: protocol name}, see _protocol_name()
 
     # ------------------------------------------------------------------------------------------------------------------
     def _api_key(self) -> str:
@@ -294,7 +296,9 @@ class EVMFetcher(ChainFetcher):
         ins = {asset_id: data for asset_id, data in deltas.items() if data['amount'] > 0}
         contract = self._norm(own_record.get('to', '')) if own else ''
         category = protocol_category(self.location_id, contract)
-        protocol = protocol_name(self.location_id, contract)
+        protocol = self._protocol_name(contract)
+        if category is None and own and self._is_fluid_token(contract):
+            category = ProtocolCategory.LENDING
 
         # Nothing moved: an approval, a reverted transaction, or a contract call whose only effect was spam we
         # filtered out. If it was the wallet's own transaction the event itself is recorded, with its gas as the cost.
@@ -621,6 +625,29 @@ class EVMFetcher(ChainFetcher):
         named = self._eth_call(pool, aave.call_data(aave.SELECTOR_RESERVE_ATOKEN, underlying))
         return aave.address_answer(named) == contract
 
+    # True for a contract the Fluid LendingFactory of this chain lists as its fToken; the list is read once per fetch
+    def _is_fluid_token(self, contract: str) -> bool:
+        factory = fluid.LENDING_FACTORIES.get(self.location_id)
+        if not factory or not is_evm_address(contract):
+            return False
+        if self._fluid_tokens is None:
+            self._fluid_tokens = fluid.tokens_answer(self._eth_call(factory, fluid.SELECTOR_ALL_TOKENS))
+        return contract in self._fluid_tokens
+
+    def _is_new_fluid_token(self, contract: str) -> bool:
+        stored = JalSymbol.find_by_identifier(AssetLocation.address_id_of(self.location_id), contract).id()
+        return not stored and self._is_fluid_token(contract)
+
+    # Registry name of a contract, or 'Fluid <symbol>@<chain>' for an fToken; '' for an unknown one
+    def _protocol_name(self, contract: str) -> str:
+        name = protocol_name(self.location_id, contract)
+        if name or not contract or not self._is_fluid_token(contract):
+            return name
+        if contract not in self._fluid_names:
+            symbol = fluid.text_answer(self._eth_call(contract, fluid.SELECTOR_SYMBOL))
+            self._fluid_names[contract] = fluid.vault_name(symbol, self.display_symbol) if symbol else fluid.PROTOCOL
+        return self._fluid_names[contract]
+
     # One 'eth_call' on a contract: the hex it answered with, '' when the call reverted. Any other answer (a rate
     # limit, a bad key) stops the fetch - read as "no" it would leave an aToken unmarked in silence.
     def _eth_call(self, contract: str, data: str) -> str:
@@ -646,6 +673,8 @@ class EVMFetcher(ChainFetcher):
         marks = lido.receipt_marks(self.location_id, address)
         if marks is None and address and self._is_new_aave_token(address):
             marks = True, aave.V3_PROTOCOL
+        if marks is None and address and self._is_new_fluid_token(address):
+            marks = False, fluid.PROTOCOL
         if marks is not None:
             asset = next(x for x in self._data[JSF.ASSETS] if x['id'] == asset_id)
             if marks[0]:
@@ -978,7 +1007,7 @@ class EVMFetcher(ChainFetcher):
         contract = self._norm(record.get('to', ''))
         if record.get('methodId', '') == _METHOD_APPROVE:
             spender = self._spender_of(record)
-            call = f"approve({protocol_name(self.location_id, spender) or spender})" if spender else "approve()"
+            call = f"approve({self._protocol_name(spender) or spender})" if spender else "approve()"
             return call if subject is not None else self._at(call, contract)
         method, selector = self._method_name(record), record.get('methodId', '')
         # No ABI name leaves the bare selector, and a transaction carrying no call data at all ('0x') leaves nothing
@@ -995,7 +1024,7 @@ class EVMFetcher(ChainFetcher):
     def _at(self, call: str, contract: str) -> str:
         if not contract:
             return call
-        where = protocol_name(self.location_id, contract) or contract
+        where = self._protocol_name(contract) or contract
         return f"{call} @ {where}" if call else where
 
     # The method name out of the signature the provider decoded from the contract's ABI ("supply(address asset, ...)"

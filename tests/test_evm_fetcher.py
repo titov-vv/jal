@@ -16,6 +16,7 @@ from jal.net.chain_fetchers.ethereum import EthereumFetcher
 from jal.net.chain_fetchers.fetcher import TransferMark
 from jal.net.chain_fetchers.protocols import _REGISTRY, ProtocolCategory, protocol_category, protocol_name
 from jal.net.token_lists import TokenListProvider
+from jal.net import fluid
 
 # A sample wallet used only by the recorded fixtures - never the address of a real user, as an on-chain address
 # can't be anonymized afterwards. The USDC contract is the
@@ -1893,9 +1894,11 @@ def test_a_new_a_token_is_marked_by_the_pool(eth_wallet, monkeypatch, pool_names
     swaps = data.get(JSF.SWAPS, [])
     assert len(swaps) == 1 and swaps[0]['out_qty'] == Decimal('1005') and swaps[0]['in_qty'] == Decimal('1004')
     assert [(p['amount'], p['description']) for p in _interest(data)] == [(Decimal('5'), 'Aave v3')]
-    # each contract is asked once: the aToken and then the Pool about it, and USDC, which has no such view
+    # each contract is asked once: the aToken and then the Pool about it, USDC, which has no such view, and the
+    # Fluid factory once for the fetch
     assert sorted(_chain_calls) == sorted([(A_TOKEN, _UNDERLYING), (USDC_CONTRACT, _UNDERLYING),
-                                           (AAVE_POOL, _RESERVE_ATOKEN + _address_word(USDC_CONTRACT))])
+                                           (AAVE_POOL, _RESERVE_ATOKEN + _address_word(USDC_CONTRACT)),
+                                           (FLUID_FACTORY, fluid.SELECTOR_ALL_TOKENS)])
 
 
 # The marks reach the stored asset, and from then on the token answers with them and the chain isn't asked again
@@ -2033,22 +2036,118 @@ def test_a_cctp_bridging_kit_send_is_a_pending_send_half(eth_wallet, monkeypatch
     assert halves[0]['description'] == 'Circle CCTP'
 
 
-# A Fluid fUSDC deposit: USDC goes to Fluid's liquidity layer and fUSDC shares are minted back
-def test_a_fluid_fusdc_deposit_is_a_conversion(eth_wallet, monkeypatch):
-    fusdc = "0x9fb7b4477576fe5b32be4c1843afb1e55f251b33"
-    liquidity = "0x52aa899454998be5b000ad077a46bbe360f4e497"
-    f1 = "0xf1" + "0" * 62
-    pages = {
-        "txlist": [_tx(f1, 100, WALLET, fusdc, value=0, gas_used='123589', method='0x6e553f65')],
-        "tokentx": [_token_tx(f1, 100, WALLET, liquidity, 6300271977),
-                    _token_tx(f1, 100, ZERO, WALLET, 5123336184, contract=fusdc, symbol='fUSDC',
-                              name='Fluid USD Coin', decimals='6')],
+# ----------------------------------------------------------------------------------------------------------------------
+# Fluid: an fToken is recognized because the chain's LendingFactory lists it in allTokens()
+FLUID_FACTORY = "0x54b91a0d94cb471f37f949c60f7fa7935b551d03"
+FUSDC = "0x9fb7b4477576fe5b32be4c1843afb1e55f251b33"
+FLUID_LIQUIDITY = "0x52aa899454998be5b000ad077a46bbe360f4e497"
+
+
+def _abi_addresses(addresses) -> str:
+    return '0x' + format(32, '064x') + format(len(addresses), '064x') + ''.join(_address_word(a) for a in addresses)
+
+
+def _abi_text(text: str) -> str:
+    data = text.encode('utf-8')
+    return '0x' + format(32, '064x') + format(len(data), '064x') + data.hex().ljust(-(-len(data) // 32) * 64, '0')
+
+
+@pytest.fixture
+def fluid_factory():
+    _chain_answers.clear()
+    _chain_calls.clear()
+    _chain_answers[(FLUID_FACTORY, fluid.SELECTOR_ALL_TOKENS)] = _abi_addresses([STETH, FUSDC])
+    _chain_answers[(FUSDC, fluid.SELECTOR_SYMBOL)] = _abi_text('fUSDC')
+    yield
+    _chain_answers.clear()
+    _chain_calls.clear()
+
+
+def _fusdc_tx(tx_hash, block, frm, to, value):
+    return _token_tx(tx_hash, block, frm, to, value, contract=FUSDC, symbol='fUSDC', name='Fluid USD Coin', decimals='6')
+
+
+# The real deposit: USDC goes to Fluid's liquidity layer and fUSDC shares are minted back; then a withdrawal
+def _fluid_deposit_and_withdrawal() -> dict:
+    f1, f2 = "0xf1" + "0" * 62, "0xf2" + "0" * 62
+    return {
+        "txlist": [_tx(f1, 100, WALLET, FUSDC, value=0, gas_used='123589', method='0x6e553f65'),
+                   _tx(f2, 200, WALLET, FUSDC, value=0, method='0xba087652')],
+        "tokentx": [_token_tx(f1, 100, WALLET, FLUID_LIQUIDITY, 6300271977),
+                    _fusdc_tx(f1, 100, ZERO, WALLET, 5123336184),
+                    _fusdc_tx(f2, 200, WALLET, ZERO, 1000 * 10 ** 6),
+                    _token_tx(f2, 200, FLUID_LIQUIDITY, WALLET, 1230 * 10 ** 6)],
         "txlistinternal": [],
     }
-    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+
+def test_a_fluid_deposit_and_withdrawal_are_conversions(fluid_factory, eth_wallet, monkeypatch):
+    fetcher, data = _drive(eth_wallet, monkeypatch, _fluid_deposit_and_withdrawal())
 
     assert fetcher.skipped() == {} and _transfers(data) == [] and _swaps(data) == []
-    conversion, = _conversions(data)
-    assert conversion['out_symbol'] in _usdc_symbol_ids(data) and conversion['out_qty'] == Decimal('6300.271977')
-    assert conversion['in_symbol'] in _symbol_ids_of(data, fusdc) and conversion['in_qty'] == Decimal('5123.336184')
-    assert conversion['description'] == 'Fluid fUSDC vault'
+    deposit, withdrawal = _conversions(data)
+    assert deposit['out_symbol'] in _usdc_symbol_ids(data) and deposit['out_qty'] == Decimal('6300.271977')
+    assert deposit['in_symbol'] in _symbol_ids_of(data, FUSDC) and deposit['in_qty'] == Decimal('5123.336184')
+    assert withdrawal['out_symbol'] in _symbol_ids_of(data, FUSDC) and withdrawal['out_qty'] == Decimal('1000')
+    assert withdrawal['in_symbol'] in _usdc_symbol_ids(data) and withdrawal['in_qty'] == Decimal('1230')
+    assert deposit['description'] == withdrawal['description'] == 'Fluid fUSDC@ETH'
+    # One factory read for the whole fetch and one symbol read per vault
+    assert _chain_calls.count((FLUID_FACTORY, fluid.SELECTOR_ALL_TOKENS)) == 1
+    assert _chain_calls.count((FUSDC, fluid.SELECTOR_SYMBOL)) == 1
+
+
+def test_a_new_ftoken_is_marked_fluid_and_not_rebasing(fluid_factory, eth_wallet, monkeypatch):
+    fetcher, data = _drive(eth_wallet, monkeypatch, _fluid_deposit_and_withdrawal())
+    fetcher.match_db_ids()
+    fetcher.import_into_db()
+
+    fusdc = JalSymbol.find_by_identifier(SymbolId.ETH_ADDRESS, FUSDC).asset()
+    assert fusdc.protocol() == 'Fluid' and not fusdc.rebasing()
+
+
+def test_a_stored_ftoken_is_not_marked_again(fluid_factory, eth_wallet, monkeypatch):
+    fetcher, data = _drive(eth_wallet, monkeypatch, _fluid_deposit_and_withdrawal())
+    fetcher.match_db_ids()
+    fetcher.import_into_db()
+
+    fetcher, data = _drive(eth_wallet, monkeypatch, _fluid_deposit_and_withdrawal())
+    assert all('protocol' not in a for a in data[JSF.ASSETS])
+
+
+# The same shape through a contract the factory doesn't list is still an exchange through an unknown contract
+def test_an_unlisted_vault_still_halts(fluid_factory, eth_wallet, monkeypatch):
+    _chain_answers[(FLUID_FACTORY, fluid.SELECTOR_ALL_TOKENS)] = _abi_addresses([STETH])
+    fetcher, data = _drive(eth_wallet, monkeypatch, _fluid_deposit_and_withdrawal())
+
+    assert _conversions(data) == []
+    assert any(FUSDC in reason for reason in fetcher.skipped())
+
+
+def test_a_malformed_factory_answer_lists_no_tokens():
+    good = _abi_addresses([FUSDC])
+    assert fluid.tokens_answer(good) == {FUSDC}
+    assert fluid.tokens_answer(_abi_addresses([])) == set()
+    assert fluid.tokens_answer(good[:-2]) == set()                         # truncated
+    assert fluid.tokens_answer('0x' + format(64, '064x') + good[66:]) == set()   # wrong offset
+    assert fluid.tokens_answer('0x' + good[2:66] + format(2, '064x') + good[130:]) == set()   # length mismatch
+    assert fluid.tokens_answer('0x' + good[2:130] + 'ff' + good[132:]) == set()   # not an address word
+    assert fluid.tokens_answer('') == set() and fluid.tokens_answer('0xzz') == set()
+    assert fluid.text_answer(_abi_text('fUSDC')) == 'fUSDC' and fluid.text_answer('0x') == ''
+
+
+# Fluid is asked about only on a chain with a factory, and the gas note of an approval names the vault
+def test_the_factory_is_not_asked_without_an_unregistered_contract(fluid_factory, eth_wallet, monkeypatch):
+    lifi = "0x1231deb6f5749ef6ce6943a275a1d3e7486f4eae"
+    e5 = "0xe5" + "0" * 62
+    pages = {"txlist": [_tx(e5, 100, WALLET, lifi, value=2 * 10 ** 18)], "tokentx": [], "txlistinternal": []}
+    _drive(eth_wallet, monkeypatch, pages)
+    assert (FLUID_FACTORY, fluid.SELECTOR_ALL_TOKENS) not in _chain_calls
+
+
+def test_an_approval_for_a_fluid_vault_names_it(fluid_factory, eth_wallet, monkeypatch):
+    a1 = "0xa1" + "0" * 62
+    approve = _tx(a1, 100, WALLET, USDC_CONTRACT, value=0, method='0x095ea7b3')
+    approve['input'] = '0x095ea7b3' + _address_word(FUSDC) + 'f' * 64
+    fetcher, data = _drive(eth_wallet, monkeypatch, {"txlist": [approve], "tokentx": [], "txlistinternal": []})
+    payments = data[JSF.ASSET_PAYMENTS]
+    assert len(payments) == 1 and 'approve(Fluid fUSDC@ETH)' in payments[0]['description']

@@ -44,9 +44,6 @@ _REGISTRY = {
         '0xce6ced23118edeb23054e06118a702797b13fc2f': (ProtocolCategory.LENDING, 'Aave Umbrella'),
         '0xa484ab92fe32b143aee7019fc1502b1daa522d31': (ProtocolCategory.LENDING, 'Aave Umbrella (stkwaEthUSDT)'),
         '0x1a88df1cfe15af22b3c4c783d4e6f7f9e0c1885d': (ProtocolCategory.LENDING, 'Aave Safety Module (stkGHO)'),
-        '0x6a29a46e21c730dca1d8b23d637c101cec605c5b': (ProtocolCategory.LENDING, 'Fluid fGHO vault'),
-        '0x5c20b550819128074fd538edf79791733ccedd18': (ProtocolCategory.LENDING, 'Fluid fUSDT vault'),
-        '0x90551c1795392094fe6d29b758eccd233cfaa260': (ProtocolCategory.LENDING, 'Fluid fWETH vault'),
         '0x89c6340b1a1f4b25d36cd8b063d49045caf3f818': (ProtocolCategory.AGGREGATOR, 'LI.FI Permit2Proxy'),
         '0x4da27a545c0c5b758a6ba100e3a049001de870f5': (ProtocolCategory.LENDING, 'Staked Aave (stkAAVE)'),
         '0x3ef3d8ba38ebe18db133cec108f4d14ce00dd9ae': (ProtocolCategory.REWARD, 'Merkl Distributor'),
@@ -62,7 +59,6 @@ _REGISTRY = {
         '0xcca852bc40e560adc3b1cc58ca5b55638ce826c9': (ProtocolCategory.HUB, 'Aave v4 Core Hub'),
         '0xae7ab96520de3a18e5e111b5eaab095312d7fe84': (ProtocolCategory.LENDING, 'Lido stETH'),
         '0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0': (ProtocolCategory.LENDING, 'Lido wstETH'),
-        '0x9fb7b4477576fe5b32be4c1843afb1e55f251b33': (ProtocolCategory.LENDING, 'Fluid fUSDC vault'),
         '0xb3fa262d0fb521cc93be83d87b322b8a23daf3f0': (ProtocolCategory.BRIDGE, 'Circle CCTP'),  # Bridging Kit
     },
     AssetLocation.ARB_BLOCKCHAIN: {
@@ -75,8 +71,6 @@ _REGISTRY = {
         '0x794a61358d6845594f94dc1db02a252b5b4814ad': (ProtocolCategory.LENDING, 'Aave v3 Pool'),
         '0x2df1c51e09aecf9cacb7bc98cb1742757f163df7': (ProtocolCategory.BRIDGE, 'Hyperliquid Bridge2'),
         '0x89c6340b1a1f4b25d36cd8b063d49045caf3f818': (ProtocolCategory.AGGREGATOR, 'LI.FI Permit2Proxy'),
-        '0x037dff1c12805707d7c29f163e0f09fc9102657a': (ProtocolCategory.LENDING, 'Fluid fGHO vault'),
-        '0x4a03f37e7d3fc243e3f99341d36f4b829bee5e03': (ProtocolCategory.LENDING, 'Fluid fUSDT vault'),
         '0x3ef3d8ba38ebe18db133cec108f4d14ce00dd9ae': (ProtocolCategory.REWARD, 'Merkl Distributor'),
         '0xf36029358a684cddd5103a4b84dc8a832c6e5b40': (ProtocolCategory.REWARD, 'FluidMerkleDistributor'),
         '0x94312a608246cecfce6811db84b3ef4b2619054e': (ProtocolCategory.REWARD, 'FluidMerkleDistributor'),
@@ -86,7 +80,6 @@ _REGISTRY = {
         '0x69460570c93f9de5e2edbc3052bf10125f0ca22d': (ProtocolCategory.AGGREGATOR, 'Rango Diamond'),
         '0xc6868edf1d2a7a8b759856cb8afa333210dfeda6': (ProtocolCategory.AGGREGATOR, 'Aori'),
         '0x4cd00e387622c35bddb9b4c962c136462338bc31': (ProtocolCategory.BRIDGE, 'Relay Depository'),
-        '0x1a996cb54bb95462040408c06122d45d6cdb6096': (ProtocolCategory.LENDING, 'Fluid fUSDC vault'),
     },
     AssetLocation.AVAX_BLOCKCHAIN: {},
 }
