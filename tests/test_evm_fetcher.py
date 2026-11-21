@@ -2011,3 +2011,44 @@ def test_lido_tokens_are_marked_at_first_import(eth_wallet, monkeypatch):
     wsteth = JalSymbol.find_by_identifier(SymbolId.ETH_ADDRESS, WSTETH).asset()
     assert not wsteth.rebasing() and wsteth.protocol() == 'Lido'
     assert [c for c in _chain_calls if c[0] in (STETH, WSTETH)] == []
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Circle's Bridging Kit takes the USDC and burns it through CCTP V2, so the send is one asset out and nothing back
+def test_a_cctp_bridging_kit_send_is_a_pending_send_half(eth_wallet, monkeypatch):
+    kit = "0xb3fa262d0fb521cc93be83d87b322b8a23daf3f0"
+    k1 = "0xcd" + "0" * 62
+    pages = {
+        "txlist": [_tx(k1, 100, WALLET, kit, value=0, gas_used='150000', method='0x513e1175')],
+        "tokentx": [_token_tx(k1, 100, WALLET, kit, 3027 * 10 ** 6)],
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    assert fetcher.skipped() == {} and _transfers(data) == [] and _swaps(data) == []
+    halves = _bridges(data)
+    assert len(halves) == 1
+    assert halves[0]['symbol'] in _usdc_symbol_ids(data) and halves[0]['qty'] == Decimal('3027')
+    assert halves[0]['fee_qty'] == Decimal('150000') * Decimal('1000000000') / Decimal('10') ** 18
+    assert halves[0]['description'] == 'Circle CCTP'
+
+
+# A Fluid fUSDC deposit: USDC goes to Fluid's liquidity layer and fUSDC shares are minted back
+def test_a_fluid_fusdc_deposit_is_a_conversion(eth_wallet, monkeypatch):
+    fusdc = "0x9fb7b4477576fe5b32be4c1843afb1e55f251b33"
+    liquidity = "0x52aa899454998be5b000ad077a46bbe360f4e497"
+    f1 = "0xf1" + "0" * 62
+    pages = {
+        "txlist": [_tx(f1, 100, WALLET, fusdc, value=0, gas_used='123589', method='0x6e553f65')],
+        "tokentx": [_token_tx(f1, 100, WALLET, liquidity, 6300271977),
+                    _token_tx(f1, 100, ZERO, WALLET, 5123336184, contract=fusdc, symbol='fUSDC',
+                              name='Fluid USD Coin', decimals='6')],
+        "txlistinternal": [],
+    }
+    fetcher, data = _drive(eth_wallet, monkeypatch, pages)
+
+    assert fetcher.skipped() == {} and _transfers(data) == [] and _swaps(data) == []
+    conversion, = _conversions(data)
+    assert conversion['out_symbol'] in _usdc_symbol_ids(data) and conversion['out_qty'] == Decimal('6300.271977')
+    assert conversion['in_symbol'] in _symbol_ids_of(data, fusdc) and conversion['in_qty'] == Decimal('5123.336184')
+    assert conversion['description'] == 'Fluid fUSDC vault'

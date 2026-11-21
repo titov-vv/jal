@@ -62,6 +62,8 @@ _REGISTRY = {
         '0xcca852bc40e560adc3b1cc58ca5b55638ce826c9': (ProtocolCategory.HUB, 'Aave v4 Core Hub'),
         '0xae7ab96520de3a18e5e111b5eaab095312d7fe84': (ProtocolCategory.LENDING, 'Lido stETH'),
         '0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0': (ProtocolCategory.LENDING, 'Lido wstETH'),
+        '0x9fb7b4477576fe5b32be4c1843afb1e55f251b33': (ProtocolCategory.LENDING, 'Fluid fUSDC vault'),
+        '0xb3fa262d0fb521cc93be83d87b322b8a23daf3f0': (ProtocolCategory.BRIDGE, 'Circle CCTP'),  # Bridging Kit
     },
     AssetLocation.ARB_BLOCKCHAIN: {
         '0xa51afafe0263b40edaef0df8781ea9aa03e381a3': (ProtocolCategory.SWAP, 'Uniswap Universal Router (V4)'),
@@ -84,6 +86,7 @@ _REGISTRY = {
         '0x69460570c93f9de5e2edbc3052bf10125f0ca22d': (ProtocolCategory.AGGREGATOR, 'Rango Diamond'),
         '0xc6868edf1d2a7a8b759856cb8afa333210dfeda6': (ProtocolCategory.AGGREGATOR, 'Aori'),
         '0x4cd00e387622c35bddb9b4c962c136462338bc31': (ProtocolCategory.BRIDGE, 'Relay Depository'),
+        '0x1a996cb54bb95462040408c06122d45d6cdb6096': (ProtocolCategory.LENDING, 'Fluid fUSDC vault'),
     },
     AssetLocation.AVAX_BLOCKCHAIN: {},
 }
