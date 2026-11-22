@@ -103,6 +103,13 @@ CREATE TABLE tax_overrides (
 DROP INDEX IF EXISTS tax_overrides_uniqueness;
 CREATE UNIQUE INDEX tax_overrides_uniqueness ON tax_overrides (operation_id, jurisdiction, kind);
 
+-- The portfolio (a tag) of the lots an operation opens; report input only, the ledger never reads it
+DROP TABLE IF EXISTS operation_portfolios;
+CREATE TABLE operation_portfolios (
+    operation_id INTEGER PRIMARY KEY NOT NULL REFERENCES operations (id) ON DELETE CASCADE,
+    tag_id       INTEGER NOT NULL REFERENCES tags (id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
 ------------------------------------------------------------------------------------------------------------------------
 -- tables to store information about Income/Spending transactions
 -- action_details keeps details about each transaction
@@ -1102,7 +1109,7 @@ BEGIN
 END;
 ------------------------------------------------------------------------------------------------------------------------
 -- Initialize default values for settings
-INSERT INTO settings(name, value) VALUES('SchemaVersion', 89);
+INSERT INTO settings(name, value) VALUES('SchemaVersion', 90);
 INSERT INTO settings(name, value) VALUES('Language', 1);
 INSERT INTO settings(name, value) VALUES('RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
 INSERT INTO settings(name, value) VALUES('RuTaxSessionId', '');
