@@ -2,18 +2,15 @@ from functools import partial
 
 from PySide6.QtCore import QObject, Slot
 from PySide6.QtGui import QAction
-from PySide6.QtWidgets import QDialog, QInputDialog
+from PySide6.QtWidgets import QInputDialog
 
 from jal.db.asset import JalAsset
 from jal.db.chain_balance import JalChainBalance
 from jal.db.clock import day_finish
-from jal.db.common_models import TagTreeModel
 from jal.db.country import JalCountry
 from jal.widgets.accrual_chart import AccrualChartWindow, ReceivableChartWindow
 from jal.widgets.icons import JalIcon
 from jal.widgets.position_details import PositionDetails
-from jal.widgets.reference_dialogs import TagsListDialog
-from jal.widgets.selection_dialog import SelectReferenceDialog
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -48,9 +45,6 @@ class HoldingsMenu(QObject):
             menu.addAction(actionAccrual)
         menu.addSeparator()
         if model.get_data_for_tax(index)[1]:   # a group row names no asset
-            actionSetTag = QAction(icon=JalIcon[JalIcon.TAG], text=self.tr("Set asset tag"), parent=self._view)
-            actionSetTag.triggered.connect(partial(self.setTag, index))
-            menu.addAction(actionSetTag)
             actionSetCountry = QAction(text=self.tr("Set asset country"), parent=self._view)
             actionSetCountry.triggered.connect(partial(self.setCountry, index))
             menu.addAction(actionSetCountry)
@@ -76,19 +70,6 @@ class HoldingsMenu(QObject):
     def showClaimHistory(self, index, source):
         account, asset, _currency, _qty = index.model().get_data_for_tax(index)
         self._add_window(ReceivableChartWindow(account, asset, source), floating=True)
-
-    @Slot()
-    def setTag(self, index):
-        model = index.model()
-        _account, asset_id, currency, _qty = model.get_data_for_tax(index)
-        asset = JalAsset(asset_id)
-        dialog = SelectReferenceDialog(self._view, self.tr("Please select tag"),
-                                       self.tr("Select tag for {} ({}): ").format(asset.symbol(currency or None), asset.name()),
-                                       TagTreeModel, TagsListDialog)
-        if dialog.exec() != QDialog.Accepted:
-            return
-        asset.set_tag(dialog.selected_id)
-        model.prepareData()   # the tag is a grouping of the report
 
     @Slot()
     def setCountry(self, index):

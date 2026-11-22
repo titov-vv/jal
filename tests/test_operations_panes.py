@@ -13,17 +13,14 @@ from tests.test_account_holdings import wallet, _stake, _claim, WALLET, LINK, EU
 import jal
 from jal.constants import PredefinedAccountType
 from jal.db.account import JalAccount, JalAccountCreator
-from jal.db.asset import JalAsset
 from jal.db.chain_balance import JalChainBalance
 from jal.db.clock import day_finish
-from jal.db.db import JalDB
 from jal.db.ledger import Ledger
 from jal.db.operations import LedgerTransaction
 from jal.db.settings import JalSettings
 from jal.widgets.icons import JalIcon
 from jal.widgets.operations_widget import OperationsWidget
 from jal.widgets.reference_dialogs import AccountListDialog
-from jal.widgets.selection_dialog import SelectReferenceDialog
 
 
 @pytest.fixture
@@ -354,10 +351,9 @@ def test_a_position_and_a_stake_offer_the_position_actions(wallet, owner, monkey
     window = _window(owner, WALLET)
     model = window.positions_model
     offered = list(_offers(window, model.index(0, 0), monkeypatch))
-    assert offered == ['Position details…', 'Set asset tag', 'Set asset country']
+    assert offered == ['Position details…', 'Set asset country']
     staked = model.index(0, 0, model.index(3, 0))
-    assert list(_offers(window, staked, monkeypatch)) == ['Position details…', 'Show Accrual Chart',
-                                                          'Set asset tag', 'Set asset country']
+    assert list(_offers(window, staked, monkeypatch)) == ['Position details…', 'Show Accrual Chart', 'Set asset country']
 
 
 def test_money_headings_and_totals_offer_nothing(wallet, owner, monkeypatch):
@@ -401,18 +397,6 @@ def test_position_details_open_for_the_list_date_and_the_box_of_a_stake(wallet, 
     _offers(window, model.index(0, 0, model.index(3, 0)), monkeypatch)['Position details…'].trigger()
     assert opened == [(box.id(), LINK, day_finish(QDate(2021, 3, 1)))]
     window._parent.reports.area.windows[0].deleteLater()
-
-
-def test_the_tag_set_from_the_list_reaches_the_asset(wallet, owner, monkeypatch):
-    tag_id = JalDB._read("SELECT id FROM tags WHERE tag='Cash'")
-
-    def pick(dialog):
-        dialog.selected_id = tag_id
-        return QDialog.Accepted
-    monkeypatch.setattr(SelectReferenceDialog, "exec", pick)
-    window = _window(owner, WALLET)
-    _offers(window, window.positions_model.index(0, 0), monkeypatch)['Set asset tag'].trigger()
-    assert JalAsset(LINK).tag().id() == tag_id
 
 
 # ----------------------------------------------------------------------------------------------------------------------

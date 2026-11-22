@@ -38,7 +38,7 @@ class AssetTreeItem(AbstractTreeItem):
             self._data = {
                 'header': '', 'currency_id': 0, 'currency': '', 'account_id': 0, 'account': '', 'asset_id': 0,
                 'symbol_id': 0,
-                'tag': '', 'account_tag_id': 0, 'account_tag': '',
+                'account_tag_id': 0, 'account_tag': '',
                 'status_id': AccountStatus.Active, 'status': '',
                 'asset_is_currency': False, 'asset': '', 'asset_name': '', 'country_id': 0, 'country': '',
                 'since': 0, 'qty': None, 'value_i': Decimal('0'), 'paid': Decimal('0'),
@@ -61,7 +61,6 @@ class AssetTreeItem(AbstractTreeItem):
         self._data['account'] = child_data['account']
         self._data['asset'] = child_data['asset']
         self._data['country'] = child_data['country']
-        self._data['tag'] = child_data['tag']
         self._data['account_tag'] = child_data['account_tag']
         self._data['paid'] += child_data['paid']
         self._data['value'] += child_data['value']
@@ -342,8 +341,7 @@ class HoldingsModel(ReportTreeModel):
                 "asset_is_currency": False,
                 "country_id": asset.country().id(),
                 "country": asset.country().name(),
-                "tag": asset.tag().name() if asset.tag().name() else self.tr("N/A"),  # the ASSET tag
-                "account_tag_id": account.tag().id(),           # the ACCOUNT's tag, unlike an asset 'tag' above
+                "account_tag_id": account.tag().id(),
                 "account_tag": account.tag().name() if account.tag().name() else self.tr("N/A"),
                 "status_id": account.status(),
                 "status": account_status_names.get_name(account.status()),
@@ -376,8 +374,7 @@ class HoldingsModel(ReportTreeModel):
                 "asset_is_currency": True,
                 "country_id": JalAsset(account.currency()).country().id(),
                 "country": JalAsset(account.currency()).country().name(),
-                "tag": self.tr("Money"),
-                "account_tag_id": account.tag().id(),           # the ACCOUNT's tag, unlike 'tag' above
+                "account_tag_id": account.tag().id(),
                 "account_tag": account.tag().name() if account.tag().name() else self.tr("N/A"),
                 "status_id": account.status(),
                 "status": account_status_names.get_name(account.status()),
@@ -511,7 +508,7 @@ class AccountHoldingsModel(HoldingsModel):
                 'account_id': account.id(), 'account': account.name(), 'asset_id': asset.id(), 'asset': symbol,
                 'symbol_id': asset.listing_id(currency=account.currency(), location=account.chain()),
                 'asset_name': name, 'asset_is_currency': True, 'country_id': asset.country().id(),
-                'country': asset.country().name(), 'tag': asset.tag().name() if asset.tag().name() else self.tr("N/A"),
+                'country': asset.country().name(),
                 'account_tag_id': account.tag().id(),
                 'account_tag': account.tag().name() if account.tag().name() else self.tr("N/A"),
                 'status_id': account.status(), 'status': '', 'since': since, 'qty': qty, 'value_i': Decimal('0'),

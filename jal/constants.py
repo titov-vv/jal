@@ -26,7 +26,7 @@ class Setup:
     INI_FILE = "jal.ini"
     DB_PATH = "jal.sqlite"
     DB_CONNECTION = "JAL.DB"
-    DB_REQUIRED_VERSION = 88
+    DB_REQUIRED_VERSION = 89
     SQLITE_MIN_VERSION = "3.35"
     MAIN_WND_NAME = "JAL_MainWindow"
     SPLITTER_STATE_PREFIX = "SplitterState_"
@@ -407,7 +407,7 @@ class SymbolId(PredefinedList, QObject):
 
 
 class AssetData(PredefinedList, QObject):
-    Tag = 1  # This value is used in database trigger(s) after tag deletion
+    Tag = 1  # Retired: asset tags were removed; the value is never reused
     ExpiryDate = 2
     PrincipalValue = 3
     # Identity of a coin that has no contract address on any chain JAL supports: a coin held by an exchange (an
@@ -450,7 +450,6 @@ class AssetData(PredefinedList, QObject):
     def __init__(self):
         super().__init__()
         self._names = {
-            self.Tag: self.tr("Tag"),
             self.ExpiryDate: self.tr("expiry"),
             self.PrincipalValue: self.tr("principal"),
             self.CoinGeckoId: self.tr("CoinGecko id"),
@@ -460,7 +459,6 @@ class AssetData(PredefinedList, QObject):
             self.PeggedTo: self.tr("pegged to")
         }
         self._types = {
-            self.Tag: "tag",
             self.ExpiryDate: "date",
             self.PrincipalValue: "float",
             self.CoinGeckoId: "str",

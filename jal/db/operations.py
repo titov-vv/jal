@@ -258,10 +258,10 @@ class LedgerTransaction(JalDB):
         return amount
 
     # The single line any fee of any operation reaches the Costs book through. 'part' is the part of the operation
-    # that bears it, 'peer' the organization that took it and 'tag' the tag of the asset it was paid in.
-    def _post_fee_cost(self, ledger, value, part, peer, tag=None) -> None:
+    # that bears it, 'peer' the organization that took it.
+    def _post_fee_cost(self, ledger, value, part, peer) -> None:
         ledger.appendTransaction(self, BookAccount.Costs, value, part=part,
-                                 category=PredefinedCategory.Fees, peer=peer, tag=tag)
+                                 category=PredefinedCategory.Fees, peer=peer)
 
     # Takes 'qty' of 'asset' out of 'account' at the cost basis the account holds it at and expenses it to Costs/Fees.
     # The quantity is consumed from the open positions in FIFO order, so the value leaving the position equals the
@@ -283,7 +283,7 @@ class LedgerTransaction(JalDB):
                               + f"Required: {qty}, Operation: {self.dump()}")
         processed_qty, processed_value = self._consume_lots(ledger.lots, qty, asset, account)
         ledger.appendTransaction(self, BookAccount.Assets, -processed_qty, asset_id=asset.id(), value=-processed_value)
-        self._post_fee_cost(ledger, processed_value, part, peer, tag=asset.tag().id())
+        self._post_fee_cost(ledger, processed_value, part, peer)
 
     # The lot half of _dispose_at_basis(): 'qty' of 'asset' taken out of the lots of 'account' at basis
     def _consume_lots(self, engine, qty, asset, account) -> (Decimal, Decimal):
@@ -1059,11 +1059,11 @@ class AssetPayment(AssetPaymentBase):
             if credit_taken < -operation_value:
                 ledger.appendTransaction(self, BookAccount.Money, operation_value + credit_taken)
         if self._amount > Decimal('0'):
-            ledger.appendTransaction(self, BookAccount.Incomes, -self._amount, part=self.PART_VALUE, category=category, peer=self._peer_id, tag=self._asset.tag().id())
+            ledger.appendTransaction(self, BookAccount.Incomes, -self._amount, part=self.PART_VALUE, category=category, peer=self._peer_id)
         else:   # This branch is valid for accrued bond interest payments for bond buying trades
-            ledger.appendTransaction(self, BookAccount.Costs, -self._amount, part=self.PART_VALUE, category=category, peer=self._peer_id, tag=self._asset.tag().id())
+            ledger.appendTransaction(self, BookAccount.Costs, -self._amount, part=self.PART_VALUE, category=category, peer=self._peer_id)
         if self._tax:
-            ledger.appendTransaction(self, BookAccount.Costs, self._tax, part=self.PART_TAX, category=PredefinedCategory.Taxes, peer=self._peer_id, tag=self._asset.tag().id())
+            ledger.appendTransaction(self, BookAccount.Costs, self._tax, part=self.PART_TAX, category=PredefinedCategory.Taxes, peer=self._peer_id)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1255,7 +1255,7 @@ class AssetIncome(AssetPaymentBase):
         if self._tax:
             ledger.appendTransaction(self, BookAccount.Money, -self._tax)
             ledger.appendTransaction(self, BookAccount.Costs, self._tax,
-                                     part=self.PART_TAX, category=PredefinedCategory.Taxes, peer=self._peer_id, tag=self._asset.tag().id())
+                                     part=self.PART_TAX, category=PredefinedCategory.Taxes, peer=self._peer_id)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1433,7 +1433,7 @@ class Trade(FeeCarrier, LedgerTransaction):
                                                       asset_id=self._asset.id(), value=deal_sign * processed_value)
             ledger.appendTransaction(self, BookAccount.Incomes,
                                      deal_sign * ((self._price * processed_qty) - processed_value + rounding_error),
-                                     part=self.PART_PROFIT, category=PredefinedCategory.Profit, peer=self._broker, tag=self._asset.tag().id())
+                                     part=self.PART_PROFIT, category=PredefinedCategory.Profit, peer=self._broker)
         if processed_qty < qty:  # We have a reminder that opens a new position
             ledger.appendTransaction(self, BookAccount.Assets, deal_sign * (qty - processed_qty),
                                      asset_id=self._asset.id(), value=deal_sign * (qty - processed_qty) * self._price)
@@ -1442,7 +1442,7 @@ class Trade(FeeCarrier, LedgerTransaction):
         # of it: a charge in another denomination is not part of the deal at all (the scalar rule on FeeCarrier).
         for fee in self.fees():
             if not fee.is_asset_fee():
-                self._post_fee_cost(ledger, fee.amount(), self.PART_FEE, self._broker, tag=self._asset.tag().id())
+                self._post_fee_cost(ledger, fee.amount(), self.PART_FEE, self._broker)
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1752,7 +1752,7 @@ class Swap(FeeCarrier, LedgerTransaction):
                 ledger.appendTransaction(self, BookAccount.Assets, self._in_qty, asset_id=self._in_asset.id(), value=basis)
             return
         ledger.appendTransaction(self, BookAccount.Incomes, -(value - basis + rounding_error), part=self.PART_PROFIT,
-                                 category=PredefinedCategory.Profit, peer=self._peer_id, tag=self._out_asset.tag().id())
+                                 category=PredefinedCategory.Profit, peer=self._peer_id)
         if self._cross_chain:
             # The proceeds travel to the destination chain as money in transit, drained by the receiving leg
             ledger.appendTransaction(self, BookAccount.Transfers, value)
@@ -2742,7 +2742,7 @@ class CorporateAction(LedgerTransaction):
                                  value=-sign * processed_value)
         if self._subtype in CorporateAction.NoResults:  # Map value to costs and exit - nothing more to process
             category = PredefinedCategory.Losses if self._subtype == CorporateAction.WriteOff else PredefinedCategory.Profit
-            ledger.appendTransaction(self, BookAccount.Costs, processed_value, category=category, peer=self._broker, tag=self._asset.tag().id())
+            ledger.appendTransaction(self, BookAccount.Costs, processed_value, category=category, peer=self._broker)
             return
         for result in self._results:
             asset = JalSymbol(result['symbol_id']).asset()

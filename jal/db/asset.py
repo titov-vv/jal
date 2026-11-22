@@ -8,7 +8,6 @@ from jal.db.clock import local_moment, local_reading
 from jal.db.helpers import format_decimal, day_begin, now_ts
 from jal.db.country import JalCountry
 from jal.db.residence import JalResidence
-from jal.db.tag import JalTag
 from jal.widgets.helpers import ts2d
 from jal.db.cache import DbCache
 
@@ -73,10 +72,6 @@ class JalAsset(JalDB):
             record.decimals = int(attributes[AssetData.Decimals])
         except (KeyError, ValueError, TypeError):
             record.decimals = None
-        try:
-            record.tag_id = int(attributes.get(AssetData.Tag, 0))
-        except (ValueError, TypeError):
-            record.tag_id = 0
         return record
 
     def _load_asset_row(self, asset_id: int) -> dict:
@@ -545,17 +540,6 @@ class JalAsset(JalDB):
                        "VALUES(:asset_id, :datatype, :value)",
                        [(":asset_id", self._id), (":datatype", AssetData.Decimals), (":value", str(int(decimals)))],
                        commit=True)
-        self._attach(reload=True)
-
-    def tag(self) -> JalTag:
-        return JalTag(self._record.tag_id)
-
-    def set_tag(self, tag_id: int) -> None:
-        if self._record.tag_id == tag_id:
-            return
-        _ = self._exec("INSERT OR REPLACE INTO asset_data(asset_id, datatype, value) "
-                       "VALUES(:asset_id, :datatype, :expiry)",
-                       [(":asset_id", self._id), (":datatype", AssetData.Tag), (":expiry", str(tag_id))])
         self._attach(reload=True)
 
     def set_country(self, country_id: int) -> None:

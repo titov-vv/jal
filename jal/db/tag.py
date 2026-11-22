@@ -1,5 +1,5 @@
 from jal.db.db import JalDB
-from jal.constants import AccountData, AssetData
+from jal.constants import AccountData
 from jal.db.cache import DbCache
 
 class JalTag(JalDB):
@@ -27,12 +27,10 @@ class JalTag(JalDB):
     def replace_with(self, new_id):
         self._exec("UPDATE action_details SET tag_id=:new_id WHERE tag_id=:old_id",
                    [(":new_id", new_id), (":old_id", self._id)])
-        self._exec("UPDATE asset_data SET value=:new_id WHERE datatype=:tag AND value=:old_id",
-                   [(":tag", AssetData.Tag), (":new_id", str(new_id)), (":old_id", self._id)])
         self._exec("UPDATE account_data SET value=:new_id WHERE datatype=:tag AND value=:old_id",
                    [(":tag", AccountData.Tag), (":new_id", str(new_id)), (":old_id", self._id)])
         self._exec("UPDATE receipt_items SET tag_id=:new_id WHERE tag_id=:old_id",
                    [(":new_id", new_id), (":old_id", self._id)])
         self._exec("DELETE FROM tags WHERE id=:old_id", [(":old_id", self._id)], commit=True)
-        JalDB().invalidate_cache()  # Full DB as it impacts JalAsset cache also
+        JalDB().invalidate_cache()  # Full DB as it impacts JalAccount cache also
         self._id = 0

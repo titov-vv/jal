@@ -105,8 +105,7 @@ Tags are set **per line** of an operation — the *Tag* column in the editor's t
 of an operation at once, right-click it in the list and choose **Assign tag**.
 
 The [operations by tag](10-reports.md#operations-by-category-peer-or-tag) report then adds up
-everything carrying the tag, whatever category it was under. Tags can also be attached to assets,
-which lets the portfolio be grouped by them — see [chapter 6](06-investments.md).
+everything carrying the tag, whatever category it was under.
 
 A tag can be put on an **account** too — add a *Tag* detail to it in **Data → Accounts**. That is how
 you split a long list of accounts into groups of your own (by the property important for you). Give the

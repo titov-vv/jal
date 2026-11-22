@@ -57,14 +57,14 @@ What you own, on a chosen date:
 | **Value, …** | The same, converted into the common currency |
 
 **Group by** rearranges everything — by currency and account, by asset, by country, by the tag on
-the asset, by the tag on the account it is held in, or by the
+the account it is held in, or by the
 [status](03-first-steps.md#step-2--create-your-accounts) of that account.
 **Accounts** says how deep the report reaches: *Active accounts only*, *With background accounts*
 (the default) or *With closed accounts*. Grouped by status, the background positions come as one
 folded group with its own total — open it to see what is inside.
 
 Right-click a position for its [details](06-investments.md#position-details-lots-chart-and-tax) —
-lots, price chart and tax estimate — or to give the asset a tag or a country. The same menu folds the groups: **Expand all**, **Collapse all**, and — when the report is
+lots, price chart and tax estimate — or to give the asset a country. The same menu folds the groups: **Expand all**, **Collapse all**, and — when the report is
 grouped by more than one thing — **Expand to level N**, which opens the groups down to that level.
 
 > A position with no recent price is valued at the last price JAL has, however old. If a figure looks

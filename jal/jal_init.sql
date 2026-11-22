@@ -1081,7 +1081,6 @@ DROP TRIGGER IF EXISTS tags_after_delete;
 CREATE TRIGGER tags_after_delete AFTER DELETE ON tags FOR EACH ROW
 BEGIN
     DELETE FROM ledger WHERE timestamp >= (SELECT MIN(timestamp) FROM ledger WHERE tag_id=OLD.id);
-    DELETE FROM asset_data WHERE datatype=1 AND value=OLD.id;
     DELETE FROM account_data WHERE datatype=12 AND value=OLD.id;
 END;
 -- An icon points at its owner by (entity, item_id), which no foreign key can express - so each table that has
@@ -1103,7 +1102,7 @@ BEGIN
 END;
 ------------------------------------------------------------------------------------------------------------------------
 -- Initialize default values for settings
-INSERT INTO settings(name, value) VALUES('SchemaVersion', 88);
+INSERT INTO settings(name, value) VALUES('SchemaVersion', 89);
 INSERT INTO settings(name, value) VALUES('Language', 1);
 INSERT INTO settings(name, value) VALUES('RuTaxClientSecret', 'IyvrAbKt9h/8p6a7QPh8gpkXYQ4=');
 INSERT INTO settings(name, value) VALUES('RuTaxSessionId', '');

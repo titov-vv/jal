@@ -4,7 +4,6 @@
 import os
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
-from collections import Counter
 from decimal import Decimal
 
 import pytest
@@ -14,7 +13,6 @@ from tests.helpers import d2t, create_stocks, create_trades, create_bridges, cre
     nth_operation, operation_id
 from jal.constants import PredefinedCategory, BookAccount
 from jal.db.db import JalDB
-from jal.db.asset import JalAsset
 from jal.db.ledger import Ledger
 from jal.db.account import JalAccountCreator
 from jal.db.operations import LedgerTransaction, AssetPayment, AssetIncome, ChainAction, FeeKind, Trade, \
@@ -115,12 +113,10 @@ def test_is_fee_row_is_the_fee_part(accounts_and_assets):
     assert not Transfer(transfer.oid(), Transfer.Incoming).is_fee_row()
 
 
-# One of every fee-bearing operation, with a tagged gas coin, and the ledger built from them.
+# One of every fee-bearing operation, and the ledger built from them.
 @pytest.fixture
 def ledger_with_every_fee(accounts_and_assets):
     gas, asset = symbol_id_for(5, 2), symbol_id_for(4, 2)
-    JalAsset(5).set_tag(JalDB._read("SELECT id FROM tags WHERE tag='Cash'"))   # the gas coin ...
-    JalAsset(4).set_tag(JalDB._read("SELECT id FROM tags WHERE tag='Card'"))   # ... and the asset being moved
     create_quotes(4, 2, [(d2t(220201), 150.0)])
     create_trades(1, [(d2t(220101), d2t(220101), 4, 100.0, 100.0, 3.0)])   # a trade with a fee of its own
     create_trades(1, [(d2t(220101), d2t(220101), 5, 10.0, 10.0, 0.0)])     # the gas coin to pay the rest with
@@ -173,27 +169,11 @@ def test_every_fee_posting_rebuilds_as_the_fee_it_is(ledger_with_every_fee):
         assert amounts == set(expected[key]), str(key)
 
 
-# Every fee paid in an asset reaches the ledger tagged with that asset's tag. Four of the five routines that used to
-# book them disagreed about it, so a tag-based report counted some gas and not the rest.
-def test_a_fee_carries_the_tag_of_the_asset_it_was_paid_in(ledger_with_every_fee):
-    coin = JalDB._read("SELECT id FROM tags WHERE tag='Cash'")     # the tag of the gas coin
-    moved = JalDB._read("SELECT id FROM tags WHERE tag='Card'")    # the tag of the asset the operations move
+# A fee reaches the ledger untagged: tags are the user's own, an asset carries none
+def test_a_fee_carries_no_tag(ledger_with_every_fee):
     postings = Ledger.get_operations_by_category(0, d2t(230101), PredefinedCategory.Fees)
     assert len(postings) == 8
-    tagged = Counter()
-    for posting in postings:
-        operation = LedgerTransaction().get_operation(posting['otype'], posting['oid'], posting['opart'])
-        assert posting['tag_id'] != '', operation.name()           # no fee reaches the ledger untagged
-        tagged[(operation.type(), operation.is_fee_row(), int(posting['tag_id']))] += 1
-    # The five gas charges name the coin they burned; a trade's fee and a bridge's in-kind fee are taken out of the
-    # asset the operation itself deals in and name that one.
-    assert tagged == Counter({(LedgerTransaction.Trade, False, moved): 1,
-                              (LedgerTransaction.Swap, True, coin): 1,
-                              (LedgerTransaction.Conversion, True, coin): 1,
-                              (LedgerTransaction.Transfer, True, coin): 1,
-                              (LedgerTransaction.Bridge, True, coin): 2,
-                              (LedgerTransaction.Bridge, True, moved): 1,
-                              (LedgerTransaction.ChainAction, True, coin): 1})
+    assert [x['tag_id'] for x in postings] == [''] * 8
 
 
 # ----------------------------------------------------------------------------------------------------------------------

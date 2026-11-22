@@ -126,7 +126,7 @@ Double-click a staking position in the Balances panel and the list shows its hol
 
 * **Position details…** — [lots, price chart and tax estimate](06-investments.md#position-details-lots-chart-and-tax) of the position on the Balances date.
 * **Show Accrual Chart**, for a position whose balance is read from a blockchain.
-* **Set asset tag**, **Set asset country**.
+* **Set asset country**.
 
 A claimable reward offers **Show claim history** instead. Money and the total rows have no menu.
 
