@@ -38,12 +38,15 @@ class JalPortfolio(JalDB):
     def of_operation(self, operation) -> int:
         return self._assigned.get(operation.id(), self.Unassigned)
 
+    # True for a short lot: one opened by a sale
+    @staticmethod
+    def is_short(lot) -> bool:
+        operation = lot.open_operation()
+        return operation.type() == jal.db.operations.LedgerTransaction.Trade and operation.qty() < Decimal('0')
+
     # The portfolio of a lot: that of the operation that opened it; a short lot belongs to none
     def of_lot(self, lot) -> int:
-        operation = lot.open_operation()
-        if operation.type() == jal.db.operations.LedgerTransaction.Trade and operation.qty() < Decimal('0'):
-            return self.Unassigned
-        return self.of_operation(operation)
+        return self.Unassigned if self.is_short(lot) else self.of_operation(lot.open_operation())
 
 
 # ----------------------------------------------------------------------------------------------------------------------

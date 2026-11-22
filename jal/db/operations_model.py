@@ -6,10 +6,12 @@ from jal.db.ledger import Ledger
 from jal.db.helpers import localize_decimal
 from jal.db.operations import LedgerTransaction
 from jal.db.tax_override import JalTaxOverride
+from jal.db.portfolio import JalPortfolio
+from jal.db.tag import JalTag
 from jal.db.clock import today_finish
 from jal.widgets.helpers import ts2dt, restore_columns, grid_row_height
 from jal.widgets.delegates import ColoredAmountsDelegate, TickerIconsDelegate, TransactionTieDelegate, \
-    long_fraction, ROW_LINES_ROLE, TRANSACTION_ROLE, TAX_OVERRIDE_ROLE
+    long_fraction, ROW_LINES_ROLE, TRANSACTION_ROLE, TAX_OVERRIDE_ROLE, PORTFOLIO_ROLE
 from jal.widgets.theme import Theme, Meaning
 from jal.db.cache import UniversalCache
 
@@ -41,6 +43,7 @@ class OperationsModel(QAbstractTableModel):
         self._tie_delegate = None
         self._data = []
         self._overridden = set()   # ids of the operations with a tax treatment override
+        self._portfolios = {}      # {operation id: portfolio tag id}
         self._cache = UniversalCache()
         self._begin = 0
         self._end = 0
@@ -79,6 +82,8 @@ class OperationsModel(QAbstractTableModel):
             return [number, odata['timestamp']] if number else None
         if role == TAX_OVERRIDE_ROLE:
             return odata['oid'] in self._overridden
+        if role == PORTFOLIO_ROLE:
+            return self._portfolios.get(odata['oid'], 0)
         if role == ROW_LINES_ROLE:
             # How tall this row was made, in lines - so that a column holding fewer values than that puts them on
             # the first lines instead of in the middle of the height the other columns asked for.
@@ -104,6 +109,8 @@ class OperationsModel(QAbstractTableModel):
                 lines = [operation.name()] if index.column() == 0 else []
                 if odata['oid'] in self._overridden:
                     lines += [self.tr("Tax treatment:"), JalTaxOverride.describe(odata['oid'])]
+                if odata['oid'] in self._portfolios:
+                    lines += [self.tr("Portfolio: ") + JalTag(self._portfolios[odata['oid']]).name()]
                 return "\n".join(lines) if lines else None
             elif index.column() == 3 or index.column() == 4:
                 # The cell rounds an amount to two decimals and writes a smaller one in compact form, so the exact
@@ -201,6 +208,7 @@ class OperationsModel(QAbstractTableModel):
         self._data = []
         self._data = group_operation_parts(Ledger.get_operations_sequence(self._begin, self._end, self._account))
         self._overridden = JalTaxOverride.operation_ids()
+        self._portfolios = JalPortfolio.assignments()
         self._cache.clear_cache()
         self.endResetModel()
 

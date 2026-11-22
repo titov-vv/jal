@@ -527,6 +527,13 @@ class TaggedIconDelegate(GridLinesDelegate):
 # The transaction a row belongs to as [number, timestamp], or None for a row that names none.
 TRANSACTION_ROLE = Qt.UserRole + 102
 TAX_OVERRIDE_ROLE = Qt.UserRole + 103   # True for a row whose operation has a tax treatment override
+PORTFOLIO_ROLE = Qt.UserRole + 104      # The portfolio (tag) id of a row's operation, 0 for none
+
+
+# The mark of a portfolio: its tag's picture, or the tag glyph for a tag that has none
+def portfolio_icon(tag_id: int) -> QIcon:
+    icon = JalIcons.icon(IconOwner.Tag, tag_id, JalIcons.grid_size())
+    return icon if not icon.isNull() else JalIcon[JalIcon.TAG]
 
 
 # How a row joins its neighbours as the view shows them: (tied to the row above, tied to the row below, the row above
@@ -547,12 +554,17 @@ def transaction_link(index) -> tuple:
 # Draws the rows of one transaction as a group in the first three columns of the operations list. The first row stays
 # as it is; every next one loses what it repeats - the time, the number and an account equal to the one above - and
 # is tied to the first one by a line, with its own icon moved aside. Its notes are drawn as secondary text.
-# A tax treatment override puts the tax glyph at the right end of the notes.
+# A tax treatment override puts the tax glyph at the right end of the notes, a portfolio its tag at the right end
+# of the account.
 class TransactionTieDelegate(GridLinesDelegate):
     def initStyleOption(self, option, index):
         super().initStyleOption(option, index)
         if index.column() == 2 and index.data(TAX_OVERRIDE_ROLE):
             option.icon = JalIcon[JalIcon.TAX]
+            option.features |= QStyleOptionViewItem.HasDecoration
+            option.decorationPosition = QStyleOptionViewItem.Right
+        if index.column() == 1 and index.data(PORTFOLIO_ROLE):
+            option.icon = portfolio_icon(index.data(PORTFOLIO_ROLE))
             option.features |= QStyleOptionViewItem.HasDecoration
             option.decorationPosition = QStyleOptionViewItem.Right
         above, _, same_account = transaction_link(index)

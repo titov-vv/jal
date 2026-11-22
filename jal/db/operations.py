@@ -8,6 +8,7 @@ from jal.db.helpers import format_decimal, remove_exponent
 from jal.db.db import JalDB
 import jal.db.account
 import jal.db.basis_policy
+import jal.db.portfolio
 from jal.db.asset import JalAsset
 from jal.db.symbol import JalSymbol
 from jal.widgets.helpers import ts2d, ts2dt
@@ -59,6 +60,7 @@ class LedgerTransaction(JalDB):
     Bridge = 8
     AssetIncome = 9
     ChainAction = 10
+    PortfolioTypes = (Trade, Transfer, CorporateAction, Conversion, Swap, Bridge, AssetIncome)   # move or open lots
     _db_table = ''   # Table where operation is stored in DB
     _otype = NA      # Operation type - a class attribute, because it identifies the operation before there is one:
                      # create_operation() below allocates the id from 'operations' and has to name the type there
@@ -391,9 +393,10 @@ class LedgerTransaction(JalDB):
     def reconciled(self) -> bool:
         return self._reconciled
 
-    # If possible assigns given tag to the operation (or all its components)
+    # If possible assigns given tag to the operation (or all its components); a lot operation takes it as its portfolio
     def assign_tag(self, tag_id: int):
-        pass
+        if self._otype in self.PortfolioTypes:
+            jal.db.portfolio.JalPortfolio.assign(self._oid, tag_id)
 
     def processLedger(self, ledger):
         raise NotImplementedError(f"processLedger() method is not defined in {type(self).__name__} class")

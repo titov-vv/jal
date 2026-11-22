@@ -3,10 +3,13 @@ from decimal import Decimal
 
 from PySide6.QtCore import Qt, QAbstractTableModel, Signal, Slot
 from PySide6.QtGui import QFont
-from PySide6.QtWidgets import QApplication, QHeaderView
+from PySide6.QtWidgets import QApplication, QHeaderView, QMenu, QDialog
 from jal.constants import Setup
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
+from jal.db.common_models import TagTreeModel
+from jal.db.portfolio import JalPortfolio
+from jal.db.tag import JalTag
 from jal.db.country import JalCountry
 from jal.db.helpers import localize_decimal
 from jal.db.residence import JalResidence
@@ -14,18 +17,20 @@ from jal.db.settings import JalSettings
 from jal.data_export.taxes import TaxReport
 from jal.data_export.tax_estimate import TaxEstimate
 from jal.ui.ui_position_details_window import Ui_PositionDetailsWindow
-from jal.widgets.delegates import FloatDelegate
+from jal.widgets.delegates import FloatDelegate, portfolio_icon
 from jal.widgets.helpers import ts2d, set_grids_metrics, restore_columns, restore_splitters, save_splitters
 from jal.widgets.icons import JalIcon
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.price_chart import ChartWidget, lot_markers, price_history
+from jal.widgets.reference_dialogs import TagsListDialog
+from jal.widgets.selection_dialog import SelectReferenceDialog
 
 
 # ----------------------------------------------------------------------------------------------------------------------
-# The open lots of a position at 'quote', each with a check box that says whether it is counted; the footer holds
-# the totals of the checked ones
+# The open lots of a position at 'quote', each with a check box that says whether it is counted and the portfolio it
+# belongs to; the footer holds the totals of the checked ones
 class LotsModel(QAbstractTableModel):
-    CHECK, DATE, HELD, QTY, PRICE, COST, PL, PL_PERCENT = range(8)
+    CHECK, DATE, HELD, QTY, PRICE, COST, PL, PL_PERCENT, PORTFOLIO = range(9)
     checkedChanged = Signal()
 
     def __init__(self, view, lots, quote, timestamp, currency):
@@ -35,8 +40,10 @@ class LotsModel(QAbstractTableModel):
         self._quote = quote
         self._timestamp = timestamp
         self._checked = [True] * len(lots)
+        self._portfolio = JalPortfolio()
         self._columns = ["", self.tr("Date"), self.tr("Held, days"), self.tr("Qty"), self.tr("Price, ") + currency,
-                         self.tr("Cost, ") + currency, self.tr("P/L, ") + currency, self.tr("P/L, %")]
+                         self.tr("Cost, ") + currency, self.tr("P/L, ") + currency, self.tr("P/L, %"),
+                         self.tr("Portfolio")]
         self._delegates = []
 
     def rowCount(self, parent=None):
@@ -65,6 +72,10 @@ class LotsModel(QAbstractTableModel):
             return Qt.Checked if self._checked[index.row()] else Qt.Unchecked
         if role == Qt.DisplayRole:
             return self._value(lot, column)
+        if role == Qt.DecorationRole and column == self.PORTFOLIO and self._portfolio.of_lot(lot):
+            return portfolio_icon(self._portfolio.of_lot(lot))
+        if role == Qt.TextAlignmentRole and column == self.PORTFOLIO:
+            return int(Qt.AlignLeft | Qt.AlignVCenter)
         if role == Qt.TextAlignmentRole and column > self.DATE:
             return int(Qt.AlignRight | Qt.AlignVCenter)
         return None
@@ -91,6 +102,20 @@ class LotsModel(QAbstractTableModel):
     def checked_lots(self) -> list:
         return [x for x, checked in zip(self._lots, self._checked) if checked]
 
+    # The lots a portfolio can be given to - every lot but a short one - checked only or all of them
+    def assignable_lots(self, checked_only: bool) -> list:
+        lots = self.checked_lots() if checked_only else self._lots
+        return [x for x in lots if not JalPortfolio.is_short(x)]
+
+    def unassigned_lots(self) -> list:
+        return [x for x in self.assignable_lots(False) if not self._portfolio.of_lot(x)]
+
+    # Re-reads the portfolios after an assignment
+    def refresh_portfolios(self):
+        self._portfolio = JalPortfolio()
+        if self._lots:
+            self.dataChanged.emit(self.index(0, self.PORTFOLIO), self.index(len(self._lots) - 1, self.PORTFOLIO))
+
     def _value(self, lot, column):
         cost = lot.open_qty() * lot.open_price(adjusted=True)
         if column == self.DATE:
@@ -107,6 +132,9 @@ class LotsModel(QAbstractTableModel):
             return lot.open_qty() * self._quote - cost
         if column == self.PL_PERCENT:
             return (lot.open_qty() * self._quote - cost) / cost if cost else None
+        if column == self.PORTFOLIO:
+            tag_id = self._portfolio.of_lot(lot)
+            return JalTag(tag_id).name() if tag_id else ''
         return None
 
     # (qty, cost) of the checked lots
@@ -137,12 +165,17 @@ class LotsModel(QAbstractTableModel):
                 return localize_decimal(pl, precision=2)
             if section == self.PL_PERCENT:
                 return localize_decimal(pl / cost, precision=2, percent=True) if cost else ''
+            if section == self.PORTFOLIO:   # a hint only where the position is split already
+                unassigned = len(self.unassigned_lots())
+                if unassigned and unassigned < len(self.assignable_lots(False)):
+                    return self.tr("{count} unassigned").format(count=unassigned)
         elif role == Qt.FontRole:
             font = QFont()
             font.setBold(True)
             return font
         elif role == Qt.TextAlignmentRole:
-            return Qt.AlignLeft | Qt.AlignVCenter if section <= self.DATE else Qt.AlignRight | Qt.AlignVCenter
+            left = section <= self.DATE or section == self.PORTFOLIO
+            return Qt.AlignLeft | Qt.AlignVCenter if left else Qt.AlignRight | Qt.AlignVCenter
         return None
 
     def configureView(self):
@@ -156,7 +189,7 @@ class LotsModel(QAbstractTableModel):
         self._view.horizontalHeader().setSectionResizeMode(self.CHECK, QHeaderView.ResizeToContents)
         digit = self._view.fontMetrics().horizontalAdvance("0")
         for column, digits in ((self.DATE, 12), (self.HELD, 10), (self.QTY, 8), (self.PRICE, 10), (self.COST, 11),
-                               (self.PL, 11), (self.PL_PERCENT, 8)):
+                               (self.PL, 11), (self.PL_PERCENT, 8), (self.PORTFOLIO, 16)):
             self._view.setColumnWidth(column, digit * digits)
         restore_columns(self._view, Setup.COLUMNS_STATE_PREFIX)
 
@@ -205,6 +238,8 @@ class PositionDetails(MdiWidget):
         self.ui.LotsView.selectionModel().selectionChanged.connect(self.onLotsChanged)
         self.ui.LotsView.horizontalHeader().sectionClicked.connect(self.onHeaderClicked)
         self.chart.lotClicked.connect(self.ui.LotsView.selectRow)
+        self.ui.LotsView.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.ui.LotsView.customContextMenuRequested.connect(self.onLotsContextMenu)
         self.ui.CountryCombo.currentIndexChanged.connect(self.showTax)
         self.onLotsChanged()
         self._restored = False
@@ -235,6 +270,34 @@ class PositionDetails(MdiWidget):
     def onHeaderClicked(self, section):
         if section == LotsModel.CHECK:
             self.model.toggle_all()
+
+    @Slot()
+    def onLotsContextMenu(self, pos):
+        menu = QMenu(self.ui.LotsView)
+        checked = menu.addAction(JalIcon[JalIcon.TAG], self.tr("Set portfolio of checked lots…"),
+                                 lambda: self.assign_portfolio(self.model.assignable_lots(True)))
+        checked.setEnabled(bool(self.model.assignable_lots(True)))
+        unassigned = menu.addAction(self.tr("Assign unassigned lots…"),
+                                    lambda: self.assign_portfolio(self.model.unassigned_lots()))
+        unassigned.setEnabled(bool(self.model.unassigned_lots()))
+        clear = menu.addAction(self.tr("Remove checked lots from portfolio"),
+                               lambda: self.set_portfolio(self.model.assignable_lots(True), JalPortfolio.Unassigned))
+        clear.setEnabled(bool(self.model.assignable_lots(True)))
+        menu.popup(self.ui.LotsView.viewport().mapToGlobal(pos))
+
+    # Asks for a portfolio and gives it to 'lots'
+    def assign_portfolio(self, lots):
+        dialog = SelectReferenceDialog(self, self.tr("Please select portfolio"),
+                                       self.tr("Portfolio for {count} lot(s):").format(count=len(lots)),
+                                       TagTreeModel, TagsListDialog)
+        if dialog.exec() == QDialog.Accepted:
+            self.set_portfolio(lots, dialog.selected_id)
+
+    # A lot belongs to the portfolio of the operation that opened it, so the assignment goes to that operation
+    def set_portfolio(self, lots, tag_id: int):
+        for lot in lots:
+            JalPortfolio.assign(lot.open_operation().id(), tag_id)
+        self.model.refresh_portfolios()
 
     @Slot()
     def onLotsChanged(self):
