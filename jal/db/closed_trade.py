@@ -122,6 +122,9 @@ class JalClosedTrade(JalDB):
     def id(self) -> int:
         return self._id
 
+    def account(self):
+        return self._account
+
     def asset(self) -> JalAsset:
         return self._asset
 

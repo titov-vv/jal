@@ -3,6 +3,9 @@ from jal.db.db import JalDB
 import jal.db.operations
 import jal.db.basis_policy
 import jal.db.lots
+import jal.db.account
+import jal.db.asset
+import jal.db.closed_trade
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -166,3 +169,60 @@ class PortfolioLots:
                 continue
             return True
         return False
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Assignments to review: a portfolio's disposal that took lots of other portfolios (its own ran out), and unassigned
+# lots of a position that holds assigned ones too
+class PortfolioReview:
+    Spill = 1
+    Unassigned = 2
+
+    # [{'issue', 'operation', 'account', 'asset', 'qty', 'portfolio', 'others'}], oldest operation first: 'portfolio'
+    # is the operation's own, 'others' the portfolios of the lots it took (Spill) or held beside it (Unassigned)
+    @classmethod
+    def items(cls) -> list:
+        PortfolioLots.prepare()
+        portfolio = JalPortfolio()
+        items = cls._spills(portfolio) + cls._unassigned(portfolio)
+        return sorted(items, key=lambda x: (x['operation'].timestamp(), x['operation'].id(), x['issue']))
+
+    @staticmethod
+    def _spills(portfolio) -> list:
+        if PortfolioLots._store is None:   # no assigned disposals, nothing can spill
+            return []
+        store = PortfolioLots._store
+        items = {}
+        for deal_id in store.deals_closed_by_any(list(portfolio._assigned)):
+            deal = jal.db.closed_trade.JalClosedTrade(deal_id, store=store)
+            own, taken = portfolio.of_operation(deal.close_operation()), portfolio.of_lot(deal)
+            if taken == own or portfolio.is_short(deal):   # covering a short takes nobody's lots
+                continue
+            key = (deal.close_operation().id(), deal.account().id(), deal.asset().id())
+            item = items.setdefault(key, {'issue': PortfolioReview.Spill, 'operation': deal.close_operation(),
+                                          'account': deal.account(), 'asset': deal.asset(), 'qty': Decimal('0'),
+                                          'portfolio': own, 'others': set()})
+            item['qty'] += deal.qty()
+            item['others'].add(taken)
+        return list(items.values())
+
+    @staticmethod
+    def _unassigned(portfolio) -> list:
+        store = jal.db.lots.LedgerLotStore() if PortfolioLots._store is None else PortfolioLots._store
+        positions = {(account_id, asset_id) for account_id, asset_id, qty in store.slices() if qty}
+        items = []
+        for account_id, asset_id in sorted(positions):
+            account, asset = jal.db.account.JalAccount(account_id), jal.db.asset.JalAsset(asset_id)
+            lots = [x for x in account.open_trades_list(asset, store=PortfolioLots._store) if not portfolio.is_short(x)]
+            assigned = {portfolio.of_lot(x) for x in lots} - {JalPortfolio.Unassigned}
+            if not assigned:
+                continue
+            openers = {}
+            for lot in lots:
+                if portfolio.of_lot(lot) == JalPortfolio.Unassigned:
+                    item = openers.setdefault(lot.open_operation().id(), {
+                        'issue': PortfolioReview.Unassigned, 'operation': lot.open_operation(), 'account': account,
+                        'asset': asset, 'qty': Decimal('0'), 'portfolio': JalPortfolio.Unassigned, 'others': assigned})
+                    item['qty'] += lot.open_qty()
+            items += list(openers.values())
+        return items

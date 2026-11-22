@@ -121,6 +121,13 @@ class LedgerLotStore(JalDB):
                                f"AND asset_id=:asset{where}", [(":account", account_id), (":asset", asset_id)])
         return self._ids(query)
 
+    # Ids of the deals closed by any of the operations 'oids', in every position
+    def deals_closed_by_any(self, oids: list) -> list:
+        if not oids:
+            return []
+        listed = ','.join(str(int(x)) for x in oids)
+        return self._ids(self._exec(f"SELECT id FROM {self._closed} WHERE close_oid IN ({listed})"))
+
     # Ids of the deals operation (otype, oid) closed in a position, the realized ones left out
     def deals_closed_by(self, otype: int, oid: int, account_id: int, asset_id: int) -> list:
         query = self._exec(f"SELECT id FROM {self._closed} WHERE close_otype=:otype AND close_oid=:oid "
