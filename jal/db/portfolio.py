@@ -113,6 +113,40 @@ class PortfolioLots:
         portfolio = JalPortfolio()
         return [(portfolio.of_lot(x), x) for x in account.open_trades_list(asset, timestamp, store=cls._store)]
 
+    # [(portfolio, deal)] of the account, from the replay when one is needed
+    @classmethod
+    def deals(cls, account, close_otypes=None) -> list:
+        cls.prepare()
+        portfolio = JalPortfolio()
+        return [(portfolio.of_lot(x), x) for x in account.closed_trades_list(close_otypes=close_otypes, store=cls._store)]
+
+    # {portfolio: (amount, tax)} of an asset payment or income, shared out by what each portfolio held before the
+    # ex-date (or at payment time without one); an income opens a lot, so it goes whole to its own portfolio
+    @classmethod
+    def payment_parts(cls, payment) -> dict:
+        if isinstance(payment, jal.db.operations.AssetIncome):
+            return {JalPortfolio().of_operation(payment): (payment.amount(), payment.tax())}
+        timestamp = payment.ex_date() - 1 if payment.ex_date() else payment.timestamp()
+        held = {}
+        for tag_id, lot in cls.lots(payment.account(), payment.asset(), timestamp):
+            held[tag_id] = held.get(tag_id, Decimal('0')) + lot.open_qty()
+        amounts = cls.share_out(payment.amount(), held)
+        taxes = cls.share_out(payment.tax(), held)
+        return {x: (amounts[x], taxes[x]) for x in amounts}
+
+    # {portfolio: part} of 'value' in proportion to 'held' {portfolio: qty}; the last part takes the remainder, and
+    # with nothing held the whole value is Unassigned
+    @staticmethod
+    def share_out(value: Decimal, held: dict) -> dict:
+        total = sum(held.values(), Decimal('0'))
+        if not total:
+            return {JalPortfolio.Unassigned: value}
+        parts, left = {}, value
+        for i, tag_id in enumerate(sorted(held)):
+            parts[tag_id] = left if i == len(held) - 1 else value * held[tag_id] / total
+            left -= parts[tag_id]
+        return parts
+
     # Drops the replay: the ledger it was made of is being rebuilt
     @classmethod
     def forget(cls) -> None:

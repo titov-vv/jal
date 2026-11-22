@@ -9,10 +9,12 @@ from jal.db.operations import AssetPayment, AssetIncome
 from jal.db.helpers import localize_decimal
 from jal.db.account import JalAccount
 from jal.db.asset import JalAsset
+from jal.db.portfolio import PortfolioLots
 from jal.db.common_models import AccountListModel
 from jal.ui.reports.ui_assets_payments_report import Ui_AssetsPaymentsReportWidget
 from jal.widgets.delegates import FloatDelegate
 from jal.widgets.mdi import MdiWidget
+from jal.widgets.custom.portfolio_combo import PortfolioCombo
 from jal.widgets.helpers import ts2dt, set_grids_metrics, restore_columns
 from jal.widgets.reference_dialogs import AccountListDialog
 
@@ -25,8 +27,9 @@ class AssetsPaymentsModel(QAbstractTableModel):
         self._columns = [self.tr("Date"), self.tr("Symbol"), self.tr("Asset"), self.tr("Type"),
                          self.tr("Amount"), self.tr("Tax"), self.tr("Note")]
         self._view = parent_view
-        self._data = []
+        self._data = []   # (operation, amount, tax): a portfolio's part of them when one is chosen
         self._account_id = 0
+        self._portfolio = None   # a tag id, JalPortfolio.Unassigned or None for every payment
         self._begin = self._end = 0
         self._float_delegate = None
         self._total = Decimal('0')
@@ -49,10 +52,9 @@ class AssetsPaymentsModel(QAbstractTableModel):
 
     def data(self, index, role=Qt.DisplayRole, field=''):
         if role == Qt.DisplayRole:
-            dividend = self._data[index.row()]
-            return self.data_text(dividend, index.column())
+            return self.data_text(*self._data[index.row()], index.column())
 
-    def data_text(self, dividend, column):
+    def data_text(self, dividend, amount, tax, column):
         if column == 0:
             return ts2dt(dividend.timestamp(), dividend.timestamp_is_day())
         if column == 1:
@@ -65,9 +67,9 @@ class AssetsPaymentsModel(QAbstractTableModel):
             # split payment. A list also ends one entry short of the class the first time a subtype is added.
             return dividend.name()
         if column == 4:
-            return dividend.amount()
+            return amount
         if column == 5:
-            return dividend.tax()
+            return tax
         if column == 6:
             return dividend.note()
         return ''
@@ -80,6 +82,8 @@ class AssetsPaymentsModel(QAbstractTableModel):
                 return localize_decimal(self._total, precision=2)
             if section == 5:
                 return localize_decimal(self._total_tax, precision=2)
+            if section == 6 and self._portfolio is not None:
+                return self.tr("Shared out by the quantity each portfolio held, for management only")
         elif role == Qt.FontRole:
             font = QFont()
             font.setBold(True)
@@ -91,8 +95,11 @@ class AssetsPaymentsModel(QAbstractTableModel):
                 return Qt.AlignLeft | Qt.AlignVCenter
         return None
 
-    def updateView(self, account_id, dates):
+    def updateView(self, account_id, dates, portfolio=None):
         update = False
+        if self._portfolio != portfolio:
+            self._portfolio = portfolio
+            update = True
         if self._account_id != account_id:
             self._account_id = account_id
             update = True
@@ -110,10 +117,15 @@ class AssetsPaymentsModel(QAbstractTableModel):
         self.beginResetModel()
         dividends = AssetPayment.get_list(self._account_id) + AssetIncome.get_list(self._account_id)
         dividends.sort(key=lambda x: x.timestamp())
-        self._data = [x for x in dividends if self._begin <= x.timestamp() <= self._end]
+        dividends = [x for x in dividends if self._begin <= x.timestamp() <= self._end]
+        if self._portfolio is None:
+            self._data = [(x, x.amount(), x.tax()) for x in dividends]
+        else:
+            parts = [(x, PortfolioLots.payment_parts(x).get(self._portfolio)) for x in dividends]
+            self._data = [(x, *part) for x, part in parts if part is not None]
         # An asset income's amount is a quantity of that asset, so only payments in money are totalled
-        self._total = sum([x.amount() for x in self._data if isinstance(x, AssetPayment)], Decimal('0'))
-        self._total_tax = sum([x.tax() for x in self._data], Decimal('0'))
+        self._total = sum([x[1] for x in self._data if isinstance(x[0], AssetPayment)], Decimal('0'))
+        self._total_tax = sum([x[2] for x in self._data], Decimal('0'))
         self._currency = JalAsset(JalAccount(self._account_id).currency()).symbol() if self._account_id else ''
         self.endResetModel()
 
@@ -153,9 +165,13 @@ class AssetsPaymentsReportWindow(MdiWidget):
     def connect_signals_and_slots(self):
         self.ui.ReportAccountEdit.changed.connect(self.updateReport)
         self.ui.ReportRange.changed.connect(self.updateReport)
+        self.ui.PortfolioCombo.currentIndexChanged.connect(self.updateReport)
         self.ui.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.ui.ReportTableView.model()))
 
     @Slot()
     def updateReport(self):
+        portfolio = self.ui.PortfolioCombo.selected()
+        if portfolio is not None:
+            PortfolioCombo.prepare_lots(self)
         self.ui.ReportTableView.model().updateView(account_id=self.ui.ReportAccountEdit.selected_id,
-                                                   dates=self.ui.ReportRange.getRange())
+                                                   dates=self.ui.ReportRange.getRange(), portfolio=portfolio)

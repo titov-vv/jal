@@ -86,6 +86,35 @@
        <widget class="ReferenceSelectorWidget" name="ReportAccountEdit"/>
       </item>
       <item>
+       <spacer name="portfolioSpacer">
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>0</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QLabel" name="PortfolioLbl">
+        <property name="text">
+         <string>&amp;Portfolio:</string>
+        </property>
+        <property name="buddy">
+         <cstring>PortfolioCombo</cstring>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="PortfolioCombo" name="PortfolioCombo"/>
+      </item>
+      <item>
        <spacer name="ReportFrameSpacer">
         <property name="orientation">
          <enum>Qt::Orientation::Horizontal</enum>
@@ -127,6 +156,7 @@
   <tabstop>ReportRange</tabstop>
   <tabstop>GroupCombo</tabstop>
   <tabstop>ReportAccountEdit</tabstop>
+  <tabstop>PortfolioCombo</tabstop>
   <tabstop>SaveButton</tabstop>
   <tabstop>ReportTreeView</tabstop>
  </tabstops>
@@ -147,6 +177,11 @@
    <extends>QWidget</extends>
    <header>jal/widgets/reference_selector.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PortfolioCombo</class>
+   <extends>QComboBox</extends>
+   <header>jal/widgets/custom/portfolio_combo.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

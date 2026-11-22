@@ -8,6 +8,7 @@ from jal.widgets.helpers import set_grids_metrics
 from jal.widgets.reference_dialogs import AccountListDialog
 from jal.db.common_models import AccountListModel
 from jal.db.trades_model import ClosedTradesModel
+from jal.widgets.custom.portfolio_combo import PortfolioCombo
 
 JAL_REPORT_CLASS = "DealsReport"
 
@@ -48,10 +49,14 @@ class DealsReportWindow(MdiWidget):
         self.ui.ReportAccountEdit.changed.connect(self.updateReport)
         self.ui.ReportRange.changed.connect(self.updateReport)
         self.ui.GroupCombo.currentIndexChanged.connect(self.updateReport)
+        self.ui.PortfolioCombo.currentIndexChanged.connect(self.updateReport)
         self.ui.SaveButton.pressed.connect(partial(self._parent.save_report, self.name, self.ui.ReportTreeView.model()))
 
     @Slot()
     def updateReport(self):
+        portfolio = self.ui.PortfolioCombo.selected()
+        if portfolio is not None:
+            PortfolioCombo.prepare_lots(self)
         self.ui.ReportTreeView.model().updateView(account_id=self.ui.ReportAccountEdit.selected_id,
                                                   dates=self.ui.ReportRange.getRange(),
-                                                  grouping=self.ui.GroupCombo.currentData())
+                                                  grouping=self.ui.GroupCombo.currentData(), portfolio=portfolio)

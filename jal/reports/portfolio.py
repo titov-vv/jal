@@ -2,14 +2,14 @@ from functools import partial
 
 from PySide6.QtCore import Qt, Slot, QObject
 from PySide6.QtGui import QAction
-from PySide6.QtWidgets import QMenu, QProgressDialog
+from PySide6.QtWidgets import QMenu
 from jal.ui.reports.ui_portfolio_report import Ui_PortfolioWidget
 from jal.reports.reports import Reports
 from jal.constants import AccountStatus
 from jal.db.clock import now_dt
 from jal.db.asset import JalAsset
 from jal.db.holdings_model import HoldingsModel
-from jal.db.portfolio import PortfolioLots
+from jal.widgets.custom.portfolio_combo import PortfolioCombo
 from jal.widgets.mdi import MdiWidget
 from jal.widgets.holdings_menu import HoldingsMenu
 from jal.widgets.helpers import set_grids_metrics
@@ -85,22 +85,12 @@ class PortfolioReportWindow(MdiWidget):
 
     @Slot()
     def updateReport(self):
-        if "portfolio_id" in (self.ui.GroupCombo.currentData() or "") and PortfolioLots.needs_replay():
-            self._replay_portfolios()
+        if "portfolio_id" in (self.ui.GroupCombo.currentData() or ""):
+            PortfolioCombo.prepare_lots(self)
         self.ui.PortfolioTreeView.model().updateView(currency_id = self.ui.PortfolioCurrencyCombo.selected_id,
                                                      date = self.ui.PortfolioDate.date(),
                                                      grouping = self.ui.GroupCombo.currentData(),
                                                      min_status = self.ui.AccountsCombo.currentData())
-
-    # The portfolio replay a grouping by portfolio needs, with its progress shown
-    def _replay_portfolios(self):
-        dialog = QProgressDialog(self.tr("Replaying lots by portfolio…"), None, 0, 100, self)
-        dialog.setWindowModality(Qt.WindowModal)
-        dialog.setMinimumDuration(0)
-        try:
-            PortfolioLots.prepare(lambda done, total: dialog.setValue(100 * done // total if total else 100))
-        finally:
-            dialog.close()
 
     @Slot()
     def onHoldingsContextMenu(self, pos):

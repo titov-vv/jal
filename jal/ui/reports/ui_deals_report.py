@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (QAbstractItemView, QApplication, QComboBox, QFram
     QSizePolicy, QSpacerItem, QVBoxLayout, QWidget)
 
 from jal.widgets.custom.date_range_selector import DateRangeSelector
+from jal.widgets.custom.portfolio_combo import PortfolioCombo
 from jal.widgets.custom.treeview_with_footer import TreeViewWithFooter
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 
@@ -69,6 +70,20 @@ class Ui_DealsReportWidget(object):
 
         self.horizontalLayout.addWidget(self.ReportAccountEdit)
 
+        self.portfolioSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout.addItem(self.portfolioSpacer)
+
+        self.PortfolioLbl = QLabel(self.ReportParamsFrame)
+        self.PortfolioLbl.setObjectName(u"PortfolioLbl")
+
+        self.horizontalLayout.addWidget(self.PortfolioLbl)
+
+        self.PortfolioCombo = PortfolioCombo(self.ReportParamsFrame)
+        self.PortfolioCombo.setObjectName(u"PortfolioCombo")
+
+        self.horizontalLayout.addWidget(self.PortfolioCombo)
+
         self.ReportFrameSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
         self.horizontalLayout.addItem(self.ReportFrameSpacer)
@@ -92,10 +107,12 @@ class Ui_DealsReportWidget(object):
 #if QT_CONFIG(shortcut)
         self.GroupLbl.setBuddy(self.GroupCombo)
         self.ReportAccountLbl.setBuddy(self.ReportAccountEdit)
+        self.PortfolioLbl.setBuddy(self.PortfolioCombo)
 #endif // QT_CONFIG(shortcut)
         QWidget.setTabOrder(self.ReportRange, self.GroupCombo)
         QWidget.setTabOrder(self.GroupCombo, self.ReportAccountEdit)
-        QWidget.setTabOrder(self.ReportAccountEdit, self.SaveButton)
+        QWidget.setTabOrder(self.ReportAccountEdit, self.PortfolioCombo)
+        QWidget.setTabOrder(self.PortfolioCombo, self.SaveButton)
         QWidget.setTabOrder(self.SaveButton, self.ReportTreeView)
 
         self.retranslateUi(DealsReportWidget)
@@ -107,6 +124,7 @@ class Ui_DealsReportWidget(object):
         DealsReportWidget.setWindowTitle(QCoreApplication.translate("DealsReportWidget", u"Deals by account", None))
         self.GroupLbl.setText(QCoreApplication.translate("DealsReportWidget", u"&Group by:", None))
         self.ReportAccountLbl.setText(QCoreApplication.translate("DealsReportWidget", u"&Account:", None))
+        self.PortfolioLbl.setText(QCoreApplication.translate("DealsReportWidget", u"&Portfolio:", None))
         self.SaveButton.setText(QCoreApplication.translate("DealsReportWidget", u"Save...", None))
     # retranslateUi
 

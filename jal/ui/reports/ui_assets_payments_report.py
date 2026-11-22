@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (QAbstractItemView, QApplication, QFrame, QGridLay
     QSpacerItem, QVBoxLayout, QWidget)
 
 from jal.widgets.custom.date_range_selector import DateRangeSelector
+from jal.widgets.custom.portfolio_combo import PortfolioCombo
 from jal.widgets.custom.tableview_with_footer import TableViewWithFooter
 from jal.widgets.reference_selector import ReferenceSelectorWidget
 
@@ -43,7 +44,7 @@ class Ui_AssetsPaymentsReportWidget(object):
 
         self.ReportFrameSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
 
-        self.gridLayout.addItem(self.ReportFrameSpacer, 0, 4, 1, 1)
+        self.gridLayout.addItem(self.ReportFrameSpacer, 0, 7, 1, 1)
 
         self.accountGroupSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
 
@@ -59,10 +60,24 @@ class Ui_AssetsPaymentsReportWidget(object):
 
         self.gridLayout.addWidget(self.ReportAccountEdit, 0, 3, 1, 1)
 
+        self.portfolioSpacer = QSpacerItem(0, 20, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum)
+
+        self.gridLayout.addItem(self.portfolioSpacer, 0, 4, 1, 1)
+
+        self.PortfolioLbl = QLabel(self.ReportParamsFrame)
+        self.PortfolioLbl.setObjectName(u"PortfolioLbl")
+
+        self.gridLayout.addWidget(self.PortfolioLbl, 0, 5, 1, 1)
+
+        self.PortfolioCombo = PortfolioCombo(self.ReportParamsFrame)
+        self.PortfolioCombo.setObjectName(u"PortfolioCombo")
+
+        self.gridLayout.addWidget(self.PortfolioCombo, 0, 6, 1, 1)
+
         self.SaveButton = QPushButton(self.ReportParamsFrame)
         self.SaveButton.setObjectName(u"SaveButton")
 
-        self.gridLayout.addWidget(self.SaveButton, 0, 5, 1, 1)
+        self.gridLayout.addWidget(self.SaveButton, 0, 8, 1, 1)
 
 
         self.verticalLayout.addWidget(self.ReportParamsFrame)
@@ -85,9 +100,11 @@ class Ui_AssetsPaymentsReportWidget(object):
 
 #if QT_CONFIG(shortcut)
         self.ReportAccountLbl.setBuddy(self.ReportAccountEdit)
+        self.PortfolioLbl.setBuddy(self.PortfolioCombo)
 #endif // QT_CONFIG(shortcut)
         QWidget.setTabOrder(self.ReportRange, self.ReportAccountEdit)
-        QWidget.setTabOrder(self.ReportAccountEdit, self.SaveButton)
+        QWidget.setTabOrder(self.ReportAccountEdit, self.PortfolioCombo)
+        QWidget.setTabOrder(self.PortfolioCombo, self.SaveButton)
         QWidget.setTabOrder(self.SaveButton, self.ReportTableView)
 
         self.retranslateUi(AssetsPaymentsReportWidget)
@@ -98,6 +115,7 @@ class Ui_AssetsPaymentsReportWidget(object):
     def retranslateUi(self, AssetsPaymentsReportWidget):
         AssetsPaymentsReportWidget.setWindowTitle(QCoreApplication.translate("AssetsPaymentsReportWidget", u"Assets' payments", None))
         self.ReportAccountLbl.setText(QCoreApplication.translate("AssetsPaymentsReportWidget", u"&Account:", None))
+        self.PortfolioLbl.setText(QCoreApplication.translate("AssetsPaymentsReportWidget", u"&Portfolio:", None))
         self.SaveButton.setText(QCoreApplication.translate("AssetsPaymentsReportWidget", u"Save...", None))
     # retranslateUi
 

@@ -8,6 +8,7 @@ from jal.db.asset import JalAsset
 from jal.db.helpers import localize_decimal
 from jal.constants import SwapTreatment
 from jal.db.operations import LedgerTransaction
+from jal.db.portfolio import PortfolioLots
 from jal.widgets.helpers import ts2d
 from jal.widgets.delegates import TimestampDelegate, FloatDelegate, GridLinesDelegate
 
@@ -102,6 +103,7 @@ class ClosedTradesModel(ReportTreeModel):
         self._trades = []
         self._account_id = 0
         self._begin = self._end = 0
+        self._portfolio = None   # a tag id, JalPortfolio.Unassigned or None for every deal
         self._grid_delegate = None
         self._float_delegate = None
         self._float2_delegate = None
@@ -150,6 +152,8 @@ class ClosedTradesModel(ReportTreeModel):
                 return localize_decimal(total_data[self._columns[section]['field']], precision=2)
             elif section == self.fieldIndex('p/l%'):
                 return self._total_currency_name
+            elif section == self.fieldIndex('note') and self._portfolio is not None:
+                return self.tr("Portfolio deals are for management only, tax reports are unaffected")
         elif role == Qt.FontRole:
             font = QFont()
             font.setBold(True)
@@ -165,8 +169,11 @@ class ClosedTradesModel(ReportTreeModel):
     def _is_conversion(operation) -> bool:
         return operation.type() == LedgerTransaction.Swap and operation.treatment() == SwapTreatment.Conversion
 
-    def updateView(self, account_id, dates, grouping):
+    def updateView(self, account_id, dates, grouping, portfolio=None):
         update = False
+        if self._portfolio != portfolio:
+            self._portfolio = portfolio
+            update = True
         if self._account_id != account_id:
             self._account_id = account_id
             self._total_currency_name = JalAsset(JalAccount(account_id).currency()).symbol()
@@ -184,8 +191,11 @@ class ClosedTradesModel(ReportTreeModel):
         self.beginResetModel()
         # The Deals report shows swap-realized deals too; tax reports keep the Trade-only default.
         # A conversion swap realizes nothing, so its zero deals are hidden as a wrapping's are.
-        self._trades = JalAccount(self._account_id).closed_trades_list(
-            close_otypes=(LedgerTransaction.Trade, LedgerTransaction.Swap))
+        account, otypes = JalAccount(self._account_id), (LedgerTransaction.Trade, LedgerTransaction.Swap)
+        if self._portfolio is None:
+            self._trades = account.closed_trades_list(close_otypes=otypes)
+        else:
+            self._trades = [x for tag_id, x in PortfolioLots.deals(account, otypes) if tag_id == self._portfolio]
         self._trades = [x for x in self._trades if self._begin <= x.close_operation().timestamp() <= self._end
                         and not self._is_conversion(x.close_operation())]
         self._root = TradeTreeItem()
