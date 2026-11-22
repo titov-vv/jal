@@ -44,8 +44,8 @@ class BasisPolicy:
     def income_cost(self, income) -> Decimal:
         raise NotImplementedError
 
-    # The open lots of a position in the order a disposal takes them
-    def order(self, lots: list) -> list:
+    # The open lots of a position in the order 'operation' takes them; None asks for the order of no particular one
+    def order(self, lots: list, operation=None) -> list:
         raise NotImplementedError
 
 
@@ -66,5 +66,5 @@ class JalPolicy(BasisPolicy):
 
     # By acquisition date, then by the original operation; slice_id breaks the remaining ties, as slices get ids in
     # replay (chronological) order
-    def order(self, lots: list) -> list:
+    def order(self, lots: list, operation=None) -> list:
         return sorted(lots, key=lambda x: (x.acquired(), x.open_operation().timestamp(), x.slice_id()))

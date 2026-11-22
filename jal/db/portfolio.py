@@ -1,6 +1,7 @@
 from decimal import Decimal
 from jal.db.db import JalDB
 import jal.db.operations
+import jal.db.basis_policy
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -43,3 +44,29 @@ class JalPortfolio(JalDB):
         if operation.type() == jal.db.operations.LedgerTransaction.Trade and operation.qty() < Decimal('0'):
             return self.Unassigned
         return self.of_operation(operation)
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# A policy that takes the lots of the disposing operation's own portfolio first, then the rest, each part in the
+# wrapped policy's order; the other questions go to the wrapped policy unchanged. For a portfolio replay only.
+class PortfolioPolicy(jal.db.basis_policy.BasisPolicy):
+    def __init__(self, policy, portfolio: JalPortfolio):
+        self._policy = policy
+        self._portfolio = portfolio
+
+    def treatment(self, operation):
+        return self._policy.treatment(operation)
+
+    def action_result(self, action, result: dict):
+        return self._policy.action_result(action, result)
+
+    def income_cost(self, income) -> Decimal:
+        return self._policy.income_cost(income)
+
+    def order(self, lots: list, operation=None) -> list:
+        ordered = self._policy.order(lots, operation)
+        tag_id = JalPortfolio.Unassigned if operation is None else self._portfolio.of_operation(operation)
+        if tag_id == JalPortfolio.Unassigned:
+            return ordered
+        own = [x for x in ordered if self._portfolio.of_lot(x) == tag_id]
+        return own + [x for x in ordered if self._portfolio.of_lot(x) != tag_id]

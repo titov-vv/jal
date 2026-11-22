@@ -193,16 +193,16 @@ class LotEngine:
         self._parked = {}
         self._operations = {}   # {(otype, oid, opart): operation} lots and deals refer to; read only, see forget()
 
-    # Open lots of a position at 'timestamp' (latest if None) in the order the policy takes them
-    def lots(self, account, asset, timestamp=None) -> list:
+    # Open lots of a position at 'timestamp' (latest if None) in the order the policy takes them for 'operation'
+    def lots(self, account, asset, timestamp=None, operation=None) -> list:
         if timestamp is None:
             timestamp = Setup.MAX_TIMESTAMP
         lots = []
         for otype, oid, price, qty, p, q, fx, slice_id, acquired in self.store.lots(account.id(), asset.id(), timestamp):
-            operation = self._operation(otype, oid, jal.db.operations.Transfer.Incoming)
-            lots.append(jal.db.closed_trade.JalOpenTrade(operation, price, qty, adjustments=(p, q), fx=fx,
+            opened_by = self._operation(otype, oid, jal.db.operations.Transfer.Incoming)
+            lots.append(jal.db.closed_trade.JalOpenTrade(opened_by, price, qty, adjustments=(p, q), fx=fx,
                                                          slice_id=slice_id, acquired=acquired))
-        return self.policy.order(lots)
+        return self.policy.order(lots, operation)
 
     # The operation a lot or a deal refers to, loaded once for as long as the engine remembers it
     def _operation(self, otype: int, oid: int, opart: int = 0):
@@ -303,7 +303,7 @@ class LotEngine:
     def _match(self, account, asset, operation, qty, close_price, record_deals) -> (Decimal, Decimal):
         sign = Decimal('-1') if qty < Decimal('0') else Decimal('1')
         matched, basis = Decimal('0'), Decimal('0')
-        for lot, taken, left in self._walk(self.lots(account, asset), abs(qty)):
+        for lot, taken, left in self._walk(self.lots(account, asset, operation=operation), abs(qty)):
             lot.set_qty(left)
             self._store(account, asset, lot, operation)
             if record_deals:

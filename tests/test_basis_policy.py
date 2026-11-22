@@ -16,8 +16,8 @@ class OtherPolicy(JalPolicy):
             return Treatment(Basis.DISPOSAL, Clock.RESTART)
         return Treatment(Basis.CARRY, Clock.RESTART)
 
-    def order(self, lots: list) -> list:
-        return list(reversed(super().order(lots)))
+    def order(self, lots: list, operation=None) -> list:
+        return list(reversed(super().order(lots, operation)))
 
 
 def _rebuild(policy):

@@ -105,8 +105,8 @@ class DecidedPolicy(BasisPolicy):
     def income_cost(self, income) -> Decimal:
         return self._policy.income_cost(income)
 
-    def order(self, lots: list) -> list:
-        return self._policy.order(lots)
+    def order(self, lots: list, operation=None) -> list:
+        return self._policy.order(lots, operation)
 
 
 class TaxReport:
