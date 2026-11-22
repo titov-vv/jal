@@ -235,7 +235,7 @@ arrived.
 For every position: quantity, when it was opened, the price you paid, the last known price, the share
 of the portfolio, profit in money and in per cent, what it has paid out, and its value in both its
 own and your reporting currency. The **Group by** box regroups it all by currency, account, asset,
-country or the tag of the account.
+country, the tag of the account or [portfolio](#portfolios).
 
 Chapter 10 describes this and the other investment reports —
 [Deals](10-reports.md#deals-by-account), [P&L](10-reports.md#pl-by-account),
@@ -273,6 +273,63 @@ The tax is a [base estimation](11-taxes.md#base-estimation): the year's base rat
 nothing more. Losses of other deals and of earlier years, deductions and the fees of the sale are not
 counted. It is a rough guide for deciding whether to sell, not a tax return; the real thing is in
 [chapter 11](11-taxes.md).
+
+## Portfolios
+
+A portfolio splits what you hold by purpose — *Retirement*, *Kids*, *Trading* — across accounts and
+within one position. Any [tag](14-glossary.md) can serve as a portfolio. A **lot** belongs to the
+portfolio of the operation that bought or received it. Anything you haven't assigned is
+*Unassigned*, and so is money.
+
+Portfolios are for your own management only. The ledger, the deals of the tax reports and every tax
+figure stay exactly as they were.
+
+### Assigning lots
+
+The usual place is **Position details** (right-click a position in the portfolio report). The table has
+a **Portfolio** column, and its right-click menu offers:
+
+* **Set portfolio of checked lots…** — pick a tag for the checked lots;
+* **Assign unassigned lots…** — one click after an import, a regular purchase or a staking reward;
+* **Remove checked lots from portfolio**.
+
+![Position details with a portfolio](img/position_details_portfolio.png)
+
+When a position holds both assigned and unassigned lots, the row under the table says how many are
+unassigned.
+
+Position details shows only the lots you still hold. To assign a **sale**, or lots already sold, use the
+operations list: select the operations, right-click and choose **Assign tag** — on a trade, transfer,
+swap, corporate action, conversion, bridge or asset income it sets the portfolio. Such an operation
+shows its portfolio's tag at the right end of the *Account* cell, and its tooltip names it.
+
+### How a sale takes lots
+
+A sale assigned to a portfolio sells that portfolio's lots first, oldest first. Only when they run out
+does it take lots of other portfolios — a *spill*, listed in the [review report](10-reports.md#portfolio-review).
+A sale with no portfolio sells oldest first, as always. So the profit per portfolio can differ from the
+profit of the same deals in the tax reports. The total over all portfolios is the same.
+
+A short position is never in a portfolio. Rewards, stock dividends and other assets that simply arrive
+stay *Unassigned* until you assign them.
+
+### Reports by portfolio
+
+* **Asset portfolio** — group by *Portfolio*, *Portfolio - Account* or *Portfolio - Asset*. A position
+  split between portfolios shows one row in each, with the cost of its own lots:
+
+  ![The portfolio report grouped by portfolio](img/report_portfolio_by_portfolio.png)
+
+* **Deals by account** and **Assets' payments** have a **Portfolio** box. A dividend or a coupon is shared out
+  by how many units each portfolio held just before the ex-date (at the payment date if no ex-date is
+  recorded).
+* **Portfolio review** lists what needs a look: spills, and unassigned lots in positions that also hold
+  assigned ones ([chapter 10](10-reports.md#portfolio-review)).
+
+The first report by portfolio after a change may take a few seconds when a **sale** is assigned:
+JAL replays your history to see which lots each portfolio sold. That result is kept until the
+ledger is rebuilt or an assignment changes. While you have assigned only purchases, no replay is
+needed.
 
 ---
 

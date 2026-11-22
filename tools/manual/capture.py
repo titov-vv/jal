@@ -370,6 +370,37 @@ def capture_position_windows(window):
     details.close()
 
 
+# The demo's WLDX is half in the 'Retirement' portfolio: the holdings by portfolio, its lots and the review list
+def capture_portfolios(window):
+    from jal.db.db import JalDB
+    from jal.db.helpers import now_ts
+    from jal.reports.portfolio import PortfolioReportWindow
+    from jal.reports.portfolio_review import PortfolioReviewReportWindow
+    from jal.widgets.position_details import PositionDetails
+    report = PortfolioReportWindow(window.reports)
+    window.ui.windowArea.addWindow(report, floating=True, size=(1120, 420))
+    report.ui.GroupCombo.setCurrentIndex(report.ui.GroupCombo.findData("portfolio_id;account_id"))
+    report.ui.PortfolioTreeView.expandAll()
+    report.ui.PortfolioTreeView.setFocus()
+    QApplication.processEvents()
+    save(report, "report_portfolio_by_portfolio")
+    report.close()
+    wldx = JalDB._read("SELECT asset_id FROM asset_symbol WHERE symbol='WLDX'")
+    details = PositionDetails(4, wldx, 2, now_ts())
+    window.ui.windowArea.addWindow(details, floating=True, size=(1100, 560))
+    details.resize(1300, 560)
+    details.ui.PositionDetailsSplitter.setSizes([900, 400])   # room for the Portfolio column, the last one
+    QApplication.processEvents()
+    save(details, "position_details_portfolio")
+    details.close()
+    review = PortfolioReviewReportWindow(window.reports)
+    window.ui.windowArea.addWindow(review, floating=True, size=(1120, 480))
+    review.ui.ReportTableView.selectRow(0)
+    QApplication.processEvents()
+    save(review, "report_portfolio_review")
+    review.close()
+
+
 def capture_deposit_dialogs(window):
     from jal.widgets.deposit_dialogs import NewDepositDialog, DepositInterestDialog
     from jal.db.deposit import JalDepositBox
@@ -494,6 +525,7 @@ def main():
     capture_edit_dialogs(window)
     capture_tax_windows(window)
     capture_position_windows(window)
+    capture_portfolios(window)
     capture_deposit_dialogs(window)
     capture_dialogs(window)
     capture_readme(window, operations)

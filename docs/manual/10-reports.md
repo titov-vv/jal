@@ -57,8 +57,9 @@ What you own, on a chosen date:
 | **Value, …** | The same, converted into the common currency |
 
 **Group by** rearranges everything — by currency and account, by asset, by country, by the tag on
-the account it is held in, or by the
-[status](03-first-steps.md#step-2--create-your-accounts) of that account.
+the account it is held in, by the
+[status](03-first-steps.md#step-2--create-your-accounts) of that account, or by
+[portfolio](06-investments.md#portfolios).
 **Accounts** says how deep the report reaches: *Active accounts only*, *With background accounts*
 (the default) or *With closed accounts*. Grouped by status, the background positions come as one
 folded group with its own total — open it to see what is inside.
@@ -80,7 +81,8 @@ One line per closed deal: when it was opened and closed, at what prices, the qua
 the profit in money and per cent. A swap booked as a conversion closes nothing here: its result
 appears on the deal that finally sells what it bought. **Group by** can group them by asset, by the date they were opened
 or closed, or by combinations of those. The **Total** at the bottom is the realised profit for the
-period — the figure most tax authorities are interested in.
+period — the figure most tax authorities are interested in. The **Portfolio** box shows the deals of one
+[portfolio](06-investments.md#portfolios), as its own sales took the lots.
 
 ## P&L by account
 
@@ -109,7 +111,24 @@ Every dividend, coupon and reward an account has received:
 ![The payments report](img/report_payments.png)
 
 Date, asset, kind of payment, amount, tax withheld and the note. The totals at the bottom are what
-the account earned in payments over the period, and what was withheld from it.
+the account earned in payments over the period, and what was withheld from it. With a
+[portfolio](06-investments.md#portfolios) chosen in the **Portfolio** box, each payment shows that
+portfolio's share: the amount split by how many units it held before the ex-date.
+
+## Portfolio review
+
+The [portfolio](06-investments.md#portfolios) assignments that need a look:
+
+![The portfolio review](img/report_portfolio_review.png)
+
+* **Spill** — a sale assigned to a portfolio ran out of that portfolio's lots and took lots of the
+  portfolios named in *Other portfolios*.
+* **Unassigned** — lots without a portfolio in a position that holds assigned lots too: typically a
+  new purchase from a statement, or a reward.
+
+Pick a row to see its operation below. Right-click for **Set portfolio…** or **Remove from portfolio**,
+which apply to the operation of every selected row. **Refresh** reads the list again after you
+change operations elsewhere.
 
 ## Deposits
 

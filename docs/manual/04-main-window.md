@@ -197,7 +197,8 @@ These sit to the right of the editor. With the editor hidden, the shortcuts open
 ![The operation context menu](img/operation_context_menu.png)
 
 * **Reconcile** — mark the account as checked up to this operation (see next chapter).
-* **Assign tag** — put a tag on every line of the operation at once.
+* **Assign tag** — put a tag on every line of the operation at once; on a trade, transfer or other
+  operation that moves lots it sets their [portfolio](06-investments.md#portfolios) instead.
 * **Tax treatment…** — your decision on how a country's tax report treats this operation; an
   operation that has one shows the tax icon at the end of its notes. See
   [chapter 11](11-taxes.md#your-decisions-tax-treatment).

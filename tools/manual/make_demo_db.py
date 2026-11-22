@@ -22,6 +22,7 @@ from jal.db.account import JalAccount, JalAccountCreator
 from jal.db.category import JalCategory
 from jal.db.peer import JalPeer
 from jal.db.tag import JalTag
+from jal.db.portfolio import JalPortfolio
 from jal.db.deposit import JalDepositBox
 from jal.db.operations import LedgerTransaction, AssetPayment, AssetIncome, ChainAction
 from jal.db.ledger import Ledger
@@ -97,7 +98,7 @@ def create_categories() -> dict:
 
 def create_tags() -> dict:
     tags = {}
-    for name in ["Holiday", "Car", "Home"]:
+    for name in ["Holiday", "Car", "Home", "Retirement"]:
         query = JalDB._exec("INSERT INTO tags (pid, tag) VALUES (0, :tag)", [(":tag", name)], commit=True)
         tags[name] = query.lastInsertId()
     return tags
@@ -313,6 +314,12 @@ def create_investments(accounts: dict, assets: dict, peers: dict) -> None:
     trade(ts("2026-08-11 17:40"), broker, assets['btc'], '-0.02', '65800.00', '6.58', number="T-114882")
 
 
+# The first WLDX purchase goes to the 'Retirement' portfolio; the second is left unassigned, for the review report
+def assign_portfolios(tags: dict) -> None:
+    oid = JalDB._read("SELECT oid FROM trades WHERE number='T-100388'")
+    JalPortfolio.assign(oid, tags["Retirement"])
+
+
 # Every account is marked reconciled up to a recent date, the way a user who checks their statements keeps them -
 # except the trading account, left behind on purpose so that the manual can show what an unreconciled balance
 # looks like in the balances panel.
@@ -402,6 +409,7 @@ def main() -> None:
     create_crypto(accounts, assets)
     create_deposit(accounts, peers)
     reconcile_accounts(accounts)
+    assign_portfolios(tags)
     JalSettings().setValue('WindowGeometry', '')
     ledger = Ledger()
     ledger.rebuild(from_timestamp=0)

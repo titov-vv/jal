@@ -69,6 +69,10 @@ with such an asset on either side is a sale by default.
 **Pending / unsettled** — a movement that knows only one of its two ends. Listed in the *Unsettled
 transfers* report until you say what the other end was.
 
+**Portfolio** — a tag given to lots to split holdings by purpose. A lot belongs to the portfolio of the
+operation that bought or received it, and a sale assigned to a portfolio sells that portfolio's lots
+first. For your own management only; tax figures ignore it.
+
 **Precision** — how many decimal places an account counts in. Two for money, more for crypto.
 
 **Protocol** — an attribute of an asset naming the venue its receipt token belongs to (*Aave v3*,
@@ -105,7 +109,7 @@ over, as a wrapping does. *Auto* chooses by the *pegged to* attribute. Compare *
 **Symbol** — see *listing*.
 
 **Tag** — a free label that cuts across categories: `Holiday`, `Car`. Set per line of an operation,
-and on accounts.
+and on accounts. Also serves as a *portfolio*.
 
 **Term deposit** — money placed with a bank for a fixed period at a stated rate. JAL keeps each as an
 account of its own.

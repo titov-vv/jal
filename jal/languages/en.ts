@@ -354,32 +354,32 @@
 <context>
     <name>AccountHoldingsModel</name>
     <message>
-        <location filename="../db/holdings_model.py" line="455"/>
+        <location filename="../db/holdings_model.py" line="492"/>
         <source>Asset</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="513"/>
+        <location filename="../db/holdings_model.py" line="550"/>
         <source>N/A</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="575"/>
+        <location filename="../db/holdings_model.py" line="612"/>
         <source>Claimable (earned, not yet paid)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="578"/>
+        <location filename="../db/holdings_model.py" line="615"/>
         <source>On this account (equals Balance)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="581"/>
+        <location filename="../db/holdings_model.py" line="618"/>
         <source>Staked from this account (separate accounts, not in Balance)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="585"/>
+        <location filename="../db/holdings_model.py" line="622"/>
         <source>Including staked</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1152,7 +1152,7 @@ Do you want to delete the account anyway?</source>
 <context>
     <name>AssetPortfolioReport</name>
     <message>
-        <location filename="../reports/portfolio.py" line="23"/>
+        <location filename="../reports/portfolio.py" line="24"/>
         <source>Asset &amp;portfolio</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1254,50 +1254,55 @@ Do you want to delete the account anyway?</source>
 <context>
     <name>AssetsPaymentsModel</name>
     <message>
-        <location filename="../reports/assets_payments.py" line="25"/>
+        <location filename="../reports/assets_payments.py" line="27"/>
         <source>Date</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="25"/>
+        <location filename="../reports/assets_payments.py" line="27"/>
         <source>Symbol</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="25"/>
+        <location filename="../reports/assets_payments.py" line="27"/>
         <source>Asset</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="25"/>
+        <location filename="../reports/assets_payments.py" line="27"/>
         <source>Type</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="26"/>
+        <location filename="../reports/assets_payments.py" line="28"/>
         <source>Amount</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="26"/>
+        <location filename="../reports/assets_payments.py" line="28"/>
         <source>Tax</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="26"/>
+        <location filename="../reports/assets_payments.py" line="28"/>
         <source>Note</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/assets_payments.py" line="78"/>
+        <location filename="../reports/assets_payments.py" line="80"/>
         <source>Total of payments in {}:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/assets_payments.py" line="86"/>
+        <source>Shared out by the quantity each portfolio held, for management only</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>AssetsPaymentsReport</name>
     <message>
-        <location filename="../reports/assets_payments.py" line="134"/>
+        <location filename="../reports/assets_payments.py" line="146"/>
         <source>Assets&apos; pay&amp;ments</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1315,7 +1320,12 @@ Do you want to delete the account anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/reports/assets_payments_report.ui" line="75"/>
+        <location filename="../ui/reports/assets_payments_report.ui" line="91"/>
+        <source>&amp;Portfolio:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/assets_payments_report.ui" line="104"/>
         <source>Save...</source>
         <translation></translation>
     </message>
@@ -1323,7 +1333,7 @@ Do you want to delete the account anyway?</source>
 <context>
     <name>AssetsPaymentsReportWindow</name>
     <message>
-        <location filename="../reports/assets_payments.py" line="146"/>
+        <location filename="../reports/assets_payments.py" line="158"/>
         <source>Assets&apos; payments</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2615,69 +2625,74 @@ Do you want to delete the category anyway?</source>
 <context>
     <name>ClosedTradesModel</name>
     <message>
-        <location filename="../db/trades_model.py" line="113"/>
+        <location filename="../db/trades_model.py" line="115"/>
         <source>Asset</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/trades_model.py" line="114"/>
+        <location filename="../db/trades_model.py" line="116"/>
         <source>Open Date/Time</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/trades_model.py" line="115"/>
+        <location filename="../db/trades_model.py" line="117"/>
         <source>Open Date</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/trades_model.py" line="116"/>
+        <location filename="../db/trades_model.py" line="118"/>
         <source>Close Date/Time</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/trades_model.py" line="117"/>
+        <location filename="../db/trades_model.py" line="119"/>
         <source>Close Date</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/trades_model.py" line="118"/>
+        <location filename="../db/trades_model.py" line="120"/>
         <source>Open Price</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/trades_model.py" line="119"/>
+        <location filename="../db/trades_model.py" line="121"/>
         <source>Close Price</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/trades_model.py" line="120"/>
+        <location filename="../db/trades_model.py" line="122"/>
         <source>Qty</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/trades_model.py" line="121"/>
+        <location filename="../db/trades_model.py" line="123"/>
         <source>Fee</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/trades_model.py" line="122"/>
+        <location filename="../db/trades_model.py" line="124"/>
         <source>P/L</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/trades_model.py" line="123"/>
+        <location filename="../db/trades_model.py" line="125"/>
         <source>P/L, %</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/trades_model.py" line="124"/>
+        <location filename="../db/trades_model.py" line="126"/>
         <source>Note</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/trades_model.py" line="148"/>
+        <location filename="../db/trades_model.py" line="150"/>
         <source>Total:</source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="../db/trades_model.py" line="156"/>
+        <source>Portfolio deals are for management only, tax reports are unaffected</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -3042,7 +3057,7 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>DealsReport</name>
     <message>
-        <location filename="../reports/deals.py" line="19"/>
+        <location filename="../reports/deals.py" line="20"/>
         <source>&amp;Deals by account</source>
         <translation type="unfinished"></translation>
     </message>
@@ -3065,7 +3080,12 @@ one for ParentCo and second for Subsidiary</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../ui/reports/deals_report.ui" line="104"/>
+        <location filename="../ui/reports/deals_report.ui" line="107"/>
+        <source>&amp;Portfolio:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/deals_report.ui" line="133"/>
         <source>Save...</source>
         <translation></translation>
     </message>
@@ -3073,37 +3093,37 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>DealsReportWindow</name>
     <message>
-        <location filename="../reports/deals.py" line="35"/>
+        <location filename="../reports/deals.py" line="36"/>
         <source>&lt;None&gt;</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="32"/>
+        <location filename="../reports/deals.py" line="33"/>
         <source>Deals by account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="36"/>
+        <location filename="../reports/deals.py" line="37"/>
         <source>Asset</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="37"/>
+        <location filename="../reports/deals.py" line="38"/>
         <source>Close</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="38"/>
+        <location filename="../reports/deals.py" line="39"/>
         <source>Asset - Open - Close</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="39"/>
+        <location filename="../reports/deals.py" line="40"/>
         <source>Open - Close</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/deals.py" line="40"/>
+        <location filename="../reports/deals.py" line="41"/>
         <source>Close - Open</source>
         <translation></translation>
     </message>
@@ -3594,88 +3614,95 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>HoldingsModel</name>
     <message>
-        <location filename="../db/holdings_model.py" line="148"/>
+        <location filename="../db/holdings_model.py" line="151"/>
         <source>Qty</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="149"/>
+        <location filename="../db/holdings_model.py" line="152"/>
         <source>Since</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="150"/>
+        <location filename="../db/holdings_model.py" line="153"/>
         <source>Open</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="151"/>
+        <location filename="../db/holdings_model.py" line="154"/>
         <source>Last</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="152"/>
+        <location filename="../db/holdings_model.py" line="155"/>
         <source>Share, %</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="153"/>
+        <location filename="../db/holdings_model.py" line="156"/>
         <source>P/L, %</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="154"/>
+        <location filename="../db/holdings_model.py" line="157"/>
         <source>P/L</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="155"/>
+        <location filename="../db/holdings_model.py" line="158"/>
         <source>Paid</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="156"/>
+        <location filename="../db/holdings_model.py" line="159"/>
         <source>Value</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="157"/>
+        <location filename="../db/holdings_model.py" line="160"/>
         <source>Value, </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="218"/>
+        <location filename="../db/holdings_model.py" line="221"/>
         <source>Last quote date: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="220"/>
+        <location filename="../db/holdings_model.py" line="223"/>
         <source>On-chain balance as of: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="283"/>
+        <location filename="../db/holdings_model.py" line="286"/>
         <source>Open position was expected but not found for (account-asset-date): </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="345"/>
-        <location filename="../db/holdings_model.py" line="378"/>
+        <location filename="../db/holdings_model.py" line="348"/>
+        <location filename="../db/holdings_model.py" line="386"/>
         <source>N/A</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="146"/>
+        <location filename="../db/holdings_model.py" line="364"/>
+        <location filename="../db/holdings_model.py" line="401"/>
+        <location filename="../db/holdings_model.py" line="432"/>
+        <source>Unassigned</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/holdings_model.py" line="149"/>
         <source>Currency/Account/Asset</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="147"/>
+        <location filename="../db/holdings_model.py" line="150"/>
         <source>Asset Name</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/holdings_model.py" line="329"/>
+        <location filename="../db/holdings_model.py" line="332"/>
         <source>Exp:</source>
         <translation></translation>
     </message>
@@ -4974,87 +5001,87 @@ do you want to save them?</source>
 <context>
     <name>Ledger</name>
     <message>
-        <location filename="../db/ledger.py" line="219"/>
+        <location filename="../db/ledger.py" line="220"/>
         <source>No asset defined for: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="224"/>
+        <location filename="../db/ledger.py" line="225"/>
         <source>No category set for: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="226"/>
+        <location filename="../db/ledger.py" line="227"/>
         <source>No peer set for: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="298"/>
+        <location filename="../db/ledger.py" line="300"/>
         <source>Processing order can&apos;t be built, ledger is left untouched</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="309"/>
+        <location filename="../db/ledger.py" line="311"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="310"/>
+        <location filename="../db/ledger.py" line="312"/>
         <source> operations require rebuild. Do you want to do it right now?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="341"/>
+        <location filename="../db/ledger.py" line="343"/>
         <source>Interrupted by user</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="375"/>
+        <location filename="../db/ledger.py" line="377"/>
         <source>Exception happened. Ledger is incomplete. Please correct errors listed in log</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="379"/>
+        <location filename="../db/ledger.py" line="381"/>
         <source>Ledger is incomplete, it stopped at </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="382"/>
+        <location filename="../db/ledger.py" line="384"/>
         <source>Ledger is complete. Elapsed time: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="383"/>
+        <location filename="../db/ledger.py" line="385"/>
         <source>, new frontier: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="409"/>
+        <location filename="../db/ledger.py" line="411"/>
         <source>Open lots don&apos;t add up to the position, check the account precision: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="430"/>
+        <location filename="../db/ledger.py" line="432"/>
         <source>Rebase residue could not be checked: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="433"/>
+        <location filename="../db/ledger.py" line="435"/>
         <source>Absorption of rebase residues was interrupted by user</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="440"/>
+        <location filename="../db/ledger.py" line="442"/>
         <source>Too many rebase residues in a row - the ledger was left incomplete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="315"/>
+        <location filename="../db/ledger.py" line="317"/>
         <source>Leger is empty</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/ledger.py" line="318"/>
+        <location filename="../db/ledger.py" line="320"/>
         <source>Re-building ledger since: </source>
         <translation></translation>
     </message>
@@ -5062,572 +5089,572 @@ do you want to save them?</source>
 <context>
     <name>LedgerTransaction</name>
     <message>
-        <location filename="../db/operations.py" line="281"/>
+        <location filename="../db/operations.py" line="283"/>
         <source>Asset amount is not enough to pay: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="292"/>
+        <location filename="../db/operations.py" line="294"/>
         <source>Processed asset amount is less than: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="583"/>
+        <location filename="../db/operations.py" line="586"/>
         <source>Fee asset isn&apos;t set. Operation: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="585"/>
+        <location filename="../db/operations.py" line="588"/>
         <source>Can&apos;t collect fee from the account &apos;{}&apos; ({}) as organization isn&apos;t set for it. Date: {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="669"/>
+        <location filename="../db/operations.py" line="672"/>
         <source>Spending</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="672"/>
+        <location filename="../db/operations.py" line="675"/>
         <source>Income</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="693"/>
+        <location filename="../db/operations.py" line="696"/>
         <source>Rate: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="755"/>
+        <location filename="../db/operations.py" line="758"/>
         <source>Income/Spending transaction has no details: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="848"/>
-        <location filename="../db/operations.py" line="913"/>
+        <location filename="../db/operations.py" line="851"/>
+        <location filename="../db/operations.py" line="916"/>
         <source>Payment fee</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="915"/>
+        <location filename="../db/operations.py" line="918"/>
         <source>Tax: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="996"/>
-        <location filename="../db/operations.py" line="1118"/>
-        <location filename="../db/operations.py" line="2545"/>
-        <location filename="../db/operations.py" line="3386"/>
+        <location filename="../db/operations.py" line="999"/>
+        <location filename="../db/operations.py" line="1121"/>
+        <location filename="../db/operations.py" line="2548"/>
+        <location filename="../db/operations.py" line="3389"/>
         <source>UNDEFINED</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="997"/>
+        <location filename="../db/operations.py" line="1000"/>
         <source>Dividend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="998"/>
+        <location filename="../db/operations.py" line="1001"/>
         <source>Bond Interest</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="999"/>
+        <location filename="../db/operations.py" line="1002"/>
         <source>Asset fee/tax</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1000"/>
+        <location filename="../db/operations.py" line="1003"/>
         <source>Depositary fee</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1001"/>
+        <location filename="../db/operations.py" line="1004"/>
         <source>Position financing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1015"/>
+        <location filename="../db/operations.py" line="1018"/>
         <source>Dividend payment for:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1045"/>
+        <location filename="../db/operations.py" line="1048"/>
         <source>Can&apos;t process dividend as bank isn&apos;t set for investment account: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1119"/>
+        <location filename="../db/operations.py" line="1122"/>
         <source>Stock Dividend</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1120"/>
+        <location filename="../db/operations.py" line="1123"/>
         <source>Stock Vesting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1121"/>
+        <location filename="../db/operations.py" line="1124"/>
         <source>Staking reward</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1122"/>
+        <location filename="../db/operations.py" line="1125"/>
         <source>Reward</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1123"/>
+        <location filename="../db/operations.py" line="1126"/>
         <source>Dust attack</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1124"/>
+        <location filename="../db/operations.py" line="1127"/>
         <source>Rebase adjustment</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1125"/>
+        <location filename="../db/operations.py" line="1128"/>
         <source>Token account rent returned</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1126"/>
+        <location filename="../db/operations.py" line="1129"/>
         <source>Lending interest</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1149"/>
+        <location filename="../db/operations.py" line="1152"/>
         <source>Received:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1156"/>
+        <location filename="../db/operations.py" line="1159"/>
         <source>No price for a stock dividend or vesting: {} on {}. Open the operation, state the price it was granted at and rebuild the ledger.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1169"/>
+        <location filename="../db/operations.py" line="1172"/>
         <source>No price data for stock dividend/vesting: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1185"/>
+        <location filename="../db/operations.py" line="1188"/>
         <source>No price data to value an asset-denominated payment: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1245"/>
+        <location filename="../db/operations.py" line="1248"/>
         <source>Can&apos;t process asset income as bank isn&apos;t set for investment account: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1250"/>
+        <location filename="../db/operations.py" line="1253"/>
         <source>Not supported action: asset income closes short trade.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1309"/>
+        <location filename="../db/operations.py" line="1312"/>
         <source>Sell</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1312"/>
+        <location filename="../db/operations.py" line="1315"/>
         <source>Buy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1419"/>
+        <location filename="../db/operations.py" line="1422"/>
         <source>Can&apos;t process trade as bank isn&apos;t set for investment account: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1565"/>
+        <location filename="../db/operations.py" line="1568"/>
         <source>Swap (conversion)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1566"/>
+        <location filename="../db/operations.py" line="1569"/>
         <source>Outgoing swap (conversion)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1567"/>
+        <location filename="../db/operations.py" line="1570"/>
         <source>Incoming swap (conversion)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1569"/>
+        <location filename="../db/operations.py" line="1572"/>
         <source>Swap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1569"/>
+        <location filename="../db/operations.py" line="1572"/>
         <source>Outgoing swap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1570"/>
+        <location filename="../db/operations.py" line="1573"/>
         <source>Incoming swap</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1571"/>
-        <location filename="../db/operations.py" line="1659"/>
+        <location filename="../db/operations.py" line="1574"/>
+        <location filename="../db/operations.py" line="1662"/>
         <source>Swap fee</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1642"/>
+        <location filename="../db/operations.py" line="1645"/>
         <source>There are no quotes to value the swap. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1715"/>
+        <location filename="../db/operations.py" line="1718"/>
         <source>Can&apos;t process swap as organization isn&apos;t set for account: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1717"/>
+        <location filename="../db/operations.py" line="1720"/>
         <source>Swap assets aren&apos;t set. Operation: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1719"/>
+        <location filename="../db/operations.py" line="1722"/>
         <source>Can&apos;t process swap of an asset into itself. Operation: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1721"/>
+        <location filename="../db/operations.py" line="1724"/>
         <source>Swap quantities must be positive. Operation: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1723"/>
+        <location filename="../db/operations.py" line="1726"/>
         <source>Swap can&apos;t receive an asset before it was exchanged. Operation: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1739"/>
+        <location filename="../db/operations.py" line="1742"/>
         <source>Asset amount is not enough for swap processing. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1810"/>
+        <location filename="../db/operations.py" line="1813"/>
         <source>Processed asset amount is less than swap amount. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1772"/>
+        <location filename="../db/operations.py" line="1775"/>
         <source>Asset disposal not found for swap.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1794"/>
+        <location filename="../db/operations.py" line="1797"/>
         <source>There is no FX rate to convert swap proceeds. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1877"/>
+        <location filename="../db/operations.py" line="1880"/>
         <source>Outgoing transfer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1878"/>
+        <location filename="../db/operations.py" line="1881"/>
         <source>Incoming transfer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1879"/>
-        <location filename="../db/operations.py" line="2008"/>
+        <location filename="../db/operations.py" line="1882"/>
+        <location filename="../db/operations.py" line="2011"/>
         <source>Transfer fee</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1880"/>
+        <location filename="../db/operations.py" line="1883"/>
         <source>Outgoing asset transfer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1881"/>
+        <location filename="../db/operations.py" line="1884"/>
         <source>Incoming asset transfer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1882"/>
+        <location filename="../db/operations.py" line="1885"/>
         <source>Asset transfer fee</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="1897"/>
-        <location filename="../db/operations.py" line="1902"/>
-        <location filename="../db/operations.py" line="3160"/>
+        <location filename="../db/operations.py" line="1900"/>
+        <location filename="../db/operations.py" line="1905"/>
+        <location filename="../db/operations.py" line="3163"/>
         <source>(pending)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2013"/>
+        <location filename="../db/operations.py" line="2016"/>
         <source>Cost basis:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2027"/>
+        <location filename="../db/operations.py" line="2030"/>
         <source>Error. Zero rate</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2180"/>
-        <location filename="../db/operations.py" line="2193"/>
+        <location filename="../db/operations.py" line="2183"/>
+        <location filename="../db/operations.py" line="2196"/>
         <source>Arrival precedes departure, transfer is left unsettled: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2201"/>
+        <location filename="../db/operations.py" line="2204"/>
         <source>Transfer settled by transaction hash: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2424"/>
+        <location filename="../db/operations.py" line="2427"/>
         <source>Asset amount is not enough for asset transfer processing. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2458"/>
+        <location filename="../db/operations.py" line="2461"/>
         <source>Processed asset amount is less than transfer amount. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2440"/>
+        <location filename="../db/operations.py" line="2443"/>
         <source>Asset withdrawal not found for transfer.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2546"/>
+        <location filename="../db/operations.py" line="2549"/>
         <source>Symbol change</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2547"/>
+        <location filename="../db/operations.py" line="2550"/>
         <source>Split</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2548"/>
+        <location filename="../db/operations.py" line="2551"/>
         <source>Spin-off</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2549"/>
+        <location filename="../db/operations.py" line="2552"/>
         <source>Merger</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2550"/>
+        <location filename="../db/operations.py" line="2553"/>
         <source>Delisting</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2551"/>
+        <location filename="../db/operations.py" line="2554"/>
         <source>Write-off</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2670"/>
+        <location filename="../db/operations.py" line="2673"/>
         <source>Asset isn&apos;t a part of corporate action results: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2717"/>
+        <location filename="../db/operations.py" line="2720"/>
         <source>Corporate action type isn&apos;t defined. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2726"/>
+        <location filename="../db/operations.py" line="2729"/>
         <source>Asset amount is not enough for corporate action processing. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2730"/>
+        <location filename="../db/operations.py" line="2733"/>
         <source>Unhandled case: Corporate action covers not full open position. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2690"/>
+        <location filename="../db/operations.py" line="2693"/>
         <source>Corporate action of this type isn&apos;t supported for a short position. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2693"/>
+        <location filename="../db/operations.py" line="2696"/>
         <source>Corporate action on a short position has to result in a short position. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2736"/>
+        <location filename="../db/operations.py" line="2739"/>
         <source>Results value of corporate action doesn&apos;t match 100% of initial asset value. </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2856"/>
-        <location filename="../db/operations.py" line="2893"/>
+        <location filename="../db/operations.py" line="2859"/>
+        <location filename="../db/operations.py" line="2896"/>
         <source>Wrapping fee</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2869"/>
+        <location filename="../db/operations.py" line="2872"/>
         <source>Move: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2871"/>
+        <location filename="../db/operations.py" line="2874"/>
         <source>Supply to </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2873"/>
+        <location filename="../db/operations.py" line="2876"/>
         <source>Withdraw from </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2874"/>
+        <location filename="../db/operations.py" line="2877"/>
         <source>Wrapping</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2964"/>
+        <location filename="../db/operations.py" line="2967"/>
         <source>Wrapping assets aren&apos;t set. Operation: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2966"/>
+        <location filename="../db/operations.py" line="2969"/>
         <source>Can&apos;t wrap an asset into itself. Operation: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2968"/>
+        <location filename="../db/operations.py" line="2971"/>
         <source>Wrapping quantities must be positive. Operation: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2978"/>
+        <location filename="../db/operations.py" line="2981"/>
         <source>Asset amount is not enough for wrapping processing. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2950"/>
+        <location filename="../db/operations.py" line="2953"/>
         <source>Processed asset amount is less than wrapped amount. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="2932"/>
+        <location filename="../db/operations.py" line="2935"/>
         <source>There are no quotes to value the wrapping. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3050"/>
+        <location filename="../db/operations.py" line="3053"/>
         <source>Outgoing bridge</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3051"/>
+        <location filename="../db/operations.py" line="3054"/>
         <source>Incoming bridge</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3052"/>
+        <location filename="../db/operations.py" line="3055"/>
         <source>Bridge fee</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3053"/>
+        <location filename="../db/operations.py" line="3056"/>
         <source>Bridge in-kind fee</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3189"/>
+        <location filename="../db/operations.py" line="3192"/>
         <source>Bridge (awaiting matching):</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3193"/>
+        <location filename="../db/operations.py" line="3196"/>
         <source>In-kind fee:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3239"/>
+        <location filename="../db/operations.py" line="3242"/>
         <source>Bridge must move the same asset between accounts. Operation: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3242"/>
+        <location filename="../db/operations.py" line="3245"/>
         <source>Bridge between the same account isn&apos;t supported. Operation: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3244"/>
+        <location filename="../db/operations.py" line="3247"/>
         <source>Bridge can&apos;t receive more asset than was sent. Operation: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3246"/>
+        <location filename="../db/operations.py" line="3249"/>
         <source>Bridge receive can&apos;t precede its send. Operation: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3261"/>
+        <location filename="../db/operations.py" line="3264"/>
         <source>Asset amount is not enough for bridge processing. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3294"/>
+        <location filename="../db/operations.py" line="3297"/>
         <source>Processed asset amount is less than bridge amount. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3275"/>
+        <location filename="../db/operations.py" line="3278"/>
         <source>Asset withdrawal not found for bridge.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3320"/>
+        <location filename="../db/operations.py" line="3323"/>
         <source>There is no FX rate to convert bridge cost basis. Date: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3387"/>
+        <location filename="../db/operations.py" line="3390"/>
         <source>Authorization</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3388"/>
+        <location filename="../db/operations.py" line="3391"/>
         <source>Failed transaction</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3389"/>
+        <location filename="../db/operations.py" line="3392"/>
         <source>Position command</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3390"/>
+        <location filename="../db/operations.py" line="3393"/>
         <source>No-op</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3391"/>
+        <location filename="../db/operations.py" line="3394"/>
         <source>Contract call</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3392"/>
+        <location filename="../db/operations.py" line="3395"/>
         <source>Token account rent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3456"/>
+        <location filename="../db/operations.py" line="3459"/>
         <source>Rent</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/operations.py" line="3456"/>
+        <location filename="../db/operations.py" line="3459"/>
         <source>Gas</source>
         <translation type="unfinished"></translation>
     </message>
@@ -5834,48 +5861,58 @@ do you want to save them?</source>
 <context>
     <name>LotsModel</name>
     <message>
-        <location filename="../widgets/position_details.py" line="38"/>
+        <location filename="../widgets/position_details.py" line="44"/>
         <source>Date</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/position_details.py" line="38"/>
+        <location filename="../widgets/position_details.py" line="44"/>
         <source>Held, days</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/position_details.py" line="38"/>
+        <location filename="../widgets/position_details.py" line="44"/>
         <source>Qty</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/position_details.py" line="38"/>
+        <location filename="../widgets/position_details.py" line="44"/>
         <source>Price, </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/position_details.py" line="39"/>
+        <location filename="../widgets/position_details.py" line="45"/>
         <source>Cost, </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/position_details.py" line="39"/>
+        <location filename="../widgets/position_details.py" line="45"/>
         <source>P/L, </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/position_details.py" line="39"/>
+        <location filename="../widgets/position_details.py" line="45"/>
         <source>P/L, %</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/position_details.py" line="53"/>
+        <location filename="../widgets/position_details.py" line="46"/>
+        <source>Portfolio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/position_details.py" line="60"/>
         <source>Check or uncheck all lots</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/position_details.py" line="128"/>
+        <location filename="../widgets/position_details.py" line="156"/>
         <source>{checked} of {total} lots</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/position_details.py" line="171"/>
+        <source>{count} unassigned</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -6462,38 +6499,43 @@ This looks like the quantity a rebasing position gained without reporting it, wh
 <context>
     <name>OperationsModel</name>
     <message>
-        <location filename="../db/operations_model.py" line="35"/>
+        <location filename="../db/operations_model.py" line="37"/>
         <source>Timestamp</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="35"/>
+        <location filename="../db/operations_model.py" line="37"/>
         <source>Account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="35"/>
+        <location filename="../db/operations_model.py" line="37"/>
         <source>Notes</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="36"/>
+        <location filename="../db/operations_model.py" line="38"/>
         <source>Amount</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="36"/>
+        <location filename="../db/operations_model.py" line="38"/>
         <source>Balance</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="36"/>
+        <location filename="../db/operations_model.py" line="38"/>
         <source>Currency</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/operations_model.py" line="106"/>
+        <location filename="../db/operations_model.py" line="111"/>
         <source>Tax treatment:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/operations_model.py" line="113"/>
+        <source>Portfolio: </source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7367,65 +7409,216 @@ Its other record is found by the transaction, but the two accounts are kept in d
     </message>
 </context>
 <context>
+    <name>PortfolioCombo</name>
+    <message>
+        <location filename="../widgets/custom/portfolio_combo.py" line="14"/>
+        <source>Portfolio figures are for management only, tax reports are unaffected</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/custom/portfolio_combo.py" line="22"/>
+        <source>All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/custom/portfolio_combo.py" line="26"/>
+        <source>Unassigned</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/custom/portfolio_combo.py" line="43"/>
+        <source>Replaying lots by portfolio…</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>PortfolioReportWindow</name>
     <message>
-        <location filename="../reports/portfolio.py" line="35"/>
+        <location filename="../reports/portfolio.py" line="36"/>
         <source>Asset portfolio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/portfolio.py" line="38"/>
+        <location filename="../reports/portfolio.py" line="39"/>
         <source>Currency - Account</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/portfolio.py" line="39"/>
+        <location filename="../reports/portfolio.py" line="40"/>
         <source>Currency - Asset</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/portfolio.py" line="40"/>
+        <location filename="../reports/portfolio.py" line="41"/>
         <source>Asset</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/portfolio.py" line="41"/>
+        <location filename="../reports/portfolio.py" line="42"/>
         <source>Country</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/portfolio.py" line="42"/>
+        <location filename="../reports/portfolio.py" line="43"/>
         <source>Country - Asset</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/portfolio.py" line="43"/>
+        <location filename="../reports/portfolio.py" line="44"/>
         <source>Account tag - Account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/portfolio.py" line="44"/>
+        <location filename="../reports/portfolio.py" line="45"/>
+        <source>Portfolio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio.py" line="46"/>
+        <source>Portfolio - Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio.py" line="47"/>
+        <source>Portfolio - Asset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio.py" line="48"/>
         <source>Status - Account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/portfolio.py" line="45"/>
+        <location filename="../reports/portfolio.py" line="49"/>
         <source>Status - Currency - Account</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/portfolio.py" line="95"/>
+        <location filename="../reports/portfolio.py" line="101"/>
         <source>Expand all</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/portfolio.py" line="98"/>
+        <location filename="../reports/portfolio.py" line="104"/>
         <source>Collapse all</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../reports/portfolio.py" line="102"/>
+        <location filename="../reports/portfolio.py" line="108"/>
         <source>Expand to level {}</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>PortfolioReviewModel</name>
+    <message>
+        <location filename="../reports/portfolio_review.py" line="25"/>
+        <source>Date</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio_review.py" line="25"/>
+        <source>Issue</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio_review.py" line="25"/>
+        <source>Account</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio_review.py" line="25"/>
+        <source>Asset</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio_review.py" line="25"/>
+        <source>Qty</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio_review.py" line="26"/>
+        <source>Portfolio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio_review.py" line="26"/>
+        <source>Other portfolios</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio_review.py" line="74"/>
+        <source>Spill</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio_review.py" line="75"/>
+        <location filename="../reports/portfolio_review.py" line="83"/>
+        <source>Unassigned</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio_review.py" line="79"/>
+        <source>The operation took lots of other portfolios: its own portfolio had too few</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio_review.py" line="80"/>
+        <source>Unassigned lots in a position that holds assigned lots too</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>PortfolioReviewReport</name>
+    <message>
+        <location filename="../reports/portfolio_review.py" line="105"/>
+        <source>Portfolio re&amp;view</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>PortfolioReviewReportWindow</name>
+    <message>
+        <location filename="../reports/portfolio_review.py" line="117"/>
+        <source>Portfolio assignments to review</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio_review.py" line="134"/>
+        <source>{count} to review</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio_review.py" line="145"/>
+        <source>Set portfolio…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio_review.py" line="148"/>
+        <source>Remove from portfolio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio_review.py" line="154"/>
+        <source>Please select portfolio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../reports/portfolio_review.py" line="155"/>
+        <source>Portfolio for {count} operation(s):</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>PortfolioReviewWidget</name>
+    <message>
+        <location filename="../ui/reports/portfolio_review_report.ui" line="14"/>
+        <source>Portfolio assignments to review</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../ui/reports/portfolio_review_report.ui" line="42"/>
+        <source>&amp;Refresh</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -7465,42 +7658,67 @@ Its other record is found by the transaction, but the two accounts are kept in d
 <context>
     <name>PositionDetails</name>
     <message>
-        <location filename="../widgets/position_details.py" line="179"/>
+        <location filename="../widgets/position_details.py" line="212"/>
         <source>Position details: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/position_details.py" line="182"/>
+        <location filename="../widgets/position_details.py" line="215"/>
         <source>Quote on {date}: {quote} {currency}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/position_details.py" line="257"/>
+        <location filename="../widgets/position_details.py" line="277"/>
+        <source>Set portfolio of checked lots…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/position_details.py" line="280"/>
+        <source>Assign unassigned lots…</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/position_details.py" line="283"/>
+        <source>Remove checked lots from portfolio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/position_details.py" line="290"/>
+        <source>Please select portfolio</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/position_details.py" line="291"/>
+        <source>Portfolio for {count} lot(s):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/position_details.py" line="320"/>
         <source>not known for {year}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/position_details.py" line="264"/>
+        <location filename="../widgets/position_details.py" line="327"/>
         <source>{rate} on {date}, cost and value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/position_details.py" line="267"/>
+        <location filename="../widgets/position_details.py" line="330"/>
         <source>Crypto held 365 days or more is left out: {count} lot(s).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/position_details.py" line="270"/>
+        <location filename="../widgets/position_details.py" line="333"/>
         <source>{count} lot(s) held under 365 days: their gain may have to be added to other income (englobamento).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/position_details.py" line="273"/>
+        <location filename="../widgets/position_details.py" line="336"/>
         <source>{rate} on {date} for value, cost at each purchase&apos;s settlement date</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/position_details.py" line="275"/>
+        <location filename="../widgets/position_details.py" line="338"/>
         <source>Rough estimate: losses of other deals and of earlier years, deductions and fees of the sale are not taken into account.</source>
         <translation type="unfinished"></translation>
     </message>

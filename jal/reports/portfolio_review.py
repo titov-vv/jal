@@ -1,6 +1,6 @@
 from PySide6.QtCore import Qt, Slot, QObject, QAbstractTableModel
 from PySide6.QtGui import QAction
-from PySide6.QtWidgets import QHeaderView, QMenu, QDialog
+from PySide6.QtWidgets import QHeaderView, QMenu, QDialog, QStyle
 from jal.constants import Setup
 from jal.reports.reports import Reports
 from jal.db.common_models import TagTreeModel
@@ -91,7 +91,8 @@ class PortfolioReviewModel(QAbstractTableModel):
         self.endResetModel()
 
     def configureView(self):
-        self._view.setColumnWidth(0, self._view.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.2)
+        icon = self._view.style().pixelMetric(QStyle.PixelMetric.PM_SmallIconSize)
+        self._view.setColumnWidth(0, self._view.fontMetrics().horizontalAdvance("00/00/0000 00:00:00") * 1.2 + icon)
         self._view.horizontalHeader().setSectionResizeMode(6, QHeaderView.Stretch)
         self._qty_delegate = FloatDelegate(0, allow_tail=True, parent=self._view)
         self._view.setItemDelegateForColumn(4, self._qty_delegate)

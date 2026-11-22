@@ -18,7 +18,7 @@ one). They need no desktop session: Qt runs on the `offscreen` platform.
 | File | What it does |
 |---|---|
 | `demo_env.py` | Points the process at `tools/manual/demo/` instead of the real ledger, and refuses to go on if the path does not resolve there. |
-| `make_demo_db.py` | Builds the demo database from nothing: residence, peers, categories, tags, accounts, assets, quotes, twenty months of household operations, a trading account, a crypto wallet and a term deposit. |
+| `make_demo_db.py` | Builds the demo database from nothing: residence, peers, categories, tags, accounts, assets, quotes, twenty months of household operations, a trading account (half of its WLDX in a *Retirement* portfolio), a crypto wallet and a term deposit. |
 | `capture.py` | Opens the real main window against that database and saves each picture the manual uses, then `capture_readme()` adds the two the project README needs on top of them. `capture_first_run.py` does the same against an empty database. |
 
 ## The Russian 3-NDFL guide
