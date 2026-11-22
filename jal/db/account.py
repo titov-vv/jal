@@ -555,6 +555,28 @@ class JalAccount(JalDB):
             amount = Decimal('0')
         return amount
 
+    # This account's share of the payments for 'asset' that the broker booked to its other accounts holding none of
+    # it; the broker's accounts that held the asset share each payment by the quantity they held
+    def linked_payments_amount(self, asset, start_ts, end_ts) -> Decimal:
+        amount = Decimal('0')
+        if self._record.organization_id == PredefinedAgents.Empty:
+            return amount
+        accounts = [x for x in self.get_all_accounts(investing_only=True, min_status=AccountStatus.Closed,
+                                                     include_hidden=True)
+                    if x.organization() == self._record.organization_id]
+        for payer in [x for x in accounts if x.id() != self._id]:
+            for payment in jal.db.operations.AssetPayment.get_list(payer.id(), asset.id()):
+                if not start_ts <= (payment.ex_date() or payment.timestamp()) <= end_ts:
+                    continue
+                held_on = payment.ex_date() - 1 if payment.ex_date() else payment.timestamp()
+                if payer.get_asset_amount(held_on, asset.id()):
+                    continue
+                held = {x.id(): x.get_asset_amount(held_on, asset.id()) for x in accounts}
+                if held[self._id] > 0:
+                    total = sum((x for x in held.values() if x > 0), Decimal('0'))
+                    amount += payment.amount(currency_id=self._record.currency_id) * held[self._id] / total
+        return amount
+
     # This method is used only in TaxesFlowRus.prepare_flow_report() to get money/asset flow for russian tax report
     # direction is "in" or "out"
     # flow_type: MONEY_FLOW or ASSETS_FLOW to get flow of money or assets value
