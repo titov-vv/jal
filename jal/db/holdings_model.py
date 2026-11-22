@@ -15,8 +15,10 @@ from jal.db.asset import JalAsset
 from jal.db.chain_balance import JalChainBalance
 from jal.db.icon import JalIcons
 from jal.db.operations import LedgerTransaction, Transfer, CorporateAction
+from jal.db.portfolio import JalPortfolio, PortfolioLots
 from jal.db.receivable import JalReceivable
 from jal.db.staking import JalStakingBox
+from jal.db.tag import JalTag
 from jal.net.chain_fetchers.protocols import protocol_name
 from jal.widgets.delegates import GridLinesDelegate, FloatDelegate, TimestampDelegate, TaggedIconDelegate, TAG_ICON_ROLE
 from jal.widgets.helpers import ts2d, columns_stored
@@ -38,7 +40,7 @@ class AssetTreeItem(AbstractTreeItem):
             self._data = {
                 'header': '', 'currency_id': 0, 'currency': '', 'account_id': 0, 'account': '', 'asset_id': 0,
                 'symbol_id': 0,
-                'account_tag_id': 0, 'account_tag': '',
+                'account_tag_id': 0, 'account_tag': '', 'portfolio_id': 0, 'portfolio': '',
                 'status_id': AccountStatus.Active, 'status': '',
                 'asset_is_currency': False, 'asset': '', 'asset_name': '', 'country_id': 0, 'country': '',
                 'since': 0, 'qty': None, 'value_i': Decimal('0'), 'paid': Decimal('0'),
@@ -62,6 +64,7 @@ class AssetTreeItem(AbstractTreeItem):
         self._data['asset'] = child_data['asset']
         self._data['country'] = child_data['country']
         self._data['account_tag'] = child_data['account_tag']
+        self._data['portfolio'] = child_data.get('portfolio', '')
         self._data['paid'] += child_data['paid']
         self._data['value'] += child_data['value']
         self._data['value_common'] += child_data['value_common']
@@ -356,10 +359,15 @@ class HoldingsModel(ReportTreeModel):
                 "quote_age": quote_age,
                 "chain_ts": accrual['measured'] if accrual['delta'] else 0,
                 "share": Decimal('0'),
-                "font": font
+                "font": font,
+                "portfolio_id": JalPortfolio.Unassigned,
+                "portfolio": self.tr("Unassigned")
             }
             record['header'] = self._row_header(record)
-            account_holdings.append(record)
+            if 'portfolio_id' in self._groups:
+                account_holdings += self._portfolio_records(record, account, asset)
+            else:
+                account_holdings.append(record)
         money = account.get_asset_amount(self._date, account.currency())
         if money:
             record = {
@@ -388,11 +396,40 @@ class HoldingsModel(ReportTreeModel):
                 "quote_a": rate,
                 "quote_age": 0,
                 "share": Decimal('0'),
-                "font": 'normal'
+                "font": 'normal',
+                "portfolio_id": JalPortfolio.Unassigned,
+                "portfolio": self.tr("Unassigned")
             }
             record['header'] = self._row_header(record)
             account_holdings.append(record)
         return account_holdings
+
+    # 'record' of a position split by the portfolios of its lots: costs are the lots' own; quantity (accrual included)
+    # and payments received are shared out by the lots' quantities, the last part taking the remainder.
+    def _portfolio_records(self, record: dict, account: JalAccount, asset: JalAsset) -> list:
+        parts = {}
+        for tag_id, lot in PortfolioLots.lots(account, asset, self._date):
+            qty, cost, since = parts.get(tag_id, (Decimal('0'), Decimal('0'), lot.acquired()))
+            parts[tag_id] = (qty + lot.open_qty(), cost + lot.open_qty() * lot.open_price(adjusted=True),
+                             min(since, lot.acquired()))
+        if len(parts) <= 1:
+            tag_id = next(iter(parts), JalPortfolio.Unassigned)
+            return [record | {'portfolio_id': tag_id, 'portfolio': self._portfolio_name(tag_id)}]
+        total = sum((x[0] for x in parts.values()), Decimal('0'))
+        records, qty_left, paid_left = [], record['qty'], record['paid']
+        for i, (tag_id, (qty, cost, since)) in enumerate(sorted(parts.items())):
+            last = i == len(parts) - 1
+            part = record | {'portfolio_id': tag_id, 'portfolio': self._portfolio_name(tag_id), 'since': since}
+            part['qty'] = qty_left if last else record['qty'] * qty / total
+            part['value_i'] = cost
+            part['paid'] = paid_left if last else record['paid'] * qty / total
+            part['open_quote'] = part['value_i'] / part['qty'] if part['qty'] else None
+            qty_left, paid_left = qty_left - part['qty'], paid_left - part['paid']
+            records.append(part)
+        return records
+
+    def _portfolio_name(self, tag_id: int) -> str:
+        return JalTag(tag_id).name() if tag_id else self.tr("Unassigned")
 
     # The report tree for the current parameters of the model: _currency, _date, _min_status, _groups
     def _build_tree(self) -> AssetTreeItem:

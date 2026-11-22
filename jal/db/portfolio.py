@@ -2,6 +2,7 @@ from decimal import Decimal
 from jal.db.db import JalDB
 import jal.db.operations
 import jal.db.basis_policy
+import jal.db.lots
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -73,3 +74,61 @@ class PortfolioPolicy(jal.db.basis_policy.BasisPolicy):
             return ordered
         own = [x for x in ordered if self._portfolio.of_lot(x) == tag_id]
         return own + [x for x in ordered if self._portfolio.of_lot(x) != tag_id]
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# The open lots of a position with the portfolio of each, for the reports. When every assigned operation only opens
+# lots the live lots are the answer; otherwise a portfolio replay, kept for the session until the ledger is rebuilt
+# or an assignment changes.
+class PortfolioLots:
+    _store = None
+    _assigned = None   # the assignments the replay in '_store' was made with
+
+    # True if the assignments need a replay that hasn't run yet
+    @classmethod
+    def needs_replay(cls) -> bool:
+        assigned = JalPortfolio.assignments()
+        return cls._disposes(assigned) and (cls._store is None or cls._assigned != assigned)
+
+    # Runs the replay if needed; 'progress(done, total)' is called after each operation
+    @classmethod
+    def prepare(cls, progress=None) -> None:
+        if not cls.needs_replay():
+            return
+        cls.forget()
+        assigned = JalPortfolio.assignments()
+        store = jal.db.lots.ScratchLotStore('portfolio_lots')
+        try:
+            jal.db.lots.replay(store, PortfolioPolicy(jal.db.basis_policy.JalPolicy(), JalPortfolio()),
+                               progress=progress)
+        except Exception:
+            store.detach()
+            raise
+        cls._store, cls._assigned = store, assigned
+
+    # [(portfolio, lot)] of the position at 'timestamp'
+    @classmethod
+    def lots(cls, account, asset, timestamp: int) -> list:
+        cls.prepare()
+        portfolio = JalPortfolio()
+        return [(portfolio.of_lot(x), x) for x in account.open_trades_list(asset, timestamp, store=cls._store)]
+
+    # Drops the replay: the ledger it was made of is being rebuilt
+    @classmethod
+    def forget(cls) -> None:
+        if cls._store is not None:
+            cls._store.detach()
+        cls._store = cls._assigned = None
+
+    # True if an assigned operation disposes of lots, so that its portfolio may change which lots it takes
+    @staticmethod
+    def _disposes(assigned: dict) -> bool:
+        for operation_id in assigned:
+            otype = JalDB._read("SELECT otype FROM operations WHERE id=:id", [(":id", operation_id)])
+            if otype == jal.db.operations.LedgerTransaction.AssetIncome:
+                continue
+            if otype == jal.db.operations.LedgerTransaction.Trade and \
+                    jal.db.operations.Trade(operation_id).qty() > Decimal('0'):
+                continue
+            return True
+        return False

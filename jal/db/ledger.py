@@ -11,6 +11,7 @@ from jal.db.helpers import format_decimal
 from jal.db.db import JalDB
 from jal.db.account import JalAccount
 from jal.db.lots import LedgerLotStore, LotEngine
+from jal.db.portfolio import PortfolioLots
 from jal.db.asset import JalAsset
 from jal.db.settings import JalSettings
 from jal.db.operations import LedgerTransaction, LedgerError, LedgerAssetShortage
@@ -292,6 +293,7 @@ class Ledger(QObject, JalDB):
         self.amounts.clear()
         self.values.clear()
         self.lots.forget()
+        PortfolioLots.forget()
         # First, build the sequence of operations (it takes <<1 sec, so it is fine here). Nothing is deleted yet,
         # so a sequence that can't be built leaves the existing ledger as it was.
         if not self.refresh_sequence():
