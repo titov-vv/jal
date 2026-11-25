@@ -1,4 +1,6 @@
+import io
 import os
+import tarfile
 import pytest
 from shutil import copyfile
 from configparser import Error as ConfigError
@@ -188,3 +190,64 @@ def test_backup_load(tmp_path, project_root):
     JalDB.connection().close()
     os.remove(target_path)  # Clean db init script
     os.remove(JalSettings.path(JalSettings.PATH_DB_FILE))  # Clean db file
+
+
+def _make_backup(path, members):
+    with tarfile.open(path, "w:gz") as tar:
+        for name, kind, value in members:
+            info = tarfile.TarInfo(name)
+            if kind == 'file':
+                info.size = len(value)
+                tar.addfile(info, io.BytesIO(value))
+            else:
+                info.type = {'symlink': tarfile.SYMTYPE, 'hardlink': tarfile.LNKTYPE, 'dir': tarfile.DIRTYPE}[kind]
+                info.linkname = value
+                tar.addfile(info)
+
+
+_LABEL = ('label', 'file', b"JAL SQLITE backup. Created: 2026/11/25 10:00:00+0000")
+_DB = (Setup.DB_PATH, 'file', b"SQLite format 3\x00" + b"\x00" * 84)
+
+
+@pytest.mark.parametrize("bad_members", [
+    [_LABEL, (Setup.DB_PATH, 'symlink', '{victim}'), (Setup.DB_PATH, 'file', b"PWNED")],
+    [_LABEL, (Setup.DB_PATH, 'symlink', '{victim}')],
+    [_LABEL, (Setup.DB_PATH, 'hardlink', '{victim}')],
+    [_LABEL, (Setup.DB_PATH, 'dir', '')],
+    [_LABEL, _DB, _DB],
+    [_LABEL, _DB, ('extra', 'file', b"x")],
+    [_LABEL, (Setup.DB_PATH, 'file', b"not a database")],
+    [_LABEL],
+], ids=["symlink+file", "symlink", "hardlink", "directory", "duplicate", "extra", "not-sqlite", "no-db"])
+def test_malicious_backup(tmp_path, monkeypatch, bad_members):
+    os.environ['JAL_TEST_PATH'] = str(tmp_path)
+    # Emulate Python <= 3.13 where tarfile extracts links without any filter
+    if hasattr(tarfile, 'fully_trusted_filter'):
+        monkeypatch.setattr(tarfile.TarFile, 'extraction_filter', staticmethod(tarfile.fully_trusted_filter), raising=False)
+    victim = tmp_path / "victim.txt"
+    victim.write_text("original")
+    ledger = tmp_path / "ledger.sqlite"
+    ledger.write_bytes(b"ledger")
+    members = [(n, k, v.format(victim=victim) if isinstance(v, str) else v) for n, k, v in bad_members]
+    _make_backup(tmp_path / "bad.tgz", members)
+
+    backup = JalBackup(None)
+    backup.backup_name = str(tmp_path / "bad.tgz")
+    backup.file = str(ledger)
+    assert not backup.validate_backup()
+    assert not backup.do_restore()
+    assert victim.read_text() == "original"
+    assert not ledger.is_symlink() and ledger.read_bytes() == b"ledger"
+    assert sorted(os.listdir(tmp_path)) == ["bad.tgz", "ledger.sqlite", "victim.txt"]
+
+
+def test_backup_restore_roundtrip(tmp_path):
+    os.environ['JAL_TEST_PATH'] = str(tmp_path)
+    _make_backup(tmp_path / "good.tgz", [_LABEL, _DB])
+    backup = JalBackup(None)
+    backup.backup_name = str(tmp_path / "good.tgz")
+    backup.file = str(tmp_path / "ledger.sqlite")
+    assert backup.validate_backup()
+    assert backup.do_restore()
+    assert (tmp_path / "ledger.sqlite").read_bytes() == _DB[2]
+    assert sorted(os.listdir(tmp_path)) == ["good.tgz", "ledger.sqlite"]

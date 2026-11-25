@@ -4,7 +4,8 @@ import logging
 import os
 from dateutil import tz
 from datetime import datetime
-from tempfile import TemporaryDirectory
+import shutil
+from tempfile import TemporaryDirectory, mkstemp
 import tarfile
 from PySide6.QtWidgets import QApplication, QFileDialog, QMessageBox
 from jal.db.db import JalDB
@@ -16,6 +17,7 @@ class JalBackup:
     tmp_prefix = 'jal_'
     backup_label = 'JAL SQLITE backup. Created: '
     date_fmt = '%Y/%m/%d %H:%M:%S%z'
+    sqlite_header = b'SQLite format 3\x00'
 
     def __init__(self, parent):
         self.parent = parent
@@ -27,32 +29,48 @@ class JalBackup:
         return QApplication.translate("JalBackup", text)
 
     # Function returns True if all of following conditions are met (otherwise returns False):
-    # - backup contains all required filenames
+    # - backup contains exactly the required files, each once and each a regular file (no links)
     # - backup contains file 'label' with valid content
-    # - backup contains file 'settings.csv' with valid schema version
+    # - backup file 'jal.sqlite' starts with SQLite header
     def validate_backup(self):
-        with tarfile.open(self.backup_name, "r:gz") as tar:
-            # Check backup file list
-            backup_file_list = [Setup.DB_PATH, 'label']
-            if set(backup_file_list) != set(tar.getnames()):
-                logging.debug("Backup content expected: " + str(backup_file_list) +
-                              "\nBackup content actual: " + str(tar.getnames()))
-                return False
+        try:
+            with tarfile.open(self.backup_name, "r:gz") as tar:
+                members = self._backup_members(tar)
+                if members is None:
+                    return False
 
-            # Check correctness of backup label
-            label_content = tar.extractfile('label').read().decode("utf-8")
-            logging.debug("Backup file label: " + label_content)
-            if label_content[:len(self.backup_label)] == self.backup_label:
-                self._backup_label_date = label_content[len(self.backup_label):]
-            else:
-                logging.warning(self.tr("Backup label not recognized"))
-                return False
-            try:
-                _ = datetime.strptime(self._backup_label_date, self.date_fmt)
-            except ValueError:
-                logging.warning(self.tr("Can't validate backup date"))
-                return False
+                # Check correctness of backup label
+                label_content = tar.extractfile(members['label']).read().decode("utf-8")
+                logging.debug("Backup file label: " + label_content)
+                if label_content[:len(self.backup_label)] == self.backup_label:
+                    self._backup_label_date = label_content[len(self.backup_label):]
+                else:
+                    logging.warning(self.tr("Backup label not recognized"))
+                    return False
+                try:
+                    _ = datetime.strptime(self._backup_label_date, self.date_fmt)
+                except ValueError:
+                    logging.warning(self.tr("Can't validate backup date"))
+                    return False
+
+                if tar.extractfile(members[Setup.DB_PATH]).read(len(self.sqlite_header)) != self.sqlite_header:
+                    logging.warning(self.tr("Backup doesn't contain SQLite database"))
+                    return False
+        except (tarfile.TarError, OSError, UnicodeDecodeError) as e:
+            logging.warning(self.tr("Can't read backup file: ") + str(e))
+            return False
         return True
+
+    # Returns {name: member} if archive holds exactly the expected regular files, None otherwise
+    def _backup_members(self, tar):
+        expected = [Setup.DB_PATH, 'label']
+        members = tar.getmembers()
+        names = [x.name for x in members]
+        if sorted(names) != sorted(expected) or not all(x.isfile() for x in members):
+            logging.debug("Backup content expected: " + str(expected) +
+                          "\nBackup content actual: " + str([(x.name, x.type) for x in members]))
+            return None
+        return {x.name: x for x in members}
 
     def do_backup(self):
         with TemporaryDirectory(prefix=self.tmp_prefix) as tmp_path:
@@ -70,28 +88,29 @@ class JalBackup:
                 tar.add(tmp_path + os.sep + Setup.DB_PATH, arcname=Setup.DB_PATH)
 
     def do_restore(self):
-        with TemporaryDirectory(prefix=self.tmp_prefix) as tmp_path:
+        tmp_file = None
+        try:
             with tarfile.open(self.backup_name, "r:gz") as tar:
-                def is_within_directory(directory, target):
-                    
-                    abs_directory = os.path.abspath(directory)
-                    abs_target = os.path.abspath(target)
-                    prefix = os.path.commonprefix([abs_directory, abs_target])
-                    return prefix == abs_directory
-                
-                def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
-                    for member in tar.getmembers():
-                        member_path = os.path.join(path, member.name)
-                        if not is_within_directory(path, member_path):
-                            raise Exception("Attempted Path Traversal in Tar File")
-                    tar.extractall(path, members, numeric_owner=numeric_owner)
-                
-                safe_extract(tar, tmp_path)
-            try:
-                os.rename(tmp_path + os.sep + Setup.DB_PATH, self.file)
-            except:
-                logging.warning(self.tr("Failed to restore backup file"))
-                return False
+                members = self._backup_members(tar)
+                if members is None:
+                    logging.warning(self.tr("Wrong format of backup file"))
+                    return False
+                source = tar.extractfile(members[Setup.DB_PATH])
+                header = source.read(len(self.sqlite_header))
+                if header != self.sqlite_header:
+                    logging.warning(self.tr("Backup doesn't contain SQLite database"))
+                    return False
+                # Temporary file is created next to the database to allow atomic replace
+                fd, tmp_file = mkstemp(prefix=self.tmp_prefix, dir=os.path.dirname(os.path.abspath(self.file)))
+                with os.fdopen(fd, 'wb') as target:
+                    target.write(header)
+                    shutil.copyfileobj(source, target)
+            os.replace(tmp_file, self.file)
+        except (tarfile.TarError, OSError) as e:
+            if tmp_file is not None and os.path.exists(tmp_file):
+                os.remove(tmp_file)
+            logging.warning(self.tr("Failed to restore backup file") + ": " + str(e))
+            return False
         return True
 
     def get_filename(self, save=True):
@@ -119,13 +138,13 @@ class JalBackup:
         self.get_filename(False)
         if self.backup_name is None:
             return
-        JalDB.connection().close()
-
         if not self.validate_backup():
             logging.error(self.tr("Wrong format of backup file"))
             return
 
+        JalDB.connection().close()
         if not self.do_restore():
+            JalDB.connection().open()   # Original database is intact - continue with it
             return
         logging.info(self.tr("Backup restored from: ") + self.backup_name + self._backup_label_date
                      + self.tr(" into ") + self.file)
