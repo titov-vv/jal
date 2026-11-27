@@ -27,6 +27,86 @@
     <number>0</number>
    </property>
    <item>
+    <widget class="QWidget" name="PeriodBar">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <layout class="QHBoxLayout" name="periodBarLayout">
+      <property name="leftMargin">
+       <number>6</number>
+      </property>
+      <property name="topMargin">
+       <number>6</number>
+      </property>
+      <property name="rightMargin">
+       <number>6</number>
+      </property>
+      <property name="bottomMargin">
+       <number>6</number>
+      </property>
+      <item>
+       <widget class="DateRangeSelector" name="DateRange">
+        <property name="ItemsList" stdset="0">
+         <string notr="true">week;month;quarter;year;all</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="CurrencyLbl">
+        <property name="text">
+         <string>C&amp;urrency:</string>
+        </property>
+        <property name="buddy">
+         <cstring>CurrencyCombo</cstring>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="CurrencyComboBox" name="CurrencyCombo"/>
+      </item>
+      <item>
+       <widget class="QLabel" name="SearchLbl">
+        <property name="text">
+         <string>S&amp;earch:</string>
+        </property>
+        <property name="buddy">
+         <cstring>SearchString</cstring>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="SearchString"/>
+      </item>
+      <item>
+       <spacer name="periodBarSpacer">
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="ResetAccountBtn">
+        <property name="visible">
+         <bool>false</bool>
+        </property>
+        <property name="toolTip">
+         <string>Show all accounts</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <widget class="QSplitter" name="BalanceOperationsSplitter">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
@@ -60,63 +140,6 @@
        <property name="bottomMargin">
         <number>0</number>
        </property>
-       <item>
-        <widget class="QWidget" name="BalanceFrameTop">
-         <layout class="QHBoxLayout" name="horizontalLayout_2">
-          <property name="leftMargin">
-           <number>6</number>
-          </property>
-          <property name="topMargin">
-           <number>6</number>
-          </property>
-          <property name="rightMargin">
-           <number>6</number>
-          </property>
-          <property name="bottomMargin">
-           <number>6</number>
-          </property>
-          <item>
-           <widget class="QDateEdit" name="BalanceDate">
-            <property name="dateTime">
-             <datetime>
-              <hour>0</hour>
-              <minute>0</minute>
-              <second>0</second>
-              <year>2020</year>
-              <month>11</month>
-              <day>19</day>
-             </datetime>
-            </property>
-            <property name="displayFormat">
-             <string>dd/MM/yyyy</string>
-            </property>
-            <property name="calendarPopup">
-             <bool>true</bool>
-            </property>
-            <property name="timeSpec">
-             <enum>Qt::TimeSpec::UTC</enum>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Orientation::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="CurrencyComboBox" name="BalancesCurrencyCombo"/>
-          </item>
-         </layout>
-        </widget>
-       </item>
        <item>
         <widget class="TreeViewWithFooter" name="BalancesTreeView"/>
        </item>
@@ -264,86 +287,6 @@
             </property>
             <item>
              <layout class="QVBoxLayout" name="operationsListLayout">
-              <item>
-               <widget class="QWidget" name="OperationConfigFrame">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-                <layout class="QHBoxLayout" name="horizontalLayout_3">
-                 <property name="leftMargin">
-                  <number>0</number>
-                 </property>
-                 <property name="topMargin">
-                  <number>6</number>
-                 </property>
-                 <property name="rightMargin">
-                  <number>0</number>
-                 </property>
-                 <property name="bottomMargin">
-                  <number>6</number>
-                 </property>
-                 <item>
-                  <widget class="DateRangeSelector" name="DateRange">
-                   <property name="ItemsList" stdset="0">
-                    <string notr="true">week;month;quarter;year;all</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <spacer name="searchGroupSpacer">
-                   <property name="orientation">
-                    <enum>Qt::Orientation::Horizontal</enum>
-                   </property>
-                   <property name="sizeType">
-                    <enum>QSizePolicy::Fixed</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>0</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                 <item>
-                  <widget class="QLabel" name="SearchLbl">
-                   <property name="text">
-                    <string>S&amp;earch:</string>
-                   </property>
-                   <property name="buddy">
-                    <cstring>SearchString</cstring>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QLineEdit" name="SearchString"/>
-                 </item>
-                 <item>
-                  <spacer name="horizontalSpacer">
-                   <property name="orientation">
-                    <enum>Qt::Orientation::Horizontal</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>40</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="ResetAccountBtn">
-                   <property name="visible">
-                    <bool>false</bool>
-                   </property>
-                   <property name="toolTip">
-                    <string>Show all accounts</string>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </widget>
-              </item>
               <item>
                <widget class="QTableView" name="OperationsTableView">
                 <property name="sizePolicy">
@@ -533,14 +476,13 @@
   </layout>
  </widget>
  <tabstops>
-  <tabstop>BalanceDate</tabstop>
-  <tabstop>BalancesCurrencyCombo</tabstop>
+  <tabstop>DateRange</tabstop>
+  <tabstop>CurrencyCombo</tabstop>
+  <tabstop>SearchString</tabstop>
+  <tabstop>ResetAccountBtn</tabstop>
   <tabstop>BalancesTreeView</tabstop>
   <tabstop>PositionsTreeView</tabstop>
   <tabstop>PositionsCollapseBtn</tabstop>
-  <tabstop>DateRange</tabstop>
-  <tabstop>SearchString</tabstop>
-  <tabstop>ResetAccountBtn</tabstop>
   <tabstop>OperationsTableView</tabstop>
   <tabstop>OperationsCollapseBtn</tabstop>
   <tabstop>DetailsToggleBtn</tabstop>

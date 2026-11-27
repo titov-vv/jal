@@ -37,8 +37,8 @@ def owner(prepare_db):
 def _window(owner, account_id=0) -> OperationsWidget:
     window = OperationsWidget(owner)
     window.resize(1200, 800)
-    window.ui.BalanceDate.setDate(QDate(2021, 3, 1))
-    window.ui.BalancesCurrencyCombo.setIndex(EUR)
+    window.ui.DateRange.setRange(0, day_finish(QDate(2021, 3, 1)))
+    window.ui.CurrencyCombo.setIndex(EUR)
     window.set_account(account_id)
     window.show()
     QApplication.processEvents()
@@ -104,7 +104,7 @@ def test_the_shown_account_is_bold_in_balances(wallet, owner):
     assert not model.data(row, Qt.FontRole)
     window.set_account(account_id)
     assert model.data(row, Qt.FontRole).bold()
-    window.ui.BalanceDate.setDate(QDate(2021, 3, 2))    # the model is rebuilt
+    window.ui.DateRange.setRange(0, day_finish(QDate(2021, 3, 2)))    # the model is rebuilt
     row = model.index(0, 0, model.index(0, 0, model.index(-1, -1)))
     assert model.data(row, Qt.FontRole).bold()
     window.set_account(0)
@@ -131,16 +131,16 @@ def test_a_cancelled_dialog_keeps_the_account(wallet, owner, monkeypatch):
     assert window.operations_model.getAccount() == WALLET
 
 
-def test_the_list_follows_the_balances_date_and_currency(wallet, owner):
+def test_the_list_follows_the_period_end_and_currency(wallet, owner):
     _stake()
     window = _window(owner, WALLET)
     model = window.positions_model
     total = lambda: [x for x in [model._root.getChild(i).details() for i in range(model._root.childrenCount())]
                      if x.get('kind') == 'total'][-1]
     assert total()['value_common'] == Decimal('100')      # 100 LINK at 12 less 1,000, at half a euro
-    window.ui.BalancesCurrencyCombo.setIndex(USD)
+    window.ui.CurrencyCombo.setIndex(USD)
     assert total()['value_common'] == Decimal('200')
-    window.ui.BalanceDate.setDate(QDate(2020, 12, 31))    # before the wallet bought anything
+    window.ui.DateRange.setRange(0, day_finish(QDate(2020, 12, 31)))    # before the wallet bought anything
     assert not model.hasPositions()
     assert _shown(window) == (False, True, True)
 

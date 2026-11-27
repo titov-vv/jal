@@ -156,3 +156,79 @@ def test_profit_loss_previous_year_has_twelve_months(owner, today):
     _pick(window.ui.ReportRange, 'last_year')
     months = window.ui.ReportTableView.model()._month_list
     assert [(x['year'], x['number']) for x in months] == [(2025, n) for n in range(1, 13)]
+
+
+def _step(selector, direction) -> tuple:
+    (selector.prev_button if direction < 0 else selector.next_button).click()
+    return _shown(selector)
+
+
+def test_arrows_step_whole_periods_of_the_preset(owner, today):
+    selector = _selector(owner)
+    _pick(selector, 'quarter')
+    assert _step(selector, -1) == (QDate(2026, 4, 1), QDate(2026, 6, 30))
+    assert selector.range_combo.currentData() == CUSTOM
+    assert _step(selector, -1) == (QDate(2026, 1, 1), QDate(2026, 3, 31))
+    assert _step(selector, -1) == (QDate(2025, 10, 1), QDate(2025, 12, 31))
+    assert _step(selector, 1) == (QDate(2026, 1, 1), QDate(2026, 3, 31))
+    assert selector.getRange() == (day_start(QDate(2026, 1, 1)), day_finish(QDate(2026, 3, 31)))
+    _pick(selector, 'quarter')
+    assert _step(selector, 1) == (QDate(2026, 10, 1), QDate(2026, 12, 31))
+
+
+@pytest.mark.parametrize("preset, back", [
+    ('week', (QDate(2026, 11, 9), QDate(2026, 11, 15))),
+    ('month', (QDate(2026, 9, 1), QDate(2026, 9, 30))),
+    ('year', (QDate(2024, 1, 1), QDate(2024, 12, 31))),
+    ('QTD', (QDate(2026, 4, 1), QDate(2026, 6, 30))),
+    ('YTD', (QDate(2024, 1, 1), QDate(2024, 12, 31))),
+    ('this_year', (QDate(2025, 1, 1), QDate(2025, 12, 31))),
+    ('last_year', (QDate(2024, 1, 1), QDate(2024, 12, 31))),
+])
+def test_arrow_back_from_each_preset(owner, today, preset, back):
+    selector = _selector(owner)
+    _pick(selector, preset)
+    assert _step(selector, -1) == back
+
+
+def test_month_steps_keep_month_ends(owner, today):
+    selector = _selector(owner)
+    _pick(selector, 'month')
+    assert _step(selector, 1) == (QDate(2026, 11, 1), QDate(2026, 11, 30))
+    assert _step(selector, 1) == (QDate(2026, 12, 1), QDate(2026, 12, 31))
+    assert _step(selector, 1) == (QDate(2027, 1, 1), QDate(2027, 1, 31))
+    assert _step(selector, 1) == (QDate(2027, 2, 1), QDate(2027, 2, 28))
+
+
+def test_hand_set_days_step_by_their_length(owner, today):
+    selector = _selector(owner)
+    selector.from_date.setDate(QDate(2026, 1, 10))
+    selector.to_date.setDate(QDate(2026, 1, 19))
+    assert _step(selector, -1) == (QDate(2025, 12, 31), QDate(2026, 1, 9))
+    assert _step(selector, 1) == (QDate(2026, 1, 10), QDate(2026, 1, 19))
+
+
+def test_open_start_has_no_steps(owner, today):
+    selector = _selector(owner)
+    _pick(selector, 'all')
+    assert not selector.prev_button.isEnabled() and not selector.next_button.isEnabled()
+    selector.setRange(day_start(QDate(2026, 2, 1)), day_finish(QDate(2026, 2, 28)))
+    assert selector.prev_button.isEnabled()
+    selector.setRange(0, day_finish(TODAY))
+    assert not selector.next_button.isEnabled()
+
+
+# Balances and positions show the state at the end of the period, and the title says which day it is
+def test_balances_follow_the_period_end(owner, today, prepare_db_ledger):
+    from jal.widgets.operations_widget import OperationsWidget
+    from jal.widgets.helpers import DateFormat
+    create_actions([(day_start(QDate(2026, 9, 30)) + 3600, 1, 1, [(5, Decimal('10'))])])
+    Ledger().rebuild(from_timestamp=0)
+    window = OperationsWidget(owner)
+    window.ui.DateRange.setRange(day_start(QDate(2026, 9, 1)), day_finish(QDate(2026, 9, 29)))
+    assert window.ui.BalanceBox.title() == "Balances on " + QDate(2026, 9, 29).toString(DateFormat.date(qt=True))
+    assert window.balances_model._date == day_finish(QDate(2026, 9, 29))
+    assert window.balances_model.rowCount(window.balances_model.index(-1, -1)) == 0
+    window.ui.DateRange.next_button.click()
+    assert window.balances_model._date == day_finish(QDate(2026, 10, 28))
+    assert window.balances_model.rowCount(window.balances_model.index(-1, -1)) == 1

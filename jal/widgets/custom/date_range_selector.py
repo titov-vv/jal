@@ -1,5 +1,5 @@
-from PySide6.QtCore import Qt, Signal, Slot, Property
-from PySide6.QtWidgets import QWidget, QComboBox, QHBoxLayout, QLabel, QDateEdit
+from PySide6.QtCore import Qt, QDate, Signal, Slot, Property
+from PySide6.QtWidgets import QWidget, QComboBox, QHBoxLayout, QLabel, QDateEdit, QToolButton
 from jal.db.clock import day_start, day_finish, local_datetime, now_dt
 from jal.widgets.helpers import ManipulateDate, DateFormat
 
@@ -7,6 +7,10 @@ from jal.widgets.helpers import ManipulateDate, DateFormat
 ITEM_NAME = 0
 ITEM_METHOD = 1
 CUSTOM = 'custom'
+WEEK, DAYS = 'week', 'days'
+# What the arrows step a preset by: a week, a whole calendar block of N months; none for an open start
+PRESET_STEPS = {'week': WEEK, 'month': 1, 'quarter': 3, 'year': 12, 'QTD': 3, 'YTD': 12,
+                'this_year': 12, 'last_year': 12, 'all': None}
 
 
 # Timestamps that cover the days from 'first' to 'last' entirely; no first day means "since the beginning"
@@ -35,6 +39,7 @@ class DateRangeSelector(QWidget):
         self._begin = 0
         self._end = 0
         self._items = []
+        self._step = None
 
         self.layout = QHBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
@@ -42,6 +47,15 @@ class DateRangeSelector(QWidget):
         self.range_combo = QComboBox(self)
         self.range_combo.addItem(self.tr("Custom"), CUSTOM)
         self.layout.addWidget(self.range_combo)
+
+        self.prev_button = QToolButton(self)
+        self.prev_button.setArrowType(Qt.LeftArrow)
+        self.prev_button.setToolTip(self.tr("Previous period"))
+        self.layout.addWidget(self.prev_button)
+        self.next_button = QToolButton(self)
+        self.next_button.setArrowType(Qt.RightArrow)
+        self.next_button.setToolTip(self.tr("Next period"))
+        self.layout.addWidget(self.next_button)
 
         self.from_label = QLabel(self.tr("From:"), parent=self)
         self.layout.addWidget(self.from_label)
@@ -63,6 +77,7 @@ class DateRangeSelector(QWidget):
 
         self.setLayout(self.layout)
         self.setFocusProxy(self.range_combo)
+        self._set_step(None)
 
         self.connect_signals_and_slots()
 
@@ -89,6 +104,8 @@ class DateRangeSelector(QWidget):
         self.range_combo.activated.connect(self.onRangeChange)
         self.from_date.dateChanged.connect(self.onFromChange)
         self.to_date.dateChanged.connect(self.onToChange)
+        self.prev_button.clicked.connect(lambda: self.step(-1))
+        self.next_button.clicked.connect(lambda: self.step(1))
 
     # Shows the days and emits the timestamps that cover them
     def _show_days(self, first, last):
@@ -102,9 +119,38 @@ class DateRangeSelector(QWidget):
     def _select_custom(self):
         self.range_combo.setCurrentIndex(self.range_combo.findData(CUSTOM))
 
+    def _set_step(self, step):
+        self._step = step
+        self.prev_button.setEnabled(step is not None)
+        self.next_button.setEnabled(step is not None)
+
+    # Moves to the previous (-1) or next (1) whole period; a range of hand-set days moves by its own length
+    @Slot()
+    def step(self, direction: int):
+        if self._step is None:
+            return
+        first, last = self.from_date.date(), self.to_date.date()
+        if self._step == DAYS:
+            length = first.daysTo(last) + 1
+            first, last = first.addDays(direction * length), last.addDays(direction * length)
+        elif self._step == WEEK:
+            first = first.addDays(1 - first.dayOfWeek() + 7 * direction)
+            last = first.addDays(6)
+        else:
+            months = self._step
+            first = QDate(first.year(), (first.month() - 1) // months * months + 1, 1).addMonths(direction * months)
+            last = first.addMonths(months).addDays(-1)
+        self._select_custom()
+        self._show_days(first, last)
+
+    # The day the range ends on
+    def lastDay(self) -> QDate:
+        return self.to_date.date()
+
     # Shows the days that 'begin_ts' and 'end_ts' fall on; a zero 'begin_ts' keeps the range open at the start
     def setRange(self, begin_ts, end_ts):
         self._select_custom()
+        self._set_step(DAYS if begin_ts else None)
         first = local_datetime(begin_ts).date() if begin_ts else None
         self._show_days(first, local_datetime(end_ts).date())
 
@@ -116,6 +162,7 @@ class DateRangeSelector(QWidget):
         item = self.range_combo.itemData(index)
         if item == CUSTOM:
             return
+        self._set_step(PRESET_STEPS[item])
         self._show_days(*self.report_ranges[item][ITEM_METHOD](now_dt().date()))
 
     @Slot()
@@ -136,6 +183,7 @@ class DateRangeSelector(QWidget):
 
     def _edited(self):
         self._select_custom()
+        self._set_step(DAYS)
         self._begin, self._end = day_bounds(self.from_date.date(), self.to_date.date())
         self.changed.emit(self._begin, self._end)
 

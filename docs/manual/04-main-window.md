@@ -6,9 +6,10 @@ Almost everything you do in JAL happens in one window. This chapter names every 
 
 ![The main window](img/main_window.png)
 
-The window has four areas:
+The window has five areas:
 
 * the **menu bar** along the top;
+* the **period bar** under the tabs — the dates, currency and search that everything below follows;
 * **Balances** on the left — what you have;
 * **Operations** on the right — what happened;
 * the **editor** underneath the operations — the details of whatever is selected.
@@ -25,16 +26,33 @@ every report you open adds another. Close a tab with the **✗** on it — closi
 harmless, **Ledger → Operations** brings it back. Some small windows (charts, tax forms) open as
 windows of their own instead of as tabs.
 
+## The period bar
+
+A single row of controls above both panels:
+
+* **Period** — a preset (*Since last week*, *Since last month*, *Since last quarter*, *Since last year*,
+  *All dates*) plus a **From** and **To** date you can set by hand. The presets count backwards from
+  today; the dates are yours to override, and both days are included. A date set by hand switches the
+  preset to *Custom*.
+* **◀ ▶** — step to the previous or next period. After a preset they move by its whole calendar unit:
+  from *Since last quarter* to the quarter before it, then the one before that; a period set by hand
+  moves by its own length. They are off for *All dates*.
+* **Currency** — what the converted columns of Balances and of the positions list are in. It starts at
+  your reporting currency.
+* **Search** — free text; only the operations whose text matches stay on screen.
+* When you have [chosen an account](#the-balances-panel), a button with its name at the right end goes
+  back to all of them.
+
+The operations list shows the whole period; Balances and the positions list show the state at the end
+of its **To** day.
+
 ## The Balances panel
 
 ![The balances panel](img/balances_panel.png)
 
-A list of your accounts, grouped by type, showing what each one holds.
+A list of your accounts, grouped by type, showing what each one holds at the end of the period's **To**
+day — the panel's title says which day that is. Step the period back to see what you had then.
 
-* The **date box** at the top left is the day the balances are shown *as of*. Set it to any past
-  date to see what you had then.
-* The **currency box** at the top right chooses the currency the last column (*Balance, …*) is
-  converted into. It starts at your reporting currency.
 * **Balance** is the amount in the account's own currency; the last column is that amount converted.
   The **Total** at the bottom adds up the converted column.
 
@@ -105,8 +123,8 @@ the operations shows them.
 
 ![Positions of a wallet above its operations](img/main_window_positions.png)
 
-It follows the **date** and **currency** of the Balances panel, so it always matches the balance you
-clicked, and it ignores the date range of the operations. An account that holds only money has
+It is shown on the **To** day and in the **currency** of the period bar, the same as Balances, so it always
+matches the balance you clicked. An account that holds only money has
 nothing to add to its balance, so the list stays hidden for it, and while all accounts are shown.
 
 From top to bottom it shows:
@@ -124,7 +142,7 @@ Double-click a staking position in the Balances panel and the list shows its hol
 
 ### Right-click on a position
 
-* **Position details…** — [lots, price chart and tax estimate](06-investments.md#position-details-lots-chart-and-tax) of the position on the Balances date.
+* **Position details…** — [lots, price chart and tax estimate](06-investments.md#position-details-lots-chart-and-tax) of the position on the period's **To** day.
 * **Show Accrual Chart**, for a position whose balance is read from a blockchain.
 * **Set asset country**.
 
@@ -161,15 +179,9 @@ its fee, a reward claim that paid out several coins — each reads as one bracke
 how the rows look: every row is still there, in the same order, and still opens its own operation.
 Rows hidden by the search box break the group, so a line never points at something you cannot see.
 
-Two controls above the list decide what is shown:
-
-* **Period** — a preset (*Since last week*, *Since last month*, *Since last quarter*, *Since last year*,
-  *All dates*) plus a **From** and **To** date you can set by hand. The presets count backwards from
-  today; the dates are yours to override, and both days are included.
-* **Search** — free text; only the operations whose text matches stay on screen.
-
-The list covers all accounts until you [choose one in Balances](#the-balances-panel); the button with its name at the
-right of these controls goes back to all of them.
+The list holds the operations of the [period](#the-period-bar) that match the search. It covers all
+accounts until you [choose one in Balances](#the-balances-panel); the button with its name at the right of
+the period bar goes back to all of them.
 
 ### How the amounts are shown
 

@@ -10,7 +10,7 @@ from jal.widgets.mdi import MdiWidget
 from jal.widgets.custom.date_range_selector import day_bounds
 from jal.widgets.selection_dialog import SelectReferenceDialog
 from jal.widgets.reference_dialogs import AccountListDialog, TagsListDialog
-from jal.widgets.helpers import (ManipulateDate, TableSelectionRestorer, set_grids_metrics,
+from jal.widgets.helpers import (ManipulateDate, DateFormat, TableSelectionRestorer, set_grids_metrics,
                                 restore_splitters, save_splitters, assign_shortcut)
 from jal.widgets.icons import JalIcon
 from jal.db.settings import JalSettings
@@ -89,7 +89,7 @@ class OperationsWidget(MdiWidget):
         self.positions_model = AccountHoldingsModel(self.ui.PositionsTreeView)
         self.ui.PositionsTreeView.setModel(self.positions_model)
         self.ui.PositionsTreeView.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.positions_menu = HoldingsMenu(self.ui.PositionsTreeView, self.ui.BalanceDate.date, self._add_window)
+        self.positions_menu = HoldingsMenu(self.ui.PositionsTreeView, self.ui.DateRange.lastDay, self._add_window)
         self._apply_panes()
 
         self.connect_signals_and_slots()
@@ -102,8 +102,7 @@ class OperationsWidget(MdiWidget):
         self.ui.NewOperationBtn.setMenu(self.NewOperationMenu)
 
         # Setup balance and holdings parameters
-        self.ui.BalanceDate.setDate(now_dt().date())
-        self.ui.BalancesCurrencyCombo.setIndex(JalAsset.get_base_currency())
+        self.ui.CurrencyCombo.setIndex(JalAsset.get_base_currency())
 
         self.ui.OperationsTableView.selectRow(0)
         self.ui.DateRange.setCurrentIndex(0)
@@ -115,10 +114,8 @@ class OperationsWidget(MdiWidget):
         super().closeEvent(event)
 
     def connect_signals_and_slots(self):
-        self.ui.BalanceDate.dateChanged.connect(self.ui.BalancesTreeView.model().setDate)
-        self.ui.BalancesCurrencyCombo.changed.connect(self.ui.BalancesTreeView.model().setCurrency)
-        self.ui.BalanceDate.dateChanged.connect(self.update_positions)
-        self.ui.BalancesCurrencyCombo.changed.connect(self.update_positions)
+        self.ui.CurrencyCombo.changed.connect(self.ui.BalancesTreeView.model().setCurrency)
+        self.ui.CurrencyCombo.changed.connect(self.update_positions)
         self.ui.PositionsTreeView.customContextMenuRequested.connect(self.positions_context_menu)
         self.ui.PositionsCollapseBtn.clicked.connect(self.move_panes_up)
         self.ui.OperationsCollapseBtn.clicked.connect(self.move_panes_down)
@@ -128,7 +125,7 @@ class OperationsWidget(MdiWidget):
         self.ui.BalancesTreeView.customContextMenuRequested.connect(self.balances_context_menu)
         self.ui.BalancesTreeView.expanded.connect(partial(self.balances_model.setGroupExpanded, expanded=True))
         self.ui.BalancesTreeView.collapsed.connect(partial(self.balances_model.setGroupExpanded, expanded=False))
-        self.ui.DateRange.changed.connect(self.operations_model.setDateRange)
+        self.ui.DateRange.changed.connect(self.period_changed)
         self.ui.ResetAccountBtn.clicked.connect(partial(self.set_account, 0))
         self.ui.SearchString.editingFinished.connect(self.update_operations_filter)
         self.ui.OperationsTableView.selectionModel().selectionChanged.connect(self.operation_selection_change)
@@ -154,12 +151,21 @@ class OperationsWidget(MdiWidget):
         if self._account_dialog.exec(enable_selection=True):
             self.set_account(self._account_dialog.selected_id)
 
-    # What the shown account holds at the date and in the currency of the Balances panel
+    # Operations of the period; balances and positions at its last day
+    @Slot()
+    def period_changed(self, begin, end):
+        self.operations_model.setDateRange(begin, end)
+        day = self.ui.DateRange.lastDay()
+        self.ui.BalanceBox.setTitle(self.tr("Balances on {}").format(day.toString(DateFormat.date(qt=True))))
+        self.balances_model.setDate(day)
+        self.update_positions()
+
+    # What the shown account holds at the last day of the period and in the chosen currency
     def update_positions(self, *_args):
-        currency_id = self.ui.BalancesCurrencyCombo.selected_id
+        currency_id = self.ui.CurrencyCombo.selected_id
         if not currency_id:
             return
-        self.positions_model.showAccount(self.operations_model.getAccount(), currency_id, self.ui.BalanceDate.date())
+        self.positions_model.showAccount(self.operations_model.getAccount(), currency_id, self.ui.DateRange.lastDay())
         self._apply_panes()
 
     def _add_window(self, *args, **kwargs):
