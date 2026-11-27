@@ -39,7 +39,10 @@ A single row of controls above both panels:
   moves by its own length. They are off for *All dates*.
 * **Currency** — what the converted columns of Balances and of the positions list are in. It starts at
   your reporting currency.
-* **Search** — free text; only the operations whose text matches stay on screen.
+* **Search** — free text, in any case; only the matching operations stay on screen. It looks at what
+  the list shows and also at the names behind each operation: asset name, ticker and ISIN, peer,
+  category, tag and portfolio. The list follows as you type; when the period holds more than 2,500
+  operations, press **Enter** to search.
 * When you have [chosen an account](#the-balances-panel), a button with its name at the right end goes
   back to all of them.
 

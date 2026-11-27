@@ -6,7 +6,7 @@ from datetime import datetime
 from decimal import Decimal
 from PySide6.QtCore import Signal, Slot, QObject, QDate
 from PySide6.QtWidgets import QDialog, QMessageBox, QApplication
-from jal.constants import BookAccount, Setup
+from jal.constants import BookAccount, Setup, SymbolId, PredefinedAsset
 from jal.db.helpers import format_decimal
 from jal.db.db import JalDB
 from jal.db.account import JalAccount
@@ -171,6 +171,35 @@ class Ledger(QObject, JalDB):
         while query.next():
             sequence.append(cls._read_record(query, named=True))
         return sequence
+
+    @classmethod
+    # Names an operation refers to without showing them - its assets (name, symbols, ISIN; not currencies), peer,
+    # categories and tags - as {operation id: lower-case text} for the ledger rows within the given time range
+    def get_search_names(cls, begin: int, end: int) -> dict:
+        names = {}
+        not_money = f"a.type_id!={PredefinedAsset.Money}"
+        for table, sql in (('asset', f"SELECT id, full_name FROM assets a WHERE {not_money}"),
+                           ('asset', "SELECT s.asset_id, s.symbol FROM asset_symbol s "
+                                     f"JOIN assets a ON a.id=s.asset_id WHERE {not_money}"),
+                           ('asset', "SELECT s.asset_id, i.id_value FROM symbol_ids i "
+                                     "JOIN asset_symbol s ON s.id=i.symbol_id JOIN assets a ON a.id=s.asset_id "
+                                     f"WHERE i.id_type={SymbolId.ISIN} AND {not_money}"),
+                           ('peer', "SELECT id, name FROM agents"),
+                           ('category', "SELECT id, name FROM categories"),
+                           ('tag', "SELECT id, tag FROM tags")):
+            query = cls._exec(sql, forward_only=True)
+            while query.next():
+                item_id, name = cls._read_record(query)
+                names.setdefault((table, item_id), []).append(name)
+        operations = defaultdict(set)
+        query = cls._exec("SELECT DISTINCT oid, asset_id, peer_id, category_id, tag_id FROM ledger "
+                          "WHERE timestamp>=:begin AND timestamp<=:end", [(":begin", begin), (":end", end)],
+                          forward_only=True)
+        while query.next():
+            oid, *ids = cls._read_record(query)
+            operations[oid].update(x for x in zip(('asset', 'peer', 'category', 'tag'), ids) if x[1])
+        return {oid: "\n".join(name for key in keys for name in names.get(key, [])).casefold()
+                for oid, keys in operations.items()}
 
     @classmethod
     # Returns a list of [otype, oid, opart, timestamp, account_id, amount] ordered by timestamp

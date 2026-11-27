@@ -1,4 +1,4 @@
-from PySide6.QtCore import Qt, Slot, QAbstractTableModel, QModelIndex
+from PySide6.QtCore import Qt, Slot, QAbstractTableModel, QModelIndex, QSortFilterProxyModel
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QHeaderView
 from jal.constants import Setup
@@ -44,6 +44,8 @@ class OperationsModel(QAbstractTableModel):
         self._data = []
         self._overridden = set()   # ids of the operations with a tax treatment override
         self._portfolios = {}      # {operation id: portfolio tag id}
+        self._search_names = None  # {operation id: names it refers to}, read on the first search
+        self._search_texts = {}    # {row: lower-case text a search looks in}
         self._cache = UniversalCache()
         self._begin = 0
         self._end = 0
@@ -209,8 +211,26 @@ class OperationsModel(QAbstractTableModel):
         self._data = group_operation_parts(Ledger.get_operations_sequence(self._begin, self._end, self._account))
         self._overridden = JalTaxOverride.operation_ids()
         self._portfolios = JalPortfolio.assignments()
+        self._search_names = None
+        self._search_texts = {}
         self._cache.clear_cache()
         self.endResetModel()
+
+    # Lower-case text of the row's columns and of the names its operation refers to but doesn't show
+    def search_text(self, row) -> str:
+        if row not in self._search_texts:
+            if self._search_names is None:
+                self._search_names = Ledger.get_search_names(self._begin, self._end)
+            oid = self._data[row]['oid']
+            texts = [self._search_names.get(oid, '')]
+            if oid in self._portfolios:
+                texts.append(JalTag(self._portfolios[oid]).name())
+            for column in range(self.columnCount()):
+                text = self.index(row, column).data()
+                if isinstance(text, str):
+                    texts.append(text)
+            self._search_texts[row] = "\n".join(texts).casefold()
+        return self._search_texts[row]
 
     # Re-reads which operations have a tax treatment override and repaints the columns that show it
     def refresh_tax_overrides(self):
@@ -242,3 +262,20 @@ class OperationsModel(QAbstractTableModel):
             if str(e) == LedgerTransaction.NoOpException:
                 return None
             raise e
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Keeps the rows whose shown text or referred names contain the search text, ignoring case
+class OperationsFilterModel(QSortFilterProxyModel):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._text = ''
+
+    def setSearch(self, text: str):
+        text = text.strip().casefold()
+        if text != self._text:
+            self._text = text
+            self.invalidateRowsFilter()
+
+    def filterAcceptsRow(self, source_row, source_parent):
+        return not self._text or self._text in self.sourceModel().search_text(source_row)

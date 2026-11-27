@@ -1,8 +1,8 @@
 from functools import partial
 
-from PySide6.QtCore import Qt, Slot, Signal, QSortFilterProxyModel, QTimer
+from PySide6.QtCore import Qt, Slot, Signal, QTimer
 from PySide6.QtGui import QAction, QActionGroup, QKeySequence, QShortcut
-from PySide6.QtWidgets import QMenu, QMessageBox, QDialog, QStyle
+from PySide6.QtWidgets import QApplication, QMenu, QMessageBox, QDialog, QStyle
 from jal.constants import Setup, AccountStatus
 from jal.ui.ui_operations_widget import Ui_OperationsWidget
 from jal.widgets.holdings_menu import HoldingsMenu
@@ -19,7 +19,7 @@ from jal.db.clock import now_dt
 from jal.db.asset import JalAsset
 from jal.db.balances_model import BalancesModel
 from jal.db.holdings_model import AccountHoldingsModel
-from jal.db.operations_model import OperationsModel
+from jal.db.operations_model import OperationsModel, OperationsFilterModel
 from jal.db.common_models import TagTreeModel
 from jal.db.operations import LedgerTransaction
 from jal.db.transfer_settlement import TransferSettlement
@@ -35,6 +35,7 @@ from jal.widgets.tax_override_dialog import TaxOverrideDialog
 # ----------------------------------------------------------------------------------------------------------------------
 class OperationsWidget(MdiWidget):
     dbUpdated = Signal()
+    LIVE_SEARCH_ROWS = 2500   # a longer list is searched on Enter only
     SHOW_BOTH, SHOW_OPERATIONS, SHOW_POSITIONS = range(3)   # what the positions and operations panes show
 
     def __init__(self, parent=None):
@@ -78,9 +79,11 @@ class OperationsWidget(MdiWidget):
         self.ui.BalancesTreeView.setContextMenuPolicy(Qt.CustomContextMenu)
 
         self.operations_model = OperationsModel(self.ui.OperationsTableView)
-        self.operations_filtered_model = QSortFilterProxyModel(self.ui.OperationsTableView)
+        self.operations_filtered_model = OperationsFilterModel(self.ui.OperationsTableView)
         self.operations_filtered_model.setSourceModel(self.operations_model)
-        self.operations_filtered_model.setFilterCaseSensitivity(Qt.CaseInsensitive)
+        self._search_timer = QTimer(self)
+        self._search_timer.setSingleShot(True)
+        self._search_timer.setInterval(300)
         self.ui.OperationsTableView.setModel(self.operations_filtered_model)
         self.operations_model.configureView()
         self.ui.OperationsTableView.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -127,7 +130,9 @@ class OperationsWidget(MdiWidget):
         self.ui.BalancesTreeView.collapsed.connect(partial(self.balances_model.setGroupExpanded, expanded=False))
         self.ui.DateRange.changed.connect(self.period_changed)
         self.ui.ResetAccountBtn.clicked.connect(partial(self.set_account, 0))
-        self.ui.SearchString.editingFinished.connect(self.update_operations_filter)
+        self.ui.SearchString.textChanged.connect(self.search_typed)
+        self.ui.SearchString.returnPressed.connect(self.update_operations_filter)
+        self._search_timer.timeout.connect(self.update_operations_filter)
         self.ui.OperationsTableView.selectionModel().selectionChanged.connect(self.operation_selection_change)
         self.operations_model.modelReset.connect(partial(self.operation_selection_change, None, None))  # Use the same slot with NULL-parameters to clean operation view
         self.ui.OperationsTableView.customContextMenuRequested.connect(self.operation_context_menu)
@@ -271,9 +276,18 @@ class OperationsWidget(MdiWidget):
         self.ui.OperationsTabs.new_operation(operation_type, self.operations_model.getAccount())
 
     @Slot()
+    def search_typed(self):
+        if self.operations_model.rowCount() <= self.LIVE_SEARCH_ROWS:
+            self._search_timer.start()
+
+    @Slot()
     def update_operations_filter(self):
-        self.ui.OperationsTableView.model().setFilterFixedString(self.ui.SearchString.text())
-        self.ui.OperationsTableView.model().setFilterKeyColumn(-1)
+        self._search_timer.stop()
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        try:
+            self.operations_filtered_model.setSearch(self.ui.SearchString.text())
+        finally:
+            QApplication.restoreOverrideCursor()
 
     @Slot()
     def balance_double_click(self, index):
