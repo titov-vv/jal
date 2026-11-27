@@ -163,8 +163,9 @@ Rows hidden by the search box break the group, so a line never points at somethi
 
 Two controls above the list decide what is shown:
 
-* **Period** — a preset (*Week*, *Month*, *Quarter*, *Year*, *All dates*) plus a **From** and **To**
-  date you can set by hand. The presets count backwards from today; the dates are yours to override.
+* **Period** — a preset (*Since last week*, *Since last month*, *Since last quarter*, *Since last year*,
+  *All dates*) plus a **From** and **To** date you can set by hand. The presets count backwards from
+  today; the dates are yours to override, and both days are included.
 * **Search** — free text; only the operations whose text matches stay on screen.
 
 The list covers all accounts until you [choose one in Balances](#the-balances-panel); the button with its name at the

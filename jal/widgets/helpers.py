@@ -1,7 +1,7 @@
 import base64
 from datetime import time, datetime, timedelta, timezone
 from functools import cmp_to_key, partial
-from PySide6.QtCore import Qt, QCollator, QItemSelectionModel, QSize, QTimer
+from PySide6.QtCore import Qt, QDate, QCollator, QItemSelectionModel, QSize, QTimer
 from PySide6.QtGui import QKeySequence, QShortcut
 from PySide6.QtWidgets import (QApplication, QAbstractItemView, QDialog, QTableView, QTreeView, QDateTimeEdit,
                                QStyle, QSplitter, QStyledItemDelegate)
@@ -579,78 +579,43 @@ def week_list(begin: int, end: int) -> list:
     return result
 
 # -----------------------------------------------------------------------------------------------------------------------
-# Helpers to work with datetime
+# Date range presets: each takes the user's today and returns (first day, last day) - both days included.
+# None as the first day stands for "since the beginning".
 class ManipulateDate:
-    # The instant a day of the user's own clock began at - these are the bounds of a date range, so they are read
-    # the way the user stated them and not the way a stored row is.
     @staticmethod
-    def toTimestamp(date_value):
-        time_value = time(0, 0, 0)
-        dt_value = datetime.combine(date_value, time_value)
-        return window_bound(int(dt_value.replace(tzinfo=timezone.utc).timestamp()))
+    def PreviousWeek(today: QDate) -> tuple:
+        week_ago = today.addDays(-7)
+        return week_ago.addDays(1 - week_ago.dayOfWeek()), today
 
     @staticmethod
-    def PreviousWeek(day=datetime.today()):
-        end = day + timedelta(days=1)
-        prev_week = day - timedelta(days=7)
-        start_of_week = prev_week - timedelta(days=prev_week.weekday())
-        return ManipulateDate.toTimestamp(start_of_week), ManipulateDate.toTimestamp(end)
+    def PreviousMonth(today: QDate) -> tuple:
+        return QDate(today.year(), today.month(), 1).addMonths(-1), today
 
     @staticmethod
-    def PreviousMonth(day=datetime.today()):
-        end = day + timedelta(days=1)
-        first_day_of_month = day.replace(day=1)
-        last_day_of_prev_month = first_day_of_month - timedelta(days=1)
-        first_day_of_prev_month = last_day_of_prev_month.replace(day=1)
-        return ManipulateDate.toTimestamp(first_day_of_prev_month), ManipulateDate.toTimestamp(end)
+    def PreviousQuarter(today: QDate) -> tuple:
+        quarter_month = (today.month() - 1) // 3 * 3 + 1
+        return QDate(today.year(), quarter_month, 1).addMonths(-3), today
 
     @staticmethod
-    def PreviousQuarter(day=datetime.today()):
-        end = day + timedelta(days=1)
-        prev_quarter_month = day.month - day.month % 3 - 3
-        if prev_quarter_month > 0:
-            quarter_back = day.replace(day=1, month=prev_quarter_month)
-        else:
-            quarter_back = day.replace(day=1, month=(prev_quarter_month + 12), year=(day.year - 1))
-        return ManipulateDate.toTimestamp(quarter_back), ManipulateDate.toTimestamp(end)
+    def PreviousYear(today: QDate) -> tuple:
+        return QDate(today.year() - 1, 1, 1), today
 
     @staticmethod
-    def PreviousYear(day=datetime.today()):
-        end = day + timedelta(days=1)
-        first_day_of_year = day.replace(day=1, month=1)
-        last_day_of_prev_year = first_day_of_year - timedelta(days=1)
-        first_day_of_prev_year = last_day_of_prev_year.replace(day=1, month=1)
-        return ManipulateDate.toTimestamp(first_day_of_prev_year), ManipulateDate.toTimestamp(end)
+    def QuarterToDate(today: QDate) -> tuple:
+        return QDate(today.year(), today.month(), 1).addMonths(-3), today
 
     @staticmethod
-    def QuarterToDate(day=datetime.today()):
-        end = day + timedelta(days=1)
-        begin_month = day.month - 3
-        if begin_month > 0:
-            begin = day.replace(day=1, month=begin_month)
-        else:
-            begin = day.replace(day=1, month=(begin_month + 12), year=(day.year - 1))
-        return ManipulateDate.toTimestamp(begin), ManipulateDate.toTimestamp(end)
+    def YearToDate(today: QDate) -> tuple:
+        return QDate(today.year() - 1, today.month(), 1), today
 
     @staticmethod
-    def YearToDate(day=datetime.today()):
-        end = day + timedelta(days=1)
-        begin = day.replace(day=1, year=(day.year - 1))
-        return ManipulateDate.toTimestamp(begin), ManipulateDate.toTimestamp(end)
+    def ThisYear(today: QDate) -> tuple:
+        return QDate(today.year(), 1, 1), today
 
     @staticmethod
-    def ThisYear(day=datetime.today()):
-        end = day + timedelta(days=1)
-        begin = day.replace(day=1, month=1)
-        return ManipulateDate.toTimestamp(begin), ManipulateDate.toTimestamp(end)
+    def LastYear(today: QDate) -> tuple:
+        return QDate(today.year() - 1, 1, 1), QDate(today.year() - 1, 12, 31)
 
     @staticmethod
-    def LastYear(day=datetime.today()):
-        end = day.replace(day=1, month=1)
-        begin = end.replace(year=(day.year - 1))
-        return ManipulateDate.toTimestamp(begin), ManipulateDate.toTimestamp(end)
-
-    @staticmethod
-    def AllDates(day=datetime.today()):
-        end = day + timedelta(days=1)
-        return 0, ManipulateDate.toTimestamp(end)
+    def AllDates(today: QDate) -> tuple:
+        return None, today

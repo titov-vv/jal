@@ -3003,57 +3003,62 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>DateRangeSelector</name>
     <message>
-        <location filename="../widgets/custom/date_range_selector.py" line="16"/>
-        <source>Week</source>
-        <translation>Неделя</translation>
+        <location filename="../widgets/custom/date_range_selector.py" line="24"/>
+        <source>Since last week</source>
+        <translation>С прошлой недели</translation>
     </message>
     <message>
-        <location filename="../widgets/custom/date_range_selector.py" line="17"/>
-        <source>Month</source>
-        <translation>Месяц</translation>
+        <location filename="../widgets/custom/date_range_selector.py" line="25"/>
+        <source>Since last month</source>
+        <translation>С прошлого месяца</translation>
     </message>
     <message>
-        <location filename="../widgets/custom/date_range_selector.py" line="18"/>
-        <source>Quarter</source>
-        <translation>Квартал</translation>
+        <location filename="../widgets/custom/date_range_selector.py" line="26"/>
+        <source>Since last quarter</source>
+        <translation>С прошлого квартала</translation>
     </message>
     <message>
-        <location filename="../widgets/custom/date_range_selector.py" line="19"/>
-        <source>Year</source>
-        <translation>Год</translation>
+        <location filename="../widgets/custom/date_range_selector.py" line="27"/>
+        <source>Since last year</source>
+        <translation>С прошлого года</translation>
     </message>
     <message>
-        <location filename="../widgets/custom/date_range_selector.py" line="20"/>
-        <source>Quarter to date</source>
-        <translation>Текущий до сегодня</translation>
+        <location filename="../widgets/custom/date_range_selector.py" line="28"/>
+        <source>3 months</source>
+        <translation>3 месяца</translation>
     </message>
     <message>
-        <location filename="../widgets/custom/date_range_selector.py" line="21"/>
-        <source>Year to date</source>
-        <translation>Год до сегодня</translation>
+        <location filename="../widgets/custom/date_range_selector.py" line="29"/>
+        <source>12 months</source>
+        <translation>12 месяцев</translation>
     </message>
     <message>
-        <location filename="../widgets/custom/date_range_selector.py" line="22"/>
+        <location filename="../widgets/custom/date_range_selector.py" line="30"/>
         <source>This year</source>
         <translation>Текущий год</translation>
     </message>
     <message>
-        <location filename="../widgets/custom/date_range_selector.py" line="23"/>
+        <location filename="../widgets/custom/date_range_selector.py" line="31"/>
         <source>Previous year</source>
         <translation>Предыдущий год</translation>
     </message>
     <message>
-        <location filename="../widgets/custom/date_range_selector.py" line="24"/>
+        <location filename="../widgets/custom/date_range_selector.py" line="32"/>
         <source>All dates</source>
         <translation>Все даты</translation>
     </message>
     <message>
-        <location filename="../widgets/custom/date_range_selector.py" line="38"/>
+        <location filename="../widgets/custom/date_range_selector.py" line="43"/>
+        <source>Custom</source>
+        <translation>Свои даты</translation>
+    </message>
+    <message>
+        <location filename="../widgets/custom/date_range_selector.py" line="46"/>
         <source>From:</source>
         <translation>С:</translation>
     </message>
     <message>
-        <location filename="../widgets/custom/date_range_selector.py" line="46"/>
+        <location filename="../widgets/custom/date_range_selector.py" line="55"/>
         <source>To:</source>
         <translation>До:</translation>
     </message>
@@ -4787,58 +4792,70 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>JalBackup</name>
     <message>
-        <location filename="../db/backup_restore.py" line="100"/>
+        <location filename="../db/backup_restore.py" line="119"/>
         <source>Save backup to:</source>
         <translation>Сохранить резервную копию в:</translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="101"/>
-        <location filename="../db/backup_restore.py" line="103"/>
-        <location filename="../db/backup_restore.py" line="107"/>
+        <location filename="../db/backup_restore.py" line="120"/>
+        <location filename="../db/backup_restore.py" line="122"/>
+        <location filename="../db/backup_restore.py" line="126"/>
         <source>Archives (*.tgz)</source>
         <translation>Архивы (*.tgz)</translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="106"/>
+        <location filename="../db/backup_restore.py" line="125"/>
         <source>Select file with backup</source>
         <translation>Выберите файл с резервной копией</translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="125"/>
+        <location filename="../db/backup_restore.py" line="96"/>
+        <location filename="../db/backup_restore.py" line="142"/>
         <source>Wrong format of backup file</source>
         <translation>Неверный формат файла резервной копии</translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="130"/>
+        <location filename="../db/backup_restore.py" line="57"/>
+        <location filename="../db/backup_restore.py" line="101"/>
+        <source>Backup doesn&apos;t contain SQLite database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/backup_restore.py" line="60"/>
+        <source>Can&apos;t read backup file: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/backup_restore.py" line="149"/>
         <source>Backup restored from: </source>
         <translation>Резервная копия восстановлена из: </translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="131"/>
+        <location filename="../db/backup_restore.py" line="150"/>
         <source> into </source>
         <translation> в </translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="133"/>
+        <location filename="../db/backup_restore.py" line="152"/>
         <source>Data restored</source>
         <translation>Данные восстановлены</translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="134"/>
+        <location filename="../db/backup_restore.py" line="153"/>
         <source>Database was loaded from the backup.
 </source>
         <translation>Данные были загружены из бэкапа.
 </translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="135"/>
+        <location filename="../db/backup_restore.py" line="154"/>
         <source>You should restart application to apply changes
 Application will be terminated now</source>
         <translation>Вы должны перезапустить приложение, чтобы применить изменения
 Приложение сейчас завершит свою работу</translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="116"/>
+        <location filename="../db/backup_restore.py" line="135"/>
         <source>Backup saved in: </source>
         <translation>Резервная копия сохранена в: </translation>
     </message>
@@ -4853,7 +4870,7 @@ Application will be terminated now</source>
         <translation>Невозможно проверить дату резервной копии</translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="93"/>
+        <location filename="../db/backup_restore.py" line="112"/>
         <source>Failed to restore backup file</source>
         <translation>Не удалось восстановить резервную копию</translation>
     </message>
@@ -4937,42 +4954,42 @@ Application will be terminated now</source>
         <translation>Невозможно добавить идентификатор для пустого символа: </translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="607"/>
+        <location filename="../db/account.py" line="629"/>
         <source>The account is closed already</source>
         <translation>Счет уже закрыт</translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="610"/>
+        <location filename="../db/account.py" line="632"/>
         <source>The account has operations at or after the closure date</source>
         <translation>По счету есть операции в дату закрытия или позже</translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="612"/>
+        <location filename="../db/account.py" line="634"/>
         <source>The ledger isn&apos;t up to date, rebuild it first</source>
         <translation>Итоги не актуальны, сначала пересчитайте их</translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="615"/>
+        <location filename="../db/account.py" line="637"/>
         <source>The account has a debt: </source>
         <translation>На счете есть долг: </translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="619"/>
+        <location filename="../db/account.py" line="641"/>
         <source>The account holds money in another currency: </source>
         <translation>На счете есть деньги в другой валюте: </translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="621"/>
+        <location filename="../db/account.py" line="643"/>
         <source>The account has a negative balance: </source>
         <translation>На счете отрицательный остаток: </translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="629"/>
+        <location filename="../db/account.py" line="651"/>
         <source>The account has a short position: </source>
         <translation>На счете есть короткая позиция: </translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="636"/>
+        <location filename="../db/account.py" line="658"/>
         <source>The account is still owed: </source>
         <translation>Счету еще причитается: </translation>
     </message>
@@ -6556,122 +6573,122 @@ This looks like the quantity a rebasing position gained without reporting it, wh
 <context>
     <name>OperationsWidget</name>
     <message>
-        <location filename="../widgets/operations_widget.py" line="292"/>
+        <location filename="../widgets/operations_widget.py" line="293"/>
         <source>Reconcile</source>
         <translation>Сверить</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="294"/>
+        <location filename="../widgets/operations_widget.py" line="295"/>
         <source>Assign tag</source>
         <translation>Присвоить метку</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="298"/>
+        <location filename="../widgets/operations_widget.py" line="299"/>
         <source>Copy</source>
         <translation>Копировать</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="300"/>
+        <location filename="../widgets/operations_widget.py" line="301"/>
         <source>Delete</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="251"/>
+        <location filename="../widgets/operations_widget.py" line="252"/>
         <source>Confirmation</source>
         <translation>Подтверждение</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="184"/>
+        <location filename="../widgets/operations_widget.py" line="185"/>
         <source>Show operations</source>
         <translation>Показать операции</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="186"/>
+        <location filename="../widgets/operations_widget.py" line="187"/>
         <source>Show positions</source>
         <translation>Показать позиции</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="252"/>
+        <location filename="../widgets/operations_widget.py" line="253"/>
         <source>Are you sure to delete selected transaction(s)?</source>
         <translation>Вы уверены что хотите удалить выбранную транзакцию(-ии),</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="296"/>
+        <location filename="../widgets/operations_widget.py" line="297"/>
         <source>Tax treatment…</source>
         <translation>Налоговый режим…</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="302"/>
+        <location filename="../widgets/operations_widget.py" line="303"/>
         <source>Match cross-chain legs…</source>
         <translation>Сопоставить межсетевые плечи…</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="335"/>
+        <location filename="../widgets/operations_widget.py" line="336"/>
         <source>Assign an account…</source>
         <translation>Назначить счёт…</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="336"/>
+        <location filename="../widgets/operations_widget.py" line="337"/>
         <source>Match with another leg…</source>
         <translation>Сопоставить с другим плечом…</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="337"/>
+        <location filename="../widgets/operations_widget.py" line="338"/>
         <source>Convert into a swap…</source>
         <translation>Преобразовать в обмен…</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="338"/>
+        <location filename="../widgets/operations_widget.py" line="339"/>
         <source>Convert into a bridge…</source>
         <translation>Преобразовать в бридж…</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="340"/>
+        <location filename="../widgets/operations_widget.py" line="341"/>
         <source>Record as a spending or an income…</source>
         <translation>Записать как расход или приход…</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="420"/>
+        <location filename="../widgets/operations_widget.py" line="421"/>
         <source>Choose account...</source>
         <translation>Выбрать счёт...</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="425"/>
+        <location filename="../widgets/operations_widget.py" line="426"/>
         <source>Show accounts</source>
         <translation>Показывать счета</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="435"/>
+        <location filename="../widgets/operations_widget.py" line="436"/>
         <source>Use credit limits</source>
         <translation>Использовать кредитные лимиты</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="440"/>
+        <location filename="../widgets/operations_widget.py" line="441"/>
         <source>Group by tag</source>
         <translation>Сгруппировать по метке</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="446"/>
+        <location filename="../widgets/operations_widget.py" line="447"/>
         <source>Balance history chart</source>
         <translation>График истории баланса</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="454"/>
+        <location filename="../widgets/operations_widget.py" line="455"/>
         <source>Expand all</source>
         <translation>Развернуть все</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="457"/>
+        <location filename="../widgets/operations_widget.py" line="458"/>
         <source>Collapse all</source>
         <translation>Свернуть все</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="483"/>
+        <location filename="../widgets/operations_widget.py" line="484"/>
         <source>Please select tag</source>
         <translation>Выберите метку</translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="484"/>
+        <location filename="../widgets/operations_widget.py" line="485"/>
         <source>Choose tag to be assigned to selected operations:</source>
         <translation>Выберите метку для присвоения выбранным операциям:</translation>
     </message>
@@ -6702,7 +6719,7 @@ This looks like the quantity a rebasing position gained without reporting it, wh
     </message>
     <message>
         <location filename="../ui/operations_widget.ui" line="220"/>
-        <location filename="../widgets/operations_widget.py" line="185"/>
+        <location filename="../widgets/operations_widget.py" line="186"/>
         <source>Hide positions</source>
         <translation>Скрыть позиции</translation>
     </message>
@@ -6713,7 +6730,7 @@ This looks like the quantity a rebasing position gained without reporting it, wh
     </message>
     <message>
         <location filename="../ui/operations_widget.ui" line="395"/>
-        <location filename="../widgets/operations_widget.py" line="187"/>
+        <location filename="../widgets/operations_widget.py" line="188"/>
         <source>Hide operations</source>
         <translation>Скрыть операции</translation>
     </message>
@@ -7590,7 +7607,7 @@ Its other record is found by the transaction, but the two accounts are kept in d
 <context>
     <name>PortfolioReviewReport</name>
     <message>
-        <location filename="../reports/portfolio_review.py" line="105"/>
+        <location filename="../reports/portfolio_review.py" line="106"/>
         <source>Portfolio re&amp;view</source>
         <translation>Про&amp;верка портфелей</translation>
     </message>
@@ -7598,32 +7615,32 @@ Its other record is found by the transaction, but the two accounts are kept in d
 <context>
     <name>PortfolioReviewReportWindow</name>
     <message>
-        <location filename="../reports/portfolio_review.py" line="117"/>
+        <location filename="../reports/portfolio_review.py" line="118"/>
         <source>Portfolio assignments to review</source>
         <translation>Портфели: что проверить</translation>
     </message>
     <message>
-        <location filename="../reports/portfolio_review.py" line="134"/>
+        <location filename="../reports/portfolio_review.py" line="135"/>
         <source>{count} to review</source>
         <translation>к проверке: {count}</translation>
     </message>
     <message>
-        <location filename="../reports/portfolio_review.py" line="145"/>
+        <location filename="../reports/portfolio_review.py" line="146"/>
         <source>Set portfolio…</source>
         <translation>Задать портфель…</translation>
     </message>
     <message>
-        <location filename="../reports/portfolio_review.py" line="148"/>
+        <location filename="../reports/portfolio_review.py" line="149"/>
         <source>Remove from portfolio</source>
         <translation>Убрать из портфеля</translation>
     </message>
     <message>
-        <location filename="../reports/portfolio_review.py" line="154"/>
+        <location filename="../reports/portfolio_review.py" line="155"/>
         <source>Please select portfolio</source>
         <translation>Выберите портфель</translation>
     </message>
     <message>
-        <location filename="../reports/portfolio_review.py" line="155"/>
+        <location filename="../reports/portfolio_review.py" line="156"/>
         <source>Portfolio for {count} operation(s):</source>
         <translation>Портфель для операций ({count}):</translation>
     </message>

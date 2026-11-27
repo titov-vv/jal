@@ -7,6 +7,7 @@ from jal.constants import Setup, AccountStatus
 from jal.ui.ui_operations_widget import Ui_OperationsWidget
 from jal.widgets.holdings_menu import HoldingsMenu
 from jal.widgets.mdi import MdiWidget
+from jal.widgets.custom.date_range_selector import day_bounds
 from jal.widgets.selection_dialog import SelectReferenceDialog
 from jal.widgets.reference_dialogs import AccountListDialog, TagsListDialog
 from jal.widgets.helpers import (ManipulateDate, TableSelectionRestorer, set_grids_metrics,
@@ -490,6 +491,6 @@ class OperationsWidget(MdiWidget):
 
     @Slot()
     def show_balance_history_chart(self, account_id):
-        begin, end = ManipulateDate.PreviousQuarter()
+        begin, end = day_bounds(*ManipulateDate.PreviousQuarter(now_dt().date()))
         details = {'begin_ts': begin, 'end_ts': end, 'account_id': account_id}
         self._parent.reports.show_report("AccountBalanceHistoryReportWindow", details)

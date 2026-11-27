@@ -9,8 +9,9 @@ has a **Save…** button that writes what you are looking at to an Excel file.
 
 Most reports share the same two controls:
 
-* a **period** — a preset (*Quarter to date*, *Year to date*, *This year*, *Previous year*) plus
-  **From** and **To** dates you can set yourself;
+* a **period** — a preset (*3 months*, *12 months*, *This year*, *Previous year*) plus
+  **From** and **To** dates you can set yourself; both days are included, and a date set by hand
+  switches the preset to *Custom*;
 * a **currency** — everything is converted into it for the totals.
 
 ---

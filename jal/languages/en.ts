@@ -2999,57 +2999,62 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>DateRangeSelector</name>
     <message>
-        <location filename="../widgets/custom/date_range_selector.py" line="16"/>
-        <source>Week</source>
-        <translation></translation>
+        <location filename="../widgets/custom/date_range_selector.py" line="24"/>
+        <source>Since last week</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/custom/date_range_selector.py" line="17"/>
-        <source>Month</source>
-        <translation></translation>
+        <location filename="../widgets/custom/date_range_selector.py" line="25"/>
+        <source>Since last month</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/custom/date_range_selector.py" line="18"/>
-        <source>Quarter</source>
-        <translation></translation>
+        <location filename="../widgets/custom/date_range_selector.py" line="26"/>
+        <source>Since last quarter</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/custom/date_range_selector.py" line="19"/>
-        <source>Year</source>
-        <translation></translation>
+        <location filename="../widgets/custom/date_range_selector.py" line="27"/>
+        <source>Since last year</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/custom/date_range_selector.py" line="20"/>
-        <source>Quarter to date</source>
-        <translation></translation>
+        <location filename="../widgets/custom/date_range_selector.py" line="28"/>
+        <source>3 months</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/custom/date_range_selector.py" line="21"/>
-        <source>Year to date</source>
-        <translation></translation>
+        <location filename="../widgets/custom/date_range_selector.py" line="29"/>
+        <source>12 months</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/custom/date_range_selector.py" line="22"/>
+        <location filename="../widgets/custom/date_range_selector.py" line="30"/>
         <source>This year</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/custom/date_range_selector.py" line="23"/>
+        <location filename="../widgets/custom/date_range_selector.py" line="31"/>
         <source>Previous year</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/custom/date_range_selector.py" line="24"/>
+        <location filename="../widgets/custom/date_range_selector.py" line="32"/>
         <source>All dates</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/custom/date_range_selector.py" line="38"/>
+        <location filename="../widgets/custom/date_range_selector.py" line="43"/>
+        <source>Custom</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../widgets/custom/date_range_selector.py" line="46"/>
         <source>From:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/custom/date_range_selector.py" line="46"/>
+        <location filename="../widgets/custom/date_range_selector.py" line="55"/>
         <source>To:</source>
         <translation></translation>
     </message>
@@ -4783,56 +4788,68 @@ one for ParentCo and second for Subsidiary</source>
 <context>
     <name>JalBackup</name>
     <message>
-        <location filename="../db/backup_restore.py" line="100"/>
+        <location filename="../db/backup_restore.py" line="119"/>
         <source>Save backup to:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="101"/>
-        <location filename="../db/backup_restore.py" line="103"/>
-        <location filename="../db/backup_restore.py" line="107"/>
+        <location filename="../db/backup_restore.py" line="120"/>
+        <location filename="../db/backup_restore.py" line="122"/>
+        <location filename="../db/backup_restore.py" line="126"/>
         <source>Archives (*.tgz)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="106"/>
+        <location filename="../db/backup_restore.py" line="125"/>
         <source>Select file with backup</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="125"/>
+        <location filename="../db/backup_restore.py" line="96"/>
+        <location filename="../db/backup_restore.py" line="142"/>
         <source>Wrong format of backup file</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="130"/>
+        <location filename="../db/backup_restore.py" line="57"/>
+        <location filename="../db/backup_restore.py" line="101"/>
+        <source>Backup doesn&apos;t contain SQLite database</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/backup_restore.py" line="60"/>
+        <source>Can&apos;t read backup file: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../db/backup_restore.py" line="149"/>
         <source>Backup restored from: </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="131"/>
+        <location filename="../db/backup_restore.py" line="150"/>
         <source> into </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="133"/>
+        <location filename="../db/backup_restore.py" line="152"/>
         <source>Data restored</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="134"/>
+        <location filename="../db/backup_restore.py" line="153"/>
         <source>Database was loaded from the backup.
 </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="135"/>
+        <location filename="../db/backup_restore.py" line="154"/>
         <source>You should restart application to apply changes
 Application will be terminated now</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="116"/>
+        <location filename="../db/backup_restore.py" line="135"/>
         <source>Backup saved in: </source>
         <translation></translation>
     </message>
@@ -4847,7 +4864,7 @@ Application will be terminated now</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../db/backup_restore.py" line="93"/>
+        <location filename="../db/backup_restore.py" line="112"/>
         <source>Failed to restore backup file</source>
         <translation></translation>
     </message>
@@ -4931,42 +4948,42 @@ Application will be terminated now</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="607"/>
+        <location filename="../db/account.py" line="629"/>
         <source>The account is closed already</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="610"/>
+        <location filename="../db/account.py" line="632"/>
         <source>The account has operations at or after the closure date</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="612"/>
+        <location filename="../db/account.py" line="634"/>
         <source>The ledger isn&apos;t up to date, rebuild it first</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="615"/>
+        <location filename="../db/account.py" line="637"/>
         <source>The account has a debt: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="619"/>
+        <location filename="../db/account.py" line="641"/>
         <source>The account holds money in another currency: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="621"/>
+        <location filename="../db/account.py" line="643"/>
         <source>The account has a negative balance: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="629"/>
+        <location filename="../db/account.py" line="651"/>
         <source>The account has a short position: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../db/account.py" line="636"/>
+        <location filename="../db/account.py" line="658"/>
         <source>The account is still owed: </source>
         <translation type="unfinished"></translation>
     </message>
@@ -6542,122 +6559,122 @@ This looks like the quantity a rebasing position gained without reporting it, wh
 <context>
     <name>OperationsWidget</name>
     <message>
-        <location filename="../widgets/operations_widget.py" line="292"/>
+        <location filename="../widgets/operations_widget.py" line="293"/>
         <source>Reconcile</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="294"/>
+        <location filename="../widgets/operations_widget.py" line="295"/>
         <source>Assign tag</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="298"/>
+        <location filename="../widgets/operations_widget.py" line="299"/>
         <source>Copy</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="300"/>
+        <location filename="../widgets/operations_widget.py" line="301"/>
         <source>Delete</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="251"/>
+        <location filename="../widgets/operations_widget.py" line="252"/>
         <source>Confirmation</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="184"/>
+        <location filename="../widgets/operations_widget.py" line="185"/>
         <source>Show operations</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="186"/>
+        <location filename="../widgets/operations_widget.py" line="187"/>
         <source>Show positions</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="252"/>
+        <location filename="../widgets/operations_widget.py" line="253"/>
         <source>Are you sure to delete selected transaction(s)?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="296"/>
+        <location filename="../widgets/operations_widget.py" line="297"/>
         <source>Tax treatment…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="302"/>
+        <location filename="../widgets/operations_widget.py" line="303"/>
         <source>Match cross-chain legs…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="335"/>
+        <location filename="../widgets/operations_widget.py" line="336"/>
         <source>Assign an account…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="336"/>
+        <location filename="../widgets/operations_widget.py" line="337"/>
         <source>Match with another leg…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="337"/>
+        <location filename="../widgets/operations_widget.py" line="338"/>
         <source>Convert into a swap…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="338"/>
+        <location filename="../widgets/operations_widget.py" line="339"/>
         <source>Convert into a bridge…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="340"/>
+        <location filename="../widgets/operations_widget.py" line="341"/>
         <source>Record as a spending or an income…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="420"/>
+        <location filename="../widgets/operations_widget.py" line="421"/>
         <source>Choose account...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="425"/>
+        <location filename="../widgets/operations_widget.py" line="426"/>
         <source>Show accounts</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="435"/>
+        <location filename="../widgets/operations_widget.py" line="436"/>
         <source>Use credit limits</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="440"/>
+        <location filename="../widgets/operations_widget.py" line="441"/>
         <source>Group by tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="446"/>
+        <location filename="../widgets/operations_widget.py" line="447"/>
         <source>Balance history chart</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="454"/>
+        <location filename="../widgets/operations_widget.py" line="455"/>
         <source>Expand all</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="457"/>
+        <location filename="../widgets/operations_widget.py" line="458"/>
         <source>Collapse all</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="483"/>
+        <location filename="../widgets/operations_widget.py" line="484"/>
         <source>Please select tag</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../widgets/operations_widget.py" line="484"/>
+        <location filename="../widgets/operations_widget.py" line="485"/>
         <source>Choose tag to be assigned to selected operations:</source>
         <translation></translation>
     </message>
@@ -6688,7 +6705,7 @@ This looks like the quantity a rebasing position gained without reporting it, wh
     </message>
     <message>
         <location filename="../ui/operations_widget.ui" line="220"/>
-        <location filename="../widgets/operations_widget.py" line="185"/>
+        <location filename="../widgets/operations_widget.py" line="186"/>
         <source>Hide positions</source>
         <translation type="unfinished"></translation>
     </message>
@@ -6699,7 +6716,7 @@ This looks like the quantity a rebasing position gained without reporting it, wh
     </message>
     <message>
         <location filename="../ui/operations_widget.ui" line="395"/>
-        <location filename="../widgets/operations_widget.py" line="187"/>
+        <location filename="../widgets/operations_widget.py" line="188"/>
         <source>Hide operations</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7571,7 +7588,7 @@ Its other record is found by the transaction, but the two accounts are kept in d
 <context>
     <name>PortfolioReviewReport</name>
     <message>
-        <location filename="../reports/portfolio_review.py" line="105"/>
+        <location filename="../reports/portfolio_review.py" line="106"/>
         <source>Portfolio re&amp;view</source>
         <translation type="unfinished"></translation>
     </message>
@@ -7579,32 +7596,32 @@ Its other record is found by the transaction, but the two accounts are kept in d
 <context>
     <name>PortfolioReviewReportWindow</name>
     <message>
-        <location filename="../reports/portfolio_review.py" line="117"/>
+        <location filename="../reports/portfolio_review.py" line="118"/>
         <source>Portfolio assignments to review</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/portfolio_review.py" line="134"/>
+        <location filename="../reports/portfolio_review.py" line="135"/>
         <source>{count} to review</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/portfolio_review.py" line="145"/>
+        <location filename="../reports/portfolio_review.py" line="146"/>
         <source>Set portfolio…</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/portfolio_review.py" line="148"/>
+        <location filename="../reports/portfolio_review.py" line="149"/>
         <source>Remove from portfolio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/portfolio_review.py" line="154"/>
+        <location filename="../reports/portfolio_review.py" line="155"/>
         <source>Please select portfolio</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../reports/portfolio_review.py" line="155"/>
+        <location filename="../reports/portfolio_review.py" line="156"/>
         <source>Portfolio for {count} operation(s):</source>
         <translation type="unfinished"></translation>
     </message>
