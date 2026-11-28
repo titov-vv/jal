@@ -41,7 +41,7 @@ A single row of controls above both panels:
   your reporting currency.
 * **Search** — free text, in any case; only the matching operations stay on screen. It looks at what
   the list shows and also at the names behind each operation: asset name, ticker and ISIN, peer,
-  category, tag and portfolio. The list follows as you type; when the period holds more than 2,500
+  category, tag, portfolio and the notes of an income/spending and its lines. The list follows as you type; when the period holds more than 2,500
   operations, press **Enter** to search.
 * When you have [chosen an account](#the-balances-panel), a button with its name at the right end goes
   back to all of them.

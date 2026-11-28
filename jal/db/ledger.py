@@ -174,7 +174,7 @@ class Ledger(QObject, JalDB):
 
     @classmethod
     # Names an operation refers to without showing them - its assets (name, symbols, ISIN; not currencies), peer,
-    # categories and tags - as {operation id: lower-case text} for the ledger rows within the given time range
+    # categories, tags and income/spending notes - as {operation id: lower-case text} for the given time range
     def get_search_names(cls, begin: int, end: int) -> dict:
         names = {}
         not_money = f"a.type_id!={PredefinedAsset.Money}"
@@ -198,7 +198,16 @@ class Ledger(QObject, JalDB):
         while query.next():
             oid, *ids = cls._read_record(query)
             operations[oid].update(x for x in zip(('asset', 'peer', 'category', 'tag'), ids) if x[1])
-        return {oid: "\n".join(name for key in keys for name in names.get(key, [])).casefold()
+        notes = defaultdict(list)
+        query = cls._exec("SELECT a.oid, a.note FROM actions a WHERE a.timestamp>=:begin AND a.timestamp<=:end "
+                          "UNION ALL SELECT a.oid, d.note FROM action_details d JOIN actions a ON a.oid=d.pid "
+                          "WHERE a.timestamp>=:begin AND a.timestamp<=:end",
+                          [(":begin", begin), (":end", end)], forward_only=True)
+        while query.next():
+            oid, note = cls._read_record(query)
+            if note and oid in operations:
+                notes[oid].append(note)
+        return {oid: "\n".join([name for key in keys for name in names.get(key, [])] + notes[oid]).casefold()
                 for oid, keys in operations.items()}
 
     @classmethod

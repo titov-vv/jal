@@ -18,14 +18,15 @@ from jal.widgets.operations_widget import OperationsWidget
 USD, ACME = 2, 4
 
 
-# A spending with a category and a tag that the list doesn't show, and a trade in a stock with an ISIN
+# A spending with a category, a tag and notes that the list doesn't show, and a trade in a stock with an ISIN
 @pytest.fixture
 def ledger(prepare_db_fifo):
     PortfolioLots.forget()
     tag = JalDB._exec("INSERT INTO tags (pid, tag) VALUES (0, 'Holiday Trip')", commit=True).lastInsertId()
     LedgerTransaction.create_new(LedgerTransaction.IncomeSpending, {
-        'timestamp': d2t(260301), 'account_id': 1, 'peer_id': 1,
-        'lines': [{'amount': Decimal('-10'), 'category_id': PredefinedCategory.Fees, 'tag_id': tag, 'note': ''}]})
+        'timestamp': d2t(260301), 'account_id': 1, 'peer_id': 1, 'note': 'Paid by Alice',
+        'lines': [{'amount': Decimal('-10'), 'category_id': PredefinedCategory.Fees, 'tag_id': tag,
+                   'note': 'Espresso machine'}]})
     create_assets([('ACME', 'Acme Rockets Inc.', 'US0000000ACM', USD, PredefinedAsset.Stock, 0)])
     create_trades(1, [(d2t(260302), d2t(260302), ACME, Decimal('1'), Decimal('100'), Decimal('0'))])
     Ledger().rebuild(from_timestamp=0)
@@ -59,6 +60,8 @@ def _search(window, text) -> list:
 @pytest.mark.parametrize("text, otype", [
     ("holiday trip", LedgerTransaction.IncomeSpending),     # tag
     ("FEES", LedgerTransaction.IncomeSpending),             # category
+    ("espresso", LedgerTransaction.IncomeSpending),         # line note
+    ("alice", LedgerTransaction.IncomeSpending),            # operation note
     ("us0000000acm", LedgerTransaction.Trade),              # ISIN
     ("card", LedgerTransaction.Trade),                      # portfolio
 ])
